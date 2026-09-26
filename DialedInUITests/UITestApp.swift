@@ -19,6 +19,15 @@ enum UITestApp {
         app.launch()
         return app
     }
+
+    /// Launches the app as a first-time user: the mock `newAnonymous` scenario, no
+    /// `STARTSCREEN_`, so the root is the real onboarding flow from the Welcome screen.
+    static func launchNewUser() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING"]
+        app.launch()
+        return app
+    }
 }
 
 extension XCUIApplication {

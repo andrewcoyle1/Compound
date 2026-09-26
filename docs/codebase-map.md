@@ -94,14 +94,14 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `DialedIn/Core/DevSettings` | 4 | 815 | DEV/MOCK-only developer tools screen |
 | `DialedIn/Core/Notifications` | 5 | 894 | Activity notifications inbox |
 | `DialedIn/Core/Nutrition` | 121 | 11,109 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
-| `DialedIn/Core/Onboarding` | 121 | 8,785 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
+| `DialedIn/Core/Onboarding` | 121 | 8,789 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `DialedIn/Core/Paywalls` | 7 | 599 | Paywall screens |
 | `DialedIn/Core/Profile` | 203 | 13,927 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
 | `DialedIn/Core/Search` | 4 | 801 | User search |
 | `DialedIn/Core/Sharing` | 8 | 502 | Share-to-follower and shared-item viewer |
 | `DialedIn/Core/SplitViewContainer` | 4 | 165 | iPad sidebar container |
 | `DialedIn/Core/TabBar` | 5 | 514 | Tab bar, DeepLink parsing, tab selection |
-| `DialedIn/Core/Training` | 182 | 15,395 | Training tab: workouts, tracker, programs, history, create flows |
+| `DialedIn/Core/Training` | 182 | 15,398 | Training tab: workouts, tracker, programs, history, create flows |
 | `DialedIn/Components` | 134 | 10,749 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
 | `DialedIn/Managers` | 242 | 29,888 | App-owned managers, models and services (see Managers table) |
 | `DialedIn/Root` | 22 | 3,147 | AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
@@ -111,11 +111,11 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Shared` | 5 | 588 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 135 | 1,724 | Live Activity / Dynamic Island / home widget extension |
 | `DialedInUnitTests` | 238 | 69,033 | Swift Testing unit suites (BlueprintName DialedInUnitTests) |
-| `DialedInUITests` | 6 | 401 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
+| `DialedInUITests` | 7 | 548 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 8 | 16,741 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 5 | 660 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 9 | 2,647 | Specs, reviews, audits, this map |
+| `docs` | 9 | 2,646 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -252,7 +252,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 |---|---|---:|---|---|---|---|
 | **Welcome** | [0 - WelcomeView](DialedIn/Core/Onboarding/0%20-%20WelcomeView) | 287 | Auth, Intro, Paywall, Subscription | WelcomeDelegate |  |  |
 | **Intro** | [1 - IntroView](DialedIn/Core/Onboarding/1%20-%20IntroView) | 252 | Auth | `showIntroView` |  |  |
-| **Auth** | [2 - AuthView](DialedIn/Core/Onboarding/2%20-%20AuthView) | 451 | Paywall, Subscription | `showAuthView` |  |  |
+| **Auth** | [2 - AuthView](DialedIn/Core/Onboarding/2%20-%20AuthView) | 452 | Paywall, Subscription | `showAuthView` |  |  |
 | **Subscription** | [3 - Subscription](DialedIn/Core/Onboarding/3%20-%20Subscription) | 212 | CompleteAccountSetup, Paywall | `showSubscriptionView` |  |  |
 | **CompleteAccountSetup** | [4 - CompleteAccountSetup](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup) | 164 | NamePhoto | `showCompleteAccountSetupView` |  |  |
 | **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 351 | Gender | `showNamePhotoView` |  |  |
@@ -272,7 +272,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](DialedIn/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 371 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
 | **WeightRate** | [6 - GoalSetting/3 - WeightRate](DialedIn/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 404 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
 | **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](DialedIn/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 524 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
-| **CustomisingDietProgram** | [8 - OnboardingDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet) | 169 | PreferredDiet | `showCustomisingDietProgramView` |  |  |
+| **CustomisingDietProgram** | [8 - OnboardingDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet) | 172 | PreferredDiet | `showCustomisingDietProgramView` |  |  |
 | **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 236 | CalorieFloor | `showPreferredDietView` |  |  |
 | **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 253 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
 | **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 280 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
@@ -380,7 +380,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseSave** | [Subviews/AddTraining/CreateExercise/ExerciseSave](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseSave) | 441 |  | ExerciseSaveDelegate, `showExerciseSaveView` |  |  |
 | **FinalExerciseDetails** | [Subviews/AddTraining/CreateExercise/FinalExerciseDetails](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise/FinalExerciseDetails) | 307 | ExerciseSave | FinalExerciseDetailsDelegate, `showFinalExerciseDetailsView` |  |  |
 | **MuscleGroupPicker** | [Subviews/AddTraining/CreateExercise/MuscleGroupPicker](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise/MuscleGroupPicker) | 271 | ExerciseEquipment | MuscleGroupPickerDelegate, `showMuscleGroupPickerView` |  |  |
-| **CreateProgram** | [Subviews/AddTraining/CreateProgram/CreateProgram](DialedIn/Core/Training/Subviews/AddTraining/CreateProgram/CreateProgram) | 192 | NameProgram | CreateProgramDelegate, `showCreateProgramView`, `showOnboardingTrainingProgramView` |  | CreateProgramFlowPresenterTests.swift |
+| **CreateProgram** | [Subviews/AddTraining/CreateProgram/CreateProgram](DialedIn/Core/Training/Subviews/AddTraining/CreateProgram/CreateProgram) | 195 | NameProgram | CreateProgramDelegate, `showCreateProgramView`, `showOnboardingTrainingProgramView` |  | CreateProgramFlowPresenterTests.swift |
 | **NameProgram** | [Subviews/AddTraining/CreateProgram/NameProgram](DialedIn/Core/Training/Subviews/AddTraining/CreateProgram/NameProgram) | 167 | ProgramIcon | NameProgramDelegate, `showNameProgramView` |  |  |
 | **ProgramDesign** | [Subviews/AddTraining/CreateProgram/ProgramDesign](DialedIn/Core/Training/Subviews/AddTraining/CreateProgram/ProgramDesign) | 645 | ProgramSettings, RenameWorkoutTemplateModel | EditTrainingProgramDelegate, ProgramDesignDelegate, `showEditTrainingProgramView`, `showProgramDesignView`, `showRenameWorkoutTemplateModelView` |  |  |
 | **ProgramSettings** | [Subviews/AddTraining/CreateProgram/ProgramDesign/ProgramSettings](DialedIn/Core/Training/Subviews/AddTraining/CreateProgram/ProgramDesign/ProgramSettings) | 384 | EditDayOrder, EditDeload, EditProgramColourIcon, RenameProgram | `showEditDayOrderView`, `showEditDeloadView`, `showEditProgramColourIconView`, `showProgramSettingsView`, `showRenameProgramView` |  | ProgramSettingsFlowPresenterTests.swift |
@@ -649,7 +649,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`DialedInUnitTests/Widgets`** (1): `WidgetSnapshotTests`
 
-**`DialedInUITests`**: `CreateExerciseUITests`, `CreateProgramUITests`, `CreateWorkoutUITests`, `ScreenDeckSmokeTests+Screens`, `ScreenDeckSmokeTests`, `UITestApp`
+**`DialedInUITests`**: `CreateExerciseUITests`, `CreateProgramUITests`, `CreateWorkoutUITests`, `OnboardingUITests`, `ScreenDeckSmokeTests+Screens`, `ScreenDeckSmokeTests`, `UITestApp`
 
 
 ## Scripts, docs, CI, backend files

@@ -18,6 +18,7 @@ struct AuthView: View {
             imageSection
             Group {
                 SignInWithAppleButtonView { presenter.onSignInApplePressed() }
+                    .accessibilityIdentifier("Auth.apple")
                 SignInWithGoogleButtonView { presenter.onSignInGooglePressed() }
                 tsAndCsSection
             }

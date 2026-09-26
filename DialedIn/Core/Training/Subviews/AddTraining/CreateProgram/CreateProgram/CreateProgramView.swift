@@ -88,8 +88,11 @@ extension CoreRouter {
         }
     }
     
+    /// Reached from the goal summary's router once the gym profile step completes, which is
+    /// two screens below the top. `.append` puts the flow on top of the stack; the default
+    /// `.insert` would slot it in behind the gym screens.
     func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) {
-        router.showScreen(.push) { router in
+        router.showScreen(.push, location: .append) { router in
             builder.createProgramView(router: router, delegate: delegate)
         }
     }

@@ -39,8 +39,10 @@ struct DevSettingsView: View {
         }
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                backButtonView
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
             }
         }
         .onFirstAppear {
@@ -49,14 +51,6 @@ struct DevSettingsView: View {
             presenter.loadPremiumOverride()
 #endif
         }
-    }
-        
-    private var backButtonView: some View {
-        Image(systemName: "xmark")
-            .anyButton {
-                presenter.onDismissPressed()
-            }
-        .accessibilityLabel("Close")
     }
 
     private var authSection: some View {
@@ -86,12 +80,12 @@ struct DevSettingsView: View {
         Section {
             Toggle("Simulate Premium", isOn: $presenter.simulatePremium)
                 .onChange(of: presenter.simulatePremium, presenter.handleSimulatePremiumChange)
-                .font(.caption)
+                .font(.label)
         } header: {
             Text("Subscription")
         } footer: {
             Text("Treats this device as a subscriber without a purchase. Debug and Mock builds only — it does not exist in a release build.")
-                .font(.caption2)
+                .font(.label)
         }
     }
 #endif
@@ -110,7 +104,7 @@ struct DevSettingsView: View {
                 }
                 .onChange(of: presenter.paywallTest, presenter.handlePaywallOptionChange)
             }
-            .font(.caption)
+            .font(.label)
         } header: {
             Text("AB Tests")
         }
@@ -131,8 +125,7 @@ struct DevSettingsView: View {
         Group {
             Section {
                 ForEach(presenter.allExercises, id: \.id) { item in
-                    CustomListCellView(imageName: item.imageURL, title: item.name, subtitle: item.description)
-                        .removeListRowFormatting()
+                    ListRow(title: item.name, subtitle: item.description, imageName: item.imageURL)
                 }
             } header: {
                 HStack {
@@ -149,29 +142,29 @@ struct DevSettingsView: View {
         Group {
             Section {
                 ForEach(presenter.allWorkoutTemplates, id: \.workoutId) { workout in
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         HStack {
                             Text(workout.name)
-                                .font(.subheadline)
+                                .font(.rowDetail)
                                 .fontWeight(.medium)
                             Spacer()
                         }
                         
                         if let description = workout.description {
                             Text(description)
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                         
-                        HStack(spacing: 4) {
+                        HStack(spacing: Spacing.xs) {
                             Image(systemName: "figure.strengthtraining.traditional")
-                                .font(.caption2)
+                                .font(.label)
                             Text("\(workout.exercises.count) exercises")
-                                .font(.caption2)
+                                .font(.label)
                         }
                         .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 4)
+                    .padding(.vertical, Spacing.xs)
                 }
             } header: {
                 HStack {
@@ -187,7 +180,7 @@ struct DevSettingsView: View {
     private var activeWorkoutSessionSection: some View {
         Section {
             if let session = presenter.activeSession {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.s) {
                     debugRow(label: "Session ID", value: session.id)
                     debugRow(label: "Name", value: session.name)
                     debugRow(label: "Template ID", value: session.workoutTemplateId ?? "nil")
@@ -204,10 +197,10 @@ struct DevSettingsView: View {
                     let totalSets = session.exercises.flatMap { $0.sets }.count
                     debugRow(label: "Sets", value: "\(completedSets)/\(totalSets)")
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, Spacing.xs)
             } else {
                 Text("No active workout session")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
         } header: {
@@ -219,26 +212,25 @@ struct DevSettingsView: View {
     
     private var localStorageDebugSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 // Active session from local storage
                 if let activeSession = presenter.activeSession {
                     Text("Active Session (Local)")
-                        .font(.caption)
+                        .font(.label)
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         debugRow(label: "  Session ID", value: activeSession.id)
                         debugRow(label: "  Template ID", value: activeSession.workoutTemplateId ?? "nil")
                         debugRow(label: "  Plan ID", value: activeSession.trainingProgramId ?? "nil")
                     }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 4)
-                    .background(Color.secondary.opacity(0.1))
-                    .cornerRadius(4)
+                    .padding(.vertical, Spacing.xxs)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
                 } else {
                     Text("No active session in local storage")
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
                 
@@ -249,18 +241,18 @@ struct DevSettingsView: View {
                 let last3 = Array(recentSessions.sorted(by: { $0.dateCreated > $1.dateCreated }).prefix(3))
                 
                 Text("Recent Sessions (Last 3)")
-                    .font(.caption)
+                    .font(.label)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
-                    .padding(.top, 4)
+                    .padding(.top, Spacing.xs)
                 
                 if last3.isEmpty {
                     Text("No recent sessions")
-                        .font(.caption2)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(last3, id: \.id) { session in
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
                             debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
                             debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
                             debugRow(label: "  Plan ID", value: session.trainingProgramId ?? "nil")
@@ -269,14 +261,13 @@ struct DevSettingsView: View {
                                 debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
                             }
                         }
-                        .padding(.vertical, 2)
-                        .padding(.horizontal, 4)
-                        .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(4)
+                        .padding(.vertical, Spacing.xxs)
+                        .padding(.horizontal, Spacing.xs)
+                        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
                     }
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
             
         } header: {
             Text("Local Storage Debug")
@@ -285,15 +276,15 @@ struct DevSettingsView: View {
     
     private var firebaseTestSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 Text("Fetch Session from Firebase")
-                    .font(.caption)
+                    .font(.label)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                 
                 TextField("Session ID", text: $presenter.testSessionId)
                     .textFieldStyle(.roundedBorder)
-                    .font(.caption)
+                    .font(.label)
                 
                 Button {
                     Task {
@@ -305,29 +296,27 @@ struct DevSettingsView: View {
                             .controlSize(.small)
                     } else {
                         Label("Fetch Session", systemImage: "arrow.down.circle")
-                            .font(.caption)
+                            .font(.label)
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .disabled(presenter.testSessionId.isEmpty || presenter.isFetchingSession)
                 
                 if let error = presenter.fetchError {
-                    Text(error)
-                        .font(.caption2)
-                        .foregroundStyle(.red)
-                        .padding(.top, 4)
+                    InlineMessage(.error, error)
+                        .padding(.top, Spacing.xs)
                 }
                 
                 if let session = presenter.fetchedSession {
                     Divider()
                     
                     Text("Fetched Session")
-                        .font(.caption)
+                        .font(.label)
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
-                        .padding(.top, 4)
+                        .padding(.top, Spacing.xs)
                     
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
                         debugRow(label: "  Name", value: session.name)
                         debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
@@ -337,13 +326,12 @@ struct DevSettingsView: View {
                             debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
                         }
                     }
-                    .padding(.vertical, 2)
-                    .padding(.horizontal, 4)
-                    .background(Color.green.opacity(0.1))
-                    .cornerRadius(4)
+                    .padding(.vertical, Spacing.xxs)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.success), in: .rect(cornerRadius: Radius.s, style: .continuous))
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
         } header: {
             Text("Firebase Test")
         }
@@ -391,7 +379,7 @@ struct DevSettingsView: View {
                 HStack {
                     ProgressView()
                     Text(presenter.reseedingMessage)
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -422,8 +410,8 @@ struct DevSettingsView: View {
             } label: {
                 Text("Clear local data & sign out")
             }
-            .tint(.red)
-            .font(.caption)
+            .tint(.danger)
+            .font(.label)
 
         } header: {
             Text("Debug Actions")
@@ -443,7 +431,7 @@ struct DevSettingsView: View {
                 Text("Unknown")
             }
         }
-        .font(.caption)
+        .font(.label)
         .lineLimit(1)
         .minimumScaleFactor(0.3)
     }
@@ -451,11 +439,11 @@ struct DevSettingsView: View {
     private func debugRow(label: String, value: String) -> some View {
         HStack(alignment: .top) {
             Text(label)
-                .font(.caption2)
+                .font(.label)
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
-                .font(.caption2)
+                .font(.label)
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.trailing)
         }

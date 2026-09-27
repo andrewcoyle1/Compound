@@ -10,6 +10,8 @@ import SwiftUI
 struct LogMeasurementView: View {
 
     @State var presenter: LogMeasurementPresenter
+    /// The wheel shows about five rows; it grows with Dynamic Type so they are never clipped.
+    @ScaledMetric(relativeTo: .body) private var wheelHeight: CGFloat = 150
 
     var body: some View {
         List {
@@ -64,7 +66,7 @@ struct LogMeasurementView: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
+                .frame(height: wheelHeight)
                 .clipped()
                 .onChange(of: presenter.selectedCentimeters) { _, newValue in
                     presenter.selectedInches = Int(Double(newValue) / 2.54)
@@ -76,7 +78,7 @@ struct LogMeasurementView: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
+                .frame(height: wheelHeight)
                 .clipped()
                 .onChange(of: presenter.selectedInches) { _, newValue in
                     presenter.selectedCentimeters = Int(Double(newValue) * 2.54)
@@ -96,13 +98,16 @@ struct LogMeasurementView: View {
             }
         }
 
-        ToolbarItem(placement: .primaryAction) {
-            Button(role: .confirm) {
-                Task {
-                    await presenter.saveMeasurement()
+        ToolbarItem(placement: .confirmationAction) {
+            if presenter.isLoading {
+                ProgressView()
+            } else {
+                Button(role: .confirm) {
+                    Task {
+                        await presenter.saveMeasurement()
+                    }
                 }
             }
-            .disabled(presenter.isLoading)
         }
     }
 }
@@ -121,7 +126,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showLogMeasurementView(kind: BodyMeasurementKind) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.5)]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.logMeasurementView(router: router, kind: kind)
         }
     }

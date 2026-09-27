@@ -55,13 +55,16 @@ struct LogWeightView: View {
             }
         }
         
-        ToolbarItem(placement: .primaryAction) {
-            Button(role: .confirm) {
-                Task {
-                    await presenter.saveWeight()
+        ToolbarItem(placement: .confirmationAction) {
+            if presenter.isLoading {
+                ProgressView()
+            } else {
+                Button(role: .confirm) {
+                    Task {
+                        await presenter.saveWeight()
+                    }
                 }
             }
-            .disabled(presenter.isLoading)
         }
     }
 }
@@ -76,7 +79,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showLogWeightView() {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.5)]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.logWeightView(router: router)
         }
     }

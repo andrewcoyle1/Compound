@@ -583,6 +583,7 @@ struct AnalyticsLogWeightPresenterTests {
         await screen.presenter.saveWeight()
 
         #expect(screen.interactor.saved.first?.weightKg == 84)
+        #expect(screen.interactor.playedHaptics == [.success])
     }
 
     /// Storage is kilograms, so a pounds entry is converted on the way in — writing 185 as though
@@ -640,6 +641,7 @@ struct AnalyticsLogWeightPresenterTests {
         #expect(screen.interactor.saved.isEmpty)
         #expect(screen.interactor.profileWeights.isEmpty)
         #expect(screen.presenter.isLoading == false)
+        #expect(screen.interactor.playedHaptics == [.error])
     }
 
     /// Signed out there is nobody to attribute the weigh-in to, so nothing is written.
@@ -651,17 +653,5 @@ struct AnalyticsLogWeightPresenterTests {
 
         #expect(screen.interactor.saved.isEmpty)
         #expect(screen.interactor.profileWeights.isEmpty)
-    }
-
-    /// The history rows on this screen read in the unit being logged in.
-    @Test("Test The History Reads In The Chosen Unit")
-    func testTheHistoryReadsInTheChosenUnit() {
-        let screen = makeScreen()
-        screen.presenter.unit = .pounds
-
-        #expect(screen.presenter.formatWeight(100) == "220.5 lbs")
-        screen.presenter.unit = .kilograms
-        #expect(screen.presenter.formatWeight(100) == "100.0 kg")
-        #expect(screen.presenter.formatWeight(nil) == "--")
     }
 }

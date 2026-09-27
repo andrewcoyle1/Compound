@@ -44,6 +44,7 @@ class FoodPhotoScannerPresenter {
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
             errorMessage = String(localized: "Failed to process image.")
+            interactor.playHaptic(option: .error)
             isAnalysing = false
             return
         }
@@ -54,6 +55,7 @@ class FoodPhotoScannerPresenter {
             analysisResults = decoded.items
         } catch {
             errorMessage = error.localizedDescription
+            interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onError(message: error.localizedDescription))
         }
         isAnalysing = false

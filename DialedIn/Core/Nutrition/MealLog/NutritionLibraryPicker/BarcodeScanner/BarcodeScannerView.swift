@@ -9,7 +9,6 @@ struct BarcodeScannerDelegate {
 
 struct BarcodeScannerView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     @State var presenter: BarcodeScannerPresenter
@@ -44,18 +43,19 @@ struct BarcodeScannerView: View {
                 if showOverlay {
                     parsedIngredientOverlay
                         .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-                        .reducedMotionAnimation(.spring(duration: 0.3), value: showOverlay)
+                        .reducedMotionAnimation(.standard, value: showOverlay)
                 }
             } else {
-                Text("Scanner not supported on this device.")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ContentUnavailableView {
+                    Label("Scanner Unavailable", systemImage: Symbol.barcode)
+                } description: {
+                    Text("Scanner not supported on this device.")
+                }
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
-        .onChange(of: presenter.scanningMode) { _, newValue in
-            presenter.recognisedTypes = newValue.recognisedTypes
-            presenter.onRescanPressed()
+        .onChange(of: presenter.scanningMode) {
+            presenter.onScanningModeChanged()
         }
         .onChange(of: presenter.scannedCode) { _, newValue in
             guard let code = newValue, presenter.scanningMode == .barcode else { return }
@@ -97,28 +97,31 @@ struct BarcodeScannerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { presenter.isEnteringManually = false }
+                    Button(role: .close) { presenter.isEnteringManually = false }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { presenter.onManualEntrySubmitted() }
+                    Button(role: .confirm) { presenter.onManualEntrySubmitted() }
                         .disabled(presenter.manualEntryText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }
-        .presentationDetents([.medium])
+        // A native sheet, because it edits the presenter's bindings; the detents match `.half`, so
+        // the field is never trapped at the large type sizes.
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Top controls
 
     private var topControls: some View {
         HStack {
-            Picker("", selection: $presenter.scanningMode) {
+            Picker("Scanning mode", selection: $presenter.scanningMode) {
                 ForEach(ScanningMode.allCases) { mode in
                     Text(mode.rawValue.capitalized).tag(mode)
                 }
             }
             .pickerStyle(.segmented)
-            .frame(maxWidth: 120)
+            .fixedSize()
 
             Spacer()
 
@@ -126,9 +129,9 @@ struct BarcodeScannerView: View {
                 presenter.onManualEntryPressed()
             } label: {
                 Image(systemName: "keyboard")
-                    .padding()
-                    .background(.secondary, in: .circle)
             }
+            .buttonStyle(.glass)
+            .buttonBorderShape(.circle)
             .accessibilityLabel("Enter manually")
 
             if presenter.isTorchAvailable {
@@ -136,9 +139,9 @@ struct BarcodeScannerView: View {
                     presenter.onTorchPressed()
                 } label: {
                     Image(systemName: presenter.isTorchOn ? "flashlight.on.fill" : "flashlight.off.fill")
-                        .padding()
-                        .background(.secondary, in: .circle)
                 }
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
                 .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off torch") : String(localized: "Turn on torch"))
             }
         }
@@ -150,50 +153,50 @@ struct BarcodeScannerView: View {
     @ViewBuilder
     private var barcodeBottomDisplay: some View {
         if presenter.isLookingUpBarcode {
-            HStack(spacing: 10) {
+            HStack(spacing: Spacing.s) {
                 ProgressView()
                 Text("Looking up product...")
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.horizontal, Spacing.xl)
+            .padding(.vertical, Spacing.m)
             .glassEffect()
-            .padding(.bottom, 32)
+            .padding(.bottom, Spacing.xxl)
         } else if presenter.scannedCode == nil {
             Text("Point camera at a barcode")
-                .font(.subheadline)
+                .font(.rowDetail)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.vertical, Spacing.m)
                 .glassEffect()
-                .padding(.bottom, 32)
+                .padding(.bottom, Spacing.xxl)
         }
     }
 
     // MARK: - Label mode bottom bar
 
     private var labelModeBottomBar: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Spacing.m) {
             if presenter.isParsingLabel {
-                HStack(spacing: 10) {
+                HStack(spacing: Spacing.s) {
                     ProgressView()
                     Text("Analysing label...")
-                        .font(.subheadline)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal)
-                .padding(.vertical, 12)
+                .padding(.vertical, Spacing.m)
                 .glassEffect()
 
                 Button("Re-scan", action: presenter.onRescanPressed)
                     .buttonStyle(.glass)
             } else if presenter.scannedCode != nil {
                 Text("Label text captured")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.m) {
                     Button("Re-scan", action: presenter.onRescanPressed)
                         .buttonStyle(.glass)
 
@@ -201,20 +204,20 @@ struct BarcodeScannerView: View {
                         Task { await presenter.onParseLabelPressed() }
                     } label: {
                         Text("Parse Label")
-                            .foregroundStyle(colorScheme.backgroundPrimary)
+                            .foregroundStyle(.onAccent)
                     }
                     .buttonStyle(.glassProminent)
                 }
             } else {
                 Text("Point camera at a nutrition label")
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, Spacing.m)
                     .glassEffect()
             }
         }
-        .padding(.bottom, 32)
+        .padding(.bottom, Spacing.xxl)
     }
 
     // MARK: - Parsed ingredient overlay
@@ -229,146 +232,106 @@ struct BarcodeScannerView: View {
     }
 
     private var parsedIngredientCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Spacing.l) {
             if let ingredient = presenter.parsedIngredient {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(alignment: .firstTextBaseline) {
                         Text(ingredient.name)
-                            .font(.title3.bold())
+                            .font(.sectionTitle)
                         Spacer()
                         Text("per 100g")
-                            .font(.caption)
+                            .font(.label)
                             .foregroundStyle(.secondary)
                     }
                     if let description = ingredient.description {
                         Text(description)
-                            .font(.caption)
+                            .font(.label)
                             .foregroundStyle(.secondary)
                     }
                 }
 
-                // Macros row
-                HStack(spacing: 8) {
-                    if let cal = ingredient.calories {
-                        macroChip("\(Int(cal)) kcal", color: .orange)
-                    }
-                    if let protein = ingredient.protein {
-                        macroChip("P \(formatted(protein))g", color: .blue)
-                    }
-                    if let carbs = ingredient.carbs {
-                        macroChip("C \(formatted(carbs))g", color: .green)
-                    }
-                    if let fatTotal = ingredient.fatTotal {
-                        macroChip("F \(formatted(fatTotal))g", color: .yellow)
-                    }
-                }
+                MacroChips(calories: ingredient.calories, protein: ingredient.protein, carbs: ingredient.carbs, fat: ingredient.fatTotal)
 
-                // Secondary nutrients
                 let secondaryItems: [NutrientAmount] = [
-                    NutrientAmount(name: "Fiber", value: ingredient.fiber, unit: "g"),
-                    NutrientAmount(name: "Sugar", value: ingredient.sugar, unit: "g"),
-                    NutrientAmount(name: "Sat fat", value: ingredient.fatSaturated, unit: "g"),
-                    NutrientAmount(name: "Sodium", value: ingredient.sodiumMg, unit: "mg"),
-                    NutrientAmount(name: "Potassium", value: ingredient.potassiumMg, unit: "mg"),
-                    NutrientAmount(name: "Calcium", value: ingredient.calciumMg, unit: "mg"),
-                    NutrientAmount(name: "Iron", value: ingredient.ironMg, unit: "mg")
+                    NutrientAmount(name: String(localized: "Fiber"), value: ingredient.fiber, unit: "g"),
+                    NutrientAmount(name: String(localized: "Sugar"), value: ingredient.sugar, unit: "g"),
+                    NutrientAmount(name: String(localized: "Sat fat"), value: ingredient.fatSaturated, unit: "g"),
+                    NutrientAmount(name: String(localized: "Sodium"), value: ingredient.sodiumMg, unit: "mg"),
+                    NutrientAmount(name: String(localized: "Potassium"), value: ingredient.potassiumMg, unit: "mg"),
+                    NutrientAmount(name: String(localized: "Calcium"), value: ingredient.calciumMg, unit: "mg"),
+                    NutrientAmount(name: String(localized: "Iron"), value: ingredient.ironMg, unit: "mg")
                 ]
                 let available = secondaryItems.filter { $0.value != nil }
                 if !available.isEmpty {
-                    FlowLayout(spacing: 6) {
+                    FlowLayout(spacing: Spacing.xs) {
                         ForEach(available, id: \.name) { nutrient in
-                            Text("\(nutrient.name): \(formatted(nutrient.value))\(nutrient.unit)")
-                                .font(.caption2)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(.quaternary, in: Capsule())
+                            Chip("\(nutrient.name): \(nutrient.formattedValue)", tint: .secondary)
                         }
                     }
                 }
 
             } else if let error = presenter.barcodeError, presenter.scanningMode == .barcode {
-                Label(error, systemImage: "barcode.viewfinder")
-                    .font(.subheadline)
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.leading)
+                InlineMessage(.error, error)
             } else if let error = presenter.labelError {
-                Label(error, systemImage: "exclamationmark.triangle")
-                    .font(.subheadline)
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.leading)
+                InlineMessage(.error, error)
             }
 
-            // Action buttons
-            if presenter.scanningMode == .barcode {
-                HStack(spacing: 12) {
-                    Button("Re-scan", action: presenter.onRescanPressed)
-                        .buttonStyle(.glass)
-                        .frame(maxWidth: .infinity)
+            actionButtons
+        }
+        .padding(Spacing.xl)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
+        .padding(.horizontal, Spacing.m)
+        .padding(.bottom, Spacing.xxl)
+    }
 
-                    if let ingredient = presenter.parsedIngredient {
-                        Button {
-                            delegate.onFoodFound?(ingredient)
-                            presenter.onDismissPressed()
-                        } label: {
-                            Text("Use This Food")
-                                .foregroundStyle(colorScheme.backgroundPrimary)
-                        }
-                        .buttonStyle(.glassProminent)
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-            } else {
-                HStack(spacing: 12) {
-                    Button("Dismiss") {
-                        presenter.onDismissLabelResultPressed()
-                    }
+    @ViewBuilder
+    private var actionButtons: some View {
+        if presenter.scanningMode == .barcode {
+            HStack(spacing: Spacing.m) {
+                Button("Re-scan", action: presenter.onRescanPressed)
                     .buttonStyle(.glass)
                     .frame(maxWidth: .infinity)
 
-                    if presenter.parsedIngredient != nil {
-                        Button {
-                            Task { await presenter.onSaveIngredientPressed() }
-                        } label: {
+                if let ingredient = presenter.parsedIngredient {
+                    Button {
+                        delegate.onFoodFound?(ingredient)
+                        presenter.onDismissPressed()
+                    } label: {
+                        Text("Use This Food")
+                            .foregroundStyle(.onAccent)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        } else {
+            HStack(spacing: Spacing.m) {
+                Button("Dismiss") {
+                    presenter.onDismissLabelResultPressed()
+                }
+                .buttonStyle(.glass)
+                .frame(maxWidth: .infinity)
+
+                if presenter.parsedIngredient != nil {
+                    Button {
+                        Task { await presenter.onSaveIngredientPressed() }
+                    } label: {
+                        Group {
                             if presenter.isSavingIngredient {
                                 ProgressView()
-                                    .frame(maxWidth: .infinity)
-                                    .foregroundStyle(colorScheme.backgroundPrimary)
+                                    .tint(.onAccent)
                             } else {
                                 Text("Save to Library")
-                                    .frame(maxWidth: .infinity)
-                                    .foregroundStyle(colorScheme.backgroundPrimary)
                             }
                         }
-                        .buttonStyle(.glassProminent)
-                        .disabled(presenter.isSavingIngredient)
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(.onAccent)
                     }
+                    .buttonStyle(.glassProminent)
+                    .disabled(presenter.isSavingIngredient)
                 }
             }
         }
-        .padding(20)
-        .glassEffect(.regular, in: .rect(cornerRadius: 20))
-        .padding(.horizontal, 12)
-        .padding(.bottom, 32)
-    }
-
-    // MARK: - Helpers
-
-    private func macroChip(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption)
-            .fontWeight(.medium)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(color.opacity(0.2), in: Capsule())
-    }
-
-    /// Accepts an optional so `NutrientAmount.value` can be passed straight through;
-    /// non-optional call sites are unaffected.
-    private func formatted(_ value: Double?) -> String {
-        guard let value else { return "–" }
-        return value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(value))
-            : String(format: "%.1f", value)
     }
 }
 

@@ -6,8 +6,6 @@ struct FoodPhotoScannerDelegate {
 
 struct FoodPhotoScannerView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: FoodPhotoScannerPresenter
     let delegate: FoodPhotoScannerDelegate
 
@@ -47,17 +45,19 @@ struct FoodPhotoScannerView: View {
                 .ignoresSafeArea(.all, edges: .bottom)
 
                 captureButton
-                    .padding(.bottom, 40)
+                    .padding(.bottom, Spacing.xxl)
             } else {
-                Text("Camera not available on this device.")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ContentUnavailableView {
+                    Label("Camera Unavailable", systemImage: Symbol.camera)
+                } description: {
+                    Text("Camera not available on this device.")
+                }
             }
         }
     }
 
     private func analysingPhase(image: UIImage) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Spacing.xl) {
             thumbnailView(image: image)
             ProgressView("Analysing meal...")
                 .progressViewStyle(.circular)
@@ -66,44 +66,51 @@ struct FoodPhotoScannerView: View {
         .padding()
     }
 
+    /// A `List`, like the describer's results and the search tab, so every picker mode that shows
+    /// foods shows them the same way.
     private func resultsPhase(image: UIImage) -> some View {
-        ScrollView {
-            VStack(spacing: 16) {
+        List {
+            Section {
                 thumbnailView(image: image)
+                    .listRowInsets(EdgeInsets())
+            }
 
-                if let error = presenter.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                } else {
-                    GlassEffectContainer(spacing: 16) {
-                        VStack(spacing: 16) {
-                            ForEach(presenter.analysisResults) { item in
-                                resultRow(for: item)
-                            }
+            if let error = presenter.errorMessage {
+                Section {
+                    InlineMessage(.error, error)
+                }
+            } else {
+                Section("Results") {
+                    ForEach(presenter.analysisResults) { item in
+                        FoodAnalysisResultRow(item: item) {
+                            delegate.onPick(presenter.makeMealItem(from: item))
                         }
                     }
                 }
-
-                retakeButton
-                    .padding(.bottom)
             }
-            .padding()
+        }
+        .bottomCTA {
+            CallToActionButton(isPrimaryAction: false) {
+                capturedImage = nil
+                presenter.onRetakePressed()
+            } label: {
+                Text("Retake")
+            }
         }
     }
 
     // MARK: - Subviews
 
+    /// Drawn over the live camera, so white on the dark preview is the one colour that always
+    /// reads; it is not an accent stand-in.
     private var captureButton: some View {
         Button {
             shouldCapture = true
         } label: {
             Image(systemName: "camera.circle.fill")
-                .resizable()
-                .frame(width: 70, height: 70)
+                .iconSize(.hero)
                 .foregroundStyle(.white)
-                .shadow(radius: 4)
+                .shadow(radius: Spacing.xs)
         }
         .accessibilityLabel("Take photo")
     }
@@ -113,8 +120,8 @@ struct FoodPhotoScannerView: View {
             .resizable()
             .scaledToFill()
             .frame(maxWidth: .infinity)
-            .frame(height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .frame(height: ChartHeight.regular)
+            .clipShape(.rect(cornerRadius: Radius.m, style: .continuous))
     }
 
     private var retakeButton: some View {
@@ -123,56 +130,6 @@ struct FoodPhotoScannerView: View {
             presenter.onRetakePressed()
         }
         .buttonStyle(.glass)
-    }
-
-    private func resultRow(for item: FoodAnalysisItem) -> some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(item.name)
-                    .font(.headline)
-                Text("\(Int(item.amountGrams))g")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                HStack(spacing: 4) {
-                    if let cal = item.calories {
-                        macroChip("\(Int(cal)) kcal", color: .orange)
-                    }
-                    if let protein = item.proteinGrams {
-                        macroChip("P \(formatted(protein))g", color: .blue)
-                    }
-                    if let carbs = item.carbGrams {
-                        macroChip("C \(formatted(carbs))g", color: .green)
-                    }
-                    if let fat = item.fatGrams {
-                        macroChip("F \(formatted(fat))g", color: .yellow)
-                    }
-                }
-            }
-            Spacer()
-            Button {
-                delegate.onPick(presenter.makeMealItem(from: item))
-            } label: {
-                Text("Add")
-                    .foregroundStyle(colorScheme.backgroundPrimary)
-            }
-            .buttonStyle(.glassProminent)
-        }
-        .padding()
-        .glassEffect(.regular, in: .rect(cornerRadius: 12))
-    }
-
-    private func macroChip(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption2)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(color.opacity(0.2), in: Capsule())
-    }
-
-    private func formatted(_ value: Double) -> String {
-        value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(value))
-            : String(format: "%.1f", value)
     }
 }
 

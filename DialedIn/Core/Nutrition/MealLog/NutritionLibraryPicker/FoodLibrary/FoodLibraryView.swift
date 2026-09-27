@@ -32,25 +32,22 @@ struct FoodLibraryView<
     @ViewBuilder
     private var favouritesList: some View {
         if !presenter.hasFavourites {
-            ContentUnavailableView(
-                "No Favourites",
-                systemImage: "heart",
-                description: Text("Tap the heart on a food or recipe to keep it here.")
-            )
+            ContentUnavailableView {
+                Label("No Favourites", systemImage: "heart")
+            } description: {
+                Text("Tap the heart on a food or recipe to keep it here.")
+            }
         } else {
             List {
                 if !presenter.favouriteRecipes.isEmpty {
                     Section {
                         ForEach(presenter.favouriteRecipes) { recipe in
-                            CustomListCellView(
-                                imageName: recipe.imageURL,
-                                title: recipe.name,
-                                subtitle: recipe.description
-                            )
-                            .anyButton(.highlight) {
+                            Button {
                                 presenter.onFavouriteRecipePressed(recipe)
+                            } label: {
+                                ListRow(title: recipe.name, subtitle: recipe.description, imageName: recipe.imageURL, accessory: .chevron)
+                                    .contentShape(.rect)
                             }
-                            .removeListRowFormatting()
                         }
                     } header: {
                         Text("Recipes")
@@ -60,15 +57,12 @@ struct FoodLibraryView<
                 if !presenter.favouriteFoods.isEmpty {
                     Section {
                         ForEach(presenter.favouriteFoods) { food in
-                            CustomListCellView(
-                                imageName: food.imageURL,
-                                title: food.name,
-                                subtitle: food.description
-                            )
-                            .anyButton(.highlight) {
+                            Button {
                                 presenter.onFavouriteFoodPressed(food, onPick: delegate.onItemPick)
+                            } label: {
+                                ListRow(title: food.name, subtitle: food.description, imageName: food.imageURL, accessory: .chevron)
+                                    .contentShape(.rect)
                             }
-                            .removeListRowFormatting()
                         }
                     } header: {
                         Text("Foods")
@@ -102,41 +96,21 @@ struct FoodLibraryView<
             }
         }
         .safeAreaInset(edge: .top) {
-            HStack {
-                Picker(selection: $presenter.foodLibraryOption) {
-                    ForEach(FoodLibraryOption.allCases, id: \.self) { option in
-                        option.icon.tag(option)
-                    }
-                } label: {
-                    Text("Picker")
+            Picker("Library", selection: $presenter.foodLibraryOption) {
+                ForEach(FoodLibraryOption.allCases, id: \.self) { option in
+                    option.icon.tag(option)
                 }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 240)
-                Spacer()
             }
-            .padding()
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.bottom, Spacing.s)
         }
-        .searchable(text: $presenter.searchText, prompt: presenter.searchPrompt)
-        .toolbar {
-            DefaultToolbarItem(kind: .search, placement: .bottomBar)
-            ToolbarSpacer(.flexible, placement: .bottomBar)
-            ToolbarItem(placement: .bottomBar) {
-                Button {
-                    presenter.onLogFoodsPressed()
-                } label: {
-                    Text("Log Foods")
-                }
-                .buttonStyle(.glassProminent)
-                .disabled(delegate.mealItems.wrappedValue.isEmpty)
-            }
-        }
+        .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text(presenter.searchPrompt))
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
         .onChange(of: presenter.foodLibraryOption) {
-            // The prompt and the list both change with the tab; a stale query would filter the
-            // new list by something the user typed for the old one.
-            presenter.searchText = ""
+            presenter.onLibraryOptionChanged()
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
@@ -163,7 +137,7 @@ enum FoodLibraryOption: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .recipes: return Text("Recipes").any()
         case .foods: return Text("Foods").any()
-        case .favourites: return Image(systemName: "heart.fill").any()
+        case .favourites: return Image(systemName: "heart.fill").accessibilityLabel("Favourites").any()
         }
     }
 }

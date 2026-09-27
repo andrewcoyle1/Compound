@@ -358,11 +358,6 @@ extension CoreBuilder {
 
 }
 
-struct NutrientAmount {
-    let name: String
-    let value: Double?
-    let unit: String
-}
 extension CoreRouter {
 
     func showNutritionOverviewView(delegate: NutritionOverviewDelegate) {

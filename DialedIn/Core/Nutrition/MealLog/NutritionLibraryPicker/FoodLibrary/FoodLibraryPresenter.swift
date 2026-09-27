@@ -70,9 +70,11 @@ class FoodLibraryPresenter {
         router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
     }
 
-    /// The plate is assembled in the parent screen, so committing it is simply leaving the picker.
-    func onLogFoodsPressed() {
-        router.dismissScreen()
+    /// The prompt and the list both change with the tab; a stale query would filter the new list
+    /// by something the user typed for the old one.
+    func onLibraryOptionChanged() {
+        interactor.playHaptic(option: .selection)
+        searchText = ""
     }
 
     func onViewAppear(delegate: FoodLibraryDelegate) {

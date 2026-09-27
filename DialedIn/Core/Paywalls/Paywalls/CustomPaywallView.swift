@@ -96,13 +96,17 @@ struct CustomPaywallView: View {
             } label: {
                 Text("Subscribe")
             }
-            CallToActionButton(isPrimaryAction: false) {
-                
-            } label: {
-                Text("Restore Subscription")
-            }
+            restoreButton
         }
         .padding(.bottom)
+    }
+
+    /// Its action was an empty closure, so Restore Subscription did nothing at all. Not private so
+    /// a test can press it.
+    var restoreButton: CallToActionButton<Text> {
+        CallToActionButton(isPrimaryAction: false, action: onRestorePurchasePressed) {
+            Text("Restore Subscription")
+        }
     }
     
     @ToolbarContentBuilder

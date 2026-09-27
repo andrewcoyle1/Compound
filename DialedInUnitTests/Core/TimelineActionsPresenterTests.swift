@@ -211,6 +211,8 @@ struct TimelineActionsPresenterTests {
         await TestManagers.eventually { screen.interactor.savedMeals.count == 2 }
 
         #expect(screen.interactor.savedMeals.allSatisfy { $0.dayKey == tuesday.dayKey })
+        await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty }
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// A copy is a new entry, not a move: it takes a fresh id, and the original is untouched.
@@ -285,6 +287,7 @@ struct TimelineActionsPresenterTests {
 
         #expect(screen.router.simpleAlerts == ["Unable to copy day"])
         #expect(screen.interactor.trackedEventNames.contains("TimelineActionsView_Action_Fail"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Without a signed-in user there is no author to file the copies under, so nothing is written

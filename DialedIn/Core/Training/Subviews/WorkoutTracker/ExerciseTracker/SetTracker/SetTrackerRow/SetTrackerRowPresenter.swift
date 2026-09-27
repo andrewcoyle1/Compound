@@ -48,8 +48,13 @@ class SetTrackerRowPresenter {
     }
     
     func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {
-        if set.wrappedValue.completedAt == nil, validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue) {
+        if set.wrappedValue.completedAt == nil {
+            guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue) else {
+                interactor.playHaptic(option: .error)
+                return
+            }
             set.wrappedValue.completedAt = Date()
+            interactor.playHaptic(option: .success)
             let useRestTimers = interactor.workoutSettings.useRestTimers
             let duration = restAfterCompleting(set.wrappedValue, in: exercise)
             interactor.trackEvent(event: Event.setCompleted(
@@ -206,13 +211,46 @@ class SetTrackerRowPresenter {
         }
     }
 
-    func buttonColor(set: WorkoutSetModel, canComplete: Bool) -> Color {
-        if set.completedAt != nil {
-            return .green
-        } else if canComplete {
-            return .secondary
-        } else {
-            return .secondary.opacity(0.3)
+    /// What the Done column shows. Each state has its own symbol and spoken value, so none of them
+    /// is told apart by colour alone.
+    func completionState(trackingMode: TrackingMode, set: WorkoutSetModel) -> SetCompletionState {
+        if set.completedAt != nil { return .completed }
+        return canComplete(trackingMode: trackingMode, set: set) ? .ready : .notReady
+    }
+}
+
+enum SetCompletionState: Equatable {
+    case completed
+    /// Holds what its tracking mode needs; a tap logs it.
+    case ready
+    /// Missing reps, a time or a distance, so it cannot be logged yet.
+    case notReady
+
+    var systemImage: String {
+        switch self {
+        case .completed: return "checkmark.circle.fill"
+        case .ready: return "circle"
+        case .notReady: return "circle.dashed"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .completed: return .success
+        case .ready: return .secondary
+        case .notReady: return .secondary.opacity(0.5)
+        }
+    }
+
+    var accessibilityLabel: String {
+        self == .completed ? String(localized: "Set completed") : String(localized: "Complete set")
+    }
+
+    var accessibilityValue: String {
+        switch self {
+        case .completed: return ""
+        case .ready: return String(localized: "Ready")
+        case .notReady: return String(localized: "Not ready, enter the set first")
         }
     }
 }
@@ -230,13 +268,15 @@ extension SetTrackerRowPresenter {
     func keyboardContext(delegate: SetTrackerRowDelegate) -> SetKeyboardContext {
         let exercise = delegate.exercise.wrappedValue
         let set = delegate.set.wrappedValue
-        let unit = getUnitPreference(for: exercise).weightUnit
+        let units = getUnitPreference(for: exercise)
+        let unit = units.weightUnit
         let lastSet = exercise.sets.firstIndex { $0.id == set.id }.flatMap { $0 > 0 ? exercise.sets[$0 - 1] : nil }
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
         return SetKeyboardContext(
             unit: unit,
             step: WeightStepper.steps(for: exercise, profile: interactor.favouriteGymProfile, unit: unit),
-            tracksWeight: exercise.trackingMode == .weightReps,
+            distanceUnit: units.distanceUnit,
+            fields: SetKeyboardField.fields(for: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
             lastSetWeightKg: lastSet?.weightKg,
             lastSetReps: lastSet?.reps,
@@ -247,10 +287,12 @@ extension SetTrackerRowPresenter {
         )
     }
 
-    /// Done on a set that is ready to log offers the same action as the row's circle.
+    /// Done on a set that is ready to log offers the same action as the row's circle. A set that is
+    /// not ready, or is already logged, just closes.
     private func offerCompletion(delegate: SetTrackerRowDelegate) {
         let exercise = delegate.exercise.wrappedValue
         let set = delegate.set
+        guard completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue) == .ready else { return }
         let complete: @MainActor () -> Void = { [weak self] in self?.onSetComplete(exercise, set) }
         interactor.trackEvent(event: Event.keyboardOfferedCompletion)
         router.showAlert(title: String(localized: "Complete Set?"), subtitle: nil) {

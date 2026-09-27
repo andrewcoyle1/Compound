@@ -94,7 +94,7 @@ struct SetKeyboardPresenterTests {
     @Test func repsOnlyHasNoWeightToGoBackTo() {
         let box = set(weightKg: nil)
         let keyboard = SetKeyboardPresenter()
-        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(tracksWeight: false))
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(fields: [.reps]))
         keyboard.previous()
         #expect(keyboard.activeField == .reps)
     }
@@ -120,16 +120,62 @@ struct SetKeyboardPresenterTests {
         #expect(offers == 1)
     }
 
-    @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
-    func doneOffersNothingWithoutReps(reps: Int?, completed: Bool) {
-        // A set with no reps, or one already logged, is not offered.
-        let box = set(weightKg: 60, reps: reps, done: completed)
+    // MARK: - Distance and duration
+
+    @Test func distanceTakesADecimalInTheExercisesUnit() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.distance, set: box.binding, context: SetKeyboardContext(distanceUnit: .miles, fields: [.distance, .duration]))
+        type("3.1", into: keyboard)
+        #expect(abs((box.value.distanceMeters ?? 0) - UnitConversion.convertDistanceToMeters(3.1, from: .miles)) < 0.0001)
+    }
+
+    @Test func durationFillsFromTheRightLikeAMicrowave() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.duration, set: box.binding, context: SetKeyboardContext(fields: [.duration]))
+        type("1", into: keyboard)
+        #expect(box.value.durationSec == 1)
+        #expect(keyboard.displayText(for: .duration, set: box.value, unit: .kilograms) == "0:01")
+        type("30", into: keyboard)
+        #expect(box.value.durationSec == 90)
+        #expect(keyboard.displayText(for: .duration, set: box.value, unit: .kilograms) == "1:30")
+        type(".", into: keyboard)
+        #expect(keyboard.text == "130")
+        keyboard.close()
+        #expect(keyboard.displayText(for: .duration, set: box.value, unit: .kilograms) == "1:30")
+    }
+
+    @Test func reopeningADurationStartsFromItsDigits() {
+        let box = set(weightKg: nil)
+        box.value.durationSec = 125
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.duration, set: box.binding, context: SetKeyboardContext(fields: [.duration]))
+        #expect(keyboard.text == "205")
+    }
+
+    @Test func nextWalksDistanceThenDuration() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.distance, set: box.binding, context: SetKeyboardContext(fields: [.distance, .duration]))
+        #expect(keyboard.previousField == nil)
+        keyboard.next()
+        #expect(keyboard.activeField == .duration)
+        #expect(keyboard.nextField == nil)
+        keyboard.previous()
+        #expect(keyboard.activeField == .distance)
+    }
+
+    /// Whether the set is ready is the row's call, since it depends on the tracking mode; the
+    /// keyboard hands over on every Done.
+    @Test func doneAlwaysHandsOverToTheRow() {
+        let box = set(weightKg: 60, reps: nil)
         let keyboard = SetKeyboardPresenter()
         var offers = 0
         keyboard.onOfferCompletion = { offers += 1 }
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
         keyboard.done()
-        #expect(offers == 0)
+        #expect(offers == 1)
     }
 
     @Test func closeOffersNothing() {
@@ -310,6 +356,29 @@ struct SetTrackerRowKeyboardTests {
         #expect(exercise.value.sets[1].reps == 5)
 
         presenter.keyboard.done()
+        #expect(router.alerts == ["Complete Set?"])
+    }
+
+    @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
+    func doneOffersNothingWithoutRepsOrOnceLogged(reps: Int?, completed: Bool) {
+        let row = makeRow()
+        let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        exercise.value.sets[1].reps = reps
+        exercise.value.sets[1].completedAt = completed ? start : nil
+        presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
+        presenter.keyboard.done()
+        #expect(router.alerts.isEmpty)
+    }
+
+    @Test func aTimedSetIsOfferedOnceItHasATime() {
+        let row = makeRow()
+        let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        exercise.value.trackingMode = .timeOnly
+        #expect(presenter.keyboardContext(delegate: delegate).fields == [.duration])
+        presenter.onKeyboardFieldBegan(.duration, delegate: delegate)
+        "45".forEach { presenter.keyboard.type($0) }
+        presenter.keyboard.done()
+        #expect(exercise.value.sets[1].durationSec == 45)
         #expect(router.alerts == ["Complete Set?"])
     }
 

@@ -112,7 +112,10 @@ class WorkoutSessionDetailPresenter {
 
     // MARK: - Edit Mode Actions
     
+    /// Only the author edits. The rows that lead here were shown to everyone, so a reader of a
+    /// friend's session from the feed could rewrite its start, duration or notes.
     func enterEditMode(session: WorkoutSessionModel) {
+        guard isAuthor(sessionAuthorId: session.authorId) else { return }
         isEditMode = true
         loadUnitPreferences(for: session)
     }
@@ -150,6 +153,7 @@ class WorkoutSessionDetailPresenter {
     var durationMinutes: Int = 0
 
     func onEditStartTimePressed(session: Binding<WorkoutSessionModel>) {
+        guard isAuthor(sessionAuthorId: session.wrappedValue.authorId) else { return }
         router.showSessionStartTimeView(
             date: Binding(
                 get: { session.wrappedValue.dateCreated },
@@ -159,6 +163,7 @@ class WorkoutSessionDetailPresenter {
     }
 
     func onEditDurationPressed(session: Binding<WorkoutSessionModel>) {
+        guard isAuthor(sessionAuthorId: session.wrappedValue.authorId) else { return }
         let current = session.wrappedValue
         let duration = current.endedAt?.timeIntervalSince(current.dateCreated) ?? 0
         durationHours = Int(duration) / 3600

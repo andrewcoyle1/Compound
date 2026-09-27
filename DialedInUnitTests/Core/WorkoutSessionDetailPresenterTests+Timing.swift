@@ -112,3 +112,21 @@ extension WorkoutSessionDetailPresenterTests {
         #expect(screen.interactor.savedSessions.isEmpty)
     }
 }
+
+// MARK: - Only the author edits
+extension WorkoutSessionDetailPresenterTests {
+    /// The feed opens other people's sessions here. Their timing rows used to open the pickers and
+    /// save, and Edit Workout used to open the notes editor, for whoever was reading.
+    @Test("Test A Reader Who Is Not The Author Cannot Edit")
+    func testAReaderWhoIsNotTheAuthorCannotEdit() {
+        let screen = makeScreen(user: UserModel(userId: "someone-else"))
+        let workout = MutableSession(session(duration: 3600))
+
+        screen.presenter.onEditStartTimePressed(session: workout.binding)
+        screen.presenter.onEditDurationPressed(session: workout.binding)
+        screen.presenter.enterEditMode(session: workout.value)
+
+        #expect(screen.router.shown.isEmpty)
+        #expect(!screen.presenter.isEditMode)
+    }
+}

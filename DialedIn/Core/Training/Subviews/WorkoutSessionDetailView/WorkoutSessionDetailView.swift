@@ -73,28 +73,39 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                 systemImage: Symbol.volume,
                 accessory: .value(presenter.volumeFormatted(session: session))
             )
-            ListRowButton(
-                title: String(localized: "Start Time"),
-                subtitle: session.dateCreated.formatted(date: .long, time: .shortened),
-                systemImage: Symbol.calendar
-            ) {
-                presenter.onEditStartTimePressed(session: $session)
-            }
-            if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
+            if presenter.isAuthor(sessionAuthorId: session.authorId) {
                 ListRowButton(
-                    title: String(localized: "Duration"),
-                    subtitle: Format.duration(duration),
-                    systemImage: Symbol.duration
+                    title: String(localized: "Start Time"),
+                    subtitle: session.dateCreated.formatted(date: .long, time: .shortened),
+                    systemImage: Symbol.calendar
                 ) {
-                    presenter.onEditDurationPressed(session: $session)
+                    presenter.onEditStartTimePressed(session: $session)
                 }
-            }
-            ListRowButton(
-                title: String(localized: "Edit Workout"),
-                subtitle: String(localized: "Go to the workout editor"),
-                systemImage: Symbol.edit
-            ) {
-                presenter.enterEditMode(session: session)
+                if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
+                    ListRowButton(
+                        title: String(localized: "Duration"),
+                        subtitle: Format.duration(duration),
+                        systemImage: Symbol.duration
+                    ) {
+                        presenter.onEditDurationPressed(session: $session)
+                    }
+                }
+                ListRowButton(
+                    title: String(localized: "Edit Workout"),
+                    subtitle: String(localized: "Go to the workout editor"),
+                    systemImage: Symbol.edit
+                ) {
+                    presenter.enterEditMode(session: session)
+                }
+            } else {
+                ListRow(
+                    title: String(localized: "Start Time"),
+                    subtitle: session.dateCreated.formatted(date: .long, time: .shortened),
+                    systemImage: Symbol.calendar
+                )
+                if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
+                    ListRow(title: String(localized: "Duration"), subtitle: Format.duration(duration), systemImage: Symbol.duration)
+                }
             }
 
             notesEditor()

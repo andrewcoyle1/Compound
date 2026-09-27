@@ -88,10 +88,10 @@ struct CreateFoodView: View {
 #endif
                     } else {
                         ZStack(alignment: .bottomTrailing) {
-                            Image(systemName: "fork.knife.circle")
+                            Image(systemName: Symbol.meal + ".circle")
                                 .iconSize(.hero)
                                 .foregroundStyle(.tertiary)
-                            Image(systemName: "pencil.circle.fill")
+                            Image(systemName: Symbol.edit + ".circle.fill")
                                 .iconSize(.medium)
                         }
                     }

@@ -16,6 +16,8 @@ struct FoodsView<IngredientList: View>: View {
     var body: some View {
         let delegate = IngredientListBuilderDelegate(onIngredientSelectionChanged: presenter.onIngredientPressed)
         ingredientListViewBuilder(delegate)
+            .navigationTitle("Foods")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -301,7 +301,7 @@ private extension AnalyticsView {
     }
 
     var nutritionSection: some View {
-        let proteinColor = MacroProgressChart.proteinColor
+        let proteinColor = Color.protein
         return Section {
             AnalyticsCardGrid {
                 AnalyticsCard(

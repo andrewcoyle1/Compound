@@ -79,9 +79,9 @@ struct ProgressCircle: View {
 
 #Preview {
     LazyVGrid(columns: [GridItem(), GridItem()]) {
-        ProgressCircle(value: 0.75, size: 100, color: .proteinColor)
-        ProgressCircle(value: 0.5, size: 50, color: .carbsColor)
-        ProgressCircle(value: 0.25, size: 75, color: .fatColor)
+        ProgressCircle(value: 0.75, size: 100, color: .protein)
+        ProgressCircle(value: 0.5, size: 50, color: .carbs)
+        ProgressCircle(value: 0.25, size: 75, color: .fat)
         ProgressCircle(value: 0.1, size: 25)
         ProgressCircle(value: 0.9, size: 150)
         ProgressCircle(value: 1)

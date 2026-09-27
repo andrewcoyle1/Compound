@@ -167,7 +167,7 @@ struct AddMealView: View {
                             current: presenter.displayProtein,
                             target: presenter.targetProtein,
                             maxValue: max(presenter.targetProtein * 1.2, presenter.displayProtein + 1),
-                            color: .proteinColor)
+                            color: .protein)
                     }
                 AnalyticsCard(
                     title: String(localized: "Fat"),
@@ -178,7 +178,7 @@ struct AddMealView: View {
                             current: presenter.displayFat,
                             target: presenter.targetFat,
                             maxValue: max(presenter.targetFat * 1.2, presenter.displayFat + 1),
-                            color: .fatColor)
+                            color: .fat)
                     }
                 AnalyticsCard(
                     title: String(localized: "Carbs"),
@@ -189,7 +189,7 @@ struct AddMealView: View {
                             current: presenter.displayCarbs,
                             target: presenter.targetCarbs,
                             maxValue: max(presenter.targetCarbs * 1.2, presenter.displayCarbs + 1),
-                            color: .carbsColor)
+                            color: .carbs)
                     }
             }
             .removeListRowFormatting()

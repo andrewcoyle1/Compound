@@ -185,7 +185,7 @@ extension MetricConfiguration {
             return [color ?? ChartConfiguration().seriesColors.first ?? .accentColor, lineSeriesColor]
         }
         if isMacrosChart {
-            return [MacroProgressChart.proteinColor, MacroProgressChart.carbsColor, MacroProgressChart.fatColor]
+            return [Color.protein, Color.carbs, Color.fat]
         }
         if let color {
             return [color]

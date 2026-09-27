@@ -100,9 +100,9 @@ struct MealItemAmountViewView: View {
         Section {
             HStack(alignment: .bottom) {
                 MacroTotalHeader(value: presenter.calories, label: "Calories")
-                MacroTotalHeader(value: presenter.protein, label: "Protein", colour: .proteinColor)
-                MacroTotalHeader(value: presenter.fat, label: "Fat", colour: .fatColor)
-                MacroTotalHeader(value: presenter.carbs, label: "Carbs", colour: .carbsColor)
+                MacroTotalHeader(value: presenter.protein, label: "Protein", colour: .protein)
+                MacroTotalHeader(value: presenter.fat, label: "Fat", colour: .fat)
+                MacroTotalHeader(value: presenter.carbs, label: "Carbs", colour: .carbs)
             }
             .listRowInsets(.bottom, 0)
         }

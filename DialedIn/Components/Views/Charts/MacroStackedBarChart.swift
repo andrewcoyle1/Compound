@@ -47,9 +47,9 @@ struct MacroStackedBarChart: View {
             Spacer(minLength: 0)
             // Stack order: fat (top), carbs (middle), protein (bottom)
             if total > 0 {
-                segment(height: barHeight * (day.fatGrams / total), color: MacroProgressChart.fatColor)
-                segment(height: barHeight * (day.carbGrams / total), color: MacroProgressChart.carbsColor)
-                segment(height: barHeight * (day.proteinGrams / total), color: MacroProgressChart.proteinColor)
+                segment(height: barHeight * (day.fatGrams / total), color: Color.fat)
+                segment(height: barHeight * (day.carbGrams / total), color: Color.carbs)
+                segment(height: barHeight * (day.proteinGrams / total), color: Color.protein)
             } else {
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .fill(Color.gray.opacity(0.2))

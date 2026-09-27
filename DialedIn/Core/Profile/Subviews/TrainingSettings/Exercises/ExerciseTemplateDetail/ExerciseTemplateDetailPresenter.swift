@@ -115,7 +115,7 @@ class ExerciseModelDetailPresenter {
     }
 
     func formattedWeight(_ kilos: Double) -> String {
-        String(format: "%.0f %@", weightInPreferredUnit(kilos), weightUnit.abbreviation)
+        Format.weight(kg: kilos, unit: weightUnit)
     }
 
     func formattedVolume(_ kilos: Double) -> String {

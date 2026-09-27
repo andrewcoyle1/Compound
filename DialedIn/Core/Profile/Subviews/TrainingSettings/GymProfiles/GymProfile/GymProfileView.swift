@@ -110,14 +110,13 @@ struct GymProfileView: View {
                 await presenter.onImageSelectorChanged(newItem)
             }
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             if delegate.onCompleted != nil {
                 CallToActionButton {
                     presenter.onContinuePressed(delegate: delegate)
                 } label: {
                     Text("Continue")
                 }
-                .padding(.bottom)
             }
         }
     }

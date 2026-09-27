@@ -19,6 +19,8 @@ struct TabBarScreen: Identifiable {
 
 struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: View>: View {
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     @State var presenter: TabBarPresenter
 
     var tabs: [TabBarScreen]
@@ -66,7 +68,10 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
         .onNotificationReceived(name: Constants.selectTab) { notification in
             presenter.onSelectTabNotificationReceived(notification)
         }
-        .tabViewStyle(.tabBarOnly)
+        .tabViewStyle(.sidebarAdaptable)
+        // Screens that lay out wider on iPad and Mac (Dashboard, Analytics) read this. Regular width
+        // is where `.sidebarAdaptable` shows the sidebar.
+        .layoutMode(horizontalSizeClass == .compact ? .tabBar : .splitView)
         .tabBarMinimizeBehavior(.onScrollDown)
         .tabViewBottomAccessory(isEnabled: presenter.showTabAccessory) {
             ScrollView(.horizontal) {
@@ -80,13 +85,10 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
                             .frame(width: presenter.tabAccessoryWidth)
                     }
                 }
-                //                    .frame(width: geometry.size.height)
                 .scrollTargetLayout()
             }
-            //                .padding(.horizontal)
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
-            //                .frame(maxHeight: .infinity)
             .background {
                 GeometryReader { geo in
                     Color.clear.preference(key: WidthPreferenceKey.self, value: geo.size.width)

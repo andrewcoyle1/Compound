@@ -24,7 +24,7 @@ sites.
    - Selection overlay behaviour from `CustomListCellView` maps to `.checkmark(Bool)`.
    - It has no background of its own: inside a `List` the row supplies it.
    - **Dynamic Type.** Every text uses a text-style token, so it scales from xSmall to AX5.
-     - No fixed heights. The only size constraint is `minHeight: ControlSize.row` (44 pt, the
+     - No fixed heights and no minHeight of its own. `List` already enforces the 44 pt minimum (the
        minimum tap target).
      - The leading symbol and thumbnail sizes come from `@ScaledMetric`.
      - Titles and subtitles wrap; there is no `lineLimit(1)` on titles. Subtitles may cap at

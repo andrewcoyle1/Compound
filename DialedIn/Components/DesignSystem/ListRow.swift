@@ -83,7 +83,8 @@ struct ListRow: View {
             }
             trailingAccessory
         }
-        .frame(minHeight: ControlSize.row)
+        // No minHeight here: List already enforces a 44 pt minimum row and adds its own vertical
+        // insets, so a second minimum on the content made every settings row ~60 pt tall.
         .modifier(SelectionTrait(accessory: accessory))
     }
 

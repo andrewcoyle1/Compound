@@ -215,6 +215,9 @@ for picker and segment changes. There are no raw `UI*FeedbackGenerator`s.
   that part is tappable until the call site moves to `ListRowButton`. Every one must move.
 - **`ListRow` selection glyph:** `checkmark.circle.fill` in `.tint` / `circle` in `.tertiary`. It
   is treated as system chrome, like the chevron.
+- **Rows inside a `List` set no `minHeight`.** List already enforces 44 pt and adds its own insets.
+  A second minimum made rows about 60 pt tall; the orchestrator removed it from `ListRow` and
+  `NumberField`.
 - **`NumberField`** takes an unlabelled leading `prompt`. `PickableUnit` now lives in
   `NumberField.swift`.
 - **`CallToActionButton(isPrimaryAction:isLoading:action:label:)`** draws its primary label in

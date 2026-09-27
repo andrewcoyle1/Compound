@@ -76,7 +76,6 @@ struct NumberField: View {
                 .font(.rowTitle)
             unitView
         }
-        .frame(minHeight: ControlSize.row)
     }
 }
 

@@ -48,12 +48,6 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         .toolbar {
             toolbarContent
         }
-        .sheet(isPresented: $presenter.isEditingStartTime) {
-            startTimeSheet
-        }
-        .sheet(isPresented: $presenter.isEditingDuration) {
-            durationSheet
-        }
         .onAppear {
             presenter.loadUnitPreferences(for: session)
         }
@@ -62,69 +56,6 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         }
     }
 
-    private var startTimeSheet: some View {
-        NavigationStack {
-            VStack {
-                DatePicker(
-                    "Started at",
-                    selection: Binding(
-                        get: { session.dateCreated },
-                        set: { presenter.onStartTimeChanged($0, session: $session) }
-                    ),
-                    in: ...Date(),
-                    displayedComponents: [.date, .hourAndMinute]
-                )
-                .datePickerStyle(.graphical)
-                Text("The workout keeps its duration; only when it started changes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal)
-            .navigationTitle("Start Time")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { presenter.isEditingStartTime = false }
-                }
-            }
-        }
-        .presentationDetents([.medium, .large])
-    }
-
-    private var durationSheet: some View {
-        NavigationStack {
-            HStack {
-                Picker("Hours", selection: $presenter.durationHours) {
-                    ForEach(0..<13, id: \.self) { hour in
-                        Text("\(hour) hr").tag(hour)
-                    }
-                }
-                .pickerStyle(.wheel)
-
-                Picker("Minutes", selection: $presenter.durationMinutes) {
-                    ForEach(0..<60, id: \.self) { minute in
-                        Text("\(minute) min").tag(minute)
-                    }
-                }
-                .pickerStyle(.wheel)
-            }
-            .padding(.horizontal)
-            .navigationTitle("Duration")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { presenter.isEditingDuration = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { presenter.onDurationConfirmed(session: $session) }
-                }
-            }
-        }
-        .presentationDetents([.medium])
-    }
-    
     @ViewBuilder
     private var authorHeaderSection: some View {
         if let author = presenter.author {
@@ -137,57 +68,39 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
     
     private var workoutDetailsSection: some View {
         Section {
-            CustomLabelButtonView(symbolName: "scalemass", title: String(localized: "Volume")) {
-                Text(presenter.volumeFormatted(session: session))
-            }
-            CustomLabelButtonView(
-                symbolName: "arrow.right",
+            ListRow(
+                title: String(localized: "Volume"),
+                systemImage: Symbol.volume,
+                accessory: .value(presenter.volumeFormatted(session: session))
+            )
+            ListRowButton(
                 title: String(localized: "Start Time"),
-                subtitle: session.dateCreated.formatted(date: .long, time: .shortened)
+                subtitle: session.dateCreated.formatted(date: .long, time: .shortened),
+                systemImage: Symbol.calendar
             ) {
-                Text("Edit")
-                    .padding(.horizontal, 8)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.2), in: .capsule)
-                    .anyButton(.press) {
-                        presenter.onEditStartTimePressed()
-                    }
+                presenter.onEditStartTimePressed(session: $session)
             }
             if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
-                CustomLabelButtonView(
-                    symbolName: "clock",
+                ListRowButton(
                     title: String(localized: "Duration"),
-                    subtitle: Date.formatDuration(duration)
+                    subtitle: Format.duration(duration),
+                    systemImage: Symbol.duration
                 ) {
-                    Text("Edit")
-                        .padding(.horizontal, 8)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.2), in: .capsule)
-                        .anyButton(.press) {
-                            presenter.onEditDurationPressed(session: session)
-                        }
+                    presenter.onEditDurationPressed(session: $session)
                 }
             }
-
-            CustomLabelButtonView(
-                symbolName: "pencil",
+            ListRowButton(
                 title: String(localized: "Edit Workout"),
-                subtitle: "Go to the workout editor"
+                subtitle: String(localized: "Go to the workout editor"),
+                systemImage: Symbol.edit
             ) {
-                Text("Edit")
-                    .padding(.horizontal, 8)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.2), in: .capsule)
-                    .anyButton(.press) {
-                        presenter.enterEditMode(session: session)
-                    }
+                presenter.enterEditMode(session: session)
             }
 
             notesEditor()
         } header: {
             Text("Workout Details")
         }
-
     }
 
     private var exerciseDetailsSection: some View {
@@ -195,85 +108,35 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             ForEach(session.exercises) { exercise in
                 DisclosureGroup {
                     if let note = exercise.notes {
-                        Label(note, systemImage: "note.text")
-                            .font(.subheadline)
+                        Label(note, systemImage: Symbol.note)
+                            .font(.rowDetail)
                     }
                     ForEach(exercise.workingSets, id: \.id) { set in
                         SetDetailRow(
                             set: set,
                             index: exercise.workingSetNumber(for: set),
                             trackingMode: exercise.trackingMode,
-                            weightUnit: presenter.weightUnit(for: exercise.templateId)
+                            weightUnit: presenter.weightUnit(for: exercise.templateId),
+                            distanceUnit: presenter.distanceUnit(for: exercise.templateId)
                         )
                     }
                 } label: {
-                    CustomListCellView(
-                        imageName: exercise.imageName ?? Constants.randomImage,
+                    ListRow(
                         title: exercise.name,
-                        subtitle: presenter.exerciseSummary(exercise)
+                        subtitle: presenter.exerciseSummary(exercise),
+                        imageName: exercise.imageName ?? Constants.randomImage
                     )
                 }
-                .listRowInsets(.vertical, 0)
-                .listRowInsets(.leading, 0)
             }
         } header: {
             Text("Exercise Details")
         }
     }
 
-    private func headerSection(session: WorkoutSessionModel, endedAt: Date?) -> some View {
-        Section {
-                        
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
-                StatCard(
-                    value: "\(session.exercises.count)",
-                    label: "Exercises",
-                    icon: "list.bullet",
-                    color: .blue,
-                    alignment: .center
-                )
-                
-                StatCard(
-                    value: "\(presenter.totalSets(session: session))",
-                    label: "Sets",
-                    icon: "square.stack.3d.up",
-                    color: .purple,
-                    alignment: .center
-                )
-
-                StatCard(
-                    value: presenter.volumeFormatted(session: session),
-                    label: "Volume",
-                    icon: "scalemass",
-                    color: .orange,
-                    alignment: .center
-                )
-            }
-
-            notesEditor()
-
-        } header: {
-            HStack {
-                Text("Workout Summary")
-                Spacer()
-                if let duration = endedAt?.timeIntervalSince(session.dateCreated) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock")
-                            .font(.caption)
-                        Text("Duration: \(Date.formatDuration(duration))")
-                            .font(.subheadline)
-                    }
-                    .foregroundStyle(.secondary)
-                }
-
-            }
-        }
-    }
-        
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         
-        ToolbarItem(placement: .topBarLeading) {
+        ToolbarItem(placement: .cancellationAction) {
             Button(role: .close) {
                 if presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session) {
                     presenter.showDiscardChangesAlert(session: session)
@@ -291,31 +154,16 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     }
                 }
                 if let link = presenter.webLink(session: session) {
-                    Button("Copy Link", systemImage: "link") {
+                    Button("Copy Link", systemImage: Symbol.share) {
                         presenter.onCopyLinkPressed(link, session: session)
                     }
                 }
             } label: {
-                Label("Share Image", systemImage: "square.and.arrow.up")
+                Label("Share Image", systemImage: Symbol.share)
             }
         }
 
         if presenter.isAuthor(sessionAuthorId: session.authorId) {
-//            ToolbarItem(placement: .topBarTrailing) {
-//                if presenter.isEditMode {
-//                    Button(role: .confirm) {
-//                        Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
-//                    }
-//                    .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
-//                    .fontWeight(.semibold)
-//                } else {
-//                    Button {
-//                        presenter.enterEditMode(session: session)
-//                    } label: {
-//                        Image(systemName: "pencil")
-//                    }
-//                }
-//            }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     if presenter.isEditMode {
@@ -328,17 +176,17 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         Button {
                             presenter.enterEditMode(session: session)
                         } label: {
-                            Label("Edit", systemImage: "pencil")
+                            Label("Edit", systemImage: Symbol.edit)
                         }
                     }
 
                     Button(role: .destructive) {
                         presenter.onDeletePressed(session: session)
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label("Delete", systemImage: Symbol.delete)
                     }
                 } label: {
-                    Label("More", systemImage: "ellipsis")
+                    Label("More", systemImage: Symbol.more)
                 }
             }
         }
@@ -346,43 +194,21 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
     
     @ViewBuilder
     private func notesEditor() -> some View {
-        // Notes editor (editable in edit mode)
         if presenter.isEditMode {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Workout Notes")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                
-                ZStack(alignment: .topLeading) {
-                    let notesValue = session.notes ?? ""
-                    if notesValue.isEmpty {
-                        Text("Add notes here...")
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 8)
-                            .padding(.leading, 6)
-                    }
-                    TextEditor(
-                        text: Binding(
-                            get: { session.notes ?? "" },
-                            set: { newValue in session.notes = newValue.isEmpty ? nil : newValue }
-                        )
-                    )
-                    .scrollContentBackground(.hidden)
-                    .frame(minHeight: 80)
-                    .textInputAutocapitalization(.sentences)
-                }
-                .padding(8)
-                .background(Color.accentColor.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
+            TextField(
+                "Workout notes",
+                text: Binding(
+                    get: { session.notes ?? "" },
+                    set: { newValue in session.notes = newValue.isEmpty ? nil : newValue }
+                ),
+                prompt: Text("Add notes here..."),
+                axis: .vertical
+            )
+            .lineLimit(3...)
+            .textInputAutocapitalization(.sentences)
         } else if let notes = session.notes, !notes.isEmpty {
-            Text(notes)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.accentColor.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+            Label(notes, systemImage: Symbol.note)
+                .font(.rowTitle)
         }
     }
 }

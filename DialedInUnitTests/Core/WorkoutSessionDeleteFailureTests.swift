@@ -32,6 +32,8 @@ struct WorkoutSessionDeleteFailureTests {
 
         func showDevSettingsView() { }
         func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
+        func showSessionStartTimeView(date: Binding<Date>) { }
+        func showSessionDurationView(hours: Binding<Int>, minutes: Binding<Int>, onSave: @escaping () -> Void) { }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 

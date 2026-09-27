@@ -79,19 +79,21 @@ class WorkoutSessionDetailPresenter {
             .reduce(0.0, +)
     }
     
+    /// Summed across exercises logged in different units, so it stays in the unit it is stored in.
     func volumeFormatted(session: WorkoutSessionModel) -> String {
         let volume = totalVolume(session: session)
-        if volume > 0 {
-            return String(format: "%.0f kg", volume)
-        } else {
-            return "—"
-        }
+        return volume > 0 ? Format.weight(kg: volume, unit: ExerciseWeightUnit.kilograms) : Format.placeholder
     }
     
     /// The weight unit this exercise is shown in. Reads the cache `loadUnitPreferences` fills
     /// without writing to it, so it is safe to call while the view draws.
     func weightUnit(for templateId: String) -> ExerciseWeightUnit {
         exerciseUnitPreferences[templateId]?.weightUnit ?? interactor.getPreference(templateId: templateId).weightUnit
+    }
+
+    /// The distance unit this exercise is shown in. Read-only, like `weightUnit(for:)`.
+    func distanceUnit(for templateId: String) -> ExerciseDistanceUnit {
+        exerciseUnitPreferences[templateId]?.distanceUnit ?? interactor.getPreference(templateId: templateId).distanceUnit
     }
 
     /// The line under each exercise: its own working sets and volume, in the exercise's unit.
@@ -105,8 +107,7 @@ class WorkoutSessionDetailPresenter {
                 return weight * Double(reps)
             }
             .reduce(0.0, +)
-        let volume = String(format: "%.0f", UnitConversion.convertWeight(volumeKg, to: unit))
-        return "\(String.countCaption(count: workingSets.pairedSetCount, unit: "set")) - \(volume) \(unit.abbreviation) volume"
+        return "\(String.countCaption(count: workingSets.pairedSetCount, unit: "set")) - \(Format.weight(kg: volumeKg, unit: unit)) volume"
     }
 
     // MARK: - Edit Mode Actions
@@ -145,22 +146,28 @@ class WorkoutSessionDetailPresenter {
 
     // MARK: - Timing
 
-    /// Presents the start-time picker.
-    var isEditingStartTime: Bool = false
-    /// Presents the duration picker.
-    var isEditingDuration: Bool = false
     var durationHours: Int = 1
     var durationMinutes: Int = 0
 
-    func onEditStartTimePressed() {
-        isEditingStartTime = true
+    func onEditStartTimePressed(session: Binding<WorkoutSessionModel>) {
+        router.showSessionStartTimeView(
+            date: Binding(
+                get: { session.wrappedValue.dateCreated },
+                set: { self.onStartTimeChanged($0, session: session) }
+            )
+        )
     }
 
-    func onEditDurationPressed(session: WorkoutSessionModel) {
-        let duration = session.endedAt?.timeIntervalSince(session.dateCreated) ?? 0
+    func onEditDurationPressed(session: Binding<WorkoutSessionModel>) {
+        let current = session.wrappedValue
+        let duration = current.endedAt?.timeIntervalSince(current.dateCreated) ?? 0
         durationHours = Int(duration) / 3600
         durationMinutes = (Int(duration) % 3600) / 60
-        isEditingDuration = true
+        router.showSessionDurationView(
+            hours: Binding(get: { self.durationHours }, set: { self.durationHours = $0 }),
+            minutes: Binding(get: { self.durationMinutes }, set: { self.durationMinutes = $0 }),
+            onSave: { self.onDurationConfirmed(session: session) }
+        )
     }
 
     /// Both timing edits save straight away rather than joining the exercise-editing flow — the
@@ -172,7 +179,6 @@ class WorkoutSessionDetailPresenter {
 
     func onDurationConfirmed(session: Binding<WorkoutSessionModel>) {
         let seconds = TimeInterval(durationHours * 3600 + durationMinutes * 60)
-        isEditingDuration = false
         guard seconds > 0 else { return }
         session.wrappedValue.updateDuration(seconds)
         persistTimingChange(session.wrappedValue)
@@ -182,7 +188,9 @@ class WorkoutSessionDetailPresenter {
         Task {
             do {
                 try await interactor.saveWorkoutSession(session)
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(
                     title: String(localized: "Save Failed"),
                     subtitle: "Unable to save the change. Please try again."
@@ -209,12 +217,14 @@ class WorkoutSessionDetailPresenter {
             session.wrappedValue.updateExercises(session.wrappedValue.exercises)
             
             try await interactor.saveWorkoutSession(session.wrappedValue)
-            
+            interactor.playHaptic(option: .success)
+
             isEditMode = false
             
             // Dismiss to refresh parent view
             dismissScreen()
         } catch {
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Save Failed"),
                 subtitle: "Unable to save changes. Please try again."
@@ -419,6 +429,7 @@ class WorkoutSessionDetailPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.deleteSessionFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Delete Workout"), subtitle: String(localized: "Please try again."))
             }
         }

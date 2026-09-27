@@ -14,11 +14,26 @@ app. Do not regress their labels, hints, reduce-motion handling or Dynamic Type 
 
 ## Specific issues
 
-- **Finish Workout** (README decision 3, default yes). Move Finish out of the `line.3.horizontal`
-  menu (`WorkoutTrackerView.swift:221-257`) into a visible `.confirmationAction` button labelled
-  "Finish". The menu keeps Minimise and Delete.
-  - The Minimise icon becomes `chevron.down` or `Symbol` equivalent; it is not `xmark`.
-  - The presenter test covers the finish haptic.
+- **Finish Workout** (README decision 3). Finish **stays** in the `line.3.horizontal` menu
+  (`WorkoutTrackerView.swift:221-257`). In addition:
+  - **Presenter.** Add `var canQuickFinish: Bool`. It is true when the session has at least one
+    set and every set (warmups included) is completed. It turns false again if a set is
+    un-completed, or a set or exercise is added.
+  - **View.** When it is true, show a `CallToActionButton` labelled "Finish Workout" through
+    `.bottomCTA`. It calls the **same** presenter method the menu item calls, so there is one
+    finish flow with its confirmation, summary and haptic.
+  - **Animation.** It appears with `.move(edge: .bottom).combined(with: .opacity)`, driven by
+    `reducedMotionAnimation(.emphasis, value: canQuickFinish)`. Under Reduce Motion it is
+    opacity only; the wrapper handles that. No extra haptic when it appears: completing the
+    last set already plays `.success`. Disappearing reverses the transition.
+  - **Accessibility.** Post an `AccessibilityNotification.Announcement("All sets complete. Finish
+    Workout is available.")` when it appears, so VoiceOver users learn about it.
+  - **Layout.** Check it against the rest-timer glass pill and the last set row. The list must
+    scroll fully above the inset. Screenshot it with the rest timer running and idle.
+  - **Tests.** `canQuickFinish`: false with no sets, false with one set open, true when all are
+    completed including warmups, and false again after adding a set or un-completing one. The
+    button's action reaches the same finish method: assert through the router or interactor spy.
+  - In the menu, the Minimise icon becomes `chevron.down` or its `Symbol` equivalent, not `xmark`.
 - **Numeric entry.** Time and distance cells use tiny `.roundedBorder` `TextField`s
   (`SetTrackerRowView.swift:~274-305, ~403-455`). Move them onto `SetKeyboardView`, extending it
   with duration and distance modes if needed, so a set row has one input paradigm.

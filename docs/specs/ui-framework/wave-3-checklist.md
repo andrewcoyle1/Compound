@@ -24,7 +24,11 @@ noted, in the folders it owns. The WP file adds its scope and its specific issue
   - No `colorScheme.backgroundPrimary`/`Secondary`/`foregroundPrimary`: use `surface`, `canvas`
     and `onAccent`.
   - No `.opacity(N)` fills: use `tintedSurface`.
-  - `.accent` is spelled one way: `Color.accentColor`.
+  - Accent per `CONTRACT.md` § Accent: `.tint` (or `Color.accentColor` where a `Color` is
+    needed), `Color.accent` and bare `.accent` retired.
+  - Selection, primary actions, links, toggles and non-data progress use the accent.
+  - Text on accent fills uses `onAccent`.
+  - Fix every entry in WP-01's accent-swap list that falls in your folders.
 - [ ] **Type.** Tokens for numbers, titles and rows. `.font(.system(size:))` on images becomes
   `.iconSize`. Replace deprecated `.foregroundColor`.
 - [ ] **Spacing and radius.** Tokens only, continuous corners, no `.cornerRadius(`.

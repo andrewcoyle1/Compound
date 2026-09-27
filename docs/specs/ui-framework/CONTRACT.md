@@ -38,7 +38,7 @@ Capsules and circles stay as they are.
 
 | Token | Value / rule |
 |---|---|
-| `onAccent` | `Color(uiColor: .systemBackground)`: legible on the monochrome accent in both modes. Replaces every `foregroundStyle(colorScheme.backgroundPrimary)` label hack. |
+| `onAccent` | A colour-set asset `OnAccent` beside `AccentColor`. It is white-on-black for today's monochrome accent: `systemBackground` values, meaning any appearance white and dark black. It replaces every `foregroundStyle(colorScheme.backgroundPrimary)` label hack. |
 | `surface` | `Color(uiColor: .secondarySystemGroupedBackground)`. Visually identical to today's `colorScheme.backgroundPrimary`. |
 | `canvas` | `Color(uiColor: .systemGroupedBackground)`. Identical to `colorScheme.backgroundSecondary`. |
 | `static func tintedSurface(_ c: Color) -> Color` | `c.opacity(0.15)`. The one fill for tinted tiles, chips and badges. |
@@ -52,6 +52,37 @@ Capsules and circles stay as they are.
 After WP-01, nothing outside `DesignSystem/` writes `Color(red:…)`. The exceptions are user data
 (`Color(hex:)`), share cards and the widget.
 
+### Accent
+
+The accent is the brand colour. Today it is monochrome: `AccentColor` = `labelColor`. Changing
+it later must be **one edit to two assets**, `AccentColor` and `OnAccent` together, and must
+recolour the whole app. That only holds if code never bypasses it.
+
+**Spelling.**
+- Use `.tint` as a `ShapeStyle` (`.foregroundStyle(.tint)`, `.fill(.tint)`) wherever a view
+  draws accent. It follows the environment tint, which defaults to the accent.
+- Use `Color.accentColor` only where a `Color` value is required.
+- `Color.accent` and bare `.accent` (about 40 sites today) are retired.
+
+**Use the accent for:**
+- primary buttons (`.glassProminent` already takes the tint)
+- selected state in chips, segments and selectable rows (the checkmark)
+- toggles, sliders and progress indicators that are not data
+- links, and "See All" style actions
+- the active tab
+- focus and highlight rings
+- goal progress, where the goal is the user's own target and not a metric colour
+
+**Never use the accent for:**
+- data meaning: macros, metrics, status, warmup and similar
+- body text
+- surfaces
+
+**Never write the accent's current value where the accent is meant.** That means no `.primary`,
+`.black`, `.white` or `labelColor` standing in for brand emphasis. Text drawn on an accent fill
+uses `onAccent`, never `.white`, `.black` or `colorScheme.*`. If the accent is swapped for a
+colour today, nothing may become unreadable.
+
 ### Typography — `Typography.swift`
 
 `extension Font` statics. All are built on text styles, so they scale with Dynamic Type.
@@ -63,8 +94,8 @@ After WP-01, nothing outside `DesignSystem/` writes `Color(red:…)`. The except
 | `metric` | `.system(.title3, design: .rounded, weight: .semibold).monospacedDigit()` | Stat value |
 | `metricSmall` | `.system(.subheadline, design: .rounded, weight: .semibold).monospacedDigit()` | Compact stat, row trailing value |
 | `sectionTitle` | `.headline` | Card and section titles |
-| `rowTitle` | `.body` | List row title (README decision 4) |
-| `rowDetail` | `.subheadline` | Row subtitle, with `.secondary` |
+| `rowTitle` | `.body` | List row title (README decision 4). 17 pt at the default Dynamic Type size (Large) |
+| `rowDetail` | `.subheadline` | Row subtitle, with `.secondary`. 15 pt at Large |
 | `label` | `.caption` | Stat labels, chips, with `.secondary` |
 
 - Use weight through the token or `.fontWeight(_)`. Never `.bold()` on top of a token.

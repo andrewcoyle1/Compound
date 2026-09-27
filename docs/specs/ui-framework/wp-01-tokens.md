@@ -39,11 +39,21 @@ the canonical one.
      `MacroProgressChart.swift`, and `Color.proteinColor` and its siblings.
    - Update every call site of those names to the tokens. This is a mechanical rename, and the
      only Core edits this WP makes.
-5. **`ColorScheme+EXT`.** The widget extension compiles this file, and it uses
+5. **Accent.**
+   - Add the `OnAccent` colour set to `Assets.xcassets`, with any appearance white and dark
+     black, so that it pairs with `AccentColor` = `labelColor`.
+   - Add a comment in `Palette.swift`, and a `README` note in the asset catalog folder if Xcode
+     allows one: "change `AccentColor` and `OnAccent` together".
+   - **Prove the swap works.** Temporarily set `AccentColor` to `systemBlue` and `OnAccent` to
+     white, take the screenshot deck, and keep the images in the job tmp dir (not the repo).
+     Revert the swap. List every screen where the blue did not appear although it should have,
+     or where text became unreadable. That list goes in the report, and Wave 3 agents fix their
+     own entries.
+6. **`ColorScheme+EXT`.** The widget extension compiles this file, and it uses
    `foregroundSecondary` (`WorkoutSessionActivity/LiveActivityView.swift:35`). Leave it working,
    but add a doc comment saying the app uses `Color.surface`/`canvas`/`onAccent`, and that WP-15
    deletes the members the widget does not need.
-6. **Format tests.** Write `DialedInUnitTests/DesignSystem/FormatTests.swift` covering each
+7. **Format tests.** Write `DialedInUnitTests/DesignSystem/FormatTests.swift` covering each
    `Format` function: rounding boundaries, lb/kg conversion, the placeholder, en dash, and a
    non-English locale for grouping. Look up the existing weight-unit types before writing
    `weight(kg:unit:)`: `ExerciseWeightUnit` (`Managers/Training/Exercise/Models/ExerciseUnitPreference.swift`)
@@ -53,4 +63,5 @@ the canonical one.
 **Done when:** the app and tests build, `FormatTests` pass, `swiftlint` is clean, and nothing
 outside `DesignSystem/` defines a macro colour.
 
-**Commits:** screenshots script · tokens · macro palette consolidation · Format + tests.
+**Commits:** screenshots script · tokens + `OnAccent` · macro palette consolidation · Format + tests.
+The accent-swap screenshots are evidence only, not a commit.

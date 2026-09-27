@@ -23,6 +23,16 @@ sites.
      because `CustomListCellView` supports images.
    - Selection overlay behaviour from `CustomListCellView` maps to `.checkmark(Bool)`.
    - It has no background of its own: inside a `List` the row supplies it.
+   - **Dynamic Type.** Every text uses a text-style token, so it scales from xSmall to AX5.
+     - No fixed heights. The only size constraint is `minHeight: ControlSize.row` (44 pt, the
+       minimum tap target).
+     - The leading symbol and thumbnail sizes come from `@ScaledMetric`.
+     - Titles and subtitles wrap; there is no `lineLimit(1)` on titles. Subtitles may cap at
+       2 lines, but only below accessibility sizes.
+     - At accessibility sizes (`dynamicTypeSize.isAccessibilitySize`), a `.value` accessory moves
+       under the title instead of squeezing it. Use `AdaptiveStack`
+       (`Components/Views/AdaptiveStack.swift`), which already does this.
+     - Previews at `.xSmall`, `.large` and `.accessibility5` are required.
 2. **`ListRowButton`**
    - A `Button(action:) { ListRow(accessory: .chevron) }` with `.contentShape(.rect)`, so the
      **whole row** is tappable. Today `CustomLabelButtonView` only responds on the chevron; fixing

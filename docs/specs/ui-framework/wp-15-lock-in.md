@@ -23,6 +23,7 @@
    | `no_fixed_font_size` | `\.font\(\.system\(size:` |
    | `no_rgb_color_literal` | `Color\(red:` |
    | `no_bare_with_animation` | `\bwithAnimation\(` outside `ReducedMotionViewModifier.swift` |
+   | `accent_spelling` | `Color\.accent\b` and `[(:, ]\.accent\b` (use `.tint` or `Color.accentColor`) |
    | `no_color_scheme_surfaces` | `colorScheme\.(background\|foreground)` |
    | `no_drawn_close_button` | `systemName: "xmark"` inside a `ToolbarItem`. Approximate it with a regex on `Image(systemName: "xmark")`, and allow-list legitimate non-toolbar uses. |
 

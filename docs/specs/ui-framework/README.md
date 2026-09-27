@@ -76,15 +76,14 @@ Files no WP may commit changes to, and why:
   and `~/.dd-wpNN`.
 - Full suite once, at the end, before pushing.
 
-## Decisions to confirm before Wave 1
+## Decisions (confirmed 2026-09-27)
 
-Defaults are chosen so the swarm can run without an answer; each is one line to change later.
-
-1. **Brand accent.** Default: keep the monochrome accent (`labelColor`), and add `Color.onAccent`
-   so nothing draws white on it. A coloured brand accent is a one-line asset change after WP-01.
-2. **Calories colour.** Default: blue, which is what `Macro.cals.colour` already says. Protein
-   stops being blue anywhere.
-3. **Finish Workout.** Default: WP-09 moves it out of the hamburger menu into a visible toolbar
-   confirm button. Say no and WP-09 leaves the menu alone.
-4. **List row text.** Default: `ListRow` titles use `.body`, the iOS standard, instead of today's
-   mix of `.subheadline` and `.headline`. Rows get slightly larger.
+1. **Brand accent.** Stays monochrome (`labelColor`) for now. It must be used in every place
+   where the brand or interactive emphasis is meant, so that one asset change later recolours the
+   whole app. See `CONTRACT.md` § Accent.
+2. **Calories colour.** Blue, which is what `Macro.cals.colour` already says. Protein stops being
+   blue anywhere.
+3. **Finish Workout.** It stays in the tracker's menu. In addition, once every set is completed,
+   a Finish button animates into the bottom safe area. See WP-09.
+4. **List row text.** Titles use `.body` and subtitles use `.subheadline`. Both are Dynamic Type
+   text styles. WP-06 carries the accessibility-size layout rules.

@@ -13,7 +13,7 @@ extension View {
         self
             .font(.caption)
             .bold()
-            .foregroundStyle(Color.white)
+            .foregroundStyle(Color(uiColor: .systemBackground))
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
             .background(Color.accentColor)

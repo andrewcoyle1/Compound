@@ -224,9 +224,13 @@ class AccountPresenter {
             subtitle: String(localized: "This action is permanent and cannot be undone. Your data will be deleted from our server forever."),
             buttons: {
                 AnyView(
-                    Button("Delete", role: .destructive, action: {
-                        self.onDeleteAccountConfirmed()
-                    })
+                    Group {
+                        Button("Delete", role: .destructive, action: {
+                            self.onDeleteAccountConfirmed()
+                        })
+                        // The alert had no way out but deleting the account.
+                        Button("Cancel", role: .cancel) { }
+                    }
                 )
             }
         )

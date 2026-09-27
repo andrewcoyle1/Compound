@@ -11,6 +11,14 @@ struct SetDetailRow: View {
     let set: WorkoutSetModel
     let index: Int
     let trackingMode: TrackingMode
+    /// Weights are stored in kg and shown in the unit the user logs this exercise in. The row used
+    /// to print kg whatever that was.
+    var weightUnit: ExerciseWeightUnit = .kilograms
+
+    var weightText: String? {
+        guard let weight = set.weightKg else { return nil }
+        return "\(UnitConversion.formatWeight(weight, unit: weightUnit)) \(weightUnit.abbreviation)"
+    }
 
     /// A left/right pair shares its number and is told apart by the marker, so three sets a side
     /// read 1L, 1R, 2L, 2R rather than 1 through 4.
@@ -30,9 +38,9 @@ struct SetDetailRow: View {
             HStack(spacing: 16) {
                 switch trackingMode {
                 case .weightReps:
-                    if let weight = set.weightKg, let reps = set.reps {
+                    if let weightText, let reps = set.reps {
                         HStack(spacing: 4) {
-                            Text("\(String(format: "%.1f", weight)) kg")
+                            Text(weightText)
                             Text("×")
                                 .foregroundStyle(.secondary)
                             Text("\(reps) reps")

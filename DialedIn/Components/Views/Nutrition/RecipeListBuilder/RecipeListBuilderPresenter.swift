@@ -8,7 +8,7 @@ class RecipeListBuilderPresenter {
     private let router: RecipeListBuilderRouter
     
     private(set) var isLoading: Bool = false
-    private(set) var searchText: String = ""
+    var searchText: String = ""
     
     var userRecipeTemplates: [RecipeTemplateModel] {
         interactor.userRecipeTemplates

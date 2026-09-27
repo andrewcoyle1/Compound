@@ -88,6 +88,27 @@ class WorkoutSessionDetailPresenter {
         }
     }
     
+    /// The weight unit this exercise is shown in. Reads the cache `loadUnitPreferences` fills
+    /// without writing to it, so it is safe to call while the view draws.
+    func weightUnit(for templateId: String) -> ExerciseWeightUnit {
+        exerciseUnitPreferences[templateId]?.weightUnit ?? interactor.getPreference(templateId: templateId).weightUnit
+    }
+
+    /// The line under each exercise: its own working sets and volume, in the exercise's unit.
+    /// It used to count the session's exercises as the sets and always said "kg".
+    func exerciseSummary(_ exercise: WorkoutExerciseModel) -> String {
+        let workingSets = exercise.workingSets
+        let unit = weightUnit(for: exercise.templateId)
+        let volumeKg = workingSets
+            .compactMap { set -> Double? in
+                guard let weight = set.weightKg, let reps = set.reps else { return nil }
+                return weight * Double(reps)
+            }
+            .reduce(0.0, +)
+        let volume = String(format: "%.0f", UnitConversion.convertWeight(volumeKg, to: unit))
+        return "\(String.countCaption(count: workingSets.pairedSetCount, unit: "set")) - \(volume) \(unit.abbreviation) volume"
+    }
+
     // MARK: - Edit Mode Actions
     
     func enterEditMode(session: WorkoutSessionModel) {

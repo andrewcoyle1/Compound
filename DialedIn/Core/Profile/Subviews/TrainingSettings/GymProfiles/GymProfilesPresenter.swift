@@ -55,6 +55,25 @@ class GymProfilesPresenter {
         router.showGymProfileView(delegate: delegate)
     }
         
+    /// The swipe's Delete button deleted the gym, and all the equipment set up in it, straight
+    /// away. It now asks first.
+    func onDeleteGymProfilePressed(profile: GymProfileModel) {
+        router.showAlert(
+            title: String(localized: "Delete Gym Profile?"),
+            subtitle: String(localized: "\(profile.name) and the equipment set up in it will be deleted."),
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Delete", role: .destructive) {
+                            self.deleteGymProfile(profile: profile)
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    }
+                )
+            }
+        )
+    }
+
     func deleteGymProfile(profile: GymProfileModel) {
         Task {
             interactor.trackEvent(event: Event.deleteProfileStart)

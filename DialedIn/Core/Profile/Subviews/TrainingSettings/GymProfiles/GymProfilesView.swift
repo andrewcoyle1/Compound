@@ -49,7 +49,7 @@ struct GymProfilesView: View {
             }
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 Button(role: .destructive) {
-                    presenter.deleteGymProfile(profile: gymProfile)
+                    presenter.onDeleteGymProfilePressed(profile: gymProfile)
                 } label: {
                     Label("Delete", systemImage: "trash")
                 }
@@ -74,7 +74,7 @@ struct GymProfilesView: View {
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
-                        presenter.deleteGymProfile(profile: profile)
+                        presenter.onDeleteGymProfilePressed(profile: profile)
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }

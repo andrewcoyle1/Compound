@@ -10,13 +10,13 @@ import SwiftUI
 struct CustomPaywallView: View {
     
     var products: [AnyProduct] = []
+    var selectedProduct: AnyProduct?
     var title: String = "Try Premium Today!"
     var subtitle: String = "Unlock unlimited access and exclusive features for premium members."
     var onBackButtonPressed: () -> Void = { }
     var onRestorePurchasePressed: () -> Void = { }
-    var onPurchaseProductPressed: (AnyProduct) -> Void = { _ in }
-    
-    @State var selectedProduct: AnyProduct?
+    var onProductSelected: (AnyProduct) -> Void = { _ in }
+    var onSubscribePressed: () -> Void = { }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -43,7 +43,7 @@ struct CustomPaywallView: View {
         }
         .foregroundStyle(.white)
         .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity, maxHeight: 150)
+        .frame(maxWidth: .infinity, minHeight: 150)
         .background(Color.accent.gradient)
     }
     
@@ -76,7 +76,7 @@ struct CustomPaywallView: View {
         }
         .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 2)
         .anyButton(.press, action: {
-            selectedProduct = product
+            onProductSelected(product)
         })
         .padding(16)
         .removeListRowFormatting()
@@ -90,19 +90,22 @@ struct CustomPaywallView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            CallToActionButton {
-                guard let product = selectedProduct else { return }
-                onPurchaseProductPressed(product)
-            } label: {
+            // Tapping Subscribe with no plan chosen did nothing and said nothing.
+            CallToActionButton(action: onSubscribePressed) {
                 Text("Subscribe")
             }
-            CallToActionButton(isPrimaryAction: false) {
-                
-            } label: {
-                Text("Restore Subscription")
-            }
+            .disabled(selectedProduct == nil)
+            restoreButton
         }
         .padding(.bottom)
+    }
+
+    /// Its action was an empty closure, so Restore Subscription did nothing at all. Not private so
+    /// a test can press it.
+    var restoreButton: CallToActionButton<Text> {
+        CallToActionButton(isPrimaryAction: false, action: onRestorePurchasePressed) {
+            Text("Restore Subscription")
+        }
     }
     
     @ToolbarContentBuilder

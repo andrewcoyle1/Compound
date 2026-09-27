@@ -202,22 +202,15 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         SetDetailRow(
                             set: set,
                             index: exercise.workingSetNumber(for: set),
-                            trackingMode: exercise.trackingMode
+                            trackingMode: exercise.trackingMode,
+                            weightUnit: presenter.weightUnit(for: exercise.templateId)
                         )
                     }
                 } label: {
-                    let volume: Double = exercise.sets
-                        .filter { !$0.isWarmup }
-                        .compactMap { set -> Double? in
-                            guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                            return weight * Double(reps)
-                        }
-                        .reduce(0.0, +)
-
-                    return CustomListCellView(
+                    CustomListCellView(
                         imageName: exercise.imageName ?? Constants.randomImage,
                         title: exercise.name,
-                        subtitle: "\(String.countCaption(count: session.exercises.count, unit: "set")) - \(String(format: "%g", volume)) kg volume"
+                        subtitle: presenter.exerciseSummary(exercise)
                     )
                 }
                 .listRowInsets(.vertical, 0)

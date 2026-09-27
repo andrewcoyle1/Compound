@@ -13,6 +13,8 @@ class PaywallPresenter {
     private(set) var productIds: [String] = EntitlementOption.allProductIds
     private(set) var isLoadingProducts: Bool = false
     private(set) var loadErrorMessage: String?
+    /// The plan chosen on the custom paywall. Subscribe stays disabled until there is one.
+    private(set) var selectedProduct: AnyProduct?
     
     var paywallTest: PaywallTestOption {
         interactor.paywallTest
@@ -122,6 +124,15 @@ class PaywallPresenter {
                 router.showAlert(error: error)
             }
         }
+    }
+
+    func onProductSelected(_ product: AnyProduct) {
+        selectedProduct = product
+    }
+
+    func onSubscribePressed() {
+        guard let selectedProduct else { return }
+        onPurchaseProductPressed(product: selectedProduct)
     }
 
     func onPurchaseProductPressed(product: AnyProduct) {

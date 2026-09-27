@@ -9,8 +9,9 @@ class FoodLibraryPresenter {
     
     var foodLibraryOption: FoodLibraryOption = .recipes
 
-    /// Filters the favourites list. The recipes and foods tabs are child views with their own
-    /// search, so this only applies to the tab drawn here.
+    /// The query in the library's search field. It filters the favourites drawn here and is handed
+    /// to the recipes and foods lists, which had no search of their own despite this comment
+    /// saying so.
     var searchText: String = ""
 
     init(interactor: FoodLibraryInteractor, router: FoodLibraryRouter) {

@@ -19,7 +19,6 @@ struct OnboardingHealthDataView: View {
         }
         .scrollIndicators(.hidden)
         .navigationTitle("Health Data")
-        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
         }

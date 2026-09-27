@@ -8,6 +8,7 @@
 import Testing
 import Foundation
 import UIKit
+import SwiftUI
 @testable import DialedIn
 
 /// The Account screen: the profile the user edits about themselves, and the two irreversible
@@ -92,6 +93,13 @@ struct ProfileAccountPresenterTests {
         private(set) var alertTitles: [String] = []
 
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
+
+        private(set) var alertButtons: [AnyView] = []
+
+        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            alertTitles.append(title)
+            if let buttons { alertButtons.append(buttons()) }
+        }
     }
 
     private struct Screen {
@@ -470,6 +478,22 @@ struct ProfileAccountPresenterTests {
         #expect(!screen.router.didSwitchToOnboarding)
         #expect(screen.interactor.trackedEventNames == ["Settings_DeleteAccount_Start"])
         #expect(!screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_StartConfirm"))
+    }
+
+    /// The confirmation offered only Delete, so the one way out of it was to delete the account.
+    /// The buttons are an opaque `AnyView`; the Cancel button is found by reflecting over it.
+    @Test("Test The Delete Account Alert Can Be Cancelled")
+    func testTheDeleteAccountAlertCanBeCancelled() {
+        let screen = makeScreen()
+
+        screen.presenter.onDeleteAccountPressed()
+
+        #expect(screen.router.alertTitles == ["Delete Account?"])
+        var described = ""
+        dump(screen.router.alertButtons.first, to: &described)
+        #expect(described.contains("\"Cancel\""))
+        #expect(described.contains("cancel"))
+        #expect(!screen.interactor.didDeleteAccount)
     }
 
     @Test("Test Confirming Deletion Deletes The Account And Returns To Onboarding")

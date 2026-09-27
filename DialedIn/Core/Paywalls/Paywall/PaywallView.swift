@@ -15,7 +15,6 @@ struct PaywallView: View {
                     VStack(spacing: 12) {
                         Text("Unable to load subscription options")
                             .font(.headline)
-                            .foregroundStyle(colorScheme.backgroundPrimary)
                         Text(errorMessage)
                             .font(.subheadline)
                             .multilineTextAlignment(.center)
@@ -41,14 +40,18 @@ struct PaywallView: View {
                 } else {
                     CustomPaywallView(
                         products: presenter.products,
+                        selectedProduct: presenter.selectedProduct,
                         onBackButtonPressed: {
                             presenter.onBackButtonPressed()
                         },
                         onRestorePurchasePressed: {
                             presenter.onRestorePurchasePressed()
                         },
-                        onPurchaseProductPressed: { product in
-                            presenter.onPurchaseProductPressed(product: product)
+                        onProductSelected: { product in
+                            presenter.onProductSelected(product)
+                        },
+                        onSubscribePressed: {
+                            presenter.onSubscribePressed()
                         }
                     )
                 }

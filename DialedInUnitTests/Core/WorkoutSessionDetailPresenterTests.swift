@@ -726,3 +726,25 @@ struct WorkoutSessionDetailPresenterTests {
         }
     }
 }
+
+// MARK: - Exercise summary, in an extension to keep the suite under the type-body limit
+extension WorkoutSessionDetailPresenterTests {
+    /// Each exercise's line used to count the session's exercises as its sets. Warm-ups stay out.
+    @Test("Test The Exercise Summary Counts That Exercise's Working Sets")
+    func testTheExerciseSummaryCountsThatExercisesWorkingSets() {
+        let bench = exercise(id: "a", index: 1, sets: [set(1, isWarmup: true), set(2), set(3), set(4)])
+        let screen = makeScreen()
+
+        #expect(screen.presenter.exerciseSummary(bench) == "3 sets - 1920 kg volume")
+    }
+
+    /// The volume was always labelled kg. An exercise the user logs in pounds reads in pounds.
+    @Test("Test The Exercise Summary Uses The Exercise's Weight Unit")
+    func testTheExerciseSummaryUsesTheExercisesWeightUnit() {
+        let bench = exercise(id: "a", index: 1, sets: [set(1, reps: 10, weightKg: 100)])
+        let screen = makeScreen()
+        screen.interactor.preferences["template-a"] = ExerciseUnitPreference(exerciseModelId: "template-a", weightUnit: .pounds)
+
+        #expect(screen.presenter.exerciseSummary(bench) == "1 set - 2205 lbs volume")
+    }
+}

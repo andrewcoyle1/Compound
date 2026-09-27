@@ -6,6 +6,8 @@ struct RecipeListBuilderDelegate {
     /// Optional list of recipe templates that should display as "selected" in the UI.
     /// If `nil`, no selection state is shown.
     var selectedRecipeTemplates: [RecipeTemplateModel]?
+    /// A query typed into a search field the host owns. `nil` means the list shows its own.
+    var searchText: String?
 }
 
 struct RecipeListBuilderView: View {
@@ -18,7 +20,18 @@ struct RecipeListBuilderView: View {
         delegate.selectedRecipeTemplates?.contains(recipeTemplate) ?? false
     }
 
+    /// Nothing ever set `searchText`, so the filtered list and its empty state could not appear.
+    /// Standalone, the list now has its own search field; inside the food library it follows the
+    /// library's.
     var body: some View {
+        if delegate.searchText == nil {
+            list.searchable(text: $presenter.searchText, prompt: "Filter Recipes")
+        } else {
+            list
+        }
+    }
+
+    private var list: some View {
         List {
             if presenter.searchText.isEmpty {
                 if !presenter.userRecipeTemplates.isEmpty {
@@ -43,6 +56,9 @@ struct RecipeListBuilderView: View {
                     Button("Create a Recipe") { presenter.onAddRecipePressed() }
                 }
             }
+        }
+        .onChange(of: delegate.searchText, initial: true) { _, newValue in
+            if let newValue { presenter.searchText = newValue }
         }
         .onAppear {
             presenter.onViewAppear()

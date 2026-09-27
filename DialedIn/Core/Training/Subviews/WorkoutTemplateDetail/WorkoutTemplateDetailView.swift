@@ -97,7 +97,7 @@ struct WorkoutTemplateDetailView: View {
             if presenter.targetMuscleSummaries(exercises: delegate.workoutTemplate.exercises).isEmpty {
                 HStack {
                     Image(systemName: "figure.wave")
-                        .font(.system(size: 32))
+                        .font(.largeTitle)
                         .frame(width: 40)
                     Text("You haven't added any exercises yet. Once you add an exercise, target muscles will appear here.")
                 }
@@ -180,19 +180,9 @@ struct WorkoutTemplateDetailView: View {
                 }
             }
         } header: {
-            HStack {
-                VStack {
-                    Text("\(delegate.workoutTemplate.exercises.count) Exercises")
-                }
-                Spacer()
-                Button {
-//                    presenter.onAddExercisePressed()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add exercise")
-                .buttonStyle(.bordered)
-            }
+            // The "+" here had its action commented out. Authors add exercises through Edit
+            // Workout in the toolbar menu; nobody else can change the template.
+            Text("\(delegate.workoutTemplate.exercises.count) Exercises")
         }
     }
     

@@ -77,6 +77,13 @@ struct FormatTests {
         #expect(Format.distance(meters: 5000, unit: .miles, locale: english) == "3.1 mi")
     }
 
+    @Test func distanceInAnExercisesUnit() {
+        #expect(Format.distance(meters: 400, exerciseUnit: .meters, locale: english) == "400 m")
+        #expect(Format.distance(meters: 5000.4, exerciseUnit: .meters, locale: english) == "5,000 m")
+        // 402.336 m is a quarter mile
+        #expect(Format.distance(meters: 402.336, exerciseUnit: .miles, locale: english) == "0.25 mi")
+    }
+
     @Test func percentFromAFraction() {
         #expect(Format.percent(0.45, locale: english) == "45%")
         #expect(Format.percent(1, locale: english) == "100%")

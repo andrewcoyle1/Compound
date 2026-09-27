@@ -14,10 +14,35 @@ struct SetDetailRow: View {
     /// Weights are stored in kg and shown in the unit the user logs this exercise in. The row used
     /// to print kg whatever that was.
     var weightUnit: ExerciseWeightUnit = .kilograms
+    /// Distances are stored in metres and shown in the exercise's unit. The row used to print
+    /// metres whatever that was.
+    var distanceUnit: ExerciseDistanceUnit = .meters
 
     var weightText: String? {
-        guard let weight = set.weightKg else { return nil }
-        return "\(UnitConversion.formatWeight(weight, unit: weightUnit)) \(weightUnit.abbreviation)"
+        self.set.weightKg.map { Format.weight(kg: $0, unit: weightUnit) }
+    }
+
+    /// What the set was, in the exercise's own terms: "80 kg × 8 reps", "12 reps", "0:45",
+    /// "400 m in 1:32". Nil when the set holds nothing its tracking mode shows.
+    var valueText: String? {
+        switch trackingMode {
+        case .weightReps:
+            guard let weightText, let reps = self.set.reps else { return nil }
+            return "\(weightText) × \(Format.reps(reps))"
+        case .repsOnly:
+            return self.set.reps.map { Format.reps($0) }
+        case .timeOnly:
+            return self.set.durationSec.map { Format.duration(TimeInterval($0)) }
+        case .distanceTime:
+            let distance = self.set.distanceMeters.map { Format.distance(meters: $0, exerciseUnit: distanceUnit) }
+            let duration = self.set.durationSec.map { Format.duration(TimeInterval($0)) }
+            switch (distance, duration) {
+            case let (distance?, duration?): return String(localized: "\(distance) in \(duration)")
+            case let (distance?, nil): return distance
+            case let (nil, duration?): return duration
+            case (nil, nil): return nil
+            }
+        }
     }
 
     /// A left/right pair shares its number and is told apart by the marker, so three sets a side
@@ -27,83 +52,29 @@ struct SetDetailRow: View {
     }
 
     var body: some View {
-        HStack {
-            // Set number
+        HStack(spacing: Spacing.m) {
             Text(label)
-                .font(.subheadline)
                 .foregroundStyle(.secondary)
-                .frame(width: 50, alignment: .leading)
-            
-            // Set details based on tracking mode
-            HStack(spacing: 16) {
-                switch trackingMode {
-                case .weightReps:
-                    if let weightText, let reps = set.reps {
-                        HStack(spacing: 4) {
-                            Text(weightText)
-                            Text("×")
-                                .foregroundStyle(.secondary)
-                            Text("\(reps) reps")
-                        }
-                    }
-                    
-                case .repsOnly:
-                    if let reps = set.reps {
-                        Text("\(reps) reps")
-                    }
-                    
-                case .timeOnly:
-                    if let duration = set.durationSec {
-                        Text(formatSeconds(duration))
-                    }
-                    
-                case .distanceTime:
-                    HStack(spacing: 8) {
-                        if let distance = set.distanceMeters {
-                            Text("\(String(format: "%.0f", distance)) m")
-                        }
-                        if let duration = set.durationSec {
-                            Text(formatSeconds(duration))
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                if let rpe = set.rpe {
-                    HStack(spacing: 2) {
-                        Text("RPE")
-                            .font(.caption2)
-                        Text(String(format: "%.1f", rpe))
-                            .font(.caption)
-                    }
+
+            if let valueText {
+                Text(valueText)
+                    .monospacedDigit()
+            }
+
+            Spacer(minLength: 0)
+
+            if let rpe = set.rpe {
+                Text("RPE \(rpe.formatted(.number.precision(.fractionLength(0...1))))")
+                    .font(.label)
                     .foregroundStyle(.secondary)
-                }
-                
-                if set.isWarmup {
-                    Text("W")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.orange)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.orange.opacity(0.2))
-                        .cornerRadius(4)
-                }
+            }
+
+            if set.isWarmup {
+                Chip("Warm-up", systemImage: Symbol.warmup, tint: .warmup)
             }
         }
-        .font(.subheadline)
-    }
-    
-    private func formatSeconds(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let remainingSeconds = seconds % 60
-        
-        if minutes > 0 {
-            return String(localized: "\(String(describing: minutes))m \(String(describing: remainingSeconds))s")
-        } else {
-            return "\(seconds)s"
-        }
+        .font(.rowDetail)
+        .accessibilityElement(children: .combine)
     }
 }
 

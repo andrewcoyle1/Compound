@@ -65,6 +65,16 @@ enum Format {
         return "\(value.formatted(.number.precision(.fractionLength(0...1)).locale(locale))) \(unit.abbreviation)"
     }
 
+    /// `"400 m"` / `"3.11 mi"` from a value stored in metres, in the unit one exercise is logged in.
+    /// Metres take no decimals; miles up to two, so a quarter-mile reads `"0.25 mi"`.
+    ///
+    /// Its own label because `.miles` is a case of both distance enums, so `unit:` would be ambiguous.
+    static func distance(meters: Double, exerciseUnit unit: ExerciseDistanceUnit, locale: Locale = .autoupdatingCurrent) -> String {
+        let digits = unit == .miles ? 0...2 : 0...0
+        let value = UnitConversion.convertDistance(meters, to: unit)
+        return "\(value.formatted(.number.precision(.fractionLength(digits)).locale(locale))) \(unit.abbreviation)"
+    }
+
     /// `"45%"` from a fraction (`0.45`), no decimals.
     static func percent(_ fraction: Double, locale: Locale = .autoupdatingCurrent) -> String {
         fraction.formatted(.percent.precision(.fractionLength(0)).locale(locale))

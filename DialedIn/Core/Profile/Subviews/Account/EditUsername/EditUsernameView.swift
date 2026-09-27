@@ -7,7 +7,7 @@ struct EditUsernameView: View {
     var body: some View {
         List {
             Section {
-                HStack(spacing: 2) {
+                HStack(spacing: Spacing.xxs) {
                     Text(verbatim: "@")
                         .foregroundStyle(.secondary)
                     TextField("username", text: $presenter.text)
@@ -27,7 +27,7 @@ struct EditUsernameView: View {
                 if presenter.isSaving {
                     ProgressView()
                 } else {
-                    Button("Save") {
+                    Button(role: .confirm) {
                         Task { await presenter.onSavePressed() }
                     }
                     .disabled(!presenter.canSave)
@@ -50,19 +50,17 @@ struct EditUsernameView: View {
         case .current:
             Text("This is your username.")
         case .invalid(let message):
-            Label(message, systemImage: "exclamationmark.circle")
-                .foregroundStyle(.orange)
+            InlineMessage(.warning, message)
         case .checking:
-            HStack(spacing: 6) {
+            HStack(spacing: Spacing.s) {
                 ProgressView().controlSize(.mini)
                 Text("Checking…")
             }
         case .available:
-            Label("Available", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(.green)
+            Label("Available", systemImage: Symbol.success)
+                .foregroundStyle(.success)
         case .taken:
-            Label("Taken", systemImage: "xmark.circle.fill")
-                .foregroundStyle(.red)
+            InlineMessage(.error, "Taken")
         case .failed:
             Text("Couldn't check that username. Try again in a moment.")
         }

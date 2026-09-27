@@ -99,7 +99,6 @@ struct AccountView: View {
                 Text("Female").tag(Gender.female as Gender?)
             } label: {
                 Text("Gender")
-                    .fontWeight(.semibold)
             }
 
             // Centimetres, matching `UserModel.submittedHeightCentimeters`. The Units screen governs
@@ -107,7 +106,6 @@ struct AccountView: View {
             // preference threading through, and would make the stored unit ambiguous on save.
             HStack {
                 Text("Height")
-                    .fontWeight(.semibold)
                 Spacer()
                 TextField("0", text: $presenter.heightText)
                     .keyboardType(.decimalPad)
@@ -124,7 +122,6 @@ struct AccountView: View {
                 }
             } label: {
                 Text("Cardio Experience")
-                    .fontWeight(.semibold)
             }
 
             Picker(selection: $presenter.selectedExerciseFrequency) {
@@ -134,24 +131,22 @@ struct AccountView: View {
                 }
             } label: {
                 Text("Lifting Experience")
-                    .fontWeight(.semibold)
             }
         }
     }
 
     private var usernameRow: some View {
-        HStack {
-            Text("Username")
-                .fontWeight(.semibold)
-            Spacer()
-            Text(presenter.currentUser?.username.map { "@\($0)" } ?? "Not set")
-                .foregroundStyle(.secondary)
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
-        }
-        .tappableBackground()
-        .anyButton {
+        ListRowButton(title: String(localized: "Username"), accessory: .custom(AnyView(
+            HStack(spacing: Spacing.s) {
+                Text(presenter.currentUser?.username.map { "@\($0)" } ?? String(localized: "Not set"))
+                    .font(.rowTitle)
+                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.forward")
+                    .font(.rowDetail.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+        ))) {
             presenter.onUsernamePressed()
         }
     }
@@ -172,26 +167,18 @@ struct AccountView: View {
             // identity provider's and cannot be changed from here. A "Password ********" row used to
             // sit below this one — removed, because there is no password to change: `SignInOption`
             // has no email case anywhere in the app.
-            HStack {
-                Text("Email")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(presenter.currentUser?.email ?? "Not provided")
-                    .foregroundStyle(.secondary)
-            }
+            ListRow(title: String(localized: "Email"), accessory: .value(presenter.currentUser?.email ?? String(localized: "Not provided")))
 
             // Signing an anonymous account out locks it away for good, so that account is offered
             // the upgrade in place of Log Out rather than alongside it.
             if presenter.isAnonymousUser {
-                Text("Save & back-up account")
-                    .anyButton {
-                        presenter.onSaveAccountPressed()
-                    }
+                ListRowButton(title: String(localized: "Save & back-up account"), accessory: .none) {
+                    presenter.onSaveAccountPressed()
+                }
             } else {
-                Text("Log Out")
-                    .anyButton {
-                        presenter.onSignOutPressed()
-                    }
+                ListRowButton(title: String(localized: "Log Out"), accessory: .none) {
+                    presenter.onSignOutPressed()
+                }
             }
             Button(role: .destructive) {
                 presenter.onDeleteAccountPressed()

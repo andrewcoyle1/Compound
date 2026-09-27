@@ -36,6 +36,14 @@ struct FormatTests {
         #expect(Format.grams(2.5, locale: german) == "2,5 g")
     }
 
+    @Test func nutrientKeepsOneDecimalAtAnySize() {
+        #expect(Format.nutrient(16.9, locale: english) == "16.9 g")
+        #expect(Format.nutrient(16.94, locale: english) == "16.9 g")
+        #expect(Format.nutrient(17, locale: english) == "17 g")
+        #expect(Format.nutrient(120, unit: "mg", locale: english) == "120 mg")
+        #expect(Format.nutrient(16.9, locale: german) == "16,9 g")
+    }
+
     @Test func weightInKilograms() {
         #expect(Format.weight(kg: 82.5, unit: ExerciseWeightUnit.kilograms, locale: english) == "82.5 kg")
         #expect(Format.weight(kg: 100, unit: ExerciseWeightUnit.kilograms, locale: english) == "100 kg")

@@ -17,14 +17,10 @@ struct NutrientAmount {
         value.map { Self.format($0, unit: unit) } ?? Format.placeholder
     }
 
-    /// Grams and kcal go through `Format`; mg and mcg get the same 0–1 decimals as grams.
-    /// `Format` has no general amount-with-unit function, so this fills that gap for nutrients.
+    /// kcal through `Format.kcal`; grams, mg and mcg through `Format.nutrient`, which keeps one
+    /// decimal as a nutrition label does (16.9 g stays 16.9 g).
     static func format(_ value: Double, unit: String) -> String {
-        switch unit {
-        case "g": return Format.grams(value)
-        case "kcal": return Format.kcal(value)
-        default: return "\(value.formatted(.number.precision(.fractionLength(0...1)))) \(unit)"
-        }
+        unit == "kcal" ? Format.kcal(value) : Format.nutrient(value, unit: unit)
     }
 }
 

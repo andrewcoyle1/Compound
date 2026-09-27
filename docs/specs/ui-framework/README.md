@@ -100,14 +100,18 @@ Files no WP may commit changes to, and why:
 4. **List row text.** Titles use `.body` and subtitles use `.subheadline`. Both are Dynamic Type
    text styles. WP-06 carries the accessibility-size layout rules.
 
-## Follow-ups found during the swarm (for WP-15 or the user)
+## Follow-up decisions (confirmed 2026-09-28)
 
-| Item | Found by | Owner |
+| # | Decision | Owner |
 |---|---|---|
-| Muscle Balance hides its footer by comparing the header to the localised word "Lower", so the footer disappears in other languages | WP-14 | WP-15: fix, with a test seam |
-| Goal Progress, its entries and its chart show kg even for users who chose pounds | WP-14 | user decision (behaviour change) |
-| The session volume total mixes units and always shows kg | WP-03 | user decision |
-| Set distance is always shown in metres | WP-03 | user decision |
-| `Format.weight` writes "lb" but the unit abbreviations say "lbs" | WP-01 | WP-15: settle on "lb" |
-| Mac Catalyst does not build (CoreInteractor, BarcodeScanner, HKWorkoutManager, the tracker interactor) | WP-04 | user decision |
-| The weekly target grid's over-target carets look busy | WP-14 | design review on the screenshot deck |
+| 1 | Grams keep one decimal on nutrition labels and food/recipe detail. Everywhere else rounds as `Format.grams` does. | WP-08 (asked mid-run) |
+| 2 | "lb" everywhere. Change `WeightUnitPreference.abbreviation` and `ExerciseWeightUnit.abbreviation` from "lbs", and fix any tests that assert "lbs". | WP-15 |
+| 3 | Goal Progress, its entries and its chart follow the user's weight unit, not kg. Add presenter tests. | WP-15 |
+| 4 | The session volume total converts each exercise to the user's body-weight unit before summing. | WP-09 (asked mid-run) |
+| 5 | Macro lines in item rows wrap to a second line instead of truncating. | WP-08 (asked mid-run) |
+| 6 | The weekly target grid shows the over-target caret only when a cell is well over target: define "well" as over 110% and put it in a named constant. VoiceOver still says "over target" for any cell over 100%. | WP-15 |
+| 7 | Mac Catalyst is out of scope for this swarm. It is a separate task, because the build was already broken in `CoreInteractor`, `BarcodeScanner`, `HKWorkoutManager` and the tracker interactor. | — |
+| 8 | US spelling in user-facing strings ("Favorites", "Analyzing", "Customize", "Colour" → "Color" and so on). Change the English source strings and keep their Spanish translations. Identifiers and comments stay as they are. | WP-15 |
+
+Also for WP-15: Muscle Balance hides its footer by comparing the header to the localised word
+"Lower", so the footer disappears in other languages. Fix it with a test seam.

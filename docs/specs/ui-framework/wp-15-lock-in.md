@@ -6,6 +6,10 @@
 
 ## Steps
 
+0. **Apply the follow-up decisions** in `README.md` § Follow-up decisions that are owned by
+   WP-15 (items 2, 3, 6 and 8, plus the Muscle Balance footer). Each is its own commit, with
+   tests where there is logic.
+
 1. **Delete deprecated components.** Build, and there must be zero deprecation warnings left.
    Then delete every type Wave 2 deprecated: `StatItem`, `StatCard`, `.badgeButton`,
    `CustomListCellView`, `CustomLabelButtonView`, `CustomToggleView`, `MetricRow`,
@@ -32,7 +36,6 @@
    - Build to let Xcode extract strings.
    - Add Spanish for every new key the Wave 1–3 reports listed. Mark stale keys removed.
    - Commit `Localizable.xcstrings` once.
-   - Raise the US/UK spelling mix WP-08 reported as a question in the final report. Do not change it.
 5. **Screenshots.** Regenerate the committed deck (`scripts/screenshots.sh`) and commit it. Make a
    contact sheet of the before and after from `git show <base>:Screenshots/…` for the PR.
 6. **Docs.**

@@ -9,6 +9,10 @@ import SwiftUI
 /// bar under the navigation bar, the developer-settings toolbar in debug and mock builds, and a
 /// primary call to action (plus an optional plain secondary button) through `.bottomCTA`.
 ///
+/// Progress is a thin bar under the navigation bar rather than a "Step x of y" subtitle: the
+/// account-setup sub-screens share one `OnboardingStep`, so a step count would not advance
+/// between them, while a fraction reads the same either way.
+///
 /// ```swift
 /// OnboardingStepScaffold(
 ///     title: "About You",
@@ -67,6 +71,7 @@ struct OnboardingStepScaffold<Content: View>: View {
                 } header: {
                     Text(subtitle)
                 }
+                .listSectionSpacing(0)
             }
             content()
         }

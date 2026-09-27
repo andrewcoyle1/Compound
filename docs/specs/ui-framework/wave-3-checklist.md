@@ -28,7 +28,7 @@ noted, in the folders it owns. The WP file adds its scope and its specific issue
     needed), `Color.accent` and bare `.accent` retired.
   - Selection, primary actions, links, toggles and non-data progress use the accent.
   - Text on accent fills uses `onAccent`.
-  - Fix every entry in WP-01's accent-swap list that falls in your folders.
+  - Fix every entry in `accent-swap-findings.md` that falls in your folders.
 - [ ] **Type.** Tokens for numbers, titles and rows. `.font(.system(size:))` on images becomes
   `.iconSize`. Replace deprecated `.foregroundColor`.
 - [ ] **Spacing and radius.** Tokens only, continuous corners, no `.cornerRadius(`.

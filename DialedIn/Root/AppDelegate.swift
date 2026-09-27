@@ -213,6 +213,8 @@ enum BuildConfiguration {
     /// Firebase's. The OAuth client enforces it, so without this call Google answers
     /// "We cannot verify the authenticity of this app … Token failed" (Error 400: invalid_request).
     /// The simulator uses the same debug token as Firebase App Check, registered in the console.
+    /// The token exchange is addressed to `oauthClients/{GIDClientID}`, read from Info.plist; the
+    /// per-configuration `INFOPLIST_KEY_GIDClientID` build setting supplies it.
     private static func configureGoogleSignInAppCheck(apiKey: String?) {
         #if targetEnvironment(simulator)
         guard let apiKey else { return }

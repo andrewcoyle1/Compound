@@ -1008,6 +1008,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Mock";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -1356,6 +1357,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -1437,6 +1439,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-bj1v2mbkjr92u8emp7li2i2157osija7.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Compound;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";

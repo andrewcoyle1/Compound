@@ -114,7 +114,7 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
             .padding(.vertical)
         } else if let customChart = presenter.customChartView {
             customChart
-                .frame(height: 300)
+                .frame(minHeight: 300)
                 .padding(.vertical)
         } else {
             MetricChart(series: series, configuration: configuration, color: themeColor)
@@ -123,13 +123,10 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         if presenter.configuration.showsAddButton {
@@ -155,21 +152,11 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
                 // Pushed with the sheet's own router rather than through each of the thirty-odd
                 // presenters that share this view, which would each need the same route.
                 RouterReader { router in
-                    Button {
+                    ListRowButton(title: String(localized: "Show All Data")) {
                         router.showScreen(.push) { _ in
                             MetricAllDataView(presenter: presenter)
                         }
-                    } label: {
-                        HStack {
-                            Text("Show All Data")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote.weight(.semibold))
-                                .foregroundStyle(.tertiary)
-                        }
-                        .contentShape(.rect)
                     }
-                    .foregroundStyle(.primary)
                 }
             }
         }
@@ -179,7 +166,7 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
     private func emptySection(configuration: MetricConfiguration) -> some View {
         Section {
             ContentUnavailableView {
-                Label(configuration.title, systemImage: "chart.xyaxis.line")
+                Label(configuration.title, systemImage: Symbol.analytics)
             } description: {
                 Text(configuration.emptyStateMessage)
             } actions: {

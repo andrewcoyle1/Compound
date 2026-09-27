@@ -414,7 +414,7 @@ struct AnalyticsNutritionMetricDetailTests {
         await screen.presenter.onAppear()
         let entry = try #require(screen.presenter.entries.first)
 
-        #expect(entry.displayValue == "148g P · 214g C · 69.7g F")
+        #expect(entry.displayValue == "\(Format.grams(148)) P · \(Format.grams(214)) C · \(Format.grams(69.7)) F")
     }
 
     // MARK: - Single metrics

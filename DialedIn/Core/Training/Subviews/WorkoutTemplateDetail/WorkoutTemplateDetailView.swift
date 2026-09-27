@@ -97,7 +97,7 @@ struct WorkoutTemplateDetailView: View {
             if presenter.targetMuscleSummaries(exercises: delegate.workoutTemplate.exercises).isEmpty {
                 HStack {
                     Image(systemName: "figure.wave")
-                        .font(.system(size: 32))
+                        .font(.largeTitle)
                         .frame(width: 40)
                     Text("You haven't added any exercises yet. Once you add an exercise, target muscles will appear here.")
                 }

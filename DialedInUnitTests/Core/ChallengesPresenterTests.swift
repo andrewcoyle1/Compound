@@ -154,6 +154,7 @@ struct ChallengesPresenterTests {
         #expect(interactor.created.first?.days == 30)
         #expect(interactor.created.first?.members == ["mutual"])
         #expect(interactor.trackedEventNames.contains("CreateChallengeView_Create_Success"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test A Failed Create Alerts And Allows A Retry")
@@ -171,6 +172,7 @@ struct ChallengesPresenterTests {
         #expect(router.alertTitles == ["Unable to create challenge"])
         #expect(presenter.canCreate)
         #expect(interactor.trackedEventNames.contains("CreateChallengeView_Create_Fail"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: Standings

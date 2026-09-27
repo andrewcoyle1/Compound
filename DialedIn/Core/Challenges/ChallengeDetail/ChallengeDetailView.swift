@@ -12,6 +12,7 @@ struct ChallengeDetailDelegate {
 struct ChallengeDetailView: View {
 
     @State var presenter: ChallengeDetailPresenter
+    @ScaledMetric(relativeTo: .subheadline) private var rankWidth: CGFloat = 24
 
     var body: some View {
         List {
@@ -34,7 +35,7 @@ struct ChallengeDetailView: View {
                             presenter.onLeavePressed()
                         }
                     } label: {
-                        Image(systemName: "ellipsis")
+                        Image(systemName: Symbol.more)
                     }
                     .accessibilityLabel("More")
                 }
@@ -45,22 +46,22 @@ struct ChallengeDetailView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: Spacing.l) {
             ChallengeRing(sessions: presenter.mySessions, target: presenter.challenge.targetSessions, size: 88)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text("Train \(presenter.challenge.targetSessions) times")
-                    .font(.headline)
+                    .font(.sectionTitle)
                 Text(presenter.daysLeftText)
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
                 Text(presenter.challenge.startsAt.formatted(date: .abbreviated, time: .omitted)
                      + " – " + presenter.challenge.endsAt.formatted(date: .abbreviated, time: .omitted))
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
 
     private func row(_ entry: ChallengeStandings.Entry, rank: Int) -> some View {
@@ -68,23 +69,24 @@ struct ChallengeDetailView: View {
         return Button {
             presenter.onMemberPressed(entry)
         } label: {
-            HStack(spacing: 12) {
-                Text("\(rank)")
-                    .font(.subheadline.monospacedDigit())
+            HStack(spacing: Spacing.m) {
+                Text(rank, format: .number)
+                    .font(.rowDetail.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .frame(width: 24)
-                UserAvatarView(imageUrl: entry.imageUrl, size: 36)
+                    .frame(minWidth: rankWidth)
+                UserAvatarView(imageUrl: entry.imageUrl, size: ControlSize.thumbnail)
                 Text(isOwn ? "You" : entry.name)
-                    .font(.body.weight(isOwn ? .semibold : .regular))
+                    .font(.rowTitle)
+                    .fontWeight(isOwn ? .semibold : .regular)
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 if entry.isComplete {
                     Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(.success)
                         .accessibilityLabel("Finished")
                 }
                 Text("\(entry.sessions)/\(presenter.challenge.targetSessions)")
-                    .font(.subheadline.monospacedDigit())
+                    .font(.metricSmall)
                     .foregroundStyle(.secondary)
             }
             .contentShape(.rect)

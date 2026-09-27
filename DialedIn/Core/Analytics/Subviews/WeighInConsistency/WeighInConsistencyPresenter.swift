@@ -49,7 +49,7 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
     }
 
     func displayValue(for entry: BodyMeasurementEntry) -> String {
-        guard let weightKg = entry.weightKg else { return "--" }
+        guard let weightKg = entry.weightKg else { return Format.placeholder }
         return UnitConversion.formatWeight(weightKg, unit: weightUnit)
     }
 
@@ -79,7 +79,7 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Weight Entries",
             emptyStateMessage: "No weigh-ins logged",
-            chartColor: .green,
+            chartColor: Color.Metric.habits,
             contributionUnit: "weigh-ins"
         )
     }

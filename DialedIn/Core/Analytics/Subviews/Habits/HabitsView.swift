@@ -43,10 +43,10 @@ struct HabitsView: View {
         habitsSection(header: String(localized: "General")) {
             ConsistencyAnalyticsCard(
                 title: String(localized: "Weigh In"),
-                value: "\(presenter.weighInCountThisWeek)",
-                themeColor: .green,
+                value: presenter.weighInCountThisWeek.formatted(),
+                themeColor: Color.Metric.habits,
                 data: presenter.weighInContributionData,
-                action: { presenter.onWeighInPressed(themeColor: .green) }
+                action: { presenter.onWeighInPressed(themeColor: Color.Metric.habits) }
             )
         }
     }
@@ -55,10 +55,10 @@ struct HabitsView: View {
         habitsSection(header: String(localized: "Training")) {
             ConsistencyAnalyticsCard(
                 title: String(localized: "Workouts"),
-                value: "\(presenter.workoutCountThisWeek)",
-                themeColor: .orange,
+                value: presenter.workoutCountThisWeek.formatted(),
+                themeColor: Color.Metric.habits,
                 data: presenter.workoutContributionData,
-                action: { presenter.onWorkoutsPressed(themeColor: .orange) }
+                action: { presenter.onWorkoutsPressed(themeColor: Color.Metric.habits) }
             )
         }
     }
@@ -68,15 +68,15 @@ struct HabitsView: View {
             ConsistencyAnalyticsCard(
                 title: String(localized: "Food Logging"),
                 value: "\(presenter.foodLoggingCountThisWeek)/7",
-                themeColor: .teal,
+                themeColor: Color.Metric.habits,
                 data: presenter.foodLoggingContributionData,
-                action: { presenter.onFoodLoggingPressed(themeColor: .teal) }
+                action: { presenter.onFoodLoggingPressed(themeColor: Color.Metric.habits) }
             )
         }
     }
 
-    /// Food Logging was orange, the same colour as Workouts directly above it, so the two habits
-    /// read as one. Each habit now has its own colour, and each section the same shape.
+    /// Every habit is drawn in `Color.Metric.habits`: they are one metric, consistency, shown three
+    /// ways, and the per-habit greens and oranges clashed with the metrics of the same name.
     private func habitsSection<Content: View>(
         header: String,
         @ViewBuilder content: @escaping () -> Content

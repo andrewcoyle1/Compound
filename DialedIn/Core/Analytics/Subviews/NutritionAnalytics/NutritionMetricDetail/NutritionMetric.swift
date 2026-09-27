@@ -163,7 +163,8 @@ enum NutritionMetric {
     @MainActor
     var chartColor: Color {
         switch self {
-        case .macros, .calories: return .blue
+        case .macros: return Color.Metric.nutrition
+        case .calories: return Color.calories
         case .protein, .cysteine, .histidine, .isoleucine, .leucine, .lysine, .methionine,
              .phenylalanine, .threonine, .tryptophan, .tyrosine, .valine:
             return Color.protein

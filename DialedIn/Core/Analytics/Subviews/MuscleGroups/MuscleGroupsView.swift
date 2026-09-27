@@ -62,13 +62,13 @@ struct MuscleGroupsView: View {
     }
 
     private func muscleCard(muscle: Muscles) -> some View {
-        let muscleGroupColor = Color.blue
+        let muscleGroupColor = Color.Metric.muscleGroups
         let data = presenter.setsData(for: muscle)
         return AnalyticsCard(
             title: muscle.name,
-            subtitle: "Last 7 Days",
-            subsubtitle: data.total.formatted(.number.precision(.fractionLength(0...1))),
-            subsubsubtitle: "sets",
+            subtitle: String(localized: "Last 7 Days"),
+            value: data.total.formatted(.number.precision(.fractionLength(0...1))),
+            unit: String(localized: "sets"),
             themeColor: muscleGroupColor,
             chartConfiguration: .compact
         ) {

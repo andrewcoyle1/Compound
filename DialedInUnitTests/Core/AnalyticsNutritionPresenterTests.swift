@@ -228,8 +228,8 @@ struct AnalyticsNutritionOverviewTests {
     func testAnUnloggedMicronutrientReadsAsMissing() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.formatBreakdown(nil, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(0, unit: "mg") == "--")
+        #expect(screen.presenter.formatBreakdown(nil, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(0, unit: "mg") == Format.placeholder)
     }
 
     /// An amount of 100 or more is printed through `Int(_:)`, which traps on an infinity — and a
@@ -238,9 +238,9 @@ struct AnalyticsNutritionOverviewTests {
     func testAMicronutrientThatIsNotANumberReadsAsMissing() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.formatBreakdown(.nan, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(.infinity, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(-.infinity, unit: "mg") == "--")
+        #expect(screen.presenter.formatBreakdown(.nan, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(.infinity, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(-.infinity, unit: "mg") == Format.placeholder)
     }
 
     /// Small amounts keep a decimal, large ones do not — a 0.7mg of B6 rounded to 1 is a 40%

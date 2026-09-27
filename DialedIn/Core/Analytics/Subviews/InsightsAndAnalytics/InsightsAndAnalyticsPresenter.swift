@@ -120,8 +120,8 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var goalProgressLatestValueText: String {
-        guard hasActiveGoal, !goalWeightEntries.isEmpty else { return "--" }
-        return "\(Int(goalProgressPercent.rounded()))"
+        guard hasActiveGoal, !goalWeightEntries.isEmpty else { return Format.placeholder }
+        return goalProgressPercent.formatted(.number.precision(.fractionLength(0)))
     }
 
     var goalProgressUnitText: String {
@@ -150,7 +150,7 @@ class InsightsAndAnalyticsPresenter {
 
     var weightTrendLatestValueText: String {
         let trend = weightTrendSparklineData
-        guard let last = trend.last else { return "--" }
+        guard let last = trend.last else { return Format.placeholder }
         return last.value.formatted(.number.precision(.fractionLength(1)))
     }
 
@@ -192,15 +192,15 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var energyBalanceLatestValueText: String {
-        guard macrosLast7Days.count == 7 else { return "--" }
+        guard macrosLast7Days.count == 7 else { return Format.placeholder }
         let tdee = interactor.estimateTDEE(user: interactor.currentUser)
         let avgIntake = macrosLast7Days.map(\.calories).reduce(0, +) / 7
         let deficit = tdee - avgIntake
         let value = Int(deficit.rounded())
         if value > 0 {
-            return String(localized: "\(String(describing: value)) deficit")
+            return String(localized: "\(value.formatted()) deficit")
         } else if value < 0 {
-            return String(localized: "\(String(describing: -value)) surplus")
+            return String(localized: "\((-value).formatted()) surplus")
         }
         return String(localized: "Balanced")
     }
@@ -225,7 +225,7 @@ class InsightsAndAnalyticsPresenter {
         let total = workoutLast7Sessions.reduce(0) { sum, session in
             sum + session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }.count
         }
-        return total > 0 ? "\(total)" : "--"
+        return total > 0 ? total.formatted() : Format.placeholder
     }
 
     var workoutUnitText: String {
@@ -251,7 +251,7 @@ class InsightsAndAnalyticsPresenter {
 
     var expenditureLatestValueText: String {
         let tdee = interactor.estimateTDEE(user: interactor.currentUser)
-        return tdee > 0 ? "\(Int(tdee.rounded()))" : "--"
+        return tdee > 0 ? tdee.formatted(.number.precision(.fractionLength(0))) : Format.placeholder
     }
 
     var expenditureUnitText: String {

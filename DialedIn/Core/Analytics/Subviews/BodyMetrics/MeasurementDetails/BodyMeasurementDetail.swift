@@ -61,7 +61,7 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Entries",
             emptyStateMessage: kind.emptyStateMessage,
-            chartColor: .green
+            chartColor: Color.Metric.measurements
         )
     }
 

@@ -9,10 +9,10 @@ struct BodyMetricCardView: View {
         AnalyticsCard(
             title: card.title,
             subtitle: card.subtitle,
-            subsubtitle: card.latestValueText,
-            subsubsubtitle: card.unitText,
+            value: card.latestValueText,
+            unit: card.unitText,
             themeColor: themeColor,
-            chartConfiguration: AnalyticsCardChartConfiguration(height: 36, verticalPadding: 2)
+            chartConfiguration: .compact
         ) {
             SparklineChart(
                 data: card.sparklineData,
@@ -20,16 +20,15 @@ struct BodyMetricCardView: View {
                     lineColor: themeColor,
                     lineWidth: 2,
                     fillColor: themeColor,
-                    height: 36
+                    height: AnalyticsCardChartConfiguration.compact.height
                 )
             )
         }
-        .tappableBackground()
-        .anyButton(.press) { onPress() }
+        .analyticsCardButton(action: onPress)
     }
 }
 
-/// The same card for a derived ratio. A ratio has no unit, so `subsubsubtitle` is omitted rather
+/// The same card for a derived ratio. A ratio has no unit, so `unit` is omitted rather
 /// than filled with something.
 struct BodyRatioCardView: View {
     let card: BodyRatioCardModel
@@ -40,10 +39,10 @@ struct BodyRatioCardView: View {
         AnalyticsCard(
             title: card.title,
             subtitle: card.subtitle,
-            subsubtitle: card.latestValueText,
-            subsubsubtitle: nil,
+            value: card.latestValueText,
+            unit: nil,
             themeColor: themeColor,
-            chartConfiguration: AnalyticsCardChartConfiguration(height: 36, verticalPadding: 2)
+            chartConfiguration: .compact
         ) {
             SparklineChart(
                 data: card.sparklineData,
@@ -51,11 +50,10 @@ struct BodyRatioCardView: View {
                     lineColor: themeColor,
                     lineWidth: 2,
                     fillColor: themeColor,
-                    height: 36
+                    height: AnalyticsCardChartConfiguration.compact.height
                 )
             )
         }
-        .tappableBackground()
-        .anyButton(.press) { onPress() }
+        .analyticsCardButton(action: onPress)
     }
 }

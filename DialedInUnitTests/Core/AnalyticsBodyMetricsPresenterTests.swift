@@ -157,7 +157,7 @@ struct AnalyticsBodyMetricsPresenterTests {
 
         let card = screen.presenter.displayModel(for: .neck)
 
-        #expect(card.latestValueText == "--")
+        #expect(card.latestValueText == Format.placeholder)
         #expect(card.subtitle == "No Entries")
         #expect(card.sparklineData.isEmpty)
     }
@@ -222,7 +222,7 @@ struct AnalyticsBodyMetricsPresenterTests {
 
         let card = try #require(screen.presenter.ratioCards.first { $0.id == .waistToHeight })
 
-        #expect(card.latestValueText == "--")
+        #expect(card.latestValueText == Format.placeholder)
         #expect(card.subtitle == "No Entries")
     }
 
@@ -252,7 +252,7 @@ struct AnalyticsBodyMetricsPresenterTests {
 
         let card = try #require(screen.presenter.ratioCards.first { $0.id == .waistToHip })
 
-        #expect(card.latestValueText == "--")
+        #expect(card.latestValueText == Format.placeholder)
     }
 
     @Test("Test Waist To Hip Uses One Days Pair")

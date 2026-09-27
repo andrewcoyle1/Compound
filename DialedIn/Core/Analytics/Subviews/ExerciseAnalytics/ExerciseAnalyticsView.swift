@@ -12,7 +12,7 @@ struct ExerciseAnalyticsView: View {
     var body: some View {
         List {
             Section {
-                let exerciseColor = Color.cyan
+                let exerciseColor = Color.Metric.exercises
                 AnalyticsCardGrid {
                     if presenter.exerciseCards.isEmpty {
                         // The header used to stand over an empty grid on a fresh account.
@@ -22,7 +22,7 @@ struct ExerciseAnalyticsView: View {
                             SparklineAnalyticsCard(
                                 title: item.name,
                                 subtitle: String(localized: "Last 7 Workouts"),
-                                value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : "--",
+                                value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : Format.placeholder,
                                 unit: item.unitText,
                                 themeColor: exerciseColor,
                                 data: item.sparklineData,

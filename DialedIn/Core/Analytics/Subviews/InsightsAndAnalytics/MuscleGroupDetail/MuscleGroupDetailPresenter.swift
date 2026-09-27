@@ -110,7 +110,7 @@ extension MuscleGroupDetailPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Daily Sets",
             emptyStateMessage: "No sets for \(muscle.name) in recent workouts",
-            chartColor: .blue,
+            chartColor: Color.Metric.muscleGroups,
             chartType: .bar,
             addActionTitle: "Start Workout",
             addActionSystemImage: "figure.run"

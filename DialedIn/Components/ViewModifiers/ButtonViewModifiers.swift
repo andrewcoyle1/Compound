@@ -89,27 +89,12 @@ extension View {
         )
         .padding()
 
-        Text(
-            "Hello, world!"
-        )
-        .callToActionButton()
-        .anyButton(
-            .press,
-            action: {
+        Text("Hello, world!")
+            .anyButton(.press, action: { })
+            .padding()
 
-            }
-        )
-        .padding()
-
-        Text(
-            "Hello, world!"
-        )
-        .callToActionButton()
-        .anyButton(
-            action: {
-
-            }
-        )
-        .padding()
+        Text("Hello, world!")
+            .anyButton(action: { })
+            .padding()
     }
 }

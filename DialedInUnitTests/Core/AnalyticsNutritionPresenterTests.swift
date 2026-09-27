@@ -676,13 +676,27 @@ struct AnalyticsNutritionTargetChartTests {
         #expect(screen.presenter.value(for: .fats, day: day) == 70)
     }
 
+    /// The weekly totals used to read "15210" beside a flame and "1150P": calories now go through
+    /// `Format.kcal` and the macros through `Format.grams`, like every other amount in the app.
     @Test("Test Calories Are Counted In Kcal And Macros In Grams")
     func testCaloriesAreCountedInKcalAndMacrosInGrams() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.unit(for: .calories) == "kcal")
-        #expect(screen.presenter.unit(for: .protein) == "g")
-        #expect(screen.presenter.unit(for: .carbs) == "g")
-        #expect(screen.presenter.unit(for: .fats) == "g")
+        #expect(screen.presenter.amountText(15_210, for: .calories) == Format.kcal(15_210))
+        #expect(screen.presenter.amountText(1_150, for: .protein) == Format.grams(1_150))
+        #expect(screen.presenter.amountText(210, for: .carbs) == Format.grams(210))
+        #expect(screen.presenter.amountText(70, for: .fats) == Format.grams(70))
+    }
+
+    /// Over target is said in words for VoiceOver, not left to the bar passing its tick.
+    @Test("Test Going Over Target Is Said In Words")
+    func testGoingOverTargetIsSaidInWords() {
+        let screen = makeScreen()
+
+        let over = screen.presenter.cellAccessibilityValue(logged: 180, target: 150, metric: .protein)
+        let under = screen.presenter.cellAccessibilityValue(logged: 48, target: 150, metric: .protein)
+
+        #expect(over.hasSuffix("over target"))
+        #expect(under == "\(Format.grams(48)) of \(Format.grams(150))")
     }
 }

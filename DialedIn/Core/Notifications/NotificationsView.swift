@@ -21,7 +21,7 @@ struct NotificationsView: View {
             }
         }
         .navigationTitle("Notifications")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .onAppear {
             presenter.onViewAppear()
@@ -33,13 +33,10 @@ struct NotificationsView: View {
             await presenter.checkPermissions()
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
                     presenter.onDismissPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
             }
         }
         .task {
@@ -96,17 +93,18 @@ struct NotificationsView: View {
             ForEach(presenter.incomingFollowRequests) { request in
                 // Buttons move under the name at accessibility sizes, where beside it they
                 // wrapped "Accept" a letter per line.
-                AdaptiveStack(spacing: 12) {
-                    HStack(spacing: 12) {
-                        UserAvatarView(imageUrl: request.requesterImageUrl, size: 40)
+                AdaptiveStack(spacing: Spacing.m) {
+                    HStack(spacing: Spacing.m) {
+                        UserAvatarView(imageUrl: request.requesterImageUrl, size: ControlSize.thumbnail)
 
                         // Name and verb on their own lines: on one line the two buttons truncated it.
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
                             Text(request.requesterName)
-                                .font(.subheadline.weight(.medium))
+                                .font(.rowTitle)
+                                .fontWeight(.medium)
                                 .lineLimit(1)
                             Text("Wants to follow you")
-                                .font(.caption)
+                                .font(.rowDetail)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -116,8 +114,8 @@ struct NotificationsView: View {
 
                     // Side by side while both fit, one above the other once they do not.
                     ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 12) { followRequestButtons(request) }
-                        VStack(alignment: .leading, spacing: 8) { followRequestButtons(request) }
+                        HStack(spacing: Spacing.m) { followRequestButtons(request) }
+                        VStack(alignment: .leading, spacing: Spacing.s) { followRequestButtons(request) }
                     }
                     .lineLimit(1)
                 }
@@ -133,13 +131,12 @@ struct NotificationsView: View {
         Button("Accept") {
             presenter.onAcceptRequestPressed(request)
         }
-        .buttonStyle(.borderedProminent)
-        .foregroundStyle(Color(.systemBackground))
+        .buttonStyle(.glassProminent)
 
         Button("Decline") {
             presenter.onDeclineRequestPressed(request)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glass)
     }
 
     private func activityNotificationTitle(_ notification: ActivityNotificationModel) -> String {
@@ -171,14 +168,14 @@ struct NotificationsView: View {
             systemImage: "bell.slash",
             description: Text("You don't have any notifications yet. When you receive notifications, they'll appear here.")
         )
-        .padding(.vertical, 40)
+        .padding(.vertical, Spacing.xxl)
     }
     
     private var notDeterminedContent: some View {
         ContentUnavailableView {
             VStack {
                 Image(systemName: "bell.badge")
-                    .font(.system(size: 48))
+                    .iconSize(.large)
                 
                 Text("Enable Notifications")
             }
@@ -189,9 +186,9 @@ struct NotificationsView: View {
                 presenter.onRequestNotificationsPressed()
             } label: {
                 Text("Enable Notifications")
-                    .padding(8)
+                    .padding(Spacing.s)
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.glassProminent)
         }
         .padding(.vertical)
         .background(in: .containerRelative)
@@ -202,7 +199,7 @@ struct NotificationsView: View {
         ContentUnavailableView {
             VStack {
                 Image(systemName: "bell.slash.fill")
-                    .font(.system(size: 48))
+                    .iconSize(.large)
                 
                 Text("Notifications Disabled")
             }
@@ -213,7 +210,7 @@ struct NotificationsView: View {
                 presenter.openSettings()
             } label: {
                 Text("Open Settings")
-                    .padding(8)
+                    .padding(Spacing.s)
             }
             .buttonStyle(.glass)
         }
@@ -295,20 +292,21 @@ extension NotificationsView {
     /// it is unread; the follow-back button sits beside it rather than inside it, so it stays a
     /// stop of its own instead of a button nested in a button.
     private func groupedNotificationRow(_ group: NotificationGroup) -> some View {
-        AdaptiveStack(spacing: 12) {
+        AdaptiveStack(spacing: Spacing.m) {
             Button {
                 presenter.onGroupPressed(group)
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.m) {
                     stackedAvatars(group.avatarUrls)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(group.groupedTitle ?? activityNotificationTitle(group.newest))
-                            .font(.headline)
+                            .font(.rowTitle)
+                            .fontWeight(group.isRead ? .regular : .semibold)
                             .foregroundStyle(group.isRead ? .secondary : .primary)
 
                         Text(group.newest.dateCreated.formatted(date: .abbreviated, time: .shortened))
-                            .font(.caption)
+                            .font(.label)
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -326,15 +324,15 @@ extension NotificationsView {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
 
     /// Up to three overlapping avatars, the most recent actor on top. Decorative: the title names them.
     private func stackedAvatars(_ urls: [String?]) -> some View {
-        HStack(spacing: -14) {
+        HStack(spacing: -Spacing.m) {
             ForEach(Array(urls.enumerated()), id: \.offset) { index, url in
-                UserAvatarView(imageUrl: url, size: 32)
-                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                UserAvatarView(imageUrl: url, size: Spacing.xxl)
+                    .overlay(Circle().stroke(.surface, lineWidth: 2))
                     .zIndex(Double(urls.count - index))
             }
         }

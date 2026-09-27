@@ -126,12 +126,14 @@ class NutritionTargetChartPresenter {
                 return "F"
             }
         }
+        /// The macro colours used everywhere else. This chart had its own, with carbs and fat
+        /// swapped and protein in the blue that means calories.
         var colour: Color {
             switch self {
-            case .calories: return .red
-            case .protein: return .blue
-            case .carbs: return .yellow
-            case .fats: return .green
+            case .calories: return Macro.cals.colour
+            case .protein: return Macro.protein.colour
+            case .carbs: return Macro.carbs.colour
+            case .fats: return Macro.fat.colour
             }
         }
     }

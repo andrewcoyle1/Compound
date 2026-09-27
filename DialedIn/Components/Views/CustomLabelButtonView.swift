@@ -7,15 +7,17 @@
 
 import SwiftUI
 
+/// Kept so existing call sites compile; drawn by `ListRow` with the caller's trailing content.
+/// Its action lives inside that content, so only the content is tappable. `ListRowButton` makes the
+/// whole row the tap target.
+@available(*, deprecated, message: "Use ListRowButton(title:subtitle:systemImage:action:) for a row that opens something, or ListRow(accessory: .value/.custom) for a display row")
 struct CustomLabelButtonView<Content: View>: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
+
     let symbolName: String?
     let title: String
     let subtitle: String?
     var content: (() -> Content)?
-    
+
     init(
         symbolName: String? = nil,
         title: String,
@@ -27,75 +29,13 @@ struct CustomLabelButtonView<Content: View>: View {
         self.subtitle = subtitle
         self.content = content
     }
-    
+
     var body: some View {
-        HStack {
-            if let symbolName {
-                Label {
-                    Text(title)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                } icon: {
-                    Image(systemName: symbolName)
-                        .frame(width: 44, height: 44, alignment: .center)
-                }
-            } else {
-                VStack(alignment: .leading) {
-                    Text(title)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-            Spacer()
-            content?()
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .removeListRowFormatting()
-    }
-}
-
-#Preview {
-    
-    List {
-
-        CustomLabelButtonView(
-            symbolName: "wand.and.stars",
-            title: "Smart Progression",
-            subtitle: "Configure smart progression settings",
-            content: {
-                Text("Edit")
-                    .padding(.horizontal, 8)
-                    .padding(8)
-                    .background(Color.secondary.opacity(0.2), in: .capsule)
-                    .anyButton(.press) {
-                        print("Edit pressed")
-                    }
-            }
-        )
-
-        CustomLabelButtonView(
-            symbolName: "timer",
-            title: "Rest Timer",
-            subtitle: "Configure rest timer settings",
-            content: {
-                Image(systemName: "chevron.right")
-                    .padding()
-                    .anyButton(.press) {
-                        print("Chevron pressed")
-                    }
-            }
+        ListRow(
+            title: title,
+            subtitle: subtitle,
+            systemImage: symbolName,
+            accessory: content.map { .custom(AnyView($0())) } ?? .none
         )
     }
 }

@@ -12,6 +12,7 @@ import Combine
 struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     @State var presenter: WorkoutTrackerPresenter
 
@@ -23,8 +24,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             exerciseSection
         }
         .navigationTitle(presenter.workoutSession.name)
-        .toolbarTitleDisplayMode(.inlineLarge)
-        .toolbarRole(.browser)
+        .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .environment(\.editMode, $presenter.editMode)
         .onChange(of: presenter.pendingSelectedTemplates) { _, newValue in
@@ -38,6 +38,21 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             if presenter.isRestActive {
                 timerHeaderView
             }
+        }
+        // Outside the rest pill's inset, so the button sits at the bottom edge and the pill above it.
+        .bottomCTA {
+            if presenter.canQuickFinish {
+                CallToActionButton {
+                    presenter.onFinishPressed()
+                } label: {
+                    Text("Finish Workout")
+                }
+                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .reducedMotionAnimation(.emphasis, value: presenter.canQuickFinish)
+        .onChange(of: presenter.canQuickFinish) { _, isAvailable in
+            presenter.onQuickFinishAvailabilityChanged(isAvailable)
         }
         .task {
             await presenter.observeRestCompletions()
@@ -55,58 +70,21 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     // MARK: - Workout Overview Card
     private var workoutOverviewCard: some View {
         Section {
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()], spacing: 16) {
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Current Workout")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(presenter.exercisesCount)
-                        .font(.headline)
+            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()], alignment: .center, spacing: Spacing.l) {
+                Stat(value: presenter.exercisesCount, label: String(localized: "Current Workout"), size: .small, alignment: .center)
+                Stat(value: presenter.completedSetsFraction, label: String(localized: "Sets Completed"), size: .small, alignment: .center)
+                TimelineView(.periodic(from: presenter.workoutSession.dateCreated, by: 1)) { context in
+                    Stat(value: presenter.elapsedTime(at: context.date), label: String(localized: "Elapsed Time"), size: .small, alignment: .center)
                 }
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Sets Completed")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(presenter.completedSetsFraction)
-                        .font(.headline)
-                        .foregroundColor(.green)
-                }
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Elapsed Time")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(presenter.workoutSession.dateCreated, style: .timer)
-                        .font(.headline)
-                }
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Exercise")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(presenter.exerciseFraction)
-                        .font(.headline)
-                }
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Volume")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(presenter.formattedVolume)
-                        .font(.headline)
-                }
-                VStack(alignment: .center, spacing: 4) {
-                    Text("Notes")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text((presenter.workoutSession.notes ?? "").isEmpty ? String(localized: "None") : String(localized: "View"))
-                        .font(.headline)
-                }
-                .onTapGesture {
+                Stat(value: presenter.exerciseFraction, label: String(localized: "Exercise"), size: .small, alignment: .center)
+                Stat(value: presenter.formattedVolume, label: String(localized: "Volume"), size: .small, alignment: .center)
+                Button {
                     presenter.presentWorkoutNotes()
+                } label: {
+                    Stat(value: presenter.notesSummary, label: String(localized: "Notes"), size: .small, alignment: .center)
+                        .foregroundStyle(.tint)
                 }
+                .buttonStyle(.plain)
             }
         } header: {
             Text("Workout Overview")
@@ -179,7 +157,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 Button {
                     presenter.presentAddExercise()
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
                 }
                 .accessibilityLabel("Add exercise")
                 .buttonStyle(.glass)
@@ -192,26 +170,25 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     private var timerHeaderView: some View {
         HStack {
             let now = Date()
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Rest Timer")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Label("Rest Timer", systemImage: Symbol.rest)
+                    .font(.label)
+                    .foregroundStyle(.secondary)
                 if let end = presenter.restEndTime,
                    now < end {
                     Text(timerInterval: now...end)
-                        .font(.title2.bold())
-                        .foregroundColor(.primary)
+                        .font(.metricLarge)
                 } else {
                     Text((presenter.workoutSession.dateCreated), style: .timer)
-                        .font(.title2.bold())
-                        .foregroundColor(.primary)
+                        .font(.metricLarge)
                 }
             }
             
             Spacer()
         }
-        .padding(8)
-        .padding(.horizontal, 8)
+        .padding(Spacing.s)
+        .padding(.horizontal, Spacing.s)
+        .accessibilityElement(children: .combine)
         .glassEffect()
         .padding()
     }
@@ -225,7 +202,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 Button {
                     presenter.minimizeSession()
                 } label: {
-                    Label("Minimise Tracker", systemImage: "xmark")
+                    Label("Minimise Tracker", systemImage: "chevron.down")
                 }
 
                 Button {
@@ -237,22 +214,22 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 Button {
                     presenter.onWorkoutSettingsPressed()
                 } label: {
-                    Label("Workout Settings", systemImage: "dumbbell")
+                    Label("Workout Settings", systemImage: Symbol.settings)
                 }
 
                 Button {
                     presenter.onGymProfilePressed()
                 } label: {
-                    Label("Gym Settings", systemImage: "building")
+                    Label("Gym Settings", systemImage: Symbol.gym)
                 }
 
                 Button(role: .destructive) {
                     presenter.onDiscardWorkoutPressed()
                 } label: {
-                    Label("Delete Workout", systemImage: "trash")
+                    Label("Delete Workout", systemImage: Symbol.delete)
                 }
             } label: {
-                Image(systemName: "line.3.horizontal")
+                Image(systemName: Symbol.more)
             }
             .accessibilityLabel("Workout options")
         }

@@ -166,19 +166,11 @@ class WorkoutTrackerPresenter {
     
     // MARK: - Computed Properties
     
-    var elapsedTimeString: String {
-        let elapsed = Date().timeIntervalSince(startTime)
-        let hours = Int(elapsed) / 3600
-        let minutes = Int(elapsed) / 60 % 60
-        let seconds = Int(elapsed) % 60
-        
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            return String(format: "%d:%02d", minutes, seconds)
-        }
+    /// The workout clock at `date`, for the overview's ticking Elapsed Time.
+    func elapsedTime(at date: Date) -> String {
+        Format.duration(max(0, date.timeIntervalSince(startTime)))
     }
-    
+
     /// Counted per exercise so a left/right pair is the one set it is — see `WorkoutSetPairing`.
     var completedSetsCount: Int {
         workoutSession.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
@@ -188,9 +180,13 @@ class WorkoutTrackerPresenter {
         workoutSession.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
     }
     
+    /// Summed across exercises logged in different units, so it stays in the unit it is stored in.
     var formattedVolume: String {
-        let totalVolume = computeTotalVolumeKg()
-        return String(format: "%.0f kg", totalVolume)
+        Format.weight(kg: computeTotalVolumeKg(), unit: ExerciseWeightUnit.kilograms)
+    }
+
+    var notesSummary: String {
+        (workoutSession.notes ?? "").isEmpty ? String(localized: "None") : String(localized: "View")
     }
 
     // MARK: - Display Settings

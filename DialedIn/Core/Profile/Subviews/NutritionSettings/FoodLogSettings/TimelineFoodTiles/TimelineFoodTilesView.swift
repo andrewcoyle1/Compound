@@ -10,20 +10,20 @@ struct TimelineFoodTilesView: View {
     var body: some View {
         List {
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Show Food Image"),
                     subtitle: String(localized: "Display food image in timeline rows"),
-                    bool: $presenter.showFoodImageInTimeline
+                    isOn: $presenter.showFoodImageInTimeline
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Show Calories"),
                     subtitle: String(localized: "Display calorie count in timeline rows"),
-                    bool: $presenter.showCaloriesInTimeline
+                    isOn: $presenter.showCaloriesInTimeline
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Show Macros"),
                     subtitle: String(localized: "Display P/F/C macros in timeline rows"),
-                    bool: $presenter.showMacrosInTimeline
+                    isOn: $presenter.showMacrosInTimeline
                 )
             }
         }

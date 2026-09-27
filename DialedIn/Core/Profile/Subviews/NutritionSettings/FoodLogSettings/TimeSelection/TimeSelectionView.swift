@@ -10,10 +10,10 @@ struct TimeSelectionView: View {
     var body: some View {
         List {
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Auto-set Current Time"),
                     subtitle: String(localized: "Automatically set the time to now when logging a meal"),
-                    bool: $presenter.autoSetCurrentTime
+                    isOn: $presenter.autoSetCurrentTime
                 )
             }
         }

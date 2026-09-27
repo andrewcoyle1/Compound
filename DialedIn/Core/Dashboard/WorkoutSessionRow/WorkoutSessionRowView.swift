@@ -19,38 +19,19 @@ struct WorkoutSessionRowDelegate {
 
 struct WorkoutSessionRowView<AuthorHeader: View>: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State var presenter: WorkoutSessionRowPresenter
 
     @ViewBuilder var authorHeader: (AuthorHeaderDelegate) -> AuthorHeader
     
-    // MARK: - Computed Properties
-
-    private var durationFormatted: String? {
-        guard let endedAt = presenter.session.endedAt else { return nil }
-        let total = Int(endedAt.timeIntervalSince(presenter.session.dateCreated))
-        let hours = total / 3600
-        let minutes = (total % 3600) / 60
-        return hours > 0 ? String(localized: "\(String(describing: hours))h \(String(describing: minutes))m") : String(localized: "\(String(describing: minutes))m")
-    }
-
-    private var workingSets: [WorkoutSetModel] {
-        presenter.session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
-    }
-
-    private var totalVolumeKg: Double {
-        workingSets.reduce(0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
-    }
-
     // MARK: - Body
 
     /// A `Section` nested inside the feed's own section, on a square edge-to-edge fill. Every other
     /// surface in the app is a rounded, inset card, so the feed was the one place that read as a
     /// wall of text rather than a stack of cards.
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.m) {
             authorHeader(AuthorHeaderDelegate(author: presenter.author, date: presenter.session.dateCreated))
             sessionContent
             Divider()
@@ -58,9 +39,9 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+        .cardSurface()
         .padding(.horizontal)
-        .padding(.bottom, 12)
+        .padding(.bottom, Spacing.m)
     }
 
     // MARK: - Session Title and Stats
@@ -82,22 +63,22 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
     }
     
     private var sessionTitleAndStats: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             Text(presenter.session.name)
-                .font(.headline)
+                .font(.sectionTitle)
             highlights
             // Four stats side by side stop fitting at the accessibility text sizes.
-            AdaptiveStack(verticalAlignment: .top, spacing: dynamicTypeSize.isAccessibilitySize ? 8 : 20) {
-                StatItem(header: String(localized: "Exercises"), value: "\(presenter.session.exercises.count)")
-                StatItem(header: String(localized: "Sets"), value: "\(workingSets.count)")
-                if totalVolumeKg > 0 {
-                    StatItem(header: String(localized: "Volume"), value: formatVolume(totalVolumeKg))
+            AdaptiveStack(verticalAlignment: .top, spacing: dynamicTypeSize.isAccessibilitySize ? Spacing.s : Spacing.xl) {
+                Stat(value: presenter.session.exercises.count.formatted(), label: String(localized: "Exercises"), size: .small)
+                Stat(value: presenter.workingSetCount.formatted(), label: String(localized: "Sets"), size: .small)
+                if let volume = presenter.volumeText {
+                    Stat(value: volume, label: String(localized: "Volume"), size: .small)
                 }
                 if !dynamicTypeSize.isAccessibilitySize {
                     Spacer()
                 }
-                if let duration = durationFormatted {
-                    StatItem(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, header: String(localized: "Duration"), value: duration)
+                if let duration = presenter.durationText {
+                    Stat(value: duration, label: String(localized: "Duration"), size: .small, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
                 }
             }
         }
@@ -111,15 +92,15 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
     @ViewBuilder
     private var highlights: some View {
         if !presenter.personalRecords.isEmpty || presenter.streakText != nil || presenter.weeklyWorkoutText != nil {
-            FlowLayout(spacing: 6) {
+            FlowLayout(spacing: Spacing.xs) {
                 ForEach(presenter.personalRecords, id: \.exerciseName) { record in
-                    highlightCapsule("PR: \(record.exerciseName) \(record.detail)", systemImage: "trophy.fill", tint: .yellow)
+                    highlightCapsule("PR: \(record.exerciseName) \(record.detail)", systemImage: Symbol.personalRecord, tint: .personalRecord)
                 }
                 if let streak = presenter.streakText {
-                    highlightCapsule(streak, systemImage: "flame.fill", tint: .orange)
+                    highlightCapsule(streak, systemImage: Symbol.streak, tint: Color.Metric.workouts)
                 }
                 if let weekly = presenter.weeklyWorkoutText {
-                    highlightCapsule(weekly, systemImage: "calendar", tint: .blue)
+                    highlightCapsule(weekly, systemImage: Symbol.calendar, tint: Color.Metric.exercises)
                 }
             }
         }
@@ -128,7 +109,7 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
     private func highlightCapsule(_ text: String, systemImage: String, tint: Color) -> some View {
         // An `HStack`, not a `Label`: inside the card's tappable content the label rendered its
         // icon and dropped its title.
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             // The text says what the capsule is; the icon and tint only repeat it.
             Image(systemName: systemImage)
                 .foregroundStyle(tint)
@@ -136,24 +117,25 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
             Text(text)
                 .foregroundStyle(.primary)
         }
-        .font(.caption.weight(.medium))
+        .font(.label)
+        .fontWeight(.medium)
         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(tint.opacity(0.15), in: .capsule)
+        .padding(.horizontal, Spacing.s)
+        .padding(.vertical, Spacing.xs)
+        .background(Color.tintedSurface(tint), in: .capsule)
     }
 
     // MARK: - Exercise List
 
     private var exerciseList: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             ForEach(presenter.session.exercises) { exercise in
                 AdaptiveStack(spacing: 0) {
                     Text(exercise.name)
-                        .font(.subheadline)
-                    Spacer(minLength: 8)
-                    Text(setsDescription(for: exercise))
-                        .font(.subheadline)
+                        .font(.rowDetail)
+                    Spacer(minLength: Spacing.s)
+                    Text(presenter.setsDescription(for: exercise))
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
                 .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
@@ -165,8 +147,8 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
     @ViewBuilder
     private var authorNote: some View {
         if let note = presenter.authorNote {
-            Label(note, systemImage: "note.text")
-                .font(.caption)
+            Label(note, systemImage: Symbol.note)
+                .font(.label)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -194,7 +176,7 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
             .frame(maxWidth: .infinity)
             .accessibilityLabel("Comments")
             ShareLink(item: presenter.shareSummary) {
-                Image(systemName: "square.and.arrow.up")
+                Image(systemName: Symbol.share)
             }
             .frame(maxWidth: .infinity)
             .accessibilityLabel("Share workout")
@@ -225,64 +207,16 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                     }
                 }
             } label: {
-                Image(systemName: "ellipsis")
+                Image(systemName: Symbol.more)
             }
             .frame(maxWidth: .infinity)
             .accessibilityLabel("More actions")
         }
-        .font(.subheadline)
+        .font(.rowDetail)
         // Three actions of equal weight. The like button turns accented once it is on, so the "on"
         // state reads at a glance instead of only through a filled-vs-outline thumb.
         .foregroundStyle(.secondary)
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Helpers
-
-    private func setsDescription(for exercise: WorkoutExerciseModel) -> String {
-        let sets = exercise.workingSets
-        guard !sets.isEmpty else { return "\(exercise.setTargets.count) sets" }
-        // "3 × 10" is three sets of ten a side, not six of them.
-        let count = exercise.workingSetCount
-        switch exercise.trackingMode {
-        case .weightReps:
-            if let first = sets.first, let reps = first.reps, let weight = first.weightKg {
-                return String(localized: "\(String(describing: count)) × \(String(describing: reps)) @ \(String(describing: formatWeight(weight))) kg")
-            }
-            if let first = sets.first, let reps = first.reps {
-                return "\(count) × \(reps)"
-            }
-        case .repsOnly:
-            if let first = sets.first, let reps = first.reps {
-                return "\(count) × \(reps)"
-            }
-        case .timeOnly:
-            if let first = sets.first, let secs = first.durationSec {
-                return "\(count) × \(formatDuration(secs))"
-            }
-        case .distanceTime:
-            if let first = sets.first, let meters = first.distanceMeters {
-                return "\(count) × \(formatDistance(meters))"
-            }
-        }
-        return String(localized: "\(count) sets")
-    }
-
-    private func formatWeight(_ kilograms: Double) -> String {
-        let value = (kilograms * 10).rounded() / 10
-        return value == Double(Int(value)) ? "\(Int(value))" : String(format: "%.1f", value)
-    }
-
-    private func formatVolume(_ kilograms: Double) -> String {
-        kilograms >= 1000 ? String(format: "%.1f t", kilograms / 1000) : "\(Int(kilograms)) kg"
-    }
-
-    private func formatDuration(_ seconds: Int) -> String {
-        seconds >= 60 ? String(localized: "\(String(describing: seconds / 60))m") : String(localized: "\(String(describing: seconds))s")
-    }
-
-    private func formatDistance(_ meters: Double) -> String {
-        meters >= 1000 ? String(format: "%.1f km", meters / 1000) : "\(Int(meters)) m"
     }
 }
 

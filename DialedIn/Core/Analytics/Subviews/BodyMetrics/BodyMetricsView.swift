@@ -9,7 +9,8 @@ struct BodyMetricsView: View {
     @State var presenter: BodyMetricsPresenter
     let delegate: BodyMetricsDelegate
 
-    private let bodyMetricsColor = Color.green
+    /// The ratios are derived from the circumferences, so they share their colour.
+    private let ratiosColor = Color.Metric.measurements
 
     var body: some View {
         List {
@@ -20,10 +21,11 @@ struct BodyMetricsView: View {
                     dataDrivenSection(section)
                 }
                 ratiosSection
-                progressPhotosSection
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)
+            // A plain inset row, so it keeps the List's own margins.
+            progressPhotosSection
         }
         .navigationTitle("Body Metrics")
         .navigationBarTitleDisplayMode(.inline)
@@ -47,8 +49,8 @@ struct BodyMetricsView: View {
         Section {
             AnalyticsCardGrid {
                 ForEach(section.cards) { card in
-                    BodyMetricCardView(card: card, themeColor: bodyMetricsColor) {
-                        presenter.onMeasurementPressed(card.id, themeColor: bodyMetricsColor)
+                    BodyMetricCardView(card: card, themeColor: card.id.color) {
+                        presenter.onMeasurementPressed(card.id, themeColor: card.id.color)
                     }
                 }
             }
@@ -59,14 +61,9 @@ struct BodyMetricsView: View {
 
     private var progressPhotosSection: some View {
         Section {
-            Button {
+            ListRowButton(title: String(localized: "Progress Photos"), systemImage: "photo.stack") {
                 presenter.onProgressPhotosPressed()
-            } label: {
-                Label("Progress Photos", systemImage: "photo.stack")
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.bordered)
-            .tint(bodyMetricsColor)
         } header: {
             SectionHeaderView(title: String(localized: "Photos"))
         }
@@ -81,8 +78,8 @@ struct BodyMetricsView: View {
                     AnalyticsEmptyCard(message: String(localized: "Log a waist measurement to see your body ratios."))
                 } else {
                     ForEach(presenter.ratioCards) { card in
-                        BodyRatioCardView(card: card, themeColor: bodyMetricsColor) {
-                            presenter.onRatioPressed(card.id, themeColor: bodyMetricsColor)
+                        BodyRatioCardView(card: card, themeColor: ratiosColor) {
+                            presenter.onRatioPressed(card.id, themeColor: ratiosColor)
                         }
                     }
                 }

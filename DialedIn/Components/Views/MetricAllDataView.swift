@@ -33,7 +33,7 @@ struct MetricAllDataView<Presenter: MetricDetailPresenter>: View {
         .overlay {
             // Deleting the last entry leaves the section empty.
             if entries.isEmpty {
-                ContentUnavailableView(configuration.title, systemImage: "chart.xyaxis.line", description: Text(configuration.emptyStateMessage))
+                ContentUnavailableView(configuration.title, systemImage: Symbol.analytics, description: Text(configuration.emptyStateMessage))
             }
         }
         .navigationTitle("All Recorded Data")
@@ -49,23 +49,25 @@ struct MetricAllDataView<Presenter: MetricDetailPresenter>: View {
 
     private func row(_ entry: Presenter.Entry, configuration: MetricConfiguration) -> some View {
         HStack(alignment: .firstTextBaseline) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
                 // A macro row carries three values ("148g P · 214g C · 69.7g F"), so it scales down to
                 // fit on one line rather than wrapping mid-item.
                 Text(presenter.displayValue(for: entry))
+                    .font(.rowTitle)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 if !configuration.unitText.isEmpty {
                     Text(configuration.unitText)
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
             }
 
-            Spacer(minLength: 12)
+            Spacer(minLength: Spacing.m)
 
             Text(entry.displayLabel)
+                .font(.rowDetail)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }

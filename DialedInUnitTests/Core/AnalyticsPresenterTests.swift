@@ -136,14 +136,14 @@ struct AnalyticsPresenterTests {
     func testAnEmptyTabReadsAsAbsentNotZero() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.scaleWeightLatestValueText == "--")
+        #expect(screen.presenter.scaleWeightLatestValueText == Format.placeholder)
         #expect(screen.presenter.scaleWeightSubtitle == "No Entries")
-        #expect(screen.presenter.weightTrendLatestValueText == "--")
-        #expect(screen.presenter.bodyFatLatestValueText == "--")
+        #expect(screen.presenter.weightTrendLatestValueText == Format.placeholder)
+        #expect(screen.presenter.bodyFatLatestValueText == Format.placeholder)
         #expect(screen.presenter.bodyFatSubtitle == "No Entries")
-        #expect(screen.presenter.workoutLatestValueText == "--")
+        #expect(screen.presenter.workoutLatestValueText == Format.placeholder)
         #expect(screen.presenter.workoutSubtitle == "No Workouts")
-        #expect(screen.presenter.stepsLatestValueText == "--")
+        #expect(screen.presenter.stepsLatestValueText == Format.placeholder)
         #expect(screen.presenter.stepsSubtitle == "No Data")
     }
 
@@ -317,7 +317,7 @@ struct AnalyticsPresenterTests {
         let screen = makeScreen(tdee: 2750)
 
         #expect(screen.presenter.expenditureSparklineData.allSatisfy { $0.value == 2750 })
-        #expect(screen.presenter.expenditureLatestValueText == "2750")
+        #expect(screen.presenter.expenditureLatestValueText == 2750.formatted())
         #expect(screen.presenter.expenditureUnitText == "kcal")
     }
 
@@ -325,7 +325,7 @@ struct AnalyticsPresenterTests {
     func testNoExpenditureReadsAsAbsent() {
         let screen = makeScreen(tdee: 0)
 
-        #expect(screen.presenter.expenditureLatestValueText == "--")
+        #expect(screen.presenter.expenditureLatestValueText == Format.placeholder)
     }
 
     /// A deficit and a surplus have to read differently, and eating exactly the expenditure is
@@ -341,7 +341,7 @@ struct AnalyticsPresenterTests {
         surplus.presenter.loadMacrosData()
         balanced.presenter.loadMacrosData()
 
-        #expect(deficit.presenter.energyBalanceLatestValueText == "1000 deficit")
+        #expect(deficit.presenter.energyBalanceLatestValueText == "\(1000.formatted()) deficit")
         #expect(surplus.presenter.energyBalanceLatestValueText == "500 surplus")
         #expect(balanced.presenter.energyBalanceLatestValueText == "Balanced")
     }
@@ -351,7 +351,7 @@ struct AnalyticsPresenterTests {
     func testTheBalanceNeedsAFullWeek() {
         let screen = makeScreen(logged: [0: 2100])
 
-        #expect(screen.presenter.energyBalanceLatestValueText == "--")
+        #expect(screen.presenter.energyBalanceLatestValueText == Format.placeholder)
     }
 
     // MARK: - Steps
@@ -392,7 +392,7 @@ struct AnalyticsPresenterTests {
         await screen.presenter.loadStepsData()
 
         #expect(screen.presenter.stepsLast7.map(\.number) == [9000])
-        #expect(screen.presenter.stepsLatestValueText == "9000")
+        #expect(screen.presenter.stepsLatestValueText == 9000.formatted())
     }
 
     @Test("Test Steps Older Than A Week Are Left Out")
@@ -412,7 +412,7 @@ struct AnalyticsPresenterTests {
 
         #expect(!screen.presenter.hasActiveGoal)
         #expect(screen.presenter.goalProgressSubtitle == "No Goal Set")
-        #expect(screen.presenter.goalProgressLatestValueText == "--")
+        #expect(screen.presenter.goalProgressLatestValueText == Format.placeholder)
     }
 
     @Test("Test A Goal With No Weigh-Ins Since It Was Set Shows Nothing")
@@ -430,7 +430,7 @@ struct AnalyticsPresenterTests {
 
         #expect(screen.presenter.hasActiveGoal)
         #expect(screen.presenter.goalProgressSubtitle == "No Entries")
-        #expect(screen.presenter.goalProgressLatestValueText == "--")
+        #expect(screen.presenter.goalProgressLatestValueText == Format.placeholder)
     }
 
     @Test("Test Halfway To The Target Is Half The Bar")

@@ -71,13 +71,10 @@ class LogMeasurementPresenter {
             let base = existingEntries.first ?? BodyMeasurementEntry(authorId: user.userId, date: selectedDate)
             try await interactor.saveBodyMeasurement(bodyMeasurement: base.withUpdated(kind.update(to: measurementCm)))
 
-            #if os(iOS)
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-            #endif
-
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
+            interactor.playHaptic(option: .error)
             router.showAlert(error: error)
         }
 

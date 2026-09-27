@@ -26,10 +26,11 @@ struct SectionHeaderView: View {
 
             if let onActionPressed {
                 Spacer(minLength: Spacing.s)
+                // A link, so it takes the accent (CONTRACT.md § Accent).
                 Button(actionTitle, action: onActionPressed)
                     .buttonStyle(.plain)
                     .font(.label)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.tint)
                     .accessibilityLabel("\(actionTitle), \(title)")
             }
         }

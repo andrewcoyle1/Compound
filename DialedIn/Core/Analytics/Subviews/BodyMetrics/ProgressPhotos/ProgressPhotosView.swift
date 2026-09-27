@@ -4,27 +4,27 @@ struct ProgressPhotosView: View {
 
     @State var presenter: ProgressPhotosPresenter
 
-    private let columns = [GridItem(.adaptive(minimum: 104), spacing: 8)]
+    private let columns = [GridItem(.adaptive(minimum: 104), spacing: Spacing.s)]
 
     var body: some View {
         ScrollView {
             if presenter.photos.isEmpty {
                 ContentUnavailableView(
                     "No Progress Photos",
-                    systemImage: "camera",
+                    systemImage: Symbol.camera,
                     description: Text("Add a front, side or back photo to see how you change over time.")
                 )
-                .padding(.top, 80)
+                .padding(.top, Spacing.xxl)
             } else {
-                LazyVStack(alignment: .leading, spacing: 20) {
+                LazyVStack(alignment: .leading, spacing: Spacing.xl) {
                     Text("Select two photos to compare them.")
-                        .font(.footnote)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                     ForEach(presenter.sections) { section in
                         sectionView(section)
                     }
                 }
-                .padding(16)
+                .padding(Spacing.l)
             }
         }
         .navigationTitle("Progress Photos")
@@ -33,7 +33,7 @@ struct ProgressPhotosView: View {
             if presenter.isUploading {
                 ProgressView("Uploading…")
                     .padding()
-                    .background(.regularMaterial, in: .rect(cornerRadius: 12))
+                    .cardSurface(.tile)
             }
         }
         .toolbar { toolbarContent }
@@ -84,11 +84,11 @@ struct ProgressPhotosView: View {
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button("Take Photo", systemImage: "camera") { presenter.onCameraPressed() }
+                    Button("Take Photo", systemImage: Symbol.camera) { presenter.onCameraPressed() }
                 }
                 Button("Choose from Library", systemImage: "photo.on.rectangle") { presenter.onLibraryPressed() }
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add Photo")
             .disabled(presenter.isUploading)
@@ -96,10 +96,10 @@ struct ProgressPhotosView: View {
     }
 
     private func sectionView(_ section: ProgressPhotoSection) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             Text(section.date.formatted(date: .complete, time: .omitted))
-                .font(.headline)
-            LazyVGrid(columns: columns, spacing: 8) {
+                .font(.sectionTitle)
+            LazyVGrid(columns: columns, spacing: Spacing.s) {
                 ForEach(section.photos) { photo in
                     cell(photo)
                 }
@@ -116,29 +116,33 @@ struct ProgressPhotosView: View {
             }
             .overlay(alignment: .bottomLeading) {
                 Text(photo.pose.title)
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .font(.label)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, Spacing.s)
+                    .padding(.vertical, Spacing.xxs)
+                    // Material, not a surface: it sits on the photo and has to read over any image.
                     .background(.ultraThinMaterial, in: .capsule)
-                    .padding(6)
+                    .padding(Spacing.s)
             }
             .overlay(alignment: .topTrailing) {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(.white, Color.accentColor)
-                        .padding(6)
+                        .iconSize(.medium)
+                        .foregroundStyle(.onAccent, .tint)
+                        .padding(Spacing.s)
                 }
             }
-            .clipShape(.rect(cornerRadius: 10))
+            .clipShape(.rect(cornerRadius: Radius.m, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(isSelected ? Color.accentColor : .clear, lineWidth: 3)
+                if isSelected {
+                    RoundedRectangle(cornerRadius: Radius.m, style: .continuous)
+                        .strokeBorder(.tint, lineWidth: 3)
+                }
             }
             .contentShape(.rect)
-            .onTapGesture { presenter.onPhotoPressed(photo) }
+            .anyButton(.press) { presenter.onPhotoPressed(photo) }
             .contextMenu {
-                Button("Delete", systemImage: "trash", role: .destructive) {
+                Button("Delete", systemImage: Symbol.delete, role: .destructive) {
                     presenter.onDeletePressed(photo)
                 }
             }

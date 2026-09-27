@@ -35,7 +35,7 @@ struct ActivityRingView: View {
         ZStack {
             // Background ring
             Circle()
-                .stroke(color.opacity(0.3), lineWidth: size / 10)
+                .stroke(Color.tintedSurface(color), lineWidth: size / 10)
             
             // Active progress ring
             Circle()
@@ -47,8 +47,7 @@ struct ActivityRingView: View {
             if progress > 0 {
                 Circle()
                     .fill(color)
-//                    .shadow(radius: 5, x: 0, y: 2)
-                    .shadow(radius: 5)
+                    .shadow(radius: Spacing.xs)
                     .frame(width: size / 10, height: size / 10)
                     .offset(y: -size / 2)
                     .rotationEffect(
@@ -64,19 +63,22 @@ struct ActivityRingView: View {
                     .padding(.horizontal, size/10)
                     .foregroundStyle(color)
                 Text(text)
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
             .padding(size/8)
         }
         .frame(width: size, height: size)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(text)
+        .accessibilityValue(Format.percent(progress))
         .onAppear {
-            withReducedMotionAnimation(.spring().speed(0.2)) {
+            withReducedMotionAnimation(.progress) {
                 internalProgress = progress
             }
         }
         .onChange(of: progress) { _, newValue in
-            withReducedMotionAnimation(.spring().speed(0.2)) {
+            withReducedMotionAnimation(.progress) {
                 internalProgress = newValue
             }
         }
@@ -87,10 +89,10 @@ struct ActivityRingView: View {
 #Preview {
     
     LazyVGrid(columns: [GridItem(), GridItem()]) {
-        ActivityRingView(progress: 0.25, color: .red, size: 200)
-        ActivityRingView(progress: 0.5, color: .green, size: 150)
-        ActivityRingView(progress: 0.9, color: .blue, size: 100)
-        ActivityRingView(progress: 1, color: .blue, size: 100)
-        ActivityRingView(progress: 1, color: .blue, size: 60)
+        ActivityRingView(progress: 0.25, color: .calories, size: 200)
+        ActivityRingView(progress: 0.5, color: .protein, size: 150)
+        ActivityRingView(progress: 0.9, color: .carbs, size: 100)
+        ActivityRingView(progress: 1, color: .fat, size: 100)
+        ActivityRingView(progress: 1, color: .calories, size: 60)
     }
 }

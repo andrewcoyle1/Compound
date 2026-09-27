@@ -92,7 +92,7 @@ extension WorkoutConsistencyPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Workout History",
             emptyStateMessage: "No completed workouts",
-            chartColor: .orange,
+            chartColor: Color.Metric.habits,
             addActionTitle: "Start Workout",
             addActionSystemImage: "figure.run",
             contributionUnit: "workouts"

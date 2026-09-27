@@ -228,8 +228,8 @@ struct AnalyticsNutritionOverviewTests {
     func testAnUnloggedMicronutrientReadsAsMissing() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.formatBreakdown(nil, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(0, unit: "mg") == "--")
+        #expect(screen.presenter.formatBreakdown(nil, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(0, unit: "mg") == Format.placeholder)
     }
 
     /// An amount of 100 or more is printed through `Int(_:)`, which traps on an infinity — and a
@@ -238,9 +238,9 @@ struct AnalyticsNutritionOverviewTests {
     func testAMicronutrientThatIsNotANumberReadsAsMissing() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.formatBreakdown(.nan, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(.infinity, unit: "mg") == "--")
-        #expect(screen.presenter.formatBreakdown(-.infinity, unit: "mg") == "--")
+        #expect(screen.presenter.formatBreakdown(.nan, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(.infinity, unit: "mg") == Format.placeholder)
+        #expect(screen.presenter.formatBreakdown(-.infinity, unit: "mg") == Format.placeholder)
     }
 
     /// Small amounts keep a decimal, large ones do not — a 0.7mg of B6 rounded to 1 is a 40%
@@ -414,7 +414,7 @@ struct AnalyticsNutritionMetricDetailTests {
         await screen.presenter.onAppear()
         let entry = try #require(screen.presenter.entries.first)
 
-        #expect(entry.displayValue == "148g P · 214g C · 69.7g F")
+        #expect(entry.displayValue == "\(Format.grams(148)) P · \(Format.grams(214)) C · \(Format.grams(69.7)) F")
     }
 
     // MARK: - Single metrics
@@ -676,13 +676,27 @@ struct AnalyticsNutritionTargetChartTests {
         #expect(screen.presenter.value(for: .fats, day: day) == 70)
     }
 
+    /// The weekly totals used to read "15210" beside a flame and "1150P": calories now go through
+    /// `Format.kcal` and the macros through `Format.grams`, like every other amount in the app.
     @Test("Test Calories Are Counted In Kcal And Macros In Grams")
     func testCaloriesAreCountedInKcalAndMacrosInGrams() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.unit(for: .calories) == "kcal")
-        #expect(screen.presenter.unit(for: .protein) == "g")
-        #expect(screen.presenter.unit(for: .carbs) == "g")
-        #expect(screen.presenter.unit(for: .fats) == "g")
+        #expect(screen.presenter.amountText(15_210, for: .calories) == Format.kcal(15_210))
+        #expect(screen.presenter.amountText(1_150, for: .protein) == Format.grams(1_150))
+        #expect(screen.presenter.amountText(210, for: .carbs) == Format.grams(210))
+        #expect(screen.presenter.amountText(70, for: .fats) == Format.grams(70))
+    }
+
+    /// Over target is said in words for VoiceOver, not left to the bar passing its tick.
+    @Test("Test Going Over Target Is Said In Words")
+    func testGoingOverTargetIsSaidInWords() {
+        let screen = makeScreen()
+
+        let over = screen.presenter.cellAccessibilityValue(logged: 180, target: 150, metric: .protein)
+        let under = screen.presenter.cellAccessibilityValue(logged: 48, target: 150, metric: .protein)
+
+        #expect(over.hasSuffix("over target"))
+        #expect(under == "\(Format.grams(48)) of \(Format.grams(150))")
     }
 }

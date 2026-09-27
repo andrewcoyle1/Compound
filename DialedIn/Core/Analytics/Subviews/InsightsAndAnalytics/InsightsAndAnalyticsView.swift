@@ -37,13 +37,13 @@ struct InsightsAndAnalyticsView: View {
     }
 
     private var activitySection: some View {
-        let workoutColor = Color.orange
+        let workoutColor = Color.Metric.workouts
         return analyticsSection(title: String(localized: "Activity")) {
             AnalyticsCard(
                 title: String(localized: "Workouts"),
                 subtitle: presenter.workoutSubtitle,
-                subsubtitle: presenter.workoutLatestValueText,
-                subsubsubtitle: presenter.workoutUnitText,
+                value: presenter.workoutLatestValueText,
+                unit: presenter.workoutUnitText,
                 themeColor: workoutColor,
                 chartConfiguration: .compact
             ) {
@@ -60,7 +60,7 @@ struct InsightsAndAnalyticsView: View {
     }
 
     private var energySection: some View {
-        let expenditureColor = Color.pink
+        let expenditureColor = Color.Metric.expenditure
         return analyticsSection(title: String(localized: "Energy")) {
             SparklineAnalyticsCard(
                 title: String(localized: "Expenditure"),
@@ -74,8 +74,8 @@ struct InsightsAndAnalyticsView: View {
             AnalyticsCard(
                 title: String(localized: "Energy Balance"),
                 subtitle: presenter.energyBalanceSubtitle,
-                subsubtitle: presenter.energyBalanceLatestValueText,
-                subsubsubtitle: presenter.energyBalanceUnitText,
+                value: presenter.energyBalanceLatestValueText,
+                unit: presenter.energyBalanceUnitText,
                 themeColor: nil,
                 chartConfiguration: .compact
             ) {
@@ -91,7 +91,7 @@ struct InsightsAndAnalyticsView: View {
     }
 
     private var bodySection: some View {
-        let weightTrendColor = Color.purple
+        let weightTrendColor = Color.Metric.scaleWeight
         return analyticsSection(title: String(localized: "Body")) {
             SparklineAnalyticsCard(
                 title: String(localized: "Weight Trend"),
@@ -106,14 +106,14 @@ struct InsightsAndAnalyticsView: View {
     }
 
     private var goalsSection: some View {
-        let goalProgressColor = Color.green
+        let goalProgressColor = Color.Metric.goalProgress
         // Was hardcoded to "14%" over "Last 7 Days", the same placeholder the Analytics tab carried.
         return analyticsSection(title: String(localized: "Goals")) {
             AnalyticsCard(
                 title: String(localized: "Goal Progress"),
                 subtitle: presenter.goalProgressSubtitle,
-                subsubtitle: presenter.goalProgressLatestValueText,
-                subsubsubtitle: presenter.goalProgressUnitText,
+                value: presenter.goalProgressLatestValueText,
+                unit: presenter.goalProgressUnitText,
                 themeColor: goalProgressColor,
                 chartConfiguration: .compact,
                 chart: {
@@ -121,7 +121,8 @@ struct InsightsAndAnalyticsView: View {
                         current: presenter.goalProgressPercent,
                         target: 100,
                         maxValue: 100,
-                        color: goalProgressColor
+                        color: goalProgressColor,
+                        unit: "%"
                     )
                 }
             )

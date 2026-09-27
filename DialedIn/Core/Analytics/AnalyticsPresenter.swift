@@ -215,8 +215,8 @@ class AnalyticsPresenter {
     }
 
     var stepsLatestValueText: String {
-        guard let latest = stepsLast7.last else { return "--" }
-        return "\(latest.number)"
+        guard let latest = stepsLast7.last else { return Format.placeholder }
+        return latest.number.formatted()
     }
 
     var stepsUnitText: String {
@@ -242,7 +242,7 @@ class AnalyticsPresenter {
 
     var scaleWeightLatestValueText: String {
         guard let latest = scaleWeightLastEntries.last,
-              let weightKg = latest.weightKg else { return "--" }
+              let weightKg = latest.weightKg else { return Format.placeholder }
         return UnitConversion.formatWeight(weightKg, unit: weightUnit)
     }
 
@@ -268,7 +268,7 @@ class AnalyticsPresenter {
     }
 
     var weightTrendLatestValueText: String {
-        guard let last = weightTrendSparklineData.last else { return "--" }
+        guard let last = weightTrendSparklineData.last else { return Format.placeholder }
         // Already converted by `weightTrendSparklineData`.
         return last.value.formatted(.number.precision(.fractionLength(1)))
     }
@@ -311,15 +311,15 @@ class AnalyticsPresenter {
     }
 
     var energyBalanceLatestValueText: String {
-        guard macrosLast7Days.count == 7 else { return "--" }
+        guard macrosLast7Days.count == 7 else { return Format.placeholder }
         let tdee = interactor.estimateTDEE(user: interactor.currentUser)
         let avgIntake = macrosLast7Days.map(\.calories).reduce(0, +) / 7
         let deficit = tdee - avgIntake
         let value = Int(deficit.rounded())
         if value > 0 {
-            return String(localized: "\(String(describing: value)) deficit")
+            return String(localized: "\(value.formatted()) deficit")
         } else if value < 0 {
-            return String(localized: "\(String(describing: -value)) surplus")
+            return String(localized: "\((-value).formatted()) surplus")
         }
         return String(localized: "Balanced")
     }
@@ -342,7 +342,7 @@ class AnalyticsPresenter {
     var bodyFatLatestValueText: String {
         guard let latest = bodyFatLastEntries.last,
               let bodyFatPercentage = latest.bodyFatPercentage else {
-            return "--"
+            return Format.placeholder
         }
         return bodyFatPercentage.formatted(.number.precision(.fractionLength(1)))
     }
@@ -371,7 +371,7 @@ class AnalyticsPresenter {
         let total = workoutLast7Sessions.reduce(0) { sum, session in
             sum + session.exercises.reduce(0) { $0 + $1.workingSetCount }
         }
-        return total > 0 ? "\(total)" : "--"
+        return total > 0 ? total.formatted() : Format.placeholder
     }
 
     var workoutUnitText: String {
@@ -397,7 +397,7 @@ class AnalyticsPresenter {
 
     var expenditureLatestValueText: String {
         let tdee = interactor.estimateTDEE(user: interactor.currentUser)
-        return tdee > 0 ? "\(Int(tdee.rounded()))" : "--"
+        return tdee > 0 ? tdee.formatted(.number.precision(.fractionLength(0))) : Format.placeholder
     }
 
     var expenditureUnitText: String {
@@ -493,8 +493,8 @@ class AnalyticsPresenter {
     }
 
     var goalProgressLatestValueText: String {
-        guard hasActiveGoal, !goalWeightEntries.isEmpty else { return "--" }
-        return "\(Int(goalProgressPercent.rounded()))"
+        guard hasActiveGoal, !goalWeightEntries.isEmpty else { return Format.placeholder }
+        return goalProgressPercent.formatted(.number.precision(.fractionLength(0)))
     }
 
     var goalProgressUnitText: String {

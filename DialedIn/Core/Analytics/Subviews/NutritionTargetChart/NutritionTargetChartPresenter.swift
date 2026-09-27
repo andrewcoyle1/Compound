@@ -79,11 +79,22 @@ class NutritionTargetChartPresenter {
         }
     }
 
-    func unit(for metric: Metric) -> String {
-        switch metric {
-        case .calories: return "kcal"
-        default: return "g"
-        }
+    /// "15,210 kcal" for calories, "1,150 g" for a macro.
+    func amountText(_ value: Double, for metric: Metric) -> String {
+        metric == .calories ? Format.kcal(value) : Format.grams(value)
+    }
+
+    /// Full weekday names in the grid's Monday-first order, for VoiceOver.
+    var dayNames: [String] {
+        let symbols = Calendar.current.weekdaySymbols
+        return Array(symbols[1...] + [symbols[0]])
+    }
+
+    /// What VoiceOver reads for one day's cell: "48 g of 150 g, over target".
+    func cellAccessibilityValue(logged: Double, target: Double, metric: Metric) -> String {
+        let amounts = String(localized: "\(amountText(logged, for: metric)) of \(amountText(target, for: metric))")
+        guard target > 0, logged > target else { return amounts }
+        return String(localized: "\(amounts), over target")
     }
 
     func loadCurrentWeekLoggedTotals() async {
@@ -114,16 +125,21 @@ class NutritionTargetChartPresenter {
         case carbs = "Carbohydrates"
         case fats = "Fats"
 
-        var initial: String {
+        var systemImage: String {
             switch self {
-            case .calories:
-                return "Cal"
-            case .protein:
-                return "P"
-            case .carbs:
-                return "C"
-            case .fats:
-                return "F"
+            case .calories: return Symbol.calories
+            case .protein: return Symbol.protein
+            case .carbs: return Symbol.carbs
+            case .fats: return Symbol.fat
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .calories: return String(localized: "Calories")
+            case .protein: return String(localized: "Protein")
+            case .carbs: return String(localized: "Carbs")
+            case .fats: return String(localized: "Fat")
             }
         }
         /// The macro colours used everywhere else. This chart had its own, with carbs and fat

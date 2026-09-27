@@ -144,7 +144,7 @@ struct AnalyticsInsightsPresenterTests {
 
         #expect(screen.presenter.weightTrendSparklineData.count == 2)
         #expect(screen.presenter.weightTrendSubtitle == "Last 7 Days")
-        #expect(screen.presenter.weightTrendLatestValueText != "--")
+        #expect(screen.presenter.weightTrendLatestValueText != Format.placeholder)
     }
 
     /// With nothing logged the card says so rather than printing a zero-kilogram bodyweight.
@@ -154,7 +154,7 @@ struct AnalyticsInsightsPresenterTests {
 
         #expect(screen.presenter.weightTrendSparklineData.isEmpty)
         #expect(screen.presenter.weightTrendSubtitle == "No Entries")
-        #expect(screen.presenter.weightTrendLatestValueText == "--")
+        #expect(screen.presenter.weightTrendLatestValueText == Format.placeholder)
     }
 
     /// Deleted weigh-ins leave the trend, and an entry that recorded no weight was never in it.
@@ -201,7 +201,7 @@ struct AnalyticsInsightsPresenterTests {
 
         #expect(screen.presenter.hasActiveGoal == false)
         #expect(screen.presenter.goalProgressSubtitle == "No Goal Set")
-        #expect(screen.presenter.goalProgressLatestValueText == "--")
+        #expect(screen.presenter.goalProgressLatestValueText == Format.placeholder)
     }
 
     /// Progress is measured from the weigh-ins logged since the goal was set. A weight from before
@@ -220,7 +220,7 @@ struct AnalyticsInsightsPresenterTests {
 
         #expect(screen.presenter.hasActiveGoal)
         #expect(screen.presenter.goalProgressSubtitle == "No Entries")
-        #expect(screen.presenter.goalProgressLatestValueText == "--")
+        #expect(screen.presenter.goalProgressLatestValueText == Format.placeholder)
     }
 
     @Test("Test Progress Is Measured From The Latest Weigh In")
@@ -330,7 +330,7 @@ struct AnalyticsInsightsPresenterTests {
         let screen = makeScreen()
 
         #expect(screen.presenter.workoutSubtitle == "No Workouts")
-        #expect(screen.presenter.workoutLatestValueText == "--")
+        #expect(screen.presenter.workoutLatestValueText == Format.placeholder)
     }
 
     // MARK: - Energy balance and expenditure
@@ -356,7 +356,7 @@ struct AnalyticsInsightsPresenterTests {
         await screen.presenter.onFirstTask()
 
         // 7,000 kcal over seven days averages 1,000 against a 3,000 expenditure.
-        #expect(screen.presenter.energyBalanceLatestValueText == "2000 deficit")
+        #expect(screen.presenter.energyBalanceLatestValueText == "\(2000.formatted()) deficit")
         #expect(screen.presenter.energyBalanceUnitText == "kcal")
     }
 
@@ -366,7 +366,7 @@ struct AnalyticsInsightsPresenterTests {
 
         await screen.presenter.onFirstTask()
 
-        #expect(screen.presenter.energyBalanceLatestValueText == "1000 surplus")
+        #expect(screen.presenter.energyBalanceLatestValueText == "\(1000.formatted()) surplus")
     }
 
     /// Before the week has been read there is no average to state.
@@ -374,7 +374,7 @@ struct AnalyticsInsightsPresenterTests {
     func testBeforeLoadingThereIsNoBalanceToState() {
         let screen = makeScreen(logged: [0: 2000])
 
-        #expect(screen.presenter.energyBalanceLatestValueText == "--")
+        #expect(screen.presenter.energyBalanceLatestValueText == Format.placeholder)
     }
 
     /// Expenditure is a flat line at the estimate, one point per day of the week.
@@ -384,7 +384,7 @@ struct AnalyticsInsightsPresenterTests {
 
         #expect(screen.presenter.expenditureSparklineData.count == 7)
         #expect(screen.presenter.expenditureSparklineData.allSatisfy { $0.value == 2750 })
-        #expect(screen.presenter.expenditureLatestValueText == "2750")
+        #expect(screen.presenter.expenditureLatestValueText == 2750.formatted())
     }
 
     /// Without enough profile to estimate an expenditure the card says nothing rather than zero
@@ -393,7 +393,7 @@ struct AnalyticsInsightsPresenterTests {
     func testWithNoEstimateTheExpenditureCardSaysSo() {
         let screen = makeScreen(tdee: 0)
 
-        #expect(screen.presenter.expenditureLatestValueText == "--")
+        #expect(screen.presenter.expenditureLatestValueText == Format.placeholder)
     }
 
     // MARK: - Navigation

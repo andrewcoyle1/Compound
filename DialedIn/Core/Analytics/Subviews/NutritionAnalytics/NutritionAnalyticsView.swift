@@ -33,6 +33,8 @@ struct NutritionAnalyticsView: View {
             presenter.onViewDisappear()
         }
         .scrollIndicators(.hidden)
+        // `.task`, not `.onFirstTask`: the cards say "Today", so they re-read whenever the sheet
+        // comes back into view (after a detail screen closes, say), not only the first time.
         .task {
             await presenter.loadData()
         }
@@ -47,17 +49,18 @@ struct NutritionAnalyticsView: View {
     }
     
     private var caloriesAndMacrosSection: some View {
+        let macrosColor = Color.Metric.nutrition
         let proteinColor = Color.protein
-        let caloriesColor = Color.blue
+        let caloriesColor = Color.calories
         let fatColor = Color.fat
         let carbsColor = Color.carbs
         return breakdownSection(header: String(localized: "Calories & Macros")) {
             AnalyticsCard(
                 title: String(localized: "Macros"),
                 subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Last 7 Days"),
-                subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : Int(presenter.macrosAverageCalories).formatted(),
-                subsubsubtitle: "kcal",
-                themeColor: proteinColor,
+                value: presenter.macrosLast7Days.isEmpty ? Format.placeholder : presenter.macrosAverageCalories.formatted(.number.precision(.fractionLength(0))),
+                unit: "kcal",
+                themeColor: macrosColor,
                 chartConfiguration: .compact,
                 chart: {
                     let chartData = presenter.macrosLast7Days.isEmpty
@@ -67,7 +70,7 @@ struct NutritionAnalyticsView: View {
                 }
             )
             .analyticsCardButton {
-                presenter.onMacrosPressed(themeColor: proteinColor)
+                presenter.onMacrosPressed(themeColor: macrosColor)
             }
             macroCard(
                 title: String(localized: "Calories"),
@@ -117,10 +120,10 @@ struct NutritionAnalyticsView: View {
         AnalyticsCard(
             title: title,
             subtitle: presenter.dailyTotals != nil ? String(localized: "Today") : String(localized: "No Data"),
-            subsubtitle: presenter.dailyTotals != nil
+            value: presenter.dailyTotals != nil
                 ? card.value.formatted(.number.precision(.fractionLength(card.decimals)))
-                : "--",
-            subsubsubtitle: card.unit,
+                : Format.placeholder,
+            unit: card.unit,
             themeColor: color,
             chartConfiguration: .compact,
             chart: {
@@ -128,7 +131,8 @@ struct NutritionAnalyticsView: View {
                     current: card.value,
                     target: card.target,
                     maxValue: card.maxValue,
-                    color: color
+                    color: color,
+                    unit: card.unit
                 )
             }
         )
@@ -148,7 +152,7 @@ struct NutritionAnalyticsView: View {
     }
 
     /// `isTracked: false` marks a nutrient the food model carries no field for. Those cards used to
-    /// look like every other one, show "--", and open a detail screen that was always empty
+    /// look like every other one, show a placeholder, and open a detail screen that was always empty
     /// whatever the user had logged. They now read as unavailable and do not take a tap.
     @ViewBuilder
     private func breakdownCard(
@@ -162,16 +166,18 @@ struct NutritionAnalyticsView: View {
         let card = AnalyticsCard(
             title: title,
             subtitle: isTracked ? String(localized: "Today") : String(localized: "Not Tracked"),
-            subsubtitle: isTracked ? presenter.formatBreakdown(value, unit: unit) : "--",
-            subsubsubtitle: unit,
+            value: isTracked ? presenter.formatBreakdown(value, unit: unit) : Format.placeholder,
+            unit: unit,
             themeColor: color,
+            showsChevron: isTracked,
             chartConfiguration: .compact,
             chart: {
                 MacroProgressChart(
                     current: isTracked ? (value ?? 0) : 0,
                     target: nil,
                     maxValue: presenter.breakdownChartMax(current: value, defaultMax: 50),
-                    color: color
+                    color: color,
+                    unit: unit
                 )
             }
         )

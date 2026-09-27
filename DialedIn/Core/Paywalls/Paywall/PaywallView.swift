@@ -15,7 +15,6 @@ struct PaywallView: View {
                     VStack(spacing: 12) {
                         Text("Unable to load subscription options")
                             .font(.headline)
-                            .foregroundStyle(colorScheme.backgroundPrimary)
                         Text(errorMessage)
                             .font(.subheadline)
                             .multilineTextAlignment(.center)

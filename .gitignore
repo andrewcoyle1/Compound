@@ -67,3 +67,6 @@ TestResults.xcresult/
 
 # Output of scripts/screenshots-diff.py
 Screenshots/diff/
+
+# Firebase CLI deploy cache
+.firebase/

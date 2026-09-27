@@ -180,9 +180,10 @@ class WorkoutTrackerPresenter {
         workoutSession.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
     }
     
-    /// Summed across exercises logged in different units, so it stays in the unit it is stored in.
+    /// Exercises are logged in different units, so the total is shown in the user's body-weight
+    /// unit. Sets are stored in kilograms, so summing first and converting once is exact.
     var formattedVolume: String {
-        Format.weight(kg: computeTotalVolumeKg(), unit: ExerciseWeightUnit.kilograms)
+        Format.weight(kg: computeTotalVolumeKg(), unit: interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms)
     }
 
     var notesSummary: String {

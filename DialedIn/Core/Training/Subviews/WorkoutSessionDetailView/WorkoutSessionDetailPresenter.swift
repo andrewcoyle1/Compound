@@ -79,10 +79,13 @@ class WorkoutSessionDetailPresenter {
             .reduce(0.0, +)
     }
     
-    /// Summed across exercises logged in different units, so it stays in the unit it is stored in.
+    /// Exercises are logged in different units, so the total is shown in the reader's own
+    /// body-weight unit. Every set is stored in kilograms, so summing first and converting once is
+    /// the same as converting each exercise. It used to be labelled kg whatever the user used.
     func volumeFormatted(session: WorkoutSessionModel) -> String {
         let volume = totalVolume(session: session)
-        return volume > 0 ? Format.weight(kg: volume, unit: ExerciseWeightUnit.kilograms) : Format.placeholder
+        let unit = interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
+        return volume > 0 ? Format.weight(kg: volume, unit: unit) : Format.placeholder
     }
     
     /// The weight unit this exercise is shown in. Reads the cache `loadUnitPreferences` fills

@@ -16,7 +16,7 @@ struct GymProfilesView: View {
         .overlay {
             if presenter.gymProfiles.isEmpty {
                 ContentUnavailableView {
-                    Label("No Gym Profiles", systemImage: "dumbbell")
+                    Label("No Gym Profiles", systemImage: Symbol.equipment)
                 } description: {
                     Text("Add the gyms you train at and the equipment each one has.")
                 } actions: {
@@ -39,23 +39,14 @@ struct GymProfilesView: View {
     
     private func favouriteGymProfileSection(gymProfile: GymProfileModel) -> some View {
         Section {
-            CustomListCellView(
-                imageName: gymProfile.imageUrl,
-                title: gymProfile.name,
-                subtitle: equipmentSubtitle(for: gymProfile)
-            )
-            .anyButton {
-                presenter.onGymProfilePressed(gymProfile: gymProfile)
-            }
+            gymProfileRow(gymProfile)
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 Button(role: .destructive) {
                     presenter.onDeleteGymProfilePressed(profile: gymProfile)
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Label("Delete", systemImage: Symbol.delete)
                 }
             }
-            .removeListRowFormatting()
-
         } header: {
             Text("Favourite Gym Profile")
         }
@@ -64,19 +55,12 @@ struct GymProfilesView: View {
     private var otherGymProfilesSection: some View {
         Section {
             ForEach(presenter.nonFavouriteGymProfiles) { profile in
-                CustomListCellView(
-                    imageName: profile.imageUrl,
-                    title: profile.name,
-                    subtitle: equipmentSubtitle(for: profile)
-                )
-                .anyButton {
-                    presenter.onGymProfilePressed(gymProfile: profile)
-                }
+                gymProfileRow(profile)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         presenter.onDeleteGymProfilePressed(profile: profile)
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label("Delete", systemImage: Symbol.delete)
                     }
                 }
                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -85,11 +69,9 @@ struct GymProfilesView: View {
                     } label: {
                         Label("Favourite", systemImage: "star")
                     }
-                    .tint(.accent)
+                    .tint(.accentColor)
                 }
             }
-            .removeListRowFormatting()
-
         } header: {
             Text(String.countCaption(count: presenter.nonFavouriteGymProfiles.count, unit: "Gym"))
         }
@@ -102,9 +84,18 @@ struct GymProfilesView: View {
             Button {
                 presenter.onAddGymProfilePressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add gym profile")
+        }
+    }
+
+    private func gymProfileRow(_ profile: GymProfileModel) -> some View {
+        Button {
+            presenter.onGymProfilePressed(gymProfile: profile)
+        } label: {
+            ListRow(title: profile.name, subtitle: equipmentSubtitle(for: profile), imageName: profile.imageUrl, accessory: .chevron)
+                .contentShape(.rect)
         }
     }
 

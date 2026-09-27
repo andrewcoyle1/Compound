@@ -16,7 +16,7 @@ struct TutorialsView: View {
         // empty presenter function. Nothing in the app tracks tutorial progress, so nothing to reset.
         FeatureUnavailableView(
             title: String(localized: "Tutorials"),
-            systemImage: "book",
+            systemImage: Symbol.tutorials,
             summary: "There are no tutorials to reset yet. When the app starts showing first-run guidance, this is where you will be able to see it again."
         )
         .onAppear {

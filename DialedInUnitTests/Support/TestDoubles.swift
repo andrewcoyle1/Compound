@@ -86,8 +86,13 @@ class SpyOnboardingRouter: OnboardingStepRouter {
 
     func showAlert(error: Error) { alertedErrors.append(error) }
 
+    /// The buttons of each `showAlert(title:subtitle:buttons:)`, for tests that check an alert
+    /// offers a way out. Reflect over one with `dump` to find a button's title and role.
+    private(set) var alertButtons: [AnyView] = []
+
     func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
         alertTitles.append(title)
+        if let buttons { alertButtons.append(buttons()) }
     }
 
     func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }

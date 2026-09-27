@@ -10,25 +10,25 @@ struct LoggerBannerView: View {
     var body: some View {
         List {
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Calories Ring"),
                     subtitle: String(localized: "Show calorie ring in the logger banner"),
-                    bool: $presenter.showCaloriesRing
+                    isOn: $presenter.showCaloriesRing
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Protein Ring"),
                     subtitle: String(localized: "Show protein ring in the logger banner"),
-                    bool: $presenter.showProteinRing
+                    isOn: $presenter.showProteinRing
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Fat Ring"),
                     subtitle: String(localized: "Show fat ring in the logger banner"),
-                    bool: $presenter.showFatRing
+                    isOn: $presenter.showFatRing
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Carbs Ring"),
                     subtitle: String(localized: "Show carbs ring in the logger banner"),
-                    bool: $presenter.showCarbsRing
+                    isOn: $presenter.showCarbsRing
                 )
             }
         }

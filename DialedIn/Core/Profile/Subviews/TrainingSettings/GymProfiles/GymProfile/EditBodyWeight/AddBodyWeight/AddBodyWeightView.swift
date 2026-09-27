@@ -33,7 +33,7 @@ struct AddBodyWeightView: View {
     private var weightSection: some View {
         VStack(alignment: .leading) {
             Text("Weight")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.bodyWeightAvailable.availableWeights, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -47,22 +47,15 @@ struct AddBodyWeightView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button {
+            Button(role: .confirm) {
                 presenter.onSavePressed()
-            } label: {
-                Image(systemName: "checkmark")
             }
-            .accessibilityLabel("Save")
-            .buttonStyle(.glassProminent)
         }
     }
 }
@@ -84,7 +77,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAddBodyWeightView(delegate: AddBodyWeightDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.2)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.addBodyWeightView(router: router, delegate: delegate)
         }
     }

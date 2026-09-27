@@ -267,6 +267,7 @@ struct GymProfilePresenterTests {
         await settle()
 
         #expect(screen.interactor.savedProfiles.map(\.name) == ["Home Gym"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// An unnamed profile cannot be saved, so leaving asks rather than silently dropping the work.
@@ -278,6 +279,22 @@ struct GymProfilePresenterTests {
         await settle()
 
         #expect(screen.interactor.savedProfiles.isEmpty)
+    }
+
+    /// The discard alert offered only its destructive button, so the one way out of it threw the
+    /// profile away, even when the user only wanted to go back and name it.
+    @Test("Test The Discard Alert For An Unnamed Profile Can Be Cancelled")
+    func testTheDiscardAlertForAnUnnamedProfileCanBeCancelled() {
+        let screen = makeScreen(name: "")
+
+        screen.presenter.onBackButtonPressed()
+
+        #expect(screen.router.alertTitles == ["Discard Gym Profile"])
+        var described = ""
+        dump(screen.router.alertButtons.first, to: &described)
+        #expect(described.contains("\"Cancel\""))
+        #expect(described.contains("cancel"))
+        #expect(described.contains("\"Discard\""))
     }
 
     @Test("Test Saving Is Tracked From Start To Success")
@@ -312,6 +329,7 @@ struct GymProfilePresenterTests {
         await settle()
 
         #expect(screen.router.alertTitles == ["Unable to Save Gym Profile"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Continuing through onboarding has the same failure: nothing is saved, nothing is routed to,

@@ -12,23 +12,18 @@ struct StrategySettingsView: View {
     var body: some View {
         List {
             Section {
-                CustomLabelButtonView(
-                    symbolName: "calendar",
+                ListRowButton(
                     title: String(localized: "Check-in Day"),
-                    subtitle: presenter.checkInWeekdayName) {
-                        Text("Edit")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.onEditCheckInDayPressed()
-                            }
-                    }
-                CustomToggleView(
-                    symbolName: "hare",
+                    subtitle: presenter.checkInWeekdayName,
+                    systemImage: Symbol.calendar
+                ) {
+                    presenter.onEditCheckInDayPressed()
+                }
+                ListRowToggle(
                     title: String(localized: "Fast Check-in"),
                     subtitle: presenter.fastCheckInEnabled ? String(localized: "On") : String(localized: "Off"),
-                    bool: Binding(
+                    systemImage: "hare",
+                    isOn: Binding(
                         get: { presenter.fastCheckInEnabled },
                         set: { presenter.fastCheckInEnabled = $0 }
                     )
@@ -38,35 +33,35 @@ struct StrategySettingsView: View {
             }
 
             Section {
-                Label("Introduction", systemImage: "info")
-                CustomToggleView(
+                Label("Introduction", systemImage: Symbol.info)
+                ListRowToggle(
                     title: String(localized: "Partial Logging"),
                     subtitle: nil,
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.partialLoggingEnabled },
                         set: { presenter.partialLoggingEnabled = $0 }
                     )
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Weigh-In"),
                     subtitle: nil,
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.weighInEnabled },
                         set: { presenter.weighInEnabled = $0 }
                     )
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Fasting"),
                     subtitle: nil,
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.fastingEnabled },
                         set: { presenter.fastingEnabled = $0 }
                     )
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Logging Break"),
                     subtitle: nil,
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.loggingBreakEnabled },
                         set: { presenter.loggingBreakEnabled = $0 }
                     )
@@ -95,16 +90,7 @@ struct StrategySettingsView: View {
         NavigationStack {
             List {
                 ForEach(presenter.weekdayOptions, id: \.weekday) { option in
-                    HStack {
-                        Text(option.name)
-                        Spacer(minLength: 0)
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.tint)
-                            .opacity(presenter.checkInWeekday == option.weekday ? 1 : 0)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton(.highlight) {
+                    SelectableRow(title: option.name, isSelected: presenter.checkInWeekday == option.weekday) {
                         presenter.checkInWeekday = option.weekday
                         presenter.isChoosingCheckInDay = false
                     }
@@ -114,11 +100,12 @@ struct StrategySettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { presenter.isChoosingCheckInDay = false }
+                    Button(role: .close) { presenter.isChoosingCheckInDay = false }
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 

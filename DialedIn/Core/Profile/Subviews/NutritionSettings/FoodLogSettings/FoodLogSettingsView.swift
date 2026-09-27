@@ -12,166 +12,121 @@ struct FoodLogSettingsView: View {
     var body: some View {
         List {
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Show Overages"),
                     subtitle: presenter.showOveragesSubtitle,
-                    bool: $presenter.showOverages
+                    isOn: $presenter.showOverages
                 )
             } header: {
                 Text("Nutrient Reporting")
             }
 
             Section {
-                CustomLabelButtonView(
-                    symbolName: "clock",
+                ListRowButton(
                     title: String(localized: "Hour Range"),
-                    subtitle: presenter.hourRangeSubtitle) {
-                        Text("Edit")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.onEditHourRangePressed()
-                            }
-                    }
-                CustomLabelButtonView(
-                    symbolName: "chart.bar.yaxis",
+                    subtitle: presenter.hourRangeSubtitle,
+                    systemImage: Symbol.duration
+                ) {
+                    presenter.onEditHourRangePressed()
+                }
+                ListRowButton(
                     title: String(localized: "Alignment"),
-                    subtitle: presenter.alignmentSubtitle) {
-                        Text("Edit")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.onEditAlignmentPressed()
-                            }
-                    }
-                CustomToggleView(
-                    symbolName: "plus.circle",
+                    subtitle: presenter.alignmentSubtitle,
+                    systemImage: "chart.bar.yaxis"
+                ) {
+                    presenter.onEditAlignmentPressed()
+                }
+                ListRowToggle(
                     title: String(localized: "Add Foods to Hour"),
                     subtitle: String(localized: "Show + button on each hour"),
-                    bool: $presenter.showAddFoodsButton
+                    systemImage: Symbol.add,
+                    isOn: $presenter.showAddFoodsButton
                 )
-                CustomToggleView(
-                    symbolName: "clock",
+                ListRowToggle(
                     title: String(localized: "Food Timestamps"),
                     subtitle: String(localized: "Show timestamps"),
-                    bool: $presenter.showsFoodTimestamps
+                    systemImage: Symbol.duration,
+                    isOn: $presenter.showsFoodTimestamps
                 )
-                CustomToggleView(
-                    symbolName: "clock",
+                ListRowToggle(
                     title: String(localized: "Hourly Macro Totals"),
                     subtitle: String(localized: "Show"),
-                    bool: $presenter.showHourlyMacroTotals
+                    systemImage: Symbol.duration,
+                    isOn: $presenter.showHourlyMacroTotals
                 )
-                CustomToggleView(
-                    symbolName: "clock",
+                ListRowToggle(
                     title: String(localized: "Calendar Week Banner"),
                     subtitle: String(localized: "Show"),
-                    bool: $presenter.showCalendarWeekBanner
+                    systemImage: Symbol.duration,
+                    isOn: $presenter.showCalendarWeekBanner
                 )
-                CustomToggleView(
-                    symbolName: "clock",
+                ListRowToggle(
                     title: String(localized: "Premove"),
                     subtitle: String(localized: "Pre-log meals before eating"),
-                    bool: $presenter.premove
+                    systemImage: Symbol.duration,
+                    isOn: $presenter.premove
                 )
             } header: {
                 Text("Timeline Options")
             }
 
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Branded Results"),
                     subtitle: presenter.showBrandedFoods ? String(localized: "On") : String(localized: "Off"),
-                    bool: $presenter.showBrandedFoods
+                    isOn: $presenter.showBrandedFoods
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Open Food Facts Results"),
                     subtitle: presenter.showOpenFoodFactsFoods ? String(localized: "On") : String(localized: "Off"),
-                    bool: $presenter.showOpenFoodFactsFoods
+                    isOn: $presenter.showOpenFoodFactsFoods
                 )
             } header: {
                 Text("Food Search")
             }
 
             Section {
-                CustomLabelButtonView(
+                ListRowButton(
                     title: String(localized: "Timeline Food Tiles"),
-                    subtitle: String(localized: "Customise how foods appear in your timeline")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onTimelineFoodTilesPressed()
-                            }
-                        .accessibilityLabel("Timeline Food Tiles")
-
-                    }
-                CustomLabelButtonView(
+                    subtitle: String(localized: "Customise how foods appear in your timeline")
+                ) {
+                    presenter.onTimelineFoodTilesPressed()
+                }
+                ListRowButton(
                     title: String(localized: "Logger Food Tiles"),
-                    subtitle: String(localized: "Customise how foods appear in search")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onLoggerFoodTilesPressed()
-                            }
-                        .accessibilityLabel("Logger Food Tiles")
-
-                    }
+                    subtitle: String(localized: "Customise how foods appear in search")
+                ) {
+                    presenter.onLoggerFoodTilesPressed()
+                }
             } header: {
                 Text("Food Tiles")
             }
 
             Section {
-                CustomLabelButtonView(
+                ListRowButton(
                     title: String(localized: "Logger Banner"),
-                    subtitle: String(localized: "Customise the top of your plate")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onLoggedBannerPressed()
-                            }
-                        .accessibilityLabel("Logger Banner")
-
-                    }
-                CustomLabelButtonView(
+                    subtitle: String(localized: "Customise the top of your plate")
+                ) {
+                    presenter.onLoggedBannerPressed()
+                }
+                ListRowButton(
                     title: String(localized: "Time Selection"),
-                    subtitle: String(localized: "Customise how you change time while logging")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onTimeSelectionPressed()
-                            }
-                        .accessibilityLabel("Time Selection")
-
-                    }
-                CustomLabelButtonView(
+                    subtitle: String(localized: "Customise how you change time while logging")
+                ) {
+                    presenter.onTimeSelectionPressed()
+                }
+                ListRowButton(
                     title: String(localized: "Favourite Measurements"),
-                    subtitle: String(localized: "Select the measurements to pin to serving size selections.")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onFavouriteMeasurementsPressed()
-                            }
-                        .accessibilityLabel("Favourite Measurements")
-
-                    }
-                CustomLabelButtonView(
+                    subtitle: String(localized: "Select the measurements to pin to serving size selections.")
+                ) {
+                    presenter.onFavouriteMeasurementsPressed()
+                }
+                ListRowButton(
                     title: String(localized: "Optimisation"),
-                    subtitle: String(localized: "Optimise for speed")) {
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
-                            .padding()
-                            .anyButton(.press) {
-                                presenter.onOptimisationPressed()
-                            }
-                        .accessibilityLabel("Optimisation")
-                    }
+                    subtitle: String(localized: "Optimise for speed")
+                ) {
+                    presenter.onOptimisationPressed()
+                }
 
             } header: {
                 Text("Logger Options")
@@ -210,7 +165,7 @@ struct FoodLogSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button(role: .confirm) {
                         presenter.isShowingHourRangePicker = false
                     }
                 }

@@ -14,58 +14,21 @@ struct ExpenditureSettingsView: View {
             estimateSection
 
             Section {
-                CustomLabelButtonView(
-                    title: String(localized: "Estimation Method"),
-                    subtitle: presenter.estimationMethod.title) {
-                        editMenu(
-                            options: presenter.estimationMethods,
-                            selection: presenter.estimationMethod,
-                            onSelect: { presenter.estimationMethod = $0 }
-                        )
-                    }
-                CustomLabelButtonView(
+                optionPicker("Estimation Method", options: presenter.estimationMethods, selection: $presenter.estimationMethod)
+                ListRowButton(
                     title: String(localized: "Calculation Start Date"),
-                    subtitle: presenter.calculationStartDateLabel) {
-                        Text("Edit")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.onEditStartDatePressed()
-                            }
-                    }
-                CustomLabelButtonView(
-                    title: String(localized: "BMR Equation"),
-                    subtitle: presenter.bmrEquation.title) {
-                        editMenu(
-                            options: presenter.bmrEquations,
-                            selection: presenter.bmrEquation,
-                            onSelect: { presenter.bmrEquation = $0 }
-                        )
-                    }
+                    subtitle: presenter.calculationStartDateLabel
+                ) {
+                    presenter.onEditStartDatePressed()
+                }
+                optionPicker("BMR Equation", options: presenter.bmrEquations, selection: $presenter.bmrEquation)
             } header: {
                 Text("Initial Estimate")
             }
 
             Section {
-                CustomLabelButtonView(
-                    title: String(localized: "Calculation Mode"),
-                    subtitle: presenter.calculationMode.title) {
-                        editMenu(
-                            options: presenter.calculationModes,
-                            selection: presenter.calculationMode,
-                            onSelect: { presenter.calculationMode = $0 }
-                        )
-                    }
-                CustomLabelButtonView(
-                    title: String(localized: "Algorithm"),
-                    subtitle: presenter.algorithmVersion.title) {
-                        editMenu(
-                            options: presenter.algorithmVersions,
-                            selection: presenter.algorithmVersion,
-                            onSelect: { presenter.algorithmVersion = $0 }
-                        )
-                    }
+                optionPicker("Calculation Mode", options: presenter.calculationModes, selection: $presenter.calculationMode)
+                optionPicker("Algorithm", options: presenter.algorithmVersions, selection: $presenter.algorithmVersion)
             } header: {
                 Text("Expenditure Calculation")
             } footer: {
@@ -73,18 +36,18 @@ struct ExpenditureSettingsView: View {
             }
 
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Step-Informed Updates"),
                     subtitle: String(localized: "Uses step trends to speed up expenditure updates during periods where the step data improves confidence"),
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.stepInformedUpdates },
                         set: { presenter.stepInformedUpdates = $0 }
                     )
                 )
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Predictive Goal Adjustment"),
                     subtitle: String(localized: "Applies a predictive adjustment to expenditure based on the likely impact of goal changes"),
-                    bool: Binding(
+                    isOn: Binding(
                         get: { presenter.predictiveGoalAdjustments },
                         set: { presenter.predictiveGoalAdjustments = $0 }
                     )
@@ -110,20 +73,19 @@ struct ExpenditureSettingsView: View {
     /// number, so it belongs above them rather than on another screen.
     private var estimateSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(presenter.expenditureValueText)
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                    .font(.metricLarge)
                 Text(presenter.expenditureStatusText)
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
                 if let stepText = presenter.stepAdjustmentText {
                     Text(stepText)
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
         } header: {
             Text("Today's Expenditure")
         }
@@ -153,42 +115,29 @@ struct ExpenditureSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { presenter.isChoosingStartDate = false }
+                    Button(role: .confirm) { presenter.isChoosingStartDate = false }
                 }
             }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
-    /// The row keeps its "Edit" capsule, which opens a menu rather than another screen — these are
-    /// all short lists, and each option carries its own explanation.
-    private func editMenu<Option: Identifiable & Equatable>(
+    /// An inline menu picker: these are all short lists, so a menu beats another screen.
+    private func optionPicker<Option: Identifiable & Hashable & ExpenditureOptionDescribing>(
+        _ title: LocalizedStringKey,
         options: [Option],
-        selection: Option,
-        onSelect: @escaping (Option) -> Void
-    ) -> some View where Option: ExpenditureOptionDescribing {
-        Menu {
+        selection: Binding<Option>
+    ) -> some View {
+        Picker(title, selection: selection) {
             ForEach(options) { option in
-                Button {
-                    onSelect(option)
-                } label: {
-                    if option == selection {
-                        Label(option.title, systemImage: "checkmark")
-                    } else {
-                        Text(option.title)
-                    }
-                }
+                Text(option.title).tag(option)
             }
-        } label: {
-            Text("Edit")
-                .padding(.horizontal, 8)
-                .padding(8)
-                .background(Color.secondary.opacity(0.2), in: .capsule)
         }
     }
 }
 
-/// Lets one menu helper serve every expenditure option enum without repeating it four times.
+/// Lets one picker helper serve every expenditure option enum without repeating it four times.
 protocol ExpenditureOptionDescribing {
     var title: String { get }
     var subtitle: String { get }

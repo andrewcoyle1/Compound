@@ -30,7 +30,7 @@ struct EditFreeWeightView: View {
             if weightIDs.isEmpty {
                 ContentUnavailableView(
                     "No \(presenter.selectedUnit.displayName) weights",
-                    systemImage: "dumbbell",
+                    systemImage: Symbol.equipment,
                     description: Text("There are no weights for the selected unit.")
                 )
             } else {
@@ -42,9 +42,9 @@ struct EditFreeWeightView: View {
                                 .frame(maxHeight: 20)
                                 .foregroundStyle(Color(hex: colour))
                         }
-                        Text("\(String(format: "%g", weight.wrappedValue.availableWeights)) \(weight.wrappedValue.unit.abbreviation)")
+                        Text(GymEquipmentFormat.weight(weight.wrappedValue.availableWeights, weight.wrappedValue.unit))
                         Spacer()
-                        Toggle("", isOn: weight.isActive)
+                        Toggle("Available", isOn: weight.isActive)
                             .labelsHidden()
                     }
                 }
@@ -56,33 +56,31 @@ struct EditFreeWeightView: View {
             HStack {
                 Text("Weights")
                 Spacer()
-                Picker("", selection: $presenter.selectedUnit) {
+                Picker("Unit", selection: $presenter.selectedUnit) {
                     ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                         Text(unit.abbreviation)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 160)
+                .labelsHidden()
+                .fixedSize()
             }
         }
     }
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddPressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add free weight")
         }

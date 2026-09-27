@@ -285,7 +285,7 @@ struct ExerciseModelDetailPresenterTests {
         #expect(screen.presenter.weightChartConfiguration.unit == "lbs")
     }
 
-    /// A user logging in pounds sees pounds: 100 kg is 220 lb, not 100 lb under a "lbs" label.
+    /// A user logging in pounds sees pounds: 100 kg is 220.5 lb, not 100 lb under a pound label.
     @Test("Test Weights Are Converted Into The Exercises Unit")
     func testWeightsAreConvertedIntoTheExercisesUnit() {
         let screen = makeScreen(
@@ -295,7 +295,8 @@ struct ExerciseModelDetailPresenterTests {
 
         screen.presenter.onViewAppear(delegate: ExerciseModelDetailDelegate(exerciseModel: exerciseModel()))
 
-        #expect(screen.presenter.formattedWeight(100) == "220 lbs")
+        #expect(screen.presenter.formattedWeight(100) == Format.weight(kg: 100, unit: ExerciseWeightUnit.pounds))
+        #expect(screen.presenter.formattedWeight(100).hasPrefix(220.5.formatted()))
         #expect(screen.presenter.weightSeries.first?.data.first?.value == UnitConversion.kgToLbs(100))
     }
 
@@ -310,7 +311,8 @@ struct ExerciseModelDetailPresenterTests {
 
         screen.presenter.onViewAppear(delegate: ExerciseModelDetailDelegate(exerciseModel: exerciseModel()))
 
-        #expect(screen.presenter.formattedWeight(100) == "100 kg")
+        #expect(screen.presenter.formattedWeight(100) == Format.weight(kg: 100, unit: ExerciseWeightUnit.kilograms))
+        #expect(screen.presenter.formattedWeight(100).hasPrefix(100.formatted()))
         #expect(screen.presenter.weightSeries.first?.data.first?.value == 100)
     }
 

@@ -73,7 +73,7 @@ class RestTimerSettingsPresenter {
     }
 
     func formattedScaling(_ value: Double) -> String {
-        "\(Int((value * 100).rounded()))%"
+        Format.percent(value)
     }
 
     // MARK: - Scaling Sheet

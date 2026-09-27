@@ -66,34 +66,32 @@ struct ExerciseModelDetailView: View {
     private var historySection: some View {
         if presenter.stats.isEmpty {
             Section(header: Text("History")) {
-                Text("You have not logged this exercise yet.")
-                    .foregroundColor(.secondary)
+                notLoggedYet
             }
         } else {
             Section(header: Text("History")) {
                 ForEach(presenter.stats.mostRecentFirst) { performance in
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(performance.workoutName)
-                                .font(.subheadline.weight(.medium))
-                            Spacer(minLength: 0)
-                            Text(performance.date.formatted(date: .abbreviated, time: .omitted))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Text(historyDetail(performance))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 2)
+                    ListRow(
+                        title: performance.workoutName,
+                        subtitle: historyDetail(performance),
+                        accessory: .value(performance.date.formatted(date: .abbreviated, time: .omitted))
+                    )
                 }
             }
         }
     }
 
+    private var notLoggedYet: some View {
+        ContentUnavailableView {
+            Label("Not Logged Yet", systemImage: Symbol.history)
+        } description: {
+            Text("You have not logged this exercise yet.")
+        }
+    }
+
     private func historyDetail(_ performance: ExerciseModelDetailStats.Performance) -> String {
-        let sets = "\(performance.workingSets) × sets"
-        let reps = "\(performance.totalReps) reps"
+        let sets = String(localized: "\(performance.workingSets) sets")
+        let reps = Format.reps(performance.totalReps)
         let top = presenter.formattedWeight(performance.heaviestWeightKg)
         return String(localized: "\(String(describing: sets)) · \(String(describing: reps)) · top \(String(describing: top))")
     }
@@ -114,20 +112,17 @@ struct ExerciseModelDetailView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         #if DEBUG || MOCK
         ToolbarItem(placement: .topBarLeading) {
             Button {
                 presenter.onDevSettingsPressed()
             } label: {
-                Image(systemName: "info")
+                Image(systemName: Symbol.info)
             }
             .accessibilityLabel("Developer settings")
         }
@@ -138,10 +133,10 @@ struct ExerciseModelDetailView: View {
                     Button(role: .destructive) {
                         presenter.showDeleteConfirmation(exercise: delegate.exerciseModel)
                     } label: {
-                        Label("Delete Exercise", systemImage: "trash")
+                        Label("Delete Exercise", systemImage: Symbol.delete)
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: Symbol.more)
                 }
                 .disabled(presenter.isDeleting)
                 .accessibilityLabel("Exercise options")
@@ -163,8 +158,7 @@ private extension ExerciseModelDetailView {
     var weightProgressChart: some View {
         Section(header: Text("Top Set")) {
             if presenter.stats.isEmpty {
-                Text("You have not logged this exercise yet.")
-                    .foregroundColor(.secondary)
+                notLoggedYet
             } else {
                 LineChart(data: presenter.weightSeries, configuration: presenter.weightChartConfiguration)
             }
@@ -175,8 +169,7 @@ private extension ExerciseModelDetailView {
     var repsProgressChart: some View {
         Section(header: Text("Reps Per Session")) {
             if presenter.stats.isEmpty {
-                Text("You have not logged this exercise yet.")
-                    .foregroundColor(.secondary)
+                notLoggedYet
             } else {
                 BarChart(data: presenter.repsSeries, configuration: presenter.repsChartConfiguration)
             }
@@ -195,34 +188,26 @@ private extension ExerciseModelDetailView {
     var personalBestSubSection: some View {
         Section {
             if let achieved = presenter.stats.heaviestSetDate, presenter.stats.heaviestSetKg > 0 {
-                HStack {
-                    VStack {
-                        Text("\(presenter.formattedWeight(presenter.stats.heaviestSetKg)) x \(presenter.stats.repsAtHeaviestSet) reps")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        HStack {
-                            Image(systemName: "trophy.fill")
-                                .foregroundColor(.yellow)
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("\(presenter.formattedWeight(presenter.stats.heaviestSetKg)) × \(Format.reps(presenter.stats.repsAtHeaviestSet))")
+                            .font(.metric)
+                        Label {
                             Text("Achieved on \(achieved.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                        } icon: {
+                            Image(systemName: Symbol.personalRecord)
+                                .foregroundStyle(.personalRecord)
                         }
+                        .font(.label)
+                        .foregroundStyle(.secondary)
                     }
-                    Spacer()
-                    VStack {
-                        Text("1RM")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text(presenter.formattedWeight(presenter.stats.bestOneRMKg))
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.blue)
-                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Stat(value: presenter.formattedWeight(presenter.stats.bestOneRMKg), label: String(localized: "1RM"), alignment: .trailing)
                 }
             } else {
                 Text("No working sets logged yet.")
-                    .foregroundColor(.secondary)
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
             }
         } header: {
             Text("Personal Best")
@@ -237,16 +222,13 @@ private extension ExerciseModelDetailView {
             let records = presenter.oneRMRecords
             if records.isEmpty {
                 Text("No records yet.")
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             } else {
                 ForEach(records) { record in
-                    HStack {
-                        Text(record.date.formatted(date: .abbreviated, time: .omitted))
-                            .font(.subheadline)
-                        Spacer(minLength: 0)
-                        Text(presenter.formattedWeight(record.bestOneRMKg))
-                            .font(.subheadline.weight(.medium))
-                    }
+                    ListRow(
+                        title: record.date.formatted(date: .abbreviated, time: .omitted),
+                        accessory: .value(presenter.formattedWeight(record.bestOneRMKg))
+                    )
                 }
             }
         } header: {
@@ -256,76 +238,30 @@ private extension ExerciseModelDetailView {
 
     var allTimeStatsSubSection: some View {
         Section {
-            HStack(spacing: 24) {
-                VStack {
-                    Text("Total Sets")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("\(presenter.stats.totalSets)")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                }
-                VStack {
-                    Text("Total Reps")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("\(presenter.stats.totalReps)")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                }
-                VStack {
-                    Text("Total Volume")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text(presenter.formattedVolume(presenter.stats.totalVolumeKg))
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                }
+            HStack(alignment: .top, spacing: Spacing.xl) {
+                Stat(value: presenter.stats.totalSets.formatted(), label: String(localized: "Total Sets"))
+                Stat(value: presenter.stats.totalReps.formatted(), label: String(localized: "Total Reps"))
+                Stat(value: presenter.formattedVolume(presenter.stats.totalVolumeKg), label: String(localized: "Total Volume"))
             }
+            .padding(.vertical, Spacing.s)
         } header: {
             Text("All-Time Stats")
         }
-        .padding(.vertical, 8)
     }
 
     var definitionSection: some View {
         Section {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Exercise Name")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.name)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Trackable Metrics")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(trackableMetricString)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Type")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.type?.name ?? "None")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Laterality")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.laterality?.name ?? "None")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Bodyweight")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.isBodyweight ? String(localized: "Yes") : String(localized: "No"))
-            }
+            ListRow(title: String(localized: "Exercise Name"), accessory: .value(delegate.exerciseModel.name))
+            ListRow(title: String(localized: "Trackable Metrics"), accessory: .value(trackableMetricString))
+            ListRow(title: String(localized: "Type"), accessory: .value(delegate.exerciseModel.type?.name ?? String(localized: "None")))
+            ListRow(title: String(localized: "Laterality"), accessory: .value(delegate.exerciseModel.laterality?.name ?? String(localized: "None")))
+            ListRow(title: String(localized: "Bodyweight"), accessory: .value(delegate.exerciseModel.isBodyweight ? String(localized: "Yes") : String(localized: "No")))
         } header: {
             HStack(alignment: .firstTextBaseline) {
                 Text("Definition")
                 Spacer()
                 Text("Template")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
         }
@@ -347,7 +283,7 @@ private extension ExerciseModelDetailView {
                 Text("Target Muscles")
                 Spacer()
                 Text("Template")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
         }
@@ -366,28 +302,32 @@ private extension ExerciseModelDetailView {
         HStack {
             Text("Range of Motion")
             Spacer()
-            HStack {
-                ForEach(1...5, id: \.self) { value in
-                    Capsule()
-                        .fill(value <= delegate.exerciseModel.rangeOfMotion ? Color.accentColor : Color.secondary.opacity(0.2))
-                }
-            }
-            .frame(maxWidth: 200)
+            ratingBar(delegate.exerciseModel.rangeOfMotion)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Range of Motion"))
+        .accessibilityValue(Text("\(delegate.exerciseModel.rangeOfMotion) of 5"))
     }
 
     var stabilityRow: some View {
         HStack {
             Text("Stability")
             Spacer()
-            HStack {
-                ForEach(1...5, id: \.self) { value in
-                    Capsule()
-                        .fill(value <= delegate.exerciseModel.stability ? Color.accentColor : Color.secondary.opacity(0.2))
-                }
-            }
-            .frame(maxWidth: 200)
+            ratingBar(delegate.exerciseModel.stability)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Stability"))
+        .accessibilityValue(Text("\(delegate.exerciseModel.stability) of 5"))
+    }
+
+    func ratingBar(_ rating: Int) -> some View {
+        HStack {
+            ForEach(1...5, id: \.self) { value in
+                Capsule()
+                    .fill(value <= rating ? AnyShapeStyle(.tint) : AnyShapeStyle(.quaternary))
+            }
+        }
+        .frame(maxWidth: 200)
     }
 
     var equipmentVariationsSection: some View {
@@ -402,7 +342,7 @@ private extension ExerciseModelDetailView {
                         Text("Equipment")
                         Spacer()
                         Text("Template")
-                            .font(.caption)
+                            .font(.label)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -433,7 +373,7 @@ private extension ExerciseModelDetailView {
                             Text("Variation \(index + 1)")
                             Spacer()
                             Text("Template")
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -444,28 +384,9 @@ private extension ExerciseModelDetailView {
 
     var detailsSection: some View {
         Section {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Body Weight Contribution")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(delegate.exerciseModel.bodyWeightContribution)%")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Alternative Names")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(alternateNamesConcatenated)
-                    .foregroundStyle(alternateNamesConcatenated.isEmpty ? .secondary : .primary)
-                    .lineLimit(2)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Description")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.description ?? "None")
-                    .foregroundStyle(delegate.exerciseModel.description == nil ? .secondary : .primary)
-                    .lineLimit(3)
-            }
+            ListRow(title: String(localized: "Body Weight Contribution"), accessory: .value(Format.percent(Double(delegate.exerciseModel.bodyWeightContribution) / 100)))
+            ListRow(title: String(localized: "Alternative Names"), accessory: .value(alternateNamesConcatenated))
+            ListRow(title: String(localized: "Description"), accessory: .value(delegate.exerciseModel.description ?? String(localized: "None")))
         } header: {
             Text("Details")
         }
@@ -473,75 +394,18 @@ private extension ExerciseModelDetailView {
 
     var metadataSection: some View {
         Section {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Exercise ID")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.id)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.trailing)
-            }
+            ListRow(title: String(localized: "Exercise ID"), accessory: .value(delegate.exerciseModel.id))
             if !delegate.exerciseModel.authorId.isEmpty {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Author ID")
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Text(delegate.exerciseModel.authorId)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.trailing)
-                }
+                ListRow(title: String(localized: "Author ID"), accessory: .value(delegate.exerciseModel.authorId))
             }
-            HStack(alignment: .firstTextBaseline) {
-                Text("System Exercise")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.isSystemExercise ? String(localized: "Yes") : String(localized: "No"))
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Date Created")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.dateCreated.formatted(date: .abbreviated, time: .omitted))
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Date Modified")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseModel.dateModified.formatted(date: .abbreviated, time: .omitted))
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Click Count")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(delegate.exerciseModel.clickCount ?? 0)")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Bookmark Count")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(delegate.exerciseModel.bookmarkCount ?? 0)")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Favourite Count")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(delegate.exerciseModel.favouriteCount ?? 0)")
-            }
+            ListRow(title: String(localized: "System Exercise"), accessory: .value(delegate.exerciseModel.isSystemExercise ? String(localized: "Yes") : String(localized: "No")))
+            ListRow(title: String(localized: "Date Created"), accessory: .value(delegate.exerciseModel.dateCreated.formatted(date: .abbreviated, time: .omitted)))
+            ListRow(title: String(localized: "Date Modified"), accessory: .value(delegate.exerciseModel.dateModified.formatted(date: .abbreviated, time: .omitted)))
+            ListRow(title: String(localized: "Click Count"), accessory: .value("\(delegate.exerciseModel.clickCount ?? 0)"))
+            ListRow(title: String(localized: "Bookmark Count"), accessory: .value("\(delegate.exerciseModel.bookmarkCount ?? 0)"))
+            ListRow(title: String(localized: "Favourite Count"), accessory: .value("\(delegate.exerciseModel.favouriteCount ?? 0)"))
             if let imageURL = delegate.exerciseModel.imageURL, !imageURL.isEmpty {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Image URL")
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Text(imageURL)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.trailing)
-                }
+                ListRow(title: String(localized: "Image URL"), accessory: .value(imageURL))
             }
         } header: {
             Text("Metadata")
@@ -572,7 +436,7 @@ private extension ExerciseModelDetailView {
 
     var trackableMetricString: String {
         let names = delegate.exerciseModel.trackableMetrics.map { $0.name }
-        return names.isEmpty ? "None" : names.joined(separator: " x ")
+        return names.isEmpty ? String(localized: "None") : names.joined(separator: " × ")
     }
 
     var alternateNamesConcatenated: String {

@@ -15,67 +15,48 @@ struct TimerDurationView: View {
         List {
             Section {
                 ForEach(ExerciseType.allCases, id: \.self) { type in
-                    CustomLabelButtonView(
+                    ListRowButton(
                         title: type.name,
-                        subtitle: presenter.formattedDuration(for: type)) {
-                            Text("Edit")
-                                .padding(.horizontal, 8)
-                                .padding(8)
-                                .background(Color.secondary.opacity(0.2), in: .capsule)
-                                .anyButton(.press) {
-                                    presenter.onEditPressed(type: type)
-                                }
-                        }
-                }
-                CustomLabelButtonView(
-                    title: String(localized: "Reset Defaults"),
-                    subtitle: String(localized: "Reset timers to default settings")) {
-                        Text("Reset")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.resetDefaults()
-                            }
+                        subtitle: presenter.formattedDuration(for: type)
+                    ) {
+                        presenter.onEditPressed(type: type)
                     }
+                }
+                ListRowButton(
+                    title: String(localized: "Reset Defaults"),
+                    subtitle: String(localized: "Reset timers to default settings"),
+                    accessory: .none
+                ) {
+                    presenter.resetDefaults()
+                }
             } header: {
                 Text("Default Timers")
             }
 
             Section {
                 ForEach(presenter.exerciseOverrides) { override in
-                    CustomLabelButtonView(
+                    ListRowButton(
                         title: override.name,
-                        subtitle: presenter.formattedDuration(seconds: override.seconds)) {
-                            Text("Edit")
-                                .padding(.horizontal, 8)
-                                .padding(8)
-                                .background(Color.secondary.opacity(0.2), in: .capsule)
-                                .anyButton(.press) {
-                                    presenter.onEditExerciseOverridePressed(override)
-                                }
-                        }
-                        .swipeActions(edge: .trailing) {
-                            Button("Remove", role: .destructive) {
-                                presenter.removeExerciseOverride(override)
-                            }
-                        }
-                }
-                CustomLabelButtonView(
-                    title: String(localized: "Add Exercise Timer"),
-                    subtitle: String(localized: "Set timers for specific exercises")) {
-                        Text("Add")
-                            .padding(.horizontal, 8)
-                            .padding(8)
-                            .background(Color.secondary.opacity(0.2), in: .capsule)
-                            .anyButton(.press) {
-                                presenter.onAddExerciseTimerPressed()
-                            }
+                        subtitle: presenter.formattedDuration(seconds: override.seconds)
+                    ) {
+                        presenter.onEditExerciseOverridePressed(override)
                     }
+                    .swipeActions(edge: .trailing) {
+                        Button("Remove", role: .destructive) {
+                            presenter.removeExerciseOverride(override)
+                        }
+                    }
+                }
+                ListRowButton(
+                    title: String(localized: "Add Exercise Timer"),
+                    subtitle: String(localized: "Set timers for specific exercises")
+                ) {
+                    presenter.onAddExerciseTimerPressed()
+                }
             } header: {
                 Text("Exercise Timers")
             } footer: {
-                Text("These take precident over default timers")
+                Text("These take precedence over default timers")
             }
         }
         .navigationTitle("Timer Duration")
@@ -108,19 +89,16 @@ struct TimerDurationView: View {
         NavigationStack {
             List {
                 ForEach(presenter.exercisesWithoutOverride) { exercise in
-                    Text(exercise.name)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .tappableBackground()
-                        .anyButton(.highlight) {
-                            presenter.onExercisePicked(exercise)
-                        }
+                    ListRowButton(title: exercise.name, accessory: .none) {
+                        presenter.onExercisePicked(exercise)
+                    }
                 }
             }
             .navigationTitle("Choose Exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { presenter.isAddingExerciseTimer = false }
+                    Button(role: .close) { presenter.isAddingExerciseTimer = false }
                 }
             }
         }
@@ -151,13 +129,13 @@ struct TimerDurationView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(role: .close) {
                         presenter.isEditingType = false
                         presenter.isEditingExercise = false
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { onSave() }
+                    Button(role: .confirm) { onSave() }
                 }
             }
         }

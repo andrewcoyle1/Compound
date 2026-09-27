@@ -13,7 +13,6 @@ struct CustomPaywallView: View {
     var selectedProduct: AnyProduct?
     var title: String = "Try Premium Today!"
     var subtitle: String = "Unlock unlimited access and exclusive features for premium members."
-    var onBackButtonPressed: () -> Void = { }
     var onRestorePurchasePressed: () -> Void = { }
     var onProductSelected: (AnyProduct) -> Void = { _ in }
     var onSubscribePressed: () -> Void = { }
@@ -27,67 +26,67 @@ struct CustomPaywallView: View {
             }
         }
         .multilineTextAlignment(.center)
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             subscriptionButtonSection
         }
     }
     
     private var headerSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.s) {
             Text(title)
-                .font(.largeTitle)
-                .fontWeight(.semibold)
-            
+                .font(.display)
+
             Text(subtitle)
-                .font(.subheadline)
+                .font(.rowDetail)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.onAccent)
         .multilineTextAlignment(.center)
+        .padding()
         .frame(maxWidth: .infinity, minHeight: 150)
-        .background(Color.accent.gradient)
+        .background(Color.accentColor.gradient)
     }
     
+    /// A plan card. The selected one is outlined in the accent and carries `.isSelected`.
     private func productRow(product: AnyProduct) -> some View {
-        VStack(alignment: .leading) {
-            HStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 4) {
+        let isSelected = product.id == selectedProduct?.id
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(spacing: Spacing.s) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(product.title)
-                        .font(.headline)
+                        .font(.sectionTitle)
                     Text(product.priceStringWithDuration)
-                        .font(.subheadline)
+                        .font(.rowDetail)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text("START")
-                    .badgeButton()
+                Chip("Start", isSelected: isSelected)
             }
             Divider()
             Text(product.subtitle)
-                .font(.body)
+                .font(.rowTitle)
                 .foregroundStyle(.secondary)
         }
-        .padding(16)
-        .background(Color(uiColor: .systemBackground))
-        .cornerRadius(16)
-        .padding(3)
-        .background {
-            RoundedRectangle(cornerRadius: 19, style: .continuous)
-                .foregroundStyle(Color.accentColor)
+        .multilineTextAlignment(.leading)
+        .padding()
+        .cardSurface()
+        .overlay {
+            RoundedRectangle(cornerRadius: Radius.xl, style: .continuous)
+                .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 3)
         }
-        .shadow(color: Color.black.opacity(0.3), radius: 8, x: 0, y: 2)
-        .anyButton(.press, action: {
+        .anyButton(.press) {
             onProductSelected(product)
-        })
-        .padding(16)
+        }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .padding()
         .removeListRowFormatting()
         .listRowSeparator(.hidden)
     }
-    
+
     private var subscriptionButtonSection: some View {
-        VStack {
+        VStack(spacing: Spacing.s) {
             if let product = selectedProduct {
                 Text("Plan auto-renews for \(product.priceStringWithDuration) until cancelled.")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
             // Tapping Subscribe with no plan chosen did nothing and said nothing.
@@ -97,7 +96,6 @@ struct CustomPaywallView: View {
             .disabled(selectedProduct == nil)
             restoreButton
         }
-        .padding(.bottom)
     }
 
     /// Its action was an empty closure, so Restore Subscription did nothing at all. Not private so
@@ -105,18 +103,6 @@ struct CustomPaywallView: View {
     var restoreButton: CallToActionButton<Text> {
         CallToActionButton(isPrimaryAction: false, action: onRestorePurchasePressed) {
             Text("Restore Subscription")
-        }
-    }
-    
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                onBackButtonPressed()
-            } label: {
-                Image(systemName: "xmark")
-            }
-            .accessibilityLabel("Close")
         }
     }
 }

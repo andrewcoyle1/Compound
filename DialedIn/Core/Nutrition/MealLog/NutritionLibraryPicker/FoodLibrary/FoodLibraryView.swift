@@ -85,14 +85,16 @@ struct FoodLibraryView<
             case .recipes:
                 recipeList(
                     RecipeListBuilderDelegate(
-                        onMealItemConfirmed: { item in delegate.onItemPick?(item) }
+                        onMealItemConfirmed: { item in delegate.onItemPick?(item) },
+                        searchText: presenter.searchText
                     )
                 )
             case .foods:
                 ingredientList(
                     IngredientListBuilderDelegate(
                         mealItems: delegate.mealItems,
-                        onMealItemConfirmed: { item in delegate.onItemPick?(item) }
+                        onMealItemConfirmed: { item in delegate.onItemPick?(item) },
+                        searchText: presenter.searchText
                     )
                 )
             case .favourites:

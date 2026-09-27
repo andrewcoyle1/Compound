@@ -10,19 +10,23 @@ struct IngredientListBuilderDelegate {
     /// Optional list of ingredient templates that should display as "selected" in the UI.
     /// If `nil`, no selection state is shown.
     var selectedFoods: [FoodModel]?
+    /// A query typed into a search field the host owns. `nil` means the list shows its own.
+    var searchText: String?
 
     init(
         mealItems: Binding<[MealItemModel]>? = nil,
         onIngredientSelectionChanged: ((FoodModel) -> Void)? = nil,
         onMealItemConfirmed: ((MealItemModel) -> Void)? = nil,
         onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)? = nil,
-        selectedFoods: [FoodModel]? = nil
+        selectedFoods: [FoodModel]? = nil,
+        searchText: String? = nil
     ) {
         self.mealItems = mealItems
         self.onIngredientSelectionChanged = onIngredientSelectionChanged
         self.onMealItemConfirmed = onMealItemConfirmed
         self.onRecipeIngredientConfirmed = onRecipeIngredientConfirmed
         self.selectedFoods = selectedFoods
+        self.searchText = searchText
     }
 }
 
@@ -32,7 +36,18 @@ struct IngredientListBuilderView: View {
     
     let delegate: IngredientListBuilderDelegate
     
+    /// Nothing ever set `searchText`, so the filtered list and its empty state could not appear.
+    /// Standalone, the list now has its own search field; inside the food library it follows the
+    /// library's.
     var body: some View {
+        if delegate.searchText == nil {
+            list.searchable(text: $presenter.searchText, prompt: "Filter Foods")
+        } else {
+            list
+        }
+    }
+
+    private var list: some View {
         List {
             if presenter.searchText.isEmpty {
                 if !presenter.userFoods.isEmpty {
@@ -57,6 +72,9 @@ struct IngredientListBuilderView: View {
                     Button("Create a Food") { presenter.onAddIngredientPressed(delegate: delegate) }
                 }
             }
+        }
+        .onChange(of: delegate.searchText, initial: true) { _, newValue in
+            if let newValue { presenter.searchText = newValue }
         }
         .onAppear {
             presenter.onViewAppear()

@@ -252,7 +252,23 @@ struct FoodDefinitionPresenterTests {
         #expect(added?.displayName == "Oat Milk")
         #expect(added?.sourceId == saved?.id)
         #expect(added?.amount == 100)
-        #expect(added?.unit == "grams")
+        #expect(added?.unit == "g")
+        #expect(added?.resolvedGrams == 100)
+    }
+
+    /// The plate item carries the food's nutrients at 100g. It used to carry none, so the new food
+    /// added nothing to the meal's totals.
+    @Test("Test Create And Add Puts The Food's Nutrients On The Plate")
+    func testCreateAndAddPutsTheFoodsNutrientsOnThePlate() async {
+        let screen = makeScreen(name: "Oat Milk")
+        screen.presenter.energy = 250
+        screen.presenter.protein = 12
+
+        screen.presenter.onCreateAndAddPressed(delegate: screen.delegate)
+        await TestManagers.eventually { !screen.box.items.isEmpty }
+
+        #expect(screen.box.items.first?.nutrients[.calories] == 250)
+        #expect(screen.box.items.first?.nutrients[.protein] == 12)
     }
 
     /// Plain create does not touch the plate.

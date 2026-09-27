@@ -113,15 +113,10 @@ class FoodDefinitionPresenter {
             interactor.trackEvent(event: Event.createFoodStart)
             do {
                 let food = try await self.createFood(userId: userId, delegate: delegate)
-                let mealLogItem = MealItemModel(
-                    itemId: UUID().uuidString,
-                    sourceType: .ingredient,
-                    sourceId: food.id,
-                    displayName: food.name,
-                    amount: 100,
-                    unit: "grams"
-                )
-                delegate.mealItems?.wrappedValue.append(mealLogItem)
+                // Through `mealItem(amount:)`, like every other way onto the plate. Building the
+                // item by hand left out its nutrients, so a food created here counted for nothing
+                // in the meal's totals, and gave it a unit ("grams") nothing else writes.
+                delegate.mealItems?.wrappedValue.append(food.mealItem(amount: 100))
                 interactor.trackEvent(event: Event.createFoodSuccess)
                 router.dismissScreen()
             } catch {

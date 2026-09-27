@@ -19,7 +19,7 @@ struct IngredientAmountView: View {
     var delegate: IngredientAmountDelegate
 
     var body: some View {
-        Form {
+        List {
             Section("Amount") {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)
@@ -36,39 +36,23 @@ struct IngredientAmountView: View {
                     }
                 }
             }
-            
-            Section("Estimated Macros") {
-                HStack {
-                    Text("Calories")
-                    Spacer()
-                    Text(presenter.calories(ingredient: delegate.ingredient).map { String(Int(round($0))) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Protein")
-                    Spacer()
-                    Text(presenter.protein(ingredient: delegate.ingredient).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Carbs")
-                    Spacer()
-                    Text(presenter.carbs(ingredient: delegate.ingredient).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Fat")
-                    Spacer()
-                    Text(presenter.fat(ingredient: delegate.ingredient).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-            }
+
+            EstimatedMacrosSection(
+                title: "Estimated Macros",
+                calories: presenter.calories(ingredient: delegate.ingredient),
+                protein: presenter.protein(ingredient: delegate.ingredient),
+                carbs: presenter.carbs(ingredient: delegate.ingredient),
+                fat: presenter.fat(ingredient: delegate.ingredient)
+            )
         }
         .navigationTitle(delegate.ingredient.name)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Add") { presenter.add(ingredient: delegate.ingredient, onConfirm: delegate.onPick) }
-                    .disabled((Double(presenter.amountText) ?? 0) <= 0)
+                Button("Log", role: .confirm) {
+                    presenter.add(ingredient: delegate.ingredient, onConfirm: delegate.onPick)
+                }
+                .disabled(presenter.amountValue <= 0)
             }
         }
     }

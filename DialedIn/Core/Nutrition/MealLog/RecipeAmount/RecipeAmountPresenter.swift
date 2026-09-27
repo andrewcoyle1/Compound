@@ -64,6 +64,7 @@ class RecipeAmountPresenter {
             resolvedMilliliters: nil,
             nutrients: scaledNutrients
         )
+        interactor.playHaptic(option: .success)
         onConfirm(item)
     }
 

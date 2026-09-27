@@ -18,7 +18,7 @@ import SwiftUI
 @MainActor
 struct RecipeAmountPresenterTests {
 
-    private final class Interactor: RecipeAmountInteractor { }
+    private final class Interactor: SpyGlobalInteractor, RecipeAmountInteractor { }
 
     /// `showDevSettingsView()` unguarded — the test target builds without `-DDEV`.
     private final class Router: RecipeAmountRouter {
@@ -75,6 +75,16 @@ struct RecipeAmountPresenterTests {
         presenter.add(recipe: recipe(servings: 4)) { box.item = $0 }
 
         #expect(box.item?.nutrients[.calories] == 150)
+    }
+
+    @Test("Test Logging Plays A Success Haptic")
+    func testLoggingPlaysASuccessHaptic() {
+        let interactor = Interactor()
+        let presenter = RecipeAmountPresenter(interactor: interactor, router: Router())
+
+        presenter.add(recipe: recipe(servings: 4)) { _ in }
+
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test Logging Two Servings Logs Twice As Much")

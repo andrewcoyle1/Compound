@@ -31,6 +31,7 @@ class RecipeIngredientAmountPresenter {
     func confirm(delegate: RecipeIngredientAmountDelegate) {
         let unit: IngredientAmountUnit = delegate.food.measurementMethod == .volume ? .milliliters : .grams
         let model = RecipeIngredientModel(ingredient: delegate.food, amount: amountValue, unit: unit)
+        interactor.playHaptic(option: .success)
         delegate.onConfirm(model)
         router.dismissScreen()
     }

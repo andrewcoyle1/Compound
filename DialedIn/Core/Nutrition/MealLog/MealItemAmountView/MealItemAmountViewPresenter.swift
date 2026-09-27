@@ -85,6 +85,7 @@ class MealItemAmountViewPresenter {
                 nutrients: unitNutrients.mapValues { $0 * scale }
             )
         }
+        interactor.playHaptic(option: .success)
         onConfirm(item)
         router.dismissScreen()
     }

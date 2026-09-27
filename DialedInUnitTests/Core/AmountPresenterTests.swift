@@ -241,20 +241,42 @@ struct MealItemAmountPresenterTests {
         let presenter: MealItemAmountViewPresenter
         let box: ItemBox
         let delegate: MealItemAmountViewDelegate
+        let interactor: Interactor
     }
 
     private func makeScreen(mode: MealItemAmountViewMode) -> Screen {
         let box = ItemBox()
         let delegate = MealItemAmountViewDelegate(mode: mode, onConfirm: { box.item = $0 })
+        let interactor = Interactor()
         return Screen(
             presenter: MealItemAmountViewPresenter(
-                interactor: Interactor(),
+                interactor: interactor,
                 router: Router(),
                 delegate: delegate
             ),
             box: box,
-            delegate: delegate
+            delegate: delegate,
+            interactor: interactor
         )
+    }
+
+    @Test("Test Confirming Plays A Success Haptic")
+    func testConfirmingPlaysASuccessHaptic() {
+        let screen = makeScreen(mode: .addFood(food()))
+
+        screen.presenter.onConfirmPressed(delegate: screen.delegate)
+
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// Logging a food and correcting one are different jobs, so the button says which.
+    @Test("Test Adding Logs And Editing Saves")
+    func testAddingLogsAndEditingSaves() {
+        let adding = MealItemAmountViewDelegate(mode: .addFood(food()), onConfirm: { _ in })
+        let editing = MealItemAmountViewDelegate(mode: .editItem(loggedItem()), onConfirm: { _ in })
+
+        #expect(adding.confirmTitle == String(localized: "Log"))
+        #expect(editing.confirmTitle == String(localized: "Save"))
     }
 
     // MARK: - Adding a food
@@ -494,6 +516,19 @@ struct IngredientAmountPresenterTests {
     }
 
     // MARK: - Adding an ingredient to the plate
+
+    @Test("Test Logging An Ingredient Or Adding It To A Recipe Plays A Success Haptic")
+    func testLoggingAnIngredientOrAddingItToARecipePlaysASuccessHaptic() {
+        let ingredientInteractor = IngredientInteractor()
+        IngredientAmountPresenter(interactor: ingredientInteractor, router: IngredientRouter())
+            .add(ingredient: food()) { _ in }
+        #expect(ingredientInteractor.playedHaptics.map { "\($0)" } == ["success"])
+
+        let recipeInteractor = RecipeInteractor()
+        RecipeIngredientAmountPresenter(interactor: recipeInteractor, router: RecipeRouter())
+            .confirm(delegate: RecipeIngredientAmountDelegate(food: food(), onConfirm: { _ in }))
+        #expect(recipeInteractor.playedHaptics.map { "\($0)" } == ["success"])
+    }
 
     @Test("Test An Ingredient Amount Scales From Per 100g")
     func testAnIngredientAmountScalesFromPer100g() {

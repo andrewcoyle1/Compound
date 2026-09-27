@@ -29,14 +29,15 @@ struct WorkoutNotesView: View {
         VStack(alignment: .leading) {
             if let hint = delegate.hint {
                 Text("Last time: \(hint)")
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
                     .padding(.top)
             }
             TextEditor(text: delegate.notes)
+                .scrollContentBackground(.hidden)
                 .padding()
-                .background(Color.secondaryBackground, in: .rect(cornerRadius: 24))
+                .cardSurface()
                 .padding()
             Spacer()
         }
@@ -49,14 +50,14 @@ struct WorkoutNotesView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button("Cancel") {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
             }
         }
 
-        ToolbarItem(placement: .topBarTrailing) {
-            Button(delegate.saveTitle) {
+        ToolbarItem(placement: .confirmationAction) {
+            Button(delegate.saveTitle, role: .confirm) {
                 delegate.onSave()
                 presenter.onDismissPressed()
             }

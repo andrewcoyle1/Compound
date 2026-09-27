@@ -111,7 +111,19 @@ class WorkoutExerciseEquipmentSheetPresenter {
     }
 
     func onSelectVariation(id: String) {
+        guard chosenVariationId != id else { return }
         chosenVariationId = id
+        interactor.playHaptic(option: .selection)
+    }
+
+    /// The row's subtitle: what the variation loads with and what it is braced by, leaving out
+    /// either that is "None".
+    func detail(for item: VariationDisplayItem) -> String? {
+        let parts = [
+            item.resistanceSummary == "None" ? nil : String(localized: "Resistance: \(item.resistanceSummary)"),
+            item.supportSummary == "None" ? nil : String(localized: "Support: \(item.supportSummary)")
+        ].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: "\n")
     }
 
     func onCancelPressed() {

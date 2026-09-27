@@ -55,6 +55,18 @@ Files no WP may commit changes to, and why:
 - One logical change per commit, message prefixed `[UI]`, `[Fix]` or `[Chore]` like the existing
   history. A real bug found on the way is fixed in its own `[Fix]` commit with a test that would
   have caught it. Verify it is real first by tracing call sites.
+- **Dynamic Type, always.** Any fixed type size in a file you own is replaced with a Dynamic Type
+  equivalent, whatever else the WP says:
+  - `.font(.system(size:))` without a text style
+  - `Font.custom(_:size:)` without `relativeTo:`
+  - a hardcoded `UIFont` point size
+  - a fixed `.frame(height:)` that clips text
+
+  Use a text-style token from `CONTRACT.md` for text and `.iconSize(_:)` for symbols. Where a size
+  has to stay proportional, use `@ScaledMetric(relativeTo:)`. The only exceptions are share cards
+  rendered to images and the widget; `CONTRACT.md` names them. If you see a fixed size in a file
+  you do not own, list it in your report. WP-15 sweeps the leftovers and its lint rule stops new
+  ones.
 - Keep behaviour. This is a styling and structure pass. The only intended behaviour changes are
   the bug fixes and the pattern changes the WP names, such as haptics and toolbar roles.
 - **Clean up.** Kill every process you start. Bound any wait loop with a timeout. Delete your

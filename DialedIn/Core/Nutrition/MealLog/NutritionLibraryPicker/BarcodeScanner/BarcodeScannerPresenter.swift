@@ -110,6 +110,7 @@ class BarcodeScannerPresenter {
             parsedIngredient = decoded.toFood(authorId: interactor.currentUser?.userId)
         } catch {
             labelError = error.localizedDescription
+            interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
         isParsingLabel = false
@@ -123,11 +124,13 @@ class BarcodeScannerPresenter {
         do {
             try await interactor.saveFood(ingredient, image: nil)
             savedSuccessfully = true
+            interactor.playHaptic(option: .success)
             parsedIngredient = nil
             scannedCode = nil
             isScanning = true
         } catch {
             labelError = error.localizedDescription
+            interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
         isSavingIngredient = false
@@ -138,6 +141,13 @@ class BarcodeScannerPresenter {
         labelError = nil
         savedSuccessfully = false
         isScanning = true
+    }
+
+    /// The mode picker changed: point the scanner at the new kind of data and start over.
+    func onScanningModeChanged() {
+        interactor.playHaptic(option: .selection)
+        recognisedTypes = scanningMode.recognisedTypes
+        onRescanPressed()
     }
 
     func onRescanPressed() {
@@ -173,6 +183,7 @@ class BarcodeScannerPresenter {
                 parsedIngredient = food
             } catch {
                 barcodeError = error.localizedDescription
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.onBarcodeError(message: error.localizedDescription))
             }
         }

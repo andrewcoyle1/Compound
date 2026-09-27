@@ -357,6 +357,7 @@ struct AddMealPresenterTests {
         #expect(screen.interactor.savedMeals.map(\.mealId) == ["meal-1"])
         #expect(screen.interactor.draftDeletes == 1)
         #expect(screen.interactor.trackedEventNames.contains("AddMealView_SaveMeal_Success"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// A failed save keeps the draft, so the meal is still there to try again with.
@@ -384,6 +385,26 @@ struct AddMealPresenterTests {
         await TestManagers.eventually { !screen.router.alerts.isEmpty }
 
         #expect(screen.router.alerts.map(\.title) == ["Unable to Save Meal"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    @Test("Test Deleting A Plate Item Removes Only That Item")
+    func testDeletingAPlateItemRemovesOnlyThatItem() {
+        let screen = makeScreen(meal: meal(items: [item(id: "a", calories: 100), item(id: "b", calories: 50)]))
+
+        screen.presenter.onDeleteMealItem(screen.presenter.mealLog.items[0])
+
+        #expect(screen.presenter.mealLog.items.map(\.itemId) == ["b"])
+    }
+
+    @Test("Test Changing Scope Plays A Selection Haptic")
+    func testChangingScopePlaysASelectionHaptic() {
+        let screen = makeScreen()
+
+        screen.presenter.nutritionScope = .day
+        screen.presenter.onNutritionScopeChanged()
+
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
     }
 
     /// The draft failure alert used to talk about a workout on the meal screen.

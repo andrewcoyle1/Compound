@@ -138,6 +138,19 @@ struct BarcodeScannerPresenterTests {
     }
 
     /// The two modes read different things, and the scanner is told which through this set.
+    @Test("Test Changing Mode Retargets The Scanner And Starts Over")
+    func testChangingModeRetargetsTheScannerAndStartsOver() {
+        let screen = makeScreen()
+        screen.presenter.scannedCode = "5012345678900"
+
+        screen.presenter.scanningMode = .label
+        screen.presenter.onScanningModeChanged()
+
+        #expect(screen.presenter.recognisedTypes == [.text()])
+        #expect(screen.presenter.scannedCode == nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
+    }
+
     @Test("Test Each Mode Recognises Its Own Data Type")
     func testEachModeRecognisesItsOwnDataType() {
         #expect(ScanningMode.barcode.recognisedTypes == [.barcode()])
@@ -356,6 +369,7 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.presenter.parsedIngredient == nil)
         #expect(!screen.presenter.isParsingLabel)
         #expect(screen.interactor.trackedEventNames.contains("BarcodeScanner_LabelError"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// The analyser is a language model, so malformed JSON is a normal outcome rather than a
@@ -409,6 +423,7 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.presenter.scannedCode == nil)
         #expect(screen.presenter.isScanning)
         #expect(!screen.presenter.isSavingIngredient)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test Saving Without An Ingredient Does Nothing")
@@ -437,6 +452,7 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.presenter.parsedIngredient != nil)
         #expect(screen.presenter.labelError != nil)
         #expect(screen.interactor.trackedEventNames.contains("BarcodeScanner_LabelError"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     @Test("Test Dismissing A Result Clears It And Resumes Scanning")
@@ -561,6 +577,7 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.presenter.parsedIngredient == nil)
         #expect(!screen.presenter.isLookingUpBarcode)
         #expect(screen.interactor.trackedEventNames.contains("BarcodeScanner_BarcodeError"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// The camera fires repeatedly as it moves across a shelf, so a new code has to displace the

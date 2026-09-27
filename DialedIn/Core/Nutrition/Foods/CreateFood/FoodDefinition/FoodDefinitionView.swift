@@ -69,31 +69,29 @@ struct FoodDefinitionDelegate {
 }
 
 struct FoodDefinitionView: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
+
     @State var presenter: FoodDefinitionPresenter
     let delegate: FoodDefinitionDelegate
-    
+
     var body: some View {
         List {
             Section {
-                Picker("", selection: $presenter.foodDefinitionOption) {
+                Picker("Nutrition information", selection: $presenter.foodDefinitionOption) {
                     ForEach(FoodDefinitionOption.allCases, id: \.self) { option in
                         Text(option.name).tag(option)
                     }
                 }
                 .pickerStyle(.segmented)
+                .labelsHidden()
                 .removeListRowFormatting()
             } header: {
                 Text("What will you be entering nutrition information for?")
-                    .font(.subheadline)
             }
-            
+
             switch presenter.foodDefinitionOption {
             case .usLabel: Text("US Label")
             case .nonUsLabel: Text("Non-US Label")
-            case .foodDetail: foodDetailSection
+            case .foodDetail: foodDetailSections
             }
         }
         .navigationTitle("Create Food")
@@ -104,356 +102,175 @@ struct FoodDefinitionView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .safeAreaInset(edge: .bottom) {
-            VStack {
-                CallToActionButton(isPrimaryAction: true) {
+        .bottomCTA {
+            if presenter.canAddToPlate(delegate: delegate) {
+                CallToActionButton {
                     presenter.onCreateAndAddPressed(delegate: delegate)
                 } label: {
                     Text("Create & Add")
                 }
-                CallToActionButton(isPrimaryAction: false) {
-                    presenter.onCreatePressed(delegate: delegate)
-                } label: {
-                    Text("Create")
-                }
             }
-            .padding(.bottom)
+            CallToActionButton(isPrimaryAction: !presenter.canAddToPlate(delegate: delegate)) {
+                presenter.onCreatePressed(delegate: delegate)
+            } label: {
+                Text("Create")
+            }
         }
     }
-    
+
+    // MARK: - Food detail
+
+    /// One section per nutrient group, each a disclosure of labelled number fields. Only calories
+    /// and macros start open.
     @ViewBuilder
-    private var foodDetailSection: some View {
+    private var foodDetailSections: some View {
         Section {
-            caloriesAndMacrosSection
-            carbsSection
-            fatsSection
-            proteinSection
-            vitaminsSection
-            mineralsSection
-            otherSection
+            DisclosureGroup(isExpanded: $presenter.isShowingMacros) {
+                NumberField(
+                    "0",
+                    value: $presenter.energy,
+                    units: Array(EnergyUnit.allCases),
+                    selection: $presenter.energyUnit,
+                    label: String(localized: "Energy")
+                )
+                fields(Self.macros)
+            } label: {
+                Text("Calories & Macros")
+                    .font(.sectionTitle)
+            }
         } header: {
             VStack(alignment: .leading) {
                 Text("Provide nutrition facts for \(delegate.nutritionDefinitionOption.name.lowercased())")
                 if let portionSize = delegate.portionSize, let portionName = delegate.portionName {
-                    Text("Serving Size: \(portionSize) \(portionName)")
-                        .font(.caption)
+                    Text("Serving Size: \(portionSize.formatted()) \(portionName)")
+                        .font(.label)
                 }
             }
         }
+        group("Carbs Breakdown", Self.carbs)
+        group("Fats Breakdown", Self.fats)
+        group("Protein Breakdown", Self.proteins)
+        group("Vitamins Breakdown", Self.vitamins)
+        group("Minerals Breakdown", Self.minerals)
+        group("Other", Self.other)
     }
-    
-    private var caloriesAndMacrosSection: some View {
-        DisclosureGroup(isExpanded: $presenter.isShowingMacros) {
-            Group {
-                LabeledTextFieldWithUnitPicker<EnergyUnit>(
-                    label: "Energy",
-                    value: $presenter.energy,
-                    unit: $presenter.energyUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Protein",
-                    value: $presenter.protein,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Carbs",
-                    value: $presenter.carbs,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Fats",
-                    value: $presenter.fats,
-                    unit: presenter.nutritionWeightUnit)
+
+    private func group(_ title: LocalizedStringKey, _ rows: [Row]) -> some View {
+        Section {
+            DisclosureGroup {
+                fields(rows)
+            } label: {
+                Text(title)
+                    .font(.sectionTitle)
             }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Calories & Macros")
-                .font(.headline)
         }
     }
-    
-    private var carbsSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Fiber",
-                    value: $presenter.fiber,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Starch",
-                    value: $presenter.starch,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Sugars",
-                    value: $presenter.sugars,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Sugars (Added)",
-                    value: $presenter.addedSugars,
-                    unit: presenter.nutritionWeightUnit)
+
+    private func fields(_ rows: [Row]) -> some View {
+        ForEach(rows, id: \.label) { row in
+            if row.picksUnit {
+                NumberField(
+                    "0",
+                    value: $presenter[dynamicMember: row.value],
+                    units: Array(NutritionWeightUnit.allCases),
+                    selection: $presenter.nutritionWeightUnit,
+                    label: row.label
+                )
+            } else {
+                NumberField("0", value: $presenter[dynamicMember: row.value], unit: presenter.nutritionWeightUnit.acronym, label: row.label)
             }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Carbs Breakdown")
-                .font(.headline)
         }
     }
-    
-    private var fatsSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Monounsaturated Fat",
-                    value: $presenter.monounsaturatedFats,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Polyunsaturated Fat",
-                    value: $presenter.polyunsaturatedFats,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Omega-3",
-                    value: $presenter.omega3,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Omega-3 ALA",
-                    value: $presenter.omega3Ala,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Omega-3 DHA",
-                    value: $presenter.omega3Dha,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Omega-3 EPA",
-                    value: $presenter.omega3Epa,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Omega-6",
-                    value: $presenter.omega6,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Saturated Fat",
-                    value: $presenter.saturatedFats,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Trans Fat",
-                    value: $presenter.transFats,
-                    unit: presenter.nutritionWeightUnit)
-            }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Fats Breakdown")
-                .font(.headline)
+
+    // MARK: - Fields
+
+    /// A nutrient field: its label, the presenter property it edits, and whether it offers the
+    /// unit picker (which, as before, sets the unit every weight field shares).
+    private struct Row {
+        let label: String
+        let value: ReferenceWritableKeyPath<FoodDefinitionPresenter, Double?>
+        var picksUnit: Bool = false
+
+        init(_ label: String.LocalizationValue, _ value: ReferenceWritableKeyPath<FoodDefinitionPresenter, Double?>, picksUnit: Bool = false) {
+            self.label = String(localized: label)
+            self.value = value
+            self.picksUnit = picksUnit
         }
     }
-    
-    private var proteinSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Cysteine",
-                    value: $presenter.cysteine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Histidine",
-                    value: $presenter.histidine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Isoleucine",
-                    value: $presenter.isoleucine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Leucine",
-                    value: $presenter.leucine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Lysine",
-                    value: $presenter.lysine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Methionine",
-                    value: $presenter.methionine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Phenylalanine",
-                    value: $presenter.phenylalinine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Threonine",
-                    value: $presenter.threonine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Tryptophan",
-                    value: $presenter.tryptophan,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Tyrosine",
-                    value: $presenter.tyrosine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Valine",
-                    value: $presenter.valine,
-                    unit: presenter.nutritionWeightUnit)
-            }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Protein Breakdown")
-                .font(.headline)
-        }
-    }
-    
-    private var vitaminsSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B1, Thiamine",
-                    value: $presenter.b1Thiamine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B2, Riboflavin",
-                    value: $presenter.b2Riboflavin,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B3, Niacin",
-                    value: $presenter.b3Niacin,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B5, Pantothenic Acid",
-                    value: $presenter.b5PantothenicAcid,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B6, Pyridoxine",
-                    value: $presenter.b6Pyridoxine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "B12, Cobalamin",
-                    value: $presenter.b12Cobalamin,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Folate",
-                    value: $presenter.folate,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnitPicker<NutritionWeightUnit>(
-                    label: "Vitamin A",
-                    value: $presenter.vitaminA,
-                    unit: $presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Vitamin C",
-                    value: $presenter.vitaminC,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnitPicker<NutritionWeightUnit>(
-                    label: "Vitamin D",
-                    value: $presenter.vitaminD,
-                    unit: $presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnitPicker<NutritionWeightUnit>(
-                    label: "Vitamin E",
-                    value: $presenter.vitaminE,
-                    unit: $presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Vitamin K",
-                    value: $presenter.vitaminK,
-                    unit: presenter.nutritionWeightUnit)
-            }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Vitamins Breakdown")
-                .font(.headline)
-        }
-    }
-    
-    private var mineralsSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Calcium",
-                    value: $presenter.calcium,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Copper",
-                    value: $presenter.copper,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Iron",
-                    value: $presenter.iron,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Magnesium",
-                    value: $presenter.magnesium,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Manganese",
-                    value: $presenter.manganese,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Phosphorus",
-                    value: $presenter.phosphorus,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Potassium",
-                    value: $presenter.potassium,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Selenium",
-                    value: $presenter.selenium,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnitPicker<NutritionWeightUnit>(
-                    label: "Sodium",
-                    value: $presenter.sodium,
-                    unit: $presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Zinc",
-                    value: $presenter.zinc,
-                    unit: presenter.nutritionWeightUnit)
-            }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Minerals Breakdown")
-                .font(.headline)
-        }
-    }
-    private var otherSection: some View {
-        DisclosureGroup {
-            Group {
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Alcohol",
-                    value: $presenter.alcohol,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Caffeine",
-                    value: $presenter.caffeine,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Cholesterol",
-                    value: $presenter.cholesterol,
-                    unit: presenter.nutritionWeightUnit)
-                LabeledTextFieldWithUnit<NutritionWeightUnit>(
-                    label: "Water",
-                    value: $presenter.water,
-                    unit: presenter.nutritionWeightUnit)
-            }
-            .padding(.bottom)
-            .listRowSeparator(.hidden)
-            .listRowInsets(.vertical, 0)
-            .listRowInsets(.leading, 0)
-        } label: {
-            Text("Other")
-                .font(.headline)
-        }
-    }
+
+    private static let macros: [Row] = [
+        Row("Protein", \.protein),
+        Row("Carbs", \.carbs),
+        Row("Fats", \.fats)
+    ]
+
+    private static let carbs: [Row] = [
+        Row("Fiber", \.fiber),
+        Row("Starch", \.starch),
+        Row("Sugars", \.sugars),
+        Row("Sugars (Added)", \.addedSugars)
+    ]
+
+    private static let fats: [Row] = [
+        Row("Monounsaturated Fat", \.monounsaturatedFats),
+        Row("Polyunsaturated Fat", \.polyunsaturatedFats),
+        Row("Omega-3", \.omega3),
+        Row("Omega-3 ALA", \.omega3Ala),
+        Row("Omega-3 DHA", \.omega3Dha),
+        Row("Omega-3 EPA", \.omega3Epa),
+        Row("Omega-6", \.omega6),
+        Row("Saturated Fat", \.saturatedFats),
+        Row("Trans Fat", \.transFats)
+    ]
+
+    private static let proteins: [Row] = [
+        Row("Cysteine", \.cysteine),
+        Row("Histidine", \.histidine),
+        Row("Isoleucine", \.isoleucine),
+        Row("Leucine", \.leucine),
+        Row("Lysine", \.lysine),
+        Row("Methionine", \.methionine),
+        Row("Phenylalanine", \.phenylalinine),
+        Row("Threonine", \.threonine),
+        Row("Tryptophan", \.tryptophan),
+        Row("Tyrosine", \.tyrosine),
+        Row("Valine", \.valine)
+    ]
+
+    private static let vitamins: [Row] = [
+        Row("B1, Thiamine", \.b1Thiamine),
+        Row("B2, Riboflavin", \.b2Riboflavin),
+        Row("B3, Niacin", \.b3Niacin),
+        Row("B5, Pantothenic Acid", \.b5PantothenicAcid),
+        Row("B6, Pyridoxine", \.b6Pyridoxine),
+        Row("B12, Cobalamin", \.b12Cobalamin),
+        Row("Folate", \.folate),
+        Row("Vitamin A", \.vitaminA, picksUnit: true),
+        Row("Vitamin C", \.vitaminC),
+        Row("Vitamin D", \.vitaminD, picksUnit: true),
+        Row("Vitamin E", \.vitaminE, picksUnit: true),
+        Row("Vitamin K", \.vitaminK)
+    ]
+
+    private static let minerals: [Row] = [
+        Row("Calcium", \.calcium),
+        Row("Copper", \.copper),
+        Row("Iron", \.iron),
+        Row("Magnesium", \.magnesium),
+        Row("Manganese", \.manganese),
+        Row("Phosphorus", \.phosphorus),
+        Row("Potassium", \.potassium),
+        Row("Selenium", \.selenium),
+        Row("Sodium", \.sodium, picksUnit: true),
+        Row("Zinc", \.zinc)
+    ]
+
+    private static let other: [Row] = [
+        Row("Alcohol", \.alcohol),
+        Row("Caffeine", \.caffeine),
+        Row("Cholesterol", \.cholesterol),
+        Row("Water", \.water)
+    ]
 }
 
 enum FoodDefinitionOption: CaseIterable {

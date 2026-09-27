@@ -25,7 +25,7 @@ struct RecipeListBuilderView: View {
     /// library's.
     var body: some View {
         if delegate.searchText == nil {
-            list.searchable(text: $presenter.searchText, prompt: "Filter Recipes")
+            list.searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Filter Recipes"))
         } else {
             list
         }
@@ -49,7 +49,7 @@ struct RecipeListBuilderView: View {
                 ContentUnavailableView.search(text: presenter.searchText)
             } else if presenter.searchText.isEmpty && presenter.userRecipeTemplates.isEmpty && presenter.systemRecipeTemplates.isEmpty {
                 ContentUnavailableView {
-                    Label("No Recipes", systemImage: "book.closed")
+                    Label("No Recipes", systemImage: Symbol.recipe)
                 } description: {
                     Text("Recipes you create appear here.")
                 } actions: {
@@ -72,7 +72,8 @@ struct RecipeListBuilderView: View {
                 Button {
                     presenter.onAddRecipePressed()
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
+                        .foregroundStyle(.onAccent)
                 }
                 .accessibilityLabel("Add recipe")
                 .buttonStyle(.glassProminent)
@@ -128,16 +129,17 @@ struct RecipeListBuilderView: View {
                 )
             )
         } else {
-            CustomListCellView(
-                imageName: recipe.imageURL,
-                title: recipe.name,
-                subtitle: recipe.description,
-                isSelected: isRecipeTemplateSelected(recipe)
-            )
-            .anyButton(.highlight) {
+            Button {
                 delegate.onRecipeSelectionChanged?(recipe)
+            } label: {
+                ListRow(
+                    title: recipe.name,
+                    subtitle: recipe.description,
+                    imageName: recipe.imageURL,
+                    accessory: delegate.selectedRecipeTemplates == nil ? .chevron : .checkmark(isRecipeTemplateSelected(recipe))
+                )
+                .contentShape(.rect)
             }
-            .removeListRowFormatting()
         }
     }
 }

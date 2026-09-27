@@ -217,6 +217,7 @@ struct FoodItemQuickAddPresenterTests {
         #expect(item?.displayName == "Leftovers")
         #expect(item?.sourceType == .quickAdd)
         #expect(screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_QuickAdd"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// There is no food behind the item and no weight to scale by, so it is one serving and its

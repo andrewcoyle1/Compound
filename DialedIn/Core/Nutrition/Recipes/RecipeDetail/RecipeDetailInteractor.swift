@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol RecipeDetailInteractor {
+protocol RecipeDetailInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     func isFavouriteRecipe(id: String) -> Bool
     func setFavouriteRecipe(id: String, isFavourite: Bool) async throws

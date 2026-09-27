@@ -24,6 +24,8 @@ class NutritionLibraryPickerPresenter {
     }
         
     func onModePressed(_ mode: NutritionPickerMode) {
+        guard mode != self.mode else { return }
+        interactor.playHaptic(option: .selection)
         self.mode = mode
     }
     
@@ -79,12 +81,12 @@ enum NutritionPickerMode: String, CaseIterable, DataSyncModelProtocol {
     
     var systemName: String {
         switch self {
-        case .barcode: return "barcode"
-        case .search: return "magnifyingglass"
-        case .aiScanner: return "wand.and.stars"
+        case .barcode: return Symbol.barcode
+        case .search: return Symbol.search
+        case .aiScanner: return Symbol.camera
         case .quickAdd: return "hare"
-        case .library: return "book"
-        case .describe: return "pencil"
+        case .library: return Symbol.library
+        case .describe: return "text.bubble"
         }
     }
 }

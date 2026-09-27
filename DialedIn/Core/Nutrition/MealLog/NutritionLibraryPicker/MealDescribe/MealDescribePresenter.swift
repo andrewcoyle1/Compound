@@ -31,7 +31,18 @@ class MealDescribePresenter {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
 
-    func onLogFoodsPressed() async {
+    var canAnalyse: Bool {
+        !descriptionText.trimmingCharacters(in: .whitespaces).isEmpty && !isAnalysing
+    }
+
+    /// Holds the description to `characterLimit`.
+    func onDescriptionChanged(_ newValue: String) {
+        if newValue.count > characterLimit {
+            descriptionText = String(newValue.prefix(characterLimit))
+        }
+    }
+
+    func onAnalysePressed() async {
         guard !descriptionText.trimmingCharacters(in: .whitespaces).isEmpty,
               interactor.ensureOnline(or: router) else { return }
         isAnalysing = true
@@ -44,6 +55,7 @@ class MealDescribePresenter {
             analysisResults = decoded.items
         } catch {
             errorMessage = error.localizedDescription
+            interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onError(message: error.localizedDescription))
         }
         isAnalysing = false

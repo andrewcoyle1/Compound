@@ -139,6 +139,7 @@ struct FoodPhotoScannerPresenterTests {
         #expect(screen.presenter.errorMessage != nil)
         #expect(!screen.presenter.isAnalysing)
         #expect(screen.interactor.trackedEventNames.contains("FoodPhotoScanner_Error"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// A second capture clears the first one's results and error, so a retry that works does not
@@ -293,7 +294,7 @@ struct MealDescribePresenterTests {
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
 
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         #expect(screen.presenter.analysisResults.map(\.name) == ["Porridge", "Banana"])
         #expect(screen.interactor.describedTexts == ["Porridge and a banana"])
@@ -307,7 +308,7 @@ struct MealDescribePresenterTests {
         let screen = makeScreen()
         screen.presenter.descriptionText = "   "
 
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         #expect(screen.interactor.describedTexts.isEmpty)
         #expect(!screen.presenter.isAnalysing)
@@ -321,7 +322,7 @@ struct MealDescribePresenterTests {
         let presenter = MealDescribePresenter(interactor: interactor, router: router)
         presenter.descriptionText = "Porridge with honey"
 
-        await presenter.onLogFoodsPressed()
+        await presenter.onAnalysePressed()
 
         #expect(router.alertTitles == [OfflineError.title])
         #expect(interactor.describedTexts.isEmpty)
@@ -334,11 +335,33 @@ struct MealDescribePresenterTests {
         screen.interactor.error = URLError(.notConnectedToInternet)
         screen.presenter.descriptionText = "Porridge"
 
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         #expect(screen.presenter.errorMessage != nil)
         #expect(!screen.presenter.isAnalysing)
         #expect(screen.interactor.trackedEventNames.contains("MealDescribe_Error"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    @Test("Test A Description Is Held To The Character Limit")
+    func testADescriptionIsHeldToTheCharacterLimit() {
+        let screen = makeScreen()
+        let long = String(repeating: "a", count: screen.presenter.characterLimit + 20)
+        screen.presenter.descriptionText = long
+
+        screen.presenter.onDescriptionChanged(long)
+
+        #expect(screen.presenter.descriptionText.count == screen.presenter.characterLimit)
+    }
+
+    @Test("Test Analyse Is Enabled Only With A Description")
+    func testAnalyseIsEnabledOnlyWithADescription() {
+        let screen = makeScreen()
+        screen.presenter.descriptionText = "  "
+        #expect(!screen.presenter.canAnalyse)
+
+        screen.presenter.descriptionText = "Porridge"
+        #expect(screen.presenter.canAnalyse)
     }
 
     @Test("Test Unreadable Output Is An Error Not A Crash")
@@ -347,7 +370,7 @@ struct MealDescribePresenterTests {
         screen.interactor.json = "I am not sure what you ate."
         screen.presenter.descriptionText = "Porridge"
 
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         #expect(screen.presenter.errorMessage != nil)
         #expect(screen.presenter.analysisResults.isEmpty)
@@ -360,13 +383,13 @@ struct MealDescribePresenterTests {
         let screen = makeScreen()
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         screen.interactor.json = """
         {"items": [{"id": "3", "name": "Toast", "amountGrams": 40, "calories": 110}]}
         """
         screen.presenter.descriptionText = "Toast"
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         #expect(screen.presenter.analysisResults.map(\.name) == ["Toast"])
     }
@@ -377,7 +400,7 @@ struct MealDescribePresenterTests {
         let screen = makeScreen()
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
         let result = screen.presenter.analysisResults.first
 
         if let result {
@@ -397,7 +420,7 @@ struct MealDescribePresenterTests {
         let screen = makeScreen()
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         if let second = screen.presenter.analysisResults.last {
             screen.presenter.onAddItem(second, delegate: screen.delegate)
@@ -412,7 +435,7 @@ struct MealDescribePresenterTests {
         let screen = makeScreen()
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
-        await screen.presenter.onLogFoodsPressed()
+        await screen.presenter.onAnalysePressed()
 
         if let banana = screen.presenter.analysisResults.last {
             screen.presenter.onAddItem(banana, delegate: screen.delegate)

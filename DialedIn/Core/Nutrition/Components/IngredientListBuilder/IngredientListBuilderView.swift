@@ -41,7 +41,7 @@ struct IngredientListBuilderView: View {
     /// library's.
     var body: some View {
         if delegate.searchText == nil {
-            list.searchable(text: $presenter.searchText, prompt: "Filter Foods")
+            list.searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Filter Foods"))
         } else {
             list
         }
@@ -65,7 +65,7 @@ struct IngredientListBuilderView: View {
                 ContentUnavailableView.search(text: presenter.searchText)
             } else if presenter.searchText.isEmpty && presenter.userFoods.isEmpty && presenter.systemFoods.isEmpty {
                 ContentUnavailableView {
-                    Label("No Foods", systemImage: "carrot")
+                    Label("No Foods", systemImage: Symbol.food)
                 } description: {
                     Text("Foods you create appear here.")
                 } actions: {
@@ -88,7 +88,8 @@ struct IngredientListBuilderView: View {
                 Button {
                     presenter.onAddIngredientPressed(delegate: delegate)
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
+                        .foregroundStyle(.onAccent)
                 }
                 .accessibilityLabel("Add ingredient")
                 .buttonStyle(.glassProminent)

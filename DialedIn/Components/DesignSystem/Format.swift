@@ -28,6 +28,12 @@ enum Format {
         return "\(value.formatted(.number.precision(.fractionLength(digits)).locale(locale))) g"
     }
 
+    /// `"16.9 g"`, `"120 mg"`: up to one decimal at any size, for nutrition labels and nutrient
+    /// tables, which keep the precision the label printed. Elsewhere use `grams(_:)`.
+    static func nutrient(_ value: Double, unit: String = "g", locale: Locale = .autoupdatingCurrent) -> String {
+        "\(value.formatted(.number.precision(.fractionLength(0...1)).locale(locale))) \(unit)"
+    }
+
     /// `"82.5 kg"` / `"181.9 lb"`, up to one decimal, from a value stored in kilograms.
     static func weight(kg kilograms: Double, unit: ExerciseWeightUnit, locale: Locale = .autoupdatingCurrent) -> String {
         weight(UnitConversion.convertWeight(kilograms, to: unit), isPounds: unit == .pounds, locale: locale)

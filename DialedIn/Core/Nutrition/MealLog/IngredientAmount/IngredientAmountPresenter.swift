@@ -53,6 +53,7 @@ class IngredientAmountPresenter {
     }
 
     func add(ingredient: FoodModel, onConfirm: @escaping (MealItemModel) -> Void) {
+        interactor.playHaptic(option: .success)
         onConfirm(ingredient.mealItem(amount: amountValue, unit: selectedUnit))
     }
 

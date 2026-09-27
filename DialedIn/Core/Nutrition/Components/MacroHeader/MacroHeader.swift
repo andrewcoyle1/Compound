@@ -39,11 +39,11 @@ struct MacroHeader: View {
     }
 
     var body: some View {
-        VStack(spacing: Self.dotSpacing) {
+        VStack(spacing: Spacing.xs) {
             pages
             pageIndicator
         }
-        .padding(.bottom, 6)
+        .padding(.bottom, Spacing.s)
         .onAppear {
             // Set here rather than as the property's initial value, so there is a row to scroll to
             // by the time the position is applied.
@@ -71,14 +71,14 @@ struct MacroHeader: View {
     }
 
     private var pageIndicator: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: Spacing.xs) {
             ForEach(Page.allCases) { dot in
                 Circle()
-                    .fill(dot == page ? Color.primary.opacity(0.6) : Color.secondary.opacity(0.25))
+                    .fill(dot == page ? AnyShapeStyle(.secondary) : AnyShapeStyle(.quaternary))
                     .frame(width: Self.dotSize, height: Self.dotSize)
             }
         }
-        .animation(.easeInOut(duration: 0.15), value: page)
+        .reducedMotionAnimation(.quick, value: page)
         .accessibilityHidden(true)
     }
 
@@ -100,19 +100,19 @@ struct MacroHeader: View {
         switch macro {
         case .cals:
             macroBar(macro: .cals, total: dailyTotals.calories, target: dailyTarget.calories, page: page) {
-                Image(systemName: "flame")
+                Image(systemName: Symbol.calories)
             }
         case .fat:
             macroBar(macro: .fat, total: dailyTotals.fatGrams, target: dailyTarget.fatGrams, page: page) {
-                Text("F").bold()
+                Text("F").fontWeight(.bold)
             }
         case .protein:
             macroBar(macro: .protein, total: dailyTotals.proteinGrams, target: dailyTarget.proteinGrams, page: page) {
-                Text("P").bold()
+                Text("P").fontWeight(.bold)
             }
         case .carbs:
             macroBar(macro: .carbs, total: dailyTotals.carbGrams, target: dailyTarget.carbGrams, page: page) {
-                Text("C").bold()
+                Text("C").fontWeight(.bold)
             }
         }
     }
@@ -126,12 +126,15 @@ struct MacroHeader: View {
     ) -> some View {
         let remaining = Self.remaining(total: total, target: target, showOverages: showOverages)
 
-        return VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 3) {
+        let figure = page == .consumed ? String(localized: "\(String(describing: Int(total))) / \(String(describing: Int(target)))") : String(localized: "\(String(describing: Int(remaining))) left")
+
+        return VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(spacing: Spacing.xxs) {
                 icon()
-                Text(page == .consumed ? String(localized: "\(String(describing: Int(total))) / \(String(describing: Int(target)))") : String(localized: "\(String(describing: Int(remaining))) left"))
+                Text(figure)
+                    .monospacedDigit()
             }
-            .font(.caption2)
+            .font(.label)
             .lineLimit(1)
             .minimumScaleFactor(0.75)
 
@@ -139,6 +142,9 @@ struct MacroHeader: View {
             ProgressView(value: progress(page == .consumed ? total : remaining, of: target))
                 .tint(macro.colour)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(macro.title)
+        .accessibilityValue(figure)
     }
 
     /// How much of `target` is left, as the remaining page prints it.
@@ -168,7 +174,6 @@ struct MacroHeader: View {
     }
 
     private static let dotSize: CGFloat = 5
-    private static let dotSpacing: CGFloat = 4
 }
 
 #Preview {
@@ -189,12 +194,11 @@ struct MacroHeader: View {
     List {
         Text("Hello, World!")
     }
-    .safeAreaInset(edge: .top) {
+    .safeAreaBar(edge: .top) {
         MacroHeader(
             dailyTotals: totals,
             dailyTarget: targets
         )
-        .background(.bar)
     }
 }
 
@@ -211,13 +215,12 @@ struct MacroHeader: View {
     List {
         Text("Hello, World!")
     }
-    .safeAreaInset(edge: .top) {
+    .safeAreaBar(edge: .top) {
         MacroHeader(
             dailyTotals: totals,
             dailyTarget: .mock,
             remainingMode: true
         )
-        .background(.bar)
     }
 }
 
@@ -234,14 +237,13 @@ struct MacroHeader: View {
     List {
         Text("Hello, World!")
     }
-    .safeAreaInset(edge: .top) {
+    .safeAreaBar(edge: .top) {
         MacroHeader(
             dailyTotals: totals,
             dailyTarget: .mock,
             showOverages: true,
             remainingMode: true
         )
-        .background(.bar)
     }
 }
 
@@ -252,11 +254,10 @@ struct MacroHeader: View {
     List {
         Text("Hello, World!")
     }
-    .safeAreaInset(edge: .top) {
+    .safeAreaBar(edge: .top) {
         MacroHeader(
             dailyTotals: empty,
             dailyTarget: empty
         )
-        .background(.bar)
     }
 }

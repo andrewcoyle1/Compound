@@ -17,28 +17,24 @@ struct TimelineActionsView: View {
     var body: some View {
         List {
             Section {
-                CustomLabelButtonView(symbolName: "pages", title: String(localized: "Copy Day")) { EmptyView() }
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onCopyDayPressed(delegate: delegate)
-                    }
-                CustomLabelButtonView(symbolName: "trash", title: String(localized: "Clear Day")) { EmptyView() }
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onClearDayPressed(delegate: delegate)
-                    }
-                CustomToggleView(
-                    symbolName: "chevron.up",
+                ListRowButton(title: String(localized: "Copy Day"), systemImage: "doc.on.doc", accessory: .none) {
+                    presenter.onCopyDayPressed(delegate: delegate)
+                }
+                ListRowButton(title: String(localized: "Clear Day"), systemImage: Symbol.delete, tint: .danger, accessory: .none) {
+                    presenter.onClearDayPressed(delegate: delegate)
+                }
+                ListRowToggle(
                     title: String(localized: "Hide Food Details"),
-                    bool: Binding(
+                    systemImage: "eye.slash",
+                    isOn: Binding(
                         get: { presenter.hideFoodDetails },
                         set: { presenter.hideFoodDetails = $0 }
                     )
                 )
-                CustomToggleView(
-                    symbolName: "hourglass",
+                ListRowToggle(
                     title: String(localized: "Hide Empty Hours"),
-                    bool: Binding(
+                    systemImage: "hourglass",
+                    isOn: Binding(
                         get: { presenter.hideEmptyHours },
                         set: { presenter.hideEmptyHours = $0 }
                     )
@@ -70,23 +66,24 @@ struct TimelineActionsView: View {
             .padding(.horizontal)
             .navigationTitle("Copy Day")
             .navigationBarTitleDisplayMode(.inline)
-            .safeAreaInset(edge: .bottom) {
+            .bottomCTA {
                 CallToActionButton {
                     presenter.onCopyDayConfirmed(delegate: delegate)
                 } label: {
                     Text("Copy")
                 }
-                .padding(.bottom)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(role: .cancel) {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
                         presenter.isChoosingCopyDestination = false
                     }
                 }
             }
         }
+        // A native sheet: the date picker binds the presenter's copy destination.
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -118,7 +115,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showTimelineActionsView(delegate: TimelineActionsDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.4)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.timelineActionsView(router: router, delegate: delegate)
         }
     }

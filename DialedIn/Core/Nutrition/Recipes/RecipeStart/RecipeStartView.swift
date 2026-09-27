@@ -17,15 +17,13 @@ struct RecipeStartView: View {
         List {
             Section("Ingredients") {
                 ForEach(delegate.recipe.ingredients) { wrapper in
-                    HStack {
-                        Text(wrapper.ingredient.name)
-                        Spacer()
-                        Text("\(Int(wrapper.amount)) \(unitString(wrapper.unit))")
-                            .foregroundStyle(.secondary)
-                    }
+                    LabeledContent(wrapper.ingredient.name, value: "\(wrapper.amount.formatted(.number.precision(.fractionLength(0...1)))) \(unitString(wrapper.unit))")
+                        .monospacedDigit()
                 }
             }
         }
+        .navigationTitle(delegate.recipe.name)
+        .navigationBarTitleDisplayMode(.inline)
     }
     private func unitString(_ unit: IngredientAmountUnit) -> String {
         switch unit {

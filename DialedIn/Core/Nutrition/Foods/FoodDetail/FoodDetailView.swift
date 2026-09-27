@@ -35,7 +35,7 @@ struct FoodDetailView: View {
         }
         .navigationTitle(delegate.food.name)
         .navigationSubtitle(delegate.food.description ?? "")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -53,13 +53,6 @@ struct FoodDetailView: View {
                 .frame(maxWidth: .infinity, minHeight: 180)
         }
         .removeListRowFormatting()
-    }
-
-    private func descriptionSection(description: String) -> some View {
-        Section(header: Text("Description")) {
-            Text(description)
-                .font(.body)
-        }
     }
 
     private var macroNutrientSection: some View {
@@ -158,16 +151,12 @@ struct FoodDetailView: View {
         }
     }
 
-    private func rowItem(label: String, value: Double?, unit: String? = nil) -> some View {
-        HStack {
-            Text(label)
-            Spacer()
-            if let value = value {
-                Text(value.formatted() + " " + (unit ?? ""))
-            } else {
-                Text("-")
-            }
-        }
+    private func rowItem(label: String, value: Double?, unit: String) -> some View {
+        LabeledContent(
+            label,
+            value: value.map { NutrientAmount.format($0, unit: unit.trimmingCharacters(in: .whitespaces)) } ?? Format.placeholder
+        )
+        .monospacedDigit()
     }
 
     private var dateCreatedSection: some View {
@@ -179,8 +168,8 @@ struct FoodDetailView: View {
     private func authorSection(id: String) -> some View {
         Section(header: Text("Author ID")) {
             Text(id)
-                .font(.footnote)
-                .foregroundColor(.secondary)
+                .font(.rowDetail)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -212,10 +201,10 @@ struct FoodDetailView: View {
                     Button(role: .destructive) {
                         presenter.showDeleteConfirmation(food: delegate.food)
                     } label: {
-                        Label("Delete Food", systemImage: "trash")
+                        Label("Delete Food", systemImage: Symbol.delete)
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: Symbol.more)
                 }
                 .disabled(presenter.isDeleting)
                 .accessibilityLabel("Food options")

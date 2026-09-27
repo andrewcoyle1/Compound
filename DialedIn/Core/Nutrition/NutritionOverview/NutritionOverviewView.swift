@@ -7,7 +7,6 @@ struct NutritionOverviewDelegate {
 
 struct NutritionOverviewView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: NutritionOverviewPresenter
     let delegate: NutritionOverviewDelegate
 
@@ -18,11 +17,11 @@ struct NutritionOverviewView: View {
             caloriesSection
             contributorsSection
             macrosSection
-            carbsSection
-            fatsSection
-            vitaminsSection
-            mineralsSection
-            otherSection
+            nutrientSection("Carb Breakdown", carbs)
+            nutrientSection("Fat Breakdown", fats)
+            nutrientSection("Vitamins", vitamins)
+            nutrientSection("Minerals", minerals)
+            nutrientSection("Other", other)
         }
         .navigationTitle("Nutrition Overview")
         .navigationBarTitleDisplayMode(.inline)
@@ -43,29 +42,12 @@ struct NutritionOverviewView: View {
     private var checkInSection: some View {
         if presenter.dueCheckInWeekStart != nil {
             Section {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Weekly check-in ready")
-                        .font(.headline)
-                    Text("Review the week and update your program.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 12) {
-                        Button {
-                            presenter.onStartCheckInPressed()
-                        } label: {
-                            Text("Start")
-                                .foregroundStyle(colorScheme.backgroundPrimary)
-                        }
-                        .buttonStyle(.glassProminent)
-                        Button {
-                            presenter.onSkipCheckInPressed()
-                        } label: {
-                            Text("Skip this week")
-                        }
-                        .buttonStyle(.glass)
-                    }
-                }
-                .padding(.vertical, 4)
+                decisionCard(
+                    title: "Weekly check-in ready",
+                    message: Text("Review the week and update your program."),
+                    primary: ("Start", presenter.onStartCheckInPressed),
+                    secondary: ("Skip this week", presenter.onSkipCheckInPressed)
+                )
             }
         }
     }
@@ -79,56 +61,69 @@ struct NutritionOverviewView: View {
     private var proposalSection: some View {
         if let summary = presenter.proposalSummary, presenter.dueCheckInWeekStart == nil {
             Section {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("New targets suggested")
-                        .font(.headline)
-                    Text(summary)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    HStack(spacing: 12) {
-                        Button("Accept") {
-                            presenter.onAcceptProposalPressed()
-                        }
-                        .buttonStyle(.glassProminent)
-                        Button("Not now") {
-                            presenter.onDismissProposalPressed()
-                        }
-                        .buttonStyle(.glass)
-                    }
-                }
-                .padding(.vertical, 4)
+                decisionCard(
+                    title: "New targets suggested",
+                    message: Text(summary),
+                    primary: ("Accept", presenter.onAcceptProposalPressed),
+                    secondary: ("Not now", presenter.onDismissProposalPressed)
+                )
             }
         }
+    }
+
+    private func decisionCard(
+        title: LocalizedStringKey,
+        message: Text,
+        primary: (LocalizedStringKey, () -> Void),
+        secondary: (LocalizedStringKey, () -> Void)
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(title)
+                .font(.sectionTitle)
+            message
+                .font(.rowDetail)
+                .foregroundStyle(.secondary)
+            HStack(spacing: Spacing.m) {
+                Button(action: primary.1) {
+                    Text(primary.0)
+                        .foregroundStyle(.onAccent)
+                }
+                .buttonStyle(.glassProminent)
+                Button(secondary.0, action: secondary.1)
+                    .buttonStyle(.glass)
+            }
+        }
+        .padding(.vertical, Spacing.xs)
     }
 
     // MARK: - Calories
 
     private var caloriesSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("\(Int(presenter.totals.calories)) kcal consumed")
-                        .font(.headline)
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(Format.kcal(presenter.totals.calories)) consumed")
+                        .font(.sectionTitle)
                     Spacer()
                     if let target = presenter.target {
-                        Text("/ \(Int(target.calories)) kcal")
+                        Text("/ \(Format.kcal(target.calories))")
                             .foregroundStyle(.secondary)
                     }
                 }
+                .monospacedDigit()
                 ProgressView(value: presenter.caloriesProgress)
-                    .tint(.orange)
+                    .tint(.calories)
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
         } header: {
             HStack {
                 Text("Calories")
                 Spacer()
                 Toggle(isOn: $presenter.showsContributors) {
                     Text("Contributors")
-                        .lineLimit(1)
-                        .font(.subheadline)
+                        .font(.rowDetail)
                 }
-                .frame(width: 160)
+                .fixedSize()
             }
         }
     }
@@ -140,196 +135,126 @@ struct NutritionOverviewView: View {
         if presenter.showsContributors && !presenter.topContributors.isEmpty {
             Section("Top Contributors") {
                 ForEach(presenter.topContributors) { contributor in
-                    contributorRow(contributor)
+                    ListRow(
+                        title: contributor.displayName,
+                        subtitle: [
+                            String(localized: "\(Format.grams(contributor.proteinGrams)) P"),
+                            String(localized: "\(Format.grams(contributor.fatGrams)) F"),
+                            String(localized: "\(Format.grams(contributor.carbGrams)) C")
+                        ].joined(separator: " · "),
+                        accessory: .value(Format.kcal(contributor.calories))
+                    )
                 }
             }
         }
-    }
-
-    private func contributorRow(_ contributor: MealItemContributor) -> some View {
-        HStack {
-            Text(contributor.displayName)
-                .lineLimit(1)
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(Int(contributor.calories)) kcal")
-                    .font(.subheadline)
-                HStack(spacing: 6) {
-                    Text(String(format: "%.1f P", contributor.proteinGrams))
-                    Text(String(format: "%.1f F", contributor.fatGrams))
-                    Text(String(format: "%.1f C", contributor.carbGrams))
-                }
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.vertical, 2)
     }
 
     // MARK: - Macros
 
     private var macrosSection: some View {
         Section {
-            macroRow(label: "Protein", grams: presenter.totals.proteinGrams, target: presenter.target?.proteinGrams, progress: presenter.proteinProgress, color: .blue)
-            macroRow(label: "Carbs", grams: presenter.totals.carbGrams, target: presenter.target?.carbGrams, progress: presenter.carbsProgress, color: .green)
-            macroRow(label: "Fat", grams: presenter.totals.fatGrams, target: presenter.target?.fatGrams, progress: presenter.fatProgress, color: .yellow)
+            macroRow(.protein, grams: presenter.totals.proteinGrams, target: presenter.target?.proteinGrams, progress: presenter.proteinProgress)
+            macroRow(.carbs, grams: presenter.totals.carbGrams, target: presenter.target?.carbGrams, progress: presenter.carbsProgress)
+            macroRow(.fat, grams: presenter.totals.fatGrams, target: presenter.target?.fatGrams, progress: presenter.fatProgress)
         } header: {
             Text("Macros")
         }
     }
 
-    private func macroRow(label: String, grams: Double, target: Double?, progress: Double, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
+    private func macroRow(_ macro: Macro, grams: Double, target: Double?, progress: Double) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(macro.title)
                 Spacer()
-                Text(grams > 0 ? "\(formatted(grams))g" : "—")
+                Text(grams > 0 ? Format.grams(grams) : Format.placeholder)
                     .foregroundStyle(.secondary)
                 if let target {
-                    Text("/ \(formatted(target))g")
+                    Text("/ \(Format.grams(target))")
+                        .font(.label)
                         .foregroundStyle(.tertiary)
-                        .font(.caption)
                 }
             }
+            .monospacedDigit()
             ProgressView(value: progress)
-                .tint(color)
+                .tint(macro.colour)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, Spacing.xxs)
     }
 
-    // MARK: - Carb Breakdown
+    // MARK: - Nutrient breakdowns
 
+    /// A section of the nutrients the day has figures for; none, and the section is left out.
     @ViewBuilder
-    private var carbsSection: some View {
-        let breakdown = presenter.breakdown
-        let items: [NutrientAmount] = [
-            NutrientAmount(name: "Fiber", value: breakdown.fiberGrams, unit: "g"),
-            NutrientAmount(name: "Sugar", value: breakdown.sugarGrams, unit: "g"),
-            NutrientAmount(name: "Net Carbs", value: breakdown.netCarbsGrams, unit: "g")
-        ]
+    private func nutrientSection(_ title: LocalizedStringKey, _ items: [NutrientAmount]) -> some View {
         let available = items.filter { $0.value != nil }
         if !available.isEmpty {
-            Section("Carb Breakdown") {
+            Section(title) {
                 ForEach(available, id: \.name) { nutrient in
-                    nutrientRow(nutrient)
+                    LabeledContent(nutrient.name, value: nutrient.formattedValue)
+                        .monospacedDigit()
                 }
             }
         }
     }
 
-    // MARK: - Fat Breakdown
-
-    @ViewBuilder
-    private var fatsSection: some View {
+    private var carbs: [NutrientAmount] {
         let breakdown = presenter.breakdown
-        let items: [NutrientAmount] = [
-            NutrientAmount(name: "Saturated", value: breakdown.fatSaturatedGrams, unit: "g"),
-            NutrientAmount(name: "Monounsaturated", value: breakdown.fatMonounsaturatedGrams, unit: "g"),
-            NutrientAmount(name: "Polyunsaturated", value: breakdown.fatPolyunsaturatedGrams, unit: "g")
+        return [
+            NutrientAmount(name: String(localized: "Fiber"), value: breakdown.fiberGrams, unit: "g"),
+            NutrientAmount(name: String(localized: "Sugar"), value: breakdown.sugarGrams, unit: "g"),
+            NutrientAmount(name: String(localized: "Net Carbs"), value: breakdown.netCarbsGrams, unit: "g")
         ]
-        let available = items.filter { $0.value != nil }
-        if !available.isEmpty {
-            Section("Fat Breakdown") {
-                ForEach(available, id: \.name) { nutrient in
-                    nutrientRow(nutrient)
-                }
-            }
-        }
     }
 
-    // MARK: - Vitamins
-
-    @ViewBuilder
-    private var vitaminsSection: some View {
+    private var fats: [NutrientAmount] {
         let breakdown = presenter.breakdown
-        let items: [NutrientAmount] = [
-            NutrientAmount(name: "Vitamin A", value: breakdown.vitaminAMcg, unit: "mcg"),
-            NutrientAmount(name: "Vitamin B6", value: breakdown.vitaminB6Mg, unit: "mg"),
-            NutrientAmount(name: "Vitamin B12", value: breakdown.vitaminB12Mcg, unit: "mcg"),
-            NutrientAmount(name: "Vitamin C", value: breakdown.vitaminCMg, unit: "mg"),
-            NutrientAmount(name: "Vitamin D", value: breakdown.vitaminDMcg, unit: "mcg"),
-            NutrientAmount(name: "Vitamin E", value: breakdown.vitaminEMg, unit: "mg"),
-            NutrientAmount(name: "Vitamin K", value: breakdown.vitaminKMcg, unit: "mcg"),
-            NutrientAmount(name: "Thiamin", value: breakdown.thiaminMg, unit: "mg"),
-            NutrientAmount(name: "Riboflavin", value: breakdown.riboflavinMg, unit: "mg"),
-            NutrientAmount(name: "Niacin", value: breakdown.niacinMg, unit: "mg"),
-            NutrientAmount(name: "Pantothenic Acid", value: breakdown.pantothenicAcidMg, unit: "mg"),
-            NutrientAmount(name: "Folate", value: breakdown.folateMcg, unit: "mcg")
+        return [
+            NutrientAmount(name: String(localized: "Saturated"), value: breakdown.fatSaturatedGrams, unit: "g"),
+            NutrientAmount(name: String(localized: "Monounsaturated"), value: breakdown.fatMonounsaturatedGrams, unit: "g"),
+            NutrientAmount(name: String(localized: "Polyunsaturated"), value: breakdown.fatPolyunsaturatedGrams, unit: "g")
         ]
-        let available = items.filter { $0.value != nil }
-        if !available.isEmpty {
-            Section("Vitamins") {
-                ForEach(available, id: \.name) { nutrient in
-                    nutrientRow(nutrient)
-                }
-            }
-        }
     }
 
-    // MARK: - Minerals
-
-    @ViewBuilder
-    private var mineralsSection: some View {
+    private var vitamins: [NutrientAmount] {
         let breakdown = presenter.breakdown
-        let items: [NutrientAmount] = [
-            NutrientAmount(name: "Sodium", value: breakdown.sodiumMg, unit: "mg"),
-            NutrientAmount(name: "Potassium", value: breakdown.potassiumMg, unit: "mg"),
-            NutrientAmount(name: "Calcium", value: breakdown.calciumMg, unit: "mg"),
-            NutrientAmount(name: "Iron", value: breakdown.ironMg, unit: "mg"),
-            NutrientAmount(name: "Magnesium", value: breakdown.magnesiumMg, unit: "mg"),
-            NutrientAmount(name: "Zinc", value: breakdown.zincMg, unit: "mg"),
-            NutrientAmount(name: "Copper", value: breakdown.copperMg, unit: "mg"),
-            NutrientAmount(name: "Manganese", value: breakdown.manganeseMg, unit: "mg"),
-            NutrientAmount(name: "Phosphorus", value: breakdown.phosphorusMg, unit: "mg"),
-            NutrientAmount(name: "Selenium", value: breakdown.seleniumMcg, unit: "mcg")
+        return [
+            NutrientAmount(name: String(localized: "Vitamin A"), value: breakdown.vitaminAMcg, unit: "mcg"),
+            NutrientAmount(name: String(localized: "Vitamin B6"), value: breakdown.vitaminB6Mg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Vitamin B12"), value: breakdown.vitaminB12Mcg, unit: "mcg"),
+            NutrientAmount(name: String(localized: "Vitamin C"), value: breakdown.vitaminCMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Vitamin D"), value: breakdown.vitaminDMcg, unit: "mcg"),
+            NutrientAmount(name: String(localized: "Vitamin E"), value: breakdown.vitaminEMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Vitamin K"), value: breakdown.vitaminKMcg, unit: "mcg"),
+            NutrientAmount(name: String(localized: "Thiamin"), value: breakdown.thiaminMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Riboflavin"), value: breakdown.riboflavinMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Niacin"), value: breakdown.niacinMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Pantothenic Acid"), value: breakdown.pantothenicAcidMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Folate"), value: breakdown.folateMcg, unit: "mcg")
         ]
-        let available = items.filter { $0.value != nil }
-        if !available.isEmpty {
-            Section("Minerals") {
-                ForEach(available, id: \.name) { nutrient in
-                    nutrientRow(nutrient)
-                }
-            }
-        }
     }
 
-    // MARK: - Other
-
-    @ViewBuilder
-    private var otherSection: some View {
+    private var minerals: [NutrientAmount] {
         let breakdown = presenter.breakdown
-        let items: [NutrientAmount] = [
-            NutrientAmount(name: "Cholesterol", value: breakdown.cholesterolMg, unit: "mg"),
-            NutrientAmount(name: "Caffeine", value: breakdown.caffeineMg, unit: "mg")
+        return [
+            NutrientAmount(name: String(localized: "Sodium"), value: breakdown.sodiumMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Potassium"), value: breakdown.potassiumMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Calcium"), value: breakdown.calciumMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Iron"), value: breakdown.ironMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Magnesium"), value: breakdown.magnesiumMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Zinc"), value: breakdown.zincMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Copper"), value: breakdown.copperMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Manganese"), value: breakdown.manganeseMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Phosphorus"), value: breakdown.phosphorusMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Selenium"), value: breakdown.seleniumMcg, unit: "mcg")
         ]
-        let available = items.filter { $0.value != nil }
-        if !available.isEmpty {
-            Section("Other") {
-                ForEach(available, id: \.name) { nutrient in
-                    nutrientRow(nutrient)
-                }
-            }
-        }
     }
 
-    // MARK: - Helpers
-
-    private func nutrientRow(_ nutrient: NutrientAmount) -> some View {
-        HStack {
-            Text(nutrient.name)
-            Spacer()
-            Text("\(formatted(nutrient.value ?? 0)) \(nutrient.unit)")
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    /// Accepts an optional so `NutrientAmount.value` can be passed straight through;
-    /// non-optional call sites are unaffected.
-    private func formatted(_ value: Double?) -> String {
-        guard let value else { return "–" }
-        return value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(value))
-            : String(format: "%.1f", value)
+    private var other: [NutrientAmount] {
+        let breakdown = presenter.breakdown
+        return [
+            NutrientAmount(name: String(localized: "Cholesterol"), value: breakdown.cholesterolMg, unit: "mg"),
+            NutrientAmount(name: String(localized: "Caffeine"), value: breakdown.caffeineMg, unit: "mg")
+        ]
     }
 }
 
@@ -358,11 +283,6 @@ extension CoreBuilder {
 
 }
 
-struct NutrientAmount {
-    let name: String
-    let value: Double?
-    let unit: String
-}
 extension CoreRouter {
 
     func showNutritionOverviewView(delegate: NutritionOverviewDelegate) {

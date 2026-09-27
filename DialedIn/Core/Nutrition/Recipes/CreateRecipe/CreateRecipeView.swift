@@ -11,6 +11,8 @@ import PhotosUI
 struct CreateRecipeView: View {
     
     @State var presenter: CreateRecipePresenter
+
+    @ScaledMetric(relativeTo: .body) private var amountFieldWidth: CGFloat = 70
     
     var body: some View {
         List {
@@ -24,13 +26,12 @@ struct CreateRecipeView: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed()
             } label: {
                 Text("Next")
             }
-            .padding(.bottom)
         }
     }
     
@@ -42,7 +43,7 @@ struct CreateRecipeView: View {
                 Text("Recipe name")
                 Spacer()
                 Text("Required")
-                    .font(.caption)
+                    .font(.label)
             }
         }
     }
@@ -60,15 +61,14 @@ struct CreateRecipeView: View {
                 Text("Serving Quantity")
                 Spacer()
                 Text("Required")
-                    .font(.caption)
+                    .font(.label)
             }
         }
     }
     
     private var totalWeightSection: some View {
         Section {
-            TextFieldwUnit<NutritionWeightUnit>(prompt: String(localized: "Enter weight after preparation"), value: $presenter.recipeTotalWeight, unit: .grams)
-
+            NumberField(String(localized: "Enter weight after preparation"), value: $presenter.recipeTotalWeight, unit: NutritionWeightUnit.grams.acronym)
         } header: {
             Text("Total Weight")
         }
@@ -78,41 +78,38 @@ struct CreateRecipeView: View {
     private var foodsSection: some View {
         Section {
             ForEach($presenter.ingredients) { $wrapper in
-                HStack(alignment: .center, spacing: 12) {
-                    CustomListCellView(imageName: wrapper.ingredient.imageURL, title: wrapper.ingredient.name, subtitle: wrapper.ingredient.description)
-                    Spacer()
-                    HStack(spacing: 6) {
-                        TextField("Amount", value: $wrapper.amount, format: .number)
-                            .keyboardType(.decimalPad)
-                            .frame(width: 70)
-                        
-                        Picker("", selection: $wrapper.unit) {
-                            Text("g").tag(IngredientAmountUnit.grams)
-                            Text("ml").tag(IngredientAmountUnit.milliliters)
-                            Text("units").tag(IngredientAmountUnit.units)
-                        }
-                        .pickerStyle(.menu)
-                        .frame(width: 15)
+                HStack(spacing: Spacing.s) {
+                    ListRow(title: wrapper.ingredient.name, subtitle: wrapper.ingredient.description, imageName: wrapper.ingredient.imageURL)
+                    TextField("Amount", value: $wrapper.amount, format: .number)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: amountFieldWidth)
+                    Picker("Unit", selection: $wrapper.unit) {
+                        Text("g").tag(IngredientAmountUnit.grams)
+                        Text("ml").tag(IngredientAmountUnit.milliliters)
+                        Text("units").tag(IngredientAmountUnit.units)
                     }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .fixedSize()
                 }
-                .removeListRowFormatting()
             }
         } header: {
             HStack {
                 VStack(alignment: .leading) {
                     Text("Ingredients")
                     Text("Weight of ingredients is 0 \(NutritionWeightUnit.grams.acronym)")
-                        .font(.caption)
+                        .font(.label)
                 }
                 Spacer()
                 Button {
                     presenter.onAddIngredientPressed()
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24))
+                    Image(systemName: Symbol.add)
+                        .iconSize(.medium)
                 }
                 .accessibilityLabel("Add ingredient")
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
             }
         }
@@ -120,13 +117,10 @@ struct CreateRecipeView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 #if DEBUG || MOCK
         ToolbarSpacer(.fixed, placement: .topBarLeading)

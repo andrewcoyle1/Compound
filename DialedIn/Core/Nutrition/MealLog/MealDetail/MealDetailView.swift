@@ -18,42 +18,33 @@ struct MealDetailDelegate {
 /// overwrite whatever plate the user is currently assembling.
 struct MealDetailView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: MealDetailPresenter
 
     let delegate: MealDetailDelegate
 
     var body: some View {
-        NavigationStack {
-            List {
-                summarySection
-                itemsSection
-            }
-            .scrollIndicators(.hidden)
-            .navigationTitle("Meal")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { toolbarContent }
-            .onAppear {
-                presenter.onViewAppear(delegate: delegate)
-            }
+        List {
+            summarySection
+            itemsSection
+        }
+        .scrollIndicators(.hidden)
+        .navigationTitle("Meal")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar { toolbarContent }
+        .onAppear {
+            presenter.onViewAppear(delegate: delegate)
         }
     }
 
     private var summarySection: some View {
         Section {
-            HStack {
+            HStack(alignment: .top) {
                 ForEach(presenter.macroSummary(for: delegate.meal)) { macro in
-                    VStack(spacing: 2) {
-                        Text(macro.value)
-                            .font(.headline)
-                        Text(macro.label)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
+                    Stat(value: macro.value, label: macro.label, alignment: .center)
+                        .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, Spacing.s)
         } header: {
             Text(delegate.meal.date.formatted(date: .abbreviated, time: .shortened))
         }
@@ -63,16 +54,19 @@ struct MealDetailView: View {
     private var itemsSection: some View {
         if delegate.meal.items.isEmpty {
             Section {
-                Text("This meal has no items.")
-                    .foregroundStyle(.secondary)
+                ContentUnavailableView {
+                    Label("No Items", systemImage: Symbol.meal)
+                } description: {
+                    Text("This meal has no items.")
+                }
             }
         } else {
             Section {
+                // Read-only here, so the rows carry no edit button.
                 ForEach(delegate.meal.items) { item in
                     MealItemRowView(
                         item: item,
-                        style: .mealDetail,
-                        onEditPressed: { _ in }
+                        style: .mealDetail
                     )
                 }
             } header: {
@@ -84,20 +78,17 @@ struct MealDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button(role: .destructive) {
                 presenter.onDeletePressed(meal: delegate.meal)
             } label: {
-                Image(systemName: "trash")
+                Image(systemName: Symbol.delete)
             }
             .accessibilityLabel("Delete meal")
         }

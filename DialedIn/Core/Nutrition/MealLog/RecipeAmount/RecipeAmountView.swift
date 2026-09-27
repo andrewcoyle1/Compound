@@ -18,42 +18,24 @@ struct RecipeAmountView: View {
     let delegate: RecipeAmountDelegate
 
     var body: some View {
-        Form {
+        List {
             Section("Servings") {
                 TextField("Servings", text: $presenter.servingsText)
                     .keyboardType(.decimalPad)
             }
-            Section("Estimated Macros (per serving)") {
-                HStack {
-                    Text("Calories")
-                    Spacer()
-                    Text(presenter.baseCalories(recipe: delegate.recipe).map { String(Int(round($0))) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Protein")
-                    Spacer()
-                    Text(presenter.baseProtein(recipe: delegate.recipe).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Carbs")
-                    Spacer()
-                    Text(presenter.baseCarbs(recipe: delegate.recipe).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Fat")
-                    Spacer()
-                    Text(presenter.baseFat(recipe: delegate.recipe).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-            }
+            EstimatedMacrosSection(
+                title: "Estimated Macros (per serving)",
+                calories: presenter.baseCalories(recipe: delegate.recipe),
+                protein: presenter.baseProtein(recipe: delegate.recipe),
+                carbs: presenter.baseCarbs(recipe: delegate.recipe),
+                fat: presenter.baseFat(recipe: delegate.recipe)
+            )
         }
         .navigationTitle(delegate.recipe.name)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
+                Button("Log", role: .confirm) {
                     presenter.add(
                         recipe: delegate.recipe,
                         onConfirm: delegate.onPick

@@ -92,13 +92,16 @@ class EditUsernamePresenter {
         do {
             try await interactor.claimUsername(text)
             interactor.trackEvent(event: Event.saveSuccess)
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch UsernameError.taken {
             // Someone reserved it between the check and the save.
             status = .taken
+            interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.saveFail(error: UsernameError.taken))
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Unable to save"), subtitle: String(localized: "Please check your connection and try again."))
         }
     }

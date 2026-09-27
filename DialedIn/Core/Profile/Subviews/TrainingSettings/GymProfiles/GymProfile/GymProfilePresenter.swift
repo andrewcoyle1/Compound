@@ -123,9 +123,11 @@ class GymProfilePresenter {
                 gymProfile.dateModified = .now
                 try await interactor.saveGymProfile(profile: gymProfile, image: nil)
                 interactor.trackEvent(event: Event.saveGymProfileSuccess)
+                interactor.playHaptic(option: .success)
                 onComplete()
             } catch {
                 interactor.trackEvent(event: Event.saveGymProfileFail(error: error))
+                interactor.playHaptic(option: .error)
                 // `onComplete` is what leaves this screen, so a silent failure leaves Back and
                 // Continue looking broken. Say why nothing moved.
                 router.showSimpleAlert(

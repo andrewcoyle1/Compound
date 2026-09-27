@@ -267,6 +267,7 @@ struct GymProfilePresenterTests {
         await settle()
 
         #expect(screen.interactor.savedProfiles.map(\.name) == ["Home Gym"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// An unnamed profile cannot be saved, so leaving asks rather than silently dropping the work.
@@ -328,6 +329,7 @@ struct GymProfilePresenterTests {
         await settle()
 
         #expect(screen.router.alertTitles == ["Unable to Save Gym Profile"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Continuing through onboarding has the same failure: nothing is saved, nothing is routed to,

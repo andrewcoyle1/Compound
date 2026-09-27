@@ -78,6 +78,7 @@ class PaywallPresenter {
     }
     
     private func onPurchaseSuccess() {
+        interactor.playHaptic(option: .success)
         if isOnboarding {
             handleNavigation()
         } else {
@@ -121,12 +122,14 @@ class PaywallPresenter {
                     )
                 }
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }
     }
 
     func onProductSelected(_ product: AnyProduct) {
+        interactor.playHaptic(option: .selection)
         selectedProduct = product
     }
 
@@ -148,6 +151,7 @@ class PaywallPresenter {
                 }
             } catch {
                 interactor.trackEvent(event: Event.purchaseFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }
@@ -176,6 +180,7 @@ class PaywallPresenter {
             }
         case .failure(let error):
             interactor.trackEvent(event: Event.purchaseFail(error: error))
+            interactor.playHaptic(option: .error)
         }
     }
     

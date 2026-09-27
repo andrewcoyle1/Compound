@@ -94,6 +94,18 @@ struct TimerDurationExerciseOverrideTests {
         screen.presenter.saveExerciseEdit()
 
         #expect(await TestManagers.eventually { screen.interactor.savedOverrides.last?.seconds == 150 })
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["success"] })
+    }
+
+    @Test("Test A Failed Duration Save Plays The Error Haptic")
+    func testAFailedDurationSavePlaysTheErrorHaptic() async {
+        let screen = makeScreen()
+        screen.interactor.saveError = URLError(.notConnectedToInternet)
+        screen.presenter.onEditPressed(type: .core)
+
+        screen.presenter.saveEdit()
+
+        #expect(await TestManagers.eventually(timeout: .seconds(5)) { screen.interactor.playedHaptics.map { "\($0)" } == ["error"] })
     }
 
     /// The per-type durations are the other half of this screen, and they live in the shared

@@ -218,6 +218,7 @@ struct PaywallPurchasePresenterTests {
         screen.presenter.onSubscribePressed()
 
         #expect(screen.presenter.selectedProduct?.id == "yearly")
+        #expect(screen.interactor.playedHaptics.map { "\($0)" }.first == "selection")
         #expect(await TestManagers.eventually { screen.interactor.purchasedProductIds == ["yearly"] })
     }
 
@@ -231,6 +232,7 @@ struct PaywallPurchasePresenterTests {
         screen.presenter.onPurchaseProductPressed(product: product())
 
         #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
         #expect(screen.interactor.purchasedProductIds == ["monthly"])
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Success"))
     }
@@ -276,6 +278,7 @@ struct PaywallPurchasePresenterTests {
 
         #expect(await TestManagers.eventually { screen.router.alertedErrors.count == 1 })
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Fail"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(screen.router.shown.isEmpty)
     }
 

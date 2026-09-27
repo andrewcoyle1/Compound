@@ -63,7 +63,9 @@ class TimerDurationPresenter {
         Task {
             do {
                 try await save()
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
@@ -152,7 +154,9 @@ class TimerDurationPresenter {
         Task {
             do {
                 try await interactor.setExerciseRestOverride(seconds, for: exerciseId)
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }

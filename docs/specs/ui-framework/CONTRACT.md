@@ -201,6 +201,34 @@ for picker and segment changes. There are no raw `UI*FeedbackGenerator`s.
 | `InlineMessage(_ kind: .error/.warning/.info, _ text:)` | 07 | Raw red or orange `Text` errors |
 | `OnboardingStepScaffold(title:subtitle:progress:content:primary:secondary:)` | 07 | Per-step List + title + CTA scaffolding |
 
+### Notes from Wave 2 (as built)
+
+- **`Stat`** has an extra `tint: Color? = nil` that colours its symbol. VoiceOver reads it as
+  label then value.
+- **`AnalyticsCard`**
+  - `subsubtitle` and `subsubsubtitle` are now `value` and `unit`. The old labels still compile
+    with a deprecation warning; migrate them.
+  - New `showsChevron: Bool = true`. Pass `false` on cards that are not tappable (AddMeal's macro
+    cards, NutritionAnalytics' `breakdownCard`).
+  - Optional `systemImage`, tinted by `themeColor`.
+- **`CustomLabelButtonView` call sites** keep their action inside the trailing closure, so only
+  that part is tappable until the call site moves to `ListRowButton`. Every one must move.
+- **`ListRow` selection glyph:** `checkmark.circle.fill` in `.tint` / `circle` in `.tertiary`. It
+  is treated as system chrome, like the chevron.
+- **`NumberField`** takes an unlabelled leading `prompt`. `PickableUnit` now lives in
+  `NumberField.swift`.
+- **`CallToActionButton(isPrimaryAction:isLoading:action:label:)`** draws its primary label in
+  `onAccent`.
+- **`.bottomCTA { }`** adds its own bottom padding. Callers add none.
+- **`InlineMessage(.error, text)`** accepts a `LocalizedStringKey` or a runtime `String`.
+- **`OnboardingStepScaffold(title:subtitle:progress:primary:secondary:onDevSettingsPressed:content:)`**
+  - `content` is the trailing closure.
+  - `primary` is `.init(title:isEnabled:isLoading:action:)`.
+  - `progress` comes from `OnboardingStep.progress`.
+  - The dev toolbar appears only when `onDevSettingsPressed` is passed.
+- **`Chip`** defaults its tint to `.accentColor`. A selected chip draws solid tint with
+  `onAccent` text.
+
 ## Patterns (applied in Wave 3)
 
 | Pattern | Rule |

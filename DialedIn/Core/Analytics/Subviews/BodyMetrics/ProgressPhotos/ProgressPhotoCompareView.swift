@@ -25,7 +25,7 @@ struct ProgressPhotoCompareView: View {
     @State private var split: Double = 0.5
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Spacing.l) {
             Picker("Layout", selection: $mode) {
                 ForEach(Mode.allCases, id: \.self) { Text($0.rawValue) }
             }
@@ -33,7 +33,7 @@ struct ProgressPhotoCompareView: View {
 
             switch mode {
             case .sideBySide:
-                HStack(alignment: .top, spacing: 8) {
+                HStack(alignment: .top, spacing: Spacing.s) {
                     column(delegate.before, caption: delegate.beforeCaption)
                     column(delegate.after, caption: delegate.afterCaption)
                 }
@@ -42,7 +42,7 @@ struct ProgressPhotoCompareView: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(16)
+        .padding(Spacing.l)
         .navigationTitle("Compare")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -55,18 +55,18 @@ struct ProgressPhotoCompareView: View {
     }
 
     private func column(_ model: ProgressPhotoModel, caption: String) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Spacing.s) {
             photo(model)
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: Radius.m, style: .continuous))
             Text(caption)
-                .font(.caption)
+                .font(.label)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
     }
 
     private var sliderOverlay: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Spacing.m) {
             photo(delegate.after)
                 .overlay {
                     GeometryReader { geometry in
@@ -81,22 +81,22 @@ struct ProgressPhotoCompareView: View {
                             .offset(x: width - 1)
                     }
                 }
-                .clipShape(.rect(cornerRadius: 10))
+                .clipShape(.rect(cornerRadius: Radius.m, style: .continuous))
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(delegate.beforeCaption) over \(delegate.afterCaption)")
             Slider(value: $split, in: 0...1) {
                 Text("Reveal")
             } minimumValueLabel: {
-                Text("Before").font(.caption)
+                Text("Before").font(.label)
             } maximumValueLabel: {
-                Text("After").font(.caption)
+                Text("After").font(.label)
             }
             HStack {
                 Text(delegate.beforeCaption)
                 Spacer()
                 Text(delegate.afterCaption)
             }
-            .font(.caption)
+            .font(.label)
             .foregroundStyle(.secondary)
         }
     }

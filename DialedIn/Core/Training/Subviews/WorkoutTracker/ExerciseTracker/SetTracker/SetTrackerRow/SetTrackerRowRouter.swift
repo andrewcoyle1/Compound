@@ -32,7 +32,7 @@ extension CoreRouter: SetTrackerRowRouter {
                     secondaryButtonTitle: "Cancel",
                     secondaryButtonAction: { secondaryButtonAction() },
                     middleContent: AnyView(
-                        HStack(spacing: 16) {
+                        HStack(spacing: Spacing.l) {
                             Picker("Minutes", selection: minutesSelection) {
                                 ForEach(0..<60, id: \.self) { minute in
                                     Text("\(minute) m").tag(minute)
@@ -49,7 +49,6 @@ extension CoreRouter: SetTrackerRowRouter {
                             .pickerStyle(.wheel)
                             .frame(maxWidth: .infinity)
                         }
-                            .frame(height: 180)
                     )
                 )
             }

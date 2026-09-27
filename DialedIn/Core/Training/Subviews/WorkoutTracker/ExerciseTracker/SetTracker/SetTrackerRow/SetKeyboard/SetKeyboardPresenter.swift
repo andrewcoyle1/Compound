@@ -2,8 +2,8 @@
 //  SetKeyboardPresenter.swift
 //  DialedIn
 //
-//  The in-app weight and reps keyboards for one set row. Every key edits the set as it is
-//  pressed, so the row behind the keyboard always shows what will be logged.
+//  The in-app keyboards for one set row: weight, reps, distance and duration. Every key edits the
+//  set as it is pressed, so the row behind the keyboard always shows what will be logged.
 //
 
 import SwiftUI
@@ -11,6 +11,22 @@ import SwiftUI
 enum SetKeyboardField: Equatable {
     case weight
     case reps
+    /// In the exercise's distance unit, with a decimal point.
+    case distance
+    /// Typed like a microwave: digits fill from the right, so "130" is 1:30.
+    case duration
+
+    var takesDecimals: Bool { self == .weight || self == .distance }
+
+    /// The fields a row of this tracking mode shows, in the order Next and Prev walk them.
+    static func fields(for trackingMode: TrackingMode) -> [SetKeyboardField] {
+        switch trackingMode {
+        case .weightReps: return [.weight, .reps]
+        case .repsOnly: return [.reps]
+        case .timeOnly: return [.duration]
+        case .distanceTime: return [.distance, .duration]
+        }
+    }
 }
 
 /// What the keyboard needs to know about the exercise and set it is editing, resolved by the row
@@ -18,8 +34,9 @@ enum SetKeyboardField: Equatable {
 struct SetKeyboardContext {
     var unit: ExerciseWeightUnit = .kilograms
     var step: WeightStep = WeightStepper.fallback(.kilograms)
-    /// False for reps-only exercises: the reps keyboard then has nothing to go back to.
-    var tracksWeight: Bool = true
+    var distanceUnit: ExerciseDistanceUnit = .meters
+    /// The row's fields, in order. Next and Prev walk them.
+    var fields: [SetKeyboardField] = [.weight, .reps]
     /// `WorkoutSettings.rirTracking`, shown to the user as "Effort (RPE)".
     var showsEffort: Bool = false
     var lastSetWeightKg: Double?
@@ -51,7 +68,7 @@ final class SetKeyboardPresenter {
 
     private var editingSet: Binding<WorkoutSetModel>?
 
-    /// Called by Done when the set now holds everything it needs to be logged.
+    /// Called by Done. The row offers to log the set if it is ready.
     var onOfferCompletion: (() -> Void)?
 
     // MARK: - Opening and moving
@@ -63,23 +80,32 @@ final class SetKeyboardPresenter {
         activate(field)
     }
 
-    /// Weight → reps.
+    /// The field after the active one, if any: weight → reps, distance → duration.
+    var nextField: SetKeyboardField? {
+        guard let field = activeField, let index = context.fields.firstIndex(of: field) else { return nil }
+        return context.fields.indices.contains(index + 1) ? context.fields[index + 1] : nil
+    }
+
+    /// The field before the active one, if any.
+    var previousField: SetKeyboardField? {
+        guard let field = activeField, let index = context.fields.firstIndex(of: field) else { return nil }
+        return index > 0 ? context.fields[index - 1] : nil
+    }
+
     func next() {
-        guard activeField == .weight else { return }
-        activate(.reps)
+        guard let field = nextField else { return }
+        activate(field)
     }
 
-    /// Reps → weight.
     func previous() {
-        guard activeField == .reps, context.tracksWeight else { return }
-        activate(.weight)
+        guard let field = previousField else { return }
+        activate(field)
     }
 
-    /// Closes the keyboard and, when the set is ready, offers to log it.
+    /// Closes the keyboard and hands over to the row, which offers to log the set when it is ready.
+    /// The row decides, because what "ready" means depends on the tracking mode.
     func done() {
         close()
-        guard let set = editingSet?.wrappedValue, set.completedAt == nil, let reps = set.reps, reps > 0 else { return }
-        if let weight = set.weightKg, weight < 0 { return }
         onOfferCompletion?()
     }
 
@@ -105,7 +131,7 @@ final class SetKeyboardPresenter {
         let candidate: String
         switch key {
         case ".", ",":
-            guard field == .weight, !base.contains(".") else { return }
+            guard field.takesDecimals, !base.contains(".") else { return }
             candidate = (base.isEmpty ? "0" : base) + "."
         case "0"..."9":
             candidate = base + String(key)
@@ -129,9 +155,13 @@ final class SetKeyboardPresenter {
         switch field {
         case .reps:
             return candidate.count <= 3
-        case .weight:
+        case .duration:
+            // mmss: up to 99:99, which is read as 100:39.
+            return candidate.count <= 4
+        case .weight, .distance:
             let parts = candidate.split(separator: ".", omittingEmptySubsequences: false)
-            return (parts.first?.count ?? 0) <= 4 && (parts.count < 2 || parts[1].count <= 2)
+            let wholeDigits = field == .distance ? 5 : 4
+            return (parts.first?.count ?? 0) <= wholeDigits && (parts.count < 2 || parts[1].count <= 2)
         }
     }
 
@@ -144,7 +174,28 @@ final class SetKeyboardPresenter {
             set.wrappedValue.weightKg = Double(text).map { UnitConversion.convertWeightToKg($0, from: context.unit) }
         case .reps:
             set.wrappedValue.reps = Int(text)
+        case .distance:
+            set.wrappedValue.distanceMeters = Double(text).map { UnitConversion.convertDistanceToMeters($0, from: context.distanceUnit) }
+        case .duration:
+            set.wrappedValue.durationSec = Self.seconds(fromDigits: text)
         }
+    }
+
+    /// "130" → 90, "45" → 45, "" → nil. The last two digits are seconds, the rest minutes.
+    static func seconds(fromDigits digits: String) -> Int? {
+        guard !digits.isEmpty, let value = Int(digits) else { return nil }
+        return (value / 100) * 60 + value % 100
+    }
+
+    /// 90 → "130", the digits that type a duration back in.
+    static func digits(fromSeconds seconds: Int) -> String {
+        String((seconds / 60) * 100 + seconds % 60)
+    }
+
+    /// The typed digits as a clock: "1" → "0:01", "130" → "1:30".
+    static func clock(fromDigits digits: String) -> String {
+        let padded = String(repeating: "0", count: max(0, 3 - digits.count)) + digits
+        return "\(padded.dropLast(2)):\(padded.suffix(2))"
     }
 
     // MARK: - Stepper and chips
@@ -231,25 +282,43 @@ final class SetKeyboardPresenter {
     // MARK: - Display
 
     /// What a field shows: the live text while it is being typed into, the stored value otherwise.
-    func displayText(for field: SetKeyboardField, set: WorkoutSetModel, unit: ExerciseWeightUnit) -> String {
-        if field == activeField, editingSet?.wrappedValue.id == set.id { return text }
+    func displayText(
+        for field: SetKeyboardField,
+        set: WorkoutSetModel,
+        unit: ExerciseWeightUnit,
+        distanceUnit: ExerciseDistanceUnit = .meters
+    ) -> String {
+        if field == activeField, editingSet?.wrappedValue.id == set.id {
+            return field == .duration && !text.isEmpty ? Self.clock(fromDigits: text) : text
+        }
         if field == .weight, let bandIndex, case .bands(let names) = context.step.kind, names.indices.contains(bandIndex) {
             return names[bandIndex]
         }
-        return Self.text(for: field, set: set, unit: unit)
+        if field == .duration { return set.durationSec.map { Format.duration(TimeInterval($0)) } ?? "" }
+        return Self.text(for: field, set: set, unit: unit, distanceUnit: distanceUnit)
     }
 
     private func currentText(for field: SetKeyboardField) -> String {
         guard let set = editingSet?.wrappedValue else { return "" }
-        return Self.text(for: field, set: set, unit: context.unit)
+        return Self.text(for: field, set: set, unit: context.unit, distanceUnit: context.distanceUnit)
     }
 
-    static func text(for field: SetKeyboardField, set: WorkoutSetModel, unit: ExerciseWeightUnit) -> String {
+    /// What typing starts from: the stored value as the keys would enter it.
+    static func text(
+        for field: SetKeyboardField,
+        set: WorkoutSetModel,
+        unit: ExerciseWeightUnit,
+        distanceUnit: ExerciseDistanceUnit = .meters
+    ) -> String {
         switch field {
         case .weight:
             return set.weightKg.map { WeightStepper.format(UnitConversion.convertWeight($0, to: unit)) } ?? ""
         case .reps:
             return set.reps.map(String.init) ?? ""
+        case .distance:
+            return set.distanceMeters.map { WeightStepper.format(UnitConversion.convertDistance($0, to: distanceUnit)) } ?? ""
+        case .duration:
+            return set.durationSec.map(digits(fromSeconds:)) ?? ""
         }
     }
 }

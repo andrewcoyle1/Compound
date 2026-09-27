@@ -48,7 +48,7 @@ class SetTrackerPresenter {
     func deleteExercise(_ exercise: Binding<WorkoutExerciseModel>, onDelete: @escaping @MainActor () -> Void) {
         let name = exercise.wrappedValue.name
         router.showAlert(title: String(localized: "Delete Exercise?"), subtitle: String(localized: "Remove '\(name)' from this workout?")) {
-            AnyView(VStack(spacing: 8) {
+            AnyView(VStack(spacing: Spacing.s) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) { onDelete() }
             })
@@ -107,7 +107,7 @@ class SetTrackerPresenter {
             return
         }
         router.showAlert(title: String(localized: "Add to Group"), subtitle: String(localized: "Pair '\(current.name)' with:")) {
-            AnyView(VStack(spacing: 8) {
+            AnyView(VStack(spacing: Spacing.s) {
                 ForEach(available, id: \.id) { partner in
                     let partnerGroupId = partner.supersetGroupId
                     let partnerId = partner.id
@@ -191,11 +191,11 @@ class SetTrackerPresenter {
 
     func buttonColor(set: WorkoutSetModel, canComplete: Bool) -> Color {
         if set.completedAt != nil {
-            return .green
+            return .success
         } else if canComplete {
             return .secondary
         } else {
-            return .red.opacity(0.6)
+            return .danger
         }
     }
 
@@ -309,7 +309,7 @@ class SetTrackerPresenter {
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         Button("Display Only") {
                             self.updateWeightUnit(newUnit, for: exercise)
                         }
@@ -333,7 +333,7 @@ class SetTrackerPresenter {
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         Button("Display Only") {
                             self.updateDistanceUnit(newUnit, for: exercise)
                         }

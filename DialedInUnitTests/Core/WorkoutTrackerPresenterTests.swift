@@ -425,7 +425,7 @@ struct WorkoutTrackerPresenterTests {
         ])])
 
         #expect(screen.presenter.computeTotalVolumeKg() == 1180)
-        #expect(screen.presenter.formattedVolume == "1180 kg")
+        #expect(screen.presenter.formattedVolume == "1,180 kg")
     }
 
     @Test("Test Sets Without Weight Or Reps Add No Volume")

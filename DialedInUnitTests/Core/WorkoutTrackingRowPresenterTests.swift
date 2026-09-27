@@ -167,6 +167,7 @@ struct SetTrackerRowPresenterTests {
         screen.presenter.onSetComplete(exercise(), box.binding)
 
         #expect(box.value.completedAt != nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// The tick is a toggle — tapping a set that is already done undoes it, which is how a set
@@ -179,6 +180,7 @@ struct SetTrackerRowPresenterTests {
         screen.presenter.onSetComplete(exercise(), box.binding)
 
         #expect(box.value.completedAt == nil)
+        #expect(screen.interactor.playedHaptics.isEmpty)
     }
 
     /// A set with no reps entered has not been lifted, so it must not be stamped as done however
@@ -191,6 +193,7 @@ struct SetTrackerRowPresenterTests {
         screen.presenter.onSetComplete(exercise(), box.binding)
 
         #expect(box.value.completedAt == nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// A negative weight is a typo, not a lift, so it is refused even though reps are present.
@@ -630,15 +633,17 @@ struct SetTrackerRowPresenterTests {
         #expect(!screen.presenter.canComplete(trackingMode: .distanceTime, set: timed))
     }
 
-    /// A completed set stays green even if its figures would no longer pass, so editing a logged
-    /// set does not make it look undone.
-    @Test("Test The Tick Colour Follows The Sets State")
-    func testTheTickColourFollowsTheSetsState() {
+    /// A completed set stays done even if its figures would no longer pass, so editing a logged
+    /// set does not make it look undone. Each state has its own symbol, so none relies on colour.
+    @Test("Test The Tick Follows The Sets State")
+    func testTheTickFollowsTheSetsState() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.buttonColor(set: set(completedAt: Date()), canComplete: false) == .green)
-        #expect(screen.presenter.buttonColor(set: set(), canComplete: true) == .secondary)
-        #expect(screen.presenter.buttonColor(set: set(), canComplete: false) != .green)
+        #expect(screen.presenter.completionState(trackingMode: .weightReps, set: set(reps: nil, completedAt: Date())) == .completed)
+        #expect(screen.presenter.completionState(trackingMode: .weightReps, set: set()) == .ready)
+        #expect(screen.presenter.completionState(trackingMode: .weightReps, set: set(reps: nil)) == .notReady)
+        let symbols = [SetCompletionState.completed, .ready, .notReady].map(\.systemImage)
+        #expect(Set(symbols).count == 3)
     }
 
     // MARK: - Units

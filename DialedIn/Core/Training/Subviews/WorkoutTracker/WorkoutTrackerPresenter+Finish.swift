@@ -38,6 +38,24 @@ extension WorkoutTrackerPresenter {
         )
     }
 
+    // MARK: - Quick finish
+
+    /// True once there is something to finish and all of it is logged: at least one set, and every
+    /// set, warm-ups included, completed. The tracker then offers Finish Workout at the bottom of the
+    /// screen as well as in its menu. Un-completing a set, or adding a set or an exercise, turns it
+    /// off again, because the new set is open.
+    var canQuickFinish: Bool {
+        let sets = workoutSession.exercises.flatMap(\.sets)
+        return !sets.isEmpty && sets.allSatisfy { $0.completedAt != nil }
+    }
+
+    /// VoiceOver users cannot see the button slide in, so they are told. No haptic: completing the
+    /// last set has just played one.
+    func onQuickFinishAvailabilityChanged(_ isAvailable: Bool) {
+        guard isAvailable else { return }
+        AccessibilityNotification.Announcement(String(localized: "All sets complete. Finish Workout is available.")).post()
+    }
+
     // MARK: - Finishing
 
     func finishWorkout() {

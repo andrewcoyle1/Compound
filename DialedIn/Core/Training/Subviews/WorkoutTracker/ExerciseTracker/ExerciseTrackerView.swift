@@ -32,6 +32,8 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     @State var presenter: ExerciseTrackerPresenter
     let delegate: ExerciseTrackerDelegate
 
+    @ScaledMetric(relativeTo: .body) private var thumbnailSide = ControlSize.thumbnail
+
     @ViewBuilder var setTracker: (SetTrackerDelegate) -> SetTracker
 
     var body: some View {
@@ -55,35 +57,28 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     func exerciseHeader(_ exercise: WorkoutExerciseModel) -> some View {
         HStack(alignment: .center) {
             ImageLoaderView(urlString: exercise.imageName ?? Constants.randomImage, resizingMode: .fit)
-                .frame(width: 40, height: 40)
+                .frame(width: thumbnailSide, height: thumbnailSide)
+                .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
+                .accessibilityHidden(true)
 
-            VStack(alignment: .leading) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                HStack(spacing: Spacing.s) {
                     Text(exercise.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(.sectionTitle)
+                        .foregroundStyle(.primary)
                         .multilineTextAlignment(.leading)
 
                     if let label = delegate.supersetLabel {
-                        Text(label)
-                            .font(.caption2)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.orange)
-                            .clipShape(Capsule())
+                        Chip(label, systemImage: Symbol.superset, tint: .superset)
                     }
                 }
 
-                // Counted in sets, not rows: three sets a side reads "Set 2/3", not "Set 4/6".
-                Text("Set \(min(exercise.loggedSetCount + 1, exercise.workingSetCount))/\(exercise.workingSetCount)")
-                    .font(.caption)
-                    .foregroundColor(exercise.loggedSetCount == exercise.workingSetCount ? .green : .secondary)
+                setProgress(exercise)
 
                 if let progressionHint = delegate.progressionHint {
-                    Text(progressionHint)
+                    Label(progressionHint, systemImage: "wand.and.stars")
                         .font(.caption)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
 
@@ -96,7 +91,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 }
 
                 if let sessionNote = exercise.notes {
-                    Label(sessionNote, systemImage: "note.text")
+                    Label(sessionNote, systemImage: Symbol.note)
                         .font(.caption)
                         .foregroundStyle(.primary)
                         .lineLimit(2)
@@ -111,6 +106,23 @@ struct ExerciseTrackerView<SetTracker: View>: View {
         .listRowInsets(.vertical, .zero)
     }
 
+    /// Counted in sets, not rows: three sets a side reads "Set 2/3", not "Set 4/6". A finished
+    /// exercise gets a check as well as the colour.
+    private func setProgress(_ exercise: WorkoutExerciseModel) -> some View {
+        let isDone = exercise.loggedSetCount == exercise.workingSetCount
+        return HStack(spacing: Spacing.xs) {
+            if isDone {
+                Image(systemName: Symbol.success)
+                    .accessibilityHidden(true)
+            }
+            Text("Set \(min(exercise.loggedSetCount + 1, exercise.workingSetCount))/\(exercise.workingSetCount)")
+        }
+        .font(.caption)
+        .foregroundStyle(isDone ? AnyShapeStyle(.success) : AnyShapeStyle(.secondary))
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(isDone ? String(localized: "All sets done") : "")
+    }
+
     /// Borderless so a tap opens the note sheet rather than toggling the card it sits on.
     private func noteButton(_ exercise: WorkoutExerciseModel) -> some View {
         Button {
@@ -120,7 +132,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 onSave: delegate.onUpdateNote
             )
         } label: {
-            Image(systemName: exercise.notes == nil ? "note.text.badge.plus" : "note.text")
+            Image(systemName: exercise.notes == nil ? Symbol.note + ".badge.plus" : Symbol.note)
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(exercise.notes == nil ? String(localized: "Add note") : String(localized: "Edit note"))

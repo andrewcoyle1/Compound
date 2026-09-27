@@ -13,6 +13,8 @@ protocol WorkoutSessionDetailRouter: ShareSheetRouter {
 func showDevSettingsView()
 #endif
     func showExercisesPickerView(delegate: ExercisesPickerDelegate)
+    func showSessionStartTimeView(date: Binding<Date>)
+    func showSessionDurationView(hours: Binding<Int>, minutes: Binding<Int>, onSave: @escaping () -> Void)
 }
 
 extension CoreRouter: WorkoutSessionDetailRouter { }

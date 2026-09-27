@@ -10,27 +10,21 @@ struct SwapExercisePickerView: View {
     @State var presenter: SwapExercisePickerPresenter
 
     var body: some View {
-        NavigationStack {
-            List(presenter.filteredExercises) { exercise in
-                Button {
-                    presenter.onExerciseSelected(exercise)
-                } label: {
-                    HStack {
-                        ImageLoaderView(urlString: exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
-                            .frame(width: 36, height: 36)
-                        Text(exercise.name)
-                            .foregroundStyle(.primary)
-                    }
-                }
+        List(presenter.filteredExercises) { exercise in
+            Button {
+                presenter.onExerciseSelected(exercise)
+            } label: {
+                ListRow(title: exercise.name, imageName: exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
+                    .contentShape(.rect)
             }
-            .searchable(text: $presenter.searchText, prompt: String(localized: "Search exercises"))
-            .navigationTitle("Swap Exercise")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(role: .close) {
-                        presenter.onDismissPressed()
-                    }
+        }
+        .searchable(text: $presenter.searchText, prompt: String(localized: "Search exercises"))
+        .navigationTitle("Swap Exercise")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
                 }
             }
         }

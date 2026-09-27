@@ -22,7 +22,7 @@ import SwiftUI
 @MainActor
 struct WorkoutSessionDetailPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+    final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "author-1")
         var preferences: [String: ExerciseUnitPreference] = [:]
         private(set) var savedSessions: [WorkoutSessionModel] = []
@@ -56,7 +56,7 @@ struct WorkoutSessionDetailPresenterTests {
         }
     }
 
-    private final class Router: WorkoutSessionDetailRouter {
+    final class Router: WorkoutSessionDetailRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 
@@ -64,18 +64,28 @@ struct WorkoutSessionDetailPresenterTests {
         // `#if DEV || MOCK` stub disappears while the protocol requirement stays.
         func showDevSettingsView() { shown.append("devSettings") }
         func showExercisesPickerView(delegate: ExercisesPickerDelegate) { shown.append("exercisesPicker") }
+        private(set) var startTimeDate: Binding<Date>?
+        func showSessionStartTimeView(date: Binding<Date>) {
+            shown.append("startTime")
+            startTimeDate = date
+        }
+        private(set) var durationSave: (() -> Void)?
+        func showSessionDurationView(hours: Binding<Int>, minutes: Binding<Int>, onSave: @escaping () -> Void) {
+            shown.append("duration")
+            durationSave = onSave
+        }
     }
 
-    private struct Screen {
+    struct Screen {
         let presenter: WorkoutSessionDetailPresenter
         let interactor: Interactor
         let router: Router
     }
 
-    private let start = Date(timeIntervalSince1970: 1_000_000)
+    let start = Date(timeIntervalSince1970: 1_000_000)
 
     /// Saving happens in a detached `Task` for the timing edits, so a test has to let the loop turn.
-    private func settle() async {
+    func settle() async {
         for _ in 0..<10 {
             await Task.yield()
         }
@@ -112,7 +122,7 @@ struct WorkoutSessionDetailPresenterTests {
         )
     }
 
-    private func session(exercises: [WorkoutExerciseModel] = [], duration: TimeInterval? = 3600) -> WorkoutSessionModel {
+    func session(exercises: [WorkoutExerciseModel] = [], duration: TimeInterval? = 3600) -> WorkoutSessionModel {
         WorkoutSessionModel(
             id: "session-1",
             authorId: "author-1",
@@ -142,7 +152,7 @@ struct WorkoutSessionDetailPresenterTests {
         )
     }
 
-    private func makeScreen(user: UserModel? = UserModel(userId: "author-1")) -> Screen {
+    func makeScreen(user: UserModel? = UserModel(userId: "author-1")) -> Screen {
         let interactor = Interactor()
         interactor.currentUser = user
         let router = Router()
@@ -526,64 +536,6 @@ struct WorkoutSessionDetailPresenterTests {
         #expect(stored?.distanceUnit == .miles)
     }
 
-    // MARK: - Timing
-
-    /// Moving the start moves the end with it, so correcting when a workout began does not silently
-    /// change how long it lasted.
-    @Test("Test Moving The Start Keeps The Duration")
-    func testMovingTheStartKeepsTheDuration() async {
-        let screen = makeScreen()
-        let workout = MutableSession(session(duration: 3600))
-        let newStart = start.addingTimeInterval(7200)
-
-        screen.presenter.onStartTimeChanged(newStart, session: workout.binding)
-        await settle()
-
-        #expect(workout.value.dateCreated == newStart)
-        #expect(workout.value.endedAt == newStart.addingTimeInterval(3600))
-        #expect(screen.interactor.savedSessions.count == 1)
-    }
-
-    @Test("Test Editing The Duration Starts From What The Session Lasted")
-    func testEditingTheDurationStartsFromWhatTheSessionLasted() {
-        let screen = makeScreen()
-
-        screen.presenter.onEditDurationPressed(session: session(duration: 5400))
-
-        #expect(screen.presenter.durationHours == 1)
-        #expect(screen.presenter.durationMinutes == 30)
-        #expect(screen.presenter.isEditingDuration)
-    }
-
-    @Test("Test Confirming A Duration Moves The End")
-    func testConfirmingADurationMovesTheEnd() async {
-        let screen = makeScreen()
-        let workout = MutableSession(session(duration: 3600))
-        screen.presenter.durationHours = 2
-        screen.presenter.durationMinutes = 15
-
-        screen.presenter.onDurationConfirmed(session: workout.binding)
-        await settle()
-
-        #expect(workout.value.endedAt == start.addingTimeInterval(2 * 3600 + 15 * 60))
-        #expect(!screen.presenter.isEditingDuration)
-    }
-
-    /// A zero duration would put the end before the beginning, so it is refused rather than saved.
-    @Test("Test A Zero Duration Is Refused")
-    func testAZeroDurationIsRefused() async {
-        let screen = makeScreen()
-        let workout = MutableSession(session(duration: 3600))
-        screen.presenter.durationHours = 0
-        screen.presenter.durationMinutes = 0
-
-        screen.presenter.onDurationConfirmed(session: workout.binding)
-        await settle()
-
-        #expect(workout.value.endedAt == start.addingTimeInterval(3600))
-        #expect(screen.interactor.savedSessions.isEmpty)
-    }
-
     // MARK: - Saving
 
     /// Opening an edit and changing nothing should not write, so an untouched session keeps its
@@ -611,6 +563,7 @@ struct WorkoutSessionDetailPresenterTests {
 
         #expect(screen.interactor.savedSessions.map(\.name) == ["Pull Day"])
         #expect(!screen.presenter.isEditMode)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// A failed save leaves the user in edit mode with their work, rather than dropping it.
@@ -627,6 +580,7 @@ struct WorkoutSessionDetailPresenterTests {
 
         #expect(screen.presenter.isEditMode)
         #expect(!screen.presenter.isSaving)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: - Deleting
@@ -707,7 +661,7 @@ struct WorkoutSessionDetailPresenterTests {
     /// A session held by reference, so the presenter's editing methods — which all take a
     /// `Binding` — can be driven without a view, and the result read back afterwards.
     @MainActor
-    private final class MutableSession {
+    final class MutableSession {
         var value: WorkoutSessionModel
 
         init(_ value: WorkoutSessionModel) {
@@ -735,7 +689,7 @@ extension WorkoutSessionDetailPresenterTests {
         let bench = exercise(id: "a", index: 1, sets: [set(1, isWarmup: true), set(2), set(3), set(4)])
         let screen = makeScreen()
 
-        #expect(screen.presenter.exerciseSummary(bench) == "3 sets - 1920 kg volume")
+        #expect(screen.presenter.exerciseSummary(bench) == "3 sets - 1,920 kg volume")
     }
 
     /// The volume was always labelled kg. An exercise the user logs in pounds reads in pounds.
@@ -745,6 +699,6 @@ extension WorkoutSessionDetailPresenterTests {
         let screen = makeScreen()
         screen.interactor.preferences["template-a"] = ExerciseUnitPreference(exerciseModelId: "template-a", weightUnit: .pounds)
 
-        #expect(screen.presenter.exerciseSummary(bench) == "1 set - 2205 lbs volume")
+        #expect(screen.presenter.exerciseSummary(bench) == "1 set - 2,204.6 lb volume")
     }
 }

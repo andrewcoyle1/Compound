@@ -99,3 +99,15 @@ Files no WP may commit changes to, and why:
    a Finish button animates into the bottom safe area. See WP-09.
 4. **List row text.** Titles use `.body` and subtitles use `.subheadline`. Both are Dynamic Type
    text styles. WP-06 carries the accessibility-size layout rules.
+
+## Follow-ups found during the swarm (for WP-15 or the user)
+
+| Item | Found by | Owner |
+|---|---|---|
+| Muscle Balance hides its footer by comparing the header to the localised word "Lower", so the footer disappears in other languages | WP-14 | WP-15: fix, with a test seam |
+| Goal Progress, its entries and its chart show kg even for users who chose pounds | WP-14 | user decision (behaviour change) |
+| The session volume total mixes units and always shows kg | WP-03 | user decision |
+| Set distance is always shown in metres | WP-03 | user decision |
+| `Format.weight` writes "lb" but the unit abbreviations say "lbs" | WP-01 | WP-15: settle on "lb" |
+| Mac Catalyst does not build (CoreInteractor, BarcodeScanner, HKWorkoutManager, the tracker interactor) | WP-04 | user decision |
+| The weekly target grid's over-target carets look busy | WP-14 | design review on the screenshot deck |

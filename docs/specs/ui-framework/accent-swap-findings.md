@@ -23,7 +23,8 @@ All of these use `colorScheme.background*`/`foreground*` on an accent fill. Use
 
 | Where | Owner |
 |---|---|
-| Dashboard "Find People" link, Social/Own Profile "See All" | WP-11 |
+| Dashboard "Find People" link | WP-11 |
+| Social/Own Profile "See All": done by WP-14 in `SectionHeaderView`, which draws its action in `.tint` | — |
 | Analytics "See All" | WP-14 |
 | Analytics "Goal Progress" bar, which is green and should be accent | WP-14 |
 | Training "Microcycle 1 of 8" link | WP-10 |

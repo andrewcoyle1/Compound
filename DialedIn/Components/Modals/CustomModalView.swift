@@ -9,8 +9,6 @@ import SwiftUI
 
 struct CustomModalView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     var title: String = "Title"
     var subtitle: String? = "This is a subtitle"
     var primaryButtonTitle: String = "Yes"
@@ -21,39 +19,39 @@ struct CustomModalView: View {
     var middleContent: AnyView?
 
     var body: some View {
-        VStack(spacing: 24) {
-            VStack(spacing: 12) {
+        VStack(spacing: Spacing.xl) {
+            VStack(spacing: Spacing.m) {
                 Text(title)
                     .font(.title)
                     .fontWeight(.semibold)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.callout)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
 
             }
-            .padding(12)
+            .padding(Spacing.m)
 
             if let middleContent {
                 middleContent
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: Spacing.s) {
                 Button {
                     primaryButtonAction()
                 } label: {
                     Text(primaryButtonTitle)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, Spacing.m)
                         .frame(maxWidth: .infinity)
-                        .foregroundStyle(colorScheme.foregroundSecondary)
+                        .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.glassProminent)
 
                 Text(secondaryButtonTitle)
-                    .font(.headline)
+                    .font(.sectionTitle)
                     .foregroundStyle(.secondary)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, Spacing.m)
                     .frame(maxWidth: .infinity)
                     .tappableBackground()
                     .anyButton(.plain) {
@@ -62,9 +60,9 @@ struct CustomModalView: View {
             }
         }
         .multilineTextAlignment(.center)
-        .padding(16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 24))
-        .padding(40)
+        .padding(Spacing.l)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
+        .padding(Spacing.xxl)
     }
 }
 

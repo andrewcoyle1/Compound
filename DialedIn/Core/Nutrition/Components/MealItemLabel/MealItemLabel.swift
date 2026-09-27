@@ -27,11 +27,13 @@ struct MealItemLabel: View {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(mealItem.displayName)
                     .font(.rowTitle)
+                    .lineLimit(1)
+                // Wraps rather than truncating, so the macros and amount always show, at any type size.
                 Text(mealItem.detail(showsCalories: showCalories, showsMacros: showMacros, showsAmount: true))
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if let onEditPressed {

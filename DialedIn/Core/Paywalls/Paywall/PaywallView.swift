@@ -41,14 +41,18 @@ struct PaywallView: View {
                 } else {
                     CustomPaywallView(
                         products: presenter.products,
+                        selectedProduct: presenter.selectedProduct,
                         onBackButtonPressed: {
                             presenter.onBackButtonPressed()
                         },
                         onRestorePurchasePressed: {
                             presenter.onRestorePurchasePressed()
                         },
-                        onPurchaseProductPressed: { product in
-                            presenter.onPurchaseProductPressed(product: product)
+                        onProductSelected: { product in
+                            presenter.onProductSelected(product)
+                        },
+                        onSubscribePressed: {
+                            presenter.onSubscribePressed()
                         }
                     )
                 }

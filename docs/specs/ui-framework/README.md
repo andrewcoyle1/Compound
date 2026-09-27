@@ -113,5 +113,6 @@ Files no WP may commit changes to, and why:
 | 7 | Mac Catalyst is out of scope for this swarm. It is a separate task, because the build was already broken in `CoreInteractor`, `BarcodeScanner`, `HKWorkoutManager` and the tracker interactor. | — |
 | 8 | US spelling in user-facing strings ("Favorites", "Analyzing", "Customize", "Colour" → "Color" and so on). Change the English source strings and keep their Spanish translations. Identifiers and comments stay as they are. | WP-15 |
 
-Also for WP-15: Muscle Balance hides its footer by comparing the header to the localised word
+Also for WP-15: Muscle Balance tiles say "1 sets" and "1.5 sets". Pluralise through the string
+catalog, and treat a fractional count as plural. Muscle Balance also hides its footer by comparing the header to the localised word
 "Lower", so the footer disappears in other languages. Fix it with a test seam.

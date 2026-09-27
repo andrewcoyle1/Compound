@@ -202,7 +202,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         SetDetailRow(
                             set: set,
                             index: exercise.workingSetNumber(for: set),
-                            trackingMode: exercise.trackingMode
+                            trackingMode: exercise.trackingMode,
+                            weightUnit: presenter.weightUnit(for: exercise.templateId)
                         )
                     }
                 } label: {

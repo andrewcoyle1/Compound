@@ -8,11 +8,11 @@ struct DashboardDelegate {
 
 /// Gutter between the Dashboard's carousel cards, and between a card and the screen edge. Matches
 /// the Analytics tab's header carousel, which the two screens are read one after the other.
-private let carouselCardSpacing: CGFloat = 16
+private let carouselCardSpacing: CGFloat = Spacing.l
 
 /// How much of the next card shows past the trailing edge of the current one, so the carousel
 /// reads as scrollable without page dots.
-private let carouselCardPeek: CGFloat = 32
+private let carouselCardPeek: CGFloat = Spacing.xxl
 
 struct DashboardView<
     WorkoutSessionRow: View,
@@ -20,7 +20,6 @@ struct DashboardView<
     StreakCard: View
 >: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.layoutMode) private var layoutMode
     /// The card titles grow with Dynamic Type; a fixed 30pt clipped them at accessibility sizes.
     @ScaledMetric(relativeTo: .headline) private var carouselTitleHeight = DashboardCard<EmptyView>.titleHeight
@@ -176,18 +175,19 @@ struct DashboardView<
             if presenter.isFeedLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
+                    .padding(.vertical, Spacing.xxl)
                     .removeListRowFormatting()
                     .listRowSeparator(.hidden)
             } else if presenter.feedSessions.isEmpty {
                 ContentUnavailableView {
-                    Label("No Activity Yet", systemImage: "figure.run")
+                    Label("No Activity Yet", systemImage: Symbol.friends)
                 } description: {
                     Text("Follow athletes you admire. Progress is more fun shared.")
                 } actions: {
                     Button("Find People") {
                         presenter.onFindPeoplePressed()
                     }
+                    .buttonStyle(.glassProminent)
                 }
                 .removeListRowFormatting()
                 suggestedPeopleRows
@@ -255,7 +255,7 @@ struct DashboardView<
             Button {
                 presenter.onPushNotificationsPressed()
             } label: {
-                Image(systemName: "bell")
+                Image(systemName: Symbol.notifications)
             }
             .accessibilityLabel("Notifications")
             .badge(presenter.bellBadgeCount)

@@ -9,19 +9,18 @@ import SwiftUI
 
 struct CircleWeeklySummaryCard: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let summary: CircleWeek.Summary
     let onDismissPressed: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "calendar.badge.checkmark")
-                .font(.title3)
-                .foregroundStyle(.green)
+        HStack(spacing: Spacing.m) {
+            Image(systemName: Symbol.streak)
+                .iconSize(.medium)
+                .foregroundStyle(.success)
                 .accessibilityHidden(true)
             Text(summary.text)
-                .font(.subheadline.weight(.medium))
+                .font(.rowDetail)
+                .fontWeight(.medium)
             Spacer(minLength: 0)
             Button(role: .close, action: onDismissPressed)
                 .buttonStyle(.plain)
@@ -29,9 +28,9 @@ struct CircleWeeklySummaryCard: View {
                 .accessibilityLabel("Dismiss last week's summary")
         }
         .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+        .cardSurface()
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, Spacing.s)
     }
 }
 

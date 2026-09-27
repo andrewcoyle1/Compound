@@ -19,27 +19,26 @@ struct UsernameBannerView: View {
             Section {
                 // Two plain buttons rather than a tappable row holding a button: in a List row the
                 // row's button would swallow the dismiss tap.
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.m) {
                     Button(action: onPickPressed) {
-                        HStack(spacing: 12) {
+                        HStack(spacing: Spacing.m) {
                             Image(systemName: "at")
-                                .font(.title3.weight(.semibold))
+                                .iconSize(.medium)
+                                .fontWeight(.semibold)
                                 .foregroundStyle(.tint)
                             Text("Pick a username so friends can find you")
-                                .font(.subheadline.weight(.medium))
+                                .font(.rowDetail)
+                                .fontWeight(.medium)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    Button {
+                    Button(role: .close) {
                         isDismissed = true
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
                     .accessibilityLabel("Dismiss")
                 }
             }

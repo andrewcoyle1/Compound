@@ -16,20 +16,20 @@ struct ChallengesDashboardSection: View {
     let onCreatePressed: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
                 Text("Challenges")
-                    .font(.headline)
+                    .font(.sectionTitle)
                 Spacer()
-                Button("New", systemImage: "plus") {
+                Button("New", systemImage: Symbol.add) {
                     onCreatePressed()
                 }
-                .font(.subheadline)
+                .font(.rowDetail)
                 .accessibilityLabel("New challenge")
             }
             if cards.isEmpty {
                 Text("Challenge your circle to train a set number of times.")
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
             ForEach(cards) { card in
@@ -37,31 +37,32 @@ struct ChallengesDashboardSection: View {
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 8)
+        .padding(.vertical, Spacing.s)
     }
 
     private func cardView(_ card: DashboardPresenter.ChallengeCard) -> some View {
         Button {
             onCardPressed(card)
         } label: {
-            HStack(spacing: 16) {
+            HStack(spacing: Spacing.l) {
                 ChallengeRing(sessions: card.mySessions, target: card.challenge.targetSessions)
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(card.challenge.title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.rowTitle)
+                        .fontWeight(.semibold)
                         .lineLimit(1)
                     Text(card.daysLeft == 1 ? String(localized: "1 day left") : String(localized: "\(card.daysLeft) days left"))
-                        .font(.caption)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                     topThree(card)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.tertiary)
             }
-            .padding(12)
-            .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 16))
+            .padding(Spacing.m)
+            .cardSurface()
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
@@ -70,12 +71,12 @@ struct ChallengesDashboardSection: View {
     }
 
     private func topThree(_ card: DashboardPresenter.ChallengeCard) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             ForEach(Array(card.topThree.enumerated()), id: \.element.id) { index, entry in
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xs) {
                     UserAvatarView(imageUrl: entry.imageUrl, size: 20)
                     Text("\(index + 1). \(entry.userId == currentUserId ? "You" : entry.name) \(entry.sessions)")
-                        .font(.caption2.monospacedDigit())
+                        .font(.label.monospacedDigit())
                         .lineLimit(1)
                 }
             }

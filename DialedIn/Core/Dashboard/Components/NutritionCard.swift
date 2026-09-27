@@ -19,34 +19,40 @@ struct NutritionCard: View {
     }
     
     private var cardItem: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center, spacing: 24) {
+        VStack(spacing: Spacing.l) {
+            HStack(alignment: .center, spacing: Spacing.xl) {
                 ActivityRingView(
-                    text: "\(Int(calories))",
-                    imageName: "flame.fill",
+                    text: calories.formatted(.number.precision(.fractionLength(0))),
+                    imageName: Symbol.calories + ".fill",
                     progress: calorieTarget > 0 ? min(calories / calorieTarget, 1) : 0,
-                    color: .orange,
+                    color: .calories,
                     size: 80
                 )
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    macroBar(label: "Protein", value: proteinGrams, target: proteinTarget, color: .blue)
-                    macroBar(label: "Carbs", value: carbGrams, target: carbTarget, color: .green)
-                    macroBar(label: "Fat", value: fatGrams, target: fatTarget, color: .yellow)
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    macroBar(label: "Protein", value: proteinGrams, target: proteinTarget, color: .protein)
+                    macroBar(label: "Carbs", value: carbGrams, target: carbTarget, color: .carbs)
+                    macroBar(label: "Fat", value: fatGrams, target: fatTarget, color: .fat)
                 }
                 .frame(maxWidth: .infinity)
             }
             
             if calorieTarget > 0 {
                 HStack {
-                    Text("\(Int(calories)) / \(Int(calorieTarget)) kcal")
-                        .font(.caption)
+                    Text(verbatim: "\(calories.formatted(.number.precision(.fractionLength(0)))) / \(Format.kcal(calorieTarget))")
+                        .font(.label)
                         .foregroundStyle(.secondary)
                     Spacer()
                     let remaining = calorieTarget - calories
-                    Text(remaining > 0 ? String(localized: "\(String(describing: Int(remaining))) remaining") : String(localized: "Goal reached!"))
-                        .font(.caption)
-                        .foregroundStyle(remaining > 0 ? Color.secondary : Color.orange)
+                    if remaining > 0 {
+                        Text("\(Format.kcal(remaining)) remaining")
+                            .font(.label)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Label("Goal reached!", systemImage: Symbol.success)
+                            .font(.label)
+                            .foregroundStyle(.success)
+                    }
                 }
             }
             
@@ -54,19 +60,19 @@ struct NutritionCard: View {
                 Text("Log a Meal")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.glass)
         }
     }
     
     private func macroBar(label: String, value: Double, target: Double, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             HStack {
                 Text(label)
-                    .font(.caption2)
+                    .font(.label)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("\(Int(value))g")
-                    .font(.caption2)
+                Text(Format.grams(value))
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
             ProgressView(value: target > 0 ? min(value / target, 1) : 0)

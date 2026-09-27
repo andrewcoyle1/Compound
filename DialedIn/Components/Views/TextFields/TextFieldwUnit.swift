@@ -7,35 +7,15 @@
 
 import SwiftUI
 
+/// Kept so existing call sites compile; drawn by `NumberField`.
+@available(*, deprecated, message: "Use NumberField(_:value:unit:label:)")
 struct TextFieldwUnit<T: PickableUnit>: View {
-    
-    @FocusState private var isFocused
-    @State private var selection: TextSelection?
-    @State private var text: String = ""
 
     var prompt: String = ""
     @Binding var value: Double?
     var unit: T
-    
-    var body: some View {
-        HStack {
-            AutoSelectNumberField(prompt: prompt, value: $value, alignment: .leading)
-                .textFieldStyle(.plain)
-            Text(unit.acronym)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
 
-#Preview {
-    @Previewable @State var value: Double?
-    let unit: NutritionWeightUnit = .grams
-    
-    List {
-        DisclosureGroup {
-            TextFieldwUnit<NutritionWeightUnit>(prompt: "Prompt", value: $value, unit: unit)
-        } label: {
-            Text("Label")
-        }
+    var body: some View {
+        NumberField(prompt, value: $value, unit: unit.acronym)
     }
 }

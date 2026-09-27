@@ -373,7 +373,7 @@ private extension ExerciseModelDetailView {
                             Text("Variation \(index + 1)")
                             Spacer()
                             Text("Template")
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                     }

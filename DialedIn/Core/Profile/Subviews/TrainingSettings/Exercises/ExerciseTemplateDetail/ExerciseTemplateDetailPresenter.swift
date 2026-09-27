@@ -76,7 +76,7 @@ class ExerciseModelDetailPresenter {
             valueFormat: .number.precision(.fractionLength(0)),
             availableScales: [.month, .sixMonths, .year],
             initialScale: .month,
-            seriesColors: [.orange],
+            seriesColors: [Color.Metric.exercises],
             height: 220,
             accessibilityTitle: "Top Set"
         )
@@ -90,7 +90,7 @@ class ExerciseModelDetailPresenter {
             valueFormat: .number.precision(.fractionLength(0)),
             availableScales: [.month, .sixMonths, .year],
             initialScale: .month,
-            seriesColors: [.orange],
+            seriesColors: [Color.Metric.exercises],
             height: 220,
             accessibilityTitle: "Reps Per Session"
         )

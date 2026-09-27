@@ -19,11 +19,7 @@ struct AuthorHeaderView: View {
     
     var body: some View {
         HStack(spacing: Spacing.m) {
-            ImageLoaderView(
-                urlString: delegate.author.profileImageNameCalculated ?? Constants.randomImage,
-                clipShape: AnyShape(.circle)
-            )
-            .frame(width: 40, height: 40)
+            UserAvatarView(imageUrl: delegate.author.profileImageNameCalculated, size: ControlSize.thumbnail)
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 // The handle drops under the name once both no longer fit on one line.
                 ViewThatFits(in: .horizontal) {

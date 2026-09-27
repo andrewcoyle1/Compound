@@ -29,6 +29,14 @@ public enum AppleButtonType {
     case signIn
     case signUp
     
+    var accessibilityLabel: Text {
+        switch self {
+        case .continueType: return Text("Continue with Apple")
+        case .signIn: return Text("Sign in with Apple")
+        case .signUp: return Text("Sign up with Apple")
+        }
+    }
+
     var asASAuth: ASAuthorizationAppleIDButton.ButtonType {
         switch self {
         case .continueType:
@@ -80,6 +88,8 @@ public struct SignInWithAppleButtonView: View {
         .anyButton(.press) {
             action()
         }
+        // The system button is drawn disabled under a tap target, so VoiceOver found no name.
+        .accessibilityLabel(type.accessibilityLabel)
         .frame(maxWidth: 408)
     }
 }

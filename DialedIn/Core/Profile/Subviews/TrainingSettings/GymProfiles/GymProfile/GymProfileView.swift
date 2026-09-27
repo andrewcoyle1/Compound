@@ -136,15 +136,16 @@ struct GymProfileView: View {
         Section {
             HStack {
                 Text("Equipment")
-                    .font(.headline)
+                    .font(.sectionTitle)
                 Spacer()
-                Picker("", selection: $presenter.filter) {
+                Picker("Filter", selection: $presenter.filter) {
                     ForEach(ListFilter.allCases, id: \.self) { option in
                         Text(option.description)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 160)
+                .labelsHidden()
+                .fixedSize()
             }
             .removeListRowFormatting()
         }
@@ -154,43 +155,21 @@ struct GymProfileView: View {
     
     private var freeWeightsSection: some View {
         Section {
-            if presenter.filteredFreeWeights.isEmpty {
-                ContentUnavailableView("No Weights", image: "dumbbell", description: Text("There are no weights added to this gym."))
-            } else {
-                ForEach(presenter.filteredFreeWeights) { $freeWeight in
-                    HStack {
-                        if let imageName = freeWeight.imageName {
-                            ImageLoaderView(urlString: imageName)
-                                .frame(width: 40, height: 40)
-                        } else {
-                            Rectangle()
-                                .foregroundStyle(.secondary.opacity(0.2))
-                                .frame(width: 40, height: 40)
-                                .cornerRadius(8)
-                        }
-
-                        VStack(alignment: .leading) {
-                            Text(freeWeight.name)
-                            Text(ActiveSortedWeightSubtitle.format(items: freeWeight.range, config: .init(
-                                isActive: { $0.isActive },
-                                value: { $0.availableWeights },
-                                unit: { $0.unit },
-                                formatter: { "\(String(format: "%g", $0.availableWeights)) \($0.unit.abbreviation)" },
-                                separator: ", "
-                            )))
-                                .font(.caption)
-                                .lineLimit(2)
-                            Text("Edit Weights")
-                                .underline()
-                                .font(.caption.bold())
-                                .anyButton {
-                                    presenter.onEditFreeWeightPressed(freeWeight: $freeWeight)
-                                }
-                        }
-                        Spacer()
-                        Toggle("", isOn: $freeWeight.isActive)
-                            .labelsHidden()
-                    }
+            ForEach(presenter.filteredFreeWeights) { $freeWeight in
+                GymEquipmentRow(
+                    name: freeWeight.name,
+                    imageName: freeWeight.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: freeWeight.range, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.availableWeights },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.weight($0.availableWeights, $0.unit) },
+                        separator: ", "
+                    )),
+                    editTitle: "Edit Weights",
+                    isActive: $freeWeight.isActive
+                ) {
+                    presenter.onEditFreeWeightPressed(freeWeight: $freeWeight)
                 }
             }
         } header: {
@@ -198,42 +177,24 @@ struct GymProfileView: View {
         }
         .listSectionMargins(.top, 0)
     }
-    
+
     private var loadableBarsSection: some View {
         Section {
             ForEach(presenter.filteredLoadableBars) { $loadableBar in
-                HStack {
-                    if let imageName = loadableBar.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-                    VStack(alignment: .leading) {
-                        Text(loadableBar.name)
-                        Text(ActiveSortedWeightSubtitle.format(items: loadableBar.baseWeights, config: .init(
-                            isActive: { $0.isActive },
-                            value: { $0.baseWeight },
-                            unit: { $0.unit },
-                            formatter: { "\(String(format: "%g", $0.baseWeight)) \($0.unit.abbreviation)" },
-                            separator: ", "
-                        )))
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Weights")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditLoadableBarPressed(loadableBar: $loadableBar)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $loadableBar.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: loadableBar.name,
+                    imageName: loadableBar.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: loadableBar.baseWeights, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.baseWeight },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.weight($0.baseWeight, $0.unit) },
+                        separator: ", "
+                    )),
+                    editTitle: "Edit Weights",
+                    isActive: $loadableBar.isActive
+                ) {
+                    presenter.onEditLoadableBarPressed(loadableBar: $loadableBar)
                 }
             }
         } header: {
@@ -244,39 +205,20 @@ struct GymProfileView: View {
     private var fixedWeightBarsSection: some View {
         Section {
             ForEach(presenter.filteredFixedWeightBars) { $fixedWeightBar in
-                HStack {
-                    if let imageName = fixedWeightBar.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(fixedWeightBar.name)
-                        Text(ActiveSortedWeightSubtitle.format(items: fixedWeightBar.baseWeights, config: .init(
-                            isActive: { $0.isActive },
-                            value: { $0.baseWeight },
-                            unit: { $0.unit },
-                            formatter: { "\(String(format: "%g", $0.baseWeight)) \($0.unit.abbreviation)" },
-                            separator: ", "
-                        )))
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Weights")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditFixedWeightBarPressed(fixedWeightBar: $fixedWeightBar)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $fixedWeightBar.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: fixedWeightBar.name,
+                    imageName: fixedWeightBar.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: fixedWeightBar.baseWeights, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.baseWeight },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.weight($0.baseWeight, $0.unit) },
+                        separator: ", "
+                    )),
+                    editTitle: "Edit Weights",
+                    isActive: $fixedWeightBar.isActive
+                ) {
+                    presenter.onEditFixedWeightBarPressed(fixedWeightBar: $fixedWeightBar)
                 }
             }
         } header: {
@@ -287,85 +229,44 @@ struct GymProfileView: View {
     private var bandsSection: some View {
         Section {
             ForEach(presenter.filteredBands) { $band in
-                HStack {
-                    if let imageName = band.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(band.name)
-                        Text(ActiveSortedWeightSubtitle.format(items: band.range, config: .init(
-                            isActive: { $0.isActive },
-                            value: { $0.availableResistance },
-                            unit: { $0.unit },
-                            formatter: { "\(String(format: "%g", $0.availableResistance)) \($0.unit.abbreviation)" },
-                            separator: ", "
-                        )))
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Inventory")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditBandPressed(band: $band)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $band.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: band.name,
+                    imageName: band.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: band.range, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.availableResistance },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.weight($0.availableResistance, $0.unit) },
+                        separator: ", "
+                    )),
+                    editTitle: "Edit Inventory",
+                    isActive: $band.isActive
+                ) {
+                    presenter.onEditBandPressed(band: $band)
                 }
             }
         } header: {
             Text("Bands")
         }
     }
-    
+
     private var bodyWeightsSection: some View {
         Section {
-            if presenter.filteredBodyWeights.isEmpty {
-                ContentUnavailableView("No Weights", image: "dumbbell", description: Text("There are no weights added to this gym."))
-            } else {
-                ForEach(presenter.filteredBodyWeights) { $bodyWeight in
-                    HStack {
-                        if let imageName = bodyWeight.imageName {
-                            ImageLoaderView(urlString: imageName)
-                                .frame(width: 40, height: 40)
-                        } else {
-                            Rectangle()
-                                .foregroundStyle(.secondary.opacity(0.2))
-                                .frame(width: 40, height: 40)
-                                .cornerRadius(8)
-                        }
-
-                        VStack(alignment: .leading) {
-                            Text(bodyWeight.name)
-                            Text(ActiveSortedWeightSubtitle.format(items: bodyWeight.range, config: .init(
-                                isActive: { $0.isActive },
-                                value: { $0.availableWeights },
-                                unit: { $0.unit },
-                                formatter: { "\(String(format: "%g", $0.availableWeights)) \($0.unit.abbreviation)" },
-                                separator: ", "
-                            )))
-                                .font(.caption)
-                                .lineLimit(2)
-                            Text("Edit Weights")
-                                .underline()
-                                .font(.caption.bold())
-                                .anyButton {
-                                    presenter.onEditBodyWeightPressed(bodyWeight: $bodyWeight)
-                                }
-                        }
-                        Spacer()
-                        Toggle("", isOn: $bodyWeight.isActive)
-                            .labelsHidden()
-                    }
+            ForEach(presenter.filteredBodyWeights) { $bodyWeight in
+                GymEquipmentRow(
+                    name: bodyWeight.name,
+                    imageName: bodyWeight.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: bodyWeight.range, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.availableWeights },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.weight($0.availableWeights, $0.unit) },
+                        separator: ", "
+                    )),
+                    editTitle: "Edit Weights",
+                    isActive: $bodyWeight.isActive
+                ) {
+                    presenter.onEditBodyWeightPressed(bodyWeight: $bodyWeight)
                 }
             }
         } header: {
@@ -377,24 +278,7 @@ struct GymProfileView: View {
     private var benchesAndRacksSection: some View {
         Section {
             ForEach(presenter.filteredSupportEquipment) { $supportEquipment in
-                HStack {
-                    if let imageName = supportEquipment.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(supportEquipment.name)
-                    }
-                    Spacer()
-                    Toggle("", isOn: $supportEquipment.isActive)
-                        .labelsHidden()
-                }
+                GymEquipmentRow(name: supportEquipment.name, imageName: supportEquipment.imageName, isActive: $supportEquipment.isActive)
             }
         } header: {
             Text("Benches & Racks")
@@ -404,24 +288,7 @@ struct GymProfileView: View {
     private var accessoriesSection: some View {
         Section {
             ForEach(presenter.filteredAccessoryEquipment) { $accessoryEquipment in
-                HStack {
-                    if let imageName = accessoryEquipment.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(accessoryEquipment.name)
-                    }
-                    Spacer()
-                    Toggle("", isOn: $accessoryEquipment.isActive)
-                        .labelsHidden()
-                }
+                GymEquipmentRow(name: accessoryEquipment.name, imageName: accessoryEquipment.imageName, isActive: $accessoryEquipment.isActive)
             }
         } header: {
             Text("Accessories")
@@ -431,33 +298,14 @@ struct GymProfileView: View {
     private var loadableAccessoriesSection: some View {
         Section {
             ForEach(presenter.filteredLoadableAccessoryEquipment) { $loadableAccessoryEquipment in
-                HStack {
-                    if let imageName = loadableAccessoryEquipment.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(loadableAccessoryEquipment.name)
-                        Text("\(String(format: "%g", loadableAccessoryEquipment.baseWeight)) \(loadableAccessoryEquipment.unit.abbreviation)")
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Base Weights")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditLoadableAccessoryEquipmentPressed(loadableAccessoryEquipment: $loadableAccessoryEquipment)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $loadableAccessoryEquipment.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: loadableAccessoryEquipment.name,
+                    imageName: loadableAccessoryEquipment.imageName,
+                    detail: GymEquipmentFormat.weight(loadableAccessoryEquipment.baseWeight, loadableAccessoryEquipment.unit),
+                    editTitle: "Edit Base Weights",
+                    isActive: $loadableAccessoryEquipment.isActive
+                ) {
+                    presenter.onEditLoadableAccessoryEquipmentPressed(loadableAccessoryEquipment: $loadableAccessoryEquipment)
                 }
             }
         } header: {
@@ -477,7 +325,7 @@ struct GymProfileView: View {
             Button {
                 presenter.onBackButtonPressed()
             } label: {
-                Image(systemName: "chevron.left")
+                Image(systemName: "chevron.backward")
             }
             .accessibilityLabel("Back")
         }
@@ -516,41 +364,20 @@ private struct GymProfileMachineSectionsView: View {
     private var cableMachinesSection: some View {
         Section {
             ForEach(presenter.filteredCableMachines) { $cableMachines in
-                HStack {
-                    if let imageName = cableMachines.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(cableMachines.name)
-                        Text(ActiveSortedWeightSubtitle.format(items: cableMachines.ranges, config: .init(
-                            isActive: { $0.isActive },
-                            value: { $0.minWeight },
-                            unit: { $0.unit },
-                            formatter: {
-                                String(localized: "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \(String(describing: $0.unit.abbreviation)), \(String(format: "%g", $0.increment)) \(String(describing: $0.unit.abbreviation)) increments")
-                            },
-                            separator: "\n"
-                        )))
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Machine")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditCableMachinePressed(cableMachine: $cableMachines)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $cableMachines.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: cableMachines.name,
+                    imageName: cableMachines.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: cableMachines.ranges, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.minWeight },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        separator: "\n"
+                    )),
+                    editTitle: "Edit Machine",
+                    isActive: $cableMachines.isActive
+                ) {
+                    presenter.onEditCableMachinePressed(cableMachine: $cableMachines)
                 }
             }
         } header: {
@@ -561,32 +388,14 @@ private struct GymProfileMachineSectionsView: View {
     private var plateLoadedMachineSection: some View {
         Section {
             ForEach(presenter.filteredPlateLoadedMachines) { $plateLoadedMachines in
-                HStack {
-                    if let imageName = plateLoadedMachines.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-                    VStack(alignment: .leading) {
-                        Text(plateLoadedMachines.name)
-                        Text("\(String(format: "%g", plateLoadedMachines.baseWeight)) \(plateLoadedMachines.unit.abbreviation)")
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Base Weight")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditPlateLoadedMachinePressed(plateLoadedMachine: $plateLoadedMachines)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $plateLoadedMachines.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: plateLoadedMachines.name,
+                    imageName: plateLoadedMachines.imageName,
+                    detail: GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit),
+                    editTitle: "Edit Base Weight",
+                    isActive: $plateLoadedMachines.isActive
+                ) {
+                    presenter.onEditPlateLoadedMachinePressed(plateLoadedMachine: $plateLoadedMachines)
                 }
             }
         } header: {
@@ -597,44 +406,78 @@ private struct GymProfileMachineSectionsView: View {
     private var pinLoadedMachineSection: some View {
         Section {
             ForEach(presenter.filteredPinLoadedMachines) { $pinLoadedMachines in
-                HStack {
-                    if let imageName = pinLoadedMachines.imageName {
-                        ImageLoaderView(urlString: imageName)
-                            .frame(width: 40, height: 40)
-                    } else {
-                        Rectangle()
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    }
-                    VStack(alignment: .leading) {
-                        Text(pinLoadedMachines.name)
-                        Text(ActiveSortedWeightSubtitle.format(items: pinLoadedMachines.ranges, config: .init(
-                            isActive: { $0.isActive },
-                            value: { $0.minWeight },
-                            unit: { $0.unit },
-                            formatter: {
-                                String(localized: "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \(String(describing: $0.unit.abbreviation)), \(String(format: "%g", $0.increment)) \(String(describing: $0.unit.abbreviation)) increments")
-                            },
-                            separator: "\n"
-                        )))
-                            .font(.caption)
-                            .lineLimit(2)
-                        Text("Edit Machine")
-                            .underline()
-                            .font(.caption.bold())
-                            .anyButton {
-                                presenter.onEditPinLoadedMachinePressed(pinLoadedMachine: $pinLoadedMachines)
-                            }
-
-                    }
-                    Spacer()
-                    Toggle("", isOn: $pinLoadedMachines.isActive)
-                        .labelsHidden()
+                GymEquipmentRow(
+                    name: pinLoadedMachines.name,
+                    imageName: pinLoadedMachines.imageName,
+                    detail: ActiveSortedWeightSubtitle.format(items: pinLoadedMachines.ranges, config: .init(
+                        isActive: { $0.isActive },
+                        value: { $0.minWeight },
+                        unit: { $0.unit },
+                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        separator: "\n"
+                    )),
+                    editTitle: "Edit Machine",
+                    isActive: $pinLoadedMachines.isActive
+                ) {
+                    presenter.onEditPinLoadedMachinePressed(pinLoadedMachine: $pinLoadedMachines)
                 }
             }
         } header: {
             Text("Pin Loaded Machines")
+        }
+    }
+}
+
+// MARK: - Equipment Row
+
+/// One piece of equipment: thumbnail, name, what is available, an edit link and the toggle that
+/// includes it in this gym. The edit link and the toggle are separate controls in one row, so the
+/// link uses `.borderless` to keep the List from turning the whole row into its tap target.
+private struct GymEquipmentRow: View {
+    let name: String
+    let imageName: String?
+    var detail: String?
+    var editTitle: LocalizedStringKey?
+    @Binding var isActive: Bool
+    var onEdit: (() -> Void)?
+
+    @ScaledMetric(relativeTo: .body) private var thumbnailSide = ControlSize.thumbnail
+
+    var body: some View {
+        HStack(spacing: Spacing.m) {
+            Group {
+                if let imageName {
+                    ImageLoaderView(urlString: imageName)
+                } else {
+                    Rectangle().fill(.quaternary)
+                }
+            }
+            .frame(width: thumbnailSide, height: thumbnailSide)
+            .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(name)
+                    .font(.rowTitle)
+                if let detail, !detail.isEmpty {
+                    Text(detail)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                if let editTitle, let onEdit {
+                    Button(editTitle, action: onEdit)
+                        .font(.rowDetail.weight(.semibold))
+                        .foregroundStyle(.tint)
+                        .buttonStyle(.borderless)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Toggle(isOn: $isActive) {
+                Text(name)
+            }
+            .labelsHidden()
         }
     }
 }

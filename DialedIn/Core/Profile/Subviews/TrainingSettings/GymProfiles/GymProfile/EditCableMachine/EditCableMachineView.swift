@@ -28,27 +28,28 @@ struct EditCableMachineView: View {
             if weightIDs.isEmpty {
                 ContentUnavailableView(
                     "No \(presenter.selectedUnit.displayName) weights",
-                    systemImage: "dumbbell",
+                    systemImage: Symbol.equipment,
                     description: Text("There are no weights for the selected unit.")
                 )
             } else {
                 ForEach(weightIDs, id: \.self) { weightID in
                     let weight = presenter.bindingForWeight(id: weightID, fallbackUnit: unit)
-                    HStack {
-                        VStack(alignment: .leading) {
+                    HStack(spacing: Spacing.m) {
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
                             Text(weight.wrappedValue.name)
-                            Text("\(String(format: "%g", weight.wrappedValue.minWeight)) - \(String(format: "%g", weight.wrappedValue.maxWeight)) \(weight.wrappedValue.unit.abbreviation), \(String(format: "%g", weight.wrappedValue.increment)) \(weight.wrappedValue.unit.abbreviation) increments")
-                                .font(.caption)
-                            Text("Edit Range")
-                                .underline()
-                                .font(.caption.bold())
-                                .anyButton {
-                                    presenter.onEditRangePressed(range: weight)
-                                }
-
+                                .font(.rowTitle)
+                            Text(GymEquipmentFormat.range(min: weight.wrappedValue.minWeight, max: weight.wrappedValue.maxWeight, increment: weight.wrappedValue.increment, unit: weight.wrappedValue.unit))
+                                .font(.rowDetail)
+                                .foregroundStyle(.secondary)
+                            Button("Edit Range") {
+                                presenter.onEditRangePressed(range: weight)
+                            }
+                            .font(.rowDetail.weight(.semibold))
+                            .foregroundStyle(.tint)
+                            .buttonStyle(.borderless)
                         }
-                        Spacer()
-                        Toggle("", isOn: weight.isActive)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Toggle("Available", isOn: weight.isActive)
                             .labelsHidden()
                     }
                 }
@@ -60,33 +61,31 @@ struct EditCableMachineView: View {
             HStack {
                 Text("Weights")
                 Spacer()
-                Picker("", selection: $presenter.selectedUnit) {
+                Picker("Unit", selection: $presenter.selectedUnit) {
                     ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                         Text(unit.abbreviation)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 160)
+                .labelsHidden()
+                .fixedSize()
             }
         }
     }
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddPressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add cable machine")
         }

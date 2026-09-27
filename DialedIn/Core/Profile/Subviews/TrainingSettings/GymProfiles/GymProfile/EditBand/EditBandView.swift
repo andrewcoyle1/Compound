@@ -31,7 +31,7 @@ struct EditBandView: View {
             if weightIDs.isEmpty {
                 ContentUnavailableView(
                     "No \(presenter.selectedUnit.displayName) weights",
-                    systemImage: "dumbbell",
+                    systemImage: Symbol.equipment,
                     description: Text("There are no weights for the selected unit.")
                 )
             } else {
@@ -44,11 +44,11 @@ struct EditBandView: View {
                         VStack(alignment: .leading) {
                             Text(weight.wrappedValue.name)
                                 .fontWeight(.semibold)
-                            Text("Up to \(String(format: "%g", weight.wrappedValue.availableResistance)) \(weight.wrappedValue.unit.abbreviation)")
-                                .font(.caption)
+                            Text("Up to \(GymEquipmentFormat.weight(weight.wrappedValue.availableResistance, weight.wrappedValue.unit))")
+                                .font(.rowDetail)
                         }
                         Spacer()
-                        Toggle("", isOn: weight.isActive)
+                        Toggle("Available", isOn: weight.isActive)
                             .labelsHidden()
                     }
                 }
@@ -60,33 +60,31 @@ struct EditBandView: View {
             HStack {
                 Text("Weights")
                 Spacer()
-                Picker("", selection: $presenter.selectedUnit) {
+                Picker("Unit", selection: $presenter.selectedUnit) {
                     ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                         Text(unit.abbreviation)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 160)
+                .labelsHidden()
+                .fixedSize()
             }
         }
     }
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddPressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add band")
         }

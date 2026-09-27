@@ -35,18 +35,20 @@ struct ShareToFollowerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button {
+                Button(role: .close) {
                     presenter.onCancelPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Cancel")
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Send") {
-                    presenter.onSendPressed()
+                if presenter.isSending {
+                    ProgressView()
+                } else {
+                    Button(role: .confirm) {
+                        presenter.onSendPressed()
+                    }
+                    .accessibilityLabel("Send")
+                    .disabled(!presenter.canSend)
                 }
-                .disabled(!presenter.canSend)
             }
         }
         .onAppear {
@@ -55,17 +57,13 @@ struct ShareToFollowerView: View {
     }
 
     private func recipientRow(_ user: UserModel) -> some View {
-        HStack(spacing: 12) {
-            ImageLoaderView(
-                urlString: user.submittedProfileImage ?? "SplashScreen",
-                resizingMode: .fit,
-                clipShape: AnyShape(Circle())
-            )
-            .frame(width: 36, height: 36)
+        HStack(spacing: Spacing.m) {
+            UserAvatarView(imageUrl: user.profileImageNameCalculated, size: ControlSize.thumbnail)
             Text(user.fullNameCalculated ?? "User")
+                .font(.rowTitle)
             Spacer()
             Image(systemName: presenter.isSelected(user) ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.isSelected(user) ? Color.accentColor : Color.secondary)
+                .foregroundStyle(presenter.isSelected(user) ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
         }
         .contentShape(Rectangle())
         .anyButton {

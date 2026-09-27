@@ -180,19 +180,9 @@ struct WorkoutTemplateDetailView: View {
                 }
             }
         } header: {
-            HStack {
-                VStack {
-                    Text("\(delegate.workoutTemplate.exercises.count) Exercises")
-                }
-                Spacer()
-                Button {
-//                    presenter.onAddExercisePressed()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add exercise")
-                .buttonStyle(.bordered)
-            }
+            // The "+" here had its action commented out. Authors add exercises through Edit
+            // Workout in the toolbar menu; nobody else can change the template.
+            Text("\(delegate.workoutTemplate.exercises.count) Exercises")
         }
     }
     

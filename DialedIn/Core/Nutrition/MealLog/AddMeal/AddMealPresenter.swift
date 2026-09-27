@@ -61,6 +61,14 @@ class AddMealPresenter {
         ))
     }
 
+    func onDeleteMealItem(_ item: MealItemModel) {
+        mealLog.items.removeAll { $0.itemId == item.itemId }
+    }
+
+    func onNutritionScopeChanged() {
+        interactor.playHaptic(option: .selection)
+    }
+
     func onShowPickerPressed() {
         let delegate = NutritionLibraryPickerDelegate(
             items: Binding(get: {
@@ -91,9 +99,11 @@ class AddMealPresenter {
                 try await interactor.saveMeal(mealLog)
                 try interactor.deleteDraftMeal()
                 interactor.trackEvent(event: Event.saveMealSuccess)
+                interactor.playHaptic(option: .success)
                 self.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
+                interactor.playHaptic(option: .error)
                 // Saving is what dismisses this screen. Without this the meal is simply still
                 // sitting there, unlogged, with nothing to say the save was even attempted.
                 router.showSimpleAlert(
@@ -261,6 +271,13 @@ enum NutritionScope: String, DataSyncModelProtocol, CaseIterable {
     var id: String { self.rawValue }
     case plate
     case day
+
+    var title: String {
+        switch self {
+        case .plate: return String(localized: "Plate")
+        case .day: return String(localized: "Day")
+        }
+    }
 }
 
 enum AddMealError: LocalizedError { case noCurrentUser }

@@ -296,7 +296,7 @@ extension SetTrackerRowPresenter {
         let complete: @MainActor () -> Void = { [weak self] in self?.onSetComplete(exercise, set) }
         interactor.trackEvent(event: Event.keyboardOfferedCompletion)
         router.showAlert(title: String(localized: "Complete Set?"), subtitle: nil) {
-            AnyView(VStack(spacing: 8) {
+            AnyView(VStack(spacing: Spacing.s) {
                 Button("Not Yet", role: .cancel) { }
                 Button("Complete Set") { complete() }
             })

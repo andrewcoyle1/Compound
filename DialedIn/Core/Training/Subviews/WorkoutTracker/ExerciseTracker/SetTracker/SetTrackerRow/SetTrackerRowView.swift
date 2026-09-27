@@ -66,11 +66,8 @@ struct SetTrackerRowView: View {
 
     func setNumber(set: Binding<WorkoutSetModel>) -> some View {
         Menu {
-            Button {
-                set.wrappedValue.isWarmup.toggle()
-            } label: {
-                Label("Warmup Set", systemImage: set.wrappedValue.isWarmup ? "checkmark" : "")
-            }
+            // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
+            Toggle("Warmup Set", isOn: set.isWarmup)
             
             Button {
                 presenter.onWarmupSetHelpPressed()

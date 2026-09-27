@@ -36,35 +36,30 @@ struct RestTimerSettingsView: View {
 
     private var behaviourSection: some View {
         Section {
-            CustomLabelButtonView(
-                symbolName: "heart.fill",
+            ListRowButton(
                 title: String(localized: "Timer Duration"),
-                subtitle: String(localized: "Configure rest duration for different exercise types")) {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .anyButton(.press) {
-                            presenter.onTimerDurationPressed()
-                        }
-                    .accessibilityLabel("Timer Duration")
-                }
-            CustomToggleView(
-                symbolName: "flag",
+                subtitle: String(localized: "Configure rest duration for different exercise types"),
+                systemImage: Symbol.duration
+            ) {
+                presenter.onTimerDurationPressed()
+            }
+            ListRowToggle(
                 title: String(localized: "Rest After Last Warm-Up Set"),
                 subtitle: String(localized: "Rest before the first working set. Warm-up sets never rest between themselves"),
-                bool: $presenter.restAfterLastWarmUp
+                systemImage: "flag",
+                isOn: $presenter.restAfterLastWarmUp
             )
-            CustomToggleView(
-                symbolName: "checkmark.circle.fill",
+            ListRowToggle(
                 title: String(localized: "Rest Between Exercises"),
                 subtitle: String(localized: "Use rest timers when moving between exercises"),
-                bool: $presenter.restBetweenExercises
+                systemImage: "arrow.forward.circle",
+                isOn: $presenter.restBetweenExercises
             )
-            CustomToggleView(
-                symbolName: "signpost.right.and.left.fill",
+            ListRowToggle(
                 title: String(localized: "Rest Between Left/Right Sets"),
                 subtitle: String(localized: "Use rest timers in between left and right sets"),
-                bool: $presenter.restBetweenSideSets
+                systemImage: "signpost.right.and.left.fill",
+                isOn: $presenter.restBetweenSideSets
             )
         } header: {
             Text("Behaviour")
@@ -73,23 +68,23 @@ struct RestTimerSettingsView: View {
 
     private var notificationsSection: some View {
         Section {
-            CustomToggleView(
-                symbolName: "timer",
+            ListRowToggle(
                 title: String(localized: "Use Rest Timers"),
                 subtitle: String(localized: "Rest timers will count down after each exercise set"),
-                bool: $presenter.useRestTimers
+                systemImage: Symbol.rest,
+                isOn: $presenter.useRestTimers
             )
-            CustomToggleView(
-                symbolName: "music.note",
+            ListRowToggle(
                 title: String(localized: "Play Sound"),
                 subtitle: String(localized: "Play sound when rest time is over"),
-                bool: $presenter.restTimerPlaySound
+                systemImage: "music.note",
+                isOn: $presenter.restTimerPlaySound
             )
-            CustomToggleView(
-                symbolName: "apple.haptics.and.exclamationmark.triangle",
+            ListRowToggle(
                 title: String(localized: "Vibrate"),
                 subtitle: String(localized: "Vibrate when rest time is over"),
-                bool: $presenter.restTimerVibrate
+                systemImage: "apple.haptics.and.exclamationmark.triangle",
+                isOn: $presenter.restTimerVibrate
             )
         } header: {
             Text("Notifications")
@@ -98,42 +93,27 @@ struct RestTimerSettingsView: View {
 
     private var scalingSection: some View {
         Section {
-            CustomLabelButtonView(
-                symbolName: "figure.yoga",
+            ListRowButton(
                 title: String(localized: "Rest After Last Warm-Up Set"),
-                subtitle: presenter.formattedScaling(presenter.warmUpRestScaling)) {
-                    Text("Edit")
-                        .padding(.horizontal, 8)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.2), in: .capsule)
-                        .anyButton(.press) {
-                            presenter.onEditWarmUpScalingPressed()
-                        }
-                }
-            CustomLabelButtonView(
-                symbolName: "checkmark.circle.fill",
+                subtitle: presenter.formattedScaling(presenter.warmUpRestScaling),
+                systemImage: "figure.yoga"
+            ) {
+                presenter.onEditWarmUpScalingPressed()
+            }
+            ListRowButton(
                 title: String(localized: "Rest Between Exercises"),
-                subtitle: presenter.formattedScaling(presenter.betweenExercisesRestScaling)) {
-                    Text("Edit")
-                        .padding(.horizontal, 8)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.2), in: .capsule)
-                        .anyButton(.press) {
-                            presenter.onEditBetweenExercisesScalingPressed()
-                        }
-                }
-            CustomLabelButtonView(
-                symbolName: "signpost.right.and.left.fill",
+                subtitle: presenter.formattedScaling(presenter.betweenExercisesRestScaling),
+                systemImage: "arrow.forward.circle"
+            ) {
+                presenter.onEditBetweenExercisesScalingPressed()
+            }
+            ListRowButton(
                 title: String(localized: "Rest Between Left/Right Sets"),
-                subtitle: presenter.formattedScaling(presenter.sideSetRestScaling)) {
-                    Text("Edit")
-                        .padding(.horizontal, 8)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.2), in: .capsule)
-                        .anyButton(.press) {
-                            presenter.onEditSideSetsScalingPressed()
-                        }
-                }
+                subtitle: presenter.formattedScaling(presenter.sideSetRestScaling),
+                systemImage: "signpost.right.and.left.fill"
+            ) {
+                presenter.onEditSideSetsScalingPressed()
+            }
         } header: {
             Text("Rest Scaling")
         }
@@ -143,25 +123,13 @@ struct RestTimerSettingsView: View {
 
     @ViewBuilder
     private func scalingPicker(for type: RestTimerSettingsPresenter.ScalingType) -> some View {
-        let options: [(label: String, value: Double)] = [
-            ("25%", 0.25), ("50%", 0.50), ("75%", 0.75),
-            ("100%", 1.0), ("125%", 1.25), ("150%", 1.50), ("200%", 2.0)
-        ]
+        let options: [Double] = [0.25, 0.50, 0.75, 1.0, 1.25, 1.50, 2.0]
         let current = presenter.currentScaling(for: type)
         NavigationStack {
             List {
-                ForEach(options, id: \.value) { option in
-                    HStack {
-                        Text(option.label)
-                        Spacer()
-                        if abs(current - option.value) < 0.001 {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.accent)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .anyButton(.press) {
-                        presenter.updateScaling(for: type, value: option.value)
+                ForEach(options, id: \.self) { option in
+                    SelectableRow(title: presenter.formattedScaling(option), isSelected: abs(current - option) < 0.001) {
+                        presenter.updateScaling(for: type, value: option)
                     }
                 }
             }

@@ -59,8 +59,8 @@ struct SparklineAnalyticsCard: View {
         AnalyticsCard(
             title: title,
             subtitle: subtitle,
-            subsubtitle: value,
-            subsubsubtitle: unit,
+            value: value,
+            unit: unit,
             themeColor: themeColor,
             chartConfiguration: .compact
         ) {
@@ -91,8 +91,8 @@ struct ConsistencyAnalyticsCard: View {
         AnalyticsCard(
             title: title,
             subtitle: String(localized: "Last 30 Days"),
-            subsubtitle: value,
-            subsubsubtitle: "this week",
+            value: value,
+            unit: String(localized: "this week"),
             themeColor: themeColor,
             chartConfiguration: .compact
         ) {
@@ -112,20 +112,16 @@ struct ConsistencyAnalyticsCard: View {
 /// by blank space.
 struct AnalyticsEmptyCard: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let message: String
 
     var body: some View {
         Text(message)
-            .font(.caption)
+            .font(.label)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity)
-            .frame(height: 120)
+            .frame(maxWidth: .infinity, minHeight: AnalyticsCardLayout.minHeight)
             .padding()
-            .background(colorScheme.backgroundPrimary)
-            .cornerRadius(16)
+            .cardSurface(.tile)
     }
 }
 
@@ -138,7 +134,7 @@ struct AnalyticsEmptyCard: View {
                     subtitle: "Last 7 Entries",
                     value: "82.4",
                     unit: "kg",
-                    themeColor: .green,
+                    themeColor: Color.Metric.scaleWeight,
                     data: (0..<7).map { (date: Date().addingTimeInterval(Double($0) * 86_400), value: Double(80 + $0)) },
                     action: { }
                 )

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(*, deprecated, message: "Use Stat / Chip, see docs/specs/ui-framework/CONTRACT.md")
 struct StatItem: View {
     
     var alignment: HorizontalAlignment = .leading
@@ -14,13 +15,6 @@ struct StatItem: View {
     var value: String
     
     var body: some View {
-        VStack(alignment: alignment, spacing: 2) {
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            Text(header)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
+        Stat(value: value, label: header, size: .small, alignment: alignment)
     }
 }

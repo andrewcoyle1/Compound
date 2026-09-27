@@ -9,15 +9,9 @@ import SwiftUI
 
 extension View {
 
+    @available(*, deprecated, message: "Use Stat / Chip, see docs/specs/ui-framework/CONTRACT.md")
     func badgeButton() -> some View {
-        self
-            .font(.caption)
-            .bold()
-            .foregroundStyle(Color(uiColor: .systemBackground))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(Color.accentColor)
-            .cornerRadius(6)
+        chipStyle(tint: .accentColor, filled: true)
     }
 
     @ViewBuilder

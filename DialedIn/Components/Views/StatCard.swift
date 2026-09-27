@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(*, deprecated, message: "Use Stat / Chip, see docs/specs/ui-framework/CONTRACT.md")
 struct StatCard: View {
     let value: String
     let label: String
@@ -29,30 +30,6 @@ struct StatCard: View {
     }
     
     var body: some View {
-        VStack(alignment: alignment, spacing: 8) {
-            
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundStyle(color ?? .secondary)
-                .frame(height: 30)
-            VStack {
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                
-                Text(value)
-                    .font(.title3)
-                    .fontWeight(.bold)
-            }
-        }
+        Stat(value: value, label: label, systemImage: icon, size: .medium, alignment: alignment, tint: color)
     }
-}
-
-#Preview {
-    StatCard(
-        value: "Value",
-        label: "Label",
-        icon: "dumbbell",
-        color: .red
-    )
 }

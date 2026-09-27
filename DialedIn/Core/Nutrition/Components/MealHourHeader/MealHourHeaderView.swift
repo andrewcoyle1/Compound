@@ -21,73 +21,43 @@ struct MealHourHeaderView: View {
         HStack {
             Text(delegate.hour, style: .time)
                 .lineLimit(1)
-                .padding(6)
-                .padding(.horizontal, 6)
-//                .frame(width: 80)
-                .background(.secondary.opacity(0.2), in: .capsule)
+                .chipStyle(tint: .secondary, filled: false)
                 .onLongPressGesture {
                     if !presenter.showAddFoodsButton {
                         presenter.onAddMealPressed(selectedTime: delegate.hour)
                     }
                 }
-            
+                .accessibilityAction(named: Text("Add meal")) {
+                    presenter.onAddMealPressed(selectedTime: delegate.hour)
+                }
+
             if presenter.showAddFoodsButton {
                 Button {
                     presenter.onAddMealPressed(selectedTime: delegate.hour)
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
                 }
                 .accessibilityLabel("Add meal")
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
             }
-            
+
             Spacer()
-            
+
             if !delegate.meals.isEmpty && presenter.showHourlyMacroTotals {
-                HStack(spacing: 16) {
+                HStack(spacing: Spacing.l) {
                     ForEach(Macro.allCases, id: \.self) { macro in
-                        var value: Int {
-                            switch macro {
-                            case .cals:
-                                return Int(
-                                    delegate.meals
-                                        .compactMap { $0.totalCalories }
-                                        .reduce(0.0, +)
-                                )
-                                
-                            case .carbs:
-                                return Int(
-                                    delegate.meals
-                                        .compactMap { $0.totalCarbGrams }
-                                        .reduce(0.0, +)
-                                )
-                            case .fat:
-                                return Int(
-                                    delegate.meals
-                                        .compactMap { $0.totalFatGrams }
-                                        .reduce(0.0, +)
-                                )
-                                
-                            case .protein:
-                                return Int(
-                                    delegate.meals
-                                        .compactMap { $0.totalProteinGrams }
-                                        .reduce(0.0, +)
-                                )
-                            }
-                        }
-                        MacroLabel(
-                            title: macro.title,
-                            value: value
+                        Stat(
+                            value: "\(presenter.total(of: macro, in: delegate.meals))",
+                            label: macro.title,
+                            size: .small,
+                            alignment: .center
                         )
                     }
                 }
             }
         }
-        .font(.caption)
         .removeListRowFormatting()
-
     }
 }
 

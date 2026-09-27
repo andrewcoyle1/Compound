@@ -14,7 +14,8 @@ import SwiftUI
 /// every host had to hand over a meal even when it had no timeline to align.
 struct MealItemRowView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
+    /// Scales the timestamp gutter with the time printed in it.
+    @ScaledMetric(relativeTo: .caption) private var gutterScale: CGFloat = 1
 
     let item: MealItemModel
 
@@ -24,7 +25,8 @@ struct MealItemRowView: View {
 
     var style: MealItemRowStyle = MealItemRowStyle()
 
-    var onEditPressed: (MealItemModel) -> Void
+    /// Nil hides the edit button, for hosts where the item cannot be edited.
+    var onEditPressed: ((MealItemModel) -> Void)?
 
     var body: some View {
         HStack {
@@ -47,12 +49,12 @@ struct MealItemRowView: View {
         ZStack {
             if let timestamp {
                 Text(timestamp.formatted(date: .omitted, time: .shortened))
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
-                    .padding(style.timestampColumnEdge, 24)
+                    .padding(style.timestampColumnEdge, Spacing.xl)
             }
         }
-        .frame(width: style.timestampColumnWidth, alignment: style.timestampAlignment)
+        .frame(width: style.timestampColumnWidth * gutterScale, alignment: style.timestampAlignment)
     }
 
     private var itemLabel: some View {
@@ -64,10 +66,7 @@ struct MealItemRowView: View {
             onEditPressed: onEditPressed
         )
         .padding()
-        .background(
-            colorScheme.backgroundPrimary,
-            in: .containerRelative
-        )
+        .background(.surface, in: .containerRelative)
     }
 }
 
@@ -92,7 +91,7 @@ struct MealItemRowView: View {
                 }
             }
         }
-        .listSectionMargins(.vertical, 4)
+        .listSectionMargins(.vertical, Spacing.xs)
         .listRowSeparator(.hidden)
     }
 }
@@ -105,8 +104,7 @@ struct MealItemRowView: View {
             ForEach(MealLogModel.mock.items) { item in
                 MealItemRowView(
                     item: item,
-                    style: .mealDetail,
-                    onEditPressed: { _ in }
+                    style: .mealDetail
                 )
             }
         }

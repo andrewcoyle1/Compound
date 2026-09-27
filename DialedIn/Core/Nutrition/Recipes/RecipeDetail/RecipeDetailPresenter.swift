@@ -62,6 +62,7 @@ class RecipeDetailPresenter {
     }
 
     func onServingsChanged(_ servings: Double) {
+        interactor.playHaptic(option: .selection)
         servingsOverride = servings.clamped(to: Self.servingsRange, whenNotFinite: Self.servingsRange.lowerBound)
     }
 
@@ -119,9 +120,11 @@ func onDevSettingsPressed() {
         isDeleting = true
         do {
             try await interactor.deleteRecipeTemplate(id: recipe.id)
+            interactor.playHaptic(option: .success)
             onDismiss()
         } catch {
             isDeleting = false
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Failed to delete recipe"), subtitle: String(localized: "Please try again later"))
         }
     }

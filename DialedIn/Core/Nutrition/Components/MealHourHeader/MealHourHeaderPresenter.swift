@@ -43,13 +43,26 @@ class MealHourHeaderPresenter {
         return now
     }
 
+    /// The hour's total of one macro across its meals, rounded down to a whole number as the
+    /// header prints it.
+    func total(of macro: Macro, in meals: [MealLogModel]) -> Int {
+        let values: [Double]
+        switch macro {
+        case .cals: values = meals.map(\.totalCalories)
+        case .protein: values = meals.map(\.totalProteinGrams)
+        case .carbs: values = meals.map(\.totalCarbGrams)
+        case .fat: values = meals.map(\.totalFatGrams)
+        }
+        return Int(values.reduce(0, +))
+    }
+
     func onAddMealPressed(selectedTime: Date = Date()) {
         guard let userId = currentUser?.userId else { return }
         let mealDate = mealTime(for: selectedTime)
         if let meal = interactor.draftMeal {
             router.showAlert(
                 title: String(localized: "Unable to add new meal"),
-                subtitle: String(localized: "You already have an draft meal."),
+                subtitle: String(localized: "You already have a draft meal."),
                 buttons: {
                     AnyView(
                         VStack {

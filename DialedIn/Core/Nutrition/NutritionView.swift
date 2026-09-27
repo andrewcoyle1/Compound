@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 
 struct NutritionDelegate {
     var eventParameters: [String: Any]? {
@@ -44,7 +41,7 @@ struct NutritionView<
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             topSafeAreaSection
         }
     }
@@ -78,7 +75,6 @@ struct NutritionView<
                 )
             }
         }
-        .background(.bar)
     }
     
     // MARK: - Timeline
@@ -129,14 +125,14 @@ struct NutritionView<
             Button(role: .destructive) {
                 presenter.deleteMealItem(item, from: meal)
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("Delete", systemImage: Symbol.delete)
             }
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button {
                 presenter.onViewMealPressed(meal)
             } label: {
-                Label("Meal", systemImage: "list.bullet.rectangle")
+                Label("Meal", systemImage: Symbol.meal)
             }
         }
     }
@@ -145,21 +141,12 @@ struct NutritionView<
 
     private var moreSection: some View {
         Section {
-            Group {
-                Label("Nutrition Overview", systemImage: "list.bullet")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onNutritionOverviewPressed()
-                    }
-                Label("Customise Food Log", systemImage: "slider.horizontal.3")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onCustomiseFoodLogPressed()
-                    }
+            ListRowButton(title: String(localized: "Nutrition Overview"), systemImage: Symbol.nutrition) {
+                presenter.onNutritionOverviewPressed()
             }
-            .foregroundStyle(.primary)
+            ListRowButton(title: String(localized: "Customise Food Log"), systemImage: Symbol.settings) {
+                presenter.onCustomiseFoodLogPressed()
+            }
         } header: {
             Text("More")
         }
@@ -184,7 +171,7 @@ struct NutritionView<
             Button {
                 isCalendarExpanded = true
             } label: {
-                Image(systemName: "calendar")
+                Image(systemName: Symbol.calendar)
             }
             .accessibilityLabel("Show calendar")
         }
@@ -193,7 +180,7 @@ struct NutritionView<
             Button {
                 presenter.onTimelineActionsPressed()
             } label: {
-                Image(systemName: "line.3.horizontal")
+                Image(systemName: Symbol.more)
             }
             .accessibilityLabel("Timeline actions")
         }

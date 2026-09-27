@@ -95,7 +95,7 @@ struct FoodLibraryView<
                 favouritesList
             }
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             Picker("Library", selection: $presenter.foodLibraryOption) {
                 ForEach(FoodLibraryOption.allCases, id: \.self) { option in
                     option.icon.tag(option)

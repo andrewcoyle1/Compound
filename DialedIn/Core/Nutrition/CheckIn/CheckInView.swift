@@ -79,7 +79,7 @@ struct CheckInView: View {
     private var weighInStep: some View {
         Section {
             Text("A recent weigh-in keeps the trend honest.")
-                .font(.subheadline)
+                .font(.rowDetail)
                 .foregroundStyle(.secondary)
         }
         WeightPickerInput(
@@ -151,7 +151,7 @@ struct CheckInView: View {
         if let summary = presenter.proposalSummary {
             Section {
                 Text(summary)
-                    .font(.subheadline)
+                    .font(.rowDetail)
                 Button("Accept") {
                     presenter.onAcceptProposalPressed()
                 }
@@ -180,19 +180,14 @@ struct CheckInView: View {
     // MARK: - Pieces
 
     private func summaryRow(title: String, value: String) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Text(value)
-                .foregroundStyle(.secondary)
-        }
+        LabeledContent(title, value: value)
     }
 
     private func dayLabel(_ row: CheckInDayRow) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(row.weekdayName)
             Text(row.intakeDescription)
-                .font(.caption)
+                .font(.rowDetail)
                 .foregroundStyle(.secondary)
         }
     }
@@ -225,7 +220,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showCheckInView(delegate: CheckInDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.large]))) { router in
+        router.showScreen(.sheetConfig(config: .full)) { router in
             builder.checkInView(router: router, delegate: delegate)
         }
     }

@@ -62,7 +62,7 @@ struct NutritionLibraryPickerView<
         }
         .navigationTitle("Add Item")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             modeChips
         }
         .toolbar {

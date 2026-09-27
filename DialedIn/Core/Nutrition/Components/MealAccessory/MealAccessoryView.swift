@@ -53,7 +53,7 @@ struct MealAccessoryView: View {
         let isCompleted = !draftMeal.amount.isZero
         ZStack {
             Circle()
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(.surface)
 
             ImageLoaderView(
                 urlString: "SplashScreen",
@@ -63,33 +63,35 @@ struct MealAccessoryView: View {
             .grayscale(isCompleted ? 1 : 0)
 
             if isCompleted {
+                // A scrim over the item's picture, so the check reads on any image.
                 Circle()
                     .fill(.black.opacity(0.4))
                 Image(systemName: "checkmark")
-                    .font(.caption.bold())
+                    .font(.label)
+                    .fontWeight(.bold)
                     .foregroundStyle(.white)
             }
         }
-        .frame(width: 38, height: 38)
-        .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+        .frame(width: ControlSize.thumbnail, height: ControlSize.thumbnail)
+        .overlay(Circle().stroke(.canvas, lineWidth: Spacing.xxs))
     }
     
     private var workoutName: some View {
         Text(delegate.draftMeal.date.formatted(date: .omitted, time: .shortened))
-            .font(.subheadline)
+            .font(.rowDetail)
             .fontWeight(.semibold)
             .lineLimit(1)
     }
 
     private func timeSection(draftMeal: MealLogModel) -> some View {
         // Elapsed time
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Text("Elapsed: ")
             Text(presenter.draftMeal.date, style: .timer)
                 .monospacedDigit()
         }
         .foregroundStyle(.secondary)
-        .font(.subheadline)
+        .font(.rowDetail)
         .multilineTextAlignment(.leading)
     }
 }

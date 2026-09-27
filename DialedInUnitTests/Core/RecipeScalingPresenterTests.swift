@@ -14,7 +14,7 @@ import SwiftUI
 @MainActor
 struct RecipeDetailServingsPresenterTests {
 
-    private final class Interactor: RecipeDetailInteractor {
+    private final class Interactor: SpyGlobalInteractor, RecipeDetailInteractor {
         var currentUser: UserModel?
         func isFavouriteRecipe(id: String) -> Bool { false }
         func setFavouriteRecipe(id: String, isFavourite: Bool) async throws { }
@@ -98,6 +98,16 @@ struct RecipeDetailServingsPresenterTests {
 
         presenter.onServingsChanged(.nan)
         #expect(presenter.servings(recipe: chilli) == 0.5)
+    }
+
+    @Test("Test Stepping Servings Plays A Selection Haptic")
+    func testSteppingServingsPlaysASelectionHaptic() {
+        let interactor = Interactor()
+        let presenter = RecipeDetailPresenter(interactor: interactor, router: Router())
+
+        presenter.onServingsChanged(2)
+
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection"])
     }
 }
 

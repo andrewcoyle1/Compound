@@ -376,7 +376,7 @@ struct CreateRecipePresenterTests {
 @MainActor
 struct RecipeDetailPresenterTests {
 
-    private final class DetailInteractor: RecipeDetailInteractor {
+    private final class DetailInteractor: SpyGlobalInteractor, RecipeDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var favouriteIds: Set<String> = []
         var setFavouriteError: Error?

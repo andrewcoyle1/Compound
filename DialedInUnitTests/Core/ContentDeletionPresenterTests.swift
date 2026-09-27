@@ -126,7 +126,7 @@ struct ExerciseModelDetailDeletionTests {
 @MainActor
 struct RecipeDetailDeletionTests {
 
-    private final class Interactor: RecipeDetailInteractor {
+    private final class Interactor: SpyGlobalInteractor, RecipeDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var deleteError: Error?
         private(set) var deletedIds: [String] = []

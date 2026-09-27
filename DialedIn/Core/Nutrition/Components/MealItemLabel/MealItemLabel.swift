@@ -12,51 +12,38 @@ struct MealItemLabel: View {
     var showImage: Bool = true
     var showCalories: Bool = true
     var showMacros: Bool = true
-    let onEditPressed: (MealItemModel) -> Void
+    /// Nil hides the edit button.
+    var onEditPressed: ((MealItemModel) -> Void)?
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.m) {
             if showImage {
-//                ImageLoaderView(resizingMode: .fill, clipShape: AnyShape(Circle()))
-                Image(systemName: "fork.knife.circle.fill")
-                    .font(.title)
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 30, maxHeight: 30)
-
+                // A stand-in for the food's picture, so neutral: it is not brand emphasis.
+                Image(systemName: Symbol.meal + ".circle.fill")
+                    .iconSize(.medium)
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
             }
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(mealItem.displayName)
-                    .fontWeight(.semibold)
-                    .font(.caption)
-                HStack(spacing: 4) {
-                    if showCalories {
-                        HStack(spacing: 0) {
-                            Text("\(Int(mealItem.calories ?? 0))")
-                            Image(systemName: "flame")
-                        }
-                    }
-                    if showMacros {
-                        Text("\(Int(mealItem.proteinGrams ?? 0))P")
-                        Text("\(Int(mealItem.fatGrams ?? 0))F")
-                        Text("\(Int(mealItem.carbGrams ?? 0))C")
-                    }
-                    Divider()
-                    Text(String(format: "%g %@", mealItem.amount, mealItem.unit))
-                }
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                    .font(.rowTitle)
+                Text(mealItem.detail(showsCalories: showCalories, showsMacros: showMacros, showsAmount: true))
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
             }
             .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer()
-            Button {
-                onEditPressed(mealItem)
-            } label: {
-                Image(systemName: "pencil")
+            if let onEditPressed {
+                Button {
+                    onEditPressed(mealItem)
+                } label: {
+                    Image(systemName: Symbol.edit)
+                }
+                .accessibilityLabel("Edit meal item")
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
             }
-            .accessibilityLabel("Edit meal item")
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
         }
     }
 }

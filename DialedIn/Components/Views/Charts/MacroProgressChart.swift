@@ -14,6 +14,8 @@ struct MacroProgressChart: View {
     var target: Double?
     var maxValue: Double
     var color: Color
+    /// Read by VoiceOver after the numbers, e.g. "g" gives "48 of 150 g".
+    var unit: String = ""
     
     /// Scale for the bar: progress fills from 0 to min(current, maxValue)/maxValue
     private var progress: Double {
@@ -29,35 +31,45 @@ struct MacroProgressChart: View {
     
     var body: some View {
         GeometryReader { geo in
-            let trackHeight: CGFloat = 8
+            let trackHeight = Spacing.s
             let trackY = (geo.size.height - trackHeight) / 2
             
             ZStack(alignment: .leading) {
                 // Track (light grey background)
-                RoundedRectangle(cornerRadius: trackHeight / 2)
-                    .fill(Color.gray.opacity(0.2))
+                Capsule()
+                    .fill(.quaternary)
                     .frame(height: trackHeight)
                     .frame(maxWidth: .infinity)
                 
                 // Progress fill
-                RoundedRectangle(cornerRadius: trackHeight / 2)
+                Capsule()
                     .fill(color)
                     .frame(width: max(0, geo.size.width * progress), height: trackHeight)
                 
                 // Target marker (vertical grey line)
                 if let targetPos = targetPosition {
                     let xVal = geo.size.width * targetPos
-                    let topY = trackY - CGFloat(2)
-                    let bottomY = trackY + trackHeight + CGFloat(2)
+                    let topY = trackY - Spacing.xxs
+                    let bottomY = trackY + trackHeight + Spacing.xxs
                     Path { path in
                         path.move(to: CGPoint(x: xVal, y: topY))
                         path.addLine(to: CGPoint(x: xVal, y: bottomY))
                     }
-                    .stroke(Color.gray.opacity(0.5), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                    .stroke(.secondary, style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
                 }
             }
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement()
+        .accessibilityValue(accessibilitySummary)
+    }
+
+    /// "48 of 150 g", or "48 g" with no target.
+    private var accessibilitySummary: String {
+        let format = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(0...1))
+        let suffix = unit.isEmpty ? "" : " \(unit)"
+        guard let target, target > 0 else { return "\(current.formatted(format))\(suffix)" }
+        return String(localized: "\(current.formatted(format)) of \(target.formatted(format))\(suffix)")
     }
 }
 

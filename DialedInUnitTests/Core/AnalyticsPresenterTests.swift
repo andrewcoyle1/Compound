@@ -392,7 +392,7 @@ struct AnalyticsPresenterTests {
         await screen.presenter.loadStepsData()
 
         #expect(screen.presenter.stepsLast7.map(\.number) == [9000])
-        #expect(screen.presenter.stepsLatestValueText == "9000")
+        #expect(screen.presenter.stepsLatestValueText == 9000.formatted())
     }
 
     @Test("Test Steps Older Than A Week Are Left Out")

@@ -583,7 +583,7 @@ struct AnalyticsLogWeightPresenterTests {
         await screen.presenter.saveWeight()
 
         #expect(screen.interactor.saved.first?.weightKg == 84)
-        #expect(screen.interactor.playedHaptics == [.success])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// Storage is kilograms, so a pounds entry is converted on the way in — writing 185 as though
@@ -641,7 +641,7 @@ struct AnalyticsLogWeightPresenterTests {
         #expect(screen.interactor.saved.isEmpty)
         #expect(screen.interactor.profileWeights.isEmpty)
         #expect(screen.presenter.isLoading == false)
-        #expect(screen.interactor.playedHaptics == [.error])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Signed out there is nobody to attribute the weigh-in to, so nothing is written.

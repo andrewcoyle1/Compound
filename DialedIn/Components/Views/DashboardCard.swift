@@ -12,8 +12,6 @@ import SwiftUI
 
 struct DashboardCard<Content: View>: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let title: String
     /// Cards whose content brings its own surface (the Today's Workout label styles itself) opt out
     /// of the rounded background rather than nesting two.
@@ -32,7 +30,7 @@ struct DashboardCard<Content: View>: View {
             // One line, shrinking before it truncates: "Today's Workout" is wider than a card at
             // accessibility sizes. The carousel grows its height with the same text style.
             Text(title)
-                .font(.headline)
+                .font(.sectionTitle)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
@@ -48,7 +46,7 @@ struct DashboardCard<Content: View>: View {
             content()
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+                .cardSurface(.card)
         } else {
             content()
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,15 +54,27 @@ struct DashboardCard<Content: View>: View {
     }
 }
 
-#Preview {
+#Preview("Dashboard card, light") {
+    dashboardCardSample.preferredColorScheme(.light)
+}
+
+#Preview("Dashboard card, dark") {
+    dashboardCardSample.preferredColorScheme(.dark)
+}
+
+#Preview("Dashboard card, accessibility size") {
+    dashboardCardSample.dynamicTypeSize(.accessibility3)
+}
+
+@MainActor private var dashboardCardSample: some View {
     DashboardCard(title: "Workout Streak") {
         VStack(alignment: .leading) {
             Text("12 days")
-                .font(.largeTitle.bold())
+                .font(.display)
             Spacer()
-            Text("Best streak 21 days")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Stat(value: "21 days", label: "Best streak", size: .small)
         }
     }
+    .padding()
+    .background(Color.canvas)
 }

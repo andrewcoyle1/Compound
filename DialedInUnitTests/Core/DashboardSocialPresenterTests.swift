@@ -415,13 +415,8 @@ struct SocialCommentsPresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
 
-        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
-            alertTitles.append(title)
-        }
-
-        func showSimpleAlert(title: String, subtitle: String?) {
-            alertTitles.append(title)
-        }
+        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -566,6 +561,7 @@ struct SocialCommentsPresenterTests {
         #expect(screen.interactor.added.first?.sessionAuthorId == "friend")
         #expect(screen.presenter.commentDraft.isEmpty)
         #expect(screen.router.alertTitles.isEmpty)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
     // MARK: Replies
@@ -686,6 +682,7 @@ struct SocialCommentsPresenterTests {
         #expect(screen.presenter.comments.isEmpty)
         #expect(screen.presenter.commentDraft == "Strong session")
         #expect(screen.router.alertTitles == ["Unable to Post Comment"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: Deleting and reporting

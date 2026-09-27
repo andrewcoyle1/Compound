@@ -126,7 +126,9 @@ class CommentsPresenter {
         Task {
             do {
                 try await interactor.addComment(comment)
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 comments.removeAll { $0.id == comment.id }
                 replyingTo = parent
                 draftMentions = mentions

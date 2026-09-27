@@ -62,14 +62,13 @@ struct PortionDefinitionView: View {
         }
         .navigationTitle("Create Food")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Next")
             }
             .disabled(!presenter.canSave)
-            .padding(.bottom)
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -130,8 +129,6 @@ struct PortionDefinitionView: View {
 
 private struct PortionDefinition<T: PickableUnit>: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     let headerText: String
     let sizeHeader: String
     let primaryPrompt: String
@@ -146,60 +143,23 @@ private struct PortionDefinition<T: PickableUnit>: View {
 
     var body: some View {
         Section {
-            VStack(spacing: 12) {
-                
-                VStack(alignment: .leading) {
-                    Text(sizeHeader)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading)
-                    TextFieldwUnit<T>(
-                        prompt: primaryPrompt,
-                        value: primaryValue,
-                        unit: unit
-                    )
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
-                    .background(colorScheme.backgroundPrimary, in: .capsule)
-                }
-                VStack(alignment: .leading) {
-                    Text("Portion Description")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading)
-                    
-                    HStack {
-                        TextField(
-                            secondaryPrompt,
-                            value: secondaryValue,
-                            format: .number
-                        )
-                        .textFieldStyle(.roundedBorder)
-                        .frame(maxWidth: 60)
-                        TextField(
-                            tertiaryPrompt,
-                            text: tertiaryValue
-                        )
-                        .textFieldStyle(.roundedBorder)
-                        .textInputAutocapitalization(.never)
-                    }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal)
-                    .background(colorScheme.backgroundPrimary, in: .capsule)
-                }
+            NumberField(primaryPrompt, value: primaryValue, unit: unit.acronym, label: sizeHeader)
+            NumberField(secondaryPrompt, value: secondaryValue, label: String(localized: "Portion Quantity"))
+            LabeledContent("Portion Name") {
+                TextField(tertiaryPrompt, text: tertiaryValue)
+                    .multilineTextAlignment(.trailing)
+                    .textInputAutocapitalization(.never)
             }
-            .removeListRowFormatting()
         } header: {
             Text(headerText)
         } footer: {
             Text(footerText)
         }
-        
-        Label(alertText, systemImage: "info.circle.fill")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-    }
 
+        Section {
+            InlineMessage(.info, alertText)
+        }
+    }
 }
 
 enum NutritionDefinitionOption: CaseIterable, Hashable {

@@ -28,8 +28,6 @@ struct FoodPackagingDelegate {
 
 struct FoodPackagingView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: FoodPackagingPresenter
     let delegate: FoodPackagingDelegate
     
@@ -42,30 +40,36 @@ struct FoodPackagingView: View {
             }
             .listSectionSpacing(0)
             Section {
-                Image(systemName: "camera")
-                    .padding(20)
-                    .frame(maxWidth: .infinity)
-                    .anyButton(.press) {
-                        presenter.onFrontImageSelectorPressed()
-                    }
+                Button {
+                    presenter.onFrontImageSelectorPressed()
+                } label: {
+                    Image(systemName: Symbol.camera)
+                        .iconSize(.medium)
+                        .padding(Spacing.xl)
+                        .frame(maxWidth: .infinity)
+                        .contentShape(.rect)
+                }
                 .accessibilityLabel("Add product front photo")
             } header: {
                 Text("Product Front")
             }
             Section {
-                Image(systemName: "camera")
-                    .padding(20)
-                    .frame(maxWidth: .infinity)
-                    .anyButton(.press) {
-                        presenter.onRearImageSelectorPressed()
-                    }
+                Button {
+                    presenter.onRearImageSelectorPressed()
+                } label: {
+                    Image(systemName: Symbol.camera)
+                        .iconSize(.medium)
+                        .padding(Spacing.xl)
+                        .frame(maxWidth: .infinity)
+                        .contentShape(.rect)
+                }
                 .accessibilityLabel("Add nutrition facts photo")
             } header: {
                 Text("Nutrition Facts")
             }
             Section {
                 Text("How these photos are used.")
-                    .bold()
+                    .font(.sectionTitle)
                 Text(usageAttributedText)
             } footer: {
                 HStack {
@@ -83,13 +87,12 @@ struct FoodPackagingView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Next")
             }
-            .padding(.bottom)
         }
         .photosPicker(isPresented: $presenter.isFrontImagePickerPresented, selection: $presenter.selectedFrontPhotoItem, matching: .images)
         .photosPicker(isPresented: $presenter.isRearImagePickerPresented, selection: $presenter.selectedRearPhotoItem, matching: .images)

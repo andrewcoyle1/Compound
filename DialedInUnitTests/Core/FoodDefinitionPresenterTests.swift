@@ -312,6 +312,24 @@ struct FoodDefinitionPresenterTests {
         await TestManagers.eventually { !screen.router.alertTitles.isEmpty }
 
         #expect(screen.router.alertTitles == ["Unable to Create Food"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    @Test("Test Create And Add Is Offered Only With A Plate")
+    func testCreateAndAddIsOfferedOnlyWithAPlate() {
+        let screen = makeScreen()
+        let noPlate = FoodDefinitionDelegate(
+            nutritionDefinitionOption: .standardMass,
+            image: nil,
+            name: "Oat Milk",
+            brandName: nil,
+            barcode: nil,
+            imageFront: nil,
+            nutritionImage: nil
+        )
+
+        #expect(screen.presenter.canAddToPlate(delegate: screen.delegate))
+        #expect(!screen.presenter.canAddToPlate(delegate: noPlate))
     }
 
     /// Signed out there is nobody to attribute the food to, so nothing is written and the attempt
@@ -417,6 +435,8 @@ struct FoodDefinitionPresenterTests {
 
         #expect(screen.interactor.trackedEventNames.contains("FoodDefinitionView_CreateFood_Start"))
         #expect(screen.interactor.trackedEventNames.contains("FoodDefinitionView_CreateFood_Success"))
+        await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty }
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// Create-and-add logs it too — it is the same creation with a different next step.

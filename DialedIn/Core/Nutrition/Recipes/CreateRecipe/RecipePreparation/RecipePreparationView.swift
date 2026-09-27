@@ -58,8 +58,7 @@ struct RecipePreparationView: View {
                 EditButton()
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            VStack {
+        .bottomCTA {
                 if delegate.onMealItemConfirmed != nil {
                     CallToActionButton(
                         isPrimaryAction: true,
@@ -83,7 +82,6 @@ struct RecipePreparationView: View {
                         Text("Create")
                     }
                 )
-            }
         }
         .navigationTitle(delegate.recipeName)
         .navigationBarTitleDisplayMode(.inline)
@@ -104,28 +102,29 @@ struct RecipePreparationView: View {
     }
 
     private var timingSection: some View {
-        Group {
-            LabeledTextFieldWithUnit<TimeUnit>(
-                label: "Preparation Time",
-                prompt: String(localized: "Enter preparation time"),
+        Section("Timing") {
+            NumberField(
+                String(localized: "Enter preparation time"),
                 value: $presenter.prepTime,
-                unit: TimeUnit.minute
+                unit: TimeUnit.minute.acronym,
+                label: String(localized: "Preparation Time")
             )
-            LabeledTextFieldWithUnit<TimeUnit>(
-                label: "Cooking Time",
-                prompt: String(localized: "Enter cooking time"),
+            NumberField(
+                String(localized: "Enter cooking time"),
                 value: $presenter.cookTime,
-                unit: TimeUnit.minute
+                unit: TimeUnit.minute.acronym,
+                label: String(localized: "Cooking Time")
             )
         }
     }
 
     private var linkSection: some View {
-        LabeledTextField(
-            label: "Link",
-            prompt: String(localized: "Enter link to the recipe"),
-            text: $presenter.sourceURL
-        )
+        Section("Link") {
+            TextField(String(localized: "Enter link to the recipe"), text: $presenter.sourceURL)
+                .keyboardType(.URL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+        }
     }
 
     private var stepsSection: some View {
@@ -142,7 +141,7 @@ struct RecipePreparationView: View {
             Button {
                 presenter.onAddStepPressed()
             } label: {
-                Label("Add Step", systemImage: "plus")
+                Label("Add Step", systemImage: Symbol.add)
             }
         } header: {
             Text("Preparation Steps")
@@ -161,9 +160,8 @@ struct RecipePreparationView: View {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 150)
-                        .clipped()
-                        .cornerRadius(8)
+                        .frame(height: ChartHeight.compact)
+                        .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
                 } else {
                     Label("Select Photo", systemImage: "photo")
                 }

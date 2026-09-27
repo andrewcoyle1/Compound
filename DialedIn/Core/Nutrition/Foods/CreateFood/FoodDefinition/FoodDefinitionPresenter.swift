@@ -13,6 +13,11 @@ class FoodDefinitionPresenter {
     var energyUnit: EnergyUnit = .kcal
 
     var isShowingMacros: Bool = true
+
+    /// "Create & Add" only means something when there is a plate to add to.
+    func canAddToPlate(delegate: FoodDefinitionDelegate) -> Bool {
+        delegate.mealItems != nil
+    }
     
     var energy: Double?
     var protein: Double?
@@ -94,9 +99,11 @@ class FoodDefinitionPresenter {
             do {
                 _ = try await self.createFood(userId: userId, delegate: delegate)
                 interactor.trackEvent(event: Event.createFoodSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createFoodFail(error: error))
+                interactor.playHaptic(option: .error)
                 // Creating is what closes this form. Silence leaves a filled-in form and a button
                 // that appears to do nothing.
                 router.showSimpleAlert(
@@ -118,9 +125,11 @@ class FoodDefinitionPresenter {
                 // in the meal's totals, and gave it a unit ("grams") nothing else writes.
                 delegate.mealItems?.wrappedValue.append(food.mealItem(amount: 100))
                 interactor.trackEvent(event: Event.createFoodSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createFoodFail(error: error))
+                interactor.playHaptic(option: .error)
                 // Creating is what closes this form. Silence leaves a filled-in form and a button
                 // that appears to do nothing.
                 router.showSimpleAlert(

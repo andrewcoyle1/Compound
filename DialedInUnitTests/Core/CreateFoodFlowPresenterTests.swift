@@ -388,12 +388,25 @@ struct AddFoodPresenterTests {
 
     @Test("Test Pressing A Food Selects It")
     func testPressingAFoodSelectsIt() {
-        let (presenter, _) = makeScreen()
+        let (presenter, interactor) = makeScreen()
         var selected: [FoodModel] = []
 
         presenter.onIngredientPressed(ingredient: food("Oats"), selectedIngredients: &selected)
 
         #expect(selected.map(\.name) == ["Oats"])
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection"])
+    }
+
+    @Test("Test Search Narrows The Library By Name Or Description")
+    func testSearchNarrowsTheLibraryByNameOrDescription() {
+        let milk = FoodModel(ingredientId: "Milk", name: "Milk", description: "Semi-skimmed")
+        let (presenter, _) = makeScreen(foods: [food("Oats"), milk])
+
+        presenter.searchText = " skimmed "
+        #expect(presenter.filteredFoods.map(\.name) == ["Milk"])
+
+        presenter.searchText = ""
+        #expect(presenter.filteredFoods.map(\.name) == ["Oats", "Milk"])
     }
 
     /// The row is a toggle, so pressing a selected food takes it back out rather than adding a

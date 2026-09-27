@@ -43,6 +43,24 @@ struct FoodLibraryPickerRowDelegate<T: FoodItem> {
     var eventParameters: [String: Any]? {
         nil
     }
+
+    /// The row's second line: whichever of calories, macros and portion the logger settings show,
+    /// separated by middle dots. Nil when all three are off.
+    var detail: String? {
+        var parts: [String] = []
+        if showCalories {
+            parts.append(Format.kcal(item.calories ?? 0))
+        }
+        if showMacros {
+            parts.append(String(localized: "\(Format.grams(item.protein ?? 0)) P"))
+            parts.append(String(localized: "\(Format.grams(item.fats ?? 0)) F"))
+            parts.append(String(localized: "\(Format.grams(item.carbs ?? 0)) C"))
+        }
+        if showPortion, let quantity = item.portionQuantityCalculated, let name = item.portionNameCalculated {
+            parts.append("\(quantity.formatted()) \(name)")
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
 }
 
 struct FoodLibraryPickerRowView<T: FoodItem>: View {
@@ -50,51 +68,31 @@ struct FoodLibraryPickerRowView<T: FoodItem>: View {
     let delegate: FoodLibraryPickerRowDelegate<T>
 
     var body: some View {
-        HStack {
+        HStack(spacing: Spacing.s) {
             Button {
                 delegate.onAdd?()
             } label: {
-                HStack {
-                    if delegate.showImage {
-                        ImageLoaderView(urlString: delegate.item.imageURL ?? Constants.randomImage)
-                            .cornerRadius(10)
-                            .frame(width: 40, height: 40)
-                    }
-                    VStack(alignment: .leading) {
-                        Text(delegate.item.name)
-                            .font(.subheadline)
-                        HStack {
-                            if delegate.showCalories {
-                                Text("\(String(format: "%.1f", delegate.item.calories ?? 0)) kcal")
-                            }
-                            if delegate.showMacros {
-                                Text("\(String(format: "%.1f", delegate.item.protein ?? 0)) P")
-                                Text("\(String(format: "%.1f", delegate.item.fats ?? 0)) F")
-                                Text("\(String(format: "%.1f", delegate.item.carbs ?? 0)) C")
-                            }
-                            if delegate.showPortion {
-                                Divider()
-                                if let quantity = delegate.item.portionQuantityCalculated, let name = delegate.item.portionNameCalculated {
-                                    Text("\(String(format: "%g", quantity)) \(name)")
-                                }
-                            }
-                        }
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    }
-                }
-                .tappableBackground()
+                row
+                    .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            Spacer()
             Button {
                 delegate.onQuickAdd?()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Quick add")
-            .buttonStyle(.bordered)
+            .buttonStyle(.glass)
             .buttonBorderShape(.circle)
+        }
+    }
+
+    @ViewBuilder
+    private var row: some View {
+        if delegate.showImage {
+            ListRow(title: delegate.item.name, subtitle: delegate.detail, imageName: delegate.item.imageURL ?? Constants.randomImage)
+        } else {
+            ListRow(title: delegate.item.name, subtitle: delegate.detail)
         }
     }
 }

@@ -5,13 +5,15 @@
 #
 # Usage: scripts/screenshots.sh [--diff] [simulator-udid]
 #   With no UDID, the first available iPhone on the newest iOS runtime is used.
-#   SKIP_BUILD=1 reuses the last build in $HOME/.dd-screenshots.
+#   SKIP_BUILD=1 reuses the last build in $DERIVED.
+#   DERIVED=<path> overrides the DerivedData folder (default $HOME/.dd-screenshots), so
+#   several worktrees can capture in parallel.
 #   --diff runs scripts/screenshots-diff.py against the committed deck after capture and exits
 #   with its status (non-zero when any screen changed).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DERIVED="$HOME/.dd-screenshots"
+DERIVED="${DERIVED:-$HOME/.dd-screenshots}"
 BUNDLE_ID="com.andrewcoyle.DialedIn.mock"
 OUT="$ROOT/Screenshots"
 SOURCE="$ROOT/DialedIn/Root/EntryPoints/AppViewForUITesting.swift"

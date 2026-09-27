@@ -33,10 +33,10 @@ enum Macro: CaseIterable {
 
     var colour: Color {
         switch self {
-        case .cals: return .blue
-        case .carbs: return .carbsColor
-        case .fat: return .fatColor
-        case .protein: return .proteinColor
+        case .cals: return .calories
+        case .carbs: return .carbs
+        case .fat: return .fat
+        case .protein: return .protein
         }
     }
 
@@ -48,10 +48,6 @@ enum Macro: CaseIterable {
         case .carbs: return .carbs
         }
     }
-
-    static var proteinColor: Color { Color(red: 0.9, green: 0.4, blue: 0.3) }
-    static var fatColor: Color { Color(red: 0.95, green: 0.75, blue: 0.2) }
-    static var carbsColor: Color { Color(red: 0.4, green: 0.75, blue: 0.5) }
 }
 
 protocol MacroNutrient {

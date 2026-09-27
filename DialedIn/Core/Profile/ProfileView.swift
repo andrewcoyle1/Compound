@@ -10,7 +10,8 @@ import SwiftUI
 struct ProfileView: View {
     
     @State var presenter: ProfilePresenter
-    
+    @ScaledMetric(relativeTo: .title3) private var avatarSide: CGFloat = 80
+
     var body: some View {
         List {
             if let user = presenter.currentUser,
@@ -29,7 +30,7 @@ struct ProfileView: View {
             }
         }
         .navigationTitle("Profile")
-        .toolbarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .toolbar {
             toolbarContent
@@ -39,248 +40,155 @@ struct ProfileView: View {
     private var profileHeaderSection: some View {
         Section {
             if let user = presenter.currentUser {
-                HStack(spacing: 16) {
-                    // Profile Image
-                    ZStack {
-                        Image(systemName: "person.circle")
-                            .resizable()
-                            .font(.system(size: 24))
-                        if let urlString = user.profileImageNameCalculated {
-                            ImageLoaderView(urlString: urlString, clipShape: AnyShape(Circle()))
-                                .contentShape(Circle())
-                        }
-                    }
-                    .frame(width: 80, height: 80)
-
-                    // User Info
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(presenter.fullName)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                        
-                        if let email = user.emailCalculated {
-                            Text(email)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                    }
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                }
-                .tappableBackground()
-                .anyButton {
+                Button {
                     presenter.onProfileEditPressed()
+                } label: {
+                    HStack(spacing: Spacing.l) {
+                        ZStack {
+                            Image(systemName: Symbol.profile)
+                                .resizable()
+                                .scaledToFit()
+                                .foregroundStyle(.secondary)
+                            if let urlString = user.profileImageNameCalculated {
+                                ImageLoaderView(urlString: urlString, clipShape: AnyShape(Circle()))
+                            }
+                        }
+                        .frame(width: avatarSide, height: avatarSide)
+                        .accessibilityHidden(true)
+
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(presenter.fullName)
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                            if let email = user.emailCalculated {
+                                Text(email)
+                                    .font(.rowDetail)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Image(systemName: "chevron.forward")
+                            .font(.rowDetail.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(.rect)
                 }
             }
         } header: {
             Text("Profile")
         }
     }
-    
+
     private var generalSection: some View {
         Section {
-            Group {
-                HStack(spacing: 8) {
-                    Label("Subscription", systemImage: "tag")
-                    Spacer(minLength: 0)
-                    Text(presenter.subscriptionStatus)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .tappableBackground()
-                .anyButton(.highlight) {
-                    presenter.onSubscriptionPressed()
-                }
-                Label("Integrations", systemImage: "app.connected.to.app.below.fill")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onIntegrationsPressed()
-                    }
-                Label("Units", systemImage: "base.unit")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onUnitsPressed()
-                    }
-                Label("Analytics", systemImage: "chart.bar.xaxis")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onCustomiseAnalyticsPressed()
-                    }
-                Label("Siri", systemImage: "siri")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onSiriPressed()
-                    }
-                Label("Shortcuts", systemImage: "bolt")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onShortcutsPressed()
-                    }
-                
+            ListRowButton(title: String(localized: "Subscription"), systemImage: "tag", accessory: .value(presenter.subscriptionStatus)) {
+                presenter.onSubscriptionPressed()
             }
-            .foregroundStyle(.primary)
-
+            ListRowButton(title: String(localized: "Integrations"), systemImage: "app.connected.to.app.below.fill") {
+                presenter.onIntegrationsPressed()
+            }
+            ListRowButton(title: String(localized: "Units"), systemImage: "base.unit") {
+                presenter.onUnitsPressed()
+            }
+            ListRowButton(title: String(localized: "Analytics"), systemImage: Symbol.analytics) {
+                presenter.onCustomiseAnalyticsPressed()
+            }
+            ListRowButton(title: String(localized: "Siri"), systemImage: "siri") {
+                presenter.onSiriPressed()
+            }
+            ListRowButton(title: String(localized: "Shortcuts"), systemImage: "square.2.layers.3d") {
+                presenter.onShortcutsPressed()
+            }
         } header: {
             Text("General")
         }
     }
-    
+
     private var nutritionSettingsSection: some View {
         Section {
-            Group {
-                Label("Food Log", systemImage: "carrot")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onFoodLogSettingsPressed()
-                    }
-                Label("Expenditure", systemImage: "flame")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onExpenditureSettingsPressed()
-                    }
-                Label("Strategy", systemImage: "map")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onStrategySettingsPressed()
-                    }
-                Label("Nutrition Plan", systemImage: "fork.knife")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onNutritionPlanPressed()
-                    }
+            ListRowButton(title: String(localized: "Food Log"), systemImage: Symbol.food) {
+                presenter.onFoodLogSettingsPressed()
             }
-            .foregroundStyle(.primary)
-            //            .removeListRowFormatting()
+            ListRowButton(title: String(localized: "Expenditure"), systemImage: Symbol.expenditure) {
+                presenter.onExpenditureSettingsPressed()
+            }
+            ListRowButton(title: String(localized: "Strategy"), systemImage: Symbol.strategy) {
+                presenter.onStrategySettingsPressed()
+            }
+            ListRowButton(title: String(localized: "Nutrition Plan"), systemImage: Symbol.meal) {
+                presenter.onNutritionPlanPressed()
+            }
         } header: {
             Text("Nutrition Settings")
         }
     }
-    
+
     private var trainingSettingsSection: some View {
         Section {
-            Group {
-                Label("Gym Profiles", systemImage: "building")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onGymProfilesPressed()
-                    }
-                Label("Exercises", systemImage: "list.bullet")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onExerciseLibraryPressed()
-                    }
-                Label("Workout Settings", systemImage: "dumbbell")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onWorkoutSettingsPressed()
-                    }
+            ListRowButton(title: String(localized: "Gym Profiles"), systemImage: Symbol.gym) {
+                presenter.onGymProfilesPressed()
             }
-            .foregroundStyle(.primary)
-            //            .removeListRowFormatting()
+            ListRowButton(title: String(localized: "Exercises"), systemImage: Symbol.exercise) {
+                presenter.onExerciseLibraryPressed()
+            }
+            ListRowButton(title: String(localized: "Workout Settings"), systemImage: Symbol.workout) {
+                presenter.onWorkoutSettingsPressed()
+            }
         } header: {
             Text("Training Settings")
         }
     }
-    
+
     private var communityAndSupportSection: some View {
         Section {
-            Group {
-                Label("Invite a friend", systemImage: "person.badge.plus")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        Task { await presenter.onInviteFriendPressed() }
-                    }
-                Label("Knowledge Base", systemImage: "book.closed")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onKnowledgeBasePressed()
-                    }
-                Label("Roadmap", systemImage: "map")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onRoadmapPressed()
-                    }
-                Label("Support", systemImage: "questionmark.circle")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onSupportPressed()
-                    }
-                Label("Rate us on the app store", systemImage: "star")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton {
-                        presenter.onRatingsButtonPressed()
-                    }
+            ListRowButton(title: String(localized: "Invite a friend"), systemImage: "person.badge.plus") {
+                Task { await presenter.onInviteFriendPressed() }
             }
-            .foregroundStyle(.primary)
-
+            ListRowButton(title: String(localized: "Knowledge Base"), systemImage: Symbol.knowledgeBase) {
+                presenter.onKnowledgeBasePressed()
+            }
+            ListRowButton(title: String(localized: "Roadmap"), systemImage: Symbol.roadmap) {
+                presenter.onRoadmapPressed()
+            }
+            ListRowButton(title: String(localized: "Support"), systemImage: "questionmark.circle") {
+                presenter.onSupportPressed()
+            }
+            ListRowButton(title: String(localized: "Rate us on the app store"), systemImage: "star") {
+                presenter.onRatingsButtonPressed()
+            }
         } header: {
             Text("Community & Support")
         }
     }
-    
+
     private var otherSection: some View {
         Section {
-            Group {
-                Label("Legal", systemImage: "book")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onLegalPressed()
-                    }
-                Label("App Icon", systemImage: "app.grid")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onAppIconPressed()
-                    }
-                Label("Tutorials", systemImage: "book")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onTutorialPressed()
-                    }
-                Label("About", systemImage: "info.circle")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                    .tappableBackground()
-                    .anyButton(.highlight) {
-                        presenter.onAboutPressed()
-                    }
+            ListRowButton(title: String(localized: "Legal"), systemImage: Symbol.legal) {
+                presenter.onLegalPressed()
             }
-            .foregroundStyle(.primary)
-            //            .removeListRowFormatting()
+            ListRowButton(title: String(localized: "App Icon"), systemImage: "app.grid") {
+                presenter.onAppIconPressed()
+            }
+            ListRowButton(title: String(localized: "Tutorials"), systemImage: Symbol.tutorials) {
+                presenter.onTutorialPressed()
+            }
+            ListRowButton(title: String(localized: "About"), systemImage: Symbol.info) {
+                presenter.onAboutPressed()
+            }
         } header: {
             Text("Other")
         }
     }
-    
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
 }

@@ -12,37 +12,25 @@ struct AboutView: View {
     let delegate: AboutDelegate
     
     var body: some View {
-        VStack {
+        ScrollView {
             Text("Compound is your training and nutrition platform. Every session builds on the last. You are currently on version \(presenter.appVersion) (\(presenter.appBuild)).")
-                .lineLimit(4)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
-            Spacer()
         }
         .navigationTitle("About Compound")
-        .toolbarTitleDisplayMode(.inlineLarge)
-        .safeAreaInset(edge: .bottom) {
-            VStack {
-                CallToActionButton(isPrimaryAction: false) {
-                    presenter.onLicencesPressed()
-                } label: {
-                    Text("View Licences")
-                }
-                CallToActionButton {
-                    presenter.onDismissPressed()
-                } label: {
-                    Text("Go Back")
-                }
+        .navigationBarTitleDisplayMode(.inline)
+        .bottomCTA {
+            CallToActionButton(isPrimaryAction: false) {
+                presenter.onLicencesPressed()
+            } label: {
+                Text("View Licences")
             }
-            .padding(.bottom)
         }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
                     presenter.onDismissPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
             }
         }
         .onAppear {
@@ -82,7 +70,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAboutView(delegate: AboutDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.35)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.aboutView(router: router, delegate: delegate)
         }
     }

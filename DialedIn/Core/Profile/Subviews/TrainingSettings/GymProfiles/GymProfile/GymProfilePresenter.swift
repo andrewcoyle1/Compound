@@ -98,8 +98,13 @@ class GymProfilePresenter {
                 subtitle: String(localized: "To save the gym profile, you must give it a name."),
                 buttons: {
                     AnyView(
-                        Button(role: .destructive) {
-                            self.router.dismissScreen()
+                        Group {
+                            Button("Discard", role: .destructive) {
+                                self.router.dismissScreen()
+                            }
+                            // Without it the only way out was to throw the profile away, when the
+                            // user may just want to go back and name it.
+                            Button("Cancel", role: .cancel) { }
                         }
                     )
                 }

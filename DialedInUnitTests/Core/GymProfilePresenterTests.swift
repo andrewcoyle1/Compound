@@ -280,6 +280,22 @@ struct GymProfilePresenterTests {
         #expect(screen.interactor.savedProfiles.isEmpty)
     }
 
+    /// The discard alert offered only its destructive button, so the one way out of it threw the
+    /// profile away, even when the user only wanted to go back and name it.
+    @Test("Test The Discard Alert For An Unnamed Profile Can Be Cancelled")
+    func testTheDiscardAlertForAnUnnamedProfileCanBeCancelled() {
+        let screen = makeScreen(name: "")
+
+        screen.presenter.onBackButtonPressed()
+
+        #expect(screen.router.alertTitles == ["Discard Gym Profile"])
+        var described = ""
+        dump(screen.router.alertButtons.first, to: &described)
+        #expect(described.contains("\"Cancel\""))
+        #expect(described.contains("cancel"))
+        #expect(described.contains("\"Discard\""))
+    }
+
     @Test("Test Saving Is Tracked From Start To Success")
     func testSavingIsTrackedFromStartToSuccess() async {
         let screen = makeScreen()

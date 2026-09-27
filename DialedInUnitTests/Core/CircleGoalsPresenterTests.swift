@@ -59,6 +59,7 @@ struct WeeklyGoalPresenterTests {
 
         #expect(await TestManagers.eventually { interactor.savedGoals == [7] })
         #expect(interactor.trackedEventNames.contains("WeeklyGoalView_Save_Pressed"))
+        #expect(await TestManagers.eventually { interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
     @Test("Test A Failed Save Says So")
@@ -72,6 +73,7 @@ struct WeeklyGoalPresenterTests {
 
         #expect(await TestManagers.eventually { router.alertTitles == ["Unable to save your goal"] })
         #expect(await TestManagers.eventually { !presenter.isSaving })
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 }
 

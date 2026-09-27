@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileButton: View {
     
-    let avatarSize: CGFloat = 40
+    let avatarSize: CGFloat = ControlSize.thumbnail
     let action: () -> Void
     let imageUrl: String?
     
@@ -22,9 +22,8 @@ struct ProfileButton: View {
                     ImageLoaderView(urlString: imageUrl, clipShape: AnyShape(Circle()))
                         .frame(width: avatarSize, height: avatarSize)
                 } else {
-                    Image(systemName: "person.circle")
-                        .font(.system(size: 24))
-
+                    Image(systemName: Symbol.profile)
+                        .iconSize(.medium)
                 }
             }
         }
@@ -39,7 +38,7 @@ struct ProfileButton: View {
     NavigationStack {
         Color.clear.ignoresSafeArea()
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     ProfileButton(
                         action: {
                             

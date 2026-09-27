@@ -9,12 +9,12 @@ struct SocialProfileDelegate {
 
 struct SocialProfileView<WorkoutSessionRow: View>: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: SocialProfilePresenter
     let delegate: SocialProfileDelegate
 
     @ViewBuilder var workoutSessionRow: (WorkoutSessionRowDelegate) -> WorkoutSessionRow
+
+    @ScaledMetric(relativeTo: .caption) private var avatarSide = ControlSize.thumbnail
     
     var body: some View {
         List {
@@ -53,7 +53,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                 presenter.onReportPressed()
             }
         } label: {
-            Image(systemName: "ellipsis")
+            Image(systemName: Symbol.more)
         }
         .accessibilityLabel("More actions")
     }
@@ -62,38 +62,40 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
     /// list's own background. It is a card now, like every other surface the app shows.
     private var profileSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: Spacing.l) {
                 // Stacked at accessibility sizes: beside an 80pt face and the follow button the
                 // name had a third of the row and hyphenated onto three lines.
-                AdaptiveStack(spacing: 16) {
+                AdaptiveStack(spacing: Spacing.l) {
                     UserAvatarView(imageUrl: delegate.user.profileImageNameCalculated, size: 80)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         if let name = delegate.user.fullNameCalculated {
                             Text(name)
                                 .font(.title3)
                                 .fontWeight(.semibold)
                         }
-                        UsernameLabel(username: delegate.user.username, font: .subheadline)
+                        UsernameLabel(username: delegate.user.username, font: .rowDetail)
                         if presenter.followsYou {
                             Text("Follows you")
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                         // A date of birth sat here: personal data with no social value.
                         if let streak = presenter.latestStreak {
-                            Label("\(streak)-day streak", systemImage: "flame.fill")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.orange)
+                            Label("\(streak)-day streak", systemImage: Symbol.streak)
+                                .font(.label)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.Metric.workouts)
                         }
                         if let programName = presenter.programName {
                             Text("Following \(programName)")
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                         if let goalText = presenter.weeklyGoalText {
-                            Button(goalText, systemImage: "target") { presenter.onWeeklyGoalPressed() }
-                                .font(.caption.weight(.medium))
+                            Button(goalText, systemImage: Symbol.goal) { presenter.onWeeklyGoalPressed() }
+                                .font(.label)
+                                .fontWeight(.medium)
                                 .buttonStyle(.borderless)
                                 .accessibilityHint("Changes your weekly session goal")
                         }
@@ -112,18 +114,18 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
 
                 if presenter.isBlocked {
                     Label("You have blocked this account", systemImage: "hand.raised")
-                        .font(.subheadline)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 } else {
-                    HStack(spacing: 32) {
+                    HStack(spacing: Spacing.xxl) {
                         // An "Activity 1" stat sat here, hardcoded. Nothing counts a user's activity, and
                         // followers/following beside it are real, which made the fake one look real too.
-                        StatItem(header: String(localized: "Followers"), value: "\(presenter.followersCount)")
+                        Stat(value: presenter.followersCount.formatted(), label: String(localized: "Followers"), size: .small)
                             .tappableBackground()
                             .anyButton(.press) {
                                 presenter.onFollowersPressed()
                             }
-                        StatItem(header: String(localized: "Following"), value: "\(presenter.followingCount)")
+                        Stat(value: presenter.followingCount.formatted(), label: String(localized: "Following"), size: .small)
                             .tappableBackground()
                             .anyButton(.press) {
                                 presenter.onFollowingPressed()
@@ -136,7 +138,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
 
                 if !presenter.isBlocked, presenter.isLocked {
                     Label("This account is private. Follow it to see its workouts.", systemImage: "lock")
-                        .font(.subheadline)
+                        .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
 
@@ -147,9 +149,9 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+            .cardSurface()
             .padding(.horizontal)
-            .padding(.bottom, 12)
+            .padding(.bottom, Spacing.m)
             .removeListRowFormatting()
         }
         .listSectionMargins(.all, 0)
@@ -167,13 +169,13 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
     /// Training days over the last twelve weeks, a square per day.
     private var consistencySection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 ContributionChart(
                     data: [presenter.consistencySeries],
                     configuration: ChartConfiguration(
                         aggregation: .sum,
                         unit: "workouts",
-                        seriesColors: [.orange],
+                        seriesColors: [Color.Metric.workouts],
                         goal: 1,
                         accessibilityTitle: "Training days"
                     )
@@ -181,9 +183,9 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+            .cardSurface()
             .padding(.horizontal)
-            .padding(.bottom, 12)
+            .padding(.bottom, Spacing.m)
             .removeListRowFormatting()
         } header: {
             SectionHeaderView(title: String(localized: "Consistency"))
@@ -201,14 +203,12 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                     .padding()
                     .removeListRowFormatting()
             } else if presenter.sessions.isEmpty {
-                Text("No workouts yet")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
-                    .padding(.horizontal)
-                    .removeListRowFormatting()
+                ContentUnavailableView {
+                    Label("No Workouts Yet", systemImage: Symbol.workout)
+                } description: {
+                    Text("Finished workouts show up here.")
+                }
+                .removeListRowFormatting()
             } else {
                 ForEach(presenter.sessions) { session in
                     workoutSessionRow(WorkoutSessionRowDelegate(session: session, author: delegate.user))
@@ -225,10 +225,10 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
     }
 
     private var mutualFollowersImagesSection: some View {
-        AdaptiveStack(spacing: 8) {
+        AdaptiveStack(spacing: Spacing.s) {
             // The avatars overlap; the label beside them must not, so the negative spacing is
             // scoped to the stack that wants it instead of the whole row.
-            HStack(spacing: -10) {
+            HStack(spacing: -Spacing.m) {
                 ForEach(presenter.mutualFollowers.prefix(5)) { user in
                     mutualFollowersImageCircle(user: user)
                 }
@@ -236,17 +236,17 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
             .accessibilityHidden(true)
 
             Text("People you both follow")
-                .font(.caption)
+                .font(.label)
                 .foregroundStyle(.secondary)
 
             Spacer()
 
-            Text("See All")
-                .font(.caption)
-                .underline()
-                .anyButton(.press) {
-                    presenter.onMutualFollowersPressed()
-                }
+            Button("See All") {
+                presenter.onMutualFollowersPressed()
+            }
+            .font(.label)
+            .foregroundStyle(.tint)
+            .buttonStyle(.borderless)
         }
     }
 
@@ -254,7 +254,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
     private func mutualFollowersImageCircle(user: UserModel) -> some View {
         ZStack {
             Circle()
-                .fill(colorScheme.backgroundPrimary)
+                .fill(.surface)
 
             ImageLoaderView(
                 urlString: user.submittedProfileImage ?? "SplashScreen",
@@ -262,8 +262,8 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                 clipShape: AnyShape(Circle())
             )
         }
-        .frame(width: 38, height: 38)
-        .overlay(Circle().stroke(colorScheme.backgroundSecondary, lineWidth: 2))
+        .frame(width: avatarSide, height: avatarSide)
+        .overlay(Circle().stroke(.canvas, lineWidth: 2))
     }
 
 }

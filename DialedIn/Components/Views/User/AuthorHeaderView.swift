@@ -18,20 +18,20 @@ struct AuthorHeaderView: View {
     let delegate: AuthorHeaderDelegate
     
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.m) {
             ImageLoaderView(
                 urlString: delegate.author.profileImageNameCalculated ?? Constants.randomImage,
                 clipShape: AnyShape(.circle)
             )
             .frame(width: 40, height: 40)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 // The handle drops under the name once both no longer fit on one line.
                 ViewThatFits(in: .horizontal) {
-                    HStack(spacing: 4) { nameAndHandle }
-                    VStack(alignment: .leading, spacing: 2) { nameAndHandle }
+                    HStack(spacing: Spacing.xs) { nameAndHandle }
+                    VStack(alignment: .leading, spacing: Spacing.xxs) { nameAndHandle }
                 }
                 Text(delegate.date.formatted(date: .abbreviated, time: .shortened))
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
         }
@@ -45,7 +45,7 @@ struct AuthorHeaderView: View {
     private var nameAndHandle: some View {
         if let name = delegate.author.fullNameCalculated {
             Text(name)
-                .font(.subheadline)
+                .font(.rowDetail)
                 .fontWeight(.semibold)
         }
         UsernameLabel(username: delegate.author.username)

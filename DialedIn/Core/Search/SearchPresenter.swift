@@ -73,6 +73,9 @@ class SearchPresenter {
     /// it used to hide behind one spinner for the whole 350ms debounce plus the round trip.
     private(set) var isLoadingPeople: Bool = false
 
+    /// The last people search failed. Without it a network failure read as "no results".
+    private(set) var peopleSearchFailed: Bool = false
+
     private var searchTask: Task<Void, Never>?
 
     private(set) var recentQueries: [String] = []
@@ -94,6 +97,7 @@ class SearchPresenter {
             || !filteredRecipeTemplates.isEmpty
             || !filteredFoods.isEmpty
             || !filteredUsers.isEmpty
+            || peopleSearchFailed
     }
 
     func followState(for user: UserModel) -> FollowState {
@@ -128,11 +132,17 @@ class SearchPresenter {
             try? await Task.sleep(for: .milliseconds(350))
             guard !Task.isCancelled else { return }
 
-            // Silent: search-as-you-type; a failed query shows no results rather than an alert per keystroke.
-            let fetchedUsers = (try? await interactor.searchUsers(query: query)) ?? []
-            guard !Task.isCancelled else { return }
-
-            users = fetchedUsers
+            // No alert per keystroke: a failure shows as a line in the People section instead.
+            do {
+                let fetchedUsers = try await interactor.searchUsers(query: query)
+                guard !Task.isCancelled else { return }
+                users = fetchedUsers
+                peopleSearchFailed = false
+            } catch {
+                guard !Task.isCancelled else { return }
+                users = []
+                peopleSearchFailed = true
+            }
         }
     }
 
@@ -149,6 +159,7 @@ class SearchPresenter {
 
     func onSearchCleared() {
         users = []
+        peopleSearchFailed = false
         reloadRecentQueries()
     }
 
@@ -302,46 +313,18 @@ class SearchPresenter {
 
     func onLogMealPressed() {
         guard let userId = currentUser?.userId else { return }
+        let newMeal = MealLogModel(authorId: userId, dayKey: Date().dayKey, date: Date(), items: [])
         if let meal = interactor.draftMeal {
-            router.showAlert(
-                title: String(localized: "Unable to add new meal"),
-                subtitle: String(localized: "You already have an draft meal."),
-                buttons: {
-                    AnyView(
-                        VStack {
-                            Button("Continue editing") {
-                                self.router.showAddMealView(
-                                    delegate: AddMealDelegate(mealLog: meal)
-                                )
-                            }
-                            Button("Delete drafted meal", role: .destructive) {
-                                self.router.showAddMealView(
-                                    delegate: AddMealDelegate(
-                                        mealLog: MealLogModel(
-                                            authorId: userId,
-                                            dayKey: Date().dayKey,
-                                            date: Date(),
-                                            items: []
-                                        )
-                                    )
-                                )
-                            }
-                            Button("Cancel", role: .cancel) { }
-                        }
-                    )
+            router.showDraftMealDialog(
+                onContinue: {
+                    Task { @MainActor in self.router.showAddMealView(delegate: AddMealDelegate(mealLog: meal)) }
+                },
+                onStartNew: {
+                    Task { @MainActor in self.router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal)) }
                 }
             )
         } else {
-            self.router.showAddMealView(
-                delegate: AddMealDelegate(
-                    mealLog: MealLogModel(
-                        authorId: userId,
-                        dayKey: Date().dayKey,
-                        date: Date(),
-                        items: []
-                    )
-                )
-            )
+            router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
         }
     }
 
@@ -367,6 +350,22 @@ class SearchPresenter {
     func onEnterInviteCodePressed() {
         inviteCodeInput = ""
         isEnteringInviteCode = true
+    }
+
+    var canJoinWithInviteCode: Bool {
+        !inviteCodeInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func onInviteCodeClosePressed() {
+        isEnteringInviteCode = false
+    }
+
+    /// Closes the sheet first, so whatever the invite opens (the inviter's profile, or an alert
+    /// saying the code is wrong) is not stacked on top of it.
+    func onInviteCodeJoinPressed() {
+        guard canJoinWithInviteCode else { return }
+        isEnteringInviteCode = false
+        Task { await onInviteCodeSubmitted() }
     }
 
     func onInviteCodeSubmitted() async {

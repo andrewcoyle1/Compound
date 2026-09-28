@@ -6,10 +6,13 @@
 import SwiftUI
 
 /// The shared shape of an onboarding step: a `List` under a large title, an optional progress
-/// bar under the navigation bar, the developer-settings toolbar in debug and mock builds, and a
+/// bar at the top of the list, the developer-settings toolbar in debug and mock builds, and a
 /// primary call to action (plus an optional plain secondary button) through `.bottomCTA`.
 ///
-/// Progress is a thin bar under the navigation bar rather than a "Step x of y" subtitle: the
+/// The bar scrolls with the list rather than sitting in a top `safeAreaBar`: a top bar brings the
+/// scroll-edge effect with it, which blurs the large title above it into illegibility.
+///
+/// Progress is a thin bar rather than a "Step x of y" subtitle: the
 /// account-setup sub-screens share one `OnboardingStep`, so a step count would not advance
 /// between them, while a fraction reads the same either way.
 ///
@@ -69,10 +72,18 @@ struct OnboardingStepScaffold<Content: View>: View {
 
     var body: some View {
         List {
-            if let subtitle {
+            if progress != nil || subtitle != nil {
                 Section {
                 } header: {
-                    Text(subtitle)
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        if let progress {
+                            ProgressView(value: progress)
+                                .accessibilityLabel("Onboarding progress")
+                        }
+                        if let subtitle {
+                            Text(subtitle)
+                        }
+                    }
                 }
                 .listSectionSpacing(0)
             }
@@ -80,14 +91,6 @@ struct OnboardingStepScaffold<Content: View>: View {
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.large)
-        .safeAreaBar(edge: .top) {
-            if let progress {
-                ProgressView(value: progress)
-                    .accessibilityLabel("Onboarding progress")
-                    .padding(.horizontal)
-                    .padding(.vertical, Spacing.xs)
-            }
-        }
         #if DEBUG || MOCK
         .toolbar {
             if let onDevSettingsPressed {

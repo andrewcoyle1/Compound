@@ -33,6 +33,8 @@ class WeightRatePresenter {
     }
     
     // MARK: - Constants
+    /// The standard calorie floor the diet step applies. No estimate is shown below it.
+    static let lowestCalorieTargetShown: Double = 1200
     let minWeightChangeRate: Double = 0.25 // kg/week
     let maxWeightChangeRate: Double = 1.5  // kg/week
     let conservativeThreshold: Double = 0.4 // kg/week
@@ -115,11 +117,14 @@ class WeightRatePresenter {
         let weeklyCalorieChange = weeklyChangeInPounds * 3500
         let dailyCalorieChange = weeklyCalorieChange / 7
         
-        let baseCalories = 2000.0 // Rough BMR estimate
-        let targetCalories = delegate.overarchingObjective == .loseWeight ?
+        // The person's own expenditure, the figure they were shown four screens earlier. This
+        // was a fixed 2000 kcal for everyone, so the fastest rate read "~ 346 kcal".
+        let baseCalories = interactor.estimateTDEE(user: interactor.currentUser)
+        let unclamped = delegate.overarchingObjective == .loseWeight ?
             baseCalories - dailyCalorieChange :
             baseCalories + dailyCalorieChange
-        
+        let targetCalories = max(unclamped, Self.lowestCalorieTargetShown)
+
         return String(localized: "~ \(String(describing: Int(targetCalories))) kcal estimated daily calorie target")
     }
     

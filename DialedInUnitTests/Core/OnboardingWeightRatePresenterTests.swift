@@ -30,10 +30,13 @@ struct OnboardingWeightRatePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, WeightRateInteractor {
         var currentUser: UserModel?
+        var expenditure: Double = 2000
 
         init(currentUser: UserModel?) {
             self.currentUser = currentUser
         }
+
+        func estimateTDEE(user: UserModel?) -> Double { expenditure }
     }
 
     private final class Router: WeightRateRouter {
@@ -164,7 +167,7 @@ struct OnboardingWeightRatePresenterTests {
     }
 
     /// The 3500 kcal rule is per pound. Half a kilogram a week is 1.10 lb, which is 3858 kcal a
-    /// week or 551 a day off a 2000 baseline. Reading the rule as per kilogram would show 1750 —
+    /// week or 551 a day off the 2000 kcal this suite's interactor reports as expenditure. Reading the rule as per kilogram would show 1750 —
     /// a deficit half as large again.
     @Test("The calorie estimate applies the 3500 rule per pound, not per kilogram")
     func testTheCalorieEstimateAppliesTheRulePerPound() {
@@ -188,6 +191,33 @@ struct OnboardingWeightRatePresenterTests {
         #expect(
             screen.presenter.estimatedCalorieTargetText(delegate: delegate(.gainWeight, target: 90))
                 == "~ 2551 kcal estimated daily calorie target"
+        )
+    }
+
+    /// The baseline was a fixed 2000 kcal, so someone who burns 2600 was shown a target 600 too low.
+    @Test("The calorie estimate starts from the person's own expenditure")
+    func testTheCalorieEstimateStartsFromThePersonsOwnExpenditure() {
+        let screen = makeScreen()
+        screen.interactor.expenditure = 2600
+        screen.presenter.onAppear(delegate: delegate())
+        screen.presenter.weightChangeRate = 0.5
+
+        #expect(
+            screen.presenter.estimatedCalorieTargetText(delegate: delegate())
+                == "~ 2048 kcal estimated daily calorie target"
+        )
+    }
+
+    /// At 1.5 kg a week the deficit is 1653 kcal a day. Off 2000 that read "~ 346 kcal".
+    @Test("The calorie estimate never reads below the calorie floor")
+    func testTheCalorieEstimateNeverReadsBelowTheCalorieFloor() {
+        let screen = makeScreen()
+        screen.presenter.onAppear(delegate: delegate())
+        screen.presenter.weightChangeRate = 1.5
+
+        #expect(
+            screen.presenter.estimatedCalorieTargetText(delegate: delegate())
+                == "~ 1200 kcal estimated daily calorie target"
         )
     }
 

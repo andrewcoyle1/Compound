@@ -32,7 +32,7 @@ xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-The tests compile and pass (2,715 tests in `DialedInUnitTests`). Treat a `TEST FAILED` as a
+The tests compile and pass (3,542 tests in `DialedInUnitTests`). Treat a `TEST FAILED` as a
 regression from your change unless it is only the UI-test flake described below.
 
 `-only-testing` works, but only under the scheme's own name for the target. The productName is
@@ -47,7 +47,7 @@ xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
 
 **Run the full suite only when pushing.** Not between steps, and not to confirm something a
 narrower run has already shown. Measured on this machine: the whole suite is about fifteen minutes
-with the UI bundle and **2.7 minutes without it** (2,717 unit tests), one suite through
+with the UI bundle and **2.7 minutes without it** (3,542 unit tests as of the UI framework merge), one suite through
 `-only-testing` is about forty-five seconds, and the package's own `swift test` is under two.
 Nearly all of the fifteen minutes is the UI runner and its simulator clones, so
 `-skip-testing:DialedInUITests` is the single biggest saving available. Pick the narrowest run
@@ -404,6 +404,40 @@ their own keypath and title dictionaries.
 Together these two passes removed ~7,400 lines across 90 files whose only real differences were
 the values now in the table.
 
+## Design System
+
+**Use a token or primitive, never a literal.** Everything lives in
+`DialedIn/Components/DesignSystem/`, one file per concern, app target only:
+
+| File | Provides |
+|---|---|
+| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight` |
+| `Palette.swift` | `surface`, `canvas`, `tintedSurface(_:)`, the macro colours, `success/warning/danger`, `warmup/superset/personalRecord`, `Color.Metric.*`. `onAccent` is generated from the `OnAccent` asset. |
+| `Typography.swift` | `Font.display/metricLarge/metric/metricSmall/sectionTitle/rowTitle/rowDetail/label`, and `.iconSize(_:)` for symbols. All Dynamic Type. |
+| `Motion.swift` | `Animation.quick/standard/emphasis/progress`, applied only through `withReducedMotionAnimation` / `reducedMotionAnimation` |
+| `Symbols.swift` | `Symbol.*`: one SF Symbol per concept |
+| `Format.swift` | `Format.kcal/grams/weight/reps/sets/repRange/duration/distance/percent/placeholder` for every displayed quantity |
+| `Presentation.swift` | Sheet presets `.compact/.half/.full` |
+| `Card.swift`, `Stat.swift`, `Chip.swift`, `ListRow.swift`, `NumberField.swift`, `BottomCTA.swift`, `InlineMessage.swift`, `OnboardingStepScaffold.swift` | The primitives: `.cardSurface`, `Stat`, `Chip` (+ `.chipTapTarget()`), `ListRow`/`ListRowButton`/`ListRowToggle`/`SelectableRow`, `NumberField`, `.bottomCTA`, `InlineMessage`, `OnboardingStepScaffold` |
+
+`docs/specs/ui-framework/CONTRACT.md` is the contract: every name above, the accent rules
+(`.tint`/`Color.accentColor`, never `.primary` or `labelColor` standing in for the brand), and the
+screen patterns (close/confirm roles, one `CallToActionButton` via `.bottomCTA`, inline titles,
+`ContentUnavailableView` empty states, haptics after every save). The accent is two assets,
+`AccentColor` and `OnAccent`; changing both recolours the app.
+
+User-facing strings use US spelling and go through `Localizable.xcstrings`, which is kept 100%
+Spanish-complete. Counts use the catalog's plural variations (`"\(n) sets"`) or `Format.sets`,
+never a hand-written "s".
+
+Eight `custom_rules` in `.swiftlint.yml` enforce this at **error** severity, and CI runs
+`swiftlint --strict`: `no_corner_radius_modifier`, `no_foreground_color`, `no_fixed_font_size`,
+`no_rgb_color_literal`, `no_bare_with_animation`, `accent_spelling`, `no_color_scheme_surfaces`
+and `no_drawn_close_button`. They skip comments. Share cards
+(`Core/Dashboard/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
+the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
+cannot apply. If a rule fires, use the token; do not suppress it.
+
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
@@ -437,8 +471,9 @@ lock.
 
 ## Code Health Baseline
 
-As of the latest commit on `main`, all three schemes build with **zero warnings** and
-`swiftlint` reports **zero violations** across 1,305 files. Treat any new warning as something to
+As of the UI framework merge, all three schemes and the `WorkoutSessionActivityExtension` scheme
+build with **zero warnings**, and `swiftlint --strict` reports **zero violations** across 1,520
+files, including the design-system custom rules. Treat any new warning as something to
 fix rather than accumulate.
 
 Building a scheme does not compile the test target, so a warning in `DialedInUnitTests` shows up
@@ -452,7 +487,14 @@ Two file-wide suppressions exist, each documented at the site:
   `@available(iOS, deprecated: 26.0)` — not a SwiftLint rule — because every spelling of a
   scene-less `UIWindow` is deprecated and Swift has no per-call suppression.
 
-Six single-line `swiftlint:disable:next` comments also exist, in `Dependencies.swift`,
-`DevPreview.swift`, `CoreInteractor.swift`, `WorkoutSessionModel.swift`, `PushManager.swift` and
-`NutritionOverviewPresenter.swift`, each for `function_body_length` or `large_tuple` — the
-`Dependencies.swift` one also covers `cyclomatic_complexity`.
+`DesignSystem/Spacing.swift` disables `identifier_name` so `Spacing.s`, `Radius.m` and the
+rest can be one letter.
+
+Ten single-line `swiftlint:disable:next` comments also exist:
+- `function_body_length` in `DevPreview.swift`, `CoreInteractor.swift` and
+  `WorkoutSessionModel.swift`; in `Dependencies.swift` it also covers `cyclomatic_complexity`.
+- `large_tuple` in `PushManager.swift` and `NutritionOverviewPresenter.swift`.
+- `function_parameter_count` in `AddMealView.swift` and `ExpenditureEngine.swift`.
+- `cyclomatic_complexity` in `WeightStepper.swift`.
+- `no_rgb_color_literal` in `SignInWithGoogleButtonView.swift`, for the dark fill Google's
+  branding guidelines fix.

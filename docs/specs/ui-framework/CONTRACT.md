@@ -232,6 +232,18 @@ for picker and segment changes. There are no raw `UI*FeedbackGenerator`s.
 - **`Chip`** defaults its tint to `.accentColor`. A selected chip draws solid tint with
   `onAccent` text.
 
+### Notes from WP-15 (as built)
+
+- The deprecated components are deleted. `ColorScheme+EXT` keeps only `inverseLabel`, for the widget.
+- **`Format.sets(_:)`** takes a `Double`: whole counts go through the catalog's `%lld sets` plural,
+  fractional counts are always plural. Whole `Int` counts can use `String(localized: "\(n) sets")`
+  directly; `%lld sets/reps/exercises/workouts/gyms` carry English and Spanish plural variations.
+- **`.chipTapTarget()`** pads a tappable `Chip`'s hit area to 44 pt. Every `Chip` inside a `Button` uses it.
+- **`SelectableRow` and `.checkmark` rows** never cap their subtitle.
+- **`.bottomCTA`** reserves nothing when its content is empty.
+- **Pounds** are "lb" everywhere.
+- **Lint.** The patterns above are enforced by the `.swiftlint.yml` custom rules; see `CLAUDE.md` § Design System.
+
 ## Patterns (applied in Wave 3)
 
 | Pattern | Rule |

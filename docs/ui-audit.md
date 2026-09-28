@@ -1,5 +1,10 @@
 # UI audit (2026-09-27)
 
+> **Resolved (2026-09-28).** Every finding below was addressed by the UI framework work packages
+> WP-01 to WP-15 (`docs/specs/ui-framework/`), merged through `feature/ui-framework` and its PR.
+> The token layer, primitives and lint rules it proposes now exist; see the Design System section
+> of `CLAUDE.md`. Kept as a record of the starting point; the counts are no longer current.
+
 Pre-planning for an app-wide design system. Read-only audit of `DialedIn/`, `WorkoutSessionActivity/`
 and `Shared/`. Counts are grep-based and approximate. Paths are relative to `DialedIn/` unless noted.
 

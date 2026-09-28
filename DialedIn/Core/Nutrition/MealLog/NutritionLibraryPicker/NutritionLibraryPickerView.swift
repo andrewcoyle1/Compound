@@ -66,10 +66,10 @@ struct NutritionLibraryPickerView<
             modeChips
         }
         .toolbar {
-            // Picks land on the plate as they are made, so there is nothing to cancel: the one
-            // action is finishing.
-            ToolbarItem(placement: .confirmationAction) {
-                Button(role: .confirm) {
+            // Picks land on the plate as they are made, so there is nothing to confirm or cancel:
+            // closing is the one honest action.
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
                     presenter.dismissScreen()
                 }
             }

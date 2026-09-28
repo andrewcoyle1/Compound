@@ -40,8 +40,10 @@ struct RecipeDetailView: View {
     
     private func imageSection(url: String) -> some View {
         Section {
+            // Decorative: the recipe's name is the title right above it.
             ImageLoaderView(urlString: url, resizingMode: .fill)
                 .frame(maxWidth: .infinity, minHeight: 180)
+                .accessibilityHidden(true)
         }
         .removeListRowFormatting()
     }
@@ -82,6 +84,12 @@ struct RecipeDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
+                presenter.onDismissPressed()
+            }
+        }
+
         #if DEBUG || MOCK
         ToolbarItem(placement: .topBarLeading) {
             Button {

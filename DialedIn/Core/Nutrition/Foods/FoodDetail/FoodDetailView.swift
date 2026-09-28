@@ -29,9 +29,6 @@ struct FoodDetailView: View {
             waterSolubleVitaminsSection
             bioactiveCompoundsSection
             dateCreatedSection
-            if let authorId =  delegate.food.authorId {
-                authorSection(id: authorId)
-            }
         }
         .navigationTitle(delegate.food.name)
         .navigationSubtitle(delegate.food.description ?? "")
@@ -49,8 +46,10 @@ struct FoodDetailView: View {
 
     private func imageSection(url: String) -> some View {
         Section {
+            // Decorative: the food's name is the title right above it.
             ImageLoaderView(urlString: url, resizingMode: .fill)
                 .frame(maxWidth: .infinity, minHeight: 180)
+                .accessibilityHidden(true)
         }
         .removeListRowFormatting()
     }
@@ -151,9 +150,10 @@ struct FoodDetailView: View {
         }
     }
 
-    private func rowItem(label: String, value: Double?, unit: String) -> some View {
+    /// `LocalizationValue`, so the literal labels at every call site reach the string catalog.
+    private func rowItem(label: String.LocalizationValue, value: Double?, unit: String) -> some View {
         LabeledContent(
-            label,
+            String(localized: label),
             value: value.map { NutrientAmount.format($0, unit: unit.trimmingCharacters(in: .whitespaces)) } ?? Format.placeholder
         )
         .monospacedDigit()
@@ -165,16 +165,14 @@ struct FoodDetailView: View {
         }
     }
 
-    private func authorSection(id: String) -> some View {
-        Section(header: Text("Author ID")) {
-            Text(id)
-                .font(.rowDetail)
-                .foregroundStyle(.secondary)
-        }
-    }
-
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
+                presenter.onDismissPressed()
+            }
+        }
+
         #if DEBUG || MOCK
         ToolbarItem(placement: .topBarLeading) {
             Button {

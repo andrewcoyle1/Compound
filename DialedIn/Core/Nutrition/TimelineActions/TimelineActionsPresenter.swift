@@ -13,6 +13,10 @@ class TimelineActionsPresenter {
     var isChoosingCopyDestination: Bool = false
     var copyDestination: Date = Date()
 
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     init(interactor: TimelineActionsInteractor, router: TimelineActionsRouter) {
         self.interactor = interactor
         self.router = router
@@ -48,19 +52,24 @@ class TimelineActionsPresenter {
 
     /// Re-logs the day's meals against the chosen date. Each copy gets a fresh `mealId` so it is a
     /// new entry rather than a move, and keeps its time of day.
+    /// Set while a copy or clear is writing, so a second tap cannot copy the day twice.
+    private(set) var isWorking: Bool = false
+
     func onCopyDayConfirmed(delegate: TimelineActionsDelegate) {
-        guard let authorId = interactor.currentUser?.userId else { return }
-        // Silent: local read; a failure falls through to the "Nothing to copy" alert below.
+        guard !isWorking, let authorId = interactor.currentUser?.userId else { return }
+        // Silent: local read; a failure falls through to the "Nothing to Copy" alert below.
         let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
         guard !meals.isEmpty else {
             isChoosingCopyDestination = false
-            router.showSimpleAlert(title: String(localized: "Nothing to copy"), subtitle: String(localized: "This day has no meals logged."))
+            router.showSimpleAlert(title: String(localized: "Nothing to Copy"), subtitle: String(localized: "This day has no meals logged."))
             return
         }
 
         let destination = copyDestination
         interactor.trackEvent(event: Event.onCopyDay(count: meals.count))
+        isWorking = true
         Task {
+            defer { isWorking = false }
             do {
                 for meal in meals {
                     try await interactor.saveMeal(copy(of: meal, to: destination, authorId: authorId))
@@ -71,7 +80,7 @@ class TimelineActionsPresenter {
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to copy day"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Copy Day"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -99,7 +108,7 @@ class TimelineActionsPresenter {
         // Silent: local read; a failure falls through to the empty-day guard below.
         let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
         guard !meals.isEmpty else {
-            router.showSimpleAlert(title: String(localized: "Nothing to clear"), subtitle: String(localized: "This day has no meals logged."))
+            router.showSimpleAlert(title: String(localized: "Nothing to Clear"), subtitle: String(localized: "This day has no meals logged."))
             return
         }
 
@@ -122,8 +131,11 @@ class TimelineActionsPresenter {
     }
 
     private func clearDay(meals: [MealLogModel]) {
+        guard !isWorking else { return }
         interactor.trackEvent(event: Event.onClearDay(count: meals.count))
+        isWorking = true
         Task {
+            defer { isWorking = false }
             do {
                 for meal in meals {
                     try await interactor.deleteMealAndSync(
@@ -137,7 +149,7 @@ class TimelineActionsPresenter {
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to clear day"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Clear Day"), subtitle: String(localized: "Please try again."))
             }
         }
     }

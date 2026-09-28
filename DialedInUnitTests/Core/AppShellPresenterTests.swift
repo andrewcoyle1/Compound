@@ -369,27 +369,41 @@ struct AppShellTabBarPresenterTests {
         MealLogModel(authorId: "user-1", dayKey: "2026-03-04", date: Date(timeIntervalSince1970: 0), items: [])
     }
 
-    /// The Dashboard tab's badge is the unread count — a read notification, or a follow someone
-    /// has already seen, must not keep the badge up.
-    @Test("Test The Dashboard Badge Counts Only Unread Activity")
-    func testTheDashboardBadgeCountsOnlyUnreadActivity() {
+    /// The Dashboard tab's badge is for something to answer: unread comments and mentions. A read
+    /// one, or a like or follow, must not keep the badge up.
+    @Test("Test The Dashboard Badge Counts Only Unread Comments And Mentions")
+    func testTheDashboardBadgeCountsOnlyUnreadCommentsAndMentions() {
         let screen = makeScreen()
         #expect(screen.presenter.unreadActivityCount == 0)
 
         screen.interactor.activityNotifications = [
             activity(id: "1", type: .like, isRead: false),
             activity(id: "2", type: .follow, isRead: false),
-            activity(id: "3", type: .comment, isRead: true)
+            activity(id: "3", type: .comment, isRead: true),
+            activity(id: "4", type: .mention, isRead: false)
         ]
 
-        #expect(screen.presenter.unreadActivityCount == 2)
+        #expect(screen.presenter.unreadActivityCount == 1)
+    }
+
+    /// The tab the scene was left on comes back on appear, and a pending link still wins over it.
+    @Test("Test The Last Tab Is Restored On Appear")
+    func testTheLastTabIsRestoredOnAppear() {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear(restoredTab: .nutrition)
+        #expect(screen.presenter.selectedTab == .nutrition)
+
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/analytics"])
+        screen.presenter.onViewAppear(restoredTab: .nutrition)
+        #expect(screen.presenter.selectedTab == .analytics)
     }
 
     /// A follow request waiting on an answer is something to act on, so it counts like unread activity.
     @Test("Test The Dashboard Badge Includes Pending Follow Requests")
     func testTheDashboardBadgeIncludesPendingFollowRequests() {
         let screen = makeScreen()
-        screen.interactor.activityNotifications = [activity(id: "1", type: .like, isRead: false)]
+        screen.interactor.activityNotifications = [activity(id: "1", type: .comment, isRead: false)]
         screen.interactor.incomingFollowRequests = [
             FollowRequestModel(requesterId: "r1", requesterName: "R1", requesterImageUrl: nil, dateCreated: Date(), status: .pending),
             FollowRequestModel(requesterId: "r2", requesterName: "R2", requesterImageUrl: nil, dateCreated: Date(), status: .pending)

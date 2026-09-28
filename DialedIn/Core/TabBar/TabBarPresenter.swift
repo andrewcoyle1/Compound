@@ -22,10 +22,12 @@ class TabBarPresenter {
         interactor.draftMeal
     }
     
-    /// Unread notification rows (a grouped row counts once), plus follow requests waiting on an
+    /// Unread comments and mentions (a grouped row counts once), plus follow requests waiting on an
     /// answer, shown on the Dashboard tab since that is where the bell lives. Zero hides the badge.
+    /// Likes, follows and the rest wait in Notifications: a badge is for something to answer.
     var unreadActivityCount: Int {
-        NotificationGrouping.unreadGroupCount(interactor.activityNotifications) + interactor.incomingFollowRequests.count
+        let needsAnswer = interactor.activityNotifications.filter { $0.type == .comment || $0.type == .mention }
+        return NotificationGrouping.unreadGroupCount(needsAnswer) + interactor.incomingFollowRequests.count
     }
 
     var showTabAccessory: Bool {
@@ -122,7 +124,10 @@ class TabBarPresenter {
         routePendingDeepLink()
     }
 
-    func onViewAppear() {
+    /// `restoredTab` is the tab the scene was on when the app last closed. A pending link, routed
+    /// after it, still wins.
+    func onViewAppear(restoredTab: DeepLink.Tab? = nil) {
+        if let restoredTab { selectedTab = restoredTab }
         routePendingDeepLink()
     }
 

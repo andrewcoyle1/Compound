@@ -24,6 +24,9 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
 
     @State var presenter: TabBarPresenter
 
+    /// The selected tab, by `DeepLink.Tab.rawValue`, so the app reopens where it was left.
+    @SceneStorage("selectedTab") private var storedTab: String = DeepLink.Tab.dashboard.rawValue
+
     var tabs: [TabBarScreen]
     
     @ViewBuilder var trainingAccessoryView: (TrainingAccessoryDelegate) -> TrainingTabAccessory
@@ -59,7 +62,10 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
             presenter.onPushNotificationReceived()
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(restoredTab: DeepLink.Tab(rawValue: storedTab))
+        }
+        .onChange(of: presenter.selectedTab) { _, tab in
+            storedTab = tab.rawValue
         }
         // A screen inside a tab asking for a different tab — see `DeepLink.post()`.
         .onNotificationReceived(name: Constants.selectTab) { notification in

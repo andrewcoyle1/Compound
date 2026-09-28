@@ -88,13 +88,13 @@ struct FoodLogSettingsView: View {
             Section {
                 ListRowButton(
                     title: String(localized: "Timeline Food Tiles"),
-                    subtitle: String(localized: "Customise how foods appear in your timeline")
+                    subtitle: String(localized: "Customize how foods appear in your timeline")
                 ) {
                     presenter.onTimelineFoodTilesPressed()
                 }
                 ListRowButton(
                     title: String(localized: "Logger Food Tiles"),
-                    subtitle: String(localized: "Customise how foods appear in search")
+                    subtitle: String(localized: "Customize how foods appear in search")
                 ) {
                     presenter.onLoggerFoodTilesPressed()
                 }
@@ -105,25 +105,25 @@ struct FoodLogSettingsView: View {
             Section {
                 ListRowButton(
                     title: String(localized: "Logger Banner"),
-                    subtitle: String(localized: "Customise the top of your plate")
+                    subtitle: String(localized: "Customize the top of your plate")
                 ) {
                     presenter.onLoggedBannerPressed()
                 }
                 ListRowButton(
                     title: String(localized: "Time Selection"),
-                    subtitle: String(localized: "Customise how you change time while logging")
+                    subtitle: String(localized: "Customize how you change time while logging")
                 ) {
                     presenter.onTimeSelectionPressed()
                 }
                 ListRowButton(
-                    title: String(localized: "Favourite Measurements"),
+                    title: String(localized: "Favorite Measurements"),
                     subtitle: String(localized: "Select the measurements to pin to serving size selections.")
                 ) {
                     presenter.onFavouriteMeasurementsPressed()
                 }
                 ListRowButton(
-                    title: String(localized: "Optimisation"),
-                    subtitle: String(localized: "Optimise for speed")
+                    title: String(localized: "Optimization"),
+                    subtitle: String(localized: "Optimize for speed")
                 ) {
                     presenter.onOptimisationPressed()
                 }

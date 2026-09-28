@@ -60,7 +60,7 @@ struct MealDescribeView: View {
             CallToActionButton(isLoading: presenter.isAnalysing) {
                 Task { await presenter.onAnalysePressed() }
             } label: {
-                Text("Analyse")
+                Text("Analyze")
             }
             .disabled(!presenter.canAnalyse)
         }

@@ -85,7 +85,7 @@ struct CustomPaywallView: View {
     private var subscriptionButtonSection: some View {
         VStack(spacing: Spacing.s) {
             if let product = selectedProduct {
-                Text("Plan auto-renews for \(product.priceStringWithDuration) until cancelled.")
+                Text("Plan auto-renews for \(product.priceStringWithDuration) until canceled.")
                     .font(.label)
                     .foregroundStyle(.secondary)
             }

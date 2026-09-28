@@ -23,7 +23,7 @@ struct AboutView: View {
             CallToActionButton(isPrimaryAction: false) {
                 presenter.onLicencesPressed()
             } label: {
-                Text("View Licences")
+                Text("View Licenses")
             }
         }
         .toolbar {

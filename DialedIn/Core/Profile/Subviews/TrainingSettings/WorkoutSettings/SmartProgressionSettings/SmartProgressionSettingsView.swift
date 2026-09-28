@@ -23,7 +23,7 @@ struct SmartProgressionSettingsView: View {
                 )
                 optionPicker("Adjustment Mode", systemImage: "dot.squareshape", options: presenter.adjustmentModes, selection: $presenter.adjustmentMode, optionTitle: \.title)
             } header: {
-                Text("Behaviour")
+                Text("Behavior")
             }
         }
         .navigationTitle("Smart Progression")

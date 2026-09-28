@@ -181,7 +181,7 @@ struct BarcodeScannerView: View {
             if presenter.isParsingLabel {
                 HStack(spacing: Spacing.s) {
                     ProgressView()
-                    Text("Analysing label...")
+                    Text("Analyzing label...")
                         .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }

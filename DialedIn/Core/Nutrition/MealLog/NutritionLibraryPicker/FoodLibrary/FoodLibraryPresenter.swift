@@ -23,7 +23,7 @@ class FoodLibraryPresenter {
         switch foodLibraryOption {
         case .recipes:      return String(localized: "Filter Recipes")
         case .foods:        return String(localized: "Filter Foods")
-        case .favourites:   return String(localized: "Filter Favourites")
+        case .favourites:   return String(localized: "Filter Favorites")
         }
     }
 

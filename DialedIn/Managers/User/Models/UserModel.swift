@@ -456,7 +456,7 @@ enum DistanceUnitPreference: String, Codable, Sendable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .kilometers: return String(localized: "Kilometers & Metres")
+        case .kilometers: return String(localized: "Kilometers & Meters")
         case .miles: return String(localized: "Miles & Yards")
         }
     }

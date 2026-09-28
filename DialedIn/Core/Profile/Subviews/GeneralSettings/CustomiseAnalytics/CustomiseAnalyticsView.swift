@@ -32,7 +32,7 @@ struct CustomiseAnalyticsView: View {
                 }
             }
         }
-        .navigationTitle("Customise Analytics")
+        .navigationTitle("Customize Analytics")
         .onAppear {
             presenter.onViewAppear()
         }

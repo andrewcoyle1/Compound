@@ -403,7 +403,7 @@ private extension ExerciseModelDetailView {
             ListRow(title: String(localized: "Date Modified"), accessory: .value(delegate.exerciseModel.dateModified.formatted(date: .abbreviated, time: .omitted)))
             ListRow(title: String(localized: "Click Count"), accessory: .value("\(delegate.exerciseModel.clickCount ?? 0)"))
             ListRow(title: String(localized: "Bookmark Count"), accessory: .value("\(delegate.exerciseModel.bookmarkCount ?? 0)"))
-            ListRow(title: String(localized: "Favourite Count"), accessory: .value("\(delegate.exerciseModel.favouriteCount ?? 0)"))
+            ListRow(title: String(localized: "Favorite Count"), accessory: .value("\(delegate.exerciseModel.favouriteCount ?? 0)"))
             if let imageURL = delegate.exerciseModel.imageURL, !imageURL.isEmpty {
                 ListRow(title: String(localized: "Image URL"), accessory: .value(imageURL))
             }

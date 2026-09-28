@@ -119,7 +119,7 @@ extension AppIntentsInteractor {
 // MARK: - Phrasing
 
 enum AppIntentsPhrasing {
-    static let noProgram = "You don't have an active programme. Pick one in the Training tab."
+    static let noProgram = "You don't have an active program. Pick one in the Training tab."
 
     static func started(name: String) -> String { "Starting \(name)." }
 

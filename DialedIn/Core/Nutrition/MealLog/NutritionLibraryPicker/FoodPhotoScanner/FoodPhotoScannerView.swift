@@ -59,7 +59,7 @@ struct FoodPhotoScannerView: View {
     private func analysingPhase(image: UIImage) -> some View {
         VStack(spacing: Spacing.xl) {
             thumbnailView(image: image)
-            ProgressView("Analysing meal...")
+            ProgressView("Analyzing meal...")
                 .progressViewStyle(.circular)
             retakeButton
         }

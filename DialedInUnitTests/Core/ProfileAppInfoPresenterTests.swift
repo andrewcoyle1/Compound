@@ -136,7 +136,7 @@ struct ProfileLicencesPresenterTests {
     func testPackagesWithNoStatedLicenceAreGroupedLast() {
         let (presenter, _) = makePresenter()
 
-        let unstatedIndex = presenter.groups.firstIndex { $0.licence.hasPrefix("Licence not") }
+        let unstatedIndex = presenter.groups.firstIndex { $0.licence.hasPrefix("License not") }
 
         if let unstatedIndex {
             #expect(unstatedIndex == presenter.groups.count - 1)

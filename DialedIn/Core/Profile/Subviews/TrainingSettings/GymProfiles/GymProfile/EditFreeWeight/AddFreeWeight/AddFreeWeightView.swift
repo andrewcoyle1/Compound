@@ -35,7 +35,7 @@ struct AddFreeWeightView: View {
     
     private var colourSection: some View {
         EquipmentColourPicker(
-            title: "Plate Colour",
+            title: "Plate Color",
             colours: presenter.colours,
             selectedColour: presenter.selectedColour
         ) { colour in

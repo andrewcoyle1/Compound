@@ -51,7 +51,7 @@ struct EquipmentColourPicker: View {
         case .green: return Text("Green")
         case .blue: return Text("Blue")
         case .purple: return Text("Purple")
-        default: return Text("Colour")
+        default: return Text("Color")
         }
     }
 }

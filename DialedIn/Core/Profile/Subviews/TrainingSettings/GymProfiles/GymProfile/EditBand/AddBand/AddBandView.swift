@@ -35,7 +35,7 @@ struct AddBandView: View {
     
     private var colourSection: some View {
         EquipmentColourPicker(
-            title: "Band Colour",
+            title: "Band Color",
             colours: presenter.colours,
             selectedColour: presenter.selectedColour
         ) { colour in

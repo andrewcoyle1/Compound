@@ -14,7 +14,7 @@ struct AppIconView: View {
         FeatureUnavailableView(
             title: String(localized: "App Icon"),
             systemImage: "app.grid",
-            summary: "Alternate app icons are not available yet. There is only one icon set in the asset catalogue, so there is nothing to switch between."
+            summary: "Alternate app icons are not available yet. There is only one icon set in the asset catalog, so there is nothing to switch between."
         )
         .onAppear {
             presenter.onViewAppear()

@@ -16,10 +16,10 @@ struct FavouriteMeasurementsView: View {
                     }
                 }
             } header: {
-                Text("Tap to toggle a measurement as a favourite")
+                Text("Tap to toggle a measurement as a favorite")
             }
         }
-        .navigationTitle("Favourite Measurements")
+        .navigationTitle("Favorite Measurements")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

@@ -27,7 +27,7 @@ struct LicencesView: View {
                 }
             }
         }
-        .navigationTitle("Licences")
+        .navigationTitle("Licenses")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {

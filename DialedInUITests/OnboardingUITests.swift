@@ -35,7 +35,7 @@ final class OnboardingUITests: XCTestCase {
         app.continueFrom("Welcome to Compound.")
         app.waitFor(app.element("Auth.apple")).tap()
         app.continueFrom("Why Subscribe?")
-        app.waitFor(app.staticTexts["START"].firstMatch).tap()
+        app.waitFor(app.staticTexts["Start"].firstMatch).tap()
         app.tap("Subscribe")
     }
 

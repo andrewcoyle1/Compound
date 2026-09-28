@@ -132,6 +132,8 @@ struct NotificationsView: View {
             presenter.onAcceptRequestPressed(request)
         }
         .buttonStyle(.glassProminent)
+        // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
+        .foregroundStyle(.onAccent)
 
         Button("Decline") {
             presenter.onDeclineRequestPressed(request)
@@ -189,6 +191,8 @@ struct NotificationsView: View {
                     .padding(Spacing.s)
             }
             .buttonStyle(.glassProminent)
+            // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
+            .foregroundStyle(.onAccent)
         }
         .padding(.vertical)
         .background(in: .containerRelative)

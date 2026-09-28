@@ -232,6 +232,8 @@ struct SearchView: View {
                             presenter.onStartWorkoutPressed(workout: workout)
                         }
                         .buttonStyle(.glassProminent)
+                        // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
+                        .foregroundStyle(.onAccent)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, Spacing.xs)

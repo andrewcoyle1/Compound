@@ -149,7 +149,7 @@ struct ReportFlowTests {
         let presenter = row.presenter, interactor = row.interactor, router = row.router
 
         presenter.onReportPressed()
-        #expect(router.alertTitles == ["Report Workout"])
+        #expect(presenter.reportFlow.title == "Report Workout")
         #expect(interactor.reports.isEmpty)
 
         presenter.reportFlow.onReasonSelected(.spam)
@@ -158,7 +158,10 @@ struct ReportFlowTests {
         await TestManagers.eventually { !interactor.reports.isEmpty }
 
         #expect(interactor.reports == ["session|session-x|friend|spam"])
-        #expect(router.alertTitles == ["Report Workout", "Add a Note", "Report Sent"])
+        #expect(router.alertTitles.isEmpty)
+        await TestManagers.eventually { !interactor.shownToasts.isEmpty }
+        let toastStyles = interactor.shownToasts.map(\.style)
+        #expect(toastStyles == [.success])
     }
 
     @Test("Test The Reader Cannot Report Their Own Session")

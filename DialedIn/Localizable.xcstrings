@@ -21330,6 +21330,606 @@
           }
         }
       }
+    },
+    "Camera Access Is Off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a la cámara está desactivado"
+          }
+        }
+      }
+    },
+    "Allow camera access in Settings to scan barcodes and nutrition labels, or type the barcode in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso a la cámara en Ajustes para escanear códigos de barras y etiquetas nutricionales, o escribe el código de barras."
+          }
+        }
+      }
+    },
+    "Enter Manually" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introducir manualmente"
+          }
+        }
+      }
+    },
+    "This device can't scan barcodes. You can type the barcode in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este dispositivo no puede escanear códigos de barras. Puedes escribir el código."
+          }
+        }
+      }
+    },
+    "Allow camera access in Settings to photograph a meal. You can still add foods with Search or Describe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso a la cámara en Ajustes para fotografiar una comida. Aún puedes añadir alimentos con Buscar o Describir."
+          }
+        }
+      }
+    },
+    "This device has no camera. You can still add foods with Search or Describe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este dispositivo no tiene cámara. Aún puedes añadir alimentos con Buscar o Describir."
+          }
+        }
+      }
+    },
+    "Something went wrong. Please try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo salió mal. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Unable to Remove Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo quitar el alimento"
+          }
+        }
+      }
+    },
+    "Unable to Delete Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar la comida"
+          }
+        }
+      }
+    },
+    "Unable to Update Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar el alimento"
+          }
+        }
+      }
+    },
+    "Unable to Skip Check-In" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo omitir la revisión"
+          }
+        }
+      }
+    },
+    "Unable to Update Your Targets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron actualizar tus objetivos"
+          }
+        }
+      }
+    },
+    "Unable to Log Weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo registrar el peso"
+          }
+        }
+      }
+    },
+    "Unable to Save Your Answer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar tu respuesta"
+          }
+        }
+      }
+    },
+    "Unable to Update Favorites" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron actualizar los favoritos"
+          }
+        }
+      }
+    },
+    "Unable to Save Recipe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la receta"
+          }
+        }
+      }
+    },
+    "Couldn't work out the foods in that description. Try naming each food and its amount, then try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron identificar los alimentos de esa descripción. Indica cada alimento y su cantidad e inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Couldn't recognize the food in this photo. Retake it in good light, or use Search or Describe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo reconocer la comida de esta foto. Vuelve a hacerla con buena luz o usa Buscar o Describir."
+          }
+        }
+      }
+    },
+    "Couldn't read this photo. Please retake it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer esta foto. Vuelve a hacerla."
+          }
+        }
+      }
+    },
+    "You're offline. Connect to the internet to analyze this photo." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tienes conexión. Conéctate a internet para analizar esta foto."
+          }
+        }
+      }
+    },
+    "Couldn't read this label. Hold the camera steady and try again, or enter it manually." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer esta etiqueta. Mantén la cámara estable e inténtalo de nuevo, o introdúcela manualmente."
+          }
+        }
+      }
+    },
+    "Couldn't save this food. Please try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar este alimento. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Couldn't find this product. Scan again, or enter the barcode manually." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró este producto. Vuelve a escanear o introduce el código de barras manualmente."
+          }
+        }
+      }
+    },
+    "You're offline. Showing your library only." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No tienes conexión. Solo se muestra tu biblioteca."
+          }
+        }
+      }
+    },
+    "Searching…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando…"
+          }
+        }
+      }
+    },
+    "Discard this food?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar este alimento?"
+          }
+        }
+      }
+    },
+    "Discard Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar alimento"
+          }
+        }
+      }
+    },
+    "Discard this recipe?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar esta receta?"
+          }
+        }
+      }
+    },
+    "Discard Recipe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar receta"
+          }
+        }
+      }
+    },
+    "Share New Foods Publicly" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir alimentos nuevos públicamente"
+          }
+        }
+      }
+    },
+    "Foods you create are shared to the public database so other people can find and log them. Your name is not attached, and the food stays in your own library either way." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los alimentos que crees se comparten en la base de datos pública para que otras personas puedan encontrarlos y registrarlos. Tu nombre no se incluye y el alimento se queda en tu biblioteca en cualquier caso."
+          }
+        }
+      }
+    },
+    "Add Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir comida"
+          }
+        }
+      }
+    },
+    "Add Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir alimento"
+          }
+        }
+      }
+    },
+    "Unlogged meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comida sin registrar"
+          }
+        }
+      }
+    },
+    "^[%lld item](inflect: true) · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "^[%lld elemento](inflect: true) · %@"
+          }
+        }
+      }
+    },
+    "Edit %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar %@"
+          }
+        }
+      }
+    },
+    "Quick add %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir rápido %@"
+          }
+        }
+      }
+    },
+    "You have an unlogged meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tienes una comida sin registrar"
+          }
+        }
+      }
+    },
+    "Continue Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar comida"
+          }
+        }
+      }
+    },
+    "Discard and Start New" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar y empezar otra"
+          }
+        }
+      }
+    },
+    "Turn on flashlight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encender linterna"
+          }
+        }
+      }
+    },
+    "Turn off flashlight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar linterna"
+          }
+        }
+      }
+    },
+    "Looking up product…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando producto…"
+          }
+        }
+      }
+    },
+    "Analyzing label…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analizando etiqueta…"
+          }
+        }
+      }
+    },
+    "Analyzing meal…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analizando comida…"
+          }
+        }
+      }
+    },
+    "View Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver comida"
+          }
+        }
+      }
+    },
+    "grams" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "gramos"
+          }
+        }
+      }
+    },
+    "ounces" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "onzas"
+          }
+        }
+      }
+    },
+    "milliliters" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mililitros"
+          }
+        }
+      }
+    },
+    "End My Break" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar mi descanso"
+          }
+        }
+      }
+    },
+    "Stay on a Break" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir en descanso"
+          }
+        }
+      }
+    },
+    "Start a Break" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar un descanso"
+          }
+        }
+      }
+    },
+    "No Thanks" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No, gracias"
+          }
+        }
+      }
+    },
+    "Not Now" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        }
+      }
+    },
+    "Skip This Week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir esta semana"
+          }
+        }
+      }
+    },
+    "Nothing to Copy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada que copiar"
+          }
+        }
+      }
+    },
+    "Unable to Copy Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo copiar el día"
+          }
+        }
+      }
+    },
+    "Nothing to Clear" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada que borrar"
+          }
+        }
+      }
+    },
+    "Unable to Clear Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo borrar el día"
+          }
+        }
+      }
+    },
+    "Unable to Log Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo registrar el alimento"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -117,6 +117,9 @@ Also for WP-15:
 - **Set-count plurals.** "1 sets" appears in Muscle Balance and in Shared Item's rows. Pluralise every
   set, rep and exercise count through the string catalog (grep `sets"`), and treat a fractional
   count as plural.
+- **Option subtitles.** `SelectableRow` subtitles must never truncate: they explain the choice
+  (the onboarding calorie floor cut off "…even if your TDEE is lower"). Drop the 2-line subtitle
+  cap for `SelectableRow`, and for `.checkmark` rows generally. Other rows keep it.
 - **Hero intro screens.** WP-10 gave Create Program and Create Workout's first steps an inline
   navigation title, which now sits unreadably over the hero image. Put back the large body heading
   (`Font.display`) under the image, and hide the navigation title there. Keep `navigationTitle` for

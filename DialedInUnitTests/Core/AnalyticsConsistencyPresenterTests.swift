@@ -199,7 +199,7 @@ struct AnalyticsWeighInConsistencyTests {
         let entry = try #require(screen.presenter.entries.first)
 
         #expect(screen.presenter.displayValue(for: entry) == "220.5")
-        #expect(screen.presenter.configuration.yAxisSuffix == " lbs")
+        #expect(screen.presenter.configuration.yAxisSuffix == " lb")
     }
 
     @Test("Test Kilogram Users See The Stored Number")

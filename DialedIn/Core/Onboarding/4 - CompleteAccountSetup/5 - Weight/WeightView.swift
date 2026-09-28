@@ -79,7 +79,7 @@ struct WeightView: View {
         Section {
             Picker("Pounds", selection: $presenter.selectedPounds) {
                 ForEach((66...440).reversed(), id: \.self) { value in
-                    Text("\(value) lbs").tag(value)
+                    Text("\(value) lb").tag(value)
                 }
             }
             .pickerStyle(.wheel)

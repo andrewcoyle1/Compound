@@ -31,7 +31,7 @@ struct WeightPickerInput: View {
         Section {
             Picker("Units", selection: $unit) {
                 Text("Metric (kg)").tag(UnitOfWeight.kilograms)
-                Text("Imperial (lbs)").tag(UnitOfWeight.pounds)
+                Text("Imperial (lb)").tag(UnitOfWeight.pounds)
             }
             .pickerStyle(.segmented)
         }
@@ -55,7 +55,7 @@ struct WeightPickerInput: View {
             } else {
                 Picker("Weight", selection: $selectedPounds) {
                     ForEach(Self.poundRange.reversed(), id: \.self) { value in
-                        Text("\(value) lbs").tag(value)
+                        Text("\(value) lb").tag(value)
                     }
                 }
                 .pickerStyle(.wheel)

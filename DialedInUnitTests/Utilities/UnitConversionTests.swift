@@ -163,13 +163,13 @@ struct UnitConversionTests {
 
     // MARK: - Abbreviations
     //
-    // These label the values above, so a chart showing kilograms under a "lbs" axis is a bug this
+    // These label the values above, so a chart showing kilograms under a "lb" axis is a bug this
     // pairing is meant to make obvious.
 
     @Test("Test Unit Abbreviations")
     func testUnitAbbreviations() {
         #expect(ExerciseWeightUnit.kilograms.abbreviation == "kg")
-        #expect(ExerciseWeightUnit.pounds.abbreviation == "lbs")
+        #expect(ExerciseWeightUnit.pounds.abbreviation == "lb")
         #expect(ExerciseDistanceUnit.meters.abbreviation == "m")
         #expect(ExerciseDistanceUnit.miles.abbreviation == "mi")
     }

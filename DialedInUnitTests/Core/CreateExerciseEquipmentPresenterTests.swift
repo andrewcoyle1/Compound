@@ -424,7 +424,7 @@ struct FinalExerciseDetailsPresenterTests {
         #expect(screen.presenter.contributionFooter(delegate: delegate(isBodyweight: true)) == "About 40 kg at your current weight.")
 
         screen.interactor.currentUser = UserModel(userId: "user-1", submittedWeightKilograms: 80, submittedWeightUnitPreference: .pounds)
-        #expect(screen.presenter.contributionFooter(delegate: delegate(isBodyweight: true)) == "About 88 lbs at your current weight.")
+        #expect(screen.presenter.contributionFooter(delegate: delegate(isBodyweight: true)) == "About 88 lb at your current weight.")
     }
 
     /// The field's footer tells the user to separate names with a comma, and people type a space

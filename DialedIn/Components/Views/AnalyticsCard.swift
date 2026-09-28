@@ -20,6 +20,7 @@ enum AnalyticsCardLayout {
 /// A grid tile: title and subtitle, a small chart, then the latest value and its unit.
 struct AnalyticsCard<MetricChart: View>: View {
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     var title: String?
     var subtitle: String?
     /// The headline number, e.g. "82.4".
@@ -67,7 +68,7 @@ struct AnalyticsCard<MetricChart: View>: View {
                                 .foregroundStyle(themeColor ?? .secondary)
                         }
                         Text(title)
-                            .lineLimit(1)
+                            .lineLimit(lineLimit)
                     }
                     .font(.sectionTitle)
                 }
@@ -91,26 +92,33 @@ struct AnalyticsCard<MetricChart: View>: View {
                 if let value {
                     Text(value)
                         .font(.metricSmall)
-                        .lineLimit(1)
+                        .lineLimit(lineLimit)
                 }
                 if let unit {
                     Text(unit)
                         .font(.label)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(lineLimit)
                 }
                 Spacer(minLength: 0)
                 if showsChevron {
-                    Image(systemName: "chevron.right")
+                    Image(systemName: "chevron.forward")
                         .font(.label)
                         .fontWeight(.semibold)
                         .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
                 }
             }
         }
         .frame(maxWidth: .infinity, minHeight: AnalyticsCardLayout.minHeight, alignment: .topLeading)
         .padding()
         .cardSurface(.tile)
+    }
+
+    /// One line while the tiles are two-up; unlimited at the accessibility sizes, where the grid is
+    /// one column and a cut-off title or value is worse than a taller tile.
+    private var lineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
 }
 

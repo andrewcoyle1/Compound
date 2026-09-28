@@ -26,13 +26,15 @@ extension View {
     }
 }
 
-/// The two-column grid and list-row treatment every Analytics section shares.
+/// The two-column grid and list-row treatment every Analytics section shares. One column at the
+/// accessibility sizes, where two tiles side by side truncate their titles and values.
 struct AnalyticsCardGrid<Content: View>: View {
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(), GridItem()]) {
+        LazyVGrid(columns: Array(repeating: GridItem(), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2)) {
             content()
         }
         .padding(.horizontal)

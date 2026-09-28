@@ -22,10 +22,12 @@ class TabBarPresenter {
         interactor.draftMeal
     }
     
-    /// Unread notification rows (a grouped row counts once), plus follow requests waiting on an
+    /// Unread comments and mentions (a grouped row counts once), plus follow requests waiting on an
     /// answer, shown on the Dashboard tab since that is where the bell lives. Zero hides the badge.
+    /// Likes, follows and the rest wait in Notifications: a badge is for something to answer.
     var unreadActivityCount: Int {
-        NotificationGrouping.unreadGroupCount(interactor.activityNotifications) + interactor.incomingFollowRequests.count
+        let needsAnswer = interactor.activityNotifications.filter { $0.type == .comment || $0.type == .mention }
+        return NotificationGrouping.unreadGroupCount(needsAnswer) + interactor.incomingFollowRequests.count
     }
 
     var showTabAccessory: Bool {
@@ -34,10 +36,10 @@ class TabBarPresenter {
     
     var tabAccessoryWidth: CGFloat = 400
 
-    /// Which tab is showing, keyed by `TabBarScreen.title`. Held here so a `compound://` link or a
-    /// push notification can change it; the `TabView` had no selection binding at all before, so
-    /// nothing outside the app could steer it.
-    var selectedTabTitle: String = DeepLink.Tab.dashboard.title
+    /// Which tab is showing. Held here so a `compound://` link or a push notification can change
+    /// it. Keyed by the tab itself, not its title: the titles are translated, so in Spanish a
+    /// title key never matched "Dashboard" and links selected nothing.
+    var selectedTab: DeepLink.Tab = .dashboard
 
     /// Applies a destination arriving from outside the app.
     func handle(_ deepLink: DeepLink) {
@@ -48,7 +50,7 @@ class TabBarPresenter {
                 parameters: ["tab": tab.rawValue],
                 type: .analytic
             )
-            selectedTabTitle = tab.title
+            selectedTab = tab
         case .session:
             interactor.trackEvent(
                 eventName: "TabBarView_DeepLink_Session",
@@ -56,7 +58,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The Dashboard is where a session opens from; it hears the request and fetches it.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .notifications:
             interactor.trackEvent(
@@ -65,7 +67,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The bell lives on the Dashboard, so it opens the screen.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .join:
             interactor.trackEvent(
@@ -74,7 +76,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The Dashboard accepts the invite and opens the inviter's profile.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .workout:
             interactor.trackEvent(
@@ -85,7 +87,7 @@ class TabBarPresenter {
             if activeSession != nil {
                 router.showWorkoutTrackerView()
             } else {
-                selectedTabTitle = DeepLink.Tab.dashboard.title
+                selectedTab = .dashboard
             }
         }
     }
@@ -122,7 +124,10 @@ class TabBarPresenter {
         routePendingDeepLink()
     }
 
-    func onViewAppear() {
+    /// `restoredTab` is the tab the scene was on when the app last closed. A pending link, routed
+    /// after it, still wins.
+    func onViewAppear(restoredTab: DeepLink.Tab? = nil) {
+        if let restoredTab { selectedTab = restoredTab }
         routePendingDeepLink()
     }
 

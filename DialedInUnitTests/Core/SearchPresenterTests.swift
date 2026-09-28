@@ -30,6 +30,7 @@ struct SearchPresenterTests {
         var activeSession: WorkoutSessionModel?
         var remoteUsers: [UserModel] = []
         var remoteDelay: Duration = .zero
+        var remoteError: Error?
         private(set) var startedTemplateNames: [String] = []
         private(set) var didDeleteActiveSession = false
         private(set) var acceptedInviteCodes: [String] = []
@@ -45,6 +46,7 @@ struct SearchPresenterTests {
         func deleteActiveSession() throws { didDeleteActiveSession = true; activeSession = nil }
         func searchUsers(query: String) async throws -> [UserModel] {
             try? await Task.sleep(for: remoteDelay)
+            if let remoteError { throw remoteError }
             return remoteUsers
         }
         func addRecentSearch(query: String) { recentSearchQueries.insert(query, at: 0) }
@@ -63,6 +65,7 @@ struct SearchPresenterTests {
         private(set) var socialProfileUserIds: [String] = []
 
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
         func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color?) {
             shown.append("exerciseDetail")
@@ -159,6 +162,36 @@ struct SearchPresenterTests {
         #expect(screen.presenter.filteredUsers.map(\.userId) == ["friend", "stranger"])
     }
 
+    /// A failed people search used to read as "No Results"; now the People section says so.
+    @Test("Test A Failed People Search Is Shown Rather Than No Results")
+    func testAFailedPeopleSearchIsShownRatherThanNoResults() async {
+        let screen = makeScreen()
+        screen.interactor.remoteError = URLError(.notConnectedToInternet)
+
+        screen.presenter.searchString = "zzz"
+        screen.presenter.performUnifiedSearch()
+
+        #expect(await TestManagers.eventually { !screen.presenter.isLoadingPeople })
+        #expect(screen.presenter.peopleSearchFailed)
+        #expect(screen.presenter.hasResults)
+
+        screen.interactor.remoteError = nil
+        screen.presenter.performUnifiedSearch()
+        #expect(await TestManagers.eventually { !screen.presenter.peopleSearchFailed })
+    }
+
+    /// Logging a meal with a draft open asks with an action sheet, and a new meal opens only on "Start New Meal".
+    @Test("Test Logging A Meal With A Draft Open Asks First")
+    func testLoggingAMealWithADraftOpenAsksFirst() {
+        let screen = makeScreen()
+        screen.interactor.draftMeal = MealLogModel(authorId: "user-1", dayKey: Date().dayKey, date: Date(), items: [])
+
+        screen.presenter.onLogMealPressed()
+
+        #expect(screen.router.alertTitles == ["Draft Meal"])
+        #expect(screen.router.shown.isEmpty)
+    }
+
     // MARK: - Recents
 
     /// Recents were written after the debounce, so every pause mid-word became a saved search.
@@ -245,5 +278,21 @@ struct SearchPresenterTests {
         #expect(screen.interactor.acceptedInviteCodes == ["push-2345"])
         #expect(screen.router.socialProfileUserIds == ["inviter"])
         #expect(screen.interactor.shownToasts.map(\.message) == ["You're now following each other"])
+    }
+
+    /// Join closes the sheet before accepting, and does nothing with an empty code.
+    @Test("Test Join Closes The Invite Sheet And Needs A Code")
+    func testJoinClosesTheInviteSheetAndNeedsACode() async {
+        let screen = makeScreen()
+        screen.presenter.onEnterInviteCodePressed()
+
+        screen.presenter.onInviteCodeJoinPressed()
+        #expect(screen.presenter.isEnteringInviteCode)
+
+        screen.presenter.inviteCodeInput = "push-2345"
+        screen.presenter.onInviteCodeJoinPressed()
+
+        #expect(screen.presenter.isEnteringInviteCode == false)
+        #expect(await TestManagers.eventually { screen.interactor.acceptedInviteCodes == ["push-2345"] })
     }
 }

@@ -60,23 +60,46 @@ struct SearchView: View {
             await presenter.loadRecentSearches()
         }
         .scrollIndicators(.hidden)
-        .alert("Enter invite code", isPresented: $presenter.isEnteringInviteCode) {
-            TextField("Code", text: $presenter.inviteCodeInput)
-                .textInputAutocapitalization(.characters)
-                .autocorrectionDisabled()
-            Button("Join") {
-                Task { await presenter.onInviteCodeSubmitted() }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("The 8-character code from a friend's invite link.")
+        // A small sheet rather than an alert with a text field: an alert is for a problem, and
+        // this is a task the person chose.
+        .sheet(isPresented: $presenter.isEnteringInviteCode) {
+            inviteCodeSheet
         }
+    }
+
+    private var inviteCodeSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Code", text: $presenter.inviteCodeInput)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                        .submitLabel(.join)
+                        .onSubmit { presenter.onInviteCodeJoinPressed() }
+                } footer: {
+                    Text("The 8-character code from a friend's invite link.")
+                }
+            }
+            .navigationTitle("Enter Invite Code")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { presenter.onInviteCodeClosePressed() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Join", role: .confirm) { presenter.onInviteCodeJoinPressed() }
+                        .disabled(!presenter.canJoinWithInviteCode)
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.35), .large])
+        .presentationDragIndicator(.visible)
     }
 
     /// For an invite link opened on another device than the one with the app.
     private var inviteCodeSection: some View {
         Section {
-            Label("Enter invite code", systemImage: "person.badge.plus")
+            Label("Enter Invite Code", systemImage: "person.badge.plus")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .tappableBackground()
                 .anyButton(.highlight) {
@@ -139,7 +162,8 @@ struct SearchView: View {
                     Button("Clear") {
                         presenter.onClearRecentSearchesPressed()
                     }
-                    .font(.label)
+                    .frame(minHeight: ControlSize.row)
+                    .contentShape(.rect)
                 }
             }
         }
@@ -174,8 +198,11 @@ struct SearchView: View {
     /// The only section that waits on the network, so the only one with a spinner.
     @ViewBuilder
     private var usersSection: some View {
-        if !presenter.filteredUsers.isEmpty || presenter.isLoadingPeople {
+        if !presenter.filteredUsers.isEmpty || presenter.isLoadingPeople || presenter.peopleSearchFailed {
             Section {
+                if presenter.peopleSearchFailed {
+                    InlineMessage(.warning, "Couldn't search people. Check your connection.")
+                }
                 ForEach(presenter.filteredUsers) { user in
                     UserRowView(user: user) {
                         FollowButton(state: presenter.followState(for: user)) {

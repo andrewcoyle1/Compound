@@ -25,6 +25,31 @@ says so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Resolution (2026-09-28, branch hig/shell)
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | fixed | Already non-dismissible with a label and modal trait on `feature/hig`; the spinner now also sits on a glass panel instead of white on dimmed grey. Nav and tab bar staying tappable above it is still unverified. |
+| 2 | needs a change elsewhere | The three read-only uses are in Notifications, Dashboard and Training presenters. |
+| 3 | skipped: decision | Title already says "Compound" (and the `CustomModalView` preview now does too). System prompt vs App Store link awaits a decision. |
+| 4 | fixed (shell part) | Titles translated, empty button hidden, scrolling: already fixed. The warm-up explanation is now a system alert. Health Disclaimer and Set Rest live in feature folders; `CustomModalView` stays until they and the rating card move. |
+| 5 | needs a change elsewhere | New `GlobalRouter.showDiscardChangesDialog(onDiscard:)` for the per-screen close buttons; the `interactiveDismissDisabled` flags belong to each screen. |
+| 6 | skipped: decision | |
+| 7 | needs a change elsewhere | Workout tracker is under `Core/Training/`. |
+| 8 | fixed (shell part) | Active-workout prompt and the new shared draft-meal prompt are action sheets; Search's draft-meal choice uses it. Report is one `.half` sheet with Close/Send. Invite code is a small sheet. Other pickers and forms are in feature folders. |
+| 9 | fixed (shell part) | `showAlert(title:error:)` added; the message is the app's own `errorDescription` or "Please try again."; bare `showAlert(error:)` now titles "Something Went Wrong". The 32 call sites still need their own titles. |
+| 10 | fixed (shell part) | First failure raises a persistent "Can't reach the server" toast, cleared on success; retries back off 5 s to 60 s. Welcome's in-button spinner is in onboarding. |
+| 11 | needs a change elsewhere | `Root/LaunchScreen.storyboard` is outside this branch's paths. |
+| 12 | needs a change elsewhere | Gym Profile and Program Design. |
+| 13 | skipped: decision | |
+| 14 | fixed | Announced to VoiceOver, failure toasts stay until tapped, swipe up dismisses, banner opens Notifications, one stacked overlay. Toast-behind-sheet is unchanged (root overlay). |
+| 15 | skipped: decision | |
+| 16 | fixed (shell part) | "Report Sent" is a success toast. Integrations and Timeline actions are elsewhere. |
+| 17 | needs a change elsewhere | Add Meal and Progress Photos. |
+| 18 | fixed | `peopleSearchFailed` with an `InlineMessage`; Clear has a 44 pt target. |
+| 19 | fixed | Selected tab restored from `@SceneStorage` by `DeepLink.Tab.rawValue`. On the way: selection was keyed by translated title, so in Spanish links and push taps selected nothing and the Search label stayed English (own `[Fix]` commit). |
+| Smaller | partly fixed | Draft-meal wording fixed in Search and in the shared prompt; "Enter Invite Code" capitalised; Dashboard badge counts only comments, mentions and follow requests. Cancel roles, other capitalisation and Licences are elsewhere. |
+
 ## Findings
 
 ### 1. The "blocking" loading modal can be tapped away, and says nothing to VoiceOver

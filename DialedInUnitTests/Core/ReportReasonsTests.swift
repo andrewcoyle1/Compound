@@ -13,7 +13,7 @@ import SwiftUI
 // MARK: - Reason and note
 
 /// A report needs a reason; "Other" also needs a note, and a note has a length limit the rules
-/// enforce too. An invalid report goes back to the note alert instead of being sent.
+/// enforce too. An invalid report stays in the sheet with the reason shown, instead of being sent.
 @MainActor
 struct ReportReasonFlowTests {
 
@@ -62,18 +62,23 @@ struct ReportReasonFlowTests {
 
         flow.start(comment)
         flow.onReasonSelected(.other)
-        flow.onSendPressed()
+        let sentWithoutNote = flow.onSendPressed()
 
+        #expect(sentWithoutNote == false)
         #expect(interactor.reports.isEmpty)
         #expect(flow.pending == comment)
-        #expect(router.alerts.last == "Add a Note: Add a note saying what is wrong.")
+        #expect(flow.validationMessage == "Add a note saying what is wrong.")
 
         flow.note = "  Posting someone else's workout  "
-        flow.onSendPressed()
+        let sentWithNote = flow.onSendPressed()
         await TestManagers.eventually { !interactor.reports.isEmpty }
 
+        #expect(sentWithNote)
         #expect(interactor.reports == ["comment|c1|other|Posting someone else's workout"])
-        #expect(router.alerts.last == "Report Sent")
+        await TestManagers.eventually { !interactor.shownToasts.isEmpty }
+        let toastStyles = interactor.shownToasts.map(\.style)
+        #expect(toastStyles == [.success])
+        #expect(router.alerts.isEmpty)
     }
 
     @Test("Test A Reason Without A Note Sends No Note")
@@ -88,6 +93,20 @@ struct ReportReasonFlowTests {
         await TestManagers.eventually { !interactor.reports.isEmpty }
 
         #expect(interactor.reports == ["comment|c1|inappropriate|nil"])
+    }
+
+    @Test("Test Sending Without A Reason Stays In The Sheet")
+    func testSendingWithoutAReasonStaysInTheSheet() {
+        let interactor = Interactor(), router = Router()
+        let flow = ReportFlow(interactor: interactor, router: router)
+
+        flow.start(comment)
+        let sent = flow.onSendPressed()
+
+        #expect(sent == false)
+        #expect(flow.validationMessage == "Choose a reason for the report.")
+        flow.onReasonSelected(.spam)
+        #expect(flow.validationMessage == nil)
     }
 
     @Test("Test Cancelling Sends Nothing")

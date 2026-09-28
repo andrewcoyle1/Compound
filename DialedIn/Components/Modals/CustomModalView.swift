@@ -86,7 +86,7 @@ struct CustomModalView: View {
         Color.black.ignoresSafeArea()
 
         CustomModalView(
-            title: "Are you enjoying Dialed?",
+            title: "Are you enjoying Compound?",
             subtitle: "We'd love to hear your feedback!",
             primaryButtonTitle: "Yes",
             primaryButtonAction: { },

@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct TabBarScreen: Identifiable {
-    var id: String {
-        title
+    var id: DeepLink.Tab {
+        tab
     }
 
+    let tab: DeepLink.Tab
     let title: String
     let systemImage: String
     @ViewBuilder var screen: () -> AnyView
@@ -23,6 +24,9 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
 
     @State var presenter: TabBarPresenter
 
+    /// The selected tab, by `DeepLink.Tab.rawValue`, so the app reopens where it was left.
+    @SceneStorage("selectedTab") private var storedTab: String = DeepLink.Tab.dashboard.rawValue
+
     var tabs: [TabBarScreen]
     
     @ViewBuilder var trainingAccessoryView: (TrainingAccessoryDelegate) -> TrainingTabAccessory
@@ -30,26 +34,22 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
     
     @ViewBuilder var searchView: () -> Search
 
-    /// The search tab is SwiftUI's own, so it has no `TabBarScreen` to take a title from.
-    /// Computed rather than `static let`: `TabBarView` is generic, and generic types cannot hold
-    /// static stored properties.
-    private var searchTabTitle: String { DeepLink.Tab.search.title }
-
     var body: some View {
-        TabView(selection: $presenter.selectedTabTitle) {
+        TabView(selection: $presenter.selectedTab) {
             ForEach(tabs) { tab in
-                Tab(value: tab.title) {
+                Tab(value: tab.tab) {
                     tab.screen()
                 } label: {
                     Label(tab.title, systemImage: tab.systemImage)
                 }
-                .badge(tab.title == DeepLink.Tab.dashboard.title ? presenter.unreadActivityCount : 0)
+                .badge(tab.tab == .dashboard ? presenter.unreadActivityCount : 0)
             }
 
-            Tab(value: searchTabTitle, role: .search) {
+            // The search tab is SwiftUI's own, so it has no `TabBarScreen` to take a title from.
+            Tab(value: DeepLink.Tab.search, role: .search) {
                 searchView()
             } label: {
-                Label(searchTabTitle, systemImage: "magnifyingglass")
+                Label("Search", systemImage: "magnifyingglass")
             }
         }
         // `compound://tab/nutrition` and the equivalent push payload land here. This is the only
@@ -62,7 +62,10 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
             presenter.onPushNotificationReceived()
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(restoredTab: DeepLink.Tab(rawValue: storedTab))
+        }
+        .onChange(of: presenter.selectedTab) { _, tab in
+            storedTab = tab.rawValue
         }
         // A screen inside a tab asking for a different tab — see `DeepLink.post()`.
         .onNotificationReceived(name: Constants.selectTab) { notification in
@@ -134,6 +137,7 @@ extension CoreBuilder {
     private var tabBarScreens: [TabBarScreen] {
         [
             TabBarScreen(
+                tab: .dashboard,
                 title: String(localized: "Dashboard"),
                 systemImage: "house",
                 screen: {
@@ -144,6 +148,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
+                tab: .training,
                 title: String(localized: "Training"),
                 systemImage: "dumbbell",
                 screen: {
@@ -154,6 +159,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
+                tab: .nutrition,
                 title: String(localized: "Nutrition"),
                 systemImage: "carrot",
                 screen: {
@@ -164,6 +170,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
+                tab: .analytics,
                 title: String(localized: "Analytics"),
                 systemImage: "chart.bar.xaxis",
                 screen: {

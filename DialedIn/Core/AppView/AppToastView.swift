@@ -47,6 +47,11 @@ struct AppToastView: View {
         .padding(.vertical, Spacing.m)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
         .padding(.horizontal, Spacing.xl)
+        .accessibilityElement(children: .combine)
+        // It appears over whatever the person is doing, so VoiceOver has to be told.
+        .task(id: toast.message) {
+            AccessibilityNotification.Announcement(toast.message).post()
+        }
     }
 }
 

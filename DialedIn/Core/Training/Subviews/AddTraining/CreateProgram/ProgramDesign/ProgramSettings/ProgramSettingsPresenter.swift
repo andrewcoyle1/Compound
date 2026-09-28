@@ -61,8 +61,10 @@ class ProgramSettingsPresenter {
             do {
                 try await interactor.saveTrainingProgram(trainingProgram: program)
                 try await interactor.setActiveTrainingProgram(programId: program.id)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }

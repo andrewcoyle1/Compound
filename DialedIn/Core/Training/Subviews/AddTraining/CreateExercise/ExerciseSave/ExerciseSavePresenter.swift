@@ -38,9 +38,11 @@ class ExerciseSavePresenter {
             do {
                 try await interactor.saveExerciseModel(exercise: model, image: nil)
                 interactor.trackEvent(event: Event.createExerciseSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
                 interactor.trackEvent(event: Event.createExerciseFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Create Exercise"), subtitle: String(localized: "Please try again."))
             }
         }

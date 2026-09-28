@@ -280,12 +280,13 @@ struct EquipmentPickerPresenterTests {
 
     @Test("Test Pressing An Item Selects It And Pressing It Again Deselects It")
     func testPressingAnItemSelectsItAndPressingItAgainDeselectsIt() {
-        let (presenter, _) = makeScreen()
+        let (presenter, interactor) = makeScreen()
         let box = EquipmentRefBox()
         presenter.onSelect(item: barbell, binding: box.binding)
         #expect(box.value == [barbell.ref])
         presenter.onSelect(item: barbell, binding: box.binding)
         #expect(box.value.isEmpty)
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection", "selection"])
     }
 
     /// A variation can combine equipment — a barbell in a rack — so choosing a second item adds to
@@ -597,6 +598,8 @@ struct ExerciseSavePresenterTests {
         _ = await TestManagers.eventually { screen.interactor.saved.count == 1 }
         #expect(screen.interactor.saved.first?.authorId == "user-42")
         #expect(screen.interactor.saved.first?.isSystemExercise == false)
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// With nobody signed in there is no author to file the exercise under, so it is not written at
@@ -616,6 +619,8 @@ struct ExerciseSavePresenterTests {
         screen.presenter.onCreatePressed(delegate: delegate())
         _ = await TestManagers.eventually { !screen.interactor.saved.isEmpty }
         #expect(screen.interactor.saved.isEmpty)
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: - The create funnel

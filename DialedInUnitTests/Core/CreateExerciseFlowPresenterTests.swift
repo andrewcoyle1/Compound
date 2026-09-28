@@ -241,7 +241,7 @@ struct CreateExercisePresenterTests {
         screen.presenter.lateralityPressed(navigationTitle: "Laterality", item: .constant(nil))
         #expect(screen.router.pickers.map(\.title) == ["Trackable Metric 1", "Exercise Type", "Laterality"])
         #expect(screen.router.pickers.map(\.canDelete) == [true, false, false])
-        #expect(screen.router.pickers.map(\.detents) == [nil, .fraction(0.45), .fraction(0.5)])
+        #expect(screen.router.pickers.map(\.detents) == [nil, .medium, .medium])
     }
 
     /// The picker writes back through the binding it was handed. Hand over the wrong one and the
@@ -319,13 +319,15 @@ struct MuscleGroupPickerPresenterTests {
 
     @Test("Test Pressing A Muscle Cycles Primary Secondary And Off")
     func testPressingAMuscleCyclesPrimarySecondaryAndOff() {
-        let presenter = makeScreen().presenter
+        let screen = makeScreen()
+        let presenter = screen.presenter
         presenter.onMuscleGroupPressed(muscle: .chest)
         #expect(presenter.selectedMuscleGroups[.chest] == .primary)
         presenter.onMuscleGroupPressed(muscle: .chest)
         #expect(presenter.selectedMuscleGroups[.chest] == .secondary)
         presenter.onMuscleGroupPressed(muscle: .chest)
         #expect(presenter.selectedMuscleGroups[.chest] == nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection", "selection", "selection"])
     }
 
     /// The footer counts what has been chosen, and the two weights are counted separately.
@@ -382,5 +384,41 @@ struct MuscleGroupPickerPresenterTests {
         screen.presenter.onViewDisappear()
         #expect(screen.interactor.trackedScreenEventNames == ["MuscleGroupPickerView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["MuscleGroupPickerView_Disappear"])
+    }
+}
+
+// MARK: - Enum picker
+
+@MainActor
+struct EnumPickerPresenterTests {
+
+    private final class Interactor: SpyGlobalInteractor, EnumPickerInteractor { }
+
+    private final class Router: EnumPickerRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
+
+    @MainActor
+    private final class Choice {
+        var value: TrackableExerciseMetric?
+
+        var binding: Binding<TrackableExerciseMetric?> {
+            Binding(
+                get: { MainActor.assumeIsolated { self.value } },
+                set: { newValue in MainActor.assumeIsolated { self.value = newValue } }
+            )
+        }
+    }
+
+    @Test("Test Choosing An Option Writes It Back And Plays The Selection Haptic")
+    func testChoosingAnOptionWritesItBackAndPlaysTheSelectionHaptic() {
+        let interactor = Interactor()
+        let presenter = EnumPickerPresenter(interactor: interactor, router: Router())
+        let choice = Choice()
+
+        presenter.onSelect(item: TrackableExerciseMetric.reps, binding: choice.binding)
+
+        #expect(choice.value == .reps)
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection"])
     }
 }

@@ -65,8 +65,10 @@ class DefineWorkoutWrapperPresenter {
             defer { isSaving = false }
             do {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: workout, image: nil)
+                interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
             }
         }

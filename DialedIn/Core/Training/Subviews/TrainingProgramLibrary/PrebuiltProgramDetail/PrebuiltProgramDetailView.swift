@@ -21,8 +21,13 @@ struct PrebuiltProgramDetailView: View {
         }
         .navigationTitle(presenter.program.name)
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .bottom) {
-            startButton
+        .bottomCTA {
+            CallToActionButton(isLoading: presenter.isStarting) {
+                Task { await presenter.onStartPressed() }
+            } label: {
+                Text("Start this program")
+            }
+            .disabled(presenter.isStarting)
         }
         .onAppear {
             presenter.onViewAppear()
@@ -42,12 +47,13 @@ struct PrebuiltProgramDetailView: View {
     private var daysSection: some View {
         Section("Days") {
             ForEach(Array(presenter.program.workoutTemplates.enumerated()), id: \.element.id) { index, day in
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text("Day \(index + 1)")
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                     if day.exercises.isEmpty {
-                        Text("Rest")
+                        Label("Rest", systemImage: Symbol.restDay)
+                            .font(.rowTitle)
                             .foregroundStyle(.secondary)
                     } else {
                         WorkoutTemplateRow(workoutTemplate: day)
@@ -55,25 +61,6 @@ struct PrebuiltProgramDetailView: View {
                 }
             }
         }
-    }
-
-    private var startButton: some View {
-        Button {
-            Task { await presenter.onStartPressed() }
-        } label: {
-            Group {
-                if presenter.isStarting {
-                    ProgressView()
-                } else {
-                    Text("Start this program")
-                }
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.glassProminent)
-        .controlSize(.large)
-        .disabled(presenter.isStarting)
-        .padding()
     }
 }
 

@@ -71,8 +71,10 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
                 HStack {
                     TrainingProgramHeader(program: program)
                     Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
+                    Image(systemName: "chevron.forward")
+                        .font(.rowDetail.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
                 }
                 .anyButton {
                     presenter.onPrebuiltProgramPressed(program)
@@ -87,7 +89,7 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("No Programs", systemImage: "calendar.badge.clock")
+            Label("No Programs", systemImage: Symbol.program)
         } description: {
             Text("Create your first training program to get started")
         }
@@ -96,22 +98,18 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.dismissScreen()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarItem(placement: .primaryAction) {
             Button {
                 presenter.onCreateProgramPressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Create program")
-            .buttonStyle(.glassProminent)
         }
     }
 }

@@ -45,14 +45,13 @@ struct WorkoutListViewBuilder: View {
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     presenter.onAddWorkoutPressed()
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
                 }
                 .accessibilityLabel("Add workout")
-                .buttonStyle(.glassProminent)
             }
         }
     }
@@ -60,7 +59,10 @@ struct WorkoutListViewBuilder: View {
     private func workoutRow(_ workout: WorkoutTemplateModel) -> some View {
         HStack {
             WorkoutTemplateRow(workoutTemplate: workout)
-            Image(systemName: "chevron.right")
+            Image(systemName: "chevron.forward")
+                .font(.rowDetail.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .accessibilityHidden(true)
         }
         .anyButton(.highlight) {
             presenter.onWorkoutPressed(
@@ -80,7 +82,6 @@ struct WorkoutListViewBuilder: View {
                 Text("Pre-Built Templates")
                 Spacer()
                 Text("\(presenter.systemWorkoutTemplates.count)")
-                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         } footer: {
@@ -98,7 +99,6 @@ struct WorkoutListViewBuilder: View {
                 Text("Custom Templates")
                 Spacer()
                 Text("\(presenter.userWorkoutTemplates.count)")
-                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
@@ -114,7 +114,6 @@ struct WorkoutListViewBuilder: View {
                 Text("Workout Templates")
                 Spacer()
                 Text("\(presenter.filteredWorkoutTemplates.count)")
-                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }

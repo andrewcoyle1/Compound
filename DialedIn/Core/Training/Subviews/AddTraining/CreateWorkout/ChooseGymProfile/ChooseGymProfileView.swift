@@ -15,29 +15,32 @@ struct ChooseGymProfileView: View {
             if presenter.gymProfiles.isEmpty {
                 // Every workout needs a gym, so an empty list was a dead end with no way to make one.
                 ContentUnavailableView {
-                    Label("No Gym Profiles", systemImage: "building.2")
+                    Label("No Gym Profiles", systemImage: Symbol.gym)
                 } description: {
                     Text("A workout is built around the equipment at a gym. Create one to continue.")
                 } actions: {
                     Button("Create Gym Profile") {
                         presenter.onCreateGymProfilePressed()
                     }
+                    .buttonStyle(.glass)
                 }
                 .removeListRowFormatting()
             }
             Section {
                 ForEach(presenter.gymProfiles) { profile in
-                    CustomListCellView(
-                        imageName: profile.imageUrl,
-                        title: profile.name,
-                        subtitle: equipmentSubtitle(for: profile)
-                    )
-                    .anyButton {
+                    Button {
                         presenter.onGymProfilePressed(name: delegate.name, profile: profile, delegate: delegate)
+                    } label: {
+                        ListRow(
+                            title: profile.name,
+                            subtitle: equipmentSubtitle(for: profile),
+                            imageName: profile.imageUrl,
+                            accessory: .chevron
+                        )
+                        .contentShape(.rect)
                     }
                     .accessibilityIdentifier("ChooseGymProfile.profile")
                 }
-                .removeListRowFormatting()
             } header: {
                 Text("This will be associated with the workout template.")
             }
@@ -54,8 +57,7 @@ struct ChooseGymProfileView: View {
     
     private func equipmentSubtitle(for profile: GymProfileModel) -> String {
         let count = profile.activeEquipmentCount
-        let pieceLabel = count == 1 ? String(localized: "piece") : String(localized: "pieces")
-        return String(localized: "\(String(describing: count)) active \(pieceLabel) of equipment")
+        return String(localized: "^[\(count) active piece](inflect: true) of equipment")
     }
 
 }

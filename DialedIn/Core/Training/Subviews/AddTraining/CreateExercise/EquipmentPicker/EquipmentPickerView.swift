@@ -62,42 +62,22 @@ struct EquipmentPickerView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
     
-    @ViewBuilder
     private func rowItem(item: AnyEquipment) -> some View {
-        HStack {
-            if let imageName = item.imageName {
-                ImageLoaderView(urlString: imageName)
-                    .frame(width: 40, height: 40)
-            } else {
-                Rectangle()
-                    .foregroundStyle(.secondary.opacity(0.2))
-                    .frame(width: 40, height: 40)
-                    .cornerRadius(8)
-            }
-
-            VStack(alignment: .leading) {
-                Text(item.name)
-            }
-            Spacer()
-            Circle()
-                .stroke(lineWidth: chosenItems.contains(item.ref) ? 12 : 3)
-                .frame(height: 20)
-                .labelsHidden()
-        }
-        .tappableBackground()
-        .anyButton(.press) {
+        let isSelected = chosenItems.contains(item.ref)
+        return Button {
             presenter.onSelect(item: item, binding: $chosenItems)
+        } label: {
+            ListRow(title: item.name, imageName: item.imageName, accessory: .checkmark(isSelected))
+                .contentShape(.rect)
         }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 

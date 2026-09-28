@@ -43,7 +43,7 @@ struct FinalExerciseDetailsView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
@@ -51,41 +51,28 @@ struct FinalExerciseDetailsView: View {
             }
             .accessibilityIdentifier("FinalExerciseDetails.next")
             .disabled(!presenter.canContinue(delegate: delegate))
-            .padding(.bottom)
         }
     }
 
     private var rangeOfMotionSection: some View {
-        Stepper(value: $presenter.rangeOfMotion, in: 0...5) {
-            VStack(alignment: .leading) {
-                Text("Range of Motion")
-                Spacer()
-                HStack {
-                    ForEach(1...5) { value in
-                        Capsule()
-                            .fill(value <= presenter.rangeOfMotion ? Color.accentColor : Color.secondary.opacity(0.2))
-                    }
-                }
-                .frame(maxWidth: 200)
-            }
-        }
-
+        ratingStepper(String(localized: "Range of Motion"), value: $presenter.rangeOfMotion)
     }
 
     private var stabilitySection: some View {
-        Stepper(value: $presenter.stability, in: 0...5) {
-            VStack(alignment: .leading) {
-                Text("Stability")
-                Spacer()
-                HStack {
-                    ForEach(1...5) { value in
-                        Capsule()
-                            .fill(value <= presenter.stability ? Color.accentColor : Color.secondary.opacity(0.2))
-                    }
-                }
-                .frame(maxWidth: 200)
+        ratingStepper(String(localized: "Stability"), value: $presenter.stability)
+    }
+
+    /// VoiceOver reads the rating as "3 of 5" through the stepper's value.
+    private func ratingStepper(_ title: String, value: Binding<Int>) -> some View {
+        Stepper(value: value, in: 0...5) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text(title)
+                    .font(.rowTitle)
+                RatingBar(value: value.wrappedValue)
+                    .accessibilityHidden(true)
             }
         }
+        .accessibilityValue(String(localized: "\(value.wrappedValue) of 5"))
     }
 
     private var bodyweightSection: some View {
@@ -102,7 +89,6 @@ struct FinalExerciseDetailsView: View {
                 Text("Body Weight Contribution")
                 Spacer()
                 Text("Required")
-                    .font(.caption)
             }
         } footer: {
             Text(presenter.contributionFooter(delegate: delegate))
@@ -120,7 +106,6 @@ struct FinalExerciseDetailsView: View {
                 Text("Alternate Names")
                 Spacer()
                 Text("\(presenter.alternateNames.count)/300")
-                    .font(.caption)
             }
         } footer: {
             Text("Separate names with a comma.")

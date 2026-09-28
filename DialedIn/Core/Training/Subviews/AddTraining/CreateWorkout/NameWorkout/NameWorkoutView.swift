@@ -39,7 +39,7 @@ struct NameWorkoutView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(delegate: delegate)
             } label: {

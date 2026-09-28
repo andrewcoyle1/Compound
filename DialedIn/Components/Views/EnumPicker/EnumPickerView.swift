@@ -41,24 +41,8 @@ struct EnumPickerView<Item: PickableItem>: View {
         .listSectionMargins(.top, 0)
     }
     
-    @ViewBuilder
     func rowItem(item: Item) -> some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(item.name)
-                if let description = item.description {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
-                Circle()
-                    .stroke(lineWidth: delegate.chosenItem.wrappedValue == item ? 12 : 3)
-                    .frame(height: 20)
-        }
-        .tappableBackground()
-        .anyButton(.press) {
+        SelectableRow(title: item.name, subtitle: item.description, isSelected: delegate.chosenItem.wrappedValue == item) {
             presenter.onSelect(item: item, binding: delegate.chosenItem)
         }
         .accessibilityIdentifier("EnumPicker.\(item.name)")
@@ -66,13 +50,10 @@ struct EnumPickerView<Item: PickableItem>: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         if delegate.canDelete {
@@ -80,7 +61,7 @@ struct EnumPickerView<Item: PickableItem>: View {
                 Button {
                     presenter.onDeletePressed(binding: delegate.chosenItem)
                 } label: {
-                    Image(systemName: "trash")
+                    Image(systemName: Symbol.delete)
                 }
                 .accessibilityLabel("Clear selection")
             }
@@ -106,8 +87,10 @@ extension CoreRouter {
     
     func showEnumPickerView<Item: PickableItem>(delegate: EnumPickerDelegate<Item>, detentsInput: PresentationDetentTransformable? = nil) {
         if let detentsVerified = detentsInput {
+            // Always offers `.large` too, so the list is never trapped at large Dynamic Type sizes.
             router.showScreen(.sheetConfig(config: ResizableSheetConfig(
-                detents: [detentsVerified]
+                detents: [detentsVerified, .large],
+                dragIndicator: .visible
             ))) { router in
                 builder.enumPickerView(router: router, delegate: delegate)
             }

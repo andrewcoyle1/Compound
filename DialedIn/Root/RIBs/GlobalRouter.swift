@@ -133,8 +133,11 @@ extension GlobalRouter {
             // back while the work was still running.
             dismissOnBackgroundTap: false,
             destination: {
+                // On glass rather than a bare white spinner, which vanished over a light screen.
                 ProgressView()
-                    .tint(.white)
+                    .controlSize(.large)
+                    .padding(Spacing.xl)
+                    .glassEffect(.regular, in: .rect(cornerRadius: Radius.l, style: .continuous))
                     .accessibilityLabel(Text("Loading"))
                     .accessibilityAddTraits(.isModal)
             }

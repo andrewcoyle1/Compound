@@ -13,22 +13,13 @@ struct CoreRouter: GlobalRouter {
     let router: AnyRouter
     let builder: CoreBuilder
         
+    /// A system alert rather than `CustomModalView`: it scrolls at large text sizes, is modal to
+    /// VoiceOver and dismisses itself, so `primaryButtonAction` (which callers used to take the
+    /// old overlay down) has nothing left to do.
     func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) {
-        router.showModal(
-            transition: .move(edge: .bottom),
-            backgroundColor: .black.opacity(0.3),
-            destination: {
-                CustomModalView(
-                    title: String(localized: "Warmup Sets"),
-                    subtitle: String(localized: "Warmup sets are lighter weight sets performed before your working sets to prepare your muscles and joints. They don't count toward your total volume or personal records."),
-                    primaryButtonTitle: "Got it",
-                    primaryButtonAction: {
-                        primaryButtonAction()
-                    },
-                    secondaryButtonTitle: "",
-                    secondaryButtonAction: {}
-                )
-            }
+        showSimpleAlert(
+            title: String(localized: "Warmup Sets"),
+            subtitle: String(localized: "Warmup sets are lighter weight sets performed before your working sets to prepare your muscles and joints. They don't count toward your total volume or personal records.")
         )
     }
 

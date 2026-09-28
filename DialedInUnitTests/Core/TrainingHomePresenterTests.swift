@@ -134,6 +134,9 @@ struct TrainingHomePresenterTests {
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
             alertTitles.append(title)
         }
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            alertTitles.append(title)
+        }
         private(set) var sessionDetailDelegates: [WorkoutSessionDetailDelegate] = []
         private(set) var addTrainingDelegates: [AddTrainingDelegate] = []
         private(set) var createWorkoutDelegates: [CreateWorkoutDelegate] = []

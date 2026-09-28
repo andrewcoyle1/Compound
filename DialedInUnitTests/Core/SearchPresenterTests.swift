@@ -63,6 +63,7 @@ struct SearchPresenterTests {
         private(set) var socialProfileUserIds: [String] = []
 
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
         func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color?) {
             shown.append("exerciseDetail")

@@ -741,7 +741,8 @@ struct SocialCommentsPresenterTests {
 
         screen.presenter.onReportPressed(comment("a", on: DashboardFixture.date(day: 2)))
 
-        #expect(screen.router.alertTitles == ["Report Comment"])
+        // The report is a sheet now, not an alert, so the flow holds what is being reported.
+        #expect(screen.presenter.reportFlow.title == "Report Comment")
         #expect(screen.interactor.reports.isEmpty)
     }
 }

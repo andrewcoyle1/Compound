@@ -552,7 +552,8 @@ struct SocialProfilePresenterTests {
         screen.presenter.onViewAppear(delegate: profile("friend", following: []))
 
         screen.presenter.onReportPressed()
-        #expect(screen.router.alertTitles == ["Report Profile"])
+        // The report is a sheet now, not an alert, so the flow holds what is being reported.
+        #expect(screen.presenter.reportFlow.title == "Report Profile")
         #expect(screen.interactor.reports.isEmpty)
 
         screen.presenter.reportFlow.onReasonSelected(.harassment)

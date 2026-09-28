@@ -45,6 +45,19 @@ struct ListRow: View {
     private let tint: AnyShapeStyle
     let accessory: Accessory
 
+    /// Literal titles are looked up in the string catalog. The `String` initialisers below take text
+    /// that is already localized or is the user's own.
+    init(
+        title: LocalizedStringResource,
+        subtitle: LocalizedStringResource? = nil,
+        systemImage: String? = nil,
+        tint: Color? = nil,
+        accessory: Accessory = .none
+    ) {
+        self.init(title: String(localized: title), subtitle: subtitle.map { String(localized: $0) }, systemImage: systemImage, tint: tint, accessory: accessory)
+    }
+
+    @_disfavoredOverload
     init(
         title: String,
         subtitle: String? = nil,
@@ -210,6 +223,18 @@ struct ListRowButton: View {
     let action: () -> Void
 
     init(
+        title: LocalizedStringResource,
+        subtitle: LocalizedStringResource? = nil,
+        systemImage: String? = nil,
+        tint: Color? = nil,
+        accessory: ListRow.Accessory = .chevron,
+        action: @escaping () -> Void
+    ) {
+        self.init(title: String(localized: title), subtitle: subtitle.map { String(localized: $0) }, systemImage: systemImage, tint: tint, accessory: accessory, action: action)
+    }
+
+    @_disfavoredOverload
+    init(
         title: String,
         subtitle: String? = nil,
         systemImage: String? = nil,
@@ -242,6 +267,11 @@ struct ListRowToggle: View {
     var systemImage: String?
     @Binding var isOn: Bool
 
+    init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil, systemImage: String? = nil, isOn: Binding<Bool>) {
+        self.init(title: String(localized: title), subtitle: subtitle.map { String(localized: $0) }, systemImage: systemImage, isOn: isOn)
+    }
+
+    @_disfavoredOverload
     init(title: String, subtitle: String? = nil, systemImage: String? = nil, isOn: Binding<Bool>) {
         self.title = title
         self.subtitle = subtitle
@@ -266,6 +296,11 @@ struct SelectableRow: View {
     let isSelected: Bool
     let action: () -> Void
 
+    init(title: LocalizedStringResource, subtitle: LocalizedStringResource? = nil, isSelected: Bool, action: @escaping () -> Void) {
+        self.init(title: String(localized: title), subtitle: subtitle.map { String(localized: $0) }, isSelected: isSelected, action: action)
+    }
+
+    @_disfavoredOverload
     init(title: String, subtitle: String? = nil, isSelected: Bool, action: @escaping () -> Void) {
         self.title = title
         self.subtitle = subtitle

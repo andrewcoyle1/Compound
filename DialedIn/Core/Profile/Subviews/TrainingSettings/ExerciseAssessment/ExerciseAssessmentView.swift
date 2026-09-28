@@ -16,7 +16,7 @@ struct ExerciseAssessmentView: View {
         FeatureUnavailableView(
             title: String(localized: "Exercise Assessment"),
             systemImage: Symbol.exercise,
-            summary: "Guided strength assessments are not available yet. The plan is to estimate your working weights from a short set of test lifts, so a new programme starts at the right load."
+            summary: "Guided strength assessments are not available yet. The plan is to estimate your working weights from a short set of test lifts, so a new program starts at the right load."
         )
         .onAppear {
             presenter.onViewAppear(delegate: delegate)

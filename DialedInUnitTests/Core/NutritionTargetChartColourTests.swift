@@ -21,3 +21,23 @@ struct NutritionTargetChartColourTests {
         #expect(Metric.fats.colour == Macro.fat.colour)
     }
 }
+
+/// The over-target caret marks only cells well over target (above 110%), so a day a few grams
+/// over is not flagged. VoiceOver still says "over target" for anything over 100%.
+@MainActor
+struct TargetCellCaretTests {
+
+    @Test("Test The Caret Shows Only Above The Threshold")
+    func testTheCaretShowsOnlyAboveTheThreshold() {
+        #expect(TargetCellView.caretThreshold == 1.1)
+        #expect(!TargetCellView.showsCaret(value: 100, target: 100))
+        #expect(!TargetCellView.showsCaret(value: 105, target: 100))
+        #expect(!TargetCellView.showsCaret(value: 110, target: 100))
+        #expect(TargetCellView.showsCaret(value: 111, target: 100))
+    }
+
+    @Test("Test No Target Never Shows The Caret")
+    func testNoTargetNeverShowsTheCaret() {
+        #expect(!TargetCellView.showsCaret(value: 500, target: 0))
+    }
+}

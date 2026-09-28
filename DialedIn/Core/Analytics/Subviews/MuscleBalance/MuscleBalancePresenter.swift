@@ -28,6 +28,23 @@ class MuscleBalancePresenter {
     var upperRows: [MuscleBalanceRow] { rows.filter { $0.muscle.bodyRegion == .upperBody } }
     var lowerRows: [MuscleBalanceRow] { rows.filter { $0.muscle.bodyRegion == .lowerBody } }
 
+    /// The sections, in display order.
+    let regions: [BodyRegion] = [.upperBody, .lowerBody]
+
+    func rows(for region: BodyRegion) -> [MuscleBalanceRow] {
+        region == .upperBody ? upperRows : lowerRows
+    }
+
+    func header(for region: BodyRegion) -> String {
+        region == .upperBody ? String(localized: "Upper") : String(localized: "Lower")
+    }
+
+    /// The explanatory footer sits under the last section only. The view used to decide this by
+    /// comparing the header to the English word "Lower", so it vanished in every other language.
+    func showsFooter(for region: BodyRegion) -> Bool {
+        region == regions.last
+    }
+
     var selectedRow: MuscleBalanceRow? {
         rows.first { $0.muscle == selectedMuscle }
     }

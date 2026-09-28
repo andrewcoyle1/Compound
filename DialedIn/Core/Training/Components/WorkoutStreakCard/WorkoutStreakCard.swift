@@ -71,7 +71,8 @@ struct WorkoutStreakCard: View {
         let weekdayIndex = calendar.component(.weekday, from: today) - 1
         let startOfWeek = calendar.date(byAdding: .day, value: -weekdayIndex, to: today) ?? today
         let workoutDays = presenter.workoutDaysThisWeek
-        let labels = ["S", "M", "T", "W", "T", "F", "S"]
+        // The calendar's own letters, indexed by each day's weekday, so they are localised.
+        let labels = calendar.veryShortWeekdaySymbols
 
         return HStack(spacing: 0) {
             ForEach(0..<7, id: \.self) { index in
@@ -81,7 +82,7 @@ struct WorkoutStreakCard: View {
                 let isFuture = day > today
 
                 VStack(spacing: Spacing.xs) {
-                    Text(labels[index])
+                    Text(labels[calendar.component(.weekday, from: day) - 1])
                         .font(.caption2)
                         .fontWeight(isToday ? .bold : .regular)
                         .foregroundStyle(isToday ? .primary : .secondary)

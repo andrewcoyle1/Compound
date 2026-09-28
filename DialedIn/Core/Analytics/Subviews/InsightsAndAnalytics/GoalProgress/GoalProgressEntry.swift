@@ -11,6 +11,8 @@ struct GoalProgressEntry: Identifiable {
     let date: Date
     let weightKg: Double
     let progressPercent: Double
+    /// The user's unit. Storage is kilograms; the list shows what the user reads everywhere else.
+    var weightUnit: WeightUnitPreference = .kilograms
 }
 
 extension GoalProgressEntry: @MainActor MetricEntry {
@@ -19,7 +21,7 @@ extension GoalProgressEntry: @MainActor MetricEntry {
     }
 
     var displayValue: String {
-        "\(Format.weight(kg: weightKg, unit: WeightUnitPreference.kilograms)) (\(Format.percent(progressPercent / 100)))"
+        "\(Format.weight(kg: weightKg, unit: weightUnit)) (\(Format.percent(progressPercent / 100)))"
     }
 
     var systemImageName: String {

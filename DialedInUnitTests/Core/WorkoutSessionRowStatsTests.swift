@@ -81,6 +81,6 @@ struct WorkoutSessionRowStatsTests {
         #expect(presenter.setsDescription(for: exercise(.timeOnly, [set(1, seconds: 45)])) == "1 × \(Format.duration(45))")
         #expect(presenter.setsDescription(for: exercise(.distanceTime, [set(1, meters: 5000)]))
                 == "1 × \(Format.distance(meters: 5000, unit: .kilometers))")
-        #expect(presenter.setsDescription(for: exercise(.timeOnly, [set(1, reps: 3)])) == "1 sets")
+        #expect(presenter.setsDescription(for: exercise(.timeOnly, [set(1, reps: 3)])) == "1 set")
     }
 }

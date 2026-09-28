@@ -9,8 +9,9 @@ struct MuscleBalanceView: View {
     var body: some View {
         List {
             Group {
-                region(header: String(localized: "Upper"), rows: presenter.upperRows)
-                region(header: String(localized: "Lower"), rows: presenter.lowerRows)
+                ForEach(presenter.regions, id: \.self) { region in
+                    section(region)
+                }
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)
@@ -33,8 +34,9 @@ struct MuscleBalanceView: View {
         }
     }
 
-    private func region(header: String, rows: [MuscleBalanceRow]) -> some View {
-        Section {
+    private func section(_ region: BodyRegion) -> some View {
+        let rows = presenter.rows(for: region)
+        return Section {
             AnalyticsCardGrid {
                 ForEach(rows) { row in
                     tile(row)
@@ -46,9 +48,9 @@ struct MuscleBalanceView: View {
                     .removeListRowFormatting()
             }
         } header: {
-            SectionHeaderView(title: header)
+            SectionHeaderView(title: presenter.header(for: region))
         } footer: {
-            if header == "Lower" {
+            if presenter.showsFooter(for: region) {
                 Text("Working sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.")
                     .padding(.horizontal)
             }
@@ -58,9 +60,9 @@ struct MuscleBalanceView: View {
     private func tile(_ row: MuscleBalanceRow) -> some View {
         let color = row.status.color
         let isSelected = presenter.selectedMuscle == row.muscle
-        let sets = row.currentSets.formatted(.number.precision(.fractionLength(0...1)))
+        let sets = Format.sets(row.currentSets)
         return Stat.tile(
-            value: String(localized: "\(sets) sets"),
+            value: sets,
             label: "\(row.muscle.name) · \(row.status.label) \(rangeText(row.range))",
             systemImage: row.status.systemImage,
             tint: color
@@ -71,7 +73,7 @@ struct MuscleBalanceView: View {
         }
         // The reference pattern: one element, the muscle and its status first, the target after.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(row.muscle.name), \(sets) sets, \(row.status.label)")
+        .accessibilityLabel("\(row.muscle.name), \(sets), \(row.status.label)")
         .accessibilityValue("Recommended \(rangeText(row.range)) sets a week")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .anyButton(.press) {

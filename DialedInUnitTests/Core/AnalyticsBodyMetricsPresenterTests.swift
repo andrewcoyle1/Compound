@@ -113,7 +113,7 @@ struct AnalyticsBodyMetricsPresenterTests {
         let card = screen.presenter.displayModel(for: .scaleWeight)
 
         #expect(card.latestValueText == "220.5")
-        #expect(card.unitText == "lbs")
+        #expect(card.unitText == "lb")
     }
 
     /// A body fat percentage is a percentage in every unit system.
@@ -409,7 +409,7 @@ struct AnalyticsScaleWeightPresenterTests {
         let point = try #require(screen.presenter.timeSeries.first?.data.first)
 
         #expect(abs(point.value - 220.462) < 0.01)
-        #expect(screen.presenter.configuration.yAxisSuffix == " lbs")
+        #expect(screen.presenter.configuration.yAxisSuffix == " lb")
     }
 
     @Test("Test A Kilogram User Sees Stored Kilograms")

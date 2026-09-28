@@ -17,7 +17,7 @@ struct OptimisationView: View {
                 )
             }
         }
-        .navigationTitle("Optimisation")
+        .navigationTitle("Optimization")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

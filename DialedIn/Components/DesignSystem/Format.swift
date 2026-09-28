@@ -53,6 +53,17 @@ enum Format {
         count == 1 ? String(localized: "1 rep") : String(localized: "\(count.formatted(.number.locale(locale))) reps")
     }
 
+    /// `"1 set"`, `"12 sets"`, `"2.5 sets"`. Up to one decimal, since a muscle an exercise only
+    /// assists earns half a set. Whole counts use the catalog's plural variations for `%lld sets`;
+    /// a fractional count is always plural.
+    static func sets(_ count: Double, locale: Locale = .autoupdatingCurrent) -> String {
+        let rounded = (count * 10).rounded() / 10
+        if rounded == rounded.rounded() {
+            return String(localized: "\(Int(rounded)) sets", locale: locale)
+        }
+        return String(localized: "\(rounded.formatted(.number.precision(.fractionLength(0...1)).locale(locale))) sets", locale: locale)
+    }
+
     /// `"8–12"`, with an en dash.
     static func repRange(_ lower: Int, _ upper: Int, locale: Locale = .autoupdatingCurrent) -> String {
         "\(lower.formatted(.number.locale(locale)))–\(upper.formatted(.number.locale(locale)))"

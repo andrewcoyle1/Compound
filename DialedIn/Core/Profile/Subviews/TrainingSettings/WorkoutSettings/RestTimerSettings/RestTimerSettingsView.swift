@@ -62,7 +62,7 @@ struct RestTimerSettingsView: View {
                 isOn: $presenter.restBetweenSideSets
             )
         } header: {
-            Text("Behaviour")
+            Text("Behavior")
         }
     }
 

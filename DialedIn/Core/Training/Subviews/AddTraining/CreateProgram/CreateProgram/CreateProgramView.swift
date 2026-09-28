@@ -20,15 +20,22 @@ struct CreateProgramView: View {
             ImageLoaderView()
                 .ignoresSafeArea()
                 .frame(maxHeight: 400)
-            Text("It's time to create a custom workout program.")
-                .font(.rowTitle)
-                .multilineTextAlignment(.center)
-                .padding()
-                .frame(maxWidth: .infinity)
+            // The heading sits under the hero image: an inline bar title over the image was
+            // unreadable. `navigationTitle` stays for VoiceOver and the back menu.
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Create Program")
+                    .font(.display)
+                    .accessibilityAddTraits(.isHeader)
+                Text("It's time to create a custom workout program.")
+                    .font(.rowTitle)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
         }
         .navigationTitle("Create Program")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(removing: .title)
         .onAppear {
             presenter.onViewAppear()
         }

@@ -43,7 +43,7 @@ struct TargetMusclesSection: View {
             Text(summary.muscle.name)
                 .font(.rowDetail)
                 .fontWeight(.semibold)
-            Text("\(summary.formattedTargetSets) target sets")
+            Text("Target: \(Format.sets(summary.weightedTargetSets))")
                 .font(.label)
                 .foregroundStyle(.secondary)
             Text("^[\(summary.exerciseCount) exercise](inflect: true)")
@@ -54,13 +54,6 @@ struct TargetMusclesSection: View {
         .padding(Spacing.m)
         .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.m, style: .continuous))
         .accessibilityElement(children: .combine)
-    }
-}
-
-extension TargetMuscleSummary {
-    /// Whole numbers without a decimal, halves (from secondary muscles) with one: "3", "1.5".
-    var formattedTargetSets: String {
-        weightedTargetSets.formatted(.number.precision(.fractionLength(0...1)))
     }
 }
 

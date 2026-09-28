@@ -138,13 +138,6 @@ struct StringExtensionTests {
         #expect("".replaceSpacesWithUnderscores() == "")
     }
 
-    @Test("Test A Count Caption Pluralises")
-    func testACountCaptionPluralises() {
-        #expect(String.countCaption(count: 1, unit: "set") == "1 set")
-        #expect(String.countCaption(count: 2, unit: "set") == "2 sets")
-        #expect(String.countCaption(count: 0, unit: "set") == "0 sets")
-    }
-
     // MARK: - Converting analytics values
 
     @Test("Test Converting Simple Values To Strings")

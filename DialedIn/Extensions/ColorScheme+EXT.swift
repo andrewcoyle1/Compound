@@ -7,29 +7,13 @@
 
 import SwiftUI
 
-/// Legacy colour pairs, kept only because the Live Activity widget compiles this file and uses
-/// `foregroundSecondary` (`WorkoutSessionActivity/LiveActivityView.swift`).
-///
-/// App code uses the design-system tokens instead (`Components/DesignSystem/Palette.swift`):
-/// `Color.surface` for `backgroundPrimary`, `Color.canvas` for `backgroundSecondary`, and
-/// `.onAccent` for text on an accent fill, which `foregroundPrimary`/`foregroundSecondary` used
-/// to fake. WP-15 deletes the members the widget does not need.
+/// Used only by the Live Activity widget (`WorkoutSessionActivity/LiveActivityView.swift`), which
+/// compiles this file and has no design-system tokens. App code uses `.onAccent` for text on an
+/// accent fill, and `Color.surface` / `Color.canvas` for backgrounds (`Palette.swift`).
 extension ColorScheme {
-    
-    var foregroundPrimary: Color {
-        self == .dark ? Color.white : Color.black
-    }
 
-    var foregroundSecondary: Color {
+    /// The opposite of the label colour: white in light mode, black in dark.
+    var inverseLabel: Color {
         self == .dark ? Color.black : Color.white
     }
-
-    var backgroundPrimary: Color {
-        self == .dark ? Color(uiColor: .secondarySystemBackground) : Color(uiColor: .systemBackground)
-    }
-    
-    var backgroundSecondary: Color {
-        self == .dark ? Color(uiColor: .systemBackground) : Color(uiColor: .secondarySystemBackground)
-    }
-
 }

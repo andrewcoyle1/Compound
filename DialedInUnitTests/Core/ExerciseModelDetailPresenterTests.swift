@@ -282,7 +282,7 @@ struct ExerciseModelDetailPresenterTests {
 
         #expect(screen.interactor.preferenceReads == ["bench"])
         #expect(screen.presenter.weightUnit == .pounds)
-        #expect(screen.presenter.weightChartConfiguration.unit == "lbs")
+        #expect(screen.presenter.weightChartConfiguration.unit == "lb")
     }
 
     /// A user logging in pounds sees pounds: 100 kg is 220.5 lb, not 100 lb under a pound label.

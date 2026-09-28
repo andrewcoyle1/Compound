@@ -20,3 +20,72 @@ excluded:
   - SourcePackages
   - Pods
   - Carthage
+
+# Design system rules (docs/specs/ui-framework/CONTRACT.md). Use a token or primitive from
+# DialedIn/Components/DesignSystem/, never a literal. Share cards render to images at a fixed
+# size and the widget has no design system, so both are exempt where noted.
+custom_rules:
+  no_corner_radius_modifier:
+    name: "No .cornerRadius"
+    regex: '\.cornerRadius\('
+    message: "Clip to a continuous shape: .clipShape(.rect(cornerRadius: Radius.l, style: .continuous))."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+  no_foreground_color:
+    name: "No .foregroundColor"
+    regex: '\.foregroundColor\('
+    message: "Use .foregroundStyle(_:)."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+  no_fixed_font_size:
+    name: "No fixed font size"
+    regex: '\.font\(\.system\(size:'
+    message: "Use a text-style token from Typography.swift, or .iconSize(_:) for a symbol."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+    excluded:
+      # .iconSize(_:) is built on a @ScaledMetric point size.
+      - "DialedIn/Components/DesignSystem/Typography.swift"
+      - "DialedIn/Core/Dashboard/ShareCard/"
+      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "WorkoutSessionActivity/"
+  no_rgb_color_literal:
+    name: "No RGB colour literal"
+    regex: 'Color\(red:'
+    message: "Use a Palette.swift token."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+    excluded:
+      - "DialedIn/Components/DesignSystem/"
+      - "DialedIn/Core/Dashboard/ShareCard/"
+      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "WorkoutSessionActivity/"
+  no_bare_with_animation:
+    name: "No bare withAnimation"
+    regex: '\bwithAnimation\('
+    message: "Use withReducedMotionAnimation(_:_:) with a Motion.swift token."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+    excluded:
+      - "DialedIn/Components/ViewModifiers/ReducedMotionViewModifier.swift"
+      - "WorkoutSessionActivity/"
+  accent_spelling:
+    name: "Accent spelling"
+    regex: '(Color\.accent\b|[(:, ]\.accent\b)'
+    message: "Use .tint as a ShapeStyle, or Color.accentColor where a Color is required."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+    excluded:
+      - "WorkoutSessionActivity/"
+  no_color_scheme_surfaces:
+    name: "No colorScheme surfaces"
+    regex: 'colorScheme\.(background|foreground)'
+    message: "Use Color.surface, Color.canvas or .onAccent."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
+  no_drawn_close_button:
+    name: "No drawn close button"
+    regex: 'Image\(systemName: "xmark"\)'
+    message: "Dismiss is Button(role: .close) in .cancellationAction. For a non-toolbar xmark, use Symbol.close."
+    severity: error
+    excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]

@@ -66,6 +66,18 @@ struct FormatTests {
         #expect(Format.reps(0, locale: english) == "0 reps")
     }
 
+    /// "1 sets" used to appear in Muscle Balance and Shared Item. A fractional count (half a set
+    /// from an assisting muscle) is plural; one decimal at most.
+    @Test func setsPluraliseAndAFractionIsPlural() {
+        #expect(Format.sets(1, locale: english) == "1 set")
+        #expect(Format.sets(12, locale: english) == "12 sets")
+        #expect(Format.sets(0, locale: english) == "0 sets")
+        #expect(Format.sets(0.5, locale: english) == "0.5 sets")
+        #expect(Format.sets(1.5, locale: english) == "1.5 sets")
+        #expect(Format.sets(0.96, locale: english) == "1 set")
+        #expect(Format.sets(3.0, locale: english) == "3 sets")
+    }
+
     @Test func repRangeUsesAnEnDash() {
         #expect(Format.repRange(8, 12, locale: english) == "8\u{2013}12")
     }

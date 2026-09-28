@@ -137,7 +137,7 @@ struct AnalyticsView<NutritionChart: View>: View {
 
             // "house" here was copied from the Dashboard tab and said nothing about what the row
             // does.
-            ListRowButton(title: String(localized: "Customise Analytics"), systemImage: "slider.horizontal.3") {
+            ListRowButton(title: String(localized: "Customize Analytics"), systemImage: "slider.horizontal.3") {
                 presenter.onCustomiseAnalyticsPressed()
             }
         } header: {

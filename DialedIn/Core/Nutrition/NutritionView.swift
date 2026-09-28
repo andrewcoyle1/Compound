@@ -144,7 +144,7 @@ struct NutritionView<
             ListRowButton(title: String(localized: "Nutrition Overview"), systemImage: Symbol.nutrition) {
                 presenter.onNutritionOverviewPressed()
             }
-            ListRowButton(title: String(localized: "Customise Food Log"), systemImage: Symbol.settings) {
+            ListRowButton(title: String(localized: "Customize Food Log"), systemImage: Symbol.settings) {
                 presenter.onCustomiseFoodLogPressed()
             }
         } header: {

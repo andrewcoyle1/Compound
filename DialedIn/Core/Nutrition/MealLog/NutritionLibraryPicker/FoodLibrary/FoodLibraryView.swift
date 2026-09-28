@@ -33,7 +33,7 @@ struct FoodLibraryView<
     private var favouritesList: some View {
         if !presenter.hasFavourites {
             ContentUnavailableView {
-                Label("No Favourites", systemImage: "heart")
+                Label("No Favorites", systemImage: "heart")
             } description: {
                 Text("Tap the heart on a food or recipe to keep it here.")
             }
@@ -128,7 +128,7 @@ enum FoodLibraryOption: String, CaseIterable, Hashable, Identifiable {
         switch self {
         case .recipes: return String(localized: "Recipes")
         case .foods: return String(localized: "Foods")
-        case .favourites: return String(localized: "Favourites")
+        case .favourites: return String(localized: "Favorites")
         }
     }
     

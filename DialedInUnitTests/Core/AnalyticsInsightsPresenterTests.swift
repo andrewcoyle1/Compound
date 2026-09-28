@@ -179,7 +179,7 @@ struct AnalyticsInsightsPresenterTests {
         #expect(metric.presenter.weightTrendLatestValueText == "100.0")
         #expect(metric.presenter.weightTrendUnitText == "kg")
         #expect(imperial.presenter.weightTrendLatestValueText == "220.5")
-        #expect(imperial.presenter.weightTrendUnitText == "lbs")
+        #expect(imperial.presenter.weightTrendUnitText == "lb")
     }
 
     /// The card is the last seven weigh-ins, taken after sorting, so an eighth older reading drops

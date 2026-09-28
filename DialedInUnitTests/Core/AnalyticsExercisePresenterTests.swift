@@ -211,7 +211,7 @@ struct AnalyticsExerciseAnalyticsTests {
         let card = try #require(screen.presenter.exerciseCards.first)
 
         #expect(abs(card.latest1RM - 220.462) < 0.01)
-        #expect(card.unitText == "lbs")
+        #expect(card.unitText == "lb")
         #expect((card.sparklineData.first?.value ?? 0) > 220)
     }
 
@@ -473,7 +473,7 @@ struct AnalyticsExerciseDetailTests {
 
         #expect(abs(point.value - 220.462) < 0.01)
         #expect(screen.presenter.displayValue(for: row) == "220.5")
-        #expect(screen.presenter.configuration.yAxisSuffix == " lbs")
+        #expect(screen.presenter.configuration.yAxisSuffix == " lb")
     }
 
     @Test("Test A Kilogram Exercise Plots Stored Kilograms")

@@ -24,15 +24,22 @@ struct CreateWorkoutView: View {
             ImageLoaderView()
                 .ignoresSafeArea()
                 .frame(maxHeight: 400)
-            Text("You will create a new workout for your library.")
-                .font(.rowTitle)
-                .multilineTextAlignment(.center)
-                .padding()
-                .frame(maxWidth: .infinity)
+            // The heading sits under the hero image: an inline bar title over the image was
+            // unreadable. `navigationTitle` stays for VoiceOver and the back menu.
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Create Workout")
+                    .font(.display)
+                    .accessibilityAddTraits(.isHeader)
+                Text("You will create a new workout for your library.")
+                    .font(.rowTitle)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
         }
         .navigationTitle("Create Workout")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(removing: .title)
         .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(delegate: delegate)

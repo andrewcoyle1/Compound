@@ -48,7 +48,7 @@ struct GymProfilesView: View {
                 }
             }
         } header: {
-            Text("Favourite Gym Profile")
+            Text("Favorite Gym Profile")
         }
     }
 
@@ -67,13 +67,13 @@ struct GymProfilesView: View {
                     Button {
                         presenter.favouriteGymProfile(profile: profile)
                     } label: {
-                        Label("Favourite", systemImage: "star")
+                        Label("Favorite", systemImage: "star")
                     }
                     .tint(.accentColor)
                 }
             }
         } header: {
-            Text(String.countCaption(count: presenter.nonFavouriteGymProfiles.count, unit: "Gym"))
+            Text("\(presenter.nonFavouriteGymProfiles.count) gyms")
         }
     }
     

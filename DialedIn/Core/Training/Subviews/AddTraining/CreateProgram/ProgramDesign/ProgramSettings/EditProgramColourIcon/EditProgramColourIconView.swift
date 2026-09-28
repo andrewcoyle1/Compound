@@ -18,7 +18,7 @@ struct EditProgramColourIconView: View {
         }
         .padding(.top)
         .background(Color.canvas)
-        .navigationTitle("Colour & Icon")
+        .navigationTitle("Color & Icon")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {

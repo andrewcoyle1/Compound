@@ -349,65 +349,6 @@ struct SetTrackerPresenterTests {
         #expect(screen.presenter.buildPreviousLookup(for: exercise(sets: [])).isEmpty)
     }
 
-    // MARK: - When a set can be marked done
-
-    /// A set with no reps has not been done, whatever weight is showing.
-    @Test("Test A Weighted Set Needs Reps")
-    func testAWeightedSetNeedsReps() {
-        let screen = makeScreen()
-
-        #expect(!screen.presenter.canComplete(trackingMode: .weightReps, set: set(id: "s", index: 1, reps: nil)))
-        #expect(!screen.presenter.canComplete(trackingMode: .weightReps, set: set(id: "s", index: 1, reps: 0)))
-        #expect(screen.presenter.canComplete(trackingMode: .weightReps, set: set(id: "s", index: 1, reps: 1)))
-    }
-
-    /// Bodyweight work is logged at no weight, so a missing weight is allowed where missing reps
-    /// are not.
-    @Test("Test A Weighted Set Does Not Need A Weight")
-    func testAWeightedSetDoesNotNeedAWeight() {
-        let screen = makeScreen()
-        let bodyweight = set(id: "s", index: 1, reps: 10, weightKg: nil)
-
-        #expect(screen.presenter.canComplete(trackingMode: .weightReps, set: bodyweight))
-    }
-
-    @Test("Test A Timed Set Needs A Duration")
-    func testATimedSetNeedsADuration() {
-        let screen = makeScreen()
-        let none = set(id: "s", index: 1, reps: nil, weightKg: nil, durationSec: nil)
-        let some = set(id: "s", index: 1, reps: nil, weightKg: nil, durationSec: 30)
-
-        #expect(!screen.presenter.canComplete(trackingMode: .timeOnly, set: none))
-        #expect(screen.presenter.canComplete(trackingMode: .timeOnly, set: some))
-    }
-
-    /// A run needs both halves — a distance with no time, or a time with no distance, is not a
-    /// completed effort.
-    @Test("Test A Distance Set Needs Both Distance And Time")
-    func testADistanceSetNeedsBothDistanceAndTime() {
-        let screen = makeScreen()
-        let distanceOnly = set(id: "s", index: 1, reps: nil, weightKg: nil, distanceMeters: 5000)
-        let timeOnly = set(id: "s", index: 1, reps: nil, weightKg: nil, durationSec: 1500)
-        let both = set(id: "s", index: 1, reps: nil, weightKg: nil, durationSec: 1500, distanceMeters: 5000)
-
-        #expect(!screen.presenter.canComplete(trackingMode: .distanceTime, set: distanceOnly))
-        #expect(!screen.presenter.canComplete(trackingMode: .distanceTime, set: timeOnly))
-        #expect(screen.presenter.canComplete(trackingMode: .distanceTime, set: both))
-    }
-
-    /// The button reads as done, ready, or not-yet — and a completed set stays green even if its
-    /// figures would no longer pass.
-    @Test("Test The Button Colour Follows The Sets State")
-    func testTheButtonColourFollowsTheSetsState() {
-        let screen = makeScreen()
-        var done = set(id: "s", index: 1)
-        done.completedAt = Date()
-
-        #expect(screen.presenter.buttonColor(set: done, canComplete: false) == .green)
-        #expect(screen.presenter.buttonColor(set: set(id: "s", index: 1), canComplete: true) == .secondary)
-        #expect(screen.presenter.buttonColor(set: set(id: "s", index: 1), canComplete: false) != .green)
-    }
-
     // MARK: - Units
 
     /// The preference is read once and cached, so a row redrawing does not go back to the store

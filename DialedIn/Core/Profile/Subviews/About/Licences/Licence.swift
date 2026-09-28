@@ -22,7 +22,7 @@ struct Licence: Identifiable, Hashable {
     }
 
     var licenceLabel: String {
-        licence ?? "Licence not stated in package"
+        licence ?? "License not stated in package"
     }
 
     /// Every package the app links, ordered as the screen lists them.
@@ -79,8 +79,8 @@ struct Licence: Identifiable, Hashable {
         return groups
             .map { (licence: $0.key, packages: $0.value.sorted { $0.name.lowercased() < $1.name.lowercased() }) }
             .sorted { lhs, rhs in
-                let lhsUnstated = lhs.licence.hasPrefix("Licence not")
-                let rhsUnstated = rhs.licence.hasPrefix("Licence not")
+                let lhsUnstated = lhs.licence.hasPrefix("License not")
+                let rhsUnstated = rhs.licence.hasPrefix("License not")
                 if lhsUnstated != rhsUnstated { return rhsUnstated }
                 if lhs.packages.count != rhs.packages.count { return lhs.packages.count > rhs.packages.count }
                 return lhs.licence < rhs.licence

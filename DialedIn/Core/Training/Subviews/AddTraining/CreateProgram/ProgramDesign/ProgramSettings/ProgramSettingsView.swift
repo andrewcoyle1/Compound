@@ -67,7 +67,7 @@ struct ProgramSettingsView: View {
 
     private var editColourAndIcon: some View {
         editRow(
-            title: String(localized: "Colour & Icon"),
+            title: String(localized: "Color & Icon"),
             subtitle: "\(program.colour.description.capitalized), \(program.icon.capitalized)",
             systemImage: program.icon,
             tint: Color(hex: program.colour)
@@ -91,7 +91,7 @@ struct ProgramSettingsView: View {
     private var editPeriodisation: some View {
         ListRowToggle(
             title: String(localized: "Periodisation"),
-            subtitle: String(localized: "Organise your training into phases that vary intensity and volume to support continuous progress and effective recovery."),
+            subtitle: String(localized: "Organize your training into phases that vary intensity and volume to support continuous progress and effective recovery."),
             systemImage: "water.waves",
             isOn: $program.periodisation
         )

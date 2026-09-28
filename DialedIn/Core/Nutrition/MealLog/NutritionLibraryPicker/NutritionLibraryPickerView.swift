@@ -86,8 +86,7 @@ struct NutritionLibraryPickerView<
                         presenter.onModePressed(mode)
                     } label: {
                         Chip(mode.title, systemImage: mode.systemName, isSelected: mode == presenter.mode)
-                            .frame(minHeight: ControlSize.row)
-                            .contentShape(.rect)
+                            .chipTapTarget()
                     }
                     .buttonStyle(.plain)
                 }

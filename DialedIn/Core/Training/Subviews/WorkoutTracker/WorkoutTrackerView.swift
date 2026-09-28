@@ -202,7 +202,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 Button {
                     presenter.minimizeSession()
                 } label: {
-                    Label("Minimise Tracker", systemImage: "chevron.down")
+                    Label("Minimize Tracker", systemImage: "chevron.down")
                 }
 
                 Button {

@@ -139,6 +139,7 @@ struct SetKeyboardView: View {
                     } label: {
                         Chip(WeightStepper.format(rpe), isSelected: isSelected)
                             .monospacedDigit()
+                            .chipTapTarget()
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("RPE \(WeightStepper.format(rpe)), \(WeightStepper.format(EffortScale.rir(fromRPE: rpe))) reps in reserve")
@@ -161,6 +162,7 @@ struct SetKeyboardView: View {
                             apply(chip.value)
                         } label: {
                             Chip(chip.title)
+                                .chipTapTarget()
                         }
                         .buttonStyle(.plain)
                     }

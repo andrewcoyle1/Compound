@@ -484,7 +484,7 @@ struct FoodLibraryPresenterTests {
         #expect(screen.presenter.searchPrompt == "Filter Recipes")
 
         screen.presenter.foodLibraryOption = .favourites
-        #expect(screen.presenter.searchPrompt == "Filter Favourites")
+        #expect(screen.presenter.searchPrompt == "Filter Favorites")
     }
 }
 

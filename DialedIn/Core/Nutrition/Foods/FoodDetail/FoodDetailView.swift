@@ -192,7 +192,7 @@ struct FoodDetailView: View {
             } label: {
                 Image(systemName: presenter.isFavourited ? "heart.fill" : "heart")
             }
-            .accessibilityLabel(presenter.isFavourited ? String(localized: "Remove from favourites") : String(localized: "Add to favourites"))
+            .accessibilityLabel(presenter.isFavourited ? String(localized: "Remove from favorites") : String(localized: "Add to favorites"))
         }
 
         if presenter.canDelete(food: delegate.food) {

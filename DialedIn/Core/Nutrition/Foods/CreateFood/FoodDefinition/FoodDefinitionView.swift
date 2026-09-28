@@ -75,26 +75,12 @@ struct FoodDefinitionView: View {
 
     var body: some View {
         List {
-            Section {
-                Picker("Nutrition information", selection: $presenter.foodDefinitionOption) {
-                    ForEach(FoodDefinitionOption.allCases, id: \.self) { option in
-                        Text(option.name).tag(option)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .removeListRowFormatting()
-            } header: {
-                Text("What will you be entering nutrition information for?")
-            }
-
-            switch presenter.foodDefinitionOption {
-            case .usLabel: Text("US Label")
-            case .nonUsLabel: Text("Non-US Label")
-            case .foodDetail: foodDetailSections
-            }
+            foodDetailSections
         }
         .navigationTitle("Create Food")
+        // A name was entered to get here, so a swipe would throw it away; Back leads to Close,
+        // which asks first.
+        .interactiveDismissDisabled()
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -104,17 +90,19 @@ struct FoodDefinitionView: View {
         }
         .bottomCTA {
             if presenter.canAddToPlate(delegate: delegate) {
-                CallToActionButton {
+                CallToActionButton(isLoading: presenter.isSaving) {
                     presenter.onCreateAndAddPressed(delegate: delegate)
                 } label: {
                     Text("Create & Add")
                 }
+                .disabled(!presenter.canCreate)
             }
-            CallToActionButton(isPrimaryAction: !presenter.canAddToPlate(delegate: delegate)) {
+            CallToActionButton(isPrimaryAction: !presenter.canAddToPlate(delegate: delegate), isLoading: presenter.isSaving) {
                 presenter.onCreatePressed(delegate: delegate)
             } label: {
                 Text("Create")
             }
+            .disabled(!presenter.canCreate)
         }
     }
 
@@ -168,126 +156,100 @@ struct FoodDefinitionView: View {
 
     private func fields(_ rows: [Row]) -> some View {
         ForEach(rows, id: \.label) { row in
-            if row.picksUnit {
-                NumberField(
-                    "0",
-                    value: $presenter[dynamicMember: row.value],
-                    units: Array(NutritionWeightUnit.allCases),
-                    selection: $presenter.nutritionWeightUnit,
-                    label: row.label
-                )
-            } else {
-                NumberField("0", value: $presenter[dynamicMember: row.value], unit: presenter.nutritionWeightUnit.acronym, label: row.label)
-            }
+            NumberField("0", value: $presenter[dynamicMember: row.value], unit: row.key.unit, label: row.label)
         }
     }
 
     // MARK: - Fields
 
-    /// A nutrient field: its label, the presenter property it edits, and whether it offers the
-    /// unit picker (which, as before, sets the unit every weight field shares).
+    /// A nutrient field: its label, the presenter property it edits, and the nutrient it is stored
+    /// as. The unit shown is the one that nutrient is stored in, so sodium reads "mg" and vitamin D
+    /// "mcg"; one shared "g" label used to store 0.4 typed as grams of sodium as 0.4 mg.
     private struct Row {
         let label: String
         let value: ReferenceWritableKeyPath<FoodDefinitionPresenter, Double?>
-        var picksUnit: Bool = false
+        let key: NutrientKey
 
-        init(_ label: String.LocalizationValue, _ value: ReferenceWritableKeyPath<FoodDefinitionPresenter, Double?>, picksUnit: Bool = false) {
+        init(_ label: String.LocalizationValue, _ value: ReferenceWritableKeyPath<FoodDefinitionPresenter, Double?>, _ key: NutrientKey) {
             self.label = String(localized: label)
             self.value = value
-            self.picksUnit = picksUnit
+            self.key = key
         }
     }
 
     private static let macros: [Row] = [
-        Row("Protein", \.protein),
-        Row("Carbs", \.carbs),
-        Row("Fats", \.fats)
+        Row("Protein", \.protein, .protein),
+        Row("Carbs", \.carbs, .carbs),
+        Row("Fats", \.fats, .fatTotal)
     ]
 
     private static let carbs: [Row] = [
-        Row("Fiber", \.fiber),
-        Row("Starch", \.starch),
-        Row("Sugars", \.sugars),
-        Row("Sugars (Added)", \.addedSugars)
+        Row("Fiber", \.fiber, .fiber),
+        Row("Starch", \.starch, .starch),
+        Row("Sugars", \.sugars, .sugar),
+        Row("Sugars (Added)", \.addedSugars, .addedSugars)
     ]
 
     private static let fats: [Row] = [
-        Row("Monounsaturated Fat", \.monounsaturatedFats),
-        Row("Polyunsaturated Fat", \.polyunsaturatedFats),
-        Row("Omega-3", \.omega3),
-        Row("Omega-3 ALA", \.omega3Ala),
-        Row("Omega-3 DHA", \.omega3Dha),
-        Row("Omega-3 EPA", \.omega3Epa),
-        Row("Omega-6", \.omega6),
-        Row("Saturated Fat", \.saturatedFats),
-        Row("Trans Fat", \.transFats)
+        Row("Monounsaturated Fat", \.monounsaturatedFats, .fatMonounsaturated),
+        Row("Polyunsaturated Fat", \.polyunsaturatedFats, .fatPolyunsaturated),
+        Row("Omega-3", \.omega3, .omega3),
+        Row("Omega-3 ALA", \.omega3Ala, .omega3Ala),
+        Row("Omega-3 DHA", \.omega3Dha, .omega3Dha),
+        Row("Omega-3 EPA", \.omega3Epa, .omega3Epa),
+        Row("Omega-6", \.omega6, .omega6),
+        Row("Saturated Fat", \.saturatedFats, .fatSaturated),
+        Row("Trans Fat", \.transFats, .fatTrans)
     ]
 
     private static let proteins: [Row] = [
-        Row("Cysteine", \.cysteine),
-        Row("Histidine", \.histidine),
-        Row("Isoleucine", \.isoleucine),
-        Row("Leucine", \.leucine),
-        Row("Lysine", \.lysine),
-        Row("Methionine", \.methionine),
-        Row("Phenylalanine", \.phenylalinine),
-        Row("Threonine", \.threonine),
-        Row("Tryptophan", \.tryptophan),
-        Row("Tyrosine", \.tyrosine),
-        Row("Valine", \.valine)
+        Row("Cysteine", \.cysteine, .cysteine),
+        Row("Histidine", \.histidine, .histidine),
+        Row("Isoleucine", \.isoleucine, .isoleucine),
+        Row("Leucine", \.leucine, .leucine),
+        Row("Lysine", \.lysine, .lysine),
+        Row("Methionine", \.methionine, .methionine),
+        Row("Phenylalanine", \.phenylalinine, .phenylalanine),
+        Row("Threonine", \.threonine, .threonine),
+        Row("Tryptophan", \.tryptophan, .tryptophan),
+        Row("Tyrosine", \.tyrosine, .tyrosine),
+        Row("Valine", \.valine, .valine)
     ]
 
     private static let vitamins: [Row] = [
-        Row("B1, Thiamine", \.b1Thiamine),
-        Row("B2, Riboflavin", \.b2Riboflavin),
-        Row("B3, Niacin", \.b3Niacin),
-        Row("B5, Pantothenic Acid", \.b5PantothenicAcid),
-        Row("B6, Pyridoxine", \.b6Pyridoxine),
-        Row("B12, Cobalamin", \.b12Cobalamin),
-        Row("Folate", \.folate),
-        Row("Vitamin A", \.vitaminA, picksUnit: true),
-        Row("Vitamin C", \.vitaminC),
-        Row("Vitamin D", \.vitaminD, picksUnit: true),
-        Row("Vitamin E", \.vitaminE, picksUnit: true),
-        Row("Vitamin K", \.vitaminK)
+        Row("B1, Thiamine", \.b1Thiamine, .thiaminMg),
+        Row("B2, Riboflavin", \.b2Riboflavin, .riboflavinMg),
+        Row("B3, Niacin", \.b3Niacin, .niacinMg),
+        Row("B5, Pantothenic Acid", \.b5PantothenicAcid, .pantothenicAcidMg),
+        Row("B6, Pyridoxine", \.b6Pyridoxine, .vitaminB6Mg),
+        Row("B12, Cobalamin", \.b12Cobalamin, .vitaminB12Mcg),
+        Row("Folate", \.folate, .folateMcg),
+        Row("Vitamin A", \.vitaminA, .vitaminAMcg),
+        Row("Vitamin C", \.vitaminC, .vitaminCMg),
+        Row("Vitamin D", \.vitaminD, .vitaminDMcg),
+        Row("Vitamin E", \.vitaminE, .vitaminEMg),
+        Row("Vitamin K", \.vitaminK, .vitaminKMcg)
     ]
 
     private static let minerals: [Row] = [
-        Row("Calcium", \.calcium),
-        Row("Copper", \.copper),
-        Row("Iron", \.iron),
-        Row("Magnesium", \.magnesium),
-        Row("Manganese", \.manganese),
-        Row("Phosphorus", \.phosphorus),
-        Row("Potassium", \.potassium),
-        Row("Selenium", \.selenium),
-        Row("Sodium", \.sodium, picksUnit: true),
-        Row("Zinc", \.zinc)
+        Row("Calcium", \.calcium, .calciumMg),
+        Row("Copper", \.copper, .copperMg),
+        Row("Iron", \.iron, .ironMg),
+        Row("Magnesium", \.magnesium, .magnesiumMg),
+        Row("Manganese", \.manganese, .manganeseMg),
+        Row("Phosphorus", \.phosphorus, .phosphorusMg),
+        Row("Potassium", \.potassium, .potassiumMg),
+        Row("Selenium", \.selenium, .seleniumMcg),
+        Row("Sodium", \.sodium, .sodiumMg),
+        Row("Zinc", \.zinc, .zincMg)
     ]
 
     private static let other: [Row] = [
-        Row("Alcohol", \.alcohol),
-        Row("Caffeine", \.caffeine),
-        Row("Cholesterol", \.cholesterol),
-        Row("Water", \.water)
+        Row("Alcohol", \.alcohol, .alcohol),
+        Row("Caffeine", \.caffeine, .caffeineMg),
+        Row("Cholesterol", \.cholesterol, .cholesterolMg),
+        Row("Water", \.water, .water)
     ]
-}
-
-enum FoodDefinitionOption: CaseIterable {
-    case usLabel
-    case nonUsLabel// (preferredWeightUnit: NutritionWeightUnit)
-    case foodDetail
-    
-    var name: String {
-        switch self {
-        case .usLabel:
-            return String(localized: "US Label")
-        case .nonUsLabel:
-            return String(localized: "Non-US Label")
-        case .foodDetail:
-            return String(localized: "Food Detail")
-        }
-    }
 }
 
 #Preview {

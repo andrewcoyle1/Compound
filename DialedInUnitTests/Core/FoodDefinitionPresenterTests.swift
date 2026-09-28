@@ -170,6 +170,47 @@ struct FoodDefinitionPresenterTests {
         #expect(saved?.portionName == "glass")
     }
 
+    /// Energy typed in kilojoules is stored in kilocalories, the unit `.calories` means. The unit
+    /// picker used to change only the label, so 1046 kJ was stored as 1046 kcal.
+    @Test("Test Kilojoules Are Stored As Kilocalories")
+    func testKilojoulesAreStoredAsKilocalories() async {
+        let screen = makeScreen()
+        screen.presenter.energyUnit = .kjoule
+        screen.presenter.energy = 418.4
+
+        await create(screen)
+
+        let calories = screen.interactor.savedFoods.first?.nutrients[.calories] ?? 0
+        #expect(abs(calories - 100) < 0.0001)
+    }
+
+    /// Create stays off until the food has energy, rather than saving an empty food.
+    @Test("Test A Food Without Energy Cannot Be Created")
+    func testAFoodWithoutEnergyCannotBeCreated() async {
+        let screen = makeScreen()
+        screen.presenter.protein = 12
+
+        #expect(!screen.presenter.canCreate)
+        screen.presenter.onCreatePressed(delegate: screen.delegate)
+        await Task.yield()
+
+        #expect(screen.interactor.savedFoods.isEmpty)
+    }
+
+    /// A second tap while the first save is in flight does not save a second copy.
+    @Test("Test A Second Tap While Saving Saves Once")
+    func testASecondTapWhileSavingSavesOnce() async {
+        let screen = makeScreen()
+        screen.presenter.energy = 250
+
+        screen.presenter.onCreatePressed(delegate: screen.delegate)
+        #expect(screen.presenter.isSaving)
+        screen.presenter.onCreatePressed(delegate: screen.delegate)
+        await TestManagers.eventually { !screen.presenter.isSaving }
+
+        #expect(screen.interactor.savedFoods.count == 1)
+    }
+
     // MARK: - Normalising to per-100g
 
     /// Figures typed off a per-serving label are scaled to per-100g before they are stored, since

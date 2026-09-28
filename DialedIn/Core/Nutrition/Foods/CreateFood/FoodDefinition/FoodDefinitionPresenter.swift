@@ -7,10 +7,23 @@ class FoodDefinitionPresenter {
     private let interactor: FoodDefinitionInteractor
     private let router: FoodDefinitionRouter
     
-    var foodDefinitionOption: FoodDefinitionOption = .foodDetail
-    
-    var nutritionWeightUnit: NutritionWeightUnit = .grams
     var energyUnit: EnergyUnit = .kcal
+
+    /// Set while the food is being saved, so a second tap cannot save a second copy.
+    private(set) var isSaving: Bool = false
+
+    /// Energy is the one figure every food has. Without it the food would count for nothing.
+    var canCreate: Bool {
+        (energy ?? 0) > 0
+    }
+
+    /// Energy as stored: `NutrientKey.calories` is kilocalories, whichever unit was typed.
+    var energyInKilocalories: Double? {
+        guard let energy else { return nil }
+        return energyUnit == .kjoule ? energy / Self.kilojoulesPerKilocalorie : energy
+    }
+
+    private static let kilojoulesPerKilocalorie: Double = 4.184
 
     var isShowingMacros: Bool = true
 
@@ -93,8 +106,10 @@ class FoodDefinitionPresenter {
     }
     
     func onCreatePressed(delegate: FoodDefinitionDelegate) {
-        guard let userId = interactor.currentUser?.userId else { return }
+        guard canCreate, !isSaving, let userId = interactor.currentUser?.userId else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             interactor.trackEvent(event: Event.createFoodStart)
             do {
                 _ = try await self.createFood(userId: userId, delegate: delegate)
@@ -115,8 +130,10 @@ class FoodDefinitionPresenter {
     }
     
     func onCreateAndAddPressed(delegate: FoodDefinitionDelegate) {
-        guard let userId = interactor.currentUser?.userId else { return }
+        guard canCreate, !isSaving, let userId = interactor.currentUser?.userId else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             interactor.trackEvent(event: Event.createFoodStart)
             do {
                 let food = try await self.createFood(userId: userId, delegate: delegate)
@@ -177,7 +194,7 @@ class FoodDefinitionPresenter {
         func set(_ key: NutrientKey, _ value: Double?) {
             if let value { nutrients[key] = value }
         }
-        set(.calories, energy)
+        set(.calories, energyInKilocalories)
         set(.protein, protein)
         set(.carbs, carbs)
         set(.fatTotal, fats)

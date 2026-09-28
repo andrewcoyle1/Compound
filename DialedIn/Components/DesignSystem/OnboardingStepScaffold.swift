@@ -30,11 +30,14 @@ struct OnboardingStepScaffold<Content: View>: View {
         var title: LocalizedStringKey
         var isEnabled: Bool = true
         var isLoading: Bool = false
+        /// The UI tests' handle on the button, such as `Continue`.
+        var identifier: String?
         var action: () -> Void
     }
 
     struct Secondary {
         var title: LocalizedStringKey
+        var identifier: String?
         var action: () -> Void
     }
 
@@ -102,6 +105,7 @@ struct OnboardingStepScaffold<Content: View>: View {
                 Text(primary.title)
             }
             .disabled(!primary.isEnabled)
+            .accessibilityIdentifier(primary.identifier ?? "")
             if let secondary {
                 Button(action: secondary.action) {
                     Text(secondary.title)
@@ -111,6 +115,7 @@ struct OnboardingStepScaffold<Content: View>: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
+                .accessibilityIdentifier(secondary.identifier ?? "")
             }
         }
     }

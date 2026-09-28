@@ -22,7 +22,13 @@ class OverarchingObjectivePresenter {
     }
     
     var canContinue: Bool { selectedObjective != nil && userWeight != nil }
-    
+
+    /// Picking an option row: record it and give the selection tick.
+    func onObjectiveSelected(_ value: OverarchingObjective) {
+        selectedObjective = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: OverarchingObjectiveInteractor,
         router: OverarchingObjectiveRouter,

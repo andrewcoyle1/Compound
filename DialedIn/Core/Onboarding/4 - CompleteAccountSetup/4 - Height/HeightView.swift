@@ -21,6 +21,8 @@ struct HeightDelegate {
     }
 }
 
+/// Every onboarding wheel (height, weight, target weight) takes the full row width at its natural
+/// height; two wheels side by side split the row evenly.
 struct HeightView: View {
 
     @State var presenter: HeightPresenter
@@ -28,7 +30,12 @@ struct HeightView: View {
     var delegate: HeightDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "How Tall Are You?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             pickerSection
             if presenter.unit == .centimeters {
                 metricSection
@@ -36,22 +43,8 @@ struct HeightView: View {
                 imperialSection
             }
         }
-        .navigationTitle("How tall are you?")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-        }
     }
-    
+
     private var pickerSection: some View {
         Section {
             Picker("Units", selection: $presenter.unit) {
@@ -61,50 +54,37 @@ struct HeightView: View {
             .pickerStyle(.segmented)
         }
         .removeListRowFormatting()
-        
     }
-    
+
     private var metricSection: some View {
         Section {
-            VStack {
-                Picker("Centimeters", selection: $presenter.selectedCentimeters) {
-                    ForEach((100...250).reversed(), id: \.self) { value in
-                        Text("\(value) cm").tag(value)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: 150)
-                .frame(maxWidth: 150)
-                .clipped()
-                .onChange(of: presenter.selectedCentimeters) { _, _ in
-                    presenter.updateImperialFromCentimeters()
+            Picker("Centimeters", selection: $presenter.selectedCentimeters) {
+                ForEach((100...250).reversed(), id: \.self) { value in
+                    Text("\(value) cm").tag(value)
                 }
             }
-            .frame(maxWidth: .infinity)
+            .pickerStyle(.wheel)
+            .onChange(of: presenter.selectedCentimeters) { _, _ in
+                presenter.updateImperialFromCentimeters()
+            }
         } header: {
             Text("Metric")
         }
         .removeListRowFormatting()
     }
-    
+
     private var imperialSection: some View {
         Section {
-            HStack(spacing: 12) {
-                Spacer(minLength: 0)
-
+            HStack(spacing: Spacing.m) {
                 Picker("Feet", selection: $presenter.selectedFeet) {
                     ForEach((3...8).reversed(), id: \.self) { feet in
                         Text("\(feet) ft").tag(feet)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
-                .frame(maxWidth: 150)
-                .clipped()
                 .onChange(of: presenter.selectedFeet) { _, _ in
                     presenter.updateCentimetersFromImperial()
                 }
-                Spacer(minLength: 0)
 
                 Picker("Inches", selection: $presenter.selectedInches) {
                     ForEach((0...11).reversed(), id: \.self) { inch in
@@ -112,34 +92,23 @@ struct HeightView: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
-                .frame(maxWidth: 150)
-                .clipped()
                 .onChange(of: presenter.selectedInches) { _, _ in
                     presenter.updateCentimetersFromImperial()
                 }
-                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity)
         } header: {
             Text("Imperial")
         }
         .removeListRowFormatting()
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    #endif
 }
 
 extension CoreBuilder {

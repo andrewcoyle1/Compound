@@ -33,76 +33,34 @@ struct ActivityDelegate {
 
 struct ActivityView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: ActivityPresenter
 
     var delegate: ActivityDelegate
 
     var body: some View {
-        List {
-            dailyActivitySection
+        OnboardingStepScaffold(
+            title: "How Active Are You?",
+            subtitle: "What's your daily activity level outside of exercise?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(ActivityLevel.allCases, id: \.self) { level in
+                    SelectableRow(title: level.description, subtitle: level.detailDescription, isSelected: presenter.selectedActivityLevel == level) {
+                        presenter.onActivityLevelSelected(level)
+                    }
+                }
+            }
         }
-        .navigationTitle("Activity Level")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canSubmit)
-        }
-    }
-    
-    private var dailyActivitySection: some View {
-        Section {
-            ForEach(ActivityLevel.allCases, id: \.self) { level in
-                activityRow(level)
-            }
-            .removeListRowFormatting()
-        } header: {
-            Text("What's your daily activity level outside of exercise?")
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
-    private func activityRow(_ level: ActivityLevel) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(level.description)
-                    .font(.headline)
-                Text(level.detailDescription)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer(minLength: 8)
-            Image(systemName: presenter.selectedActivityLevel == level ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.selectedActivityLevel == level ? Color.accent : Color.secondary)
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .anyButton(.press) {
-            presenter.selectedActivityLevel = level
-        }
     }
 }
 

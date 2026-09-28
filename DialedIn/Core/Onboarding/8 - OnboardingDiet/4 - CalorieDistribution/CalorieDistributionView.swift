@@ -25,72 +25,34 @@ struct CalorieDistributionDelegate {
 
 struct CalorieDistributionView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: CalorieDistributionPresenter
 
     var delegate: CalorieDistributionDelegate
 
     var body: some View {
-        List {
-            itemSection
-        }
-        .navigationTitle("Calorie distribution")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.navigateToProteinIntake(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(presenter.selectedCalorieDistribution == nil)
-            .padding(.bottom)
-        }
-    }
-    
-    private var itemSection: some View {
-        Section {
-            ForEach(CalorieDistribution.allCases) { type in
-                HStack(alignment: .center, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(type.description)
-                            .font(.headline)
-                        Text(type.detailedDescription)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+        OnboardingStepScaffold(
+            title: "Even or Varied?",
+            progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.selectedCalorieDistribution != nil, identifier: "Continue") { presenter.navigateToProteinIntake(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(CalorieDistribution.allCases) { distribution in
+                    SelectableRow(title: distribution.description, subtitle: distribution.detailedDescription, isSelected: presenter.selectedCalorieDistribution == distribution) {
+                        presenter.onDistributionSelected(distribution)
                     }
-                    Spacer(minLength: 8)
-                    Image(systemName: presenter.selectedCalorieDistribution == type ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(presenter.selectedCalorieDistribution == type ? .accent : .secondary)
-                }
-                .padding()
-                .background(colorScheme.backgroundPrimary)
-                .anyButton {
-                    presenter.selectedCalorieDistribution = type
                 }
             }
-            .removeListRowFormatting()
         }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    #endif
 }
 
 extension CoreBuilder {

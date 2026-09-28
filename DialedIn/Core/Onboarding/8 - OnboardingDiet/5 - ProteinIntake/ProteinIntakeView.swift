@@ -27,69 +27,34 @@ struct ProteinIntakeDelegate {
 
 struct ProteinIntakeView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: ProteinIntakePresenter
 
     var delegate: ProteinIntakeDelegate
 
     var body: some View {
-        List {
-            pickerSection
-        }
-        .navigationTitle("Protein Intake")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(presenter.selectedProteinIntake == nil)
-            .padding(.bottom)
-        }
-    }
-    
-    private var pickerSection: some View {
-        Section {
-            ForEach(ProteinIntake.allCases) { intake in
-                HStack(alignment: .center, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(intake.description)
-                            .font(.headline)
-                        Text(intake.detailedDescription)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+        OnboardingStepScaffold(
+            title: "How Much Protein?",
+            progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.selectedProteinIntake != nil, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(ProteinIntake.allCases) { intake in
+                    SelectableRow(title: intake.description, subtitle: intake.detailedDescription, isSelected: presenter.selectedProteinIntake == intake) {
+                        presenter.onProteinIntakeSelected(intake)
                     }
-                    Spacer(minLength: 8)
-                    Image(systemName: presenter.selectedProteinIntake == intake ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(presenter.selectedProteinIntake == intake ? .accent : .secondary)
                 }
-                .padding()
-                .background(colorScheme.backgroundPrimary)
-                .onTapGesture { presenter.selectedProteinIntake = intake }
             }
-            .removeListRowFormatting()
         }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    #endif
 }
 
 extension CoreBuilder {

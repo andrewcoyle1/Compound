@@ -19,6 +19,12 @@ class CardioFitnessPresenter {
         selectedCardioFitness != nil
     }
 
+    /// Picking an option row: record it and give the selection tick.
+    func onCardioFitnessSelected(_ value: CardioFitnessLevel) {
+        selectedCardioFitness = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: CardioFitnessInteractor,
         router: CardioFitnessRouter

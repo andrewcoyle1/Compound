@@ -6,8 +6,6 @@
 //
 
 @MainActor
-protocol CardioFitnessInteractor {
-    func trackEvent(event: LoggableEvent)
-}
+protocol CardioFitnessInteractor: GlobalInteractor { }
 
 extension CoreInteractor: CardioFitnessInteractor { }

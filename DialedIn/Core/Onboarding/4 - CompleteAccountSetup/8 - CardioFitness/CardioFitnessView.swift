@@ -36,78 +36,36 @@ struct CardioFitnessDelegate {
 
 struct CardioFitnessView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: CardioFitnessPresenter
 
     var delegate: CardioFitnessDelegate
 
     var body: some View {
-        List {
-            cardioFitnessSection
+        OnboardingStepScaffold(
+            title: "How Fit Are You?",
+            subtitle: "How would you rate your cardiovascular fitness?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(CardioFitnessLevel.allCases, id: \.self) { level in
+                    SelectableRow(title: level.description, subtitle: level.detailDescription, isSelected: presenter.selectedCardioFitness == level) {
+                        presenter.onCardioFitnessSelected(level)
+                    }
+                }
+            } footer: {
+                Text("Consider your ability to maintain sustained cardio activities like running, cycling, or swimming.")
+            }
         }
-        .navigationTitle("Cardio Fitness")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canSubmit)
-        }
-    }
-    
-    private var cardioFitnessSection: some View {
-        Section {
-            ForEach(CardioFitnessLevel.allCases, id: \.self) { level in
-                cardioFitnessRow(level)
-            }
-            .removeListRowFormatting()
-        } header: {
-            Text("How would you rate your cardiovascular fitness?")
-        } footer: {
-            Text("Consider your ability to maintain sustained cardio activities like running, cycling, or swimming.")
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
-    private func cardioFitnessRow(_ level: CardioFitnessLevel) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(level.description)
-                    .font(.headline)
-                Text(level.detailDescription)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer(minLength: 8)
-            Image(systemName: presenter.selectedCardioFitness == level ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.selectedCardioFitness == level ? Color.accent : Color.secondary)
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .anyButton(.press) {
-            presenter.selectedCardioFitness = level
-        }
     }
 }
 

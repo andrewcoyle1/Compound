@@ -9,76 +9,33 @@ import SwiftUI
 
 struct OverarchingObjectiveView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: OverarchingObjectivePresenter
 
     var body: some View {
-        List {
-            objectiveSection
+        OnboardingStepScaffold(
+            title: "What Is Your Goal?",
+            subtitle: "Choose one",
+            progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(OverarchingObjective.allCases, id: \.self) { objective in
+                    SelectableRow(title: objective.description, subtitle: objective.detailedDescription, isSelected: presenter.selectedObjective == objective) {
+                        presenter.onObjectiveSelected(objective)
+                    }
+                }
+            }
         }
-        .navigationTitle("What is your goal?")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canContinue)
-            .padding(.bottom)
-        }
     }
-    
-    private var objectiveSection: some View {
-        Section {
-            ForEach(OverarchingObjective.allCases, id: \.self) { objective in
-                objectiveRow(objective)
-            }
-            .removeListRowFormatting()
-        } header: {
-            Text("Choose one")
-        }
-    }
-    
-    private func objectiveRow(_ objective: OverarchingObjective) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(objective.description)
-                    .font(.headline)
-                Text(objective.detailedDescription)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer(minLength: 8)
-            Image(systemName: presenter.selectedObjective == objective ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.selectedObjective == objective ? Color.accent : Color.secondary)
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .anyButton(.press) {
-            presenter.selectedObjective = objective
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

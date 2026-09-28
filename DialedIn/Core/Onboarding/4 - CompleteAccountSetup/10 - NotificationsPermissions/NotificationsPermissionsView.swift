@@ -12,117 +12,46 @@ struct NotificationsPermissionsView: View {
     @State var presenter: NotificationsPermissionsPresenter
 
     var body: some View {
-        List {
-            justificationSection
-
-            reassuranceSection
+        OnboardingStepScaffold(
+            title: "Turn On Notifications?",
+            progress: OnboardingStep.notifications.progress,
+            primary: .init(title: "Enable notifications", identifier: "EnableNotifications") { presenter.onEnableNotificationsPressed() },
+            secondary: .init(title: "Skip for now", identifier: "SkipForNow") { presenter.onSkipForNowPressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                OnboardingFeatureRow(
+                    title: "Stay Informed & Motivated",
+                    detail: "Enable notifications to receive reminders for workouts, nutrition tracking, and important updates. Stay on track and never miss a beat in your fitness journey.",
+                    systemImage: Symbol.notifications
+                )
+            } header: {
+                Text("Why Enable Notifications?")
+            }
+            Section {
+                Label("You can change your notification preferences at any time in Settings.", systemImage: Symbol.settings)
+                Label("We respect your privacy. Notifications are only used to help you reach your goals and are never shared.", systemImage: "lock.shield")
+            } header: {
+                Text("Good to Know")
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
         }
-        .navigationTitle("Notifications")
-        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden(true)
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
         .onAppear {
             presenter.onViewAppear()
         }
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
-            VStack {
-                CallToActionButton {
-                    presenter.onEnableNotificationsPressed()
-                } label: {
-                    Text("Enable notifications")
-                }
-                .accessibilityIdentifier("EnableNotifications")
+    }
 
-                CallToActionButton(isPrimaryAction: false) {
-                    presenter.onSkipForNowPressed()
-                } label: {
-                    Text("Skip for now")
-                }
-                .accessibilityIdentifier("SkipForNow")
-            }
-            .padding(.bottom)
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-
-    private var justificationSection: some View {
-        Section {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "bell.badge.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(.accent)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Stay Informed & Motivated")
-                        .font(.headline)
-                    Text("Enable notifications to receive reminders for workouts, nutrition tracking, and important updates. Stay on track and never miss a beat in your fitness journey.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Why Enable Notifications?")
-        }
-    }
-    
-    private var reassuranceSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 6) {
-                Label("You can change your notification preferences at any time in Settings.", systemImage: "gearshape")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                Label("We respect your privacy. Notifications are only used to help you reach your goals and are never shared.", systemImage: "lock.shield")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Good to Know")
-        }
-    }
-    
-    private var buttonSection: some View {
-        VStack(spacing: 12) {
-            Button {
-                presenter.onEnableNotificationsPressed()
-            } label: {
-                Text("Enable notifications")
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-            }
-            .buttonStyle(.glassProminent)
-
-            Button {
-                presenter.onSkipForNowPressed()
-            } label: {
-                Text("Not now")
-                    .frame(maxWidth: .infinity)
-            }
-            .padding(.bottom)
-        }
-        .padding(.horizontal)
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

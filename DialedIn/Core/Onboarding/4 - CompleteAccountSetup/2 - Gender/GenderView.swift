@@ -9,74 +9,38 @@ import SwiftUI
 
 struct GenderView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: GenderPresenter
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Gender?",
+            subtitle: "Select your gender",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             Section {
-                Group {
-                    genderRow(.male)
-                    genderRow(.female)
+                ForEach([Gender.male, .female], id: \.self) { gender in
+                    SelectableRow(title: gender.description, isSelected: presenter.selectedGender == gender) {
+                        presenter.onGenderSelected(gender)
+                    }
                 }
-                .removeListRowFormatting()
-            }header: {
-                Text("Select your gender")
             }
         }
-        .navigationTitle("About You")
         .onAppear {
             presenter.onViewAppear()
         }
         .onDisappear {
             presenter.onViewDisappear()
         }
-#if DEBUG || MOCK
-.toolbar {
-    toolbarContent
-}
-#endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canSubmit)
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
-    private func genderRow(_ gender: Gender) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(gender.description)
-                    .font(.headline)
-            }
-            Spacer(minLength: 8)
-            Image(systemName: presenter.selectedGender == gender ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.selectedGender == gender ? Color.accent : Color.secondary)
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .anyButton(.press) {
-            presenter.selectedGender = gender
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

@@ -48,9 +48,14 @@ struct DietPlanView: View {
     var delegate: DietPlanDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "Happy With This?",
+            progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.navigate() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             if let plan = presenter.plan {
-                chartSection
+                chartSection(plan)
                 overviewSection(plan)
                 weeklyBreakdownSection(plan)
             } else {
@@ -60,98 +65,70 @@ struct DietPlanView: View {
                 }
             }
         }
-        .navigationTitle("Your Diet Plan")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.navigate()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .padding(.bottom)
-        }
         .onAppear {
             presenter.createPlan(delegate: delegate)
         }
     }
-    
-    private var chartSection: some View {
+
+    private func chartSection(_ plan: DietPlan) -> some View {
         Section("Weekly Calorie & Macro Breakdown") {
-            if let plan = presenter.plan {
-                WeeklyMacroChart(plan: plan)
-            }
+            WeeklyMacroChart(plan: plan)
         }
     }
-    
+
     private func overviewSection(_ plan: DietPlan) -> some View {
         Section("Overview") {
-            VStack(alignment: .leading, spacing: 8) {
-                if let programName = presenter.trainingProgramName,
-                   let daysPerWeek = presenter.trainingDaysPerWeek {
-                    Text("Training program: \(programName), \(daysPerWeek) days/week")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 4)
-                }
-                Text("Estimated TDEE: \(Int(plan.tdeeEstimate)) kcal/day")
-                Text("Preferred diet: \(plan.preferredDiet.capitalized)")
-                Text("Calorie floor: \(plan.calorieFloor.capitalized)")
-                Text("Training focus: \(plan.trainingType.replacingOccurrences(of: "_", with: " ").capitalized)")
-                Text("Distribution: \(plan.calorieDistribution.capitalized)")
-                Text("Protein: \(plan.proteinIntake.capitalized)")
+            if let programName = presenter.trainingProgramName,
+               let daysPerWeek = presenter.trainingDaysPerWeek {
+                Text("Training program: \(programName), \(daysPerWeek) days/week")
             }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            Text("Estimated TDEE: \(Int(plan.tdeeEstimate)) kcal/day")
+            Text("Preferred diet: \(plan.preferredDiet.capitalized)")
+            Text("Calorie floor: \(plan.calorieFloor.capitalized)")
+            Text("Training focus: \(plan.trainingType.replacingOccurrences(of: "_", with: " ").capitalized)")
+            Text("Distribution: \(plan.calorieDistribution.capitalized)")
+            Text("Protein: \(plan.proteinIntake.capitalized)")
         }
+        .font(.rowDetail)
+        .foregroundStyle(.secondary)
     }
-    
+
     private func weeklyBreakdownSection(_ plan: DietPlan) -> some View {
         Section("7-day targets") {
             ForEach(Array(plan.days.enumerated()), id: \.offset) { idx, day in
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.s) {
                     Text("Day \(idx + 1)")
-                        .font(.headline)
-                    HStack(spacing: 16) {
-                        labelValue("Calories", "\(Int(day.calories)) kcal")
-                        labelValue("Protein", "\(Int(day.proteinGrams)) g")
+                        .font(.sectionTitle)
+                    HStack(spacing: Spacing.l) {
+                        labelValue("Calories", Format.kcal(day.calories))
+                        labelValue("Protein", Format.grams(day.proteinGrams))
                     }
-                    HStack(spacing: 16) {
-                        labelValue("Carbs", "\(Int(day.carbGrams)) g")
-                        labelValue("Fat", "\(Int(day.fatGrams)) g")
+                    HStack(spacing: Spacing.l) {
+                        labelValue("Carbs", Format.grams(day.carbGrams))
+                        labelValue("Fat", Format.grams(day.fatGrams))
                     }
                 }
-                .padding(.vertical, 6)
+                .padding(.vertical, Spacing.xs)
             }
         }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
-    private func labelValue(_ label: String, _ value: String) -> some View {
-        HStack(spacing: 6) {
+
+    private func labelValue(_ label: LocalizedStringKey, _ value: String) -> some View {
+        HStack(spacing: Spacing.xs) {
             Text(label)
                 .foregroundStyle(.secondary)
             Text(value)
                 .fontWeight(.semibold)
         }
-        .font(.subheadline)
+        .font(.rowDetail)
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

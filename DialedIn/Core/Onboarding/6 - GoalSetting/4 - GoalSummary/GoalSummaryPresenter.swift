@@ -80,10 +80,12 @@ class GoalSummaryPresenter {
 
             goalCreated = true
             interactor.trackEvent(event: Event.goalSaveSuccess)
+            interactor.playHaptic(option: .success)
 
             onSuccess()
         } catch {
             interactor.trackEvent(event: Event.goalSaveFail(error: error))
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Unable to save your Goal"),
                 subtitle: "Please check your internet connection and try again."
@@ -138,12 +140,16 @@ class GoalSummaryPresenter {
     }
     
     func formatWeight(_ weight: Double, unit: WeightUnitPreference) -> String {
-        switch unit {
-        case .kilograms:
-            return String(format: "%.1f kg", weight)
-        case .pounds:
-            return String(format: "%.1f lbs", UnitConversion.kgToLbs(weight))
-        }
+        Format.weight(kg: weight, unit: unit)
+    }
+
+    /// The signed change from the current to the target weight, and its direction, so the summary
+    /// can pair its colour with an arrow. Nil when there is no change to show.
+    func weightChange(targetWeight: Double) -> (text: String, isGain: Bool)? {
+        let difference = weightDifference(targetWeight: targetWeight)
+        guard difference != 0 else { return nil }
+        let sign = difference > 0 ? "+" : "\u{2212}"
+        return (sign + formatWeight(abs(difference), unit: weightUnit), difference > 0)
     }
     
     func objectiveIcon(objective: OverarchingObjective) -> String {

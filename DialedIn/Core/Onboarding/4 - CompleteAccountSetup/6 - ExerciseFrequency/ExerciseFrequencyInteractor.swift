@@ -6,8 +6,6 @@
 //
 
 @MainActor
-protocol ExerciseFrequencyInteractor {
-    func trackEvent(event: LoggableEvent)
-}
+protocol ExerciseFrequencyInteractor: GlobalInteractor { }
 
 extension CoreInteractor: ExerciseFrequencyInteractor { }

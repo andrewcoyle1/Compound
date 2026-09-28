@@ -11,68 +11,65 @@ struct StravaConnectView: View {
     @State var presenter: StravaConnectPresenter
 
     var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        VStack(spacing: Spacing.l) {
+            Image(systemName: "figure.run.circle.fill")
+                .iconSize(.hero)
+                .foregroundStyle(Color.strava)
+                .accessibilityHidden(true)
 
-            VStack(spacing: 16) {
-                Image(systemName: "figure.run.circle.fill")
-                    .font(.system(size: 72))
-                    .foregroundStyle(.orange)
+            Text("Connect with Strava")
+                .font(.display)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
 
-                Text("Connect with Strava")
-                    .font(.largeTitle.bold())
-
-                Text("Automatically upload every workout to your Strava account the moment you finish a session.")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-            }
-
-            Spacer()
-
+            Text("Automatically upload every workout to your Strava account the moment you finish a session.")
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Strava")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { presenter.onViewAppear() }
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 12) {
-                if presenter.isConnected {
-                    Label("Strava Connected", systemImage: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .font(.headline)
-                        .padding(.bottom, 8)
+        .bottomCTA {
+            if presenter.isConnected {
+                Label("Strava Connected", systemImage: Symbol.success)
+                    .foregroundStyle(Color.success)
+                    .font(.sectionTitle)
+                    .padding(.bottom, Spacing.s)
 
-                    CallToActionButton {
-                        presenter.onContinuePressed()
-                    } label: {
-                        Text("Continue")
-                    }
-                } else {
-                    CallToActionButton {
-                        presenter.onConnectPressed()
-                    } label: {
-                        Group {
-                            if presenter.isConnecting {
-                                ProgressView()
-                            } else {
-                                Text("Connect Strava")
-                            }
-                        }
-                    }
-                    .tint(.orange)
-                    .disabled(presenter.isConnecting)
-
-                    Button("Skip for now") {
-                        presenter.onSkipPressed()
-                    }
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 4)
+                CallToActionButton {
+                    presenter.onContinuePressed()
+                } label: {
+                    Text("Continue")
                 }
+            } else {
+                CallToActionButton(isLoading: presenter.isConnecting) {
+                    presenter.onConnectPressed()
+                } label: {
+                    Text("Connect Strava")
+                }
+                .tint(Color.strava)
+
+                Button {
+                    presenter.onSkipPressed()
+                } label: {
+                    Text("Skip for now")
+                        .padding(.vertical, Spacing.s)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
             }
-            .padding(.bottom)
         }
     }
+}
+
+private extension Color {
+    /// Strava's brand orange. It stays on this screen: it is Strava's colour, not the app's.
+    static let strava = Color.orange
 }
 
 extension CoreBuilder {

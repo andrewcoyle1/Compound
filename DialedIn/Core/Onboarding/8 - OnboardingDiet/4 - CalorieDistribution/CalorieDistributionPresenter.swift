@@ -16,7 +16,13 @@ class CalorieDistributionPresenter {
     var selectedCalorieDistribution: CalorieDistribution?
     var trainingDaysPerWeek: Int?
     var hasTrainingPlan: Bool = false
-    
+
+    /// Picking an option row: record it and give the selection tick.
+    func onDistributionSelected(_ value: CalorieDistribution) {
+        selectedCalorieDistribution = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: CalorieDistributionInteractor,
         router: CalorieDistributionRouter

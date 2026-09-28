@@ -28,7 +28,12 @@ struct WeightRateView: View {
     var delegate: WeightRateDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "At What Rate?",
+            progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             if presenter.didInitialize {
                 rateSelectionSection
                 rateDetailsSection
@@ -37,126 +42,67 @@ struct WeightRateView: View {
                 loadingSection
             }
         }
-        .navigationTitle("At what rate?")
         .onFirstAppear {
             presenter.onAppear(delegate: delegate)
         }
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .padding(.bottom)
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
+
     private var rateSelectionSection: some View {
         Section {
-            VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(presenter.currentRateCategory.title)
-                    .font(.headline)
-                    .foregroundStyle(.green)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Native SwiftUI Slider
-                VStack(spacing: 8) {
-                    Slider(
-                        value: $presenter.weightChangeRate,
-                        in: presenter.minWeightChangeRate...presenter.maxWeightChangeRate,
-                        step: 0.05
-                    )
-                    .tint(.green)
-                    
-                    // Tick marks and labels
-                    HStack {
-                        ForEach([presenter.minWeightChangeRate, (presenter.minWeightChangeRate + presenter.maxWeightChangeRate) / 2, presenter.maxWeightChangeRate], id: \.self) { value in
-                            VStack(spacing: 4) {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.6))
-                                    .frame(width: 1, height: 8)
-                                Text("\(String(format: "%.1f", value))")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                            if value < presenter.maxWeightChangeRate {
-                                Spacer()
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 12)
+                    .font(.sectionTitle)
+
+                Slider(
+                    value: $presenter.weightChangeRate,
+                    in: presenter.minWeightChangeRate...presenter.maxWeightChangeRate,
+                    step: 0.05
+                ) {
+                    Text("Weekly rate")
+                } minimumValueLabel: {
+                    Text(presenter.minWeightChangeRate, format: .number.precision(.fractionLength(1)))
+                } maximumValueLabel: {
+                    Text(presenter.maxWeightChangeRate, format: .number.precision(.fractionLength(1)))
                 }
-                .padding()
+                .font(.label)
+                .foregroundStyle(.secondary)
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, Spacing.xs)
         }
-        .removeListRowFormatting()
     }
-    
+
     private var rateDetailsSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(presenter.weeklyWeightChangeText(delegate: delegate))
-                    .font(.body)
-                    .fontWeight(.medium)
-                
-                Text(presenter.monthlyWeightChangeText(delegate: delegate))
-                    .font(.body)
-                    .fontWeight(.medium)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
+            Text(presenter.weeklyWeightChangeText(delegate: delegate))
+            Text(presenter.monthlyWeightChangeText(delegate: delegate))
         }
-        .removeListRowFormatting()
-        .padding(.horizontal)
+        .fontWeight(.medium)
     }
-    
+
     private var additionalInfoSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(presenter.estimatedCalorieTargetText(delegate: delegate))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                
-                Text(presenter.estimatedEndDateText(delegate: delegate))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
+            Text(presenter.estimatedCalorieTargetText(delegate: delegate))
+            Text(presenter.estimatedEndDateText(delegate: delegate))
         }
-        .removeListRowFormatting()
-        .padding(.horizontal)
-
+        .font(.callout)
+        .foregroundStyle(.secondary)
     }
-    
+
     private var loadingSection: some View {
         Section {
             ProgressView()
-                .frame(height: 200)
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.xxl)
         }
         .removeListRowFormatting()
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

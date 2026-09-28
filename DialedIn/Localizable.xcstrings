@@ -14778,8 +14778,7 @@
             "value" : "Empezar entrenamiento vacío"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Start every set blank and enter the values yourself." : {
       "localizations" : {
@@ -16309,8 +16308,7 @@
             "value" : "Biblioteca de programas de entrenamiento"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Training program: %@, %lld days/week" : {
       "localizations" : {
@@ -18279,8 +18277,7 @@
             "value" : "Biblioteca de entrenamientos"
           }
         }
-      },
-      "extractionState" : "stale"
+      }
     },
     "Workout name" : {
       "localizations" : {
@@ -21010,6 +21007,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acepto y continuar"
+          }
+        }
+      }
+    },
+    "Logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrado"
+          }
+        }
+      }
+    },
+    "%lld logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld registrados"
+          }
+        }
+      }
+    },
+    "%@ of goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ del objetivo"
+          }
+        }
+      }
+    },
+    "Over goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por encima del objetivo"
+          }
+        }
+      }
+    },
+    "Goal met" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo cumplido"
+          }
+        }
+      }
+    },
+    "A plain row with a subtitle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una fila simple con subtítulo"
+          }
+        }
+      }
+    },
+    "Chevron" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chevrón"
+          }
+        }
+      }
+    },
+    "Checkmark" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca de verificación"
+          }
+        }
+      }
+    },
+    "Custom" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado"
+          }
+        }
+      }
+    },
+    "Trailing view of the caller's choosing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista final a elección de quien llama"
+          }
+        }
+      }
+    },
+    "The whole row is tappable" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toda la fila se puede tocar"
+          }
+        }
+      }
+    },
+    "Keep your phone awake during active workout sessions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén el teléfono activo durante los entrenamientos"
+          }
+        }
+      }
+    },
+    "Option %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opción %lld"
+          }
+        }
+      }
+    },
+    "What this option means" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qué significa esta opción"
+          }
+        }
+      }
+    },
+    "Push Pull Legs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empuje, tirón, piernas"
+          }
+        }
+      }
+    },
+    "Barbell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra"
+          }
+        }
+      }
+    },
+    "With Action" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con acción"
+          }
+        }
+      }
+    },
+    "Title Only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo título"
           }
         }
       }

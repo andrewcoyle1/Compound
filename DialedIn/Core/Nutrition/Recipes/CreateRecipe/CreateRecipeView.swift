@@ -98,8 +98,10 @@ struct CreateRecipeView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("Ingredients")
-                    Text("Weight of ingredients is 0 \(NutritionWeightUnit.grams.acronym)")
-                        .font(.label)
+                    if let weight = presenter.ingredientsWeightText {
+                        Text(weight)
+                            .font(.label)
+                    }
                 }
                 Spacer()
                 Button {

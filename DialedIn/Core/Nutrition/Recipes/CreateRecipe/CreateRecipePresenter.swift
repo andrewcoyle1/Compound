@@ -24,6 +24,16 @@ class CreateRecipePresenter {
         interactor.currentUser
     }
     
+    /// The total of the ingredients measured in grams, under the Ingredients header. Millilitres
+    /// and units have no weight to add, so they are left out; with nothing weighed it is nil and
+    /// the line is hidden. It used to read "0 g" whatever was in the list.
+    var ingredientsWeightText: String? {
+        let weighed = ingredients.filter { $0.unit == .grams }
+        guard !weighed.isEmpty else { return nil }
+        let total = weighed.reduce(0) { $0 + $1.amount }
+        return String(localized: "Weight of ingredients is \(Format.grams(total))")
+    }
+
     var canSave: Bool {
         !recipeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }

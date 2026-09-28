@@ -58,6 +58,15 @@ extension View {
     }
 }
 
+extension View {
+    /// A chip is about 20 pt tall. Inside a button, this pads its hit area out to the 44 pt minimum
+    /// tap target without changing how it looks.
+    func chipTapTarget() -> some View {
+        frame(minHeight: ControlSize.row)
+            .contentShape(.rect)
+    }
+}
+
 // MARK: - Preview
 
 private struct ChipPreview: View {

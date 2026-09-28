@@ -106,8 +106,7 @@ struct SearchView: View {
                             } label: {
                                 Chip(action.title, systemImage: action.systemImage)
                                     .lineLimit(1)
-                                    .frame(minHeight: ControlSize.row)
-                                    .contentShape(.rect)
+                                    .chipTapTarget()
                             }
                             .buttonStyle(.plain)
                         }

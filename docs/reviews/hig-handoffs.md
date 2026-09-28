@@ -1,0 +1,133 @@
+# HIG hand-offs to feature owners (2026-09-28)
+
+The shared-component and shell fixers could not edit feature folders. These are the exact sites
+they left for whoever owns each folder. Line numbers are from when they were written and may
+have moved. Paths are relative to `DialedIn/`. "F" is `hig-foundations.md`, "S" is
+`hig-shell-navigation.md`; the number is the finding.
+
+## New shared helpers to use
+
+| Helper | Where | Use it for |
+|---|---|---|
+| `.tapTarget()` / `.chipTapTarget()` | `Components/DesignSystem/Chip.swift` | Any tappable label under 44 pt |
+| `.rowActions(edge:allowsFullSwipe:_:)` | `Components/ViewModifiers/View+EXT.swift` | Replaces `.swipeActions`; adds the same buttons to a context menu |
+| `ImageLoaderView(imageDescription:)` | `Components/Images/` | Images are hidden from VoiceOver unless described |
+| `router.showDiscardChangesDialog(onDiscard:)` | `Root/RIBs/GlobalRouter.swift` | Close buttons on forms with unsaved input |
+| `router.showConfirmationDialog(…)` | `Root/RIBs/GlobalRouter.swift` | Choices that were alerts with many buttons |
+| `router.showDraftMealDialog(onContinue:onStartNew:)` | `Root/RIBs/` | Every "you already have a draft meal" prompt |
+| `router.showAlert(title:error:)` | `Root/RIBs/GlobalRouter.swift` | Error alerts; title says what failed ("Unable to …") |
+| `Double.typed(_:locale:)` | `Extensions/Double+EXT.swift` | Parsing any typed number |
+
+## Unsaved input (S5)
+
+Each presenter exposes `hasUnsavedChanges`. Its view adds
+`.interactiveDismissDisabled(presenter.hasUnsavedChanges)`, and the close button calls
+`router.showDiscardChangesDialog { router.dismissScreen() }` when the flag is set.
+
+- `Core/Nutrition/Foods/CreateFood/CreateFoodPresenter.swift:71` (+ `CreateFoodView.swift:211`)
+- `Core/Nutrition/Recipes/CreateRecipe/CreateRecipePresenter.swift:49`
+- `Core/Challenges/CreateChallenge/CreateChallengePresenter.swift:102`
+- `Core/Training/Subviews/AddTraining/CreateExercise/CreateExercisePresenter.swift:92`
+- `Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:126-141` (+ `WorkoutSessionDetailView.swift:241`)
+
+## Core/Training
+
+- `TrainingView.swift:61`: remove `.background(.bar)`. (F9)
+- `TrainingPresenter.swift:175`: alert used as a picker → `showConfirmationDialog`. (S8)
+- `Components/ExerciseListBuilder/ExerciseListBuilderView.swift:131`, `:259`: `.glassEffect(.clear.interactive())` → `.regular.interactive()`. (F9)
+- `Components/RowChipButton.swift:24-27`: `.chipTapTarget()`. (F4)
+- `Components/ProgramColourIconGrid.swift:53-63`: `.tapTarget()` on the 40 pt swatch (F4); `:31`, `:45` localized colour and icon names; `:39` fewer columns at accessibility sizes (F3).
+- `Components/WorkoutStreakCard/WorkoutStreakCard.swift:71-72`: use `calendar.dateInterval(of: .weekOfYear, for:)`.
+- `Subviews/WorkoutTracker/WorkoutTrackerView.swift:196-236`: add a `.cancellationAction` toolbar item, `Button(role: .close) { presenter.minimizeSession() }` labelled "Minimize workout"; guard the `try?` build at `:261` (S7). `:73`: fewer grid columns at accessibility sizes (F3).
+- `Subviews/WorkoutTracker/WorkoutTrackerPresenter.swift:277`: wrap the alert literals in `String(localized:)`. (F6)
+- `…/SetTracker/SetTrackerPresenter.swift:243`, `:267`: → `showConfirmationDialog` (S8). `:187` and `SetTrackerRowPresenter.swift:144`: the `primaryButtonAction { router.dismissModal() }` passed to `showWarmupSetInfoModal` is dead; drop it.
+- `…/SetTrackerRow/SetTrackerRowView.swift:238-252`: `.tapTarget()` on the set-complete label (F4); `:43-59` `.swipeActions` → `.rowActions` (F5).
+- `…/SetTrackerRow/SetTrackerRowRouter.swift:14-55`: Set Rest → a `.sheetConfig(config: .compact)` sheet with `role: .close` and `role: .confirm`, replacing `CustomModalView`. (S4)
+- `…/SetKeyboard/SetKeyboardPresenter.swift:174`, `:178`: use `Locale.current.decimalSeparator` in place of "." and parse with `Double.typed`. (F1)
+- `…/MuscleGroupPicker/MuscleGroupPickerView.swift:52`, `:66`: fewer grid columns at accessibility sizes. (F3)
+- `Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:202`, `:236`: wrap alert literals (F6); `:471` loading modal over a read → open at once, load with `.redacted` (S2).
+- `Subviews/WorkoutTemplateDetail/WorkoutTemplateDetailPresenter.swift:98` and `Subviews/ActiveTrainingProgram/ActiveTrainingProgramPresenter.swift:214`: → `showConfirmationDialog`. (S8)
+- `Subviews/ExerciseSettings/ExerciseSettingsPresenter.swift:81`: the value should be an in-row `Picker` or `Menu`, not a presentation. (S8)
+- `…/ProgramDesign/ProgramDesignView.swift:55`, `:203-211`: drop the hand-drawn back chevron; `role: .close` plus `showDiscardChangesDialog`; `:207` `chevron.forward`. (S12, F10)
+- `.swipeActions` → `.rowActions`: `ActiveTrainingProgram/ActiveTrainingProgramView.swift:33`, `…/CreateWorkout/DefineWorkout/DefineWorkoutView.swift:83`, `…/CreateWorkout/SetTarget/SetTargetView.swift:57`. (F5)
+- `CreateWorkout/CreateWorkoutView.swift:24`, `CreateProgram/CreateProgram/CreateProgramView.swift:20`: pass `imageDescription:` or leave decorative. (F7)
+
+## Core/Nutrition
+
+- `NutritionView.swift:124-135`, `MealLog/AddMeal/AddMealView.swift:128`: `.rowActions`. (F5)
+- `MealLog/AddMeal/AddMealView.swift:243-289`: slim the toolbar. (S17)
+- `Components/MealHourHeader/MealHourHeaderView.swift:25`: add an alternative to the long-press. (F5)
+- `Foods/FoodDetail/FoodDetailView.swift:154`: the 38 `LabeledContent(label, …)` nutrient labels never reach the catalog (F6); `:52` and `Recipes/RecipeDetail/RecipeDetailView.swift:43`: `imageDescription:` (F7).
+- `MealLog/MealDetail/MealDetailPresenter.swift:37-40`: localize, and use `Format.grams`. (F6)
+- `NutritionPresenter.swift:206`, `:227`, `:244`: `showAlert(error:)` → `showAlert(title:error:)`. (S9)
+- `TimelineActions/TimelineActionsPresenter.swift:57`, `:102`: disable Copy and Clear when the day has no meals. (S16)
+- `…/FoodLogSettingsPresenter.swift:134`: in-row `Picker` or `Menu`. (S8)
+
+## Core/Dashboard
+
+- `DashboardView.swift:88-90`: the carousel height is fixed at `contentHeight + carouselTitleHeight`; it has to grow for `DashboardCard`'s new `minHeight` to take effect. (F3)
+- `DashboardPresenter.swift:368`: draft-meal alert → `showDraftMealDialog`. `DashboardPresenterTests.swift:541` then expects "Draft Meal", with the double recording `showConfirmationDialog`. (S8)
+- `Components/NutritionCard.swift`: stack the ring and macro bars at accessibility sizes (F3); `:33-35` localize the literals (F6).
+- `WorkoutSessionRow/WorkoutSessionRowView.swift:160-219`: move `.frame(maxWidth: .infinity)` inside the button labels. (F4)
+- `WorkoutSessionRow/WorkoutSessionRowPresenter.swift:179`: loading modal over a read; put the spinner in the tapped button. (S2)
+- `WorkoutSessionRow/Comments/CommentsView.swift:102-122`: `.tapTarget()` on like (F4); `:37-59` `.rowActions` plus visible Reply and Report (F5); `:86`, `:130` localize fallbacks (F6).
+- `CircleActivityStripView.swift:154-160`: drop `.controlSize(.small)` (F4); `:91-93` the label is built with `+` (F6).
+- `SocialProfile/FollowersList/FollowersListView.swift:40`: `.rowActions`. (F5)
+- `CircleGoals/CircleLeaderboardView.swift:46`, `:66`: localize fallbacks. (F6)
+- `WeeklyReview/WeeklyReviewCard.swift:25`, `WeeklyReview/WeeklyReviewView.swift:94`, `:103`: `chevron.forward` / `.backward`. (F10)
+
+## Core/Challenges
+
+- `ChallengesDashboardSection.swift:78` ("You"), `ChallengeDetail/ChallengeDetailView.swift:78`, `:96`: localize fallbacks (F6); `:60` `chevron.forward` (F10).
+- `ChallengeRing.swift:33`: replace `minimumScaleFactor`. (F3)
+
+## Core/Notifications
+
+- `NotificationsView.swift:122`: drop `.controlSize(.small)` (F4); `:281` `.rowActions` (F5); `:87` copy still says "DialedIn".
+- `NotificationsPresenter.swift:216`: loading modal over a read (S2); `:82`, `:125`, `:138`, `:323`, `:387`: `showAlert(title:error:)` (S9).
+
+## Core/Profile and Core/Paywalls
+
+- `Subviews/Account/AccountPresenter.swift:29`: parse height with `Double.typed` (F1); `:53`, `:209`, `:255`: `showAlert(title:error:)` (S9).
+- `Subviews/Account/AccountView.swift:75-77`: `imageDescription:` for the profile photo. (F7)
+- `ProfilePresenter.swift:99`, `:113`, `:121`: wrap the alert literals. (F6)
+- `Subviews/TrainingSettings/GymProfiles/GymProfilesView.swift:43`, `:59`, `:66` and `…/RestTimerSettings/TimerDuration/TimerDurationView.swift:44`: `.rowActions`. (F5)
+- `…/GymProfiles/GymProfile/GymProfileView.swift:94`, `:323-330`: keep the system back button, save on edit or in `onDisappear` (S12); `:126` `imageDescription:` (F7).
+- `Subviews/GeneralSettings/Integrations/IntegrationsPresenter.swift:49`: success → `interactor.showAppToast(AppToast(style: .success, …))`. (S16)
+- `Subviews/About/Licences/LicencesView.swift:81`: push instead of a full-screen cover.
+- `Core/Paywalls/Paywall/PaywallPresenter.swift:70`, `:126`, `:155`: `showAlert(title:error:)`. (S9)
+
+## Core/Onboarding
+
+- `0 - WelcomeView/WelcomeView.swift:58`: pass `isLoading:` while there is no `currentUser`. (S10)
+- `2 - AuthView/AuthPresenter.swift:66`, `:107` and `4 - CompleteAccountSetup/9 - Expenditure/ExpenditurePresenter.swift:245`: add `role: .cancel`.
+- `5 - HealthDisclaimer/HealthDisclaimerRouter.swift:20-40`: replace `CustomModalView` with `router.showAlert`; localize the consent text and both buttons; "DialedIn" → "Compound". (S4, F6)
+
+## Core/Analytics
+
+- `Subviews/BodyMetrics/ProgressPhotos/ProgressPhotosView.swift:115` and `ProgressPhotoCompareView.swift:53`: `imageDescription:` (pose and date) (F7); `:78-94` add `ToolbarSpacer(.fixed, placement: .topBarTrailing)`, `:73` move close to `.cancellationAction` (S17).
+- `Subviews/InsightsAndAnalytics/EnergyBalance/EnergyBalancePresenter.swift:45`: draft-meal alert → `showDraftMealDialog`. (S8)
+- `Subviews/BodyMetrics/LogMeasurement/LogWeightView/LogWeightPresenter.swift:77`: `showAlert(title:error:)`. (S9)
+
+## Core/AppView (shell owner, second pass)
+
+- `AppViewBuilder.swift:20-26`: `.reducedMotionAnimation(.standard, value: activeModuleId)`, opacity transition under Reduce Motion. (F11)
+- `ActivityNotificationBannerView.swift:35`, `:37`: localize the English fallbacks. (F6)
+
+## App-wide
+
+- The remaining `showAlert(error:)` sites (32 in total) → `showAlert(title: String(localized: "Unable to …"), error:)`. (S9)
+- The remaining bare-literal alert titles across 17 files → `String(localized:)`, title-cased. (F6)
+- The report flow's noun ("workout", "comment", "profile") is passed in as an English literal, so Spanish shows the English noun.
+
+## Outside Core (central, not an area)
+
+- `Root/LaunchScreen.storyboard`: a single `systemGroupedBackground` view, no image and no label. (F8, S11)
+- `.swiftlint.yml`: a custom rule for bare `.animation(` that excludes `ReducedMotionViewModifier.swift`. (F11)
+- Delete `Components/Modals/CustomModalView.swift` once Health Disclaimer, Set Rest and the ratings card have moved off it. (S4)
+
+## Unverified, needs a device
+
+- A toast raised while a sheet is up may appear behind it, because the overlay is on the root view.
+- The navigation and tab bars may still be tappable above the loading overlay.
+- Calendar month titles no longer stay pinned while scrolling.

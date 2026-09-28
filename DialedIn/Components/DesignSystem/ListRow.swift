@@ -118,6 +118,14 @@ struct ListRow: View {
 
     // MARK: Titles
 
+    /// Two lines below the accessibility sizes, where two lines still say enough. A `.checkmark`
+    /// row (and so every `SelectableRow`) is never capped: its subtitle explains the choice, and a
+    /// cut-off explanation ("…even if your TDEE is lower") is worse than a taller row.
+    private var subtitleLineLimit: Int? {
+        if case .checkmark = accessory { return nil }
+        return dynamicTypeSize.isAccessibilitySize ? nil : 2
+    }
+
     private var titles: some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(title)
@@ -127,8 +135,7 @@ struct ListRow: View {
                 Text(subtitle)
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
-                    // Capped only below the accessibility sizes, where two lines still say enough.
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                    .lineLimit(subtitleLineLimit)
             }
         }
         .multilineTextAlignment(.leading)

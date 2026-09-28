@@ -247,17 +247,36 @@ class NutritionPresenter {
         }
     }
 
-    func onEditMealItem(_ item: MealItemModel) {
+    /// Opens the amount screen for a logged item and writes the corrected item back into its meal.
+    /// The confirm closure used to be empty, so Save closed the screen and changed nothing.
+    func onEditMealItem(_ item: MealItemModel, in meal: MealLogModel) {
         router.showMealItemAmountViewView(
             delegate: MealItemAmountViewDelegate(
                 mode: .editItem(item),
-                onConfirm: { _ in
-                    
+                onConfirm: { [weak self] updated in
+                    self?.saveEditedItem(updated, in: meal)
                 }
             )
         )
     }
-    
+
+    private func saveEditedItem(_ item: MealItemModel, in meal: MealLogModel) {
+        guard let index = meal.items.firstIndex(where: { $0.itemId == item.itemId }) else { return }
+        var updatedMeal = meal
+        updatedMeal.items[index] = item
+        Task {
+            interactor.trackEvent(event: Event.saveMealStart)
+            do {
+                try await interactor.addMeal(updatedMeal)
+                interactor.trackEvent(event: Event.saveMealSuccess)
+            } catch {
+                interactor.playHaptic(option: .error)
+                router.showAlert(error: error)
+                interactor.trackEvent(event: Event.saveMealFail(error: error))
+            }
+        }
+    }
+
     func onViewMealPressed(_ meal: MealLogModel) {
         router.showMealDetailView(delegate: MealDetailDelegate(meal: meal))
     }

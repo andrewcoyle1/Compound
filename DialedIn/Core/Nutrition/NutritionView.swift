@@ -118,7 +118,7 @@ struct NutritionView<
             timestamp: presenter.timestamp(for: item, in: meal),
             style: presenter.mealItemRowStyle,
             onEditPressed: { mealItem in
-                presenter.onEditMealItem(mealItem)
+                presenter.onEditMealItem(mealItem, in: meal)
             }
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {

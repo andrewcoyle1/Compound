@@ -21190,6 +21190,146 @@
           }
         }
       }
+    },
+    "Something Went Wrong" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo salió mal"
+          }
+        }
+      }
+    },
+    "Draft Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comida en borrador"
+          }
+        }
+      }
+    },
+    "Continue Editing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir editando"
+          }
+        }
+      }
+    },
+    "Start New Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar comida nueva"
+          }
+        }
+      }
+    },
+    "Discard Changes?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar cambios?"
+          }
+        }
+      }
+    },
+    "Choose a reason for the report." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un motivo para la denuncia."
+          }
+        }
+      }
+    },
+    "Add a note saying what is wrong." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade una nota explicando qué está mal."
+          }
+        }
+      }
+    },
+    "Keep the note to %lld characters or fewer." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nota debe tener %lld caracteres o menos."
+          }
+        }
+      }
+    },
+    "Report sent. Thanks — we will take a look at this %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Denuncia enviada. Gracias, revisaremos este %@."
+          }
+        }
+      }
+    },
+    "Can't reach the server. Check your connection." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede conectar con el servidor. Comprueba tu conexión."
+          }
+        }
+      }
+    },
+    "Couldn't search people. Check your connection." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo buscar personas. Comprueba tu conexión."
+          }
+        }
+      }
+    },
+    "Enter Invite Code" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introducir código de invitación"
+          }
+        }
+      }
+    },
+    "Dismisses the message" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra el mensaje"
+          }
+        }
+      }
+    },
+    "Opens Notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Notificaciones"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

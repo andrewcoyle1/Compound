@@ -14,7 +14,24 @@ struct BarcodeScannerView: View {
     @State var presenter: BarcodeScannerPresenter
     let delegate: BarcodeScannerDelegate
 
+    /// Inside the food picker the scanner is one mode of a screen that already has a title and a
+    /// way out. Opened on its own, from Create Food, it is a sheet and needs both.
     var body: some View {
+        if presenter.returnsBarcodeOnly {
+            scanner
+                .navigationTitle("Scan Barcode")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .close) { presenter.onDismissPressed() }
+                    }
+                }
+        } else {
+            scanner
+        }
+    }
+
+    private var scanner: some View {
         ZStack {
             if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
                 BarcodeScanner(
@@ -115,13 +132,16 @@ struct BarcodeScannerView: View {
 
     private var topControls: some View {
         HStack {
-            Picker("Scanning mode", selection: $presenter.scanningMode) {
-                ForEach(ScanningMode.allCases) { mode in
-                    Text(mode.rawValue.capitalized).tag(mode)
+            // Reading a label produces a food, which a caller that only wants the digits cannot use.
+            if !presenter.returnsBarcodeOnly {
+                Picker("Scanning mode", selection: $presenter.scanningMode) {
+                    ForEach(ScanningMode.allCases) { mode in
+                        Text(mode.rawValue.capitalized).tag(mode)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .fixedSize()
             }
-            .pickerStyle(.segmented)
-            .fixedSize()
 
             Spacer()
 
@@ -410,7 +430,8 @@ extension CoreBuilder {
         BarcodeScannerView(
             presenter: BarcodeScannerPresenter(
                 interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
+                router: CoreRouter(router: router, builder: self),
+                delegate: delegate
             ),
             delegate: delegate
         )

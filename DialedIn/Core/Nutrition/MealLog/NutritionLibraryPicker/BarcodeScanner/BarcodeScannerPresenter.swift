@@ -9,6 +9,13 @@ class BarcodeScannerPresenter {
     private let interactor: BarcodeScannerInteractor
     private let router: BarcodeScannerRouter
 
+    /// Set when the caller wants the digits and nothing else, as Create Food does. The scanner
+    /// then hands the code straight back and closes, with no product lookup: the usual reason to
+    /// create a food is that the lookup would not find it.
+    private let onBarcodeScanned: ((String) -> Void)?
+
+    var returnsBarcodeOnly: Bool { onBarcodeScanned != nil }
+
     var isScanning: Bool = false
     var scannedCode: String?
 
@@ -43,9 +50,10 @@ class BarcodeScannerPresenter {
         AVCaptureDevice.default(for: .video)?.hasTorch ?? false
     }
 
-    init(interactor: BarcodeScannerInteractor, router: BarcodeScannerRouter) {
+    init(interactor: BarcodeScannerInteractor, router: BarcodeScannerRouter, delegate: BarcodeScannerDelegate) {
         self.interactor = interactor
         self.router = router
+        self.onBarcodeScanned = delegate.onBarcodeScanned
     }
 
     func onViewAppear(delegate: BarcodeScannerDelegate) {
@@ -164,10 +172,16 @@ class BarcodeScannerPresenter {
         guard resolvedBarcode != code else { return }
         resolvedBarcode = code
         scannedCode = code
+        interactor.trackEvent(event: Event.onBarcodeDetected(code: code))
+        if let onBarcodeScanned {
+            interactor.playHaptic(option: .success)
+            onBarcodeScanned(code)
+            router.dismissScreen()
+            return
+        }
         isLookingUpBarcode = true
         barcodeError = nil
         parsedIngredient = nil
-        interactor.trackEvent(event: Event.onBarcodeDetected(code: code))
         Task {
             defer { isLookingUpBarcode = false }
             do {

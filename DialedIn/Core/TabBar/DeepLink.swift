@@ -32,8 +32,8 @@ enum DeepLink: Equatable {
     /// under way, otherwise the Dashboard, whose today card starts one.
     case workout
 
-    /// The tab bar's roots. `search` is SwiftUI's own tab, owned through `Tab(role: .search)`;
-    /// it still selects by title like the rest.
+    /// The tab bar's roots, and the `TabView`'s selection. `search` is SwiftUI's own tab, owned
+    /// through `Tab(role: .search)`.
     enum Tab: String, CaseIterable, Identifiable {
         case dashboard
         case training
@@ -48,11 +48,6 @@ enum DeepLink: Equatable {
         }
 
         var id: String { rawValue }
-
-        /// Matches `TabBarScreen.title`, which is what the `TabView` selection is keyed on.
-        var title: String {
-            rawValue.capitalized
-        }
     }
 
     /// Parses `compound://tab/nutrition`, and tolerates `compound://tab?name=nutrition` because the

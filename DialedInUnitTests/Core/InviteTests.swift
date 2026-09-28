@@ -120,7 +120,7 @@ struct InviteDeepLinkTests {
     func testAJoinLinkSelectsTheDashboardAndAsksItToAccept() async throws {
         let interactor = TabBarInteractorDouble()
         let presenter = TabBarPresenter(interactor: interactor, router: TabBarRouterDouble())
-        presenter.selectedTabTitle = "Training"
+        presenter.selectedTab = .training
         var received: String?
         let observer = NotificationCenter.default.addObserver(forName: Constants.acceptInvite, object: nil, queue: .main) { note in
             received = note.userInfo?["code"] as? String
@@ -130,7 +130,7 @@ struct InviteDeepLinkTests {
         presenter.onOpenURL(try #require(URL(string: "compound://join/push2345")))
 
         #expect(await TestManagers.eventually { received == "PUSH2345" })
-        #expect(presenter.selectedTabTitle == "Dashboard")
+        #expect(presenter.selectedTab == .dashboard)
         #expect(interactor.trackedEventNames == ["TabBarView_DeepLink_Join"])
     }
 

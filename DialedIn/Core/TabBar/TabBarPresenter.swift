@@ -34,10 +34,10 @@ class TabBarPresenter {
     
     var tabAccessoryWidth: CGFloat = 400
 
-    /// Which tab is showing, keyed by `TabBarScreen.title`. Held here so a `compound://` link or a
-    /// push notification can change it; the `TabView` had no selection binding at all before, so
-    /// nothing outside the app could steer it.
-    var selectedTabTitle: String = DeepLink.Tab.dashboard.title
+    /// Which tab is showing. Held here so a `compound://` link or a push notification can change
+    /// it. Keyed by the tab itself, not its title: the titles are translated, so in Spanish a
+    /// title key never matched "Dashboard" and links selected nothing.
+    var selectedTab: DeepLink.Tab = .dashboard
 
     /// Applies a destination arriving from outside the app.
     func handle(_ deepLink: DeepLink) {
@@ -48,7 +48,7 @@ class TabBarPresenter {
                 parameters: ["tab": tab.rawValue],
                 type: .analytic
             )
-            selectedTabTitle = tab.title
+            selectedTab = tab
         case .session:
             interactor.trackEvent(
                 eventName: "TabBarView_DeepLink_Session",
@@ -56,7 +56,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The Dashboard is where a session opens from; it hears the request and fetches it.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .notifications:
             interactor.trackEvent(
@@ -65,7 +65,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The bell lives on the Dashboard, so it opens the screen.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .join:
             interactor.trackEvent(
@@ -74,7 +74,7 @@ class TabBarPresenter {
                 type: .analytic
             )
             // The Dashboard accepts the invite and opens the inviter's profile.
-            selectedTabTitle = DeepLink.Tab.dashboard.title
+            selectedTab = .dashboard
             deepLink.post()
         case .workout:
             interactor.trackEvent(
@@ -85,7 +85,7 @@ class TabBarPresenter {
             if activeSession != nil {
                 router.showWorkoutTrackerView()
             } else {
-                selectedTabTitle = DeepLink.Tab.dashboard.title
+                selectedTab = .dashboard
             }
         }
     }

@@ -416,7 +416,7 @@ struct AppShellTabBarPresenterTests {
     func testTheTabBarOpensOnTheDashboard() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.presenter.selectedTab == .dashboard)
     }
 
     // MARK: - Deep links
@@ -429,7 +429,7 @@ struct AppShellTabBarPresenterTests {
 
         screen.presenter.onOpenURL(try #require(URL(string: "compound://tab/nutrition")))
 
-        #expect(screen.presenter.selectedTabTitle == "Nutrition")
+        #expect(screen.presenter.selectedTab == .nutrition)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Tab"])
         #expect(screen.interactor.trackedParameters.first?["tab"] as? String == "nutrition")
     }
@@ -442,7 +442,7 @@ struct AppShellTabBarPresenterTests {
 
         screen.presenter.onOpenURL(try #require(URL(string: "compound://tab?name=training")))
 
-        #expect(screen.presenter.selectedTabTitle == "Training")
+        #expect(screen.presenter.selectedTab == .training)
     }
 
     /// A link naming a tab that does not exist leaves the user where they were. Guessing would drop
@@ -450,12 +450,12 @@ struct AppShellTabBarPresenterTests {
     @Test("Test An Unrecognised Link Leaves The Tab Alone")
     func testAnUnrecognisedLinkLeavesTheTabAlone() throws {
         let screen = makeScreen()
-        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.selectedTab = .training
 
         screen.presenter.onOpenURL(try #require(URL(string: "compound://tab/sleep")))
         screen.presenter.onOpenURL(try #require(URL(string: "https://example.com/tab/nutrition")))
 
-        #expect(screen.presenter.selectedTabTitle == "Training")
+        #expect(screen.presenter.selectedTab == .training)
         #expect(screen.interactor.trackedEventNames == [
             "TabBarView_DeepLink_Unrecognised",
             "TabBarView_DeepLink_Unrecognised"
@@ -471,7 +471,7 @@ struct AppShellTabBarPresenterTests {
         screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/analytics"])
         screen.presenter.onPushNotificationReceived()
 
-        #expect(screen.presenter.selectedTabTitle == "Analytics")
+        #expect(screen.presenter.selectedTab == .analytics)
     }
 
     /// The in-app route: the Dashboard's empty feed sending the user to the Search tab's people
@@ -484,7 +484,7 @@ struct AppShellTabBarPresenterTests {
             Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": "search"])
         )
 
-        #expect(screen.presenter.selectedTabTitle == "Search")
+        #expect(screen.presenter.selectedTab == .search)
     }
 
     /// The search tab was called "Add" until it settled on being search. Links and pushes written
@@ -494,13 +494,13 @@ struct AppShellTabBarPresenterTests {
         let screen = makeScreen()
 
         screen.presenter.onOpenURL(try #require(URL(string: "compound://tab/add")))
-        #expect(screen.presenter.selectedTabTitle == "Search")
+        #expect(screen.presenter.selectedTab == .search)
 
-        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.selectedTab = .training
         screen.presenter.onSelectTabNotificationReceived(
             Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": "add"])
         )
-        #expect(screen.presenter.selectedTabTitle == "Search")
+        #expect(screen.presenter.selectedTab == .search)
     }
 
     /// A push with no destination in it is dropped silently. It is not an error — plenty of
@@ -515,7 +515,7 @@ struct AppShellTabBarPresenterTests {
             Notification(name: Constants.selectTab, object: nil, userInfo: nil)
         )
 
-        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.presenter.selectedTab == .dashboard)
         #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 
@@ -530,11 +530,11 @@ struct AppShellTabBarPresenterTests {
         #expect(DeepLink(pushUserInfo: ["tab": "dashboard", "type": "follow", "session_id": "", "session_author_id": ""]) == .tab(.dashboard))
 
         let screen = makeScreen()
-        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.selectedTab = .training
         screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: payload)
         screen.presenter.onPushNotificationReceived()
 
-        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.presenter.selectedTab == .dashboard)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Session"])
     }
 
@@ -546,7 +546,7 @@ struct AppShellTabBarPresenterTests {
         #expect(DeepLink(pushUserInfo: payload) == .notifications)
 
         let screen = makeScreen()
-        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.selectedTab = .training
         var opened = false
         let observer = NotificationCenter.default.addObserver(forName: Constants.openNotifications, object: nil, queue: .main) { _ in
             opened = true
@@ -557,7 +557,7 @@ struct AppShellTabBarPresenterTests {
         screen.presenter.onPushNotificationReceived()
 
         #expect(await TestManagers.eventually { opened })
-        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.presenter.selectedTab == .dashboard)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Notifications"])
     }
 
@@ -569,13 +569,13 @@ struct AppShellTabBarPresenterTests {
         screen.interactor.pendingDeepLink = .tab(.nutrition)
 
         screen.presenter.onViewAppear()
-        #expect(screen.presenter.selectedTabTitle == "Nutrition")
+        #expect(screen.presenter.selectedTab == .nutrition)
 
-        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.selectedTab = .training
         screen.presenter.onViewAppear()
         screen.presenter.onPushNotificationReceived()
 
-        #expect(screen.presenter.selectedTabTitle == "Training")
+        #expect(screen.presenter.selectedTab == .training)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Tab"])
     }
 

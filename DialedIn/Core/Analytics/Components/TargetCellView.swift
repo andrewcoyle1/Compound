@@ -8,8 +8,9 @@
 import SwiftUI
 
 /// One day of one metric in the weekly target grid: a vertical bar filled to what was eaten, with a
-/// tick at the target. Going over is marked with a caret as well as the fill passing the tick, so it
-/// never rests on the bar's length alone.
+/// tick at the target. Going well over (`caretThreshold`) is marked with a caret as well as the fill
+/// passing the tick, so it never rests on the bar's length alone. VoiceOver says "over target" for any
+/// amount over 100%; the caret is for the eye, where a few grams over is not worth flagging.
 struct TargetCellView: View {
     let value: Double
     let targetValue: Double
@@ -26,8 +27,15 @@ struct TargetCellView: View {
         return max(0, min(1, targetValue / maxValue))
     }
 
+    /// The fraction of the target above which a cell shows the over-target caret.
+    static let caretThreshold = 1.1
+
+    static func showsCaret(value: Double, target: Double) -> Bool {
+        target > 0 && value > target * caretThreshold
+    }
+
     private var isOverTarget: Bool {
-        targetValue > 0 && value > targetValue
+        Self.showsCaret(value: value, target: targetValue)
     }
 
     var body: some View {

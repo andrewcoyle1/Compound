@@ -471,9 +471,16 @@ lock.
 
 ## Code Health Baseline
 
-As of the UI framework merge, all three schemes and the `WorkoutSessionActivityExtension` scheme
-build with **zero warnings**, and `swiftlint --strict` reports **zero violations** across 1,520
-files, including the design-system custom rules. Treat any new warning as something to
+As of the UI framework merge, the Development and Mock schemes and the
+`WorkoutSessionActivityExtension` scheme build with **zero warnings**, and `swiftlint --strict`
+reports **zero violations** across 1,520 files, including the design-system custom rules.
+
+Under **Xcode 27.0** the Production (Release, whole-module-optimised) build crashes the compiler:
+an LLVM verifier failure, "Instruction does not dominate all uses", in the `DialedIn` module. Before
+the UI framework merge it already failed, one step earlier, on an optimizer crash that
+`WeeklyReviewPresenter`'s `now:` default now avoids, so this is the toolchain rather than the
+swarm's code. CI pins Xcode 26.6; check
+Production there, or with 26.6 installed, before treating it as a regression. Treat any new warning as something to
 fix rather than accumulate.
 
 Building a scheme does not compile the test target, so a warning in `DialedInUnitTests` shows up

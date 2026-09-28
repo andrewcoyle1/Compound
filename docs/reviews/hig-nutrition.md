@@ -265,7 +265,7 @@ Decision needed: no
 Severity: hurts usability
 Where: `AddMealView.swift:47-54`, `FoodDefinitionView.swift:105-118`,
 `RecipePreparationView.swift:61-85`, `FoodItemQuickAddView.swift:41-46`,
-`TimelineActionsView.swift:69-75`, `TimelineActionsPresenter.swift:117-127` (Clear Day)
+`TimelineActionsView.swift:69-75`, `TimelineActionsPresenter.swift:51`, `:124` (Copy Day, Clear Day)
 Guideline: "Configure a button to display an activity indicator when you need to provide
 feedback about an action that doesn't instantly complete." —
 https://developer.apple.com/design/human-interface-guidelines/buttons

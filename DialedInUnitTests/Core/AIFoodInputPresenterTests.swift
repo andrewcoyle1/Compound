@@ -132,6 +132,8 @@ struct FoodPhotoScannerPresenterTests {
         #expect(router.alertTitles == [OfflineError.title])
         #expect(interactor.analysedByteCounts.isEmpty)
         #expect(!presenter.isAnalysing)
+        // The photo is already on screen; an empty Results section under it said nothing.
+        #expect(presenter.errorMessage != nil)
     }
 
     @Test("Test A Failed Analysis Stops The Spinner And Is Reported")

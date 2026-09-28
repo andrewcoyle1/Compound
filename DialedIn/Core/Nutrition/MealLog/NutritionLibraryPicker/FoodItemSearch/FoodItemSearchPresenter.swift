@@ -14,6 +14,8 @@ class FoodItemSearchPresenter {
     /// Set when the last search could not be run at all. Empty results and a failed request are
     /// not the same thing, and "No results found" claims the food does not exist.
     private(set) var searchFailed: Bool = false
+    /// Why the online results are missing, when the reason is that there is no connection.
+    private(set) var searchFailedOffline: Bool = false
 
     var searchText: String = ""
 
@@ -52,6 +54,7 @@ class FoodItemSearchPresenter {
         isSearching = false
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         searchFailed = false
+        searchFailedOffline = false
         guard !trimmed.isEmpty else {
             openFoodFactsFoods = []
             return
@@ -65,6 +68,7 @@ class FoodItemSearchPresenter {
         guard !interactor.isOffline else {
             openFoodFactsFoods = []
             searchFailed = true
+            searchFailedOffline = true
             return
         }
         searchTask = Task {

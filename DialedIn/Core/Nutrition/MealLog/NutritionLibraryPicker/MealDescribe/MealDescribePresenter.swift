@@ -54,7 +54,7 @@ class MealDescribePresenter {
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = String(localized: "Couldn't work out the foods in that description. Try naming each food and its amount, then try again.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onError(message: error.localizedDescription))
         }

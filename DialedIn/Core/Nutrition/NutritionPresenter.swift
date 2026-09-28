@@ -224,7 +224,7 @@ class NutritionPresenter {
                 }
                 interactor.trackEvent(event: Event.saveMealSuccess)
             } catch {
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Remove Food"), error: error)
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
             }
         }
@@ -241,7 +241,7 @@ class NutritionPresenter {
                 )
                 interactor.trackEvent(event: Event.saveMealSuccess)
             } catch {
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Delete Meal"), error: error)
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
             }
         }
@@ -271,7 +271,7 @@ class NutritionPresenter {
                 interactor.trackEvent(event: Event.saveMealSuccess)
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Update Food"), error: error)
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
             }
         }

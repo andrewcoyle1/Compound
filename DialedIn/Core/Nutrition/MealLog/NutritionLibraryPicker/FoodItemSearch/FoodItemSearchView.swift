@@ -48,10 +48,12 @@ struct FoodItemSearchView: View {
                 if presenter.isSearching {
                     HStack(spacing: Spacing.s) {
                         ProgressView()
-                        Text("Searching...")
+                        Text("Searching…")
                             .font(.rowDetail)
                             .foregroundStyle(.secondary)
                     }
+                } else if presenter.searchFailedOffline {
+                    InlineMessage(.warning, "You're offline. Showing your library only.")
                 } else if presenter.searchFailed {
                     InlineMessage(.error, "Couldn't search right now")
                 } else if presenter.openFoodFactsFoods.isEmpty && !trimmed.isEmpty {

@@ -53,14 +53,19 @@ class FoodPhotoScannerPresenter {
     }
 
     func onCapture(_ image: UIImage) async {
-        guard interactor.ensureOnline(or: router) else { return }
+        // The photo is already on screen, so say why no results follow rather than leave an empty
+        // Results section under the offline alert.
+        guard interactor.ensureOnline(or: router) else {
+            errorMessage = String(localized: "You're offline. Connect to the internet to analyze this photo.")
+            return
+        }
         isAnalysing = true
         errorMessage = nil
         analysisResults = []
         interactor.trackEvent(event: Event.onCapture)
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
-            errorMessage = String(localized: "Failed to process image.")
+            errorMessage = String(localized: "Couldn't read this photo. Please retake it.")
             interactor.playHaptic(option: .error)
             isAnalysing = false
             return
@@ -71,7 +76,7 @@ class FoodPhotoScannerPresenter {
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = String(localized: "Couldn't recognize the food in this photo. Retake it in good light, or use Search or Describe.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onError(message: error.localizedDescription))
         }

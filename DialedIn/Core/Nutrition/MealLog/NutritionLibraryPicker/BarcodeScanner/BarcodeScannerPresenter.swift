@@ -134,7 +134,7 @@ class BarcodeScannerPresenter {
             let decoded = try JSONDecoder().decode(NutritionLabelResponse.self, from: Data(json.utf8))
             parsedIngredient = decoded.toFood(authorId: interactor.currentUser?.userId)
         } catch {
-            labelError = error.localizedDescription
+            labelError = String(localized: "Couldn't read this label. Hold the camera steady and try again, or enter it manually.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
@@ -154,7 +154,7 @@ class BarcodeScannerPresenter {
             scannedCode = nil
             isScanning = true
         } catch {
-            labelError = error.localizedDescription
+            labelError = String(localized: "Couldn't save this food. Please try again.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
@@ -213,7 +213,7 @@ class BarcodeScannerPresenter {
                 try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
                 parsedIngredient = food
             } catch {
-                barcodeError = error.localizedDescription
+                barcodeError = String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.onBarcodeError(message: error.localizedDescription))
             }
@@ -286,6 +286,13 @@ enum ScanningMode: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     case barcode
     case label
+
+    var title: String {
+        switch self {
+        case .barcode: return String(localized: "Barcode")
+        case .label:   return String(localized: "Label")
+        }
+    }
 
     var recognisedTypes: Set<DataScannerViewController.RecognizedDataType> {
         switch self {

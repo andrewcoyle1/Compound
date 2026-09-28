@@ -438,6 +438,44 @@ and `no_drawn_close_button`. They skip comments. Share cards
 the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
 cannot apply. If a rule fires, use the token; do not suppress it.
 
+## UI and the HIG
+
+Check UI work against Apple's live Human Interface Guidelines with the **`apple-hig` skill**
+(user-level, `~/.claude/skills/apple-hig`), not from memory — the guidance for bars, buttons,
+materials and colour was rewritten for Liquid Glass and is still changing. If the skill is not
+installed, say so and mark HIG claims as unverified.
+
+```bash
+python3 ~/.claude/skills/apple-hig/scripts/hig.py get tab-bars toolbars --platform ios
+```
+
+**Platforms.** The app ships to iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), iOS 26.0+,
+with Mac Catalyst enabled on the app and the widget extension. Pass `--platform ios` by default
+and `--platform ipados` when the change affects layout or navigation at regular width. Read
+`designing-for-ios` once per session.
+
+**Precedence.** Where this project has already decided, the decision wins and the HIG fills in the
+rest: the Design System section above, `docs/specs/ui-framework/CONTRACT.md` and the Decisions
+list in that folder's `README.md`. If a HIG page contradicts one of those, report it with the
+source URL — do not change the contract from inside a feature.
+
+**Pages by area:**
+
+| Area | Read |
+|---|---|
+| Tab shell, navigation | `tab-bars`, `toolbars`, `searching`, `sheets`, `modality` |
+| Onboarding (`Core/Onboarding/`) | `onboarding`, `privacy`, `healthkit`, `managing-notifications`, `sign-in-with-apple`, `managing-accounts` |
+| Paywalls | `apple-in-app-purchase` |
+| Active workout, Live Activity (`WorkoutSessionActivity/`) | `workouts`, `live-activities`, `playing-haptics` |
+| Analytics and charts | `charting-data`, `charts` |
+| Logging forms (food, sets, measurements) | `entering-data`, `pickers`, `text-fields`, `virtual-keyboards` |
+| Lists and rows | `lists-and-tables`, `buttons`, `menus`, `context-menus` |
+| Everything | `accessibility`, `typography`, `color`, `materials` |
+
+**Reviews** go in `docs/reviews/`, one file per review, in the skill's finding format (severity,
+`file:line`, quoted guideline with source URL, fix). State which appearances and text sizes were
+actually checked.
+
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.

@@ -75,6 +75,7 @@ struct SignInWithGoogleButtonView: View {
             switch self {
             case .light: return Color.white
             // Google's branding guidelines fix this fill (#131314); it is not a design token.
+            // swiftlint:disable:next no_rgb_color_literal
             case .dark: return Color(red: 19/255, green: 19/255, blue: 20/255)
             }
         }

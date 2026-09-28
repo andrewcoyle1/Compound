@@ -48,7 +48,17 @@ class AppPresenter {
         interactor.schedulePushNotificationsForNextWeek()
     }
     
-    func checkUserStatus() async {
+    /// The id of the toast that says the app cannot reach the server, so a later success can take
+    /// exactly that one down.
+    static let connectionToastId = "app_connection"
+
+    /// How long to wait before retry number `attempt` (0-based): 5 s, doubling, capped at a minute.
+    /// It used to retry every five seconds for ever.
+    static func retryDelay(attempt: Int) -> Duration {
+        .seconds(min(5 * (1 << min(attempt, 4)), 60))
+    }
+
+    func checkUserStatus(attempt: Int = 0) async {
         if let user = interactor.auth {
             // User is authenticated
             interactor.trackEvent(event: Event.existingAuthStart)
@@ -56,10 +66,10 @@ class AppPresenter {
             do {
                 try await interactor.logIn(user: user, isNewUser: false)
                 interactor.trackEvent(event: Event.existingAuthSuccess)
+                onConnected()
             } catch {
                 interactor.trackEvent(event: Event.existingAuthFail(error: error))
-                try? await Task.sleep(for: .seconds(5))
-                await checkUserStatus()
+                await retryAfterFailure(attempt: attempt)
             }
         } else {
             
@@ -74,7 +84,8 @@ class AppPresenter {
                 
                 // Log in
                 try await interactor.logIn(user: result.user, isNewUser: result.isNewUser)
-                
+                onConnected()
+
                 // Save push token
                 if let token = try? await Messaging.messaging().token() {
                     savePushToken(token: token)
@@ -82,10 +93,27 @@ class AppPresenter {
                 
             } catch {
                 interactor.trackEvent(event: Event.anonAuthFail(error: error))
-                try? await Task.sleep(for: .seconds(5))
-                await checkUserStatus()
+                await retryAfterFailure(attempt: attempt)
             }
         }
+    }
+
+    /// A first launch with no connection used to leave Welcome's button greyed out with no reason
+    /// given. The first failure now says why, and stays up until the app gets through.
+    private func retryAfterFailure(attempt: Int) async {
+        if attempt == 0 {
+            interactor.showAppToast(AppToast(
+                id: Self.connectionToastId,
+                style: .failure,
+                message: String(localized: "Can't reach the server. Check your connection.")
+            ))
+        }
+        try? await Task.sleep(for: Self.retryDelay(attempt: attempt))
+        await checkUserStatus(attempt: attempt + 1)
+    }
+
+    private func onConnected() {
+        if toast?.id == Self.connectionToastId { toast = nil }
     }
 
     func onNewActivityNotification(notification: Notification) {
@@ -98,15 +126,33 @@ class AppPresenter {
         }
     }
 
+    /// The banner opens Notifications, where the activity it announced is.
+    func onActivityBannerPressed() {
+        activityBanner = nil
+        DeepLink.tab(.dashboard).post()
+        DeepLink.notifications.post()
+    }
+
+    func onActivityBannerDismissed() {
+        activityBanner = nil
+    }
+
+    /// A failure toast carries an instruction ("resume it from Training"), so it stays until the
+    /// person dismisses it. The others still time out.
     func onAppToast(notification: Notification) {
         guard let toast = notification.object as? AppToast else { return }
         self.toast = toast
         toastGeneration += 1
+        guard toast.style != .failure else { return }
         let generation = toastGeneration
         Task {
             try? await Task.sleep(for: toast.duration)
             if toastGeneration == generation { self.toast = nil }
         }
+    }
+
+    func onToastDismissed() {
+        toast = nil
     }
 
     func onFCMTokenRecieved(notification: Notification) {

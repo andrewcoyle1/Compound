@@ -197,6 +197,39 @@ struct AppShellAppPresenterTests {
 
         #expect(screen.interactor.trackedEventNames.contains("AppView_ExistingAuth_Fail"))
         #expect(screen.interactor.loggedInUids == ["existing-1"])
+        // The failure said why the app was waiting, once.
+        let toastIds = screen.interactor.shownToasts.map(\.id)
+        #expect(toastIds == [AppPresenter.connectionToastId])
+    }
+
+    /// Retries back off from five seconds to a minute rather than hammering every five seconds.
+    @Test("Test Retries Back Off To A Minute")
+    func testRetriesBackOffToAMinute() {
+        #expect(AppPresenter.retryDelay(attempt: 0) == .seconds(5))
+        #expect(AppPresenter.retryDelay(attempt: 1) == .seconds(10))
+        #expect(AppPresenter.retryDelay(attempt: 3) == .seconds(40))
+        #expect(AppPresenter.retryDelay(attempt: 4) == .seconds(60))
+        #expect(AppPresenter.retryDelay(attempt: 40) == .seconds(60))
+    }
+
+    // MARK: - Toasts
+
+    /// A failure toast carries an instruction, so it waits for the person; the others time out.
+    @Test("Test A Failure Toast Stays Until Dismissed")
+    func testAFailureToastStaysUntilDismissed() async {
+        let screen = makeScreen()
+        let failure = AppToast(style: .failure, message: "Couldn't save", duration: .milliseconds(10))
+
+        screen.presenter.onAppToast(notification: Notification(name: .appToast, object: failure))
+        try? await Task.sleep(for: .milliseconds(100))
+        #expect(screen.presenter.toast == failure)
+
+        screen.presenter.onToastDismissed()
+        #expect(screen.presenter.toast == nil)
+
+        let success = AppToast(style: .success, message: "Saved", duration: .milliseconds(10))
+        screen.presenter.onAppToast(notification: Notification(name: .appToast, object: success))
+        #expect(await TestManagers.eventually { screen.presenter.toast == nil })
     }
 
     // MARK: - Push token

@@ -55,21 +55,35 @@ struct AppView<Content: View>: View {
         .onNotificationReceived(name: .appToast) { notification in
             presenter.onAppToast(notification: notification)
         }
+        // One overlay, so a toast and a banner raised together stack rather than draw over each other.
         .overlay(alignment: .top) {
-            if let toast = presenter.toast {
-                AppToastView(toast: toast)
+            VStack(spacing: Spacing.s) {
+                if let toast = presenter.toast {
+                    Button {
+                        presenter.onToastDismissed()
+                    } label: {
+                        AppToastView(toast: toast)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Dismisses the message")
+                    .simultaneousGesture(swipeUp { presenter.onToastDismissed() })
                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
-                    .reducedMotionAnimation(.spring, value: presenter.toast?.id)
-                    .padding(.top, 8)
-            }
-        }
-        .overlay(alignment: .top) {
-            if let banner = presenter.activityBanner {
-                ActivityNotificationBannerView(notification: banner)
+                }
+                if let banner = presenter.activityBanner {
+                    Button {
+                        presenter.onActivityBannerPressed()
+                    } label: {
+                        ActivityNotificationBannerView(notification: banner)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Opens Notifications")
+                    .simultaneousGesture(swipeUp { presenter.onActivityBannerDismissed() })
                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
-                    .reducedMotionAnimation(.spring, value: presenter.activityBanner != nil)
-                    .padding(.top, 8)
+                }
             }
+            .padding(.top, Spacing.s)
+            .reducedMotionAnimation(.spring, value: presenter.toast?.id)
+            .reducedMotionAnimation(.spring, value: presenter.activityBanner?.id)
         }
         .onAppear {
             presenter.onViewAppear()
@@ -78,6 +92,14 @@ struct AppView<Content: View>: View {
             presenter.onViewDisappear()
         }
 
+    }
+
+    /// Flicking a toast or banner up puts it away, as a system banner does.
+    private func swipeUp(_ action: @escaping () -> Void) -> some Gesture {
+        DragGesture(minimumDistance: Spacing.l)
+            .onEnded { value in
+                if value.translation.height < -Spacing.l { action() }
+            }
     }
 }
 

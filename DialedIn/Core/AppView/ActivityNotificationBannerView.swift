@@ -39,23 +39,28 @@ struct ActivityNotificationBannerView: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "bell.fill")
+        HStack(spacing: Spacing.m) {
+            Image(systemName: Symbol.notifications + ".fill")
                 .foregroundStyle(.primary)
-                .font(.subheadline)
+                .font(.rowDetail)
 
             Text(message)
-                .font(.subheadline)
+                .font(.rowDetail)
                 .fontWeight(.medium)
                 .foregroundStyle(.primary)
-                .lineLimit(2)
+                .lineLimit(3)
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .glassEffect()
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.m)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
+        .padding(.horizontal, Spacing.xl)
+        .accessibilityElement(children: .combine)
+        // It appears over whatever the person is doing, so VoiceOver has to be told.
+        .task(id: notification.id) {
+            AccessibilityNotification.Announcement(message).post()
+        }
     }
 }
 
@@ -90,7 +95,7 @@ struct ActivityNotificationBannerView: View {
             )
         )
     }
-    .padding(.top, 60)
+    .padding(.top, Spacing.xxl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .background(Color.gray.opacity(0.2))
 }

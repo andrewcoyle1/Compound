@@ -37,7 +37,7 @@ class MealItemAmountViewPresenter {
         didSet {
             guard selectedUnit != oldValue else { return }
             let previous = NutritionScaling.baseAmount(amountValue, in: oldValue)
-            amountText = selectedUnit == nil ? String(format: "%g", NutritionScaling.rounded(previous)) : "1"
+            amountText = selectedUnit == nil ? NutritionScaling.rounded(previous).formatted(.number.grouping(.never)) : "1"
         }
     }
 

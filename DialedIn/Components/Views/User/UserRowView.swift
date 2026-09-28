@@ -28,6 +28,8 @@ struct UserAvatarView: View {
         }
         .frame(width: size, height: size)
         .clipShape(Circle())
+        // The name beside it already says who this is; the picture adds nothing to VoiceOver.
+        .accessibilityHidden(true)
     }
 }
 
@@ -39,7 +41,7 @@ struct UserRowView<Trailing: View>: View {
     @ViewBuilder var trailing: () -> Trailing
 
     private var displayName: String {
-        user.fullNameCalculated ?? user.firstNameCalculated ?? "Unknown"
+        user.fullNameCalculated ?? user.firstNameCalculated ?? String(localized: "Unknown")
     }
 
     var body: some View {
@@ -101,7 +103,8 @@ struct FollowButton: View {
         }
         .font(.rowDetail)
         .fontWeight(.semibold)
-        .controlSize(.small)
+        // Regular size, not `.small`: this is one of the most repeated taps in the app, and the
+        // small glass capsule came in well under the 44 pt minimum.
         .accessibilityHint(state == .requested ? "Cancels your follow request" : "")
     }
 }

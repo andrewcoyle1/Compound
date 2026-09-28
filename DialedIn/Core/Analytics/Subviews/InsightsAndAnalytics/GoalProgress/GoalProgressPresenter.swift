@@ -20,6 +20,11 @@ class GoalProgressPresenter {
     private(set) var cachedTimeSeries: [TimeSeries] = []
     private(set) var currentWeightKg: Double?
 
+    /// The user's own unit. Goals and weigh-ins are stored in kilograms.
+    var weightUnit: WeightUnitPreference {
+        interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
+    }
+
     init(interactor: GoalProgressInteractor, router: GoalProgressRouter) {
         self.interactor = interactor
         self.router = router
@@ -52,7 +57,8 @@ class GoalProgressPresenter {
                 id: entry.id,
                 date: entry.date,
                 weightKg: weightKg,
-                progressPercent: progress * 100
+                progressPercent: progress * 100,
+                weightUnit: weightUnit
             )
         }
 
@@ -137,11 +143,15 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
-    private func weightLabel(_ title: String, _ kilos: Double) -> some View {
+    /// A stored kilogram weight in the user's unit, as the entries show it.
+    func weightText(_ kilos: Double) -> String {
+        Format.weight(kg: kilos, unit: weightUnit)
+    }
+
+    private func weightLabel(_ title: LocalizedStringKey, _ kilos: Double) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(title)
-            // Kilograms, as the entries and chart on this screen are.
-            Text(Format.weight(kg: kilos, unit: WeightUnitPreference.kilograms))
+            Text(weightText(kilos))
                 .fontWeight(.medium)
         }
     }

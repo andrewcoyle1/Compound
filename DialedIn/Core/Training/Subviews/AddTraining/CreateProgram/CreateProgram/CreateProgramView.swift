@@ -20,16 +20,15 @@ struct CreateProgramView: View {
             ImageLoaderView()
                 .ignoresSafeArea()
                 .frame(maxHeight: 400)
-            VStack(alignment: .leading) {
-                Text("Create Program")
-                    .font(.title)
-                    .fontWeight(.bold)
-                Text("It's time to create a custom workout program.")
-            }
-            .padding(.top)
-            .frame(maxWidth: .infinity)
+            Text("It's time to create a custom workout program.")
+                .font(.rowTitle)
+                .multilineTextAlignment(.center)
+                .padding()
+                .frame(maxWidth: .infinity)
             Spacer()
         }
+        .navigationTitle("Create Program")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
         }
@@ -39,14 +38,13 @@ struct CreateProgramView: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Continue")
             }
             .accessibilityIdentifier("CreateProgram.continue")
-            .padding(.bottom)
         }
     }
     
@@ -55,12 +53,9 @@ struct CreateProgramView: View {
         // The library entry passed no dismiss closure, so its cover had no way out but to finish.
         if delegate.onComplete == nil {
             ToolbarItem(placement: .cancellationAction) {
-                Button {
+                Button(role: .close) {
                     presenter.onDismissPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
                 .accessibilityIdentifier("CreateProgram.close")
             }
         }

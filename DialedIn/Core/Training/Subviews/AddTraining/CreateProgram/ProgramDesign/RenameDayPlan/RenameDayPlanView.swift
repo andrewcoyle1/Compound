@@ -10,33 +10,28 @@ struct RenameWorkoutTemplateModelView: View {
     let delegate: RenameWorkoutTemplateModelDelegate
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Name") {
-                    TextField("Day name", text: $presenter.nameText)
-                        .textFieldStyle(.roundedBorder)
-                }
-            }
-            .navigationTitle("Rename Day")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                toolbarContent
+        Form {
+            Section("Name") {
+                TextField("Day name", text: $presenter.nameText)
             }
         }
-        .presentationDetents([.fraction(0.25), .fraction(0.4)])
-        .presentationDragIndicator(.visible)
+        .navigationTitle("Rename Day")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            toolbarContent
+        }
     }
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button("Cancel") {
+            Button(role: .close) {
                 presenter.onCancelPressed()
             }
         }
 
         ToolbarItem(placement: .confirmationAction) {
-            Button("Save") {
+            Button(role: .confirm) {
                 presenter.onSavePressed(onSave: delegate.onSave)
             }
             .disabled(!presenter.canSave)

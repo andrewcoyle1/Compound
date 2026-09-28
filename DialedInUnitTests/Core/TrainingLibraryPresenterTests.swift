@@ -19,7 +19,7 @@ import SwiftUI
 /// The per-exercise settings sheet: which units this exercise is logged in, how long its rest is,
 /// and the note carried into every session of it.
 ///
-/// Each setting has a subtitle that has to say what is actually stored — "Default (90s)" when there
+/// Each setting has a subtitle that has to say what is actually stored — "Default (1:30)" when there
 /// is no override and a formatted custom time when there is — and clearing an override has to mean
 /// removing it rather than storing zero seconds.
 @MainActor
@@ -128,18 +128,18 @@ struct TrainingExerciseSettingsPresenterTests {
         let screen = makeScreen()
         screen.interactor.workoutSettings.defaultRestDurationSeconds = 120
 
-        #expect(screen.presenter.restSubtitle == "Default (120s)")
+        #expect(screen.presenter.restSubtitle == "Default (2:00)")
     }
 
     @Test("Test A Custom Rest Reads As Minutes And Seconds")
     func testACustomRestReadsAsMinutesAndSeconds() {
-        #expect(makeScreen(restOverride: 150).presenter.restSubtitle == "Custom (2m 30s)")
+        #expect(makeScreen(restOverride: 150).presenter.restSubtitle == "Custom (2:30)")
     }
 
-    /// Seconds are padded, so sixty-five seconds reads "1m 05s" rather than "1m 5s".
+    /// Seconds are padded, so sixty-five seconds reads "1:05" rather than "1:5".
     @Test("Test Single Digit Seconds Are Padded")
     func testSingleDigitSecondsArePadded() {
-        #expect(makeScreen(restOverride: 65).presenter.restSubtitle == "Custom (1m 05s)")
+        #expect(makeScreen(restOverride: 65).presenter.restSubtitle == "Custom (1:05)")
     }
 
     @Test("Test An Empty Note Reads As None")
@@ -216,7 +216,7 @@ struct TrainingExerciseSettingsPresenterTests {
         await TestManagers.eventually { !screen.interactor.savedRestOverrides.isEmpty }
 
         #expect(screen.interactor.savedRestOverrides == [105])
-        #expect(screen.presenter.restSubtitle == "Custom (1m 45s)")
+        #expect(screen.presenter.restSubtitle == "Custom (1:45)")
     }
 
     /// Winding the picker back to zero means "use the default again", so the override is removed
@@ -233,7 +233,7 @@ struct TrainingExerciseSettingsPresenterTests {
         await TestManagers.eventually { !screen.interactor.savedRestOverrides.isEmpty }
 
         #expect(screen.interactor.savedRestOverrides == [Int?.none])
-        #expect(screen.presenter.restSubtitle == "Default (90s)")
+        #expect(screen.presenter.restSubtitle == "Default (1:30)")
     }
 
     // MARK: - Note

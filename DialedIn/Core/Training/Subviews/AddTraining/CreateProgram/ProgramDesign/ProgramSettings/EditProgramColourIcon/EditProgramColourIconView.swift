@@ -2,65 +2,30 @@ import SwiftUI
 
 struct EditProgramColourIconView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     @State var presenter: EditProgramColourIconPresenter
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                ForEach(presenter.colours, id: \.self) { colour in
-                    ZStack {
-                        Circle().opacity(0.3)
-                        Image(systemName: presenter.selectedIcon)
-                    }
-                    .foregroundStyle(colour)
-                    .overlay {
-                        Circle()
-                            .stroke(colour == presenter.selectedColour ? colour : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onColourPressed(colour)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            
-            Divider()
-            
-            LazyVGrid(columns: Array(repeating: GridItem(), count: 6)) {
-                ForEach(presenter.icons, id: \.self) { icon in
-                    ZStack {
-                        Circle()
-                            .opacity(0.3)
-                            .frame(maxWidth: 40)
-                        Image(systemName: icon)
-                    }
-                    .foregroundStyle(presenter.selectedColour)
-                    .padding(.vertical, 4)
-                    .overlay {
-                        Circle()
-                            .stroke(icon == presenter.selectedIcon ? presenter.selectedColour : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onIconPressed(icon)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            
+        VStack {
+            ProgramColourIconGrid(
+                colours: presenter.colours,
+                icons: presenter.icons,
+                selectedColour: presenter.selectedColour,
+                selectedIcon: presenter.selectedIcon,
+                onColourPressed: { presenter.onColourPressed($0) },
+                onIconPressed: { presenter.onIconPressed($0) }
+            )
             Spacer()
         }
         .padding(.top)
-        .background(colorScheme.backgroundSecondary)
+        .background(Color.canvas)
         .navigationTitle("Colour & Icon")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { presenter.onCancelPressed() }
+                Button(role: .close) { presenter.onCancelPressed() }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") { presenter.onSavePressed() }
+                Button(role: .confirm) { presenter.onSavePressed() }
             }
         }
     }

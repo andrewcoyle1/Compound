@@ -15,70 +15,33 @@ struct ExerciseSettingsView: View {
     var body: some View {
         List {
             Section {
-                CustomLabelButtonView(
-                    symbolName: "info.circle",
+                ListRowButton(
                     title: String(localized: "Info"),
-                    subtitle: delegate.exercise.description ?? "View instructions, exercise details, and history"
+                    subtitle: delegate.exercise.description ?? String(localized: "View instructions, exercise details, and history"),
+                    systemImage: Symbol.info
                 ) {
-                    Button {
-                        presenter.onInfoPressed()
-                    } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .accessibilityLabel("Exercise info")
+                    presenter.onInfoPressed()
                 }
-                CustomLabelButtonView(
-                    symbolName: "scalemass",
-                    title: String(localized: "Weights"),
-                    subtitle: presenter.weightsSubtitle
-                ) {
-                    Button {
-                        presenter.onWeightsPressed()
-                    } label: {
-                        Text("Edit")
-                    }
-                    .buttonStyle(.bordered)
+                editRow(title: String(localized: "Weights"), subtitle: presenter.weightsSubtitle, systemImage: Symbol.weight) {
+                    presenter.onWeightsPressed()
                 }
-                CustomLabelButtonView(
-                    symbolName: "timer",
-                    title: String(localized: "Rest Timer"),
-                    subtitle: presenter.restSubtitle
-                ) {
-                    Button {
-                        presenter.onRestTimerPressed()
-                    } label: {
-                        Text("Edit")
-                    }
-                    .buttonStyle(.bordered)
+                editRow(title: String(localized: "Rest Timer"), subtitle: presenter.restSubtitle, systemImage: Symbol.rest) {
+                    presenter.onRestTimerPressed()
                 }
                 // Shown for exercises worked one limb at a time, which is read off the metrics
                 // the exercise is tracked by. It used to be gated on `laterality`, which nearly
                 // every exercise leaves empty, so the row almost never appeared.
                 if presenter.isPerSide {
-                    CustomLabelButtonView(
-                        symbolName: "arrow.trianglehead.branch",
+                    editRow(
                         title: String(localized: "Rest Between Left/Right Sets"),
-                        subtitle: presenter.sideSetRestSubtitle
+                        subtitle: presenter.sideSetRestSubtitle,
+                        systemImage: "arrow.trianglehead.branch"
                     ) {
-                        Button {
-                            presenter.onSideSetRestPressed()
-                        } label: {
-                            Text("Edit")
-                        }
-                        .buttonStyle(.bordered)
+                        presenter.onSideSetRestPressed()
                     }
                 }
-                CustomLabelButtonView(
-                    symbolName: "text.page",
-                    title: String(localized: "Exercise Note"),
-                    subtitle: presenter.noteSubtitle
-                ) {
-                    Button {
-                        presenter.onNotePressed()
-                    } label: {
-                        Text("Edit")
-                    }
-                    .buttonStyle(.bordered)
+                editRow(title: String(localized: "Exercise Note"), subtitle: presenter.noteSubtitle, systemImage: Symbol.note) {
+                    presenter.onNotePressed()
                 }
                 // Two rows removed rather than left inert:
                 // - "Do Not Recommend" was a disabled toggle bound to .constant(false), and there
@@ -98,6 +61,15 @@ struct ExerciseSettingsView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
+    }
+
+    private func editRow(title: String, subtitle: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        ListRow(
+            title: title,
+            subtitle: subtitle,
+            systemImage: systemImage,
+            accessory: .custom(AnyView(RowChipButton(subject: title, action: action)))
+        )
     }
 }
 

@@ -99,4 +99,31 @@ struct DoubleClampTests {
         #expect(capped.isFinite)
         #expect((capped * 900 / 100).isFinite)
     }
+
+    // MARK: - Typed with the region's separator
+
+    /// The decimal pad in Germany, Spain or Brazil has a comma and no full stop. `Double("1,5")`
+    /// is nil, so every amount read as zero and Log stayed disabled.
+    @Test("A decimal comma is read as a decimal point")
+    func testADecimalCommaIsReadAsADecimalPoint() {
+        let german = Locale(identifier: "de_DE")
+
+        #expect(Double.typed("1,5", locale: german) == 1.5)
+        #expect(Double.typed("1.5", locale: german) == 1.5)
+        #expect(Double.typed("1,5", locale: Locale(identifier: "en_GB")) == 1.5)
+        #expect(Double.enteredAmount("0,25") == 0.25)
+    }
+
+    @Test("Digits in another script are read as numbers")
+    func testDigitsInAnotherScriptAreReadAsNumbers() {
+        #expect(Double.typed("١٫٥", locale: Locale(identifier: "ar_SA")) == 1.5)
+    }
+
+    @Test("A grouped figure and a non-number are still rejected")
+    func testAGroupedFigureAndANonNumberAreStillRejected() {
+        #expect(Double.typed("1,234.5") == nil)
+        #expect(Double.typed("nan") == nil)
+        #expect(Double.typed("inf") == nil)
+        #expect(Double.typed("") == nil)
+    }
 }

@@ -4,6 +4,7 @@
 //
 
 import Testing
+import Foundation
 @testable import DialedIn
 
 /// What a set row's weight and reps fields show for a stored value.
@@ -28,5 +29,14 @@ struct AutoSelectNumberFieldTextTests {
         for value in [0, 8, 42.5, 102.25, 1e20] {
             #expect(Double(AutoSelectNumberField.text(for: value)) == value)
         }
+    }
+
+    @Test("What the number field shows is what it reads back")
+    func testWhatTheNumberFieldShowsIsWhatItReadsBack() {
+        let spanish = Locale(identifier: "es_ES")
+        let shown = AutoSelectNumberField.text(for: 42.5, locale: spanish)
+
+        #expect(shown == "42,5")
+        #expect(Double.typed(shown, locale: spanish) == 42.5)
     }
 }

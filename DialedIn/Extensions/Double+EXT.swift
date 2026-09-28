@@ -48,7 +48,26 @@ extension Double {
     /// above any real portion or serving count and is only there so a finite but absurd figure
     /// cannot multiply a nutrient up to infinity.
     static func enteredAmount(_ text: String) -> Double {
-        (Double(text) ?? 0).clamped(to: 0...maximumEnteredAmount, whenNotFinite: 0)
+        (typed(text) ?? 0).clamped(to: 0...maximumEnteredAmount, whenNotFinite: 0)
+    }
+
+    /// A number as a person types it, which `Double`'s own initialiser does not read.
+    ///
+    /// The decimal pad offers only the region's separator, so in most of Europe and South America
+    /// "1,5" is the only way to type one and a half. `Double("1,5")` is nil, which every amount
+    /// field read as zero and so refused to submit. Digits in other scripts failed the same way.
+    /// Both the region's separator and a full stop are read as the decimal point; a grouped
+    /// figure such as "1,234.5" is still rejected rather than guessed at.
+    static func typed(_ text: String, locale: Locale = .current) -> Double? {
+        let separator = locale.decimalSeparator ?? "."
+        let ascii = text
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: separator, with: ".")
+            .replacingOccurrences(of: ",", with: ".")
+            .map { $0.wholeNumberValue.map(String.init) ?? String($0) }
+            .joined()
+        guard let value = Double(ascii), value.isFinite else { return nil }
+        return value
     }
 
     /// One tonne of food, or a million servings. Nothing legitimate comes near it.

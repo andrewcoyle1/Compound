@@ -40,7 +40,7 @@ struct AutoSelectNumberField: View {
                 // parses both literally. Everything downstream of this field multiplies the value
                 // into arithmetic that is printed through `Int(_:)`, which traps on a value that
                 // is not finite — so a number that is not a number never leaves the field.
-                value = Double(newValue).flatMap { $0.isFinite ? $0 : nil }
+                value = Double.typed(newValue)
             }
             .onChange(of: isFocused) { _, focused in
                 if focused {
@@ -49,24 +49,24 @@ struct AutoSelectNumberField: View {
             }
             .onChange(of: value) { _, newValue in
                 if !isFocused {
-                    text = newValue.map(Self.text(for:)) ?? ""
+                    text = newValue.map { Self.text(for: $0) } ?? ""
                 }
             }
             .onAppear {
-                text = value.map(Self.text(for:)) ?? ""
+                text = value.map { Self.text(for: $0) } ?? ""
             }
             .keyboardType(keyboardType)
             // Shrinks rather than truncating to "4…" when a large text size outgrows the field.
             .minimumScaleFactor(0.5)
     }
 
-    /// Whole numbers without the ".0" `description` adds: reps read "10", not "10.0". Kept in
-    /// the "." form `Double(_:)` parses back, rather than a localised one.
-    static func text(for value: Double) -> String {
+    /// Whole numbers without the ".0" `description` adds: reps read "10", not "10.0". Decimals
+    /// use the region's separator, the one the decimal pad offers, and `Double.typed` reads it back.
+    static func text(for value: Double, locale: Locale = .current) -> String {
         if value == value.rounded(), abs(value) < 1e15 {
             return String(Int(value))
         }
-        return value.description
+        return value.description.replacingOccurrences(of: ".", with: locale.decimalSeparator ?? ".")
     }
 }
 

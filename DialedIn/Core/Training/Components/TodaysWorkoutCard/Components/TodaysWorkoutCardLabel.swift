@@ -8,49 +8,33 @@
 import SwiftUI
 
 struct TodaysWorkoutCardLabel: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
 
     let template: WorkoutTemplateModel
-    
+
     var body: some View {
         VStack(alignment: .leading) {
-            HStack(spacing: -24) {
+            HStack(spacing: -Spacing.xl) {
                 ForEach(template.exercises.prefix(4)) { exercise in
                     exerciseCircle(exercise: exercise.exercise)
                 }
             }
             .frame(maxHeight: .infinity)
             Divider()
-            HStack(spacing: 12) {
-                Image(systemName: "dumbbell.fill")
-                    .font(.title2)
-                    .foregroundStyle(.accent)
-                VStack(alignment: .leading) {
-                    Text(template.name)
-                        .font(.title3.bold())
-                        .foregroundStyle(.primary)
-                    Text("\(template.exercises.count) exercise\(template.exercises.count == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.secondary)
-            }
+            TodaysWorkoutCardFooter(
+                systemImage: Symbol.workout,
+                tint: .accentColor,
+                title: template.name,
+                subtitle: String(localized: "^[\(template.exercises.count) exercise](inflect: true)"),
+                showsChevron: true
+            )
         }
-        .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect)
-        .cornerRadius(24)
-        .padding(.bottom)
-        .frame(height: 200)
+        .todaysWorkoutCardSurface()
     }
-    
-    @ViewBuilder
+
     private func exerciseCircle(exercise: ExerciseModel) -> some View {
         ZStack {
             Circle()
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(.canvas)
 
             ImageLoaderView(
                 urlString: exercise.imageURL ?? "SplashScreen",
@@ -59,67 +43,89 @@ struct TodaysWorkoutCardLabel: View {
             )
         }
         .frame(width: 100, height: 100)
-        .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+        .overlay(Circle().stroke(.surface, lineWidth: 2))
+        .accessibilityHidden(true)
     }
 }
 
 struct WorkoutCompletedCard: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
 
     let template: WorkoutTemplateModel
-    
+
     var body: some View {
         VStack {
             Spacer()
-            HStack(spacing: 12) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.green)
-                VStack(alignment: .leading) {
-                    Text(template.name)
-                        .font(.title3.bold())
-                    Text("Completed today")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-            }
+            TodaysWorkoutCardFooter(
+                systemImage: Symbol.success,
+                tint: .success,
+                title: template.name,
+                subtitle: String(localized: "Completed today"),
+                showsChevron: false
+            )
         }
-        .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect)
-        .cornerRadius(24)
-        .padding(.bottom)
-        .frame(height: 200)
+        .todaysWorkoutCardSurface()
     }
 }
 
 struct RestDayCard: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
+
     var body: some View {
         VStack {
             Spacer()
-            HStack(spacing: 12) {
-                Image(systemName: "moon.zzz.fill")
-                    .font(.title2)
-                    .foregroundStyle(.blue)
-                VStack(alignment: .leading) {
-                    Text("Rest Day")
-                        .font(.title3.bold())
-                    Text("Recovery is part of the process.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
+            TodaysWorkoutCardFooter(
+                systemImage: Symbol.restDay,
+                tint: .accentColor,
+                title: String(localized: "Rest Day"),
+                subtitle: String(localized: "Recovery is part of the process."),
+                showsChevron: false
+            )
+        }
+        .todaysWorkoutCardSurface()
+    }
+}
+
+/// The glyph, title and subtitle along the bottom of each of the three cards. The title is drawn
+/// in `.primary` explicitly: the card is a button, and a button would otherwise tint it.
+private struct TodaysWorkoutCardFooter: View {
+    let systemImage: String
+    let tint: Color
+    let title: String
+    let subtitle: String
+    let showsChevron: Bool
+
+    var body: some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: systemImage)
+                .iconSize(.medium)
+                .foregroundStyle(tint)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.sectionTitle)
+                    .foregroundStyle(.primary)
+                Text(subtitle)
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
+            }
+            .lineLimit(1)
+            Spacer()
+            if showsChevron {
+                Image(systemName: "chevron.forward")
+                    .font(.rowDetail.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
         }
-        .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect)
-        .cornerRadius(24)
-        .padding(.bottom)
-        .frame(height: 200)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private extension View {
+    /// Fills the Dashboard card's content height, so the whole surface is the tap target.
+    func todaysWorkoutCardSurface() -> some View {
+        padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .cardSurface()
     }
 }
 
@@ -127,7 +133,7 @@ struct RestDayCard: View {
     List {
         Section {
             TodaysWorkoutCardLabel(template: .mock)
-                .frame(height: 200)
+                .frame(height: DashboardCard<EmptyView>.contentHeight)
         }
         .frame(height: 240)
         .removeListRowFormatting()

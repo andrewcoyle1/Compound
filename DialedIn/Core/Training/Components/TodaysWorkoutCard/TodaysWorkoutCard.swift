@@ -39,11 +39,11 @@ struct TodaysWorkoutCard: View {
     }
     
     private var startWorkoutCard: some View {
-        Button {
-            presenter.onTodaysWorkoutPressed()
-        } label: {
-            TodaysWorkoutCardLabel(template: delegate.todaysWorkoutTemplate)
-        }
+        TodaysWorkoutCardLabel(template: delegate.todaysWorkoutTemplate)
+            .anyButton(.press) {
+                presenter.onTodaysWorkoutPressed()
+            }
+            .accessibilityHint("Opens today's workout")
     }
 }
 

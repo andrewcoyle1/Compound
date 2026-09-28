@@ -18,7 +18,7 @@ struct WorkoutStreakCard: View {
     
     var body: some View {
         DashboardCard(title: String(localized: "Workout Streak")) {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: Spacing.l) {
                 streakHeader
                 weeklyDotsRow
                 Divider()
@@ -29,17 +29,19 @@ struct WorkoutStreakCard: View {
     
     private var streakHeader: some View {
         HStack(alignment: .center) {
-            Image(systemName: "flame.fill")
-                .font(.title2)
+            Image(systemName: Symbol.streak)
+                .iconSize(.medium)
                 .foregroundStyle(streakAccentColor)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                .accessibilityHidden(true)
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
                 Text("\(presenter.workoutStreakCount)")
-                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .font(.display)
                     .foregroundStyle(streakAccentColor)
                 Text(presenter.workoutStreakCount == 1 ? String(localized: "day") : String(localized: "days"))
-                    .font(.subheadline)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
             Spacer()
             streakBadge
         }
@@ -48,31 +50,17 @@ struct WorkoutStreakCard: View {
     @ViewBuilder
     private var streakBadge: some View {
         if presenter.isStreakAtRisk {
-            Text("At Risk")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.yellow.opacity(0.15))
-                .foregroundStyle(Color.yellow)
-                .clipShape(Capsule())
+            Chip("At Risk", systemImage: Symbol.warning, tint: .warning)
         } else if presenter.isStreakActive {
-            Text("Active")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.orange.opacity(0.15))
-                .foregroundStyle(Color.orange)
-                .clipShape(Capsule())
+            Chip("Active", systemImage: Symbol.streak, tint: Color.Metric.workouts)
         }
     }
 
     private var streakAccentColor: Color {
         if presenter.isStreakAtRisk {
-            return .yellow
+            return .warning
         } else if presenter.isStreakActive {
-            return .orange
+            return Color.Metric.workouts
         }
         return .secondary
     }
@@ -92,14 +80,14 @@ struct WorkoutStreakCard: View {
                 let isToday = calendar.isDateInToday(day)
                 let isFuture = day > today
 
-                VStack(spacing: 6) {
+                VStack(spacing: Spacing.xs) {
                     Text(labels[index])
                         .font(.caption2)
                         .fontWeight(isToday ? .bold : .regular)
                         .foregroundStyle(isToday ? .primary : .secondary)
                     ZStack {
                         Circle()
-                            .foregroundStyle(hasWorkout ? Color.orange : Color(.systemFill))
+                            .foregroundStyle(hasWorkout ? Color.Metric.workouts : Color(.systemFill))
                             .opacity(hasWorkout ? 1.0 : isFuture ? 0.2 : 0.45)
                         if isToday && !hasWorkout {
                             Circle()
@@ -109,15 +97,18 @@ struct WorkoutStreakCard: View {
                     .frame(width: 10, height: 10)
                 }
                 .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(day, format: .dateTime.weekday(.wide)))
+                .accessibilityValue(hasWorkout ? Text("Workout logged") : Text("No workout"))
             }
         }
     }
 
     private var streakStats: some View {
         HStack {
-            StatItem(header: String(localized: "Best streak"), value: "\(presenter.longestStreak) days")
+            Stat(value: String(localized: "^[\(presenter.longestStreak) day](inflect: true)"), label: String(localized: "Best streak"), size: .small)
             Spacer()
-            StatItem(alignment: .trailing, header: String(localized: "Total workouts"), value: "\(presenter.totalWorkouts)")
+            Stat(value: presenter.totalWorkouts.formatted(), label: String(localized: "Total workouts"), size: .small, alignment: .trailing)
         }
     }
 

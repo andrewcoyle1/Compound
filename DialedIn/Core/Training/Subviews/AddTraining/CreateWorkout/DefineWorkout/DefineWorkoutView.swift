@@ -34,7 +34,20 @@ struct DefineWorkoutView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
+        .navigationTitle(delegate.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            // Adding exercises is what this screen is for, so its add lives in the toolbar.
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    presenter.onAddExercisePressed()
+                } label: {
+                    Image(systemName: Symbol.add)
+                }
+                .accessibilityLabel("Add exercise")
+                .accessibilityIdentifier("DefineWorkout.addExercise")
+            }
+        }
     }
     
     @ViewBuilder
@@ -47,152 +60,35 @@ struct DefineWorkoutView: View {
     }
     
     private var restDaySection: some View {
-        Section {
-            HStack {
-                Image(systemName: "sun.max")
-                Text("You can convert the rest day into a workout day by add exercises below")
-            }
-            .frame(maxWidth: .infinity)
-        } header: {
-            Text("Rest Day")
+        Section("Rest Day") {
+            ListRow(
+                title: String(localized: "Add exercises to turn this rest day into a workout day."),
+                systemImage: Symbol.restDay,
+                tint: .secondary
+            )
         }
     }
     
     private var targetMusclesSection: some View {
-        Section {
-            if presenter.targetMuscleSummaries.isEmpty {
-                HStack {
-                    Image(systemName: "figure.wave")
-                        .font(.system(size: 32))
-                        .frame(width: 40)
-                    Text("You haven't added any exercises yet. Once you add an exercise, target muscles will appear here.")
-                }
-            } else {
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(presenter.targetMuscleSummaries) { summary in
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(summary.muscle.name)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .lineLimit(1)
-                                
-                                Text("\(formattedSetCount(summary.weightedTargetSets)) target sets")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                
-                                Text("\(summary.exerciseCount) \(summary.exerciseCount == 1 ? String(localized: "exercise") : String(localized: "exercises"))")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            .padding(10)
-                            .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                .removeListRowFormatting()
-                .scrollIndicators(.hidden)
-            }
-        } header: {
-            Text("Target Muscles")
-        }
+        TargetMusclesSection(summaries: presenter.targetMuscleSummaries)
     }
-    
-    private func formattedSetCount(_ value: Double) -> String {
-        let rounded = value.rounded()
-        if abs(rounded - value) < 0.000_01 {
-            return "\(Int(rounded))"
-        } else {
-            return String(format: "%.1f", value)
-        }
-    }
-    
+
     private var exercisesSection: some View {
         Section {
             ForEach($presenter.exercises) { $exercise in
-                HStack {
-                    ImageLoaderView(urlString: exercise.exercise.imageURL ?? Constants.randomImage)
-                        .frame(width: 60, height: 60)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.exercise.name)
-                            .fontWeight(.semibold)
-                        LazyHGrid(rows: [GridItem(), GridItem()]) {
-                            ForEach(exercise.setTargets) { target in
-                                setTarget(target)
-                            }
-                        }
-                        ScrollView(.horizontal) {
-                            HStack {
-                                ForEach(
-                                    exercise.exercise.muscleGroups.sorted { $0.key.name < $1.key.name },
-                                    id: \.key
-                                ) { key, value in
-                                    Text(key.name)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .padding(4)
-                                        .padding(.horizontal, 4)
-                                        .background(value == .secondary ? Color.secondary.opacity(0.2) : Color.secondary.opacity(0.4), in: Capsule())
-                                }
-                            }
-                        }
+                TemplateExerciseRow(exercise: exercise)
+                    .anyButton(.highlight) {
+                        presenter.onExercisePressed(exercise: $exercise)
                     }
-                }
-                .anyButton(.highlight) {
-                    presenter.onExercisePressed(exercise: $exercise)
-                }
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         presenter.removeExercise(exercise: exercise)
                     }
                 }
             }
         } header: {
-            HStack {
-                VStack {
-                    Text("\(presenter.exercises.count) Exercises")
-                }
-                Spacer()
-                Button {
-                    presenter.onAddExercisePressed()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add exercise")
-                .accessibilityIdentifier("DefineWorkout.addExercise")
-                .buttonStyle(.bordered)
-            }
+            Text("^[\(presenter.exercises.count) Exercise](inflect: true)")
         }
-    }
-    
-    private func setTarget(_ target: SetTarget) -> some View {
-        
-        var descriptionString: String = "No target set"
-        if let maxReps = target.maxReps {
-            if let minReps = target.minReps {
-                descriptionString = "\(minReps)-\(maxReps) reps"
-            } else {
-                descriptionString = "1-\(maxReps) reps"
-            }
-        } else if let minReps = target.minReps,
-                  target.maxReps == nil {
-            descriptionString = "\(minReps)+ reps"
-        }
-        
-        return HStack {
-            Circle()
-                .frame(width: 12, height: 12)
-                .foregroundStyle(.secondary)
-                .overlay {
-                    Text("\(target.setNumber)")
-                }
-            Text(descriptionString)
-        }
-        .font(.caption)
     }
 }
 

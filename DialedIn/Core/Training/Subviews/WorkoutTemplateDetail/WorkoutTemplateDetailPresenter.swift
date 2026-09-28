@@ -54,15 +54,6 @@ class WorkoutTemplateDetailPresenter {
     func targetMuscleSummaries(exercises: [WorkoutTemplateExercise]) -> [TargetMuscleSummary] {
         MuscleVolume.targetSummaries(exercises: exercises)
     }
-    
-    func formattedSetCount(_ value: Double) -> String {
-        let rounded = value.rounded()
-        if abs(rounded - value) < 0.000_01 {
-            return "\(Int(rounded))"
-        } else {
-            return String(format: "%.1f", value)
-        }
-    }
 
     func deleteWorkout(template: WorkoutTemplateModel, onDismiss: @escaping () -> Void) async {
         isDeleting = true

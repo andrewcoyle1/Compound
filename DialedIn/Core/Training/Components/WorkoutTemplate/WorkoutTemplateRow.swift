@@ -31,38 +31,28 @@ struct WorkoutTemplateRow: View {
             }
     }
 
-    var primaryMuscleTags: [Muscles] {
-        muscleGroups.compactMap { $0.value == .primary ? $0.key : nil }
-    }
-
-    var secondaryMuscleTags: [Muscles] {
-        muscleGroups.compactMap { $0.value == .secondary ? $0.key : nil }
+    /// Primary muscles first, then secondary, each by name, so the row reads the same every time.
+    var muscleTags: [(muscle: Muscles, target: MuscleTargetType)] {
+        muscleGroups
+            .map { (muscle: $0.key, target: $0.value) }
+            .sorted { ($0.target == .primary ? 0 : 1, $0.muscle.name) < ($1.target == .primary ? 0 : 1, $1.muscle.name) }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(workoutTemplate.name)
-                .font(.headline)
+                .font(.rowTitle)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
             if !workoutTemplate.exercises.isEmpty {
                 Text(caption)
-                    .font(.caption)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                 ScrollView(.horizontal) {
-                    HStack(spacing: 6) {
-                        ForEach(primaryMuscleTags, id: \.self) { muscle in
-                            Text(muscle.name)
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.accentColor.opacity(0.2), in: Capsule())
-                        }
-                        ForEach(secondaryMuscleTags, id: \.self) { muscle in
-                            Text(muscle.name)
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.secondary.opacity(0.2), in: Capsule())
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(muscleTags, id: \.muscle) { tag in
+                            MuscleChip(muscle: tag.muscle, target: tag.target)
                         }
                     }
                 }

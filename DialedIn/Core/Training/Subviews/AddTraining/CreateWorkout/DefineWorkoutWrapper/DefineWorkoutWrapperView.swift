@@ -25,14 +25,13 @@ struct DefineWorkoutWrapperView<DefineWorkout: View>: View {
             topSectionStyle: .standaloneWorkout
         )
         defineWorkoutView(defineDelegate)
-            .navigationTitle("Define Workout")
             .onAppear {
                 presenter.onViewAppear()
             }
             .onDisappear {
                 presenter.onViewDisappear()
             }
-            .safeAreaInset(edge: .bottom) {
+            .bottomCTA {
                 CallToActionButton {
                     presenter.onConfirmPressed(delegate: self.delegate)
                 } label: {

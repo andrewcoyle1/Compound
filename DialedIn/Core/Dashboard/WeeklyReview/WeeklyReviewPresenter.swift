@@ -18,7 +18,9 @@ class WeeklyReviewPresenter {
         interactor: WeeklyReviewInteractor,
         router: WeeklyReviewRouter,
         calendar: Calendar = .current,
-        now: @escaping () -> Date = Date.init
+        // A closure, not `Date.init`: Swift 6.4's Release inliner crashes on the initializer
+        // reference when the preview inlines this init.
+        now: @escaping () -> Date = { Date() }
     ) {
         self.interactor = interactor
         self.router = router

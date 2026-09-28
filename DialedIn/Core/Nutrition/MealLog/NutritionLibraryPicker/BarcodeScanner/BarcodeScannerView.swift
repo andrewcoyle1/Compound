@@ -33,7 +33,8 @@ struct BarcodeScannerView: View {
 
     private var scanner: some View {
         ZStack {
-            if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
+            switch presenter.cameraAccess {
+            case .authorized:
                 BarcodeScanner(
                     isScanning: $presenter.isScanning,
                     scannedCode: $presenter.scannedCode,
@@ -62,15 +63,19 @@ struct BarcodeScannerView: View {
                         .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                         .reducedMotionAnimation(.standard, value: showOverlay)
                 }
-            } else {
-                ContentUnavailableView {
-                    Label("Scanner Unavailable", systemImage: Symbol.barcode)
-                } description: {
-                    Text("Scanner not supported on this device.")
-                }
+            case .notDetermined:
+                // The system alert is on screen, or about to be.
+                Color.clear
+            case .denied:
+                cameraDeniedView
+            case .unsupported:
+                scannerUnsupportedView
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
+        .task {
+            await presenter.onCameraNeeded(isSupported: DataScannerViewController.isSupported)
+        }
         .onChange(of: presenter.scanningMode) {
             presenter.onScanningModeChanged()
         }
@@ -87,6 +92,40 @@ struct BarcodeScannerView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
+    }
+
+    // MARK: - No camera
+
+    /// Typing the barcode needs no camera, so it is offered in both states below.
+    private var cameraDeniedView: some View {
+        ContentUnavailableView {
+            Label("Camera Access Is Off", systemImage: Symbol.camera)
+        } description: {
+            Text("Allow camera access in Settings to scan barcodes and nutrition labels, or type the barcode in.")
+        } actions: {
+            Button("Open Settings") {
+                presenter.onOpenSettingsPressed()
+            }
+            .buttonStyle(.glassProminent)
+            enterManuallyButton
+        }
+    }
+
+    private var scannerUnsupportedView: some View {
+        ContentUnavailableView {
+            Label("Scanner Unavailable", systemImage: Symbol.barcode)
+        } description: {
+            Text("This device can't scan barcodes. You can type the barcode in.")
+        } actions: {
+            enterManuallyButton
+        }
+    }
+
+    private var enterManuallyButton: some View {
+        Button("Enter Manually") {
+            presenter.onManualEntryPressed()
+        }
+        .buttonStyle(.glass)
     }
 
     // MARK: - Manual entry

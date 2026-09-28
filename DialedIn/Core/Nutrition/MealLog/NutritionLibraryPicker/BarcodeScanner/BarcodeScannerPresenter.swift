@@ -16,6 +16,9 @@ class BarcodeScannerPresenter {
 
     var returnsBarcodeOnly: Bool { onBarcodeScanned != nil }
 
+    /// Whether the camera can be shown, and if not, why not.
+    private(set) var cameraAccess: CameraAccess = .notDetermined
+
     var isScanning: Bool = false
     var scannedCode: String?
 
@@ -59,6 +62,20 @@ class BarcodeScannerPresenter {
     func onViewAppear(delegate: BarcodeScannerDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         isScanning = true
+    }
+
+    /// Asks for the camera the first time the scanner is opened. `isSupported` is the device's own
+    /// answer, passed in so that "cannot" and "may not" stay two different states.
+    func onCameraNeeded(isSupported: Bool) async {
+        cameraAccess = await interactor.resolveCameraAccess(isSupported: isSupported)
+        if cameraAccess == .denied {
+            interactor.trackEvent(event: Event.onCameraDenied)
+        }
+    }
+
+    func onOpenSettingsPressed() {
+        interactor.trackEvent(event: Event.onOpenSettings)
+        interactor.openAppSettings()
     }
 
     func onViewDisappear(delegate: BarcodeScannerDelegate) {
@@ -219,6 +236,8 @@ extension BarcodeScannerPresenter {
         case onBarcodeDetected(code: String)
         case onBarcodeError(message: String)
         case onTorchFail(error: Error)
+        case onCameraDenied
+        case onOpenSettings
 
         var eventName: String {
             switch self {
@@ -230,6 +249,8 @@ extension BarcodeScannerPresenter {
             case .onBarcodeDetected:  return "BarcodeScanner_BarcodeDetected"
             case .onBarcodeError:     return "BarcodeScanner_BarcodeError"
             case .onTorchFail:        return "BarcodeScanner_TorchFail"
+            case .onCameraDenied:     return "BarcodeScanner_CameraDenied"
+            case .onOpenSettings:     return "BarcodeScanner_OpenSettings"
             }
         }
 

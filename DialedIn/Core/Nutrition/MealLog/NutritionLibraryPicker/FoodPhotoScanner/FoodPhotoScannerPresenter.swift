@@ -26,6 +26,9 @@ class FoodPhotoScannerPresenter {
     private(set) var analysisResults: [FoodAnalysisItem] = []
     private(set) var errorMessage: String?
 
+    /// Whether the camera can be shown, and if not, why not.
+    private(set) var cameraAccess: CameraAccess = .notDetermined
+
     init(interactor: FoodPhotoScannerInteractor, router: FoodPhotoScannerRouter) {
         self.interactor = interactor
         self.router = router
@@ -33,6 +36,20 @@ class FoodPhotoScannerPresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    /// Asks for the camera the first time the AI tab is opened. A refusal used to leave a capture
+    /// button over a black preview, with nothing to say why.
+    func onCameraNeeded(isSupported: Bool) async {
+        cameraAccess = await interactor.resolveCameraAccess(isSupported: isSupported)
+        if cameraAccess == .denied {
+            interactor.trackEvent(event: Event.onCameraDenied)
+        }
+    }
+
+    func onOpenSettingsPressed() {
+        interactor.trackEvent(event: Event.onOpenSettings)
+        interactor.openAppSettings()
     }
 
     func onCapture(_ image: UIImage) async {
@@ -95,6 +112,8 @@ extension FoodPhotoScannerPresenter {
         case onCapture
         case onAddItem(name: String)
         case onError(message: String)
+        case onCameraDenied
+        case onOpenSettings
 
         var eventName: String {
             switch self {
@@ -102,6 +121,8 @@ extension FoodPhotoScannerPresenter {
             case .onCapture:  return "FoodPhotoScanner_Capture"
             case .onAddItem:  return "FoodPhotoScanner_AddItem"
             case .onError:    return "FoodPhotoScanner_Error"
+            case .onCameraDenied: return "FoodPhotoScanner_CameraDenied"
+            case .onOpenSettings: return "FoodPhotoScanner_OpenSettings"
             }
         }
 

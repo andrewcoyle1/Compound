@@ -6,9 +6,6 @@
 //
 
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 
 struct TrainingDelegate {
     var eventParameters: [String: Any]? {
@@ -18,8 +15,6 @@ struct TrainingDelegate {
 
 struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: TrainingPresenter
     let delegate: TrainingDelegate
 
@@ -69,69 +64,35 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
 
     private var noScheduleView: some View {
         Section {
-            VStack(spacing: 16) {
-                Image(systemName: "calendar.badge.clock")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.secondary)
-                
-                Text("No Active Training Program")
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                
+            ContentUnavailableView {
+                Label("No Active Training Program", systemImage: Symbol.program)
+            } description: {
                 Text("Add a program to start compounding.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                
+            } actions: {
                 Button {
                     presenter.onChooseProgramPressed()
                 } label: {
-                    Label("Choose Program", systemImage: "plus.circle.fill")
-                        .foregroundStyle(colorScheme.backgroundPrimary)
+                    Text("Choose Program")
+                        .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.glassProminent)
-                .padding(.top, 8)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 32)
         }
     }
 
     private var moreSection: some View {
-        Group {
-            Section {
-                Group {
-                    Label("Training Program Library", systemImage: "books.vertical")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .tappableBackground()
-                        .anyButton {
-                            presenter.onTrainingProgramLibraryView()
-                        }
-
-                    Label("Workout Library", systemImage: "dumbbell")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .tappableBackground()
-                        .anyButton {
-                            presenter.onWorkoutLibraryPressed()
-                        }
-
-                    Label("Start Empty Workout", systemImage: "plus")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .tappableBackground()
-                        .anyButton {
-                            presenter.onStartEmptyWorkoutPressed()
-                        }
-
-                    Label("Workout History", systemImage: "list.bullet")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                        .tappableBackground()
-                        .anyButton {
-                            presenter.onWorkoutHistoryPressed()
-                        }
-                }
-                .foregroundStyle(.primary)
-            } header: {
-                Text("More")
+        Section("More") {
+            ListRowButton(title: "Training Program Library", systemImage: Symbol.library) {
+                presenter.onTrainingProgramLibraryView()
+            }
+            ListRowButton(title: "Workout Library", systemImage: Symbol.workout) {
+                presenter.onWorkoutLibraryPressed()
+            }
+            ListRowButton(title: "Start Empty Workout", systemImage: Symbol.add) {
+                presenter.onStartEmptyWorkoutPressed()
+            }
+            ListRowButton(title: "Workout History", systemImage: Symbol.history) {
+                presenter.onWorkoutHistoryPressed()
             }
         }
     }
@@ -154,7 +115,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
             Button {
                 isCalendarExpanded = true
             } label: {
-                Image(systemName: "calendar")
+                Image(systemName: Symbol.calendar)
             }
             .accessibilityLabel("Show calendar")
         }
@@ -163,7 +124,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
             Button {
                 presenter.onAddPressed()
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add training")
         }

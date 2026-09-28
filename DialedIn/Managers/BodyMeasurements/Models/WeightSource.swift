@@ -16,7 +16,7 @@ enum WeightSource: String, DataSyncModelProtocol {
     var displayName: String {
         switch self {
         case .manual: return String(localized: "Manual Entry")
-        case .healthkit: return String(localized: "HealthKit")
+        case .healthkit: return String(localized: "Apple Health")
         case .imported: return String(localized: "Imported")
         }
     }

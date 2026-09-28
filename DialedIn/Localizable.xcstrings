@@ -2733,16 +2733,6 @@
         }
       }
     },
-    "Allow access to health data" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permitir acceso a los datos de salud"
-          }
-        }
-      }
-    },
     "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout" : {
       "localizations" : {
         "es" : {
@@ -4643,16 +4633,6 @@
         }
       }
     },
-    "Compound needs permission to read and write your weight data in Apple Health. This allows us to automatically track your progress, update your weight logs, and provide you with accurate charts and insights." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compound necesita permiso para leer y escribir tus datos de peso en Salud de Apple. Así podemos seguir tu progreso automáticamente, actualizar tus registros de peso y ofrecerte gráficos y análisis precisos."
-          }
-        }
-      }
-    },
     "Compound Pro" : {
       "localizations" : {
         "es" : {
@@ -6436,42 +6416,12 @@
         }
       }
     },
-    "Enable notifications" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activar notificaciones"
-          }
-        }
-      }
-    },
     "Enable Notifications" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activar notificaciones"
-          }
-        }
-      }
-    },
-    "Enable notifications to receive reminders for workouts, nutrition tracking, and important updates. Stay on track and never miss a beat in your fitness journey." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activa las notificaciones para recibir recordatorios de entrenamientos, seguimiento nutricional y novedades importantes. Mantén el rumbo y no te pierdas nada en tu camino hacia la forma física."
-          }
-        }
-      }
-    },
-    "Enable Push Notifications?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Activar notificaciones push?"
           }
         }
       }
@@ -8032,16 +7982,6 @@
         }
       }
     },
-    "Good to Know" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conviene saber"
-          }
-        }
-      }
-    },
     "Gym" : {
       "localizations" : {
         "es" : {
@@ -8129,26 +8069,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aviso de salud"
-          }
-        }
-      }
-    },
-    "HealthKit" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HealthKit"
-          }
-        }
-      }
-    },
-    "HealthKit sync" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sincronización con HealthKit"
           }
         }
       }
@@ -9181,16 +9101,6 @@
         }
       }
     },
-    "Let Compound update your Health data when you log new weights." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permite que Compound actualice tus datos de Salud cuando registres nuevos pesos."
-          }
-        }
-      }
-    },
     "Let's get to work creating a custom diet program tuned to your needs. This will evolve over time as we learn how your body responds to the diet and make the necessary changes. This can always be manually altered later if you would like a specific change." : {
       "localizations" : {
         "es" : {
@@ -9771,16 +9681,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantener"
-          }
-        }
-      }
-    },
-    "Maintain full control: you can revoke access or limit permissions at any time in the Health app." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén el control total: puedes revocar el acceso o limitar los permisos cuando quieras en la app Salud."
           }
         }
       }
@@ -13826,16 +13726,6 @@
         }
       }
     },
-    "See all your progress in one place, even if you use other health apps." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consulta todo tu progreso en un solo lugar, aunque uses otras apps de salud."
-          }
-        }
-      }
-    },
     "See trends, weekly summaries, and PRs at a glance." : {
       "localizations" : {
         "es" : {
@@ -14991,16 +14881,6 @@
         }
       }
     },
-    "Stay Informed & Motivated" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantente informado y motivado"
-          }
-        }
-      }
-    },
     "Stay informed about workouts, nutrition tracking, and important updates. Enable notifications to never miss a beat." : {
       "localizations" : {
         "es" : {
@@ -15237,16 +15117,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar ejercicio"
-          }
-        }
-      }
-    },
-    "Sync your weight entries seamlessly between Compound and Apple Health." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sincroniza tus registros de peso entre Compound y Salud de Apple sin complicaciones."
           }
         }
       }
@@ -17876,16 +17746,6 @@
         }
       }
     },
-    "We respect your privacy. Notifications are only used to help you reach your goals and are never shared." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Respetamos tu privacidad. Las notificaciones solo se usan para ayudarte a alcanzar tus objetivos y nunca se comparten."
-          }
-        }
-      }
-    },
     "We were unable to save your meal. Please try again." : {
       "localizations" : {
         "es" : {
@@ -17902,16 +17762,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pudimos guardar tu entrenamiento. Inténtalo de nuevo."
-          }
-        }
-      }
-    },
-    "We will send you reminders and updates" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Te enviaremos recordatorios y novedades"
           }
         }
       }
@@ -18288,16 +18138,6 @@
         }
       }
     },
-    "What You Get" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Qué obtienes"
-          }
-        }
-      }
-    },
     "What's a warmup set?" : {
       "localizations" : {
         "es" : {
@@ -18370,16 +18210,6 @@
         }
       }
     },
-    "Why Enable Notifications?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Por qué activar las notificaciones?"
-          }
-        }
-      }
-    },
     "Why subscribe?" : {
       "localizations" : {
         "es" : {
@@ -18390,16 +18220,6 @@
         }
       },
       "extractionState" : "stale"
-    },
-    "Why We Request Health Data Access" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por qué solicitamos acceso a los datos de salud"
-          }
-        }
-      }
     },
     "Working sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend." : {
       "localizations" : {
@@ -18684,16 +18504,6 @@
         }
       }
     },
-    "You can change your notification preferences at any time in Settings." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puedes cambiar tus preferencias de notificaciones cuando quieras en Ajustes."
-          }
-        }
-      }
-    },
     "You can convert the rest day into a workout day by add exercises below" : {
       "localizations" : {
         "es" : {
@@ -18855,16 +18665,6 @@
         }
       }
     },
-    "Your Control" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu control"
-          }
-        }
-      }
-    },
     "Your Diet Plan" : {
       "localizations" : {
         "es" : {
@@ -18902,16 +18702,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu objetivo"
-          }
-        }
-      }
-    },
-    "Your Health, Your Data" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu salud, tus datos"
           }
         }
       }
@@ -19572,16 +19362,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Color e icono"
-          }
-        }
-      }
-    },
-    "Connect Apple Health?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Conectar Apple Salud?"
           }
         }
       }
@@ -20873,16 +20653,6 @@
         }
       }
     },
-    "Turn On Notifications?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Activar notificaciones?"
-          }
-        }
-      }
-    },
     "Type ramp" : {
       "shouldTranslate" : false
     },
@@ -21178,6 +20948,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "× %@"
+          }
+        }
+      }
+    },
+    "Apple Health" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salud de Apple"
+          }
+        }
+      }
+    },
+    "Apple Health sync" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sincronización con Salud de Apple"
+          }
+        }
+      }
+    },
+    "Sign in to back up your training and nutrition, and to sync them across your devices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicia sesión para guardar una copia de tu entrenamiento y tu nutrición, y sincronizarlos entre tus dispositivos."
+          }
+        }
+      }
+    },
+    "Upload every workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sube cada entrenamiento"
           }
         }
       }

@@ -16,6 +16,11 @@ struct AuthView: View {
             ImageLoaderView()
                 .ignoresSafeArea()
             Group {
+                Text("Sign in to back up your training and nutrition, and to sync them across your devices.")
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 408)
                 SignInWithAppleButtonView { presenter.onSignInApplePressed() }
                     .accessibilityIdentifier("Auth.apple")
                 SignInWithGoogleButtonView { presenter.onSignInGooglePressed() }

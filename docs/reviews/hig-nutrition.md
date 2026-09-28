@@ -27,6 +27,33 @@ behaviour it says so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Resolution (2026-09-28, branch hig/nutrition)
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | fixed | Parsing was already fixed on `feature/hig` (`Double.typed`); no `Double(text)` parse site remains in `Core/Nutrition/`. Prefilled amounts now use the region's format instead of `%g`. |
+| 2 | fixed | Editing a timeline item writes the new item into its meal and saves it; a failure alerts. Tested. |
+| 3 | fixed | Opened from Create Food, the scanner returns the scanned or typed barcode and closes, with no lookup; it has a title and Close there and hides the label mode. Tested. |
+| 4 | fixed | Camera permission is read and requested at the moment of use; "Camera Access Is Off" with Open Settings (and Enter Manually on the scanner) is separate from "not supported". Tested. |
+| 5 | skipped: decision | |
+| 6 | skipped: decision | |
+| 7 | fixed | Each nutrient field shows its stored unit, kJ is converted to kcal, the two placeholder segments are removed, Create needs energy. Tested. |
+| 8 | skipped: decision | |
+| 9 | fixed in part | Close added to Food detail, Recipe detail, Ingredient list, Timeline Actions and the standalone scanner; the picker's Done became Close; the meal time sheet has Cancel. Not done: flattening the four-deep modal stack (size L; needs routing changes across the picker). |
+| 10 | fixed | Create Food and Create Recipe confirm before discarding entered data; the swipe is blocked while there is something to lose. |
+| 11 | fixed | `isSaving` guard and `CallToActionButton(isLoading:)` on Add Meal, Create Food, Create Recipe, Quick Add Log and Copy Day; Clear Day is disabled while working. Tested. |
+| 12 | fixed | Every listed site now names the failed action; offline keeps the offline alert (`GlobalRouter.showFailure`); search says when it is offline. |
+| 13 | fixed | "Add Meal" title, Add Food row in Your Plate, calorie readout and thumbnails removed from the bar; accessory reads "Unlogged meal" with count and calories. |
+| 14 | needs a change elsewhere | The purpose string lives in `project.pbxproj`, which this branch does not own. |
+| 15 | fixed | Next is disabled until name and servings are filled in; the alert is gone; ingredients can be deleted. Tested. |
+| 16 | fixed | Confirmation dialog "You have an unlogged meal" / "Continue Meal" / "Discard and Start New". The copies in Dashboard, Search, Energy Balance and Analytics are outside this branch. |
+| 17 | fixed | All five hints use `.primary`; "Label text captured" sits on the same glass capsule. |
+| 18 | fixed | Text-only segmented control, title-case buttons and alert titles, "flashlight", "Favorites", localized mode and unit names, "kJ", toggle renamed with a footer instead of the Learn More alert, ellipses. |
+| 19 | fixed in part | Edit and Quick add labels name the item; a timeline row opens Meal detail on tap and from a context menu. Not done: a visible alternative to the hour chip's long press when "Show Add Foods Button" is off (needs an Add Meal route from Timeline Actions). |
+| 20 | not done | Needs an AX3 run first, as the finding says; no simulator was used on this branch. |
+| Smaller | fixed in part | Photo scanner explains an offline capture; Food detail no longer shows the author id; a failed favorite toggle alerts; library rows without a picture show the neutral placeholder. Not done: Check-in CTA layout, Meal Time sheet as a compact picker (conflicts with keeping the time in the bar, finding 13), Recipe detail's Start screen. |
+| Foundations | fixed where owned | Context menus mirror the timeline and plate swipe actions; Food detail nutrient labels and meal summary labels are localized; food and recipe hero images are hidden from VoiceOver. |
+
 ## Findings
 
 ### 1. Decimal amounts cannot be typed where the decimal separator is a comma

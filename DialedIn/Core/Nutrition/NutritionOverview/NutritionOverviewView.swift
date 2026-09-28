@@ -46,7 +46,7 @@ struct NutritionOverviewView: View {
                     title: "Weekly check-in ready",
                     message: Text("Review the week and update your program."),
                     primary: ("Start", presenter.onStartCheckInPressed),
-                    secondary: ("Skip this week", presenter.onSkipCheckInPressed)
+                    secondary: ("Skip This Week", presenter.onSkipCheckInPressed)
                 )
             }
         }

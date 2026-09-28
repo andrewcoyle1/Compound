@@ -37,6 +37,10 @@ class IngredientListBuilderPresenter {
     var showMacrosInLogger: Bool { interactor.foodLogSettings.showMacrosInLogger }
     var showPortionInLogger: Bool { interactor.foodLogSettings.showPortionInLogger }
 
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     init(interactor: IngredientListBuilderInteractor, router: IngredientListBuilderRouter) {
         self.interactor = interactor
         self.router = router

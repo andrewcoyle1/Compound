@@ -269,7 +269,7 @@ class CheckInPresenter {
                 advance()
             } catch {
                 isSaving = false
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Log Weight"), error: error)
             }
         }
     }
@@ -354,7 +354,7 @@ class CheckInPresenter {
                 advance()
             } catch {
                 isSaving = false
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Save Your Answer"), error: error)
             }
         }
     }

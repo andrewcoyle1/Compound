@@ -200,14 +200,15 @@ struct CreateFoodPresenterTests {
 
     // MARK: - Odds and ends
 
-    @Test("Test Learn More Explains The Toggle")
-    func testLearnMoreExplainsTheToggle() {
+    /// Closing asks first, and the swipe is blocked, only once something has been entered.
+    @Test("Test Only An Edited Food Has Something To Lose")
+    func testOnlyAnEditedFoodHasSomethingToLose() {
         let screen = makeScreen()
+        let untouched = screen.presenter.hasUnsavedChanges
+        screen.presenter.barcode = "5012345678900"
 
-        screen.presenter.onLearnMorePressed()
-
-        #expect(screen.router.simpleAlerts == ["Contributing Foods"])
-        #expect(screen.interactor.trackedEventNames.contains("CreateFoodView_LearnMore_Press"))
+        #expect(!untouched)
+        #expect(screen.presenter.hasUnsavedChanges)
     }
 
     @Test("Test Opening The Image Picker Is Tracked")

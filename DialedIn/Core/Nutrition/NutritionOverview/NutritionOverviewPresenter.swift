@@ -97,7 +97,7 @@ class NutritionOverviewPresenter {
                 try await interactor.markCheckInSkipped(weekStart: weekStart)
             } catch {
                 checkInState = .due(weekStart: weekStart)
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Skip Check-In"), error: error)
             }
         }
     }
@@ -126,7 +126,7 @@ class NutritionOverviewPresenter {
                 try await interactor.acceptTargetProposal()
             } catch {
                 proposal = accepted
-                router.showAlert(error: error)
+                router.showFailure(String(localized: "Unable to Update Your Targets"), error: error)
                 interactor.trackEvent(event: Event.proposalAcceptFailed(error: error))
             }
             isApplyingProposal = false

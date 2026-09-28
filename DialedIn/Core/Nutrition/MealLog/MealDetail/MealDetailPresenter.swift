@@ -34,10 +34,10 @@ class MealDetailPresenter {
         let fat = Int(meal.totalFatGrams.rounded())
 
         return [
-            MacroSummaryItem(label: "Calories", value: String(calories)),
-            MacroSummaryItem(label: "Protein", value: "\(protein)g"),
-            MacroSummaryItem(label: "Carbs", value: "\(carbs)g"),
-            MacroSummaryItem(label: "Fat", value: "\(fat)g")
+            MacroSummaryItem(label: String(localized: "Calories"), value: String(calories)),
+            MacroSummaryItem(label: String(localized: "Protein"), value: "\(protein)g"),
+            MacroSummaryItem(label: String(localized: "Carbs"), value: "\(carbs)g"),
+            MacroSummaryItem(label: String(localized: "Fat"), value: "\(fat)g")
         ]
     }
 

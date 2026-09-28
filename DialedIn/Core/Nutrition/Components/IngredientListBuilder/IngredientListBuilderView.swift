@@ -84,6 +84,11 @@ struct IngredientListBuilderView: View {
         }
         .scrollIndicators(.hidden)
         .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     presenter.onAddIngredientPressed(delegate: delegate)

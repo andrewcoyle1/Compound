@@ -25,6 +25,10 @@ class RecipeDetailPresenter {
     var currentUser: UserModel? {
         interactor.currentUser
     }
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     init(
         interactor: RecipeDetailInteractor,
         router: RecipeDetailRouter
@@ -46,6 +50,7 @@ class RecipeDetailPresenter {
                 try await interactor.setFavouriteRecipe(id: delegate.recipeTemplate.id, isFavourite: newValue)
             } catch {
                 isFavourited = !newValue
+                router.showFailure(String(localized: "Unable to Update Favorites"), error: error)
             }
         }
     }

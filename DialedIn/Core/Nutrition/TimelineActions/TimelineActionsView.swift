@@ -23,6 +23,7 @@ struct TimelineActionsView: View {
                 ListRowButton(title: String(localized: "Clear Day"), systemImage: Symbol.delete, tint: .danger, accessory: .none) {
                     presenter.onClearDayPressed(delegate: delegate)
                 }
+                .disabled(presenter.isWorking)
                 ListRowToggle(
                     title: String(localized: "Hide Food Details"),
                     systemImage: "eye.slash",
@@ -44,6 +45,13 @@ struct TimelineActionsView: View {
         }
         .navigationTitle("Timeline Actions")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
+            }
+        }
         .sheet(isPresented: $presenter.isChoosingCopyDestination) {
             copyDestinationSheet
         }
@@ -67,7 +75,7 @@ struct TimelineActionsView: View {
             .navigationTitle("Copy Day")
             .navigationBarTitleDisplayMode(.inline)
             .bottomCTA {
-                CallToActionButton {
+                CallToActionButton(isLoading: presenter.isWorking) {
                     presenter.onCopyDayConfirmed(delegate: delegate)
                 } label: {
                     Text("Copy")

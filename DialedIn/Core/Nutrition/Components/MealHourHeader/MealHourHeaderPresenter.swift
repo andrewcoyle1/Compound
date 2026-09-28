@@ -60,18 +60,19 @@ class MealHourHeaderPresenter {
         guard let userId = currentUser?.userId else { return }
         let mealDate = mealTime(for: selectedTime)
         if let meal = interactor.draftMeal {
-            router.showAlert(
-                title: String(localized: "Unable to add new meal"),
-                subtitle: String(localized: "You already have a draft meal."),
+            // A choice, not a failure, so an action sheet rather than an alert titled as an error.
+            router.showConfirmationDialog(
+                title: String(localized: "You have an unlogged meal"),
+                subtitle: nil,
                 buttons: {
                     AnyView(
                         VStack {
-                            Button("Continue editing") {
+                            Button("Continue Meal") {
                                 self.router.showAddMealView(
                                     delegate: AddMealDelegate(mealLog: meal)
                                 )
                             }
-                            Button("Delete drafted meal", role: .destructive) {
+                            Button("Discard and Start New", role: .destructive) {
                                 try? self.interactor.deleteDraftMeal()
                                 self.router.showAddMealView(
                                     delegate: AddMealDelegate(

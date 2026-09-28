@@ -70,6 +70,7 @@ struct NutritionPresenterTests {
     private final class Router: NutritionRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
+        private(set) var amountDelegates: [MealItemAmountViewDelegate] = []
 
         // The test target builds without -DDEV, so this cannot be wrapped in the same `#if` the
         // protocol declares it under — the conformance would be missing a requirement the app
@@ -78,7 +79,10 @@ struct NutritionPresenterTests {
 
         func showAddMealView(delegate: AddMealDelegate) { shown.append("addMeal") }
         func showMealDetailView(delegate: MealDetailDelegate) { shown.append("mealDetail") }
-        func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) { shown.append("mealItemAmount") }
+        func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) {
+            shown.append("mealItemAmount")
+            amountDelegates.append(delegate)
+        }
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
         func showTimelineActionsView(delegate: TimelineActionsDelegate) { shown.append("timelineActions") }
         func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate) { shown.append("foodLogSettings") }
@@ -514,6 +518,54 @@ struct NutritionPresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("NutritionView_SaveMeal_Fail"))
         #expect(screen.interactor.trackedEventNames.contains("NutritionView_SaveMeal_Success") == false)
         #expect(screen.interactor.deletedMealIds.isEmpty)
+    }
+
+    // MARK: - Editing
+
+    /// The pencil on a timeline row opens the amount screen, and what that screen confirms has to
+    /// be written into the meal. The closure handed over used to be empty: Save played the success
+    /// haptic, closed the screen and left the meal as it was.
+    @Test("Test Editing A Logged Item Saves The New Amount")
+    func testEditingALoggedItemSavesTheNewAmount() async {
+        let first = item(id: "a", calories: 100)
+        let second = item(id: "b", calories: 200)
+        let logged = meal(id: "m1", at: monday, items: [first, second])
+        let screen = makeScreen(meals: [logged])
+
+        screen.presenter.onEditMealItem(second, in: logged)
+        let corrected = MealItemModel(
+            itemId: second.itemId,
+            sourceType: second.sourceType,
+            sourceId: second.sourceId,
+            displayName: second.displayName,
+            amount: 250,
+            unit: second.unit,
+            resolvedGrams: 250,
+            nutrients: NutrientMap([.calories: 500])
+        )
+        screen.router.amountDelegates.first?.onConfirm(corrected)
+        await TestManagers.eventually { !screen.interactor.addedMeals.isEmpty }
+
+        let saved = screen.interactor.addedMeals.first
+        #expect(saved?.mealId == "m1")
+        #expect(saved?.items.map(\.itemId) == ["a", "b"])
+        #expect(saved?.items.map(\.amount) == [100, 250])
+    }
+
+    /// A failed save is reported, not swallowed.
+    @Test("Test A Failed Edit Is Reported")
+    func testAFailedEditIsReported() async {
+        let only = item(id: "a", calories: 100)
+        let logged = meal(id: "m1", at: monday, items: [only])
+        let screen = makeScreen(meals: [logged])
+        screen.interactor.writeError = URLError(.badServerResponse)
+
+        screen.presenter.onEditMealItem(only, in: logged)
+        screen.router.amountDelegates.first?.onConfirm(only)
+        await TestManagers.eventually { screen.interactor.trackedEventNames.contains("NutritionView_SaveMeal_Fail") }
+
+        #expect(screen.interactor.trackedEventNames.contains("NutritionView_SaveMeal_Fail"))
+        #expect(screen.interactor.addedMeals.isEmpty)
     }
 
     // MARK: - Calendar markers

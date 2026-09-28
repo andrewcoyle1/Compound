@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol FoodPhotoScannerInteractor: GlobalInteractor {
+protocol FoodPhotoScannerInteractor: GlobalInteractor, CameraAccessInteractor {
     func analyzeFood(imageData: Data) async throws -> String
 }
 

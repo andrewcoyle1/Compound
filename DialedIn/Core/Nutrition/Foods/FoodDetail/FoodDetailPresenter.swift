@@ -20,6 +20,10 @@ class FoodDetailPresenter {
         interactor.currentUser
     }
     
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     init(
         interactor: FoodDetailInteractor,
         router: FoodDetailRouter
@@ -46,6 +50,7 @@ class FoodDetailPresenter {
             } catch {
                 isFavourited = !newValue
                 interactor.trackEvent(event: Event.favouriteIngredientFail(error: error))
+                router.showFailure(String(localized: "Unable to Update Favorites"), error: error)
             }
         }
     }

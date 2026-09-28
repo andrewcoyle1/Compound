@@ -88,7 +88,7 @@ struct CheckInView: View {
             selectedPounds: $presenter.selectedPounds
         )
         Section {
-            Button("Log weight") {
+            Button("Log Weight") {
                 presenter.onLogWeightPressed()
             }
             .disabled(presenter.isSaving)
@@ -121,11 +121,11 @@ struct CheckInView: View {
     private var loggingBreakStep: some View {
         if presenter.hasOpenLoggingBreak {
             Section {
-                Button("End my break") {
+                Button("End My Break") {
                     presenter.onEndLoggingBreakPressed()
                 }
                 .disabled(presenter.isSaving)
-                continueButton("Stay on a break")
+                continueButton("Stay on a Break")
             } header: {
                 Text("You are on a logging break")
             } footer: {
@@ -133,11 +133,11 @@ struct CheckInView: View {
             }
         } else {
             Section {
-                Button("Start a break") {
+                Button("Start a Break") {
                     presenter.onStartLoggingBreakPressed()
                 }
                 .disabled(presenter.isSaving)
-                continueButton("No thanks")
+                continueButton("No Thanks")
             } header: {
                 Text("Take a break from logging?")
             } footer: {
@@ -156,7 +156,7 @@ struct CheckInView: View {
                     presenter.onAcceptProposalPressed()
                 }
                 .disabled(presenter.isSaving)
-                Button("Not now") {
+                Button("Not Now") {
                     presenter.onDonePressed()
                 }
                 .disabled(presenter.isSaving)

@@ -28,13 +28,17 @@ struct FoodPhotoScannerView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .task {
+            await presenter.onCameraNeeded(isSupported: UIImagePickerController.isSourceTypeAvailable(.camera))
+        }
     }
 
     // MARK: - Phases
 
     private var cameraPhase: some View {
         ZStack(alignment: .bottom) {
-            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            switch presenter.cameraAccess {
+            case .authorized:
                 CameraCapture(shouldCapture: $shouldCapture) { image in
                     capturedImage = image
                     Task {
@@ -46,11 +50,25 @@ struct FoodPhotoScannerView: View {
 
                 captureButton
                     .padding(.bottom, Spacing.xxl)
-            } else {
+            case .notDetermined:
+                // The system alert is on screen, or about to be.
+                Color.clear
+            case .denied:
+                ContentUnavailableView {
+                    Label("Camera Access Is Off", systemImage: Symbol.camera)
+                } description: {
+                    Text("Allow camera access in Settings to photograph a meal. You can still add foods with Search or Describe.")
+                } actions: {
+                    Button("Open Settings") {
+                        presenter.onOpenSettingsPressed()
+                    }
+                    .buttonStyle(.glassProminent)
+                }
+            case .unsupported:
                 ContentUnavailableView {
                     Label("Camera Unavailable", systemImage: Symbol.camera)
                 } description: {
-                    Text("Camera not available on this device.")
+                    Text("This device has no camera. You can still add foods with Search or Describe.")
                 }
             }
         }
@@ -59,7 +77,7 @@ struct FoodPhotoScannerView: View {
     private func analysingPhase(image: UIImage) -> some View {
         VStack(spacing: Spacing.xl) {
             thumbnailView(image: image)
-            ProgressView("Analyzing meal...")
+            ProgressView("Analyzing meal…")
                 .progressViewStyle(.circular)
             retakeButton
         }

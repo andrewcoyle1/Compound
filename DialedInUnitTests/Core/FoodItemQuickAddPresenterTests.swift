@@ -324,7 +324,7 @@ struct FoodItemQuickAddPresenterTests {
         screen.presenter.onLogFoodPressed()
         await TestManagers.eventually { !screen.router.simpleAlerts.isEmpty }
 
-        #expect(screen.router.simpleAlerts == ["Unable to log food"])
+        #expect(screen.router.simpleAlerts == ["Unable to Log Food"])
         #expect(screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Fail"))
         #expect(!screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Success"))
     }

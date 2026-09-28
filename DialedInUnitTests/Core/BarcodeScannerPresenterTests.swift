@@ -62,6 +62,19 @@ struct BarcodeScannerPresenterTests {
         func findLocalFood(withBarcode barcode: String) -> FoodModel? {
             localFoods[barcode]
         }
+
+        /// The camera permission as the system reports it, and the answer to its alert.
+        var cameraPermission: CameraAccess = .authorized
+        var grantsCamera = true
+        private(set) var cameraRequests = 0
+        private(set) var settingsOpened = 0
+
+        func requestCameraPermission() async -> Bool {
+            cameraRequests += 1
+            return grantsCamera
+        }
+
+        func openAppSettings() { settingsOpened += 1 }
     }
 
     /// `BarcodeScannerRouter` adds nothing to `GlobalRouter`, and the one navigation the screen
@@ -77,14 +90,15 @@ struct BarcodeScannerPresenterTests {
     private struct Screen {
         let presenter: BarcodeScannerPresenter
         let interactor: Interactor
-        let delegate = BarcodeScannerDelegate()
+        let delegate: BarcodeScannerDelegate
     }
 
-    private func makeScreen() -> Screen {
+    private func makeScreen(delegate: BarcodeScannerDelegate = BarcodeScannerDelegate()) -> Screen {
         let interactor = Interactor()
         return Screen(
-            presenter: BarcodeScannerPresenter(interactor: interactor, router: Router()),
-            interactor: interactor
+            presenter: BarcodeScannerPresenter(interactor: interactor, router: Router(), delegate: delegate),
+            interactor: interactor,
+            delegate: delegate
         )
     }
 
@@ -326,7 +340,7 @@ struct BarcodeScannerPresenterTests {
         let interactor = Interactor()
         interactor.isOffline = true
         let router = Router()
-        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router)
+        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router, delegate: BarcodeScannerDelegate())
         presenter.scannedCode = "Energy 46kcal"
 
         await presenter.onParseLabelPressed()
@@ -344,7 +358,7 @@ struct BarcodeScannerPresenterTests {
         interactor.isOffline = true
         interactor.localFoods = ["111": FoodModel(name: "Local Oats", barcode: "111")]
         let router = Router()
-        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router)
+        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router, delegate: BarcodeScannerDelegate())
 
         presenter.onBarcodeDetected("111")
         await TestManagers.eventually { !presenter.isLookingUpBarcode }
@@ -487,6 +501,114 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.presenter.barcodeError == nil)
         #expect(!screen.presenter.isLookingUpBarcode)
         #expect(screen.presenter.isScanning)
+    }
+
+    // MARK: - Handing the barcode back
+
+    /// Create Food opens the scanner for the digits alone. They have to come back through the
+    /// closure it passed, and no product lookup should run: a food being created is usually one
+    /// the lookup does not know, and the result card then offered nothing but "Re-scan".
+    @Test("Test A Caller That Wants The Barcode Gets It Without A Lookup")
+    func testACallerThatWantsTheBarcodeGetsItWithoutALookup() {
+        var received: [String] = []
+        let screen = makeScreen(delegate: BarcodeScannerDelegate(onBarcodeScanned: { received.append($0) }))
+
+        screen.presenter.onBarcodeDetected("5012345678900")
+
+        #expect(screen.presenter.returnsBarcodeOnly)
+        #expect(received == ["5012345678900"])
+        #expect(!screen.presenter.isLookingUpBarcode)
+        #expect(screen.interactor.lookedUpCodes.isEmpty)
+        #expect(screen.interactor.savedFoods.isEmpty)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// The view feeds every change of `scannedCode` back in, so the same code arrives twice.
+    @Test("Test The Barcode Is Handed Back Once")
+    func testTheBarcodeIsHandedBackOnce() {
+        var received: [String] = []
+        let screen = makeScreen(delegate: BarcodeScannerDelegate(onBarcodeScanned: { received.append($0) }))
+
+        screen.presenter.onBarcodeDetected("5012345678900")
+        screen.presenter.onBarcodeDetected("5012345678900")
+
+        #expect(received == ["5012345678900"])
+    }
+
+    /// Typing the digits is the route that works without a camera, so it has to end the same way.
+    @Test("Test A Typed Barcode Is Handed Back Too")
+    func testATypedBarcodeIsHandedBackToo() {
+        var received: [String] = []
+        let screen = makeScreen(delegate: BarcodeScannerDelegate(onBarcodeScanned: { received.append($0) }))
+
+        screen.presenter.onManualEntryPressed()
+        screen.presenter.manualEntryText = " 5012345678900 "
+        screen.presenter.onManualEntrySubmitted()
+
+        #expect(received == ["5012345678900"])
+        #expect(!screen.presenter.isEnteringManually)
+        #expect(screen.interactor.lookedUpCodes.isEmpty)
+    }
+
+    /// Inside the food picker nothing changes: the code is looked up as before.
+    @Test("Test The Picker's Scanner Still Looks The Product Up")
+    func testThePickersScannerStillLooksTheProductUp() async {
+        let screen = makeScreen(delegate: BarcodeScannerDelegate(onFoodFound: { _ in }))
+
+        await detect("5012345678900", on: screen)
+
+        #expect(!screen.presenter.returnsBarcodeOnly)
+        #expect(screen.interactor.lookedUpCodes == ["5012345678900"])
+    }
+
+    // MARK: - Camera access
+
+    /// A refusal and a device that cannot scan are different problems with different ways out:
+    /// Settings fixes the first and nothing fixes the second. They used to share one message,
+    /// "Scanner not supported on this device", with no way out of either.
+    @Test("Test A Refused Camera Is Told Apart From An Unsupported Device")
+    func testARefusedCameraIsToldApartFromAnUnsupportedDevice() async {
+        let refused = makeScreen()
+        refused.interactor.cameraPermission = .denied
+        await refused.presenter.onCameraNeeded(isSupported: true)
+
+        let unsupported = makeScreen()
+        await unsupported.presenter.onCameraNeeded(isSupported: false)
+
+        #expect(refused.presenter.cameraAccess == .denied)
+        #expect(unsupported.presenter.cameraAccess == .unsupported)
+        #expect(refused.interactor.trackedEventNames.contains("BarcodeScanner_CameraDenied"))
+    }
+
+    /// The system alert appears the first time the scanner opens, not before, and only then.
+    @Test("Test The Camera Is Asked For Only While Undecided")
+    func testTheCameraIsAskedForOnlyWhileUndecided() async {
+        let undecided = makeScreen()
+        undecided.interactor.cameraPermission = .notDetermined
+        undecided.interactor.grantsCamera = false
+        await undecided.presenter.onCameraNeeded(isSupported: true)
+
+        let allowed = makeScreen()
+        await allowed.presenter.onCameraNeeded(isSupported: true)
+
+        #expect(undecided.interactor.cameraRequests == 1)
+        #expect(undecided.presenter.cameraAccess == .denied)
+        #expect(allowed.interactor.cameraRequests == 0)
+        #expect(allowed.presenter.cameraAccess == .authorized)
+    }
+
+    /// With the camera refused, typing the barcode is the one route left, and Settings the way back.
+    @Test("Test A Refused Camera Still Offers Settings And Manual Entry")
+    func testARefusedCameraStillOffersSettingsAndManualEntry() async {
+        let screen = makeScreen()
+        screen.interactor.cameraPermission = .denied
+        await screen.presenter.onCameraNeeded(isSupported: true)
+
+        screen.presenter.onOpenSettingsPressed()
+        screen.presenter.onManualEntryPressed()
+
+        #expect(screen.interactor.settingsOpened == 1)
+        #expect(screen.presenter.isEnteringManually)
     }
 
     // MARK: - Looking up a barcode

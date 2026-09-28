@@ -9,6 +9,16 @@ class BarcodeScannerPresenter {
     private let interactor: BarcodeScannerInteractor
     private let router: BarcodeScannerRouter
 
+    /// Set when the caller wants the digits and nothing else, as Create Food does. The scanner
+    /// then hands the code straight back and closes, with no product lookup: the usual reason to
+    /// create a food is that the lookup would not find it.
+    private let onBarcodeScanned: ((String) -> Void)?
+
+    var returnsBarcodeOnly: Bool { onBarcodeScanned != nil }
+
+    /// Whether the camera can be shown, and if not, why not.
+    private(set) var cameraAccess: CameraAccess = .notDetermined
+
     var isScanning: Bool = false
     var scannedCode: String?
 
@@ -43,14 +53,29 @@ class BarcodeScannerPresenter {
         AVCaptureDevice.default(for: .video)?.hasTorch ?? false
     }
 
-    init(interactor: BarcodeScannerInteractor, router: BarcodeScannerRouter) {
+    init(interactor: BarcodeScannerInteractor, router: BarcodeScannerRouter, delegate: BarcodeScannerDelegate) {
         self.interactor = interactor
         self.router = router
+        self.onBarcodeScanned = delegate.onBarcodeScanned
     }
 
     func onViewAppear(delegate: BarcodeScannerDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         isScanning = true
+    }
+
+    /// Asks for the camera the first time the scanner is opened. `isSupported` is the device's own
+    /// answer, passed in so that "cannot" and "may not" stay two different states.
+    func onCameraNeeded(isSupported: Bool) async {
+        cameraAccess = await interactor.resolveCameraAccess(isSupported: isSupported)
+        if cameraAccess == .denied {
+            interactor.trackEvent(event: Event.onCameraDenied)
+        }
+    }
+
+    func onOpenSettingsPressed() {
+        interactor.trackEvent(event: Event.onOpenSettings)
+        interactor.openAppSettings()
     }
 
     func onViewDisappear(delegate: BarcodeScannerDelegate) {
@@ -109,7 +134,7 @@ class BarcodeScannerPresenter {
             let decoded = try JSONDecoder().decode(NutritionLabelResponse.self, from: Data(json.utf8))
             parsedIngredient = decoded.toFood(authorId: interactor.currentUser?.userId)
         } catch {
-            labelError = error.localizedDescription
+            labelError = String(localized: "Couldn't read this label. Hold the camera steady and try again, or enter it manually.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
@@ -129,7 +154,7 @@ class BarcodeScannerPresenter {
             scannedCode = nil
             isScanning = true
         } catch {
-            labelError = error.localizedDescription
+            labelError = String(localized: "Couldn't save this food. Please try again.")
             interactor.playHaptic(option: .error)
             interactor.trackEvent(event: Event.onLabelError(message: error.localizedDescription))
         }
@@ -164,10 +189,16 @@ class BarcodeScannerPresenter {
         guard resolvedBarcode != code else { return }
         resolvedBarcode = code
         scannedCode = code
+        interactor.trackEvent(event: Event.onBarcodeDetected(code: code))
+        if let onBarcodeScanned {
+            interactor.playHaptic(option: .success)
+            onBarcodeScanned(code)
+            router.dismissScreen()
+            return
+        }
         isLookingUpBarcode = true
         barcodeError = nil
         parsedIngredient = nil
-        interactor.trackEvent(event: Event.onBarcodeDetected(code: code))
         Task {
             defer { isLookingUpBarcode = false }
             do {
@@ -182,7 +213,7 @@ class BarcodeScannerPresenter {
                 try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
                 parsedIngredient = food
             } catch {
-                barcodeError = error.localizedDescription
+                barcodeError = String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.onBarcodeError(message: error.localizedDescription))
             }
@@ -205,6 +236,8 @@ extension BarcodeScannerPresenter {
         case onBarcodeDetected(code: String)
         case onBarcodeError(message: String)
         case onTorchFail(error: Error)
+        case onCameraDenied
+        case onOpenSettings
 
         var eventName: String {
             switch self {
@@ -216,6 +249,8 @@ extension BarcodeScannerPresenter {
             case .onBarcodeDetected:  return "BarcodeScanner_BarcodeDetected"
             case .onBarcodeError:     return "BarcodeScanner_BarcodeError"
             case .onTorchFail:        return "BarcodeScanner_TorchFail"
+            case .onCameraDenied:     return "BarcodeScanner_CameraDenied"
+            case .onOpenSettings:     return "BarcodeScanner_OpenSettings"
             }
         }
 
@@ -251,6 +286,13 @@ enum ScanningMode: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
     case barcode
     case label
+
+    var title: String {
+        switch self {
+        case .barcode: return String(localized: "Barcode")
+        case .label:   return String(localized: "Label")
+        }
+    }
 
     var recognisedTypes: Set<DataScannerViewController.RecognizedDataType> {
         switch self {

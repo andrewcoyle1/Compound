@@ -34,8 +34,18 @@ class CreateRecipePresenter {
         return String(localized: "Weight of ingredients is \(Format.grams(total))")
     }
 
+    /// Both required fields are filled in. Next stays off until they are, rather than objecting
+    /// afterwards; a missing name used to go through and save a recipe with no name.
     var canSave: Bool {
+        !recipeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && (servingQuantity ?? 0) > 0
+    }
+
+    /// Anything entered that closing would throw away.
+    var hasUnsavedChanges: Bool {
         !recipeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || servingQuantity != nil
+            || recipeTotalWeight != nil
+            || !ingredients.isEmpty
     }
 
     init(
@@ -46,8 +56,30 @@ class CreateRecipePresenter {
         self.router = router
     }
         
+    /// Closing asks first when there is something to lose.
     func onDismissPressed() {
-        router.dismissScreen()
+        guard hasUnsavedChanges else {
+            router.dismissScreen()
+            return
+        }
+        router.showConfirmationDialog(
+            title: String(localized: "Discard this recipe?"),
+            subtitle: nil,
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Discard Recipe", role: .destructive) {
+                            self.router.dismissScreen()
+                        }
+                        Button("Keep Editing", role: .cancel) { }
+                    }
+                )
+            }
+        )
+    }
+
+    func onDeleteIngredients(at offsets: IndexSet) {
+        ingredients.remove(atOffsets: offsets)
     }
 
     #if DEV || MOCK
@@ -57,13 +89,7 @@ class CreateRecipePresenter {
     #endif
 
     func onNextPressed() {
-        guard let servingQuantity else {
-            router.showSimpleAlert(
-                title: String(localized: "Enter all required details"),
-                subtitle: "Please specify the serving quantity of the dish"
-            )
-            return
-        }
+        guard canSave, let servingQuantity else { return }
         let name = recipeName.capitalized
         
         let delegate = RecipePreparationDelegate(

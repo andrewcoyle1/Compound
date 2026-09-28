@@ -68,8 +68,35 @@ class CreateFoodPresenter {
         }
     }
     
+    /// Anything entered that closing would throw away. The later steps always have a name behind
+    /// them, so they block the swipe outright; this decides it for the first.
+    var hasUnsavedChanges: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || !(brandName ?? "").isEmpty
+            || barcode != nil
+            || selectedImageData != nil
+    }
+
+    /// Closing asks first when there is something to lose.
     func onCancelPressed() {
-        router.dismissScreen()
+        guard hasUnsavedChanges else {
+            router.dismissScreen()
+            return
+        }
+        router.showConfirmationDialog(
+            title: String(localized: "Discard this food?"),
+            subtitle: nil,
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Discard Food", role: .destructive) {
+                            self.router.dismissScreen()
+                        }
+                        Button("Keep Editing", role: .cancel) { }
+                    }
+                )
+            }
+        )
     }
     
     func onNextPressed(delegate: CreateFoodDelegate) {
@@ -102,20 +129,6 @@ class CreateFoodPresenter {
         }
     }
     
-    /// Explains the "Submit Foods to the Public Database?" toggle it sits beside. Shown inline rather
-    /// than linked out: the app knows what the toggle does, and there is no hosted help to point at.
-    func onLearnMorePressed() {
-        interactor.trackEvent(event: Event.learnMorePressed)
-        router.showSimpleAlert(
-            title: String(localized: "Contributing Foods"),
-            subtitle: """
-            With this on, foods you create are shared to the public database so other people can find \
-            and log them. Your name is not attached, and the food stays in your own library either way. \
-            With it off, the food is yours alone.
-            """
-        )
-    }
-    
     func onBarcodeScannerPressed() {
         
         router.showBarcodeScannerView(
@@ -140,7 +153,6 @@ func onDevSettingsPressed() {
         case imageSelectorSuccess
         case imageSelectorCancel
         case imageSelectorFail(error: Error)
-        case learnMorePressed
 
         var eventName: String {
             switch self {
@@ -149,7 +161,6 @@ func onDevSettingsPressed() {
             case .imageSelectorStart:               return "IngredientImageSelector_Start"
             case .imageSelectorSuccess:             return "IngredientImageSelector_Success"
             case .imageSelectorCancel:              return "IngredientImageSelector_Cancel"
-            case .learnMorePressed:     return "CreateFoodView_LearnMore_Press"
             case .imageSelectorFail:                return "IngredientImageSelector_Fail"
             }
         }

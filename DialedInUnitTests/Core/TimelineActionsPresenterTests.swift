@@ -215,6 +215,19 @@ struct TimelineActionsPresenterTests {
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
+    /// A second tap on Copy while the first copy is writing does not copy the day twice.
+    @Test("Test A Second Copy Tap While Copying Copies Once")
+    func testASecondCopyTapWhileCopyingCopiesOnce() async {
+        let screen = makeScreen(meals: [meal(id: "m1", hour: 8)])
+
+        screen.presenter.onCopyDayConfirmed(delegate: screen.delegate)
+        #expect(screen.presenter.isWorking)
+        screen.presenter.onCopyDayConfirmed(delegate: screen.delegate)
+        await TestManagers.eventually { !screen.presenter.isWorking }
+
+        #expect(screen.interactor.savedMeals.count == 1)
+    }
+
     /// A copy is a new entry, not a move: it takes a fresh id, and the original is untouched.
     /// Reusing the id would overwrite the meal being copied from.
     @Test("Test A Copied Meal Is A New Entry Not A Move")
@@ -260,7 +273,7 @@ struct TimelineActionsPresenterTests {
 
         screen.presenter.onCopyDayConfirmed(delegate: screen.delegate)
 
-        #expect(screen.router.simpleAlerts == ["Nothing to copy"])
+        #expect(screen.router.simpleAlerts == ["Nothing to Copy"])
         #expect(screen.interactor.savedMeals.isEmpty)
         #expect(!screen.presenter.isChoosingCopyDestination)
     }
@@ -285,7 +298,7 @@ struct TimelineActionsPresenterTests {
         screen.presenter.onCopyDayConfirmed(delegate: screen.delegate)
         await TestManagers.eventually { !screen.router.simpleAlerts.isEmpty }
 
-        #expect(screen.router.simpleAlerts == ["Unable to copy day"])
+        #expect(screen.router.simpleAlerts == ["Unable to Copy Day"])
         #expect(screen.interactor.trackedEventNames.contains("TimelineActionsView_Action_Fail"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
@@ -329,7 +342,7 @@ struct TimelineActionsPresenterTests {
 
         screen.presenter.onClearDayPressed(delegate: screen.delegate)
 
-        #expect(screen.router.simpleAlerts == ["Nothing to clear"])
+        #expect(screen.router.simpleAlerts == ["Nothing to Clear"])
         #expect(screen.interactor.deletedMealIds.isEmpty)
     }
 

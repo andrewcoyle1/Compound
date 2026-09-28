@@ -22,9 +22,9 @@ struct MealItemAmountViewDelegate {
         switch mode {
         case .addFood(let food):
             let base = food.portionGramsCalculated ?? food.portionMillilitersCalculated ?? 100
-            return String(format: "%g", base)
+            return base.formatted(.number.grouping(.never))
         case .editItem(let item):
-            return String(format: "%g", item.amount)
+            return item.amount.formatted(.number.grouping(.never))
         }
     }
 

@@ -61,6 +61,9 @@ struct PortionDefinitionView: View {
             }
         }
         .navigationTitle("Create Food")
+        // A name was entered to get here, so a swipe would throw it away; Back leads to Close,
+        // which asks first.
+        .interactiveDismissDisabled()
         .navigationBarTitleDisplayMode(.inline)
         .bottomCTA {
             CallToActionButton {

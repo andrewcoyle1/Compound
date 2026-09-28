@@ -109,6 +109,8 @@ struct FoodItemSearchPresenterTests {
 
         #expect(screen.interactor.queries.isEmpty)
         #expect(screen.presenter.searchFailed)
+        // Offline says so, rather than the generic "couldn't search".
+        #expect(screen.presenter.searchFailedOffline)
         #expect(!screen.presenter.isSearching)
     }
 

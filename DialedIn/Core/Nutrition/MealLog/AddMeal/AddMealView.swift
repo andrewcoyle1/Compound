@@ -28,6 +28,7 @@ struct AddMealView: View {
             }
             ListRowToggle(title: String(localized: "Show all nutrients"), systemImage: Symbol.nutrition, isOn: $presenter.showAllNutrients)
         }
+        .navigationTitle("Add Meal")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $presenter.isEditingMealTime) {
             mealTimeSheet
@@ -45,7 +46,7 @@ struct AddMealView: View {
             toolbarContent
         }
         .bottomCTA {
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.saveMeal()
             } label: {
                 Text("Log")
@@ -73,6 +74,9 @@ struct AddMealView: View {
             .navigationTitle("Meal Time")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .cancel) { presenter.onMealTimeCancelled() }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm) { presenter.isEditingMealTime = false }
                 }
@@ -99,6 +103,9 @@ struct AddMealView: View {
                 ForEach(presenter.mealLog.items) { mealItem in
                     plateRow(mealItem)
                 }
+                ListRowButton(title: String(localized: "Add Food"), systemImage: Symbol.add, accessory: .none) {
+                    presenter.onShowPickerPressed()
+                }
             }
         } header: {
             Text("Your Plate")
@@ -119,13 +126,21 @@ struct AddMealView: View {
                     } label: {
                         Image(systemName: Symbol.edit)
                     }
-                    .accessibilityLabel("Edit meal item")
+                    .accessibilityLabel("Edit \(mealItem.displayName)")
                     .buttonStyle(.glass)
                     .buttonBorderShape(.circle)
                 }
             ))
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                presenter.onDeleteMealItem(mealItem)
+            } label: {
+                Label("Delete", systemImage: Symbol.delete)
+            }
+        }
+        // The same action for anyone who cannot swipe.
+        .contextMenu {
             Button(role: .destructive) {
                 presenter.onDeleteMealItem(mealItem)
             } label: {
@@ -251,7 +266,7 @@ struct AddMealView: View {
         ToolbarSpacer(.flexible, placement: .topBarLeading)
         ToolbarItem(placement: .topBarLeading) {
             Button {
-                presenter.isEditingMealTime = true
+                presenter.onEditMealTimePressed()
             } label: {
                 VStack {
                     Text(presenter.mealLog.date.formatted(date: .omitted, time: .shortened))
@@ -263,64 +278,7 @@ struct AddMealView: View {
             }
             .accessibilityLabel("Change meal time")
         }
-        ToolbarSpacer(.flexible, placement: .topBarLeading)
-
-        // A readout, not an action — it was previously a Button that did nothing when tapped.
-        ToolbarItem(placement: .topBarLeading) {
-            Text(presenter.calorieLabel)
-                .font(.rowDetail)
-                .monospacedDigit()
-                .accessibilityLabel("\(presenter.calorieLabel) calories \(presenter.scopeLabel)")
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            HStack {
-                cartView
-                Button {
-                    presenter.onShowPickerPressed()
-                } label: {
-                    Image(systemName: "chevron.up")
-
-                }
-                .accessibilityLabel("Show food picker")
-            }
-            .frame(maxWidth: .infinity)
-
-        }
     }
-    
-    private var cartView: some View {
-        HStack {
-            Image(systemName: Symbol.meal)
-            mealItemImagesSection
-            Spacer()
-        }
-        .padding(.leading, Spacing.s)
-    }
-    
-    private var mealItemImagesSection: some View {
-        HStack(spacing: -10) {
-            ForEach(presenter.mealLog.items.prefix(5)) { mealItem in
-                mealItemCircle(mealItem: mealItem)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func mealItemCircle(mealItem: MealItemModel) -> some View {
-        ZStack {
-            Circle()
-                .fill(.surface)
-
-            ImageLoaderView(
-                urlString: "SplashScreen",
-                resizingMode: .fit,
-                clipShape: AnyShape(Circle())
-            )
-        }
-        .frame(width: ControlSize.thumbnail, height: ControlSize.thumbnail)
-        .overlay(Circle().stroke(.canvas, lineWidth: Spacing.xxs))
-    }
-
 }
 
 extension CoreBuilder {

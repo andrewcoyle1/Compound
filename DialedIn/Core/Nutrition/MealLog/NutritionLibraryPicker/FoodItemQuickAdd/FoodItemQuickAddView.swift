@@ -38,7 +38,7 @@ struct FoodItemQuickAddView: View {
                 Text("Add to Plate")
             }
             .disabled(!presenter.canSubmit)
-            CallToActionButton(isPrimaryAction: false) {
+            CallToActionButton(isPrimaryAction: false, isLoading: presenter.isSaving) {
                 presenter.onLogFoodPressed()
             } label: {
                 Text("Log")
@@ -66,8 +66,8 @@ enum NutritionWeightUnit: String, PickableUnit {
     
     var name: String {
         switch self {
-        case .grams: return "grams"
-        case .ounces: return "ounces"
+        case .grams: return String(localized: "grams")
+        case .ounces: return String(localized: "ounces")
         }
     }
     
@@ -87,7 +87,7 @@ enum NutritionVolumeUnit: String, PickableUnit {
     
     var name: String {
         switch self {
-        case .millileter: return "milliliters"
+        case .millileter: return String(localized: "milliliters")
         case .flOunce: return String(localized: "fluid ounces")
         }
     }
@@ -116,7 +116,7 @@ enum EnergyUnit: String, PickableUnit {
     var acronym: String {
         switch self {
         case .kcal: return "kcal"
-        case .kjoule: return "kj"
+        case .kjoule: return "kJ"
         }
     }
 }

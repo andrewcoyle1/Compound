@@ -274,12 +274,7 @@ struct CreateRecipePresenterTests {
     }
 
     /// Servings are what every figure on the recipe is divided by, so moving on without one would
-    /// leave the dish undividable.
-    ///
-    /// The screen does say so, but through `showSimpleAlert`, which `CreateRecipeRouter` does not
-    /// restate as a requirement — so it dispatches statically to the `GlobalRouter` extension and
-    /// never reaches the double. What can be asserted, and is the half that matters, is that the
-    /// step is not taken.
+    /// leave the dish undividable. Next is disabled until both required fields are filled in.
     @Test("Test Moving On Without Servings Goes Nowhere")
     func testMovingOnWithoutServingsGoesNowhere() {
         let screen = makeScreen()
@@ -287,7 +282,42 @@ struct CreateRecipePresenterTests {
 
         screen.presenter.onNextPressed()
 
+        #expect(!screen.presenter.canSave)
         #expect(screen.router.preparationDelegates.isEmpty)
+    }
+
+    /// A recipe with servings but no name used to go through and save with an empty name.
+    @Test("Test Moving On Without A Name Goes Nowhere")
+    func testMovingOnWithoutANameGoesNowhere() {
+        let screen = makeScreen()
+        screen.presenter.servingQuantity = 4
+
+        screen.presenter.onNextPressed()
+
+        #expect(!screen.presenter.canSave)
+        #expect(screen.router.preparationDelegates.isEmpty)
+    }
+
+    /// Closing asks first only when something has been entered.
+    @Test("Test Only An Edited Recipe Has Something To Lose")
+    func testOnlyAnEditedRecipeHasSomethingToLose() {
+        let screen = makeScreen()
+        let untouched = screen.presenter.hasUnsavedChanges
+        screen.presenter.ingredients = [ingredient("Mince")]
+
+        #expect(!untouched)
+        #expect(screen.presenter.hasUnsavedChanges)
+    }
+
+    /// An added ingredient can be taken out again.
+    @Test("Test An Ingredient Can Be Removed")
+    func testAnIngredientCanBeRemoved() {
+        let screen = makeScreen()
+        screen.presenter.ingredients = [ingredient("Mince"), ingredient("Beans")]
+
+        screen.presenter.onDeleteIngredients(at: IndexSet(integer: 0))
+
+        #expect(screen.presenter.ingredients.map(\.name) == ["Beans"])
     }
 
     @Test("Test The Recipe Details Reach The Method Step")

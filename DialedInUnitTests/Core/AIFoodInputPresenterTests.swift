@@ -30,6 +30,11 @@ struct FoodPhotoScannerPresenterTests {
             if let error { throw error }
             return json
         }
+
+        var cameraPermission: CameraAccess = .authorized
+        private(set) var settingsOpened = 0
+        func requestCameraPermission() async -> Bool { false }
+        func openAppSettings() { settingsOpened += 1 }
     }
 
     private final class Router: FoodPhotoScannerRouter {
@@ -127,6 +132,8 @@ struct FoodPhotoScannerPresenterTests {
         #expect(router.alertTitles == [OfflineError.title])
         #expect(interactor.analysedByteCounts.isEmpty)
         #expect(!presenter.isAnalysing)
+        // The photo is already on screen; an empty Results section under it said nothing.
+        #expect(presenter.errorMessage != nil)
     }
 
     @Test("Test A Failed Analysis Stops The Spinner And Is Reported")
@@ -230,6 +237,23 @@ struct FoodPhotoScannerPresenterTests {
         screen.presenter.onViewAppear()
 
         #expect(screen.interactor.trackedScreenEventNames == ["FoodPhotoScannerView_Appear"])
+    }
+
+    /// A refused camera used to show a capture button over a black preview. It is now its own
+    /// state, with Settings as the way back, and kept apart from a device with no camera.
+    @Test("Test A Refused Camera Is Told Apart From A Missing One")
+    func testARefusedCameraIsToldApartFromAMissingOne() async {
+        let refused = makeScreen()
+        refused.interactor.cameraPermission = .denied
+        await refused.presenter.onCameraNeeded(isSupported: true)
+        refused.presenter.onOpenSettingsPressed()
+
+        let missing = makeScreen()
+        await missing.presenter.onCameraNeeded(isSupported: false)
+
+        #expect(refused.presenter.cameraAccess == .denied)
+        #expect(refused.interactor.settingsOpened == 1)
+        #expect(missing.presenter.cameraAccess == .unsupported)
     }
 }
 

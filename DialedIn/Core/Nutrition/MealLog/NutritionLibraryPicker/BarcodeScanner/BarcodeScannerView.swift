@@ -14,9 +14,27 @@ struct BarcodeScannerView: View {
     @State var presenter: BarcodeScannerPresenter
     let delegate: BarcodeScannerDelegate
 
+    /// Inside the food picker the scanner is one mode of a screen that already has a title and a
+    /// way out. Opened on its own, from Create Food, it is a sheet and needs both.
     var body: some View {
+        if presenter.returnsBarcodeOnly {
+            scanner
+                .navigationTitle("Scan Barcode")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(role: .close) { presenter.onDismissPressed() }
+                    }
+                }
+        } else {
+            scanner
+        }
+    }
+
+    private var scanner: some View {
         ZStack {
-            if DataScannerViewController.isSupported && DataScannerViewController.isAvailable {
+            switch presenter.cameraAccess {
+            case .authorized:
                 BarcodeScanner(
                     isScanning: $presenter.isScanning,
                     scannedCode: $presenter.scannedCode,
@@ -45,15 +63,19 @@ struct BarcodeScannerView: View {
                         .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                         .reducedMotionAnimation(.standard, value: showOverlay)
                 }
-            } else {
-                ContentUnavailableView {
-                    Label("Scanner Unavailable", systemImage: Symbol.barcode)
-                } description: {
-                    Text("Scanner not supported on this device.")
-                }
+            case .notDetermined:
+                // The system alert is on screen, or about to be.
+                Color.clear
+            case .denied:
+                cameraDeniedView
+            case .unsupported:
+                scannerUnsupportedView
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
+        .task {
+            await presenter.onCameraNeeded(isSupported: DataScannerViewController.isSupported)
+        }
         .onChange(of: presenter.scanningMode) {
             presenter.onScanningModeChanged()
         }
@@ -70,6 +92,40 @@ struct BarcodeScannerView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
+    }
+
+    // MARK: - No camera
+
+    /// Typing the barcode needs no camera, so it is offered in both states below.
+    private var cameraDeniedView: some View {
+        ContentUnavailableView {
+            Label("Camera Access Is Off", systemImage: Symbol.camera)
+        } description: {
+            Text("Allow camera access in Settings to scan barcodes and nutrition labels, or type the barcode in.")
+        } actions: {
+            Button("Open Settings") {
+                presenter.onOpenSettingsPressed()
+            }
+            .buttonStyle(.glassProminent)
+            enterManuallyButton
+        }
+    }
+
+    private var scannerUnsupportedView: some View {
+        ContentUnavailableView {
+            Label("Scanner Unavailable", systemImage: Symbol.barcode)
+        } description: {
+            Text("This device can't scan barcodes. You can type the barcode in.")
+        } actions: {
+            enterManuallyButton
+        }
+    }
+
+    private var enterManuallyButton: some View {
+        Button("Enter Manually") {
+            presenter.onManualEntryPressed()
+        }
+        .buttonStyle(.glass)
     }
 
     // MARK: - Manual entry
@@ -115,13 +171,16 @@ struct BarcodeScannerView: View {
 
     private var topControls: some View {
         HStack {
-            Picker("Scanning mode", selection: $presenter.scanningMode) {
-                ForEach(ScanningMode.allCases) { mode in
-                    Text(mode.rawValue.capitalized).tag(mode)
+            // Reading a label produces a food, which a caller that only wants the digits cannot use.
+            if !presenter.returnsBarcodeOnly {
+                Picker("Scanning mode", selection: $presenter.scanningMode) {
+                    ForEach(ScanningMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .fixedSize()
             }
-            .pickerStyle(.segmented)
-            .fixedSize()
 
             Spacer()
 
@@ -142,7 +201,7 @@ struct BarcodeScannerView: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
-                .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off torch") : String(localized: "Turn on torch"))
+                .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off flashlight") : String(localized: "Turn on flashlight"))
             }
         }
         .padding()
@@ -155,9 +214,9 @@ struct BarcodeScannerView: View {
         if presenter.isLookingUpBarcode {
             HStack(spacing: Spacing.s) {
                 ProgressView()
-                Text("Looking up product...")
+                Text("Looking up product…")
                     .font(.rowDetail)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             }
             .padding(.horizontal, Spacing.xl)
             .padding(.vertical, Spacing.m)
@@ -166,7 +225,7 @@ struct BarcodeScannerView: View {
         } else if presenter.scannedCode == nil {
             Text("Point camera at a barcode")
                 .font(.rowDetail)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.m)
                 .glassEffect()
@@ -181,9 +240,9 @@ struct BarcodeScannerView: View {
             if presenter.isParsingLabel {
                 HStack(spacing: Spacing.s) {
                     ProgressView()
-                    Text("Analyzing label...")
+                    Text("Analyzing label…")
                         .font(.rowDetail)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, Spacing.m)
@@ -192,9 +251,13 @@ struct BarcodeScannerView: View {
                 Button("Re-scan", action: presenter.onRescanPressed)
                     .buttonStyle(.glass)
             } else if presenter.scannedCode != nil {
+                // Over the live camera, so it sits on the same glass capsule as the other hints.
                 Text("Label text captured")
-                    .font(.label)
-                    .foregroundStyle(.secondary)
+                    .font(.rowDetail)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal)
+                    .padding(.vertical, Spacing.m)
+                    .glassEffect()
 
                 HStack(spacing: Spacing.m) {
                     Button("Re-scan", action: presenter.onRescanPressed)
@@ -211,7 +274,7 @@ struct BarcodeScannerView: View {
             } else {
                 Text("Point camera at a nutrition label")
                     .font(.rowDetail)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal)
                     .padding(.vertical, Spacing.m)
                     .glassEffect()
@@ -410,7 +473,8 @@ extension CoreBuilder {
         BarcodeScannerView(
             presenter: BarcodeScannerPresenter(
                 interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
+                router: CoreRouter(router: router, builder: self),
+                delegate: delegate
             ),
             delegate: delegate
         )

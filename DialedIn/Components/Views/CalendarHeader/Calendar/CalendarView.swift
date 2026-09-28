@@ -25,21 +25,22 @@ struct CalendarView: View {
 
     /// Scrolling is driven through a `ScrollViewProxy` rather than `scrollPosition(id:)`,
     /// because that binding resolves against the scroll target layout's immediate children and
-    /// a pinned `Section` splits each month into two of them — header and grid — leaving the
+    /// a `Section` splits each month into two of them — header and grid — leaving the
     /// initial position and the Today button without an anchor.
     @State private var scrollProxy: ScrollViewProxy?
 
     var body: some View {
-        VStack(spacing: 0) {
-            daysOfWeekHeader
-
-            monthsScrollView
-        }
-        .navigationTitle("Calendar")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            toolbarContent
-        }
+        // A safe-area bar rather than a row painted with `.bar`: the months scroll under it and the
+        // system's scroll edge effect separates the two.
+        monthsScrollView
+            .safeAreaBar(edge: .top) {
+                daysOfWeekHeader
+            }
+            .navigationTitle("Calendar")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                toolbarContent
+            }
     }
 
     private var daysOfWeekHeader: some View {
@@ -54,13 +55,14 @@ struct CalendarView: View {
         .monospaced()
         .padding(.horizontal)
         .padding(.bottom, Spacing.s)
-        .background(.bar)
     }
 
     private var monthsScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical) {
-                LazyVStack(spacing: Spacing.l, pinnedViews: .sectionHeaders) {
+                // Month titles scroll with their month. Pinned, they sat over the day grid and
+                // needed a material of their own to stay legible.
+                LazyVStack(spacing: Spacing.l) {
                     ForEach(presenter.months) { month in
                         Section {
                             monthGrid(month)
@@ -87,14 +89,12 @@ struct CalendarView: View {
         }
     }
 
-    /// The background hugs the title rather than filling the row, so the grid keeps its own
-    /// background either side of it. The capsule matches the day cells.
     private func monthHeader(_ month: CalendarPresenter.Month) -> some View {
         Text(month.title)
             .font(.headline)
+            .accessibilityAddTraits(.isHeader)
             .padding(.horizontal, Spacing.m)
             .padding(.vertical, Spacing.xs)
-            .background(.bar, in: .capsule)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
             .padding(.vertical, Spacing.xs)

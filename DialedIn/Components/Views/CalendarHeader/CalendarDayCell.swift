@@ -50,6 +50,18 @@ struct CalendarDayCell: View {
         }
         .contentShape(.rect)
         .reducedMotionAnimation(.quick, value: isSelected)
+        // One element for the whole day. Read separately, the cell was "M", "14": no month, no
+        // selection, and nothing of the ring or the badge.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(day.formatted(.dateTime.weekday(.wide).day().month(.wide)))
+        .accessibilityValue(accessibilityValue)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var accessibilityValue: String {
+        [isToday ? String(localized: "Today") : nil, marker?.accessibilityDescription]
+            .compactMap { $0 }
+            .joined(separator: ", ")
     }
 
     /// Always in the layout, only visible for today — an `if` here would make today's cell

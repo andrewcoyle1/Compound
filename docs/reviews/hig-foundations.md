@@ -22,6 +22,28 @@ tree during the review, so line numbers are as read on 2026-09-28.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Resolution (2026-09-28, branch hig/foundations)
+
+Scope was `Components/` (except `Modals/`, `Presentation.swift`, `BottomCTA.swift`) and
+`Extensions/`. Sites in `Core/`, `Root/`, assets and `.swiftlint.yml` are left to their owners.
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | fixed (before this branch) | `Double.typed(_:locale:)` behind `enteredAmount` and `AutoSelectNumberField`; no other `Double(text)` parse of typed input in these paths. Account and set keypad are in `Core/`. |
+| 2 | fixed in part; ring mark skipped: decision | `CalendarDayCell` is one element: full date label, value "Today" plus `CalendarDayMarker.accessibilityDescription` (logged count, % of goal, goal met / over goal), `.isSelected`. The over-goal ring shape waits on the decision. |
+| 3 | fixed in part; set table skipped: decision | Calendar strip height is `@ScaledMetric`; `DashboardCard` uses `minHeight` and wraps its title; `ActivityRingView` scales with its caption (capped at 2x); `AnalyticsCardGrid` goes to one column and `AnalyticsCard` drops its line limits at accessibility sizes. `AutoSelectNumberField`'s shrink belongs to the set-table decision. The Dashboard carousel's fixed height is in `Core/`. |
+| 4 | fixed in shared components | New `tapTarget()`; `chipTapTarget()` calls it. Applied to `SectionHeaderView`'s action and the onboarding secondary button. `FollowButton` drops `.controlSize(.small)`. Feature-folder sites are in `Core/`. |
+| 5 | fixed in shared components | New `rowActions(edge:allowsFullSwipe:_:)` in `View+EXT.swift`: swipe actions plus the same buttons in a context menu. Adopting it is in `Core/`. |
+| 6 | fixed in shared components | `ListRow`, `ListRowButton`, `ListRowToggle`, `SelectableRow` and `SectionHeaderView` take `LocalizedStringResource` for literals (the `String` initialisers are disfavoured), which translates `TrainingView`'s four rows; "See All" and "Unknown" are localized. Other literals are in `Core/`. |
+| 7 | fixed in shared components | `ImageLoaderView` is hidden unless given `imageDescription`; `UserAvatarView` is hidden. Passing descriptions for content images is in `Core/`. |
+| 8 | needs a change elsewhere | `Root/LaunchScreen.storyboard`. |
+| 9 | fixed in part | `CalendarView`: weekday row is a `safeAreaBar`, month headers unpinned, both `.bar` backgrounds removed. `ExerciseListBuilderView` and `TrainingView` are in `Core/`. |
+| 10 | fixed in part | `AnalyticsCard` and `CalendarHeaderView` use `chevron.forward` / `.backward`. Five sites are in `Core/`. |
+| 11 | fixed in part | `HighlightButtonStyle` and `PressableButtonStyle` animate through `reducedMotionAnimation`, and a press dims rather than scales under Reduce Motion. `AppViewBuilder` and the lint rule are elsewhere. |
+| 12 | skipped: decision | Needs the source artwork. |
+| Smaller: card titles | fixed | `DashboardCard` title has `.isHeader`; month titles in `CalendarView` too. |
+| Smaller: others | needs a change elsewhere | Colour/icon names, week start, custom modal, toasts, back chevrons are all outside these paths. |
+
 ## Sweep totals
 
 | Area | What was counted | Result |

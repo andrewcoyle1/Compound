@@ -63,6 +63,26 @@ enum CalendarDayMarker: Hashable, Sendable {
         }
     }
 
+    /// What VoiceOver says the day holds, or nil when it holds nothing. The ring and the badge are
+    /// drawn, not text, so without this a marked day and an empty one sound the same.
+    var accessibilityDescription: String? {
+        guard !isEmpty else { return nil }
+        switch self {
+        case .count(let count):
+            return count == 1 ? String(localized: "Logged") : String(localized: "\(count) logged")
+        case .goalProgress(let value, let goal, _):
+            guard goal > 0 else { return String(localized: "Logged") }
+            let progress = String(localized: "\(Format.percent(value / goal)) of goal")
+            if isOverGoal {
+                return "\(progress), \(String(localized: "Over goal"))"
+            }
+            if isGoalMet {
+                return "\(progress), \(String(localized: "Goal met"))"
+            }
+            return progress
+        }
+    }
+
     /// The number shown in the corner badge, if any. Progress rings speak for themselves.
     var badgeCount: Int? {
         switch self {

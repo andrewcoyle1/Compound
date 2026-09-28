@@ -21,4 +21,16 @@ extension View {
     func any() -> AnyView {
         AnyView(self)
     }
+
+    /// Swipe actions with the same buttons in a context menu, so a row's actions are not reachable
+    /// only by swiping: someone who cannot swipe, and uses neither VoiceOver nor Switch Control,
+    /// can still long-press. Use it in place of `swipeActions` on every row.
+    func rowActions<Actions: View>(
+        edge: HorizontalEdge = .trailing,
+        allowsFullSwipe: Bool = true,
+        @ViewBuilder _ actions: () -> Actions
+    ) -> some View {
+        swipeActions(edge: edge, allowsFullSwipe: allowsFullSwipe) { actions() }
+            .contextMenu { actions() }
+    }
 }

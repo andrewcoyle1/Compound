@@ -112,8 +112,8 @@ struct OnboardingStepScaffold<Content: View>: View {
             if let secondary {
                 Button(action: secondary.action) {
                     Text(secondary.title)
-                        .padding(.vertical, Spacing.s)
                         .frame(maxWidth: .infinity)
+                        .tapTarget()
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)

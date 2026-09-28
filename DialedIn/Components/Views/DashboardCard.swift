@@ -18,7 +18,8 @@ struct DashboardCard<Content: View>: View {
     var drawsSurface: Bool = true
     @ViewBuilder var content: () -> Content
 
-    /// One height for every page of the Dashboard carousel.
+    /// The height every page of the Dashboard carousel starts from. A minimum: the content grows
+    /// past it at large text sizes.
     static var contentHeight: CGFloat { 200 }
 
     /// The title above the surface, plus the stack's spacing. The carousel sizes its scroll area
@@ -27,16 +28,18 @@ struct DashboardCard<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            // One line, shrinking before it truncates: "Today's Workout" is wider than a card at
-            // accessibility sizes. The carousel grows its height with the same text style.
+            // Wraps rather than shrinking: "Today's Workout" is wider than a card at accessibility
+            // sizes, and half-size text defeats the point of the larger size. A heading, so the
+            // VoiceOver rotor can move between the carousel's cards.
             Text(title)
                 .font(.sectionTitle)
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+                .accessibilityAddTraits(.isHeader)
 
+            // A minimum, not a fixed height, so the content grows with Dynamic Type instead of
+            // being cropped.
             surface
-                .frame(height: Self.contentHeight)
+                .frame(minHeight: Self.contentHeight)
         }
     }
 

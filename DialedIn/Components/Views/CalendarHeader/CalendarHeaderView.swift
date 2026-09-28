@@ -30,6 +30,10 @@ struct CalendarHeaderView: View {
 
     @Namespace private var namespace
 
+    /// The strip's height, grown with the text in its cells. A fixed 70 pt cropped the weekday
+    /// and date at the larger sizes, which need about twice that.
+    @ScaledMetric(relativeTo: .subheadline) private var rowHeight: CGFloat = 70
+
     var body: some View {
         // Built once per body pass and looked up per cell.
         let markers = presenter.markersByDay()
@@ -54,7 +58,7 @@ struct CalendarHeaderView: View {
             // or viewAligned paging has nothing to snap to.
             .scrollTargetLayout()
         }
-        .frame(height: Self.rowHeight)
+        .frame(height: rowHeight)
         .scrollIndicators(.hidden)
         .scrollPosition(id: $leadingDay, anchor: .leading)
         .scrollTargetBehavior(.viewAligned)
@@ -108,7 +112,9 @@ struct CalendarHeaderView: View {
         let isHidden = presenter.isTodayVisible(fromLeadingDay: leadingDay)
         let pointsForward = presenter.isTodayAhead(ofLeadingDay: leadingDay)
 
-        Image(systemName: pointsForward ? "chevron.right" : "chevron.left")
+        // Forward and backward, not right and left, so the arrow flips with the layout direction
+        // along with the edge the button sits on.
+        Image(systemName: pointsForward ? "chevron.forward" : "chevron.backward")
             .font(.caption)
             .fontWeight(.semibold)
             .foregroundStyle(.tint)
@@ -144,8 +150,6 @@ struct CalendarHeaderView: View {
         .accessibilityLabel("Today")
         .padding(.vertical, Spacing.s)
     }
-
-    private static let rowHeight: CGFloat = 70
 
     @ViewBuilder
     private func dayCell(_ day: Date, marker: CalendarDayMarker?) -> some View {

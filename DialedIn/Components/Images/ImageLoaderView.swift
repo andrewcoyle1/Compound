@@ -29,6 +29,9 @@ struct ImageLoaderView: View {
     var resizingMode: ContentMode = .fill
     var forceTransitionAnimation: Bool = false
     var clipShape: AnyShape = AnyShape(Rectangle())
+    /// What the picture shows, for VoiceOver. `nil` means decorative, and the image is hidden:
+    /// left unlabelled, a bundled asset is read out by its file name ("SplashScreen").
+    var imageDescription: String?
     
     var body: some View {
         clipShape
@@ -56,6 +59,10 @@ struct ImageLoaderView: View {
                 content
                     .drawingGroup()
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(imageDescription ?? "")
+            .accessibilityAddTraits(.isImage)
+            .accessibilityHidden(imageDescription == nil)
     }
 }
 

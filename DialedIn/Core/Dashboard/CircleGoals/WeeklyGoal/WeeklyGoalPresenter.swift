@@ -34,8 +34,10 @@ class WeeklyGoalPresenter {
             defer { isSaving = false }
             do {
                 try await interactor.updateWeeklySessionGoal(goal)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to save your goal"), subtitle: String(localized: "Please try again."))
             }
         }

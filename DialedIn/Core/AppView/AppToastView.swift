@@ -16,37 +16,37 @@ struct AppToastView: View {
     private var iconName: String {
         switch toast.style {
         case .progress: return "arrow.clockwise"
-        case .success:  return "checkmark.circle.fill"
-        case .failure:  return "exclamationmark.triangle.fill"
+        case .success:  return Symbol.success
+        case .failure:  return Symbol.error + ".fill"
         }
     }
 
     private var iconColour: Color {
         switch toast.style {
         case .progress: return .secondary
-        case .success:  return .green
-        case .failure:  return .orange
+        case .success:  return .success
+        case .failure:  return .danger
         }
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.m) {
             Image(systemName: iconName)
                 .foregroundStyle(iconColour)
-                .font(.subheadline)
+                .font(.rowDetail)
 
             Text(toast.message)
-                .font(.subheadline)
+                .font(.rowDetail)
                 .fontWeight(.medium)
                 .foregroundStyle(.primary)
                 .lineLimit(3)
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .glassEffect(.regular, in: .rect(cornerRadius: 22))
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.m)
+        .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
+        .padding(.horizontal, Spacing.xl)
     }
 }
 
@@ -59,7 +59,7 @@ struct AppToastView: View {
             message: "Couldn't save your workout. It's still on this device — resume it from Training."
         ))
     }
-    .padding(.top, 60)
+    .padding(.top, Spacing.xxl)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     .background(Color.gray.opacity(0.2))
 }

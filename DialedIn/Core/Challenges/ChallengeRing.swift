@@ -11,25 +11,30 @@ struct ChallengeRing: View {
     let target: Int
     var size: CGFloat = 56
 
+    /// Grows the ring with Dynamic Type so the count inside keeps its proportion.
+    @ScaledMetric(relativeTo: .subheadline) private var scale: CGFloat = 1
+
     private var progress: Double {
         ChallengeStandings.ringProgress(sessions: sessions, target: target)
     }
 
+    private var side: CGFloat { size * scale }
+
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.accentColor.opacity(0.2), lineWidth: size / 9)
+                .stroke(Color.tintedSurface(.accentColor), lineWidth: side / 9)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(progress >= 1 ? Color.green : Color.accentColor, style: StrokeStyle(lineWidth: size / 9, lineCap: .round))
+                .stroke(progress >= 1 ? Color.success : Color.accentColor, style: StrokeStyle(lineWidth: side / 9, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             Text("\(sessions)/\(target)")
-                .font(.system(size: size / 4.5, weight: .semibold).monospacedDigit())
+                .font(size >= 80 ? .metric : .metricSmall)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
-                .padding(size / 8)
+                .padding(side / 8)
         }
-        .frame(width: size, height: size)
+        .frame(width: side, height: side)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(sessions) of \(target) sessions")
     }

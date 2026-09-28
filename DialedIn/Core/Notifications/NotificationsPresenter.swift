@@ -196,7 +196,9 @@ class NotificationsPresenter {
         Task {
             do {
                 try await interactor.respondToFollowRequest(requesterId: request.requesterId, accept: accept)
+                if accept { interactor.playHaptic(option: .success) }
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to answer request"), subtitle: String(localized: "Please try again."))
             }
         }

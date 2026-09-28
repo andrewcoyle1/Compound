@@ -29,15 +29,12 @@ struct SharedItemView: View {
             ForEach(presenter.templates) { template in
                 Section {
                     ForEach(template.exercises) { item in
-                        HStack {
-                            ImageLoaderView(urlString: item.exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
-                                .frame(width: 44, height: 44)
-                            Text(item.exercise.name)
-                            Spacer()
-                            Text("\(item.setTargets.count) sets")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                        ListRow(
+                            title: item.exercise.name,
+                            imageName: item.exercise.imageURL ?? Constants.randomImage,
+                            resizingMode: .fit,
+                            accessory: .value(String(localized: "\(item.setTargets.count) sets"))
+                        )
                     }
                 } header: {
                     Text(template.name)
@@ -48,32 +45,27 @@ struct SharedItemView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button {
+                Button(role: .close) {
                     presenter.onClosePressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
             }
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             if presenter.isAnswered {
                 Text(presenter.status == .accepted ? String(localized: "Added to your library") : String(localized: "Dismissed"))
                     .foregroundStyle(.secondary)
                     .padding()
             } else {
-                VStack(spacing: 8) {
-                    CallToActionButton(isPrimaryAction: true) {
-                        presenter.onAddToLibraryPressed()
-                    } label: {
-                        Text("Add to my library")
-                    }
-                    Button("Dismiss") {
-                        presenter.onDismissSharePressed()
-                    }
+                CallToActionButton(isPrimaryAction: true, isLoading: presenter.isWorking) {
+                    presenter.onAddToLibraryPressed()
+                } label: {
+                    Text("Add to my library")
                 }
                 .disabled(presenter.isWorking)
-                .padding(.bottom)
+                Button("Dismiss") {
+                    presenter.onDismissSharePressed()
+                }
+                .disabled(presenter.isWorking)
             }
         }
         .onAppear {

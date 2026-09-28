@@ -46,38 +46,39 @@ struct CircleActivityStripView: View {
     private let avatarSize: CGFloat = 52
     /// Grows with the text so "Nudge" and the name keep to one line at accessibility sizes,
     /// instead of wrapping a letter per line inside a column sized for the face.
-    @ScaledMetric(relativeTo: .caption) private var cellWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .caption) private var cellWidth: CGFloat = 76
 
     var body: some View {
         ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: Spacing.l) {
                 ForEach(members) { member in
                     memberCell(member)
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, Spacing.s)
         }
         .scrollIndicators(.hidden)
     }
 
     private func memberCell(_ member: CircleMember) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: Spacing.xs) {
             Button {
                 onMemberPressed(member)
             } label: {
-                VStack(spacing: 4) {
+                VStack(spacing: Spacing.xs) {
                     avatar(member)
                     if let toGo = member.sessionsToGo {
                         Text("\(toGo) to go")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.orange)
+                            .font(.label)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.warning)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     } else {
                         // First name only: a full name under a 56pt face truncates to "Alice Coo…".
                         Text(member.user.firstNameCalculated ?? member.name)
-                            .font(.caption)
+                            .font(.label)
                             .foregroundStyle(member.trainedToday ? .primary : .secondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
@@ -96,25 +97,17 @@ struct CircleActivityStripView: View {
                 Button("Nudge") {
                     onNudgePressed(member)
                 }
-                .font(.caption2.weight(.semibold))
-                .lineLimit(1)
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.capsule)
-                .controlSize(.mini)
+                .circlePillStyle()
                 .accessibilityLabel("Nudge \(member.name) to train")
             }
 
             if member.isCurrentUser, let onSetGoalPressed {
                 Button("Set goal", action: onSetGoalPressed)
-                    .font(.caption2.weight(.semibold))
-                    .lineLimit(1)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.capsule)
-                    .controlSize(.mini)
+                    .circlePillStyle()
                     .accessibilityLabel("Set your weekly session goal")
             }
         }
-        .frame(width: max(avatarSize + 16, cellWidth))
+        .frame(width: max(avatarSize + Spacing.l, cellWidth))
     }
 
     /// The ring is the week's sessions over goal; the check is still today.
@@ -122,20 +115,20 @@ struct CircleActivityStripView: View {
         UserAvatarView(imageUrl: member.user.profileImageNameCalculated, size: avatarSize)
             .grayscale(member.trainedToday ? 0 : 1)
             .opacity(member.trainedToday ? 1 : 0.5)
-            .padding(4)
+            .padding(Spacing.xs)
             .overlay {
                 Circle()
                     .stroke(.quaternary, lineWidth: 3)
                 Circle()
                     .trim(from: 0, to: member.weeklyProgress)
-                    .stroke(.green, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .stroke(member.weeklyProgress >= 1 ? Color.success : Color.accentColor, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                     .rotationEffect(.degrees(-90))
             }
             .overlay(alignment: .bottomTrailing) {
                 if member.trainedToday {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.body)
-                        .foregroundStyle(.white, .green)
+                    Image(systemName: Symbol.success)
+                        .iconSize(.small)
+                        .foregroundStyle(.white, .success)
                         .background(Circle().fill(.background))
                 }
             }
@@ -153,4 +146,16 @@ struct CircleActivityStripView: View {
         onNudgePressed: { _ in },
         onSetGoalPressed: { }
     )
+}
+
+private extension View {
+    /// The Nudge and Set goal buttons under a face: secondary, so glass, and small enough to sit
+    /// under a 52 pt avatar.
+    func circlePillStyle() -> some View {
+        font(.label)
+            .fontWeight(.semibold)
+            .lineLimit(1)
+            .buttonStyle(.glass)
+            .controlSize(.mini)
+    }
 }

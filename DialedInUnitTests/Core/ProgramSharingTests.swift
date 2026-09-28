@@ -163,6 +163,7 @@ struct ProgramSharingTests {
         #expect(interactor.sent.first?.name == "Push Day")
         #expect(interactor.sent.first?.ids == ["amy", "cal"])
         #expect(interactor.trackedEventNames.contains("ShareToFollowerView_Send_Success"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test A Failed Send Alerts And Can Be Retried")
@@ -180,6 +181,7 @@ struct ProgramSharingTests {
 
         #expect(router.alertTitles == ["Unable to share"])
         #expect(presenter.canSend)
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: Accept
@@ -206,6 +208,7 @@ struct ProgramSharingTests {
         #expect(copy?.exercises.map(\.exercise.id) == ["system-bench", newId, newId])
         #expect(interactor.statusUpdates == ["accepted:share-1"])
         #expect(presenter.status == .accepted)
+        #expect(await TestManagers.eventually { interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
     @Test("Test Accepting A Program Copies Every Day")
@@ -243,6 +246,7 @@ struct ProgramSharingTests {
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
         #expect(router.alertTitles == ["Unable to add"])
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(interactor.statusUpdates.isEmpty)
         #expect(presenter.status == .pending)
     }

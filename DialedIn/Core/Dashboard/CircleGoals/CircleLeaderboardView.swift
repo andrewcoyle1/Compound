@@ -15,6 +15,7 @@ struct CircleLeaderboardView: View {
     let onRowPressed: (CircleWeek.Standing) -> Void
 
     @State private var isExpanded = false
+    @ScaledMetric(relativeTo: .subheadline) private var rankWidth: CGFloat = 20
 
     var body: some View {
         DisclosureGroup(isExpanded: $isExpanded) {
@@ -25,10 +26,10 @@ struct CircleLeaderboardView: View {
             }
         } label: {
             Text("This week")
-                .font(.headline)
+                .font(.sectionTitle)
         }
         .padding(.horizontal)
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
 
     private func row(_ standing: CircleWeek.Standing, rank: Int) -> some View {
@@ -36,28 +37,28 @@ struct CircleLeaderboardView: View {
         return Button {
             onRowPressed(standing)
         } label: {
-            HStack(spacing: 12) {
-                Text("\(rank)")
-                    .font(.subheadline.monospacedDigit())
+            HStack(spacing: Spacing.m) {
+                Text(rank, format: .number)
+                    .font(.rowDetail.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .frame(width: 20)
+                    .frame(minWidth: rankWidth)
                 UserAvatarView(imageUrl: standing.user.profileImageNameCalculated, size: 32)
                 Text(isOwn ? "You" : standing.name)
-                    .font(.subheadline.weight(isOwn ? .semibold : .regular))
+                    .font(.rowDetail)
+                    .fontWeight(isOwn ? .semibold : .regular)
                     .lineLimit(1)
                 if rank == 1, standing.sessions > 0 {
                     Image(systemName: "crown.fill")
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(.personalRecord)
                         .accessibilityLabel("Leader")
                 }
                 Spacer(minLength: 0)
                 Text("\(standing.sessions)/\(standing.goal)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(standing.sessions >= standing.goal ? .green : .secondary)
+                    .font(.metricSmall)
+                    .foregroundStyle(standing.sessions >= standing.goal ? .success : .secondary)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 8)
-            .background(isOwn ? Color.accentColor.opacity(0.12) : .clear, in: .rect(cornerRadius: 12))
+            .padding(Spacing.s)
+            .background(isOwn ? Color.tintedSurface(.accentColor) : .clear, in: .rect(cornerRadius: Radius.m, style: .continuous))
             .contentShape(.rect)
         }
         .buttonStyle(.plain)

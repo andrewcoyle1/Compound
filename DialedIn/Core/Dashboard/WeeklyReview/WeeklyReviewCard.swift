@@ -9,32 +9,32 @@ import SwiftUI
 
 struct WeeklyReviewCard: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let onPressed: () -> Void
 
     var body: some View {
         Button(action: onPressed) {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.m) {
                 Image(systemName: "chart.bar.doc.horizontal")
-                    .font(.title3)
-                    .foregroundStyle(.blue)
+                    .iconSize(.medium)
+                    .foregroundStyle(.tint)
                     .accessibilityHidden(true)
                 Text("Your weekly review is ready")
-                    .font(.subheadline.weight(.medium))
+                    .font(.rowTitle)
+                    .fontWeight(.medium)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
+                    .font(.label)
+                    .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
             }
             .padding()
-            .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+            .cardSurface()
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, Spacing.s)
     }
 }
 

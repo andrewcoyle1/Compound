@@ -51,30 +51,33 @@ struct CreateChallengeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button {
+                Button(role: .close) {
                     presenter.onCancelPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Cancel")
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Create") {
-                    presenter.onCreatePressed()
+                if presenter.isSaving {
+                    ProgressView()
+                } else {
+                    Button(role: .confirm) {
+                        presenter.onCreatePressed()
+                    }
+                    .accessibilityLabel("Create")
+                    .disabled(!presenter.canCreate)
                 }
-                .disabled(!presenter.canCreate)
             }
         }
         .onAppear { presenter.onViewAppear() }
     }
 
     private func candidateRow(_ user: UserModel) -> some View {
-        HStack(spacing: 12) {
-            UserAvatarView(imageUrl: user.profileImageNameCalculated, size: 36)
+        HStack(spacing: Spacing.m) {
+            UserAvatarView(imageUrl: user.profileImageNameCalculated, size: ControlSize.thumbnail)
             Text(user.fullNameCalculated ?? "User")
+                .font(.rowTitle)
             Spacer()
             Image(systemName: presenter.isSelected(user) ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.isSelected(user) ? Color.accentColor : Color.secondary)
+                .foregroundStyle(presenter.isSelected(user) ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
         }
         .contentShape(Rectangle())
         .anyButton {

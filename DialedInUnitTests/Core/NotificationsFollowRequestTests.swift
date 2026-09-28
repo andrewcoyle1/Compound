@@ -132,6 +132,7 @@ struct NotificationsFollowRequestTests {
         #expect(Set(interactor.statusWrites) == ["r1:accepted", "r2:declined"])
         #expect(presenter.incomingFollowRequests.isEmpty)
         #expect(interactor.followed.isEmpty)
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test A Failed Answer Shows An Alert And Keeps The Request")
@@ -147,6 +148,7 @@ struct NotificationsFollowRequestTests {
 
         #expect(router.alertTitles == ["Unable to answer request"])
         #expect(presenter.incomingFollowRequests.map(\.requesterId) == ["r1"])
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Follow back reads the actor's profile first: a public actor is followed, a private one is

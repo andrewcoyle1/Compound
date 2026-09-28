@@ -11,7 +11,7 @@ struct WeeklyReviewView: View {
         List {
             Section {
                 Text(review.takeaway)
-                    .font(.headline)
+                    .font(.sectionTitle)
             } header: {
                 weekHeader(review)
             }
@@ -23,7 +23,7 @@ struct WeeklyReviewView: View {
                         Text(review.volumeText)
                         if let change = review.volumeChangeText {
                             Text(change)
-                                .font(.caption)
+                                .font(.label)
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -47,7 +47,12 @@ struct WeeklyReviewView: View {
                         LabeledContent {
                             Text(record.detail)
                         } label: {
-                            Label(record.exerciseName, systemImage: "trophy.fill")
+                            Label {
+                                Text(record.exerciseName)
+                            } icon: {
+                                Image(systemName: Symbol.personalRecord)
+                                    .foregroundStyle(.personalRecord)
+                            }
                         }
                     }
                 }
@@ -67,13 +72,13 @@ struct WeeklyReviewView: View {
         .navigationTitle("Weekly Review")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
                 Button(role: .close) {
                     presenter.onClosePressed()
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Share", systemImage: "square.and.arrow.up") {
+                Button("Share", systemImage: Symbol.share) {
                     presenter.onSharePressed()
                 }
                 .disabled(presenter.isSharing)
@@ -92,7 +97,8 @@ struct WeeklyReviewView: View {
             .labelStyle(.iconOnly)
             Spacer()
             Text(review.dateRangeText)
-                .font(.subheadline.weight(.semibold))
+                .font(.rowDetail)
+                .fontWeight(.semibold)
             Spacer()
             Button("Next week", systemImage: "chevron.right") {
                 presenter.onNextWeekPressed()

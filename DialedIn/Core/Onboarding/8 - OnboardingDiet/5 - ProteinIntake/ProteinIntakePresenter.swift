@@ -16,6 +16,12 @@ class ProteinIntakePresenter {
     var selectedProteinIntake: ProteinIntake?
     var hasTrainingPlan: Bool = false
 
+    /// Picking an option row: record it and give the selection tick.
+    func onProteinIntakeSelected(_ value: ProteinIntake) {
+        selectedProteinIntake = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: ProteinIntakeInteractor,
         router: ProteinIntakeRouter

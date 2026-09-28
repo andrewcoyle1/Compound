@@ -18,7 +18,13 @@ class ExerciseFrequencyPresenter {
     var canSubmit: Bool {
         selectedFrequency != nil
     }
-    
+
+    /// Picking an option row: record it and give the selection tick.
+    func onFrequencySelected(_ value: ExerciseFrequency) {
+        selectedFrequency = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: ExerciseFrequencyInteractor,
         router: ExerciseFrequencyRouter

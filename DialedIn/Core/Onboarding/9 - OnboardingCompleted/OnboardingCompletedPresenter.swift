@@ -31,12 +31,14 @@ class OnboardingCompletedPresenter {
             do {
                 try await interactor.saveOnboardingComplete()
                 interactor.trackEvent(event: Event.finishSuccess)
+                interactor.playHaptic(option: .success)
                 isCompletingProfileSetup = false
                 router.switchToCoreModule()
             } catch {
                 // The Continue button is disabled on this flag, so leaving it set after a failed
                 // save left the last screen of onboarding with no working way forward.
                 isCompletingProfileSetup = false
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
                 interactor.trackEvent(event: Event.finishFail(error: error))
             }

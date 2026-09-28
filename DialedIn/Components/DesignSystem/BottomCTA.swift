@@ -22,10 +22,16 @@ extension View {
     /// sits `Spacing.s` above the bottom edge. `CallToActionButton` pads itself horizontally.
     func bottomCTA<Buttons: View>(@ViewBuilder _ buttons: () -> Buttons) -> some View {
         safeAreaInset(edge: .bottom) {
-            VStack(spacing: Spacing.s) {
-                buttons()
+            // A screen whose button is conditional (`if … { CallToActionButton }`) passes no
+            // subviews at times; the bottom padding alone would still push the content up 8 pt.
+            Group(subviews: buttons()) { subviews in
+                if !subviews.isEmpty {
+                    VStack(spacing: Spacing.s) {
+                        subviews
+                    }
+                    .padding(.bottom, Spacing.s)
+                }
             }
-            .padding(.bottom, Spacing.s)
         }
     }
 }

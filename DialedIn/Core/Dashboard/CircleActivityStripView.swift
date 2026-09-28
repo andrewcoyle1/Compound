@@ -46,7 +46,7 @@ struct CircleActivityStripView: View {
     private let avatarSize: CGFloat = 52
     /// Grows with the text so "Nudge" and the name keep to one line at accessibility sizes,
     /// instead of wrapping a letter per line inside a column sized for the face.
-    @ScaledMetric(relativeTo: .caption) private var cellWidth: CGFloat = 64
+    @ScaledMetric(relativeTo: .caption) private var cellWidth: CGFloat = 76
 
     var body: some View {
         ScrollView(.horizontal) {

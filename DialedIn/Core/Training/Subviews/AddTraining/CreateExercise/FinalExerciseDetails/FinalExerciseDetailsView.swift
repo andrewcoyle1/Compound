@@ -114,14 +114,9 @@ struct FinalExerciseDetailsView: View {
 
     private var descriptionSection: some View {
         Section {
-            HStack {
-                Text(presenter.exerciseDescription)
-                    .lineLimit(2)
-                Text("Edit")
-                    .padding(2)
-                    .padding(.horizontal, 4)
-                    .background(.secondary, in: Capsule())
-            }
+            TextField("Optionally describe the exercise", text: $presenter.exerciseDescription, axis: .vertical)
+                .lineLimit(2...6)
+                .accessibilityIdentifier("FinalExerciseDetails.description")
         } header: {
             Text("Description")
         }

@@ -106,7 +106,7 @@ struct WorkoutStreakCard: View {
 
     private var streakStats: some View {
         HStack {
-            Stat(value: String(localized: "^[\(presenter.longestStreak) day](inflect: true)"), label: String(localized: "Best streak"), size: .small)
+            Stat(value: String(AttributedString(localized: "^[\(presenter.longestStreak) day](inflect: true)").characters), label: String(localized: "Best streak"), size: .small)
             Spacer()
             Stat(value: presenter.totalWorkouts.formatted(), label: String(localized: "Total workouts"), size: .small, alignment: .trailing)
         }

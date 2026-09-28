@@ -59,7 +59,7 @@ struct ProgramSettingsView: View {
         Stepper(value: $program.numMicrocycles, in: 1...16) {
             ListRow(
                 title: String(localized: "Number of cycles"),
-                subtitle: String(localized: "^[\(program.numMicrocycles) cycle](inflect: true)"),
+                subtitle: String(AttributedString(localized: "^[\(program.numMicrocycles) cycle](inflect: true)").characters),
                 systemImage: "arrow.trianglehead.2.clockwise"
             )
         }

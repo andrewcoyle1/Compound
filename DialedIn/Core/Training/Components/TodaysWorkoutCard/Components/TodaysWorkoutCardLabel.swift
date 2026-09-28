@@ -24,7 +24,7 @@ struct TodaysWorkoutCardLabel: View {
                 systemImage: Symbol.workout,
                 tint: .accentColor,
                 title: template.name,
-                subtitle: String(localized: "^[\(template.exercises.count) exercise](inflect: true)"),
+                subtitle: String(AttributedString(localized: "^[\(template.exercises.count) exercise](inflect: true)").characters),
                 showsChevron: true
             )
         }

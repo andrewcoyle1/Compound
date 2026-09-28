@@ -57,7 +57,7 @@ struct ChooseGymProfileView: View {
     
     private func equipmentSubtitle(for profile: GymProfileModel) -> String {
         let count = profile.activeEquipmentCount
-        return String(localized: "^[\(count) active piece](inflect: true) of equipment")
+        return String(AttributedString(localized: "^[\(count) active piece](inflect: true) of equipment").characters)
     }
 
 }

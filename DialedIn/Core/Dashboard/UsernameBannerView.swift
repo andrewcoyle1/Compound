@@ -38,6 +38,7 @@ struct UsernameBannerView: View {
                         isDismissed = true
                     }
                     .buttonStyle(.plain)
+                    .labelStyle(.iconOnly)
                     .foregroundStyle(.secondary)
                     .accessibilityLabel("Dismiss")
                 }

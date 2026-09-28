@@ -35,6 +35,7 @@ struct InviteFriendCard: View {
             .buttonStyle(.plain)
             Button(role: .close, action: onDismiss)
                 .buttonStyle(.plain)
+                .labelStyle(.iconOnly)
                 .foregroundStyle(.secondary)
                 .accessibilityLabel("Dismiss")
         }

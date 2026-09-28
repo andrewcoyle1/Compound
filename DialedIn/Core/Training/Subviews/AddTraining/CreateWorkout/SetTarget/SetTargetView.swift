@@ -21,26 +21,27 @@ struct SetTargetView: View {
         self._workingExercise = State(initialValue: delegate.exercise.wrappedValue)
     }
     
+    @ScaledMetric(relativeTo: .body) private var numberColumnWidth: CGFloat = 44
+
     var body: some View {
         List {
             Section {
                 HStack {
                     Text("Set")
-                        .frame(width: 40)
+                        .frame(width: numberColumnWidth)
                     Text("Reps Min")
                         .frame(maxWidth: .infinity)
                     Text("Reps Max")
                         .frame(maxWidth: .infinity)
                     Text("RIR")
-                        .frame(width: 40)
+                        .frame(width: numberColumnWidth)
                 }
+                .font(.label)
+                .foregroundStyle(.secondary)
                 
                 ForEach($workingExercise.setTargets) { $setTarget in
                     HStack {
-                        Text("\(setTarget.setNumber)")
-                            .padding(8)
-                            .background(.secondary.opacity(0.2), in: Circle())
-                            .frame(width: 40)
+                        numberBadge("\(setTarget.setNumber)")
 
                         TextField("Optional", text: intTextBinding($setTarget.minReps))
                             .keyboardType(.numberPad)
@@ -50,46 +51,34 @@ struct SetTargetView: View {
                             .keyboardType(.numberPad)
                             .textFieldStyle(.roundedBorder)
                         
-                        Circle()
-                            .frame(width: 16, height: 16)
-                            .foregroundStyle(.secondary.opacity(0.2))
-                            .overlay {
-                                if let rirTarget = setTarget.rirTarget {
-                                    Text("\(rirTarget)")
-                                }
-                            }
-                            .frame(width: 40)
+                        numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
 
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
                             removeSetTarget(setTarget)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("Delete", systemImage: Symbol.delete)
                         }
                     }
                     .listRowSeparator(.hidden, edges: .bottom)
                     .listRowInsets(.vertical, 0)
                 }
-                Image(systemName: "plus")
-                    .font(.callout)
-                    .padding(4)
-                    .background(.secondary.opacity(0.2), in: Circle())
-                    .anyButton(.press) {
-                        addSetTarget()
-                    }
-                    .accessibilityLabel("Add set target")
+                Button {
+                    addSetTarget()
+                } label: {
+                    Label("Add Set", systemImage: Symbol.add)
+                }
+                .accessibilityLabel("Add set target")
             }
             
             Section {
-                Toggle(isOn: $workingExercise.setRestTimers) {
-                    VStack(alignment: .leading) {
-                        Text("Set Rest Timers")
-                            .font(.callout)
-                        Text("This will override default exercise settings.")
-                            .font(.caption)
-                    }
-                }
+                ListRowToggle(
+                    title: String(localized: "Set Rest Timers"),
+                    subtitle: String(localized: "This will override default exercise settings."),
+                    systemImage: Symbol.rest,
+                    isOn: $workingExercise.setRestTimers
+                )
             }
         }
         .navigationTitle("Targets")
@@ -108,19 +97,31 @@ struct SetTargetView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
+        ToolbarItem(placement: .cancellationAction) {
             Button(role: .close) {
                 presenter.onDismissPressed()
             }
         }
         
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItem(placement: .confirmationAction) {
             Button(role: .confirm) {
                 saveAndDismiss()
             }
         }
     }
     
+    /// The set number and RIR columns, as a badge that grows with its text rather than a fixed
+    /// circle the number overflowed at large sizes.
+    private func numberBadge(_ text: String) -> some View {
+        Text(text)
+            .font(.rowDetail)
+            .monospacedDigit()
+            .padding(.horizontal, Spacing.s)
+            .padding(.vertical, Spacing.xs)
+            .background(Color.tintedSurface(.secondary), in: .capsule)
+            .frame(width: numberColumnWidth)
+    }
+
     private func addSetTarget() {
         let count = workingExercise.setTargets.count
         workingExercise.setTargets.append(SetTarget(setNumber: count + 1))

@@ -44,6 +44,7 @@ class MuscleGroupPickerPresenter {
         case .primary:   selectedMuscleGroups[muscle] = .secondary
         case .secondary: selectedMuscleGroups.removeValue(forKey: muscle)
         }
+        interactor.playHaptic(option: .selection)
     }
     
     func onNextPressed(delegate: MuscleGroupPickerDelegate) {

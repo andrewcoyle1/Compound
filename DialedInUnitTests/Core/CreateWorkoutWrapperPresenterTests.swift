@@ -137,6 +137,8 @@ struct WorkoutBuildWrapperPresenterTests {
         #expect(await TestManagers.eventually { !screen.interactor.savedTemplates.isEmpty })
         #expect(screen.interactor.savedTemplates.first?.name == "Leg Day")
         #expect(screen.interactor.savedTemplates.first?.authorId == "user-1")
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// The gym is chosen in its own step of the wizard and is what the tracker later uses to work
@@ -181,6 +183,8 @@ struct WorkoutBuildWrapperPresenterTests {
 
         let saved = await TestManagers.eventually(timeout: .milliseconds(400)) { !screen.interactor.savedTemplates.isEmpty }
         #expect(!saved)
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// A save that fails raises an alert rather than crashing or pretending to have worked. The
@@ -196,6 +200,9 @@ struct WorkoutBuildWrapperPresenterTests {
 
         let saved = await TestManagers.eventually(timeout: .milliseconds(400)) { !screen.interactor.savedTemplates.isEmpty }
         #expect(!saved)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["error"] })
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// An empty template starts a workout with nothing in it, so Save stays off until there is one.

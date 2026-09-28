@@ -247,6 +247,8 @@ struct ProgramFlowProgramSettingsPresenterTests {
         #expect(await TestManagers.eventually { !screen.interactor.activatedProgramIds.isEmpty })
         #expect(screen.interactor.savedPrograms.map(\.id) == ["program-1"])
         #expect(screen.interactor.activatedProgramIds == ["program-1"])
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// If the program could not be stored, activating it would point the user at nothing.
@@ -260,6 +262,8 @@ struct ProgramFlowProgramSettingsPresenterTests {
 
         _ = await TestManagers.eventually(timeout: .milliseconds(200)) { !screen.interactor.activatedProgramIds.isEmpty }
         #expect(screen.interactor.activatedProgramIds.isEmpty)
+        #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

@@ -10,8 +10,6 @@ struct MuscleGroupPickerDelegate {
 
 struct MuscleGroupPickerView: View {
     
-    @Environment(\.colorScheme) private var colorScheme: ColorScheme
-    
     @State var presenter: MuscleGroupPickerPresenter
     let delegate: MuscleGroupPickerDelegate
     
@@ -29,34 +27,26 @@ struct MuscleGroupPickerView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
-            VStack(alignment: .leading) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("\(presenter.primaryCount) primary, \(presenter.secondaryCount) secondary")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    if !presenter.selectedMuscleGroups.isEmpty {
-                        Text("Reset")
-                            .underline()
-                            .anyButton(.press) {
-                                presenter.onResetPressed()
-                            }
+        .navigationSubtitle(String(localized: "\(presenter.primaryCount) primary, \(presenter.secondaryCount) secondary"))
+        .toolbar {
+            if !presenter.selectedMuscleGroups.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Reset") {
+                        presenter.onResetPressed()
                     }
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal)
-                CallToActionButton(isPrimaryAction: !presenter.selectedMuscleGroups.isEmpty ? true : false) {
-                    presenter.onNextPressed(delegate: delegate)
-                } label: {
-                    Text(!presenter.selectedMuscleGroups.isEmpty ? String(localized: "Next") : String(localized: "Skip"))
-                }
-                .accessibilityIdentifier("MuscleGroupPicker.next")
             }
-            .padding(.bottom)
-            .background(.bar)
+        }
+        .bottomCTA {
+            CallToActionButton(isPrimaryAction: !presenter.selectedMuscleGroups.isEmpty) {
+                presenter.onNextPressed(delegate: delegate)
+            } label: {
+                Text(!presenter.selectedMuscleGroups.isEmpty ? String(localized: "Next") : String(localized: "Skip"))
+            }
+            .accessibilityIdentifier("MuscleGroupPicker.next")
         }
     }
-    
+
     private var upperSection: some View {
         Section {
             LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
@@ -86,38 +76,49 @@ struct MuscleGroupPickerView: View {
 
     }
     
-    @ViewBuilder
     private func muscleView(_ muscle: Muscles) -> some View {
-        VStack(alignment: .center) {
+        let selected = presenter.selectedMuscleGroups[muscle]
+        return VStack(alignment: .center) {
             ZStack(alignment: .bottomTrailing) {
                 ImageLoaderView()
                     .aspectRatio(contentMode: .fill)
-                if let selected = presenter.selectedMuscleGroups[muscle] {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(.primary, lineWidth: 12)
-                
-                ZStack {
-                    Circle()
-                        .foregroundStyle(colorScheme.backgroundPrimary)
+                if let selected {
+                    RoundedRectangle(cornerRadius: Radius.l, style: .continuous)
+                        .stroke(.tint, lineWidth: 12)
+
+                    // The letter says which, so primary and secondary never differ by colour alone.
                     Text(selected == .primary ? String(localized: "P") : String(localized: "S"))
-                        .font(.caption)
-                        .foregroundStyle(.primary)
-                }
-                .frame(width: 16, height: 16)
-                .padding(8)
+                        .font(.label)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.onAccent)
+                        .padding(Spacing.xs)
+                        .background(.tint, in: .circle)
+                        .padding(Spacing.s)
                 }
             }
-            .cornerRadius(16)
+            .clipShape(.rect(cornerRadius: Radius.l, style: .continuous))
 
             Text(muscle.name)
-                .font(.subheadline)
+                .font(.rowDetail)
                 .lineLimit(1)
         }
         .anyButton(.press) {
             presenter.onMuscleGroupPressed(muscle: muscle)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(muscle.name)
+        .accessibilityValue(selectionDescription(selected))
+        .accessibilityAddTraits(selected != nil ? [.isButton, .isSelected] : .isButton)
         .accessibilityIdentifier("MuscleGroupPicker.\(muscle.name)")
-        .padding(8)
+        .padding(Spacing.s)
+    }
+
+    private func selectionDescription(_ selected: MuscleTargetType?) -> String {
+        switch selected {
+        case .primary: String(localized: "Primary")
+        case .secondary: String(localized: "Secondary")
+        case nil: String(localized: "Not selected")
+        }
     }
 }
 

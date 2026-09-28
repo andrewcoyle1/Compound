@@ -13,8 +13,10 @@ struct ExerciseListBuilderView: View {
     
     let delegate: ExerciseListBuilderDelegate
     
-    private func isExerciseSelected(_ exercise: ExerciseModel) -> Bool {
-        delegate.selectedExercises?.contains(exercise) ?? false
+    /// A checkmark only where the host tracks a selection; the plain library shows none.
+    private func accessory(for exercise: ExerciseModel) -> ListRow.Accessory {
+        guard let selected = delegate.selectedExercises else { return .none }
+        return .checkmark(selected.contains(exercise))
     }
     
     var body: some View {
@@ -59,7 +61,7 @@ struct ExerciseListBuilderView: View {
     /// while you do it. A chip tints and counts itself when its dimension is narrowing the list.
     private var filterSection: some View {
         ScrollView(.horizontal) {
-            GlassEffectContainer(spacing: 8) {
+            GlassEffectContainer(spacing: Spacing.s) {
                 HStack {
                     resetChip
 
@@ -83,7 +85,7 @@ struct ExerciseListBuilderView: View {
 
                     multiSelectChip(
                         "Resistance",
-                        systemImage: "scalemass",
+                        systemImage: Symbol.equipment,
                         options: EquipmentKind.allCases,
                         name: \.sectionTitle,
                         selection: $presenter.filters.resistanceKinds
@@ -91,7 +93,7 @@ struct ExerciseListBuilderView: View {
 
                     multiSelectChip(
                         "Support",
-                        systemImage: "bed.double",
+                        systemImage: "chair",
                         options: EquipmentKind.allCases,
                         name: \.sectionTitle,
                         selection: $presenter.filters.supportKinds
@@ -99,7 +101,7 @@ struct ExerciseListBuilderView: View {
 
                     ratingChip(
                         "Range of Motion",
-                        systemImage: "arrowshape.left.arrowshape.right",
+                        systemImage: "arrow.up.and.down",
                         minimum: $presenter.filters.minimumRangeOfMotion
                     )
 
@@ -116,7 +118,7 @@ struct ExerciseListBuilderView: View {
         }
         .scrollIndicators(.hidden)
         // The reset chip used to carry the leading inset, and it is hidden until a filter is active.
-        .contentMargins(.horizontal, 16, for: .scrollContent)
+        .contentMargins(.horizontal, Spacing.l, for: .scrollContent)
     }
 
     /// Only offered when something is actually filtered — a reset that resets nothing reads as a
@@ -125,7 +127,7 @@ struct ExerciseListBuilderView: View {
     private var resetChip: some View {
         if presenter.filters.isActive {
             Image(systemName: "arrow.counterclockwise")
-                .padding(8)
+                .padding(Spacing.s)
                 .glassEffect(.clear.interactive())
                 .anyButton {
                     presenter.onResetFiltersPressed()
@@ -145,7 +147,7 @@ struct ExerciseListBuilderView: View {
         } label: {
             chipLabel(
                 presenter.gymFilterLabel,
-                systemImage: "building",
+                systemImage: Symbol.gym,
                 isActive: presenter.filters.gymProfileId != nil
             )
         }
@@ -164,7 +166,7 @@ struct ExerciseListBuilderView: View {
         } label: {
             chipLabel(
                 presenter.filters.library == .all ? "Library" : presenter.filters.library.name,
-                systemImage: "book.closed",
+                systemImage: Symbol.library,
                 isActive: presenter.filters.library != .all
             )
         }
@@ -241,18 +243,18 @@ struct ExerciseListBuilderView: View {
         isActive: Bool,
         count: Int = 0
     ) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Image(systemName: systemImage)
             Text(title)
             if count > 1 {
                 Text("\(count)")
-                    .font(.caption2)
-                    .padding(.horizontal, 5)
-                    .background(.tint.opacity(0.25), in: .capsule)
+                    .font(.label)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.accentColor), in: .capsule)
             }
         }
         .lineLimit(1)
-        .padding(8)
+        .padding(Spacing.s)
         .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
         .glassEffect(.clear.interactive())
     }
@@ -261,39 +263,26 @@ struct ExerciseListBuilderView: View {
         Section {
             if !presenter.userExercises.isEmpty {
                 ForEach(presenter.userExercises) { exercise in
-                    CustomListCellView(
-                        imageName: exercise.imageURL,
-                        title: exercise.name,
-                        subtitle: exercise.description,
-                        isSelected: isExerciseSelected(exercise),
-                        resizingMode: .fit
-                    )
-                    .anyButton(.highlight) {
-                        presenter.onExercisePressed(
-                            exercise: exercise,
-                            onExerciseSelectionChanged: delegate.onExerciseSelectionChanged
-                        )
-                    }
-                    .accessibilityIdentifier("ExerciseList.\(exercise.name)")
-                    .removeListRowFormatting()
+                    exerciseRow(exercise)
                 }
             } else {
                 ContentUnavailableView(
                     "No Custom Exercises",
-                    systemImage: "dumbbell",
+                    systemImage: Symbol.exercise,
                     description: Text("You have no custom exercises.")
                 )
             }
         } header: {
             HStack {
                 Text("Custom Exercises")
-            Spacer()
+                Spacer()
+                // The add belongs to this section, not the whole screen, so it sits in the header.
                 Button {
                     presenter.onAddExercisePressed()
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: Symbol.add)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
                 .accessibilityLabel("Add exercise")
             }
@@ -303,21 +292,7 @@ struct ExerciseListBuilderView: View {
     private var systemExercisesSection: some View {
         Section {
             ForEach(presenter.systemExercises) { exercise in
-                CustomListCellView(
-                    imageName: exercise.imageURL,
-                    title: exercise.name,
-                    subtitle: exercise.description,
-                    isSelected: isExerciseSelected(exercise),
-                    resizingMode: .fit
-                )
-                .anyButton(.highlight) {
-                    presenter.onExercisePressed(
-                        exercise: exercise,
-                        onExerciseSelectionChanged: delegate.onExerciseSelectionChanged
-                    )
-                }
-                .accessibilityIdentifier("ExerciseList.\(exercise.name)")
-                .removeListRowFormatting()
+                exerciseRow(exercise)
             }
         } header: {
             Text("Official Exercises")
@@ -328,7 +303,7 @@ struct ExerciseListBuilderView: View {
         Section {
             ContentUnavailableView(
                 "No Matching Exercises",
-                systemImage: "line.3.horizontal.decrease",
+                systemImage: Symbol.filter,
                 description: Text("No exercise matches every filter. Try clearing one.")
             )
         }
@@ -337,36 +312,28 @@ struct ExerciseListBuilderView: View {
     private var filteredExercisesSection: some View {
         Section {
             ForEach(presenter.filteredExercises) { exercise in
-                CustomListCellView(
-                    imageName: exercise.imageURL,
-                    title: exercise.name,
-                    subtitle: exercise.description,
-                    isSelected: isExerciseSelected(exercise),
-                    resizingMode: .fit
-                )
-                .anyButton(.highlight) {
-                    presenter.onExercisePressed(
-                        exercise: exercise,
-                        onExerciseSelectionChanged: delegate.onExerciseSelectionChanged
-                    )
-                }
-                .accessibilityIdentifier("ExerciseList.\(exercise.name)")
-                .removeListRowFormatting()
+                exerciseRow(exercise)
             }
         }
     }
 
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onAddExercisePressed()
-            } label: {
-                Image(systemName: "plus")
-            }
-            .buttonStyle(.glassProminent)
-            .accessibilityLabel("Add exercise")
+    private func exerciseRow(_ exercise: ExerciseModel) -> some View {
+        Button {
+            presenter.onExercisePressed(
+                exercise: exercise,
+                onExerciseSelectionChanged: delegate.onExerciseSelectionChanged
+            )
+        } label: {
+            ListRow(
+                title: exercise.name,
+                subtitle: exercise.description,
+                imageName: exercise.imageURL,
+                resizingMode: .fit,
+                accessory: accessory(for: exercise)
+            )
+            .contentShape(.rect)
         }
+        .accessibilityIdentifier("ExerciseList.\(exercise.name)")
     }
 }
 

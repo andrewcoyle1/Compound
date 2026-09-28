@@ -24,17 +24,16 @@ struct CreateWorkoutView: View {
             ImageLoaderView()
                 .ignoresSafeArea()
                 .frame(maxHeight: 400)
-            VStack(alignment: .leading) {
-                Text("Create Workout")
-                    .font(.title)
-                    .fontWeight(.bold)
-                Text("You will create a new workout for your library.")
-            }
-            .padding(.top)
-            .frame(maxWidth: .infinity)
+            Text("You will create a new workout for your library.")
+                .font(.rowTitle)
+                .multilineTextAlignment(.center)
+                .padding()
+                .frame(maxWidth: .infinity)
             Spacer()
         }
-        .safeAreaInset(edge: .bottom) {
+        .navigationTitle("Create Workout")
+        .navigationBarTitleDisplayMode(.inline)
+        .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(delegate: delegate)
             } label: {

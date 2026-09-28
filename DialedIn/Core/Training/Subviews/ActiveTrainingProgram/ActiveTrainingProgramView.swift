@@ -40,9 +40,8 @@ struct ActiveTrainingProgramView: View {
             HStack {
                 Text("Active Program")
                 Spacer()
+                // Not a link: nothing opens from here, so it no longer draws as one.
                 Text(presenter.microcycleHeaderText)
-                    .font(.caption)
-                    .underline()
             }
         }
         .listSectionMargins(.top, 0)
@@ -51,8 +50,7 @@ struct ActiveTrainingProgramView: View {
     @ViewBuilder
     private func microcycleItemRow(item: MicrocycleItem) -> some View {
         MicrocycleItemRow(item: item)
-            .contentShape(Rectangle())
-            .onTapGesture {
+            .anyButton(.highlight) {
                 if let sessionId = item.completedSessionId {
                     presenter.openCompletedSession(sessionId: sessionId)
                 } else {

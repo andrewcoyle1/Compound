@@ -15,11 +15,9 @@ struct TrainingProgramDisclosureGroupView: View {
     
     var body: some View {
         DisclosureGroup {
+            // No chevron: these rows open nothing, and a chevron promised that they did.
             ForEach(delegate.trainingProgram.workoutTemplates) { workout in
-                HStack {
-                    WorkoutTemplateRow(workoutTemplate: workout)
-                    Image(systemName: "chevron.right")
-                }
+                WorkoutTemplateRow(workoutTemplate: workout)
             }
             .listRowInsets(.leading, 0)
         } label: {
@@ -28,7 +26,7 @@ struct TrainingProgramDisclosureGroupView: View {
                     presenter.onSavedProgramPressed(delegate.trainingProgram)
                 }
                 .contextMenu {
-                    Button("Share with Friends", systemImage: "paperplane") {
+                    Button("Share with Friends", systemImage: Symbol.share) {
                         presenter.onSharePressed(delegate.trainingProgram)
                     }
                 }

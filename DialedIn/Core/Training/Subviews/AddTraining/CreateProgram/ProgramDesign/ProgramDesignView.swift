@@ -31,8 +31,6 @@ struct EditTrainingProgramDelegate {
 
 struct ProgramDesignView<DefineWorkout: View>: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: ProgramDesignPresenter
     let delegate: ProgramDesignDelegate
     
@@ -67,8 +65,8 @@ struct ProgramDesignView<DefineWorkout: View>: View {
             .safeAreaInset(edge: .top) {
                 topSafeAreaSection
             }
-            .safeAreaInset(edge: .bottom) {
-                bottomSafeAreaSection
+            .bottomCTA {
+                bottomActions
             }
     }
     
@@ -109,11 +107,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                 Button {
                     presenter.onAddDayPressed()
                 } label: {
-                    HStack {
-                        Text("Add Day")
-                        Image(systemName: "plus")
-                    }
-
+                    Label("Add Day", systemImage: Symbol.add)
                 }
                 .buttonStyle(.glass)
             }
@@ -129,10 +123,11 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     presenter.onWorkoutTemplateModelSelected(dayPlan)
                 } label: {
                     Text(dayPlan.name)
-                        .foregroundStyle(colorScheme.backgroundPrimary)
+                        .foregroundStyle(.onAccent)
                         .fontWeight(.bold)
                 }
                 .buttonStyle(.glassProminent)
+                .accessibilityAddTraits(.isSelected)
             } else {
                 Button {
                     presenter.onWorkoutTemplateModelSelected(dayPlan)
@@ -152,29 +147,27 @@ struct ProgramDesignView<DefineWorkout: View>: View {
         }
     }
     
-    private var bottomSafeAreaSection: some View {
-        VStack {
-            if !presenter.isProgramActive {
-                CallToActionButton {
-                    presenter.onActivatePressed(delegate: delegate)
-                } label: {
-                    Text("Activate Program")
-                }
-                .accessibilityIdentifier("ProgramDesign.activate")
-                .disabled(!presenter.canSave)
+    @ViewBuilder
+    private var bottomActions: some View {
+        if !presenter.isProgramActive {
+            CallToActionButton {
+                presenter.onActivatePressed(delegate: delegate)
+            } label: {
+                Text("Activate Program")
             }
-
-            if delegate.onComplete == nil {
-                CallToActionButton(isPrimaryAction: false) {
-                    presenter.onSavePressed(delegate: delegate)
-                } label: {
-                    Text("Save Program")
-                }
-                .accessibilityIdentifier("ProgramDesign.save")
-                .disabled(!presenter.canSave)
-            }
+            .accessibilityIdentifier("ProgramDesign.activate")
+            .disabled(!presenter.canSave)
         }
-        .padding(.bottom)
+
+        if delegate.onComplete == nil {
+            CallToActionButton(isPrimaryAction: false) {
+                presenter.onSavePressed(delegate: delegate)
+            } label: {
+                Text("Save Program")
+            }
+            .accessibilityIdentifier("ProgramDesign.save")
+            .disabled(!presenter.canSave)
+        }
     }
     
     private var dayOptionBar: some View {
@@ -184,7 +177,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     Button {
                         presenter.onRemoveWorkoutTemplateModelPressed()
                     } label: {
-                        Label("Remove", systemImage: "minus.circle.fill")
+                        Label("Remove", systemImage: Symbol.delete)
                     }
                     .buttonStyle(.glass)
                     .disabled(!presenter.canRemoveWorkoutTemplateModel)
@@ -193,7 +186,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     Button {
                         presenter.onRenameWorkoutTemplateModelPressed()
                     } label: {
-                        Label("Rename", systemImage: "pencil")
+                        Label("Rename", systemImage: Symbol.edit)
                     }
                     .buttonStyle(.glass)
                     .padding(.trailing)
@@ -221,7 +214,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
             Button {
                 presenter.onProgramSettingsPressed(program: $presenter.program)
             } label: {
-                Image(systemName: "slider.horizontal.3")
+                Image(systemName: Symbol.settings)
             }
             .accessibilityLabel("Program settings")
         }

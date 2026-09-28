@@ -10,9 +10,8 @@ extension CoreRouter: ProgramDesignRouter { }
 
 extension CoreRouter {
     func showRenameWorkoutTemplateModelView(delegate: RenameWorkoutTemplateModelDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.renameWorkoutTemplateModelView(router: router, delegate: delegate)
-                .presentationDetents([.fraction(0.8)])
         }
     }
 }

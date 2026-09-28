@@ -12,8 +12,6 @@ import SwiftUI
 /// and no activity badge, which read as a different component entirely.
 struct CalendarDayCell: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let day: Date
 
     /// What the host screen recorded for this day: nil when nothing was logged.
@@ -25,11 +23,11 @@ struct CalendarDayCell: View {
     var showsWeekday: Bool = false
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: Spacing.xxs) {
             if showsWeekday {
                 Text(day.formatted(.dateTime.weekday(.narrow)))
                     .font(.caption2)
-                    .foregroundStyle(isSelected ? AnyShapeStyle(colorScheme.backgroundPrimary) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
             }
             Text(day.formatted(.dateTime.day()))
                 .font(.subheadline)
@@ -39,7 +37,7 @@ struct CalendarDayCell: View {
         }
         .monospaced()
         .fontWeight(isSelected || isToday ? .semibold : .regular)
-        .padding(.vertical, 8)
+        .padding(.vertical, Spacing.s)
         .frame(maxWidth: .infinity)
         .background {
             outline
@@ -51,7 +49,7 @@ struct CalendarDayCell: View {
             }
         }
         .contentShape(.rect)
-        .animation(.easeInOut(duration: 0.15), value: isSelected)
+        .reducedMotionAnimation(.quick, value: isSelected)
     }
 
     /// Always in the layout, only visible for today — an `if` here would make today's cell
@@ -64,14 +62,14 @@ struct CalendarDayCell: View {
 
     /// Inverted on the selected cell, which is filled with the tint the dot would otherwise use.
     private var todayDotStyle: AnyShapeStyle {
-        isSelected ? AnyShapeStyle(colorScheme.backgroundPrimary) : AnyShapeStyle(.tint)
+        isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.tint)
     }
 
     private var dayNumberStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(colorScheme.backgroundPrimary)
+            return AnyShapeStyle(.onAccent)
         } else if isToday {
-            return AnyShapeStyle(Color.accentColor)
+            return AnyShapeStyle(.tint)
         } else {
             return AnyShapeStyle(.primary)
         }
@@ -88,7 +86,7 @@ struct CalendarDayCell: View {
     private var outline: some View {
         ZStack {
             Capsule()
-                .fill(colorScheme.backgroundPrimary)
+                .fill(.surface)
 
             // The selection sits *inside* the ring rather than under it, with a hairline of the
             // cell surface between them. Filling the whole capsule put the ring on the boundary
@@ -135,10 +133,10 @@ struct CalendarDayCell: View {
     /// logged session is a fact, not a verdict.
     private func progressStyle(for marker: CalendarDayMarker) -> AnyShapeStyle {
         if marker.isOverGoal {
-            return AnyShapeStyle(.red.opacity(0.5))
+            return AnyShapeStyle(Color.danger.opacity(0.5))
         }
         if marker.isGoalMet {
-            return AnyShapeStyle(.green.opacity(0.5))
+            return AnyShapeStyle(Color.success.opacity(0.5))
         }
         return AnyShapeStyle(.tint)
     }
@@ -146,8 +144,8 @@ struct CalendarDayCell: View {
     private func badge(_ count: Int) -> some View {
         Text(count > 9 ? "9+" : "\(count)")
             .font(.caption2.weight(.semibold))
-            .foregroundStyle(colorScheme.backgroundSecondary)
-            .padding(4)
+            .foregroundStyle(.onAccent)
+            .padding(Spacing.xs)
             .background {
                 Circle()
                     .fill(.tint)
@@ -159,7 +157,7 @@ struct CalendarDayCell: View {
 #Preview {
     let today = Date()
 
-    return VStack(spacing: 24) {
+    return VStack(spacing: Spacing.xl) {
         // Training: today · today+selected · one session · several · nothing
         HStack(spacing: 0) {
             CalendarDayCell(day: today, marker: nil, isToday: true, isSelected: false, showsWeekday: true)

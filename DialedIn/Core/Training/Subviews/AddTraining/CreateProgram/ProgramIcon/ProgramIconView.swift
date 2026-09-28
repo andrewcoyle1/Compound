@@ -12,63 +12,28 @@ struct ProgramIconDelegate {
 
 struct ProgramIconView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: ProgramIconPresenter
     let delegate: ProgramIconDelegate
     
     var body: some View {
-        VStack {
+        VStack(spacing: Spacing.l) {
             Text("What icon should we use to display this program?")
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.sectionTitle)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
 
-            HStack {
-                ForEach(presenter.colours, id: \.self) { colour in
-                    ZStack {
-                        Circle()
-                            .opacity(0.3)
-                        Image(systemName: presenter.selectedIcon)
-                    }
-                    .foregroundStyle(colour)
-                    .overlay {
-                        Circle()
-                            .stroke(colour == presenter.selectedColour ? presenter.selectedColour : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onColourPressed(colour: colour)
-                    }
-                }
-            }
-            .padding(.horizontal)
-            
-            Divider()
-                .padding(.vertical)
-            
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem(), GridItem(), GridItem(), GridItem()]) {
-                ForEach(presenter.icons, id: \.self) { icon in
-                    ZStack {
-                        Circle()
-                            .opacity(0.3)
-                            .frame(maxWidth: 40)
-                        Image(systemName: icon)
-                    }
-                    .foregroundStyle(presenter.selectedColour)
-                    .padding(.vertical, 4)
-                    .overlay {
-                        Circle()
-                            .stroke(icon == presenter.selectedIcon ? presenter.selectedColour : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onIconPressed(icon: icon)
-                    }
-
-                }
-            }
-            .padding(.horizontal)
+            ProgramColourIconGrid(
+                colours: presenter.colours,
+                icons: presenter.icons,
+                selectedColour: presenter.selectedColour,
+                selectedIcon: presenter.selectedIcon,
+                onColourPressed: { presenter.onColourPressed(colour: $0) },
+                onIconPressed: { presenter.onIconPressed(icon: $0) }
+            )
             Spacer()
         }
-        .background(colorScheme.backgroundSecondary)
+        .padding(.top)
+        .background(Color.canvas)
         .navigationTitle("Create Program")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -77,14 +42,13 @@ struct ProgramIconView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Continue")
             }
             .accessibilityIdentifier("ProgramIcon.continue")
-            .padding(.bottom)
         }
     }
 }

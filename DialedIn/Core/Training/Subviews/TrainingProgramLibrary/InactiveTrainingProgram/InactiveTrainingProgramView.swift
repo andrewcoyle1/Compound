@@ -32,7 +32,7 @@ struct InactiveTrainingProgramView<ProgramDisclosure: View>: View {
                         Button(role: .destructive) {
                             onDelete(program)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("Delete", systemImage: Symbol.delete)
                         }
                     }
                 }

@@ -55,6 +55,6 @@ final class CreateWorkoutUITests: XCTestCase {
         app.tap("ExerciseList.Plank")
         app.tap("ExercisesPicker.confirm")
 
-        app.waitFor(app.staticTexts["1 Exercises"].firstMatch)
+        app.waitFor(app.staticTexts["1 Exercise"].firstMatch)
     }
 }

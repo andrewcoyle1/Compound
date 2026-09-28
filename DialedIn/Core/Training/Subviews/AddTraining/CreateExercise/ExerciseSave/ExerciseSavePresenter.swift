@@ -27,6 +27,7 @@ class ExerciseSavePresenter {
         // task, so this is reachable rather than theoretical.
         guard let userId = currentUser?.userId else {
             interactor.trackEvent(event: Event.createExerciseFail(error: ExerciseSaveError.noCurrentUser))
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Unable to Create Exercise"), subtitle: String(localized: "Please try again."))
             return
         }
@@ -38,9 +39,11 @@ class ExerciseSavePresenter {
             do {
                 try await interactor.saveExerciseModel(exercise: model, image: nil)
                 interactor.trackEvent(event: Event.createExerciseSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
                 interactor.trackEvent(event: Event.createExerciseFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Create Exercise"), subtitle: String(localized: "Please try again."))
             }
         }

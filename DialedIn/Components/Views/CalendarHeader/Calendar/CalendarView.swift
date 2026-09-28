@@ -35,6 +35,7 @@ struct CalendarView: View {
 
             monthsScrollView
         }
+        .navigationTitle("Calendar")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent
@@ -52,14 +53,14 @@ struct CalendarView: View {
         }
         .monospaced()
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, Spacing.s)
         .background(.bar)
     }
 
     private var monthsScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical) {
-                LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
+                LazyVStack(spacing: Spacing.l, pinnedViews: .sectionHeaders) {
                     ForEach(presenter.months) { month in
                         Section {
                             monthGrid(month)
@@ -91,16 +92,16 @@ struct CalendarView: View {
     private func monthHeader(_ month: CalendarPresenter.Month) -> some View {
         Text(month.title)
             .font(.headline)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, Spacing.xs)
             .background(.bar, in: .capsule)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal)
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
     }
 
     private func monthGrid(_ month: CalendarPresenter.Month) -> some View {
-        LazyVGrid(columns: presenter.columns, spacing: 6) {
+        LazyVGrid(columns: presenter.columns, spacing: Spacing.s) {
             ForEach(Array(month.days.enumerated()), id: \.offset) { _, day in
                 if let day {
                     dayCell(day)
@@ -132,24 +133,15 @@ struct CalendarView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
 
-        ToolbarItem(placement: .title) {
-            Text("Calendar")
-                .font(.headline)
-                .foregroundStyle(.primary)
-        }
-
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                withAnimation {
+                withReducedMotionAnimation(.standard) {
                     scrollProxy?.scrollTo(presenter.currentMonth, anchor: .top)
                 }
             } label: {
@@ -181,7 +173,7 @@ extension CoreRouter {
     static let calendarSheetHeight: CGFloat = 420
 
     func showCalendarView(delegate: CalendarDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.height(Self.calendarSheetHeight)]))) { router in
+        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.height(Self.calendarSheetHeight), .large], dragIndicator: .visible))) { router in
             builder.calendarView(router: router, delegate: delegate)
         }
     }

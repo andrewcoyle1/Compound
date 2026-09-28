@@ -41,7 +41,7 @@ struct TrainingAccessoryView: View {
     }
 
     private var exerciseImagesSection: some View {
-        HStack(spacing: -10) {
+        HStack(spacing: -Spacing.s) {
             if let activeSession = presenter.activeSession {
                 ForEach(activeSession.exercises.prefix(5)) { exercise in
                     exerciseCircle(exercise: exercise)
@@ -55,7 +55,7 @@ struct TrainingAccessoryView: View {
         let isCompleted = !exercise.sets.isEmpty && exercise.sets.allSatisfy { $0.completedAt != nil }
         ZStack {
             Circle()
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(.canvas)
 
             ImageLoaderView(
                 urlString: exercise.imageName ?? "SplashScreen",
@@ -68,17 +68,19 @@ struct TrainingAccessoryView: View {
                 Circle()
                     .fill(.black.opacity(0.4))
                 Image(systemName: "checkmark")
-                    .font(.caption.bold())
+                    .font(.label.weight(.bold))
                     .foregroundStyle(.white)
             }
         }
+        // Fixed, not scaled: the tab bar accessory has a fixed height and larger circles would clip.
         .frame(width: 38, height: 38)
-        .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+        .overlay(Circle().stroke(.surface, lineWidth: 2))
+        .accessibilityHidden(true)
     }
     
     private var workoutName: some View {
         Text(delegate.active.name)
-            .font(.subheadline)
+            .font(.rowDetail)
             .fontWeight(.semibold)
             .lineLimit(1)
     }
@@ -89,16 +91,16 @@ struct TrainingAccessoryView: View {
             if let restEndTime = presenter.restEndTime,
                now < restEndTime {
                     // Rest timer
-                    HStack(alignment: .bottom, spacing: 4) {
+                    HStack(alignment: .bottom, spacing: Spacing.xs) {
                         Text("Rest: ")
                         Text(timerInterval: now...restEndTime)
                             .monospacedDigit()
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.tint)
                     }
             
             } else {
                 // Elapsed time
-                HStack(spacing: 4) {
+                HStack(spacing: Spacing.xs) {
                     Text("Elapsed: ")
                     Text(active.dateCreated, style: .timer)
                         .monospacedDigit()
@@ -106,7 +108,7 @@ struct TrainingAccessoryView: View {
             }
         }
         .foregroundStyle(.secondary)
-        .font(.subheadline)
+        .font(.rowDetail)
         .multilineTextAlignment(.leading)
     }
 }

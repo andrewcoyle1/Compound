@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct CreateExerciseView: View {
-
-    @Environment(\.colorScheme) private var colorScheme
     
     @State var presenter: CreateExercisePresenter
 
@@ -21,7 +19,7 @@ struct CreateExerciseView: View {
             typeSection
             lateralitySection
         }
-        .navigationBarTitle("Create Custom Exercise")
+        .navigationTitle("Create Custom Exercise")
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .onAppear {
@@ -33,15 +31,13 @@ struct CreateExerciseView: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed()
             } label: {
                 Text("Next")
             }
             .accessibilityIdentifier("CreateExercise.next")
-            .padding(.bottom)
-            .opacity(presenter.canSave ? 1 : 0.3)
             .disabled(!presenter.canSave)
         }
     }
@@ -141,13 +137,10 @@ struct CreateExerciseView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onCancelPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Cancel")
         }
         
         #if DEBUG || MOCK
@@ -215,8 +208,6 @@ extension CoreRouter {
 
 struct CustomPickerView: View {
     
-    @Environment(\.colorScheme) var colorScheme
-    
     var text: String
     var isHighlighted: Bool
     var action: () -> Void
@@ -231,9 +222,7 @@ struct CustomPickerView: View {
         .foregroundStyle(isHighlighted ? .secondary : .primary)
         .frame(maxWidth: .infinity)
         .padding()
-        .background {
-            Color(colorScheme.backgroundPrimary)
-        }
+        .background(Color.surface)
         .anyButton {
             action()
         }

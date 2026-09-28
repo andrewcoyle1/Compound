@@ -60,13 +60,14 @@ struct ExerciseSaveView: View {
             detailsSection
         }
         .navigationTitle("Save Exercise")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             // A "Create & Add" button sat above this one with an empty action. "Add" means adding the
             // new exercise to whatever the user was building, but `showCreateExerciseView()` takes no
             // delegate in any of its five router protocols, so four of its five entry points have
@@ -80,44 +81,17 @@ struct ExerciseSaveView: View {
             }
             .accessibilityIdentifier("ExerciseSave.create")
             .disabled(presenter.isSaving)
-            .padding(.bottom)
         }
     }
 
     private var definitionSection: some View {
         Section {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Exercise Name: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseName)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Trackable Metric: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.trackableMetricString)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Type: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.type?.name ?? "None")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Laterality: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.laterality?.name ?? "None")
-            }
+            LabeledContent("Exercise Name", value: delegate.exerciseName)
+            LabeledContent("Trackable Metric", value: delegate.trackableMetricString)
+            LabeledContent("Type", value: delegate.type?.name ?? String(localized: "None"))
+            LabeledContent("Laterality", value: delegate.laterality?.name ?? String(localized: "None"))
         } header: {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Definition")
-                Spacer()
-                Text("Final")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            finalHeader(String(localized: "Definition"))
         }
     }
 
@@ -125,48 +99,27 @@ struct ExerciseSaveView: View {
         let muscles = Array(delegate.targetMuscles).sorted { $0.key.name < $1.key.name }
         return Section {
             ScrollView(.horizontal) {
-                HStack {
+                HStack(spacing: Spacing.xs) {
                     ForEach(muscles, id: \.key) { muscle, targetType in
-                        Text("\(muscle.name): \(targetType == .primary ? String(localized: "Primary") : String(localized: "Secondary"))")
+                        MuscleChip(muscle: muscle, target: targetType)
                     }
                 }
             }
             .scrollIndicators(.hidden)
         } header: {
-            HStack {
-                Text("Target Muscles")
-                Spacer()
-                Text("Final")
-                    .font(.caption)
-            }
+            finalHeader(String(localized: "Target Muscles"))
         }
     }
 
     private var rangeOfMotionSection: some View {
-        HStack {
-            Text("Range of Motion")
-            Spacer()
-            HStack {
-                ForEach(1...5) { value in
-                    Capsule()
-                        .fill(value <= delegate.rangeOfMotion ? Color.accentColor : Color.secondary.opacity(0.2))
-                }
-            }
-            .frame(maxWidth: 200)
+        LabeledContent("Range of Motion") {
+            RatingBar(value: delegate.rangeOfMotion)
         }
     }
 
     private var stabilitySection: some View {
-        HStack {
-            Text("Stability")
-            Spacer()
-            HStack {
-                ForEach(1...5) { value in
-                    Capsule()
-                        .fill(value <= delegate.stability ? Color.accentColor : Color.secondary.opacity(0.2))
-                }
-            }
-            .frame(maxWidth: 200)
+        LabeledContent("Stability") {
+            RatingBar(value: delegate.stability)
         }
     }
 
@@ -178,57 +131,32 @@ struct ExerciseSaveView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(variation.resistanceEquipment, id: \.self) { equipment in
-                        HStack {
-                            Text("Resistance:")
-                                .foregroundStyle(.secondary)
-                            Text(equipment.equipmentId)
-                        }
+                        LabeledContent("Resistance", value: equipment.equipmentId)
                     }
                     ForEach(variation.supportEquipment, id: \.self) { equipment in
-                        HStack {
-                            Text("Support:")
-                                .foregroundStyle(.secondary)
-                            Text(equipment.equipmentId)
-                        }
+                        LabeledContent("Support", value: equipment.equipmentId)
                     }
                 }
             } header: {
-                HStack {
-                    Text("Variation \(index + 1)")
-                    Spacer()
-                    Text("Final")
-                        .font(.caption)
-                }
+                finalHeader(String(localized: "Variation \(index + 1)"))
             }
         }
     }
 
     private var detailsSection: some View {
-        Section {
-            HStack(alignment: .firstTextBaseline) {
-                Text("Body Weight Contribution: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(delegate.bodyweightContribution)%")
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Alternative Names: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.alternativeNamesConcatenated)
-                    .lineLimit(2)
-            }
-            HStack(alignment: .firstTextBaseline) {
-                Text("Description: ")
-                    .fontWeight(.semibold)
-                Spacer()
-                Text(delegate.exerciseDescription)
-                    .lineLimit(2)
+        Section("Details") {
+            LabeledContent("Body Weight Contribution", value: Format.percent(Double(delegate.bodyweightContribution) / 100))
+            LabeledContent("Alternative Names", value: delegate.alternativeNamesConcatenated)
+            LabeledContent("Description", value: delegate.exerciseDescription)
+        }
+    }
 
-            }
-
-        } header: {
-            Text("Details")
+    /// "Final": these were settled on earlier steps and are not edited here.
+    private func finalHeader(_ title: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+            Spacer()
+            Text("Final")
         }
     }
 }

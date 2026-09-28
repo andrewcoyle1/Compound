@@ -16,23 +16,7 @@ struct ProgramSettingsView: View {
                 editPeriodisation
             }
             .listSectionMargins(.top, 0)
-
-            Section {
-                Button {
-                    presenter.onActivatePressed(program: program)
-                } label: {
-                    HStack {
-                        Spacer()
-                        Text("Activate Program")
-                        Spacer()
-                    }
-                    .padding()
-                }
-                .buttonStyle(.glassProminent)
-                .removeListRowFormatting()
-            }
         }
-        .listSectionSpacing(8)
         .navigationTitle("Program Settings")
         .navigationSubtitle(program.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -46,146 +30,82 @@ struct ProgramSettingsView: View {
         .toolbar {
             toolbarContent
         }
-    }
-    
-    private var editProgramName: some View {
-        HStack {
-            Image(systemName: "pencil")
-                .frame(width: 24)
-            VStack(alignment: .leading) {
-                Text("Name")
-                Text(program.name)
-                    .font(.caption2)
+        .bottomCTA {
+            CallToActionButton {
+                presenter.onActivatePressed(program: program)
+            } label: {
+                Text("Activate Program")
             }
-            Spacer()
-            Text("Edit")
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .foregroundStyle(.secondary.opacity(0.2))
-                }
-                .anyButton(.press) {
-                    presenter.onEditNamePressed(program: $program)
-                }
+        }
+    }
+
+    private func editRow(title: String, subtitle: String, systemImage: String, tint: Color? = nil, action: @escaping () -> Void) -> some View {
+        ListRow(
+            title: title,
+            subtitle: subtitle,
+            systemImage: systemImage,
+            tint: tint,
+            accessory: .custom(AnyView(RowChipButton(subject: title, action: action)))
+        )
+    }
+
+    private var editProgramName: some View {
+        editRow(title: String(localized: "Name"), subtitle: program.name, systemImage: Symbol.program) {
+            presenter.onEditNamePressed(program: $program)
         }
     }
 
     private var editCycleCount: some View {
         Stepper(value: $program.numMicrocycles, in: 1...16) {
-            HStack {
-                Image(systemName: "arrow.trianglehead.2.clockwise")
-                    .frame(width: 24)
-
-                VStack(alignment: .leading) {
-                    Text("Number of cycles")
-                    Text("\(program.numMicrocycles) cycles")
-                        .font(.caption2)
-                }
-            }
+            ListRow(
+                title: String(localized: "Number of cycles"),
+                subtitle: String(AttributedString(localized: "^[\(program.numMicrocycles) cycle](inflect: true)").characters),
+                systemImage: "arrow.trianglehead.2.clockwise"
+            )
         }
     }
-    
-    private var editColourAndIcon: some View {
-        HStack {
-            Image(systemName: program.icon)
-                .frame(width: 24)
-                .foregroundStyle(Color(program.colour))
-            VStack(alignment: .leading) {
-                Text("Colour & Icon")
-                Text("\(program.colour.description.capitalized), \(program.icon.capitalized)")
-                    .font(.caption2)
-            }
-            Spacer()
-            Text("Edit")
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .foregroundStyle(.secondary.opacity(0.2))
-                }
-                .anyButton(.press) {
-                    presenter.onEditColourIconPressed(program: $program)
-                }
 
+    private var editColourAndIcon: some View {
+        editRow(
+            title: String(localized: "Colour & Icon"),
+            subtitle: "\(program.colour.description.capitalized), \(program.icon.capitalized)",
+            systemImage: program.icon,
+            tint: Color(hex: program.colour)
+        ) {
+            presenter.onEditColourIconPressed(program: $program)
         }
     }
 
     private var editDayOrder: some View {
-        HStack {
-            Image(systemName: "calendar")
-                .frame(width: 24)
-
-            VStack(alignment: .leading) {
-                Text("Day Order")
-                Text(dayOrderSubtitle)
-                    .font(.caption2)
-            }
-            Spacer()
-            Text("Edit")
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .foregroundStyle(.secondary.opacity(0.2))
-                }
-                .anyButton(.press) {
-                    presenter.onEditDayOrderPressed(program: $program)
-                }
+        editRow(title: String(localized: "Day Order"), subtitle: dayOrderSubtitle, systemImage: Symbol.calendar) {
+            presenter.onEditDayOrderPressed(program: $program)
         }
     }
 
     private var editDeload: some View {
-        HStack {
-            Image(systemName: "cloud.fill")
-                .frame(width: 24)
-
-            VStack(alignment: .leading) {
-                Text("Deload")
-                Text(program.deload.title.capitalized)
-                    .font(.caption2)
-            }
-            Spacer()
-            Text("Edit")
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background {
-                    RoundedRectangle(cornerRadius: 20)
-                        .foregroundStyle(.secondary.opacity(0.2))
-                }
-                .anyButton(.press) {
-                    presenter.onEditDeloadPressed(program: $program)
-                }
+        editRow(title: String(localized: "Deload"), subtitle: program.deload.title.capitalized, systemImage: "cloud.fill") {
+            presenter.onEditDeloadPressed(program: $program)
         }
     }
 
     private var editPeriodisation: some View {
-        Toggle(isOn: $program.periodisation) {
-            HStack {
-                Image(systemName: "water.waves")
-                    .frame(width: 24)
-
-                VStack(alignment: .leading) {
-                    Text("Periodisation")
-                    Text("Organise your training into phases that vary intensity and volume to support continuous progress and effective recovery.")
-                        .font(.caption2)
-                }
-            }
-        }
+        ListRowToggle(
+            title: String(localized: "Periodisation"),
+            subtitle: String(localized: "Organise your training into phases that vary intensity and volume to support continuous progress and effective recovery."),
+            systemImage: "water.waves",
+            isOn: $program.periodisation
+        )
     }
-    
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
-    
+
     private var dayOrderSubtitle: String {
         var subtitle = ""
         for plan in program.workoutTemplates {
@@ -216,7 +136,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showProgramSettingsView(program: Binding<TrainingProgram>) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.7)]))) { router in
+        router.showScreen(.sheetConfig(config: .full)) { router in
             builder.programSettingsView(router: router, program: program)
         }
     }

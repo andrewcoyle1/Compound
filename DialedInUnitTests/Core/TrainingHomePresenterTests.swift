@@ -550,11 +550,22 @@ struct TrainingTemplateDetailPresenterTests {
     /// its decimal rather than being rounded away.
     @Test("Test Half Sets Keep Their Decimal And Whole Sets Do Not")
     func testHalfSetsKeepTheirDecimalAndWholeSetsDoNot() {
-        let screen = makeScreen()
+        func sets(_ value: Double) -> String {
+            TargetMuscleSummary(muscle: .chest, weightedTargetSets: value, exerciseCount: 1).formattedTargetSets
+        }
 
-        #expect(screen.presenter.formattedSetCount(3.0) == "3")
-        #expect(screen.presenter.formattedSetCount(1.5) == "1.5")
-        #expect(screen.presenter.formattedSetCount(0) == "0")
+        #expect(sets(3.0) == "3")
+        #expect(sets(1.5) == "1.5")
+        #expect(sets(0) == "0")
+    }
+
+    /// The rep target under each set in a template: a range, a ceiling from one, or a floor.
+    @Test("Test A Set Target Describes Its Rep Range")
+    func testASetTargetDescribesItsRepRange() {
+        #expect(SetTarget(setNumber: 1, minReps: 8, maxReps: 12).repTargetDescription == "8–12 reps")
+        #expect(SetTarget(setNumber: 1, maxReps: 12).repTargetDescription == "1–12 reps")
+        #expect(SetTarget(setNumber: 1, minReps: 8).repTargetDescription == "8+ reps")
+        #expect(SetTarget(setNumber: 1).repTargetDescription == "No target set")
     }
 
     // MARK: - Starting the workout

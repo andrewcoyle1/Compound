@@ -134,7 +134,7 @@ class WorkoutSessionRowPresenter {
         let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
         var parts = [
             session.name,
-            "\(session.exercises.count) exercises",
+            String(localized: "\(session.exercises.count) exercises"),
             String(localized: "\(setCount) sets")
         ]
         if volume > 0 {

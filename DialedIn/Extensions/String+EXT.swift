@@ -52,13 +52,3 @@ extension String {
         return unicodeScalars.reduce(5381) { ($0 << 5) &+ $0 &+ Int($1) }
     }
 }
-
-extension String {
-    static func countCaption(count: Int, unit: String) -> String {
-        if count == 1 {
-            return "\(count) \(unit)"
-        } else {
-            return "\(count) \(unit)s"
-        }
-    }
-}

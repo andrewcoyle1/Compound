@@ -73,7 +73,7 @@ struct GymProfilesView: View {
                 }
             }
         } header: {
-            Text(String.countCaption(count: presenter.nonFavouriteGymProfiles.count, unit: "Gym"))
+            Text("\(presenter.nonFavouriteGymProfiles.count) gyms")
         }
     }
     

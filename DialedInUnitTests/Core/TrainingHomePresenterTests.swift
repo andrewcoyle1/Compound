@@ -551,12 +551,12 @@ struct TrainingTemplateDetailPresenterTests {
     @Test("Test Half Sets Keep Their Decimal And Whole Sets Do Not")
     func testHalfSetsKeepTheirDecimalAndWholeSetsDoNot() {
         func sets(_ value: Double) -> String {
-            TargetMuscleSummary(muscle: .chest, weightedTargetSets: value, exerciseCount: 1).formattedTargetSets
+            Format.sets(TargetMuscleSummary(muscle: .chest, weightedTargetSets: value, exerciseCount: 1).weightedTargetSets)
         }
 
-        #expect(sets(3.0) == "3")
-        #expect(sets(1.5) == "1.5")
-        #expect(sets(0) == "0")
+        #expect(sets(3.0) == "3 sets")
+        #expect(sets(1.5) == "1.5 sets")
+        #expect(sets(0) == "0 sets")
     }
 
     /// The rep target under each set in a template: a range, a ceiling from one, or a floor.

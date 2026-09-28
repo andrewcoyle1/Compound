@@ -110,7 +110,7 @@ class WorkoutSessionDetailPresenter {
                 return weight * Double(reps)
             }
             .reduce(0.0, +)
-        return "\(String.countCaption(count: workingSets.pairedSetCount, unit: "set")) - \(Format.weight(kg: volumeKg, unit: unit)) volume"
+        return String(localized: "\(String(localized: "\(workingSets.pairedSetCount) sets")) · \(Format.weight(kg: volumeKg, unit: unit)) volume")
     }
 
     // MARK: - Edit Mode Actions

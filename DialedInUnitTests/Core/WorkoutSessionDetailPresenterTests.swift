@@ -689,7 +689,7 @@ extension WorkoutSessionDetailPresenterTests {
         let bench = exercise(id: "a", index: 1, sets: [set(1, isWarmup: true), set(2), set(3), set(4)])
         let screen = makeScreen()
 
-        #expect(screen.presenter.exerciseSummary(bench) == "3 sets - 1,920 kg volume")
+        #expect(screen.presenter.exerciseSummary(bench) == "3 sets · 1,920 kg volume")
     }
 
     /// The volume was always labelled kg. An exercise the user logs in pounds reads in pounds.
@@ -699,6 +699,6 @@ extension WorkoutSessionDetailPresenterTests {
         let screen = makeScreen()
         screen.interactor.preferences["template-a"] = ExerciseUnitPreference(exerciseModelId: "template-a", weightUnit: .pounds)
 
-        #expect(screen.presenter.exerciseSummary(bench) == "1 set - 2,204.6 lb volume")
+        #expect(screen.presenter.exerciseSummary(bench) == "1 set · 2,204.6 lb volume")
     }
 }

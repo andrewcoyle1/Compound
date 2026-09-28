@@ -60,9 +60,9 @@ struct MuscleBalanceView: View {
     private func tile(_ row: MuscleBalanceRow) -> some View {
         let color = row.status.color
         let isSelected = presenter.selectedMuscle == row.muscle
-        let sets = row.currentSets.formatted(.number.precision(.fractionLength(0...1)))
+        let sets = Format.sets(row.currentSets)
         return Stat.tile(
-            value: String(localized: "\(sets) sets"),
+            value: sets,
             label: "\(row.muscle.name) · \(row.status.label) \(rangeText(row.range))",
             systemImage: row.status.systemImage,
             tint: color
@@ -73,7 +73,7 @@ struct MuscleBalanceView: View {
         }
         // The reference pattern: one element, the muscle and its status first, the target after.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(row.muscle.name), \(sets) sets, \(row.status.label)")
+        .accessibilityLabel("\(row.muscle.name), \(sets), \(row.status.label)")
         .accessibilityValue("Recommended \(rangeText(row.range)) sets a week")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .anyButton(.press) {

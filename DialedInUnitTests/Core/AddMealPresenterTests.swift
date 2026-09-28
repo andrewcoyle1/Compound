@@ -437,6 +437,21 @@ struct AddMealPresenterTests {
         #expect(screen.presenter.mealLog.notes == "post-gym")
     }
 
+    /// The time picker applies each change as it is made, so Cancel has to put the old time back.
+    @Test("Test Cancelling The Time Picker Restores The Time")
+    func testCancellingTheTimePickerRestoresTheTime() {
+        let screen = makeScreen(meal: meal(items: [item(id: "a", calories: 100)]))
+        let original = screen.presenter.mealLog.date
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: original)!
+
+        screen.presenter.onEditMealTimePressed()
+        screen.presenter.updateMealTime(tomorrow)
+        screen.presenter.onMealTimeCancelled()
+
+        #expect(screen.presenter.mealLog.date == original)
+        #expect(!screen.presenter.isEditingMealTime)
+    }
+
     // MARK: - Nutrient breakdown
 
     /// A nutrient the food's source never recorded is left out rather than printed as zero — a

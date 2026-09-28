@@ -92,8 +92,14 @@ class AddMealPresenter {
         }
     }
 
+    /// Set while the meal is being logged, so a second tap cannot log it twice.
+    private(set) var isSaving: Bool = false
+
     func saveMeal() {
+        guard !isSaving else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             interactor.trackEvent(event: Event.saveMealStart)
             do {
                 try await interactor.saveMeal(mealLog)
@@ -163,6 +169,22 @@ class AddMealPresenter {
 
     /// Presents the time picker behind the toolbar's date readout.
     var isEditingMealTime: Bool = false
+
+    /// The time before the picker opened, so Cancel can put it back. The picker applies each
+    /// change as it is made.
+    private var mealTimeBeforeEditing: Date?
+
+    func onEditMealTimePressed() {
+        mealTimeBeforeEditing = mealLog.date
+        isEditingMealTime = true
+    }
+
+    func onMealTimeCancelled() {
+        if let mealTimeBeforeEditing, mealTimeBeforeEditing != mealLog.date {
+            updateMealTime(mealTimeBeforeEditing)
+        }
+        isEditingMealTime = false
+    }
 
     /// `MealLogModel.date` and `dayKey` are both `let`, so moving a meal means rebuilding it. The
     /// items come across untouched — this changes when the meal was eaten, not what was in it.

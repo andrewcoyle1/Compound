@@ -29,70 +29,20 @@ struct MealAccessoryView: View {
         .buttonStyle(.plain)
     }
         
+    /// Says what it is, an unlogged meal, and what is on it. It used to reuse the workout
+    /// accessory: an "Elapsed" timer and a checkmark over every thumbnail.
     private var workoutDescriptionSection: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                workoutName
-                timeSection(draftMeal: delegate.draftMeal)
-            }
-            Spacer()
-            exerciseImagesSection
+        VStack(alignment: .leading) {
+            Text("Unlogged meal")
+                .font(.rowDetail)
+                .fontWeight(.semibold)
+                .lineLimit(1)
+            Text("^[\(presenter.draftMeal.items.count) item](inflect: true) · \(Format.kcal(presenter.draftMeal.totalCalories))")
+                .font(.rowDetail)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
-    }
-
-    private var exerciseImagesSection: some View {
-        HStack(spacing: -10) {
-            ForEach(presenter.draftMeal.items.prefix(5)) { draftMeal in
-                mealItemCircle(draftMeal: draftMeal)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func mealItemCircle(draftMeal: MealItemModel) -> some View {
-        let isCompleted = !draftMeal.amount.isZero
-        ZStack {
-            Circle()
-                .fill(.surface)
-
-            ImageLoaderView(
-                urlString: "SplashScreen",
-                resizingMode: .fit,
-                clipShape: AnyShape(Circle())
-            )
-            .grayscale(isCompleted ? 1 : 0)
-
-            if isCompleted {
-                // A scrim over the item's picture, so the check reads on any image.
-                Circle()
-                    .fill(.black.opacity(0.4))
-                Image(systemName: "checkmark")
-                    .font(.label)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-            }
-        }
-        .frame(width: ControlSize.thumbnail, height: ControlSize.thumbnail)
-        .overlay(Circle().stroke(.canvas, lineWidth: Spacing.xxs))
-    }
-    
-    private var workoutName: some View {
-        Text(delegate.draftMeal.date.formatted(date: .omitted, time: .shortened))
-            .font(.rowDetail)
-            .fontWeight(.semibold)
-            .lineLimit(1)
-    }
-
-    private func timeSection(draftMeal: MealLogModel) -> some View {
-        // Elapsed time
-        HStack(spacing: Spacing.xs) {
-            Text("Elapsed: ")
-            Text(presenter.draftMeal.date, style: .timer)
-                .monospacedDigit()
-        }
-        .foregroundStyle(.secondary)
-        .font(.rowDetail)
-        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

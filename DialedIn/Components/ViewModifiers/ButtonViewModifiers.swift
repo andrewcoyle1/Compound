@@ -14,16 +14,20 @@ struct HighlightButtonStyle: ButtonStyle {
             .overlay {
                 configuration.isPressed ? Color.accentColor.opacity(0.4) : Color.accentColor.opacity(0)
             }
-            .animation(.smooth, value: configuration.isPressed)
+            .reducedMotionAnimation(.standard, value: configuration.isPressed)
     }
 }
 
 struct PressableButtonStyle: ButtonStyle {
-    
+
+    /// With Reduce Motion on, a pressed card dims instead of shrinking.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
-            .animation(.smooth, value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.95 : 1)
+            .opacity(configuration.isPressed && reduceMotion ? 0.6 : 1)
+            .reducedMotionAnimation(.standard, value: configuration.isPressed)
     }
 }
 

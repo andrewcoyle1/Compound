@@ -184,6 +184,28 @@ struct MuscleBalanceTests {
         #expect(quads.status == .below)
     }
 
+    /// The footer used to be shown by comparing the header to the English "Lower", so it
+    /// disappeared in Spanish. It hangs off the region now, whatever the header says.
+    @Test("Test The Footer Sits Under The Last Region Only")
+    func testTheFooterSitsUnderTheLastRegionOnly() {
+        let (presenter, _) = makePresenter(sessions: [])
+
+        #expect(presenter.regions == [.upperBody, .lowerBody])
+        #expect(!presenter.showsFooter(for: .upperBody))
+        #expect(presenter.showsFooter(for: .lowerBody))
+        #expect(presenter.header(for: .lowerBody) == String(localized: "Lower"))
+    }
+
+    @Test("Test Each Region Holds Only Its Own Muscles")
+    func testEachRegionHoldsOnlyItsOwnMuscles() {
+        let (presenter, _) = makePresenter(sessions: [])
+        presenter.loadData(endDate: endDate)
+
+        for region in presenter.regions {
+            #expect(presenter.rows(for: region).allSatisfy { $0.muscle.bodyRegion == region })
+        }
+    }
+
     @Test("Test Tapping A Muscle Toggles Its Trend")
     func testTappingAMuscleTogglesItsTrend() {
         let (presenter, interactor) = makePresenter(sessions: [])

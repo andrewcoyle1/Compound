@@ -86,9 +86,14 @@ extension GlobalRouter {
         router.showModal(
             transition: .opacity,
             backgroundColor: .black.opacity(0.3),
+            // It covers a save or a sign-in. A tap outside used to dismiss it and hand the screen
+            // back while the work was still running.
+            dismissOnBackgroundTap: false,
             destination: {
                 ProgressView()
                     .tint(.white)
+                    .accessibilityLabel(Text("Loading"))
+                    .accessibilityAddTraits(.isModal)
             }
         )
     }

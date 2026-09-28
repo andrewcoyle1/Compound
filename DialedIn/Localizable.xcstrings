@@ -2936,16 +2936,6 @@
         }
       }
     },
-    "Are you enjoying AIChat?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Te gusta AIChat?"
-          }
-        }
-      }
-    },
     "Are you sure you want to delete '%@'? This action cannot be undone." : {
       "localizations" : {
         "es" : {
@@ -20988,6 +20978,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sube cada entrenamiento"
+          }
+        }
+      }
+    },
+    "Are you enjoying Compound?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Te está gustando Compound?"
+          }
+        }
+      }
+    },
+    "Got it" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entendido"
+          }
+        }
+      }
+    },
+    "I Agree & Continue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acepto y continuar"
           }
         }
       }

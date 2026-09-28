@@ -21,7 +21,7 @@ extension CoreBuilder {
 
     func ratingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void) -> some View {
         CustomModalView(
-            title: String(localized: "Are you enjoying AIChat?"),
+            title: String(localized: "Are you enjoying Compound?"),
             subtitle: String(localized: "We'd love to hear your feedback!"),
             primaryButtonTitle: "Yes",
             primaryButtonAction: {

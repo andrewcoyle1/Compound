@@ -19,11 +19,21 @@ struct CustomModalView: View {
     var middleContent: AnyView?
 
     var body: some View {
+        // At the largest text sizes the card is taller than the screen, so it scrolls then.
+        ViewThatFits(in: .vertical) {
+            card
+            ScrollView { card }
+        }
+        .padding(Spacing.xxl)
+    }
+
+    private var card: some View {
         VStack(spacing: Spacing.xl) {
             VStack(spacing: Spacing.m) {
                 Text(title)
                     .font(.title)
                     .fontWeight(.semibold)
+                    .accessibilityAddTraits(.isHeader)
                 if let subtitle {
                     Text(subtitle)
                         .font(.rowDetail)
@@ -41,28 +51,33 @@ struct CustomModalView: View {
                 Button {
                     primaryButtonAction()
                 } label: {
-                    Text(primaryButtonTitle)
+                    // Callers pass plain strings ("Yes", "Cancel"), which `Text` shows verbatim.
+                    // As a key they are looked up, and one already translated falls through.
+                    Text(LocalizedStringKey(primaryButtonTitle))
                         .padding(.vertical, Spacing.m)
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.glassProminent)
 
-                Text(secondaryButtonTitle)
-                    .font(.sectionTitle)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, Spacing.m)
-                    .frame(maxWidth: .infinity)
-                    .tappableBackground()
-                    .anyButton(.plain) {
-                        secondaryButtonAction()
-                    }
+                // A caller with one action passes an empty title, which drew an invisible button.
+                if !secondaryButtonTitle.isEmpty {
+                    Text(LocalizedStringKey(secondaryButtonTitle))
+                        .font(.sectionTitle)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, Spacing.m)
+                        .frame(maxWidth: .infinity)
+                        .tappableBackground()
+                        .anyButton(.plain) {
+                            secondaryButtonAction()
+                        }
+                }
             }
         }
         .multilineTextAlignment(.center)
         .padding(Spacing.l)
         .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
-        .padding(Spacing.xxl)
+        .accessibilityAddTraits(.isModal)
     }
 }
 

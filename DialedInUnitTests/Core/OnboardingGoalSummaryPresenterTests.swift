@@ -130,6 +130,23 @@ struct OnboardingGoalSummaryPresenterTests {
         #expect(screen.presenter.weightDifference(targetWeight: 80) == 0)
     }
 
+    /// The summary shows the change with an arrow as well as a colour, so the direction and sign
+    /// have to agree; no change shows no row at all.
+    @Test("The written change carries its sign and direction")
+    func testTheWrittenChangeCarriesItsSignAndDirection() {
+        let screen = makeScreen(user: summaryUser(weightKg: 80))
+
+        let loss = screen.presenter.weightChange(targetWeight: 70)
+        #expect(loss?.text == "\u{2212}10 kg")
+        #expect(loss?.isGain == false)
+
+        let gain = screen.presenter.weightChange(targetWeight: 82.5)
+        #expect(gain?.text == "+2.5 kg")
+        #expect(gain?.isGain == true)
+
+        #expect(screen.presenter.weightChange(targetWeight: 80) == nil)
+    }
+
     /// With no weight on file there is no difference to state — better a zero than a number
     /// measured from nothing.
     @Test("No current weight and no target both mean no difference")
@@ -148,11 +165,11 @@ struct OnboardingGoalSummaryPresenterTests {
     func testWeightsAreWrittenInTheUsersOwnUnit() {
         let metric = makeScreen(user: summaryUser(weightKg: 80))
         #expect(metric.presenter.weightUnit == .kilograms)
-        #expect(metric.presenter.formatWeight(80, unit: .kilograms) == "80.0 kg")
+        #expect(metric.presenter.formatWeight(80, unit: .kilograms) == "80 kg")
 
         let imperial = makeScreen(user: summaryUser(weightKg: 80, weightUnit: .pounds))
         #expect(imperial.presenter.weightUnit == .pounds)
-        #expect(imperial.presenter.formatWeight(80, unit: .pounds) == "176.4 lbs")
+        #expect(imperial.presenter.formatWeight(80, unit: .pounds) == "176.4 lb")
     }
 
     /// A profile that never chose a unit is shown kilograms rather than nothing.
@@ -226,6 +243,7 @@ struct OnboardingGoalSummaryPresenterTests {
         #expect(screen.interactor.savedGoalIds == [screen.interactor.savedGoals.first?.id])
         #expect(screen.interactor.trackedEventNames.first == "Onboarding_Goal_Save_Start")
         #expect(screen.interactor.trackedEventNames.contains("Onboarding_Goal_Save_Success"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// Without a starting weight the goal would be unmeasurable, so it is refused with an
@@ -257,6 +275,7 @@ struct OnboardingGoalSummaryPresenterTests {
         #expect(screen.router.shown.isEmpty)
         #expect(screen.interactor.trackedEventNames.contains("Onboarding_Goal_Save_Fail"))
         #expect(screen.interactor.trackedEventNames.contains("Onboarding_Goal_Save_Success") == false)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// The goal saves and the pointer to it does not. The user must be told, rather than moved on

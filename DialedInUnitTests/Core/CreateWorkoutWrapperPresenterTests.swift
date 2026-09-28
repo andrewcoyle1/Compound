@@ -200,6 +200,7 @@ struct WorkoutBuildWrapperPresenterTests {
 
         let saved = await TestManagers.eventually(timeout: .milliseconds(400)) { !screen.interactor.savedTemplates.isEmpty }
         #expect(!saved)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["error"] })
         #expect(await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty })
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }

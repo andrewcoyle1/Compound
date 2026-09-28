@@ -42,6 +42,7 @@ class DefineWorkoutWrapperPresenter {
         // Reachable: the user document arrives on the sync engine's own task. A silent return threw
         // the whole wizard away.
         guard let uid = currentUser?.userId else {
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
             return
         }

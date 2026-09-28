@@ -59,11 +59,17 @@ extension View {
 }
 
 extension View {
-    /// A chip is about 20 pt tall. Inside a button, this pads its hit area out to the 44 pt minimum
-    /// tap target without changing how it looks.
-    func chipTapTarget() -> some View {
-        frame(minHeight: ControlSize.row)
+    /// Pads a small button label's hit area out to the 44 x 44 pt minimum without changing how it
+    /// looks. Apply it to the label, inside the `Button`: outside, the frame is not part of the
+    /// button and the extra area does not respond.
+    func tapTarget() -> some View {
+        frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
             .contentShape(.rect)
+    }
+
+    /// A chip is about 20 pt tall. Inside a button, this pads its hit area out to the minimum.
+    func chipTapTarget() -> some View {
+        tapTarget()
     }
 }
 

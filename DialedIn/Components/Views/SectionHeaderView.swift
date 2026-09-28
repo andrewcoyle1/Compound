@@ -17,8 +17,22 @@ struct SectionHeaderView: View {
     let title: String
     /// The trailing link's wording. "See All" suits a grid that is showing a subset; a feed that is
     /// already showing everything wants something else ("Find People").
-    var actionTitle: String = "See All"
+    var actionTitle: String
     var onActionPressed: (() -> Void)?
+
+    /// A literal title is looked up in the string catalog, so a call site cannot ship English by
+    /// passing a bare string.
+    init(title: LocalizedStringResource, actionTitle: LocalizedStringResource = "See All", onActionPressed: (() -> Void)? = nil) {
+        self.init(title: String(localized: title), actionTitle: String(localized: actionTitle), onActionPressed: onActionPressed)
+    }
+
+    /// For a title that is already a runtime `String`, localized or user content.
+    @_disfavoredOverload
+    init(title: String, actionTitle: String = String(localized: "See All"), onActionPressed: (() -> Void)? = nil) {
+        self.title = title
+        self.actionTitle = actionTitle
+        self.onActionPressed = onActionPressed
+    }
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
@@ -26,12 +40,16 @@ struct SectionHeaderView: View {
 
             if let onActionPressed {
                 Spacer(minLength: Spacing.s)
-                // A link, so it takes the accent (CONTRACT.md § Accent).
-                Button(actionTitle, action: onActionPressed)
-                    .buttonStyle(.plain)
-                    .font(.label)
-                    .foregroundStyle(.tint)
-                    .accessibilityLabel("\(actionTitle), \(title)")
+                // A link, so it takes the accent (CONTRACT.md § Accent). The caption-sized label
+                // is padded out to the 44 pt minimum hit area.
+                Button(action: onActionPressed) {
+                    Text(actionTitle)
+                        .tapTarget()
+                }
+                .buttonStyle(.plain)
+                .font(.label)
+                .foregroundStyle(.tint)
+                .accessibilityLabel("\(actionTitle), \(title)")
             }
         }
     }

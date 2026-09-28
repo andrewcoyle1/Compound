@@ -45,6 +45,7 @@ struct CreateFoodView: View {
         .toolbar {
             toolbarContent
         }
+        .interactiveDismissDisabled(presenter.hasUnsavedChanges)
         .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
@@ -163,13 +164,11 @@ struct CreateFoodView: View {
     private var submitToPublicDatabaseSection: some View {
         Section {
             ListRowToggle(
-                title: String(localized: "Submit Foods to the Public Database?"),
-                subtitle: String(localized: "Toggle this option to contribute new foods"),
+                title: String(localized: "Share New Foods Publicly"),
                 isOn: $presenter.contributeToPublicDatabase
             )
-            Button("Learn More") {
-                presenter.onLearnMorePressed()
-            }
+        } footer: {
+            Text("Foods you create are shared to the public database so other people can find and log them. Your name is not attached, and the food stays in your own library either way.")
         }
     }
     

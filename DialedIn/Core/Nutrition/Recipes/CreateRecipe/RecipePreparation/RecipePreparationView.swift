@@ -62,6 +62,7 @@ struct RecipePreparationView: View {
                 if delegate.onMealItemConfirmed != nil {
                     CallToActionButton(
                         isPrimaryAction: true,
+                        isLoading: presenter.isSaving,
                         action: {
                             presenter.onCreateAndAddPressed(
                                 delegate: delegate,
@@ -75,6 +76,7 @@ struct RecipePreparationView: View {
                 }
                 CallToActionButton(
                     isPrimaryAction: delegate.onMealItemConfirmed == nil,
+                    isLoading: presenter.isSaving,
                     action: {
                         presenter.onCreatePressed(delegate: delegate)
                     },

@@ -54,9 +54,14 @@ class RecipePreparationPresenter {
         )
     }
 
+    /// Set while the recipe is being saved, so a second tap cannot save a second copy.
+    private(set) var isSaving: Bool = false
+
     func onCreatePressed(delegate: RecipePreparationDelegate) {
-        guard let recipe = buildRecipe(delegate: delegate) else { return }
+        guard !isSaving, let recipe = buildRecipe(delegate: delegate) else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             do {
                 interactor.trackEvent(event: Event.createRecipeStart)
                 try await interactor.saveRecipeTemplate(recipe, image: image)
@@ -66,14 +71,19 @@ class RecipePreparationPresenter {
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
+                router.showSimpleAlert(
+                    title: String(localized: "Unable to Save Recipe"),
+                    subtitle: String(localized: "Please check your internet connection and try again.")
+                )
             }
         }
     }
 
     func onCreateAndAddPressed(delegate: RecipePreparationDelegate, onConfirm: @escaping (MealItemModel) -> Void) {
-        guard let recipe = buildRecipe(delegate: delegate) else { return }
+        guard !isSaving, let recipe = buildRecipe(delegate: delegate) else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             do {
                 interactor.trackEvent(event: Event.createRecipeStart)
                 try await interactor.saveRecipeTemplate(recipe, image: image)
@@ -108,7 +118,10 @@ class RecipePreparationPresenter {
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
+                router.showSimpleAlert(
+                    title: String(localized: "Unable to Save Recipe"),
+                    subtitle: String(localized: "Please check your internet connection and try again.")
+                )
             }
         }
     }

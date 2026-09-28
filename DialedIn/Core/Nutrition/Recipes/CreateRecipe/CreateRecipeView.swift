@@ -32,6 +32,7 @@ struct CreateRecipeView: View {
             } label: {
                 Text("Next")
             }
+            .disabled(!presenter.canSave)
         }
     }
     
@@ -94,6 +95,7 @@ struct CreateRecipeView: View {
                     .fixedSize()
                 }
             }
+            .onDelete { presenter.onDeleteIngredients(at: $0) }
         } header: {
             HStack {
                 VStack(alignment: .leading) {

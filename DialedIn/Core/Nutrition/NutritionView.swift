@@ -121,6 +121,13 @@ struct NutritionView<
                 presenter.onEditMealItem(mealItem, in: meal)
             }
         )
+        // Meal detail, which holds Delete Meal, used to open only from a leading swipe. A tap on
+        // the row opens it too; the edit button inside the row keeps its own tap. VoiceOver
+        // already reaches it as the swipe's custom action.
+        .contentShape(.rect)
+        .onTapGesture {
+            presenter.onViewMealPressed(meal)
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 presenter.deleteMealItem(item, from: meal)
@@ -133,6 +140,19 @@ struct NutritionView<
                 presenter.onViewMealPressed(meal)
             } label: {
                 Label("Meal", systemImage: Symbol.meal)
+            }
+        }
+        // The same actions for anyone who cannot swipe.
+        .contextMenu {
+            Button {
+                presenter.onViewMealPressed(meal)
+            } label: {
+                Label("View Meal", systemImage: Symbol.meal)
+            }
+            Button(role: .destructive) {
+                presenter.deleteMealItem(item, from: meal)
+            } label: {
+                Label("Delete", systemImage: Symbol.delete)
             }
         }
     }

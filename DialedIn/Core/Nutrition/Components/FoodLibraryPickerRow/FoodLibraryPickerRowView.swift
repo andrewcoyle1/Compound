@@ -81,7 +81,7 @@ struct FoodLibraryPickerRowView<T: FoodItem>: View {
             } label: {
                 Image(systemName: Symbol.add)
             }
-            .accessibilityLabel("Quick add")
+            .accessibilityLabel("Quick add \(delegate.item.name)")
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
         }
@@ -90,7 +90,7 @@ struct FoodLibraryPickerRowView<T: FoodItem>: View {
     @ViewBuilder
     private var row: some View {
         if delegate.showImage {
-            ListRow(title: delegate.item.name, subtitle: delegate.detail, imageName: delegate.item.imageURL ?? Constants.randomImage)
+            ListRow(title: delegate.item.name, subtitle: delegate.detail, imageName: delegate.item.imageURL)
         } else {
             ListRow(title: delegate.item.name, subtitle: delegate.detail)
         }

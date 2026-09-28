@@ -42,7 +42,7 @@ struct MealItemLabel: View {
                 } label: {
                     Image(systemName: Symbol.edit)
                 }
-                .accessibilityLabel("Edit meal item")
+                .accessibilityLabel("Edit \(mealItem.displayName)")
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
             }

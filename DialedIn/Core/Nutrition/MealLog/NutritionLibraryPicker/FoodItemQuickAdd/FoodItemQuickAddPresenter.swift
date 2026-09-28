@@ -69,8 +69,11 @@ class FoodItemQuickAddPresenter {
 
     /// Commits the macros to the log as a meal of their own, bypassing the plate entirely — for
     /// when the user wants the entry recorded now rather than assembled into something larger.
+    /// Set while the entry is being logged, so a second tap cannot log it twice.
+    private(set) var isSaving: Bool = false
+
     func onLogFoodPressed() {
-        guard canSubmit, let authorId = interactor.currentUser?.userId else { return }
+        guard canSubmit, !isSaving, let authorId = interactor.currentUser?.userId else { return }
         let name = trimmedName
         let meal = MealLogModel(
             authorId: authorId,
@@ -80,7 +83,9 @@ class FoodItemQuickAddPresenter {
         )
 
         interactor.trackEvent(event: Event.onLogFoodStart(name: name))
+        isSaving = true
         Task {
+            defer { isSaving = false }
             do {
                 try await interactor.saveMeal(meal)
                 interactor.trackEvent(event: Event.onLogFoodSuccess(name: name))
@@ -89,7 +94,7 @@ class FoodItemQuickAddPresenter {
             } catch {
                 interactor.trackEvent(event: Event.onLogFoodFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to log food"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Food"), subtitle: String(localized: "Please try again."))
             }
         }
     }

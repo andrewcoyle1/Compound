@@ -175,7 +175,7 @@ struct BarcodeScannerView: View {
             if !presenter.returnsBarcodeOnly {
                 Picker("Scanning mode", selection: $presenter.scanningMode) {
                     ForEach(ScanningMode.allCases) { mode in
-                        Text(mode.rawValue.capitalized).tag(mode)
+                        Text(mode.title).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -201,7 +201,7 @@ struct BarcodeScannerView: View {
                 }
                 .buttonStyle(.glass)
                 .buttonBorderShape(.circle)
-                .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off torch") : String(localized: "Turn on torch"))
+                .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off flashlight") : String(localized: "Turn on flashlight"))
             }
         }
         .padding()
@@ -214,9 +214,9 @@ struct BarcodeScannerView: View {
         if presenter.isLookingUpBarcode {
             HStack(spacing: Spacing.s) {
                 ProgressView()
-                Text("Looking up product...")
+                Text("Looking up product…")
                     .font(.rowDetail)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             }
             .padding(.horizontal, Spacing.xl)
             .padding(.vertical, Spacing.m)
@@ -225,7 +225,7 @@ struct BarcodeScannerView: View {
         } else if presenter.scannedCode == nil {
             Text("Point camera at a barcode")
                 .font(.rowDetail)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
                 .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.m)
                 .glassEffect()
@@ -240,9 +240,9 @@ struct BarcodeScannerView: View {
             if presenter.isParsingLabel {
                 HStack(spacing: Spacing.s) {
                     ProgressView()
-                    Text("Analyzing label...")
+                    Text("Analyzing label…")
                         .font(.rowDetail)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, Spacing.m)
@@ -251,9 +251,13 @@ struct BarcodeScannerView: View {
                 Button("Re-scan", action: presenter.onRescanPressed)
                     .buttonStyle(.glass)
             } else if presenter.scannedCode != nil {
+                // Over the live camera, so it sits on the same glass capsule as the other hints.
                 Text("Label text captured")
-                    .font(.label)
-                    .foregroundStyle(.secondary)
+                    .font(.rowDetail)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal)
+                    .padding(.vertical, Spacing.m)
+                    .glassEffect()
 
                 HStack(spacing: Spacing.m) {
                     Button("Re-scan", action: presenter.onRescanPressed)
@@ -270,7 +274,7 @@ struct BarcodeScannerView: View {
             } else {
                 Text("Point camera at a nutrition label")
                     .font(.rowDetail)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal)
                     .padding(.vertical, Spacing.m)
                     .glassEffect()

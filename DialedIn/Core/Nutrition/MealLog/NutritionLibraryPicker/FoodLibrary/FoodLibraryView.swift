@@ -98,7 +98,7 @@ struct FoodLibraryView<
         .safeAreaBar(edge: .top) {
             Picker("Library", selection: $presenter.foodLibraryOption) {
                 ForEach(FoodLibraryOption.allCases, id: \.self) { option in
-                    option.icon.tag(option)
+                    Text(option.title).tag(option)
                 }
             }
             .pickerStyle(.segmented)
@@ -129,15 +129,6 @@ enum FoodLibraryOption: String, CaseIterable, Hashable, Identifiable {
         case .recipes: return String(localized: "Recipes")
         case .foods: return String(localized: "Foods")
         case .favourites: return String(localized: "Favorites")
-        }
-    }
-    
-    @MainActor
-    var icon: some View {
-        switch self {
-        case .recipes: return Text("Recipes").any()
-        case .foods: return Text("Foods").any()
-        case .favourites: return Image(systemName: "heart.fill").accessibilityLabel("Favourites").any()
         }
     }
 }

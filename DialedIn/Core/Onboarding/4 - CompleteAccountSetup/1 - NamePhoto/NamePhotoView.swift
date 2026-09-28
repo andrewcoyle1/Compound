@@ -9,123 +9,91 @@ import SwiftUI
 import PhotosUI
 
 struct NamePhotoView: View {
-    
+
     @State var presenter: NamePhotoPresenter
-    
+
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Name?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.saveAndContinue() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             imageSection
             nameSection
         }
         .scrollIndicators(.hidden)
-        .navigationTitle("Create Profile")
-        .navigationBarTitleDisplayMode(.large)
-#if DEBUG || MOCK
-.toolbar {
-    toolbarContent
-}
-#endif
         .onAppear(perform: presenter.prefillFromCurrentUser)
         .onChange(of: presenter.selectedPhotoItem) {
             Task {
                 await presenter.handlePhotoSelection()
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.saveAndContinue()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canContinue)
-        }
     }
-    
+
     private var imageSection: some View {
-        ZStack {
-            Rectangle()
-                .fill(Color.secondary.opacity(0.001))
-            Group {
-                if let data = presenter.selectedImageData {
-                    Group {
-#if canImport(UIKit)
-                        if let uiImage = UIImage(data: data) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .aspectRatio(1, contentMode: .fit)
-                        }
-#elseif canImport(AppKit)
-                        if let nsImage = NSImage(data: data) {
-                            Image(nsImage: nsImage)
-                                .resizable()
-                                .scaledToFill()
-                                .aspectRatio(1, contentMode: .fit)
-                        }
-#endif
-                    }
-                    .clipShape(Circle())
-                    
-                } else if let user = presenter.currentUser,
-                          let image = user.profileImageNameCalculated {
-                    Group {
-                        // Show cached image if available
-                        ImageLoaderView(urlString: image)
-                    }
-                    .clipShape(Circle())
-                } else {
-                    VStack(spacing: 8) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.accent)
-                            .clipShape(Circle())
-                        
-                        Text("Add Photo (Optional)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 120)
-        .anyButton {
+        Button {
             presenter.isImagePickerPresented = true
-            
+        } label: {
+            photo
+                .frame(maxWidth: .infinity)
+                .contentShape(.rect)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Add Photo (Optional)")
         .photosPicker(isPresented: $presenter.isImagePickerPresented, selection: $presenter.selectedPhotoItem, matching: .images)
         .removeListRowFormatting()
     }
-    
+
+    @ViewBuilder
+    private var photo: some View {
+        if let data = presenter.selectedImageData, let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: photoSide, height: photoSide)
+                .clipShape(.circle)
+        } else if let image = presenter.currentUser?.profileImageNameCalculated {
+            ImageLoaderView(urlString: image)
+                .frame(width: photoSide, height: photoSide)
+                .clipShape(.circle)
+        } else {
+            VStack(spacing: Spacing.s) {
+                Image(systemName: Symbol.profile)
+                    .iconSize(.hero)
+                    .foregroundStyle(.tint)
+                Text("Add Photo (Optional)")
+                    .font(.label)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    /// The photo matches the placeholder glyph's height and scales with it.
+    @ScaledMetric(relativeTo: .body) private var photoSide = IconSize.hero.points + Spacing.xl
+
     private var nameSection: some View {
         Section {
             TextField("First name", text: $presenter.firstName)
                 .textContentType(.givenName)
-                .autocapitalization(.words)
+                .textInputAutocapitalization(.words)
             TextField("Last name (optional)", text: $presenter.lastName)
                 .textContentType(.familyName)
-                .autocapitalization(.words)
+                .textInputAutocapitalization(.words)
         } header: {
             Text("Your Name")
         } footer: {
             Text("Help us personalize your experience by providing your name. You can also add a profile photo if you'd like.")
         }
     }
-    
-#if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-#endif
 }
 
 extension CoreBuilder {

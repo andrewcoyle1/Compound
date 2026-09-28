@@ -24,7 +24,7 @@ final class OnboardingUITests: XCTestCase {
         setUpDiet(app)
 
         app.waitFor(app.buttons["Skip for now"].firstMatch).tap()
-        app.continueFrom("🎉 Onboarding Complete!")
+        app.continueFrom("Onboarding Complete!")
         app.waitFor(app.tabBars.firstMatch)
     }
 
@@ -34,7 +34,7 @@ final class OnboardingUITests: XCTestCase {
         app.tapWhenEnabled("GetStartedButton")
         app.continueFrom("Welcome to Compound.")
         app.waitFor(app.element("Auth.apple")).tap()
-        app.continueFrom("Why subscribe?")
+        app.continueFrom("Why Subscribe?")
         app.waitFor(app.staticTexts["START"].firstMatch).tap()
         app.tap("Subscribe")
     }
@@ -45,10 +45,10 @@ final class OnboardingUITests: XCTestCase {
         app.textFields.firstMatch.typeText("Test")
         app.continueFrom("Your Name")
         app.choose("Male", on: "Select your gender")
-        app.continueFrom("When were you born?")
-        app.continueFrom("How tall are you?")
-        app.continueFrom("What's your weight?")
-        app.choose("Never", on: "How often do you exercise?")
+        app.continueFrom("When Were You Born?")
+        app.continueFrom("How Tall Are You?")
+        app.continueFrom("What's Your Weight?")
+        app.choose("Never", on: "Do You Work Out?")
         app.choose("Sedentary", on: "What's your daily activity level outside of exercise?")
         app.choose("Beginner", on: "How would you rate your cardiovascular fitness?")
         app.continueFrom("kcal/day")
@@ -69,11 +69,11 @@ final class OnboardingUITests: XCTestCase {
     private func setGoal(_ app: XCUIApplication) {
         app.continueFrom("Goal")
         app.choose("Lose weight", on: "Choose one")
-        app.waitFor(app.staticTexts["Target Weight"].firstMatch)
+        app.waitFor(app.staticTexts["What's Your Target?"].firstMatch)
         app.waitFor(app.pickerWheels.firstMatch).adjust(toPickerWheelValue: "65 kg")
         app.tapWhenEnabled("Continue")
-        app.continueFrom("At what rate?")
-        app.continueFrom("Goal Summary")
+        app.continueFrom("At What Rate?")
+        app.continueFrom("Does This Look Right?")
     }
 
     /// A named gym profile (the equipment screen's Continue makes it the favourite), then a

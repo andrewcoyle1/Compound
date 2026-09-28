@@ -14,17 +14,17 @@ struct WelcomeDelegate {
 }
 
 struct WelcomeView: View {
-    
+
     @State var presenter: WelcomePresenter
     let delegate: WelcomeDelegate
-    
+
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.s) {
             ImageLoaderView(urlString: presenter.imageName)
                 .ignoresSafeArea()
-            
+
             titleSection
-                .padding(.top, 8)
+                .padding(.top, Spacing.xl)
 
             Spacer()
 
@@ -36,13 +36,19 @@ struct WelcomeView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .padding(.bottom)
-#if DEBUG || MOCK
+        #if DEV || MOCK
         .toolbar {
-            toolbarContent
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    presenter.onDevSettingsPressed()
+                } label: {
+                    Image(systemName: Symbol.info)
+                }
+                .accessibilityLabel("Developer settings")
+            }
         }
         #endif
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed()
             } label: {
@@ -52,53 +58,38 @@ struct WelcomeView: View {
             .disabled(presenter.currentUser == nil)
         }
     }
-    
-#if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-#endif
 
     private var titleSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.s) {
             Image(systemName: "chart.bar.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(Color.accent)
+                .iconSize(.large)
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
             Text("Compound")
-                .font(.largeTitle)
-                .fontWeight(.semibold)
+                .font(.display)
             Text("Every rep compounds.")
-                .font(.subheadline)
+                .font(.rowDetail)
                 .foregroundStyle(.secondary)
-            
         }
-        .padding(.top, 24)
     }
-    
+
     /// Force-unwrapped `URL(string:)` before — a typo in either constant would have crashed the
     /// first screen of the app.
     private var policyLinks: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.s) {
             if let url = LegalDocument.termsOfService.url {
                 Link(LegalDocument.termsOfService.title, destination: url)
             }
 
-            Circle()
-                .fill(.accent)
-                .frame(width: 4, height: 4)
+            Text(verbatim: "·")
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
 
             if let url = LegalDocument.privacyPolicy.url {
                 Link(LegalDocument.privacyPolicy.title, destination: url)
             }
         }
+        .font(.rowDetail)
     }
 }
 

@@ -18,74 +18,34 @@ struct CalorieFloorDelegate {
 
 struct CalorieFloorView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: CalorieFloorPresenter
 
     var delegate: CalorieFloorDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Floor?",
+            progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.selectedFloor != nil, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             Section {
-                ForEach(CalorieFloor.allCases) { type in
-                    typeRow(type)
+                ForEach(CalorieFloor.allCases) { floor in
+                    SelectableRow(title: floor.description, subtitle: floor.detailedDescription, isSelected: presenter.selectedFloor == floor) {
+                        presenter.onFloorSelected(floor)
+                    }
                 }
-                .removeListRowFormatting()
             }
-        }
-        .navigationTitle("Calorie floor")
-        .navigationBarTitleDisplayMode(.large)
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(presenter.selectedFloor == nil)
-            .padding(.bottom)
         }
     }
-    
-    private func typeRow(_ type: CalorieFloor) -> some View {
-        Section {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(type.description)
-                        .font(.headline)
-                    Text(type.detailedDescription)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 8)
-                Image(systemName: presenter.selectedFloor == type ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(presenter.selectedFloor == type ? .accent : .secondary)
-            }
-            .padding()
-            .background(colorScheme.backgroundPrimary)
-            .onTapGesture { presenter.selectedFloor = type }
-        }
 
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

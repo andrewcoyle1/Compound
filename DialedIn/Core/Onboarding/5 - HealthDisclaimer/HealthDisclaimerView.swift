@@ -12,72 +12,40 @@ struct HealthDisclaimerView: View {
     @State var presenter: HealthDisclaimerPresenter
 
     var body: some View {
-        List {
-            disclaimerSection
-        }
-        .scrollIndicators(.hidden)
-        .navigationTitle("Notice")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden()
-        .safeAreaInset(edge: .bottom) {
-            buttonSection
-        }
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-    }
-    
-    private var disclaimerSection: some View {
-        Section {
-            Text(presenter.disclaimerString)
-        } header: {
-            Text("Health Disclaimer")
-        }
-    }
-    
-    private var buttonSection: some View {
-        VStack {
-            Group {
+        OnboardingStepScaffold(
+            title: "Do You Agree?",
+            progress: OnboardingStep.healthDisclaimer.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                Text(presenter.disclaimerString)
+            } header: {
+                Text("Health Disclaimer")
+            }
+            Section {
                 Toggle(isOn: $presenter.acceptedTerms) {
                     Text("I acknowledge and accept the Terms of the Health Disclaimer")
-                        .font(.callout)
                 }
                 .accessibilityIdentifier("HealthDisclaimerToggle")
-                
+
                 Toggle(isOn: $presenter.acceptedPrivacy) {
                     Text("I acknowledge and accept the Terms of the Consumer Health Privacy Notice")
-                        .font(.callout)
                 }
                 .accessibilityIdentifier("HealthPrivacyPolicyToggle")
             }
-            .padding()
-            CallToActionButton {
-                presenter.onContinuePressed()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canContinue)
+        }
+        .scrollIndicators(.hidden)
+        .navigationBarBackButtonHidden()
+    }
 
-        }
-        .background(.bar)
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

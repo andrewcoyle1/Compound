@@ -39,19 +39,20 @@ struct ExpenditureDelegate {
 struct ExpenditureView: View {
 
     @State var presenter: ExpenditurePresenter
-    @ScaledMetric(relativeTo: .largeTitle) private var kcalFontSize: CGFloat = 56
 
     var delegate: ExpenditureDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "How Much Do You Burn?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             overviewSection
             breakdownSection
             explanationSection
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Expenditure")
-        .navigationBarTitleDisplayMode(.large)
         .scrollIndicators(.hidden)
         .onFirstTask {
             await presenter.checkCanRequestPermissions()
@@ -59,49 +60,26 @@ struct ExpenditureView: View {
         .onFirstAppear {
             presenter.estimateExpenditure(delegate: delegate)
         }
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canContinue)
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
+
     private var overviewSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("\(presenter.displayedKcal)")
-                        .font(.system(size: kcalFontSize, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                        .frame(minWidth: 170)
-                    Text("kcal/day")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+                Text(presenter.displayedKcal, format: .number)
+                    .font(.display)
+                    .monospacedDigit()
+                    .contentTransition(.numericText())
+                Text("kcal/day")
+                    .font(.sectionTitle)
+                    .foregroundStyle(.secondary)
             }
         } header: {
             Text("An estimate of calories burned per day")
@@ -126,20 +104,20 @@ struct ExpenditureView: View {
     private var breakdownSection: some View {
         Section("Breakdown") {
             ForEach(breakdownItems) { item in
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
                         Text(item.name)
-                            .font(.subheadline)
+                            .font(.rowDetail)
                         Spacer()
-                        Text("\(item.calories) kcal")
-                            .font(.subheadline)
+                        Text(Format.kcal(Double(item.calories)))
+                            .font(.rowDetail)
                             .foregroundStyle(.secondary)
                     }
                     ProgressView(value: presenter.animateBreakdown ? presenter.progress(for: item) : 0)
                         .tint(item.color)
-                        .reducedMotionAnimation(.easeOut(duration: 1.0), value: presenter.animateBreakdown)
+                        .reducedMotionAnimation(.progress, value: presenter.animateBreakdown)
                 }
-                .padding(.vertical, 6)
+                .padding(.vertical, Spacing.xs)
             }
         }
     }
@@ -147,34 +125,34 @@ struct ExpenditureView: View {
     // MARK: - Explanation
     private var explanationSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
                     Text("BMR (Mifflin-St Jeor)")
                     Spacer()
-                    Text("\(calculatedBmrInt) kcal")
+                    Text(Format.kcal(Double(calculatedBmrInt)))
                         .foregroundStyle(.secondary)
                 }
                 Divider()
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text("Activity Level Multiplier")
                         Text(activityDescriptionText)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(String(format: "× %.2f", calculatedBaseActivityMultiplier))
+                    Text("× \(calculatedBaseActivityMultiplier, format: .number.precision(.fractionLength(2)))")
                         .foregroundStyle(.secondary)
                 }
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text("Exercise Frequency Adjustment")
                         Text(exerciseDescriptionText)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    Text(String(format: "+ %.2f", calculatedExerciseAdjustment))
+                    Text("+ \(calculatedExerciseAdjustment, format: .number.precision(.fractionLength(2)))")
                         .foregroundStyle(.secondary)
                 }
                 Divider()
@@ -188,7 +166,7 @@ struct ExpenditureView: View {
                     Text("TDEE Result")
                         .fontWeight(.semibold)
                     Spacer()
-                    Text("\(calculatedTdeeInt) kcal/day")
+                    Text("\(Format.kcal(Double(calculatedTdeeInt)))/day")
                         .fontWeight(.semibold)
                 }
             }

@@ -12,90 +12,29 @@ struct SubscriptionView: View {
     @State var presenter: SubscriptionPresenter
 
     var body: some View {
-        List {
-            whySubscribeSection
+        OnboardingStepScaffold(
+            title: "Why Subscribe?",
+            progress: OnboardingStep.subscription.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                OnboardingFeatureRow(title: "Personalized plans", detail: "Training and nutrition tailored to your goals and schedule.", systemImage: Symbol.program)
+                OnboardingFeatureRow(title: "Smart coaching", detail: "Daily guidance powered by your data and AI insights.", systemImage: Symbol.knowledgeBase)
+                OnboardingFeatureRow(title: "Progress tracking", detail: "See trends, weekly summaries, and PRs at a glance.", systemImage: Symbol.analytics)
+                OnboardingFeatureRow(title: "HealthKit sync", detail: "Automatically log workouts and recovery from Apple Health.", systemImage: "heart.circle")
+                OnboardingFeatureRow(title: "Accountability", detail: "Reminders and nudges to help you stay consistent.", systemImage: Symbol.notifications)
+            }
         }
-        .navigationTitle("Subscription")
-        .navigationBarTitleDisplayMode(.large)
         .navigationBarBackButtonHidden()
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-#endif
 
-    private var whySubscribeSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 14) {
-                benefitRow(
-                    title: String(localized: "Personalized plans"),
-                    subtitle: String(localized: "Training and nutrition tailored to your goals and schedule."),
-                    systemImage: "figure.run"
-                )
-                benefitRow(
-                    title: String(localized: "Smart coaching"),
-                    subtitle: String(localized: "Daily guidance powered by your data and AI insights."),
-                    systemImage: "brain.head.profile"
-                )
-                benefitRow(
-                    title: String(localized: "Progress tracking"),
-                    subtitle: String(localized: "See trends, weekly summaries, and PRs at a glance."),
-                    systemImage: "chart.line.uptrend.xyaxis"
-                )
-                benefitRow(
-                    title: String(localized: "HealthKit sync"),
-                    subtitle: String(localized: "Automatically log workouts and recovery from Apple Health."),
-                    systemImage: "heart.circle"
-                )
-                benefitRow(
-                    title: String(localized: "Accountability"),
-                    subtitle: String(localized: "Reminders and nudges to help you stay consistent."),
-                    systemImage: "bell.badge"
-                )
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Why subscribe?")
-        }
-    }
-    
-    func benefitRow(title: String, subtitle: String, systemImage: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: systemImage)
-                .font(.title3)
-                .foregroundStyle(Color.accent)
-                .frame(width: 28)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(Color.secondary)
-            }
-        }
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

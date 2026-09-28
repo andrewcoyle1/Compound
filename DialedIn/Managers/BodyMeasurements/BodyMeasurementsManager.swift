@@ -333,7 +333,20 @@ extension CoreInteractor {
 
     /// CREATE
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {
+        if bodyMeasurement.weightKg != nil {
+            await requestBodyMeasurementHealthAccess()
+        }
         try await bodyMeasurementsManager.saveBodyMeasurement(bodyMeasurement: bodyMeasurement)
+    }
+
+    /// Asks for Apple Health access to weight when weight is first logged or its history first
+    /// opened, which is the moment the HIG names for it. Onboarding used to ask for everything up
+    /// front. HealthKit shows nothing once the person has answered, so this is safe to repeat.
+    private func requestBodyMeasurementHealthAccess() async {
+        #if canImport(HealthKit)
+        guard canRequestHealthDataAuthorisation() else { return }
+        try? await requestHealthKitAuthorisation(for: .bodyMeasurements)
+        #endif
     }
 
     /// DELETE
@@ -343,6 +356,7 @@ extension CoreInteractor {
 
     func backfillBodyFatFromHealthKit() async {
         guard let userId else { return }
+        await requestBodyMeasurementHealthAccess()
         await bodyMeasurementsManager.backfillBodyFatFromHealthKit(userId: userId)
     }
 

@@ -194,10 +194,10 @@ private struct OnboardingPickerPreview: View {
 private struct OnboardingTwoButtonPreview: View {
     var body: some View {
         OnboardingStepScaffold(
-            title: "Notifications",
-            subtitle: "Stay on track",
-            progress: OnboardingStep.notifications.progress,
-            primary: .init(title: "Enable notifications") { },
+            title: "Connect with Strava",
+            subtitle: "Upload every workout",
+            progress: OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Connect Strava") { },
             secondary: .init(title: "Skip for now") { }
         ) {
             Section {

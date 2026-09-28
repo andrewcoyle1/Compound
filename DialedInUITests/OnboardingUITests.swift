@@ -52,12 +52,7 @@ final class OnboardingUITests: XCTestCase {
         app.choose("Sedentary", on: "What's your daily activity level outside of exercise?")
         app.choose("Beginner", on: "How would you rate your cardiovascular fitness?")
         app.continueFrom("kcal/day")
-        // Notifications and health data only appear where their permission can still be
-        // asked; the mock scenario asks for neither. Skip whichever of them shows.
-        let disclaimer = app.switches["HealthDisclaimerToggle"].firstMatch
-        while disclaimer.waitForExistence(timeout: 3) == false {
-            app.tap("SkipForNow")
-        }
+        let disclaimer = app.waitFor(app.switches["HealthDisclaimerToggle"].firstMatch)
         // The identifier sits on the labelled row; the control that flips is the switch inside it.
         disclaimer.switches.firstMatch.tap()
         app.switches["HealthPrivacyPolicyToggle"].firstMatch.switches.firstMatch.tap()

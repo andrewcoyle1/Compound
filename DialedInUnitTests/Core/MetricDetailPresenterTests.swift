@@ -390,7 +390,7 @@ struct StepsPresenterTests {
             canRequestAuthorisation
         }
 
-        func requestHealthKitAuthorisation() async throws {
+        func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws {
             didRequestAuthorisation = true
         }
     }

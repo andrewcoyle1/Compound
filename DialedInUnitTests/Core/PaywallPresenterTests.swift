@@ -78,8 +78,6 @@ struct PaywallPurchasePresenterTests {
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
         func showCompleteAccountSetupView() { shown.append("completeAccountSetup") }
-        func showNotificationsPermissionsView() { shown.append("notifications") }
-        func showOnboardingHealthDataView() { shown.append("healthData") }
         func showHealthDisclaimerView() { shown.append("healthDisclaimer") }
         func showGoalSettingView() { shown.append("goalSetting") }
         func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { shown.append("gymProfileSetup") }

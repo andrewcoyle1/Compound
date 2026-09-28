@@ -48,7 +48,7 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         GymProfileModel(id: gymProfileId, authorId: "author-1", name: "Home Gym")
     }
     func canRequestHealthDataAuthorisation() -> Bool { false }
-    func requestHealthKitAuthorisation() async throws { }
+    func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
     func needsAuthorisationForRequiredTypes() -> Bool { false }
     func setWorkoutConfiguration(activityType: HKWorkoutActivityType, location: HKWorkoutSessionLocationType) { }
 

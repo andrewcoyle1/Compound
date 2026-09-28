@@ -42,7 +42,7 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     // MARK: - HealthKit Authorization
 
     func canRequestHealthDataAuthorisation() -> Bool
-    func requestHealthKitAuthorisation() async throws
+    func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws
     func needsAuthorisationForRequiredTypes() -> Bool
 
     // MARK: - Workout Session Configuration & Lifecycle

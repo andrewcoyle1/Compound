@@ -29,8 +29,8 @@ class HealthKitManager {
         service.canRequestAuthorisation()
     }
     
-    func requestAuthorisation() async throws {
-        try await service.requestAuthorisation()
+    func requestAuthorisation(for scope: HealthDataScope) async throws {
+        try await service.requestAuthorisation(for: scope)
     }
     
     /// Returns true when we should present the HealthKit permissions screen
@@ -56,8 +56,8 @@ extension CoreInteractor {
         healthKitManager.canRequestAuthorisation()
     }
     
-    func requestHealthKitAuthorisation() async throws {
-        try await healthKitManager.requestAuthorisation()
+    func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws {
+        try await healthKitManager.requestAuthorisation(for: scope)
     }
     
     func needsAuthorisationForRequiredTypes() -> Bool {

@@ -26,7 +26,7 @@ class StepsPresenter {
     func loadData() async {
         if interactor.canRequestHealthDataAuthorisation() {
             do {
-                try await interactor.requestHealthKitAuthorisation()
+                try await interactor.requestHealthKitAuthorisation(for: .steps)
             } catch {
                 // User denied or failed - continue to load; will show empty if no access
             }
@@ -110,7 +110,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
         Task {
             if interactor.canRequestHealthDataAuthorisation() {
                 do {
-                    try await interactor.requestHealthKitAuthorisation()
+                    try await interactor.requestHealthKitAuthorisation(for: .steps)
                 } catch {
                     router.showSimpleAlert(
                         title: String(localized: "Unable to Access Health"),

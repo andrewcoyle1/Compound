@@ -35,7 +35,7 @@ struct HealthKitManagerTests {
     func testRequestingAuthorisationSucceedsWhenTheServiceDoes() async throws {
         let manager = HealthKitManager(service: MockHealthService(showError: false))
 
-        try await manager.requestAuthorisation()
+        try await manager.requestAuthorisation(for: .workouts)
     }
 
     @Test("Test Requesting Authorisation Propagates The Service's Failure")
@@ -43,7 +43,7 @@ struct HealthKitManagerTests {
         let manager = HealthKitManager(service: MockHealthService(showError: true))
 
         await #expect(throws: (any Error).self) {
-            try await manager.requestAuthorisation()
+            try await manager.requestAuthorisation(for: .workouts)
         }
     }
 
@@ -67,6 +67,30 @@ struct HealthKitManagerTests {
 
         #expect(type(of: first) == HKHealthStore.self)
         #expect(type(of: second) == HKHealthStore.self)
+    }
+
+    // The onboarding screen promised "weight" while one request asked for about sixty types,
+    // most of them never read. These pin each feature's request to what it uses.
+
+    @Test("Test Each Scope Asks Only For What Its Feature Uses")
+    func testEachScopeAsksOnlyForWhatItsFeatureUses() {
+        #expect(HealthDataScope.workouts.typesToShare == [HKObjectType.workoutType()])
+        #expect(HealthDataScope.workouts.typesToRead == [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)])
+        #expect(HealthDataScope.steps.typesToShare.isEmpty)
+        #expect(HealthDataScope.steps.typesToRead == [HKQuantityType(.stepCount)])
+        #expect(HealthDataScope.bodyMeasurements.typesToShare == [HKQuantityType(.bodyMass)])
+        #expect(HealthDataScope.bodyMeasurements.typesToRead == [HKQuantityType(.bodyMass), HKQuantityType(.bodyFatPercentage)])
+    }
+
+    @Test("Test No Scope Asks For Nutrition Data")
+    func testNoScopeAsksForNutritionData() {
+        let requested = HealthDataScope.allCases.flatMap { scope in
+            scope.typesToRead.map(\.identifier) + scope.typesToShare.map(\.identifier)
+        }
+
+        let asksForNutrition = requested.contains { $0.contains("Dietary") }
+
+        #expect(asksForNutrition == false)
     }
 }
 

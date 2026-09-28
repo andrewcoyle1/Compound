@@ -14,8 +14,6 @@ import SwiftUI
 @MainActor
 protocol OnboardingStepRouter: GlobalRouter {
     func showCompleteAccountSetupView()
-    func showNotificationsPermissionsView()
-    func showOnboardingHealthDataView()
     func showHealthDisclaimerView()
     func showGoalSettingView()
     func showCreateGymProfileView(delegate: CreateGymProfileDelegate)
@@ -40,13 +38,9 @@ extension OnboardingStepRouter {
         case .auth, .subscription, .completeAccountSetup:
             showCompleteAccountSetupView()
 
-        case .notifications:
-            showNotificationsPermissionsView()
-
-        case .healthData:
-            showOnboardingHealthDataView()
-
-        case .healthDisclaimer:
+        // The two permission steps are gone: each permission is now asked for where it is first
+        // used. The cases stay because a stored profile can still name them.
+        case .notifications, .healthData, .healthDisclaimer:
             showHealthDisclaimerView()
 
         case .goalSetting:

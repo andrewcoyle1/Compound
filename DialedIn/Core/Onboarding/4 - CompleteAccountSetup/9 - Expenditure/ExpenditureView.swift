@@ -54,9 +54,6 @@ struct ExpenditureView: View {
             explanationSection
         }
         .scrollIndicators(.hidden)
-        .onFirstTask {
-            await presenter.checkCanRequestPermissions()
-        }
         .onFirstAppear {
             presenter.estimateExpenditure(delegate: delegate)
         }

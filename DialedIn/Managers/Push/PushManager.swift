@@ -111,6 +111,11 @@ class PushManager {
     }
         
     func schedulePushNotification(delegate: PushNotificationDelegate) async throws {
+        // Onboarding no longer asks for notifications, so the first feature that needs one does.
+        // Today that is the rest timer. iOS shows the alert once; after that this is a no-op.
+        if await canRequestAuthorisation() {
+            _ = try? await requestAuthorisation()
+        }
         let content = AnyNotificationContent(id: delegate.identifier, title: delegate.title, body: delegate.subtitle, sound: delegate.sound, badge: delegate.badge)
         let trigger = NotificationTriggerOption.date(date: delegate.triggerDate, repeats: delegate.repeats)
         try await LocalNotifications.scheduleNotification(content: content, trigger: trigger)

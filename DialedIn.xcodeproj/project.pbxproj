@@ -1014,8 +1014,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat from Apple Health to track your training and progress.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
@@ -1363,8 +1363,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat from Apple Health to track your training and progress.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
@@ -1445,8 +1445,8 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat from Apple Health to track your training and progress.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;

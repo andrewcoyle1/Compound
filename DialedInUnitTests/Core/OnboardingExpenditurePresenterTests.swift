@@ -85,8 +85,6 @@ private func expenditureContext(
 @MainActor
 private final class ExpenditureSpyInteractor: SpyGlobalInteractor, ExpenditureInteractor {
     var currentUser: UserModel?
-    var canRequestNotifications = false
-    var canRequestHealthData = false
     var shouldThrow = false
     private(set) var savedInputs: [[String: any DMCodableSendable]] = []
 
@@ -96,11 +94,9 @@ private final class ExpenditureSpyInteractor: SpyGlobalInteractor, ExpenditureIn
     }
 
     func estimateTDEE(user: UserModel?) -> Double { 0 }
-    func canRequestNotificationAuthorisation() async -> Bool { canRequestNotifications }
-    func canRequestHealthDataAuthorisation() -> Bool { canRequestHealthData }
 }
 
-/// All three onward destinations are onboarding steps the shared spy already records, so this only
+/// The onward destination is an onboarding step the shared spy already records, so this only
 /// adds the dev hook. The alert methods stay on `SpyOnboardingRouter`, which is the class that
 /// declares the `GlobalRouter` conformance and therefore owns their witnesses.
 @MainActor
@@ -530,53 +526,18 @@ struct ExpenditurePresenterSaveTests {
         #expect(saved?["submitted_cardio_fitness_level"] as? String == "advanced")
     }
 
-    @Test("Saving leads to the notifications ask when one is still available")
-    func testSavingLeadsToTheNotificationsAsk() async {
+    @Test("Saving goes straight to the disclaimer")
+    func testSavingGoesStraightToTheDisclaimer() async {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
-        let interactor = screen.interactor
         let router = screen.router
-        interactor.canRequestNotifications = true
-        interactor.canRequestHealthData = true
-        await sut.checkCanRequestPermissions()
         sut.estimateExpenditure(delegate: expenditureDelegate())
 
         sut.onContinuePressed(delegate: expenditureDelegate())
         await TestManagers.eventually { !router.shown.isEmpty }
 
-        #expect(router.shown == ["notifications"])
-    }
-
-    @Test("Health data is next when notifications were already answered")
-    func testHealthDataIsNextWhenNotificationsWereAnswered() async {
-        let screen = makeExpenditureScreen()
-        let sut = screen.sut
-        let interactor = screen.interactor
-        let router = screen.router
-        interactor.canRequestNotifications = false
-        interactor.canRequestHealthData = true
-        await sut.checkCanRequestPermissions()
-        sut.estimateExpenditure(delegate: expenditureDelegate())
-
-        sut.onContinuePressed(delegate: expenditureDelegate())
-        await TestManagers.eventually { !router.shown.isEmpty }
-
-        // Showing an ask iOS would never display would be a screen with nothing on it.
-        #expect(router.shown == ["healthData"])
-    }
-
-    @Test("Both permissions already settled goes straight to the disclaimer")
-    func testBothPermissionsSettledGoesToTheDisclaimer() async {
-        let screen = makeExpenditureScreen()
-        let sut = screen.sut
-        let router = screen.router
-        await sut.checkCanRequestPermissions()
-        sut.estimateExpenditure(delegate: expenditureDelegate())
-
-        sut.onContinuePressed(delegate: expenditureDelegate())
-        await TestManagers.eventually { !router.shown.isEmpty }
-
-        // The disclaimer is the one step that must never be skipped.
+        // Onboarding no longer asks for notifications or Apple Health. Each is requested where
+        // it is first used, so nothing stands between the profile and the disclaimer.
         #expect(router.shown == ["healthDisclaimer"])
     }
 

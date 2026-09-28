@@ -13,7 +13,7 @@ protocol StepsInteractor {
     var stepsHistory: [StepsModel] { get }
     func backfillStepsFromHealthKit() async
     func canRequestHealthDataAuthorisation() -> Bool
-    func requestHealthKitAuthorisation() async throws
+    func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws
 }
 
 extension CoreInteractor: StepsInteractor { }

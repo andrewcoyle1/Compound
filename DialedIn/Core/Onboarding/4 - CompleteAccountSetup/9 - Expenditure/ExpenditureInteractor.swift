@@ -10,8 +10,6 @@ protocol ExpenditureInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     func saveUserCompleteAccountSetup(input: [String: any DMCodableSendable]) async throws
     func estimateTDEE(user: UserModel?) -> Double
-    func canRequestNotificationAuthorisation() async -> Bool
-    func canRequestHealthDataAuthorisation() -> Bool
 }
 
 extension CoreInteractor: ExpenditureInteractor { }

@@ -30,7 +30,7 @@ struct MockHealthService: HealthService {
         canRequestAuthorisationTest
     }
     
-    func requestAuthorisation() async throws {
+    func requestAuthorisation(for scope: HealthDataScope) async throws {
         try await Task.sleep(for: .seconds(delay))
         try tryShowError()
     }

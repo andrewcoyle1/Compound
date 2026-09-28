@@ -13,9 +13,6 @@ class ExpenditurePresenter {
     private let interactor: ExpenditureInteractor
     private let router: ExpenditureRouter
 
-    private var canRequestNotifications: Bool?
-    private var canRequestHealthData: Bool?
-
     private(set) var canContinue: Bool = false
     // Computed from collected data
     var totalExpenditureKcal: Int = 0
@@ -169,11 +166,6 @@ class ExpenditurePresenter {
         let color: Color
     }
 
-    func checkCanRequestPermissions() async {
-        self.canRequestHealthData = interactor.canRequestHealthDataAuthorisation()
-        self.canRequestNotifications = await interactor.canRequestNotificationAuthorisation()
-    }
-    
     func progress(for item: Breakdown) -> Double {
         guard totalExpenditureKcal > 0 else { return 0 }
         return Double(item.calories) / Double(totalExpenditureKcal)
@@ -239,13 +231,8 @@ class ExpenditurePresenter {
                 
                 router.dismissModal()
 
-                if canRequestNotifications == true {
-                    router.showNotificationsPermissionsView()
-                } else if canRequestHealthData == true {
-                    router.showOnboardingHealthDataView()
-                } else {
-                    router.showHealthDisclaimerView()
-                }
+                // Notifications and Apple Health are asked for where they are first used, not here.
+                router.showHealthDisclaimerView()
 
             } catch {
                 interactor.trackEvent(event: Event.profileSaveFail(error: error))

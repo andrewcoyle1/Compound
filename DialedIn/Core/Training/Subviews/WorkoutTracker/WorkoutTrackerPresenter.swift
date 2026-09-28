@@ -216,7 +216,7 @@ class WorkoutTrackerPresenter {
         // Only request HealthKit auth if we're about to start a new HK session.
         if interactor.canRequestHealthDataAuthorisation() && interactor.needsAuthorisationForRequiredTypes() {
             do {
-                try await interactor.requestHealthKitAuthorisation()
+                try await interactor.requestHealthKitAuthorisation(for: .workouts)
             } catch { }
         }
 

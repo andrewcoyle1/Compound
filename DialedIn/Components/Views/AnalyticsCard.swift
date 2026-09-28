@@ -57,27 +57,6 @@ struct AnalyticsCard<MetricChart: View>: View {
         self.chart = chart
     }
 
-    @available(*, deprecated, renamed: "init(title:subtitle:value:unit:systemImage:themeColor:showsChevron:chartConfiguration:chart:)")
-    init(
-        title: String? = nil,
-        subtitle: String? = nil,
-        subsubtitle: String?,
-        subsubsubtitle: String?,
-        themeColor: Color? = nil,
-        chartConfiguration: AnalyticsCardChartConfiguration = AnalyticsCardChartConfiguration(),
-        chart: @escaping () -> MetricChart
-    ) {
-        self.init(
-            title: title,
-            subtitle: subtitle,
-            value: subsubtitle,
-            unit: subsubsubtitle,
-            themeColor: themeColor,
-            chartConfiguration: chartConfiguration,
-            chart: chart
-        )
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             VStack(alignment: .leading, spacing: Spacing.xxs) {

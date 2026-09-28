@@ -117,6 +117,11 @@ Also for WP-15:
 - **Set-count plurals.** "1 sets" appears in Muscle Balance and in Shared Item's rows. Pluralise every
   set, rep and exercise count through the string catalog (grep `sets"`), and treat a fractional
   count as plural.
+- **Hero intro screens.** WP-10 gave Create Program and Create Workout's first steps an inline
+  navigation title, which now sits unreadably over the hero image. Put back the large body heading
+  (`Font.display`) under the image, and hide the navigation title there. Keep `navigationTitle` for
+  VoiceOver and the back menu, but hide the principal bar item. Check Create Exercise and any other
+  hero-image first step for the same problem.
 - **Search shortcut tap targets.** WP-11 made the Search shortcuts `Chip`s, which are about 20 pt
   tall, below the 44 pt minimum tap target. Make them controls at least 44 pt tall (`.glass`
   buttons, or a `Chip` whose `contentShape` is padded out to 44 pt), and check any other tappable

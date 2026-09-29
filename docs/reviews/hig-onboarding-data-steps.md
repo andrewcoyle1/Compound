@@ -37,6 +37,21 @@ label/value rows in `ExpenditureView`'s "How we calculated this" section.
 Paths are relative to `DialedIn/`; `…/` stands for `Core/Onboarding/`. Findings are most serious
 first.
 
+## Decisions built (2026-09-29, branch hig/onboarding)
+
+| Decision | Status | What changed |
+|---|---|---|
+| 2 | built | The four placeholder addresses in `Constants` (and `LegalDocument.url`) carry `TODO` markers; the health consent screen links the Health Disclaimer and the Consumer Health Privacy Notice in a row under each toggle. |
+| 2a | built | The confirmation alert is gone: two toggles and Continue save both version stamps exactly as before. |
+| 3 | built | The rate slider tops out at 1% of body weight a week (never above 1.5 kg), losing or gaining; its bands are relative to that maximum, and the top fifth shows an `InlineMessage(.warning, …)` naming the consequence. The default opens below the warning. |
+| 3a | built | A "Lose weight" wheel stops at BMI 18.5 for the stored height (kg and lb, rounded up) and says why; someone already at or under it gets no target and an explanation. |
+| 3b | built | Onboarding skips the calorie-floor step and applies the standard 1,200 kcal floor; settings still reach the step with both options. |
+| 8a | built | "Sex for Calorie Estimate" with Male, Female, "Prefer not to say" (new `Gender.preferNotToSay`, stored as `prefer_not_to_say`); midpoint −78 in Mifflin-St Jeor and the average of the two Harris-Benedict equations; the option notes the estimate is less accurate. |
+| 8b | built | One-sentence subtitles on date of birth, sex, height, weight, exercise frequency and activity. Weight and activity do not say "change it in Profile": Profile cannot edit either (see the handback). |
+| 8c | built | The cardio fitness step is removed; the field and `CardioFitnessLevel` stay, it is no longer written or required by `inferredOnboardingStep`. |
+| 11d | built | The Strava step is removed; the diet plan goes straight to the completion screen. Strava stays in Profile > Integrations. |
+| 11e | built | "Fill from Apple Health" on date of birth, sex, height and weight, each requesting its own new read-only scope on tap; nothing found or refused says so inline. |
+
 ## Resolution (2026-09-28, branch hig/onboarding)
 
 | Finding | Status | What changed |

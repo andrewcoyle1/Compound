@@ -2313,6 +2313,16 @@
         }
       }
     },
+    "A subscription is required to use Compound." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita una suscripción para usar Compound."
+          }
+        }
+      }
+    },
     "A workout is built around the equipment at a gym. Create one to continue." : {
       "localizations" : {
         "es" : {
@@ -2452,6 +2462,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuenta"
+          }
+        }
+      }
+    },
+    "Account Deleted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta eliminada"
           }
         }
       }
@@ -3114,6 +3134,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade los gimnasios donde entrenas y el equipo que tiene cada uno."
+          }
+        }
+      }
+    },
+    "Add these to the Shortcuts app to run them from your Home Screen or Action button." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añádelos a la app Atajos para ejecutarlos desde la pantalla de inicio o el botón de acción."
           }
         }
       }
@@ -3813,6 +3843,7 @@
       }
     },
     "Are you enjoying Compound?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3889,6 +3920,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Brazos"
+          }
+        }
+      }
+    },
+    "Ask Siri" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta a Siri"
           }
         }
       }
@@ -4589,6 +4630,16 @@
         }
       }
     },
+    "Body measurements, goals and progress photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medidas corporales, objetivos y fotos de progreso"
+          }
+        }
+      }
+    },
     "Body weight contribution, percent" : {
       "localizations" : {
         "es" : {
@@ -5244,6 +5295,16 @@
         }
       }
     },
+    "Check your internet connection and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba tu conexión a internet e inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "Check-in Day" : {
       "localizations" : {
         "es" : {
@@ -5640,6 +5701,16 @@
         }
       }
     },
+    "Comments, likes and follows" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comentarios, me gusta y seguidores"
+          }
+        }
+      }
+    },
     "Common foods only" : {
       "localizations" : {
         "es" : {
@@ -5794,6 +5865,7 @@
       }
     },
     "Compound Pro" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5925,6 +5997,7 @@
       }
     },
     "Connection Failed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7076,6 +7149,7 @@
       }
     },
     "Delete Account?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8160,6 +8234,16 @@
         }
       }
     },
+    "Edit, sign out of or delete your account without subscribing." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edita tu cuenta, cierra sesión o elimínala sin suscribirte."
+          }
+        }
+      }
+    },
     "Effort (RPE)" : {
       "localizations" : {
         "es" : {
@@ -8788,7 +8872,6 @@
       }
     },
     "Exercise Frequency" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9820,6 +9903,7 @@
       }
     },
     "Free" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9900,6 +9984,7 @@
       }
     },
     "Gender" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9961,6 +10046,7 @@
       }
     },
     "Get premium access to unlock all features." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10764,6 +10850,16 @@
         }
       }
     },
+    "Inactive" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inactiva"
+          }
+        }
+      }
+    },
     "Inappropriate" : {
       "localizations" : {
         "es" : {
@@ -10780,6 +10876,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pulgadas"
+          }
+        }
+      }
+    },
+    "Included" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incluido"
           }
         }
       }
@@ -11616,6 +11722,7 @@
       }
     },
     "Lifting Experience" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12291,6 +12398,16 @@
         }
       }
     },
+    "Manage Subscription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestionar suscripción"
+          }
+        }
+      }
+    },
     "Manganese" : {
       "localizations" : {
         "es" : {
@@ -12383,6 +12500,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recordatorios de comidas"
+          }
+        }
+      }
+    },
+    "Meals, foods and recipes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comidas, alimentos y recetas"
           }
         }
       }
@@ -14405,6 +14532,16 @@
         }
       }
     },
+    "One subscription for training, nutrition and progress." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una suscripción para entrenamiento, nutrición y progreso."
+          }
+        }
+      }
+    },
     "Only one side of the body works independently at a time." : {
       "localizations" : {
         "es" : {
@@ -14980,6 +15117,16 @@
         }
       }
     },
+    "Personalized plans, smart coaching, progress tracking, Apple Health sync and reminders." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planes personalizados, asesoramiento inteligente, seguimiento del progreso, sincronización con Salud de Apple y recordatorios."
+          }
+        }
+      }
+    },
     "Phenylalanine" : {
       "localizations" : {
         "es" : {
@@ -15380,6 +15527,7 @@
       }
     },
     "Pre-log meals before eating" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15440,6 +15588,7 @@
       }
     },
     "Premium" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15450,6 +15599,7 @@
       }
     },
     "Premove" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17945,6 +18095,16 @@
         }
       }
     },
+    "Sex" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexo"
+          }
+        }
+      }
+    },
     "Sex for Calorie Estimate" : {
       "localizations" : {
         "es" : {
@@ -19658,6 +19818,16 @@
         }
       }
     },
+    "The rest of your data is removed from our servers within 30 days." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El resto de tus datos se elimina de nuestros servidores en un plazo de 30 días."
+          }
+        }
+      }
+    },
     "The sets you logged will not be saved." : {
       "localizations" : {
         "es" : {
@@ -19885,6 +20055,7 @@
       }
     },
     "This action is permanent and cannot be undone. Your data will be deleted from our server forever." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21032,6 +21203,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo completar la compra"
+          }
+        }
+      }
+    },
+    "Unable to Connect Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Strava"
           }
         }
       }
@@ -22851,6 +23032,7 @@
       }
     },
     "We'd love to hear your feedback!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23208,6 +23390,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Te damos la bienvenida a Compound."
+          }
+        }
+      }
+    },
+    "What Is Deleted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qué se elimina"
           }
         }
       }
@@ -23755,6 +23947,16 @@
         }
       }
     },
+    "Workouts, programs, exercises and gym profiles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos, programas, ejercicios y perfiles de gimnasio"
+          }
+        }
+      }
+    },
     "Would you like to save the workout templates in the training program for use independently?" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -24000,6 +24202,16 @@
         }
       }
     },
+    "You'll be asked to sign in again to confirm." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se te pedirá que inicies sesión de nuevo para confirmar."
+          }
+        }
+      }
+    },
     "You're following %@. They've asked to follow you." : {
       "localizations" : {
         "es" : {
@@ -24141,6 +24353,16 @@
         }
       }
     },
+    "Your account is closed straight away, and the rest of your data is removed from our servers within 30 days. This cannot be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cuenta se cierra de inmediato y el resto de tus datos se elimina de nuestros servidores en un plazo de 30 días. No se puede deshacer."
+          }
+        }
+      }
+    },
     "Your activity outside exercise feeds the calorie estimate." : {
       "localizations" : {
         "es" : {
@@ -24231,6 +24453,16 @@
         }
       }
     },
+    "Your profile, username and photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu perfil, nombre de usuario y fotos"
+          }
+        }
+      }
+    },
     "Your progress will no longer count." : {
       "localizations" : {
         "es" : {
@@ -24257,6 +24489,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus recomendaciones nunca bajarán de 800 calorías al día. Procede con precaución."
+          }
+        }
+      }
+    },
+    "Your subscription is billed by Apple and is not canceled by deleting your account. Cancel it here first if you do not want to be charged again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple factura tu suscripción, y eliminar la cuenta no la cancela. Cancélala aquí primero si no quieres que se te vuelva a cobrar."
           }
         }
       }
@@ -24935,6 +25177,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se eliminará «%@». Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "“How many workouts this week in Compound”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Cuántos entrenamientos esta semana en Compound”"
+          }
+        }
+      }
+    },
+    "“Log my weight in Compound”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Registra mi peso en Compound”"
+          }
+        }
+      }
+    },
+    "“Start a workout in Compound”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Empieza un entrenamiento en Compound”"
+          }
+        }
+      }
+    },
+    "“What's my workout today in Compound”" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Cuál es mi entrenamiento de hoy en Compound”"
           }
         }
       }

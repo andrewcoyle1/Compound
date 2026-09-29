@@ -214,3 +214,33 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 - The Spanish for the two health consent texts is marked `needs_review` in the catalog.
 - 113 catalog entries are `stale`. Check each is unused before deleting, because
   `CustomModalView` looks some titles up at runtime.
+
+## From building the decisions (2026-09-29)
+
+### Still to connect or finish
+
+- **Meal reminder offer**: `ReminderOfferFlow.offerMealRemindersIfNeeded()` is built but has no
+  caller. `NutritionPresenter.onViewAppear` should call it in place of
+  `scheduleMealRemindersIfNeeded()`; `NutritionInteractor` inherits `ReminderOfferInteractor`.
+- **Streak reminder offer**: `offerStreakReminderIfNeeded()` likewise, from
+  `DashboardPresenter.onViewAppear`; `DashboardInteractor` inherits `ReminderOfferInteractor`.
+- **Pushes inside the Notifications sheet**: `WorkoutSessionDetailView` has an `isPushed` flag
+  now; `SharedItemView` needs the same before the Notifications router can push them.
+- **Strava after the first finished workout.**
+- **Workout follow-ups**: keep the app running during workouts so the Live Activity can alert on
+  a locked phone; the saved duration excludes paused time; rest-over distance in the person's unit.
+- `Components/Views/EnumPicker/` and `CoreRouter.showEnumPickerView` have no caller now.
+- `DialedInUITests/CreateExerciseUITests.swift` taps `EnumPicker.Reps`, which is now a menu item.
+- Health consent: the second toggle and both document links sit below the fold, under the
+  Continue button. Check on a device that they scroll clear of it.
+
+### Questions the builders raised for the owner
+
+- A subscriber whose subscription lapses while using the app is not sent to the paywall.
+- On the paywall, Sign Out and Account are in a toolbar menu, not visible buttons.
+- Price wording: "$9.99 / 1 month" from the system, or a hand-written "$9.99 a month".
+- Profile's "Rate Compound" row triggers the system prompt from a button, which Apple advises
+  against. Hide it until there is an App Store ID to link to.
+- Subscription status reads "Active" / "Inactive"; "Active" is also an activity level.
+- After saving a finished workout's notes the screen closes, which on a push returns to the list.
+- The streak reminder stops for existing users who never turned it on.

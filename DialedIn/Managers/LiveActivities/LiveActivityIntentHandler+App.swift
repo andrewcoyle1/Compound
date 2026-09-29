@@ -237,13 +237,12 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     /// Pushes the saved session to the activity, the same shape `WorkoutTrackerPresenter`
     /// pushes when the tracker is on screen.
     ///
-    /// `isActive` is true rather than read from the HealthKit session state: a workout the user
-    /// has not paused is under way whether or not HealthKit ever started collecting, and reading
-    /// the state would show the banner as paused on every phone that declined HealthKit.
+    /// `isActive` is the pause the person chose, not the HealthKit session state: a workout that
+    /// has not been paused is under way whether or not HealthKit ever started collecting.
     private func push(_ session: WorkoutSessionModel, exerciseIndex: Int) {
         liveActivityUpdater.updateLiveActivity(params: LiveActivityUpdateParams(
             session: session,
-            isActive: true,
+            isActive: hkWorkoutManager.isWorkoutActive,
             currentExerciseIndex: exerciseIndex,
             restEndsAt: runningRestEndTime
         ))

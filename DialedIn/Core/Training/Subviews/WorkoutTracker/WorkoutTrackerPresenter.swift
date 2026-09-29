@@ -44,7 +44,12 @@ class WorkoutTrackerPresenter {
     }
     
     var elapsedTime: TimeInterval = 0
-    var isActive = true
+
+    /// False while the workout is paused. The rest timer's owner keeps it, so a tracker reopened
+    /// after being minimized still knows.
+    var isActive: Bool {
+        interactor.isWorkoutActive
+    }
     
     var expandedExerciseId: String?
     var workoutNotes = ""
@@ -163,9 +168,10 @@ class WorkoutTrackerPresenter {
     
     // MARK: - Computed Properties
     
-    /// The workout clock at `date`, for the overview's ticking Elapsed Time.
+    /// The workout clock at `date`, for the overview's ticking Elapsed Time. Paused time is left
+    /// out, so the clock stands still while the workout is paused.
     func elapsedTime(at date: Date) -> String {
-        Format.duration(max(0, date.timeIntervalSince(startTime)))
+        Format.duration(max(0, date.timeIntervalSince(startTime) - interactor.totalPausedDuration(at: date)))
     }
 
     /// Counted per exercise so a left/right pair is the one set it is — see `WorkoutSetPairing`.
@@ -288,6 +294,14 @@ class WorkoutTrackerPresenter {
 
     func minimizeSession() {
         router.dismissScreen()
+    }
+
+    /// Pause and Resume in the menu. The clock, the Apple Health session and the Live Activity's
+    /// paused phase all follow the one toggle.
+    func onPauseResumePressed() {
+        interactor.togglePause()
+        interactor.playHaptic(option: .light)
+        interactor.trackEvent(event: isActive ? Event.workoutResumed : Event.workoutPaused)
     }
     
     // MARK: - Rest Timer

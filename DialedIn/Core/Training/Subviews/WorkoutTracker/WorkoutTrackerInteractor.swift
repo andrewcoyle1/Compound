@@ -72,6 +72,16 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     /// Discard the current workout without saving to HealthKit.
     func discardWorkout()
 
+    /// False while the workout is paused.
+    var isWorkoutActive: Bool { get }
+
+    /// Pauses a running workout or resumes a paused one: the clock, the Apple Health session and
+    /// the Live Activity together.
+    func togglePause()
+
+    /// Time spent paused up to `date`, which the workout clock leaves out.
+    func totalPausedDuration(at date: Date) -> TimeInterval
+
     var allExercises: [ExerciseModel] { get }
     
     // MARK: - Live Activity & Status Updates

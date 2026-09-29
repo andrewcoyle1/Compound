@@ -30,7 +30,21 @@ class HKWorkoutManager: NSObject {
     /// session ever got going, so `state == .running` was the wrong test: with HealthKit declined
     /// the state stays `.notStarted` and every rest push showed the banner as paused, until the
     /// next push from the tracker or the intent handler put it back.
-    var isWorkoutActive: Bool { state != .paused }
+    ///
+    /// Read from the pause the person asked for, not from the HealthKit state, so Pause works on a
+    /// phone that declined HealthKit and the banner follows at once rather than on the session's
+    /// delegate callback.
+    var isWorkoutActive: Bool { pausedAt == nil }
+
+    /// When the workout was paused, while it is.
+    private(set) var pausedAt: Date?
+    /// Time spent paused before the current pause, so the tracker's clock can leave it out.
+    private(set) var pausedDuration: TimeInterval = 0
+
+    /// Everything spent paused up to `date`, the current pause included.
+    func totalPausedDuration(at date: Date) -> TimeInterval {
+        pausedDuration + (pausedAt.map { max(0, date.timeIntervalSince($0)) } ?? 0)
+    }
 
     private var isDiscarding = false
     private var workout: HKWorkout?
@@ -127,31 +141,44 @@ class HKWorkoutManager: NSObject {
 
     // MARK: - State Control
 
+    /// Stops the clock, pauses the Apple Health session when there is one, and shows the Live
+    /// Activity's paused phase.
     func pause() {
+        guard pausedAt == nil else { return }
+        pausedAt = Date()
         session?.pause()
         stopTimer()
+        liveActivityUpdater?.updateRestAndActive(isActive: false, restEndsAt: restEndTime)
     }
 
     func resume() {
+        guard let pausedAt else { return }
+        pausedDuration += max(0, Date().timeIntervalSince(pausedAt))
+        self.pausedAt = nil
         session?.resume()
-        startWorkoutTimer()
+        if session != nil { startWorkoutTimer() }
+        liveActivityUpdater?.updateRestAndActive(isActive: true, restEndsAt: restEndTime)
     }
 
     func togglePause() {
-        switch state {
-        case .running:
+        if isWorkoutActive {
             pause()
-        case .paused:
+        } else {
             resume()
-        default:
-            logger.trackEvent(event: Event.togglePauseInvalidState)
         }
+    }
+
+    /// A new workout starts unpaused, whatever the last one ended as.
+    private func resetPause() {
+        pausedAt = nil
+        pausedDuration = 0
     }
 
     func endWorkout() {
         state = .stopped
         session?.stopActivity(with: .now)
         stopTimer()
+        resetPause()
         // Ensure any pending rest is cancelled when ending workout
         cancelRest()
     }
@@ -203,6 +230,7 @@ class HKWorkoutManager: NSObject {
         metrics = MetricsModel(elapsedTime: 0)
 
         stopTimer()
+        resetPause()
         cancelRest()
     }
 
@@ -490,7 +518,6 @@ extension HKWorkoutManager {
         case finishWorkoutSuccess
         case finishWorkoutFail(error: Error)
         case discardWorkout
-        case togglePauseInvalidState
         case activityTypeNil
         case quantityTypeUnhandled
         case workoutSessionFailed(error: Error)
@@ -511,7 +538,6 @@ extension HKWorkoutManager {
             case .finishWorkoutSuccess:     return "HKWorkoutMan_FinishWorkout_Success"
             case .finishWorkoutFail:        return "HKWorkoutMan_FinishWorkout_Fail"
             case .discardWorkout:           return "HKWorkoutMan_DiscardWorkout"
-            case .togglePauseInvalidState:  return "HKWorkoutMan_TogglePause_InvalidState"
             case .activityTypeNil:          return "HKWorkoutMan_ActivityType_Nil"
             case .quantityTypeUnhandled:    return "HKWorkoutMan_QuantityType_Unhandled"
             case .workoutSessionFailed:     return "HKWorkoutMan_Session_Failed"
@@ -548,7 +574,7 @@ extension HKWorkoutManager {
             switch self {
             case .startWorkoutFail, .finishWorkoutFail, .workoutSessionFailed:
                 return .severe
-            case .togglePauseInvalidState, .activityTypeNil, .quantityTypeUnhandled, .endRestNoSession, .endRestNoUpdater:
+            case .activityTypeNil, .quantityTypeUnhandled, .endRestNoSession, .endRestNoUpdater:
                 return .warning
             case .startRestCalled(_, let liveActivityUpdaterIsNil) where liveActivityUpdaterIsNil:
                 return .warning
@@ -576,6 +602,18 @@ extension CoreInteractor {
 
     func discardWorkout() {
         hkWorkoutManager.discardWorkout()
+    }
+
+    var isWorkoutActive: Bool {
+        hkWorkoutManager.isWorkoutActive
+    }
+
+    func togglePause() {
+        hkWorkoutManager.togglePause()
+    }
+
+    func totalPausedDuration(at date: Date) -> TimeInterval {
+        hkWorkoutManager.totalPausedDuration(at: date)
     }
 
     // Rest Timer Management

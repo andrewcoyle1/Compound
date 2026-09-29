@@ -195,6 +195,24 @@ struct WorkoutTrackerFinishTests {
         #expect(screen.interactor.shownToasts.allSatisfy { $0.style == .progress })
     }
 
+    // MARK: - Pause
+
+    /// Pause and Resume in the menu go through the one toggle the clock, Apple Health and the Live
+    /// Activity follow, and the clock leaves paused time out.
+    @Test("Test Pause And Resume Toggle The Workout And The Clock Leaves Paused Time Out")
+    func testPauseAndResumeToggleTheWorkout() throws {
+        let screen = try makeScreen()
+
+        screen.presenter.onPauseResumePressed()
+        #expect(!screen.presenter.isActive)
+        screen.presenter.onPauseResumePressed()
+        #expect(screen.presenter.isActive)
+        #expect(Array(screen.interactor.trackedEventNames.suffix(2)) == ["WorkoutTracker_Workout_Paused", "WorkoutTracker_Workout_Resumed"])
+
+        screen.interactor.pausedDuration = 60
+        #expect(screen.presenter.elapsedTime(at: start.addingTimeInterval(180)) == Format.duration(120))
+    }
+
     private static let retryingMessage = "Couldn't save your workout. Retrying…"
     private static let savedMessage = "Workout saved."
     private static let failedMessage = "Couldn't save your workout. It's still on this device — resume it from Training."

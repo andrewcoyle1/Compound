@@ -224,8 +224,16 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                // No "Resume Workout": the tracker has no paused state to resume from, so the
-                // item did nothing. Reinstate it alongside a real pause.
+                Button {
+                    presenter.onPauseResumePressed()
+                } label: {
+                    if presenter.isActive {
+                        Label("Pause Workout", systemImage: "pause")
+                    } else {
+                        Label("Resume Workout", systemImage: "play")
+                    }
+                }
+
                 Button {
                     presenter.onFinishPressed()
                 } label: {

@@ -92,6 +92,11 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     }
     func discardWorkout() { }
 
+    var isWorkoutActive = true
+    var pausedDuration: TimeInterval = 0
+    func togglePause() { isWorkoutActive.toggle() }
+    func totalPausedDuration(at date: Date) -> TimeInterval { pausedDuration }
+
     func ensureLiveActivity(
         session: WorkoutSessionModel,
         isActive: Bool,

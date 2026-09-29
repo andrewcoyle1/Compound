@@ -6,8 +6,6 @@
 //
 
 @MainActor
-protocol SubscriptionInteractor {
-    func trackEvent(event: LoggableEvent) 
-}
+protocol SubscriptionInteractor: PaywallExitsInteractor { }
 
 extension CoreInteractor: SubscriptionInteractor { }

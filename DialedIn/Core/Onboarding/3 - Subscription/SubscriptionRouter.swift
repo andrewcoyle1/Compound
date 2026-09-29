@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol SubscriptionRouter: GlobalRouter {
+protocol SubscriptionRouter: PaywallExitsRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif

@@ -62,6 +62,9 @@ struct PaywallPurchasePresenterTests {
             if let purchaseError { throw purchaseError }
             return purchaseResult
         }
+
+        private(set) var didSignOut = false
+        func signOut() async throws { didSignOut = true }
     }
 
     /// The three alert methods are protocol requirements with default implementations, so this
@@ -88,6 +91,8 @@ struct PaywallPurchasePresenterTests {
         func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) { shown.append("trainingProgramSetup") }
         func showCustomisingDietProgramView() { shown.append("customisingDietProgram") }
         func showOnboardingCompletedView() { shown.append("onboardingCompleted") }
+        func showAccountView(delegate: AccountDelegate) { shown.append("account") }
+        func switchToOnboardingModule() { shown.append("onboardingModule") }
     }
 
     private struct Screen {
@@ -474,6 +479,23 @@ struct PaywallPurchasePresenterTests {
     }
 
     // MARK: - Which paywall
+
+    // MARK: - Leaving without subscribing
+
+    /// Someone who will not subscribe can reach their account (and so Delete Account) and sign
+    /// out from the onboarding paywall; they used to be held there with no way out.
+    @Test("Test The Paywall Offers The Account And Sign Out")
+    func testThePaywallOffersTheAccountAndSignOut() async {
+        let screen = makeScreen()
+
+        screen.presenter.onAccountPressed()
+        screen.presenter.onSignOutPressed()
+        #expect(await TestManagers.eventually { screen.router.shown.contains("onboardingModule") })
+
+        #expect(screen.router.shown == ["account", "onboardingModule"])
+        #expect(screen.interactor.didSignOut)
+        #expect(screen.interactor.trackedEventNames == ["PaywallView_Account_Press", "PaywallView_SignOut_Start", "PaywallView_SignOut_Success"])
+    }
 
     /// Which of the three paywalls is shown comes from the A/B test, read live rather than captured
     /// at init, so a variant assigned after the screen was built still takes effect.

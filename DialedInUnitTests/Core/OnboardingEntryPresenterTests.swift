@@ -150,15 +150,16 @@ struct OnboardingWelcomePresenterTests {
         #expect(screen.router.shown == ["coreModule"])
     }
 
-    /// Finished onboarding but no subscription — the app is gated, so the paywall is next, and it
-    /// is the onboarding variant of it, which can be dismissed back into the flow.
-    @Test("A finished user without a subscription sees the onboarding paywall")
+    /// Finished onboarding but no subscription (a lapsed subscriber): the app is gated, so "Why
+    /// Subscribe?" is next, as after signing in. It used to go straight to the paywall, skipping the
+    /// screen that says a subscription is required and offers Sign Out and Account.
+    @Test("A finished user without a subscription sees Why Subscribe")
     func testAFinishedUserWithoutASubscriptionSeesThePaywall() {
         let screen = makeScreen(user: onboardingStageUser(upTo: .complete), isPremium: false)
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["paywall(onboarding: true)"])
+        #expect(screen.router.shown == ["subscription"])
     }
 
     /// Someone who quit half way through is put back where they stopped, not at the start.
@@ -290,7 +291,14 @@ struct OnboardingIntroPresenterTests {
 @MainActor
 struct OnboardingSubscriptionPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, SubscriptionInteractor { }
+    private final class Interactor: SpyGlobalInteractor, SubscriptionInteractor {
+        var signOutError: Error?
+        private(set) var didSignOut = false
+        func signOut() async throws {
+            if let signOutError { throw signOutError }
+            didSignOut = true
+        }
+    }
 
     private final class Router: SubscriptionRouter {
         let router: AnyRouter = TestRouting.anyRouter
@@ -300,6 +308,11 @@ struct OnboardingSubscriptionPresenterTests {
         func showDevSettingsView() { shown.append("devSettings") }
         func showPaywall(isOnboarding: Bool) { paywallsShown.append(isOnboarding) }
         func showCompleteAccountSetupView() { shown.append("completeAccountSetup") }
+        func showAccountView(delegate: AccountDelegate) { shown.append("account") }
+        func switchToOnboardingModule() { shown.append("onboardingModule") }
+
+        private(set) var alertTitles: [String] = []
+        func showAlert(title: String, error: Error) { alertTitles.append(title) }
     }
 
     /// The paywall behaves differently inside onboarding — dismissing it has to continue the flow
@@ -329,5 +342,46 @@ struct OnboardingSubscriptionPresenterTests {
         presenter.onContinuePressed()
 
         #expect(router.paywallsShown == [true, true])
+    }
+
+    /// Someone who will not subscribe can open their account, which reaches Delete Account,
+    /// without paying.
+    @Test("The account row opens the account")
+    func testTheAccountRowOpensTheAccount() {
+        let interactor = Interactor()
+        let router = Router()
+        let presenter = SubscriptionPresenter(interactor: interactor, router: router)
+
+        presenter.onAccountPressed()
+
+        #expect(router.shown == ["account"])
+        #expect(interactor.trackedEventNames == ["SubscriptionInfoView_Account_Press"])
+    }
+
+    @Test("Signing out returns to the start of onboarding")
+    func testSigningOutReturnsToTheStartOfOnboarding() async {
+        let interactor = Interactor()
+        let router = Router()
+        let presenter = SubscriptionPresenter(interactor: interactor, router: router)
+
+        presenter.onSignOutPressed()
+
+        #expect(await TestManagers.eventually { router.shown == ["onboardingModule"] })
+        #expect(interactor.didSignOut)
+    }
+
+    /// A failed sign-out leaves the person signed in, here, and says so.
+    @Test("A failed sign out stays put and says so")
+    func testAFailedSignOutStaysPutAndSaysSo() async {
+        let interactor = Interactor()
+        interactor.signOutError = URLError(.notConnectedToInternet)
+        let router = Router()
+        let presenter = SubscriptionPresenter(interactor: interactor, router: router)
+
+        presenter.onSignOutPressed()
+
+        #expect(await TestManagers.eventually { !router.alertTitles.isEmpty })
+        #expect(router.alertTitles == ["Unable to Sign Out"])
+        #expect(router.shown.isEmpty)
     }
 }

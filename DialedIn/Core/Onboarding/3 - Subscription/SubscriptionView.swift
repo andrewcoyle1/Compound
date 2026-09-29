@@ -14,16 +14,23 @@ struct SubscriptionView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "Why Subscribe?",
+            subtitle: "A subscription is required to use Compound.",
             progress: OnboardingStep.subscription.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed() },
+            // The way out for someone who will not subscribe.
+            secondary: .init(title: "Sign Out", identifier: "SignOut") { presenter.onSignOutPressed() },
             onDevSettingsPressed: onDevSettingsPressed
         ) {
             Section {
-                OnboardingFeatureRow(title: "Personalized plans", detail: "Training and nutrition tailored to your goals and schedule.", systemImage: Symbol.program)
-                OnboardingFeatureRow(title: "Smart coaching", detail: "Daily guidance powered by your data and AI insights.", systemImage: Symbol.knowledgeBase)
-                OnboardingFeatureRow(title: "Progress tracking", detail: "See trends, weekly summaries, and PRs at a glance.", systemImage: Symbol.analytics)
-                OnboardingFeatureRow(title: "Apple Health sync", detail: "Automatically log workouts and recovery from Apple Health.", systemImage: "heart.circle")
-                OnboardingFeatureRow(title: "Accountability", detail: "Reminders and nudges to help you stay consistent.", systemImage: Symbol.notifications)
+                SubscriptionFeatureRows()
+            }
+
+            Section {
+                ListRowButton(title: String(localized: "Account"), systemImage: Symbol.profile) {
+                    presenter.onAccountPressed()
+                }
+            } footer: {
+                Text("Edit, sign out of or delete your account without subscribing.")
             }
         }
         .navigationBarBackButtonHidden()

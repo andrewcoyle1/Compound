@@ -51,7 +51,9 @@ class WelcomePresenter {
             if interactor.isPremium {
                 router.switchToCoreModule()
             } else {
-                router.showPaywall(isOnboarding: true)
+                // "Why Subscribe?" first, as after signing in: it says a subscription is required
+                // and offers Sign Out and Account to someone who will not subscribe.
+                router.showSubscriptionView()
             }
             return
         }

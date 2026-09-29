@@ -74,7 +74,23 @@ struct PaywallView: View {
             await presenter.onViewTask()
         }
         .toolbar {
-            if !presenter.isOnboarding {
+            if presenter.isOnboarding {
+                // The way out for someone who will not subscribe; "Why Subscribe?", one step back,
+                // shows the same two as a row and a button.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button("Account", systemImage: Symbol.profile) {
+                            presenter.onAccountPressed()
+                        }
+                        Button("Sign Out", systemImage: "rectangle.portrait.and.arrow.right") {
+                            presenter.onSignOutPressed()
+                        }
+                    } label: {
+                        Label("Account", systemImage: Symbol.profile)
+                    }
+                    .accessibilityIdentifier("PaywallAccountMenu")
+                }
+            } else {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) {
                         presenter.onBackButtonPressed()

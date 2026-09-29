@@ -21,9 +21,24 @@ class SubscriptionPresenter {
         self.router = router
     }
     
+    private var exits: PaywallExits {
+        PaywallExits(interactor: interactor, router: router, screenName: "SubscriptionInfoView")
+    }
+
     func onContinuePressed() {
         interactor.trackEvent(event: Event.navigate)
+        // swiftlint:disable:next todo
+        // TODO: Free trial (decision 1a, planned): an app-managed trial with no payment sign-up. Offer "Start Free Trial" beside Continue here,
+        // store when it started on the user, and have `PremiumAccess.isPremium` grant access until it ends; after that only paying users get in.
         router.showPaywall(isOnboarding: true)
+    }
+
+    func onAccountPressed() {
+        exits.onAccountPressed()
+    }
+
+    func onSignOutPressed() {
+        exits.onSignOutPressed()
     }
 
 #if DEV || MOCK

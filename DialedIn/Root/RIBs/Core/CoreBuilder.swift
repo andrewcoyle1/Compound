@@ -16,21 +16,3 @@ struct CoreBuilder: Builder {
         appView().any()
     }
 }
-
-extension CoreBuilder {
-
-    func ratingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void) -> some View {
-        CustomModalView(
-            title: String(localized: "Are you enjoying Compound?"),
-            subtitle: String(localized: "We'd love to hear your feedback!"),
-            primaryButtonTitle: "Yes",
-            primaryButtonAction: {
-                onYesPressed()
-            },
-            secondaryButtonTitle: "No",
-            secondaryButtonAction: {
-                onNoPressed()
-            }
-        )
-    }
-}

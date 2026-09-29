@@ -23,12 +23,6 @@ struct CoreRouter: GlobalRouter {
         )
     }
 
-    func showRatingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void) {
-        router.showModal(transition: .fade, backgroundColor: Color.black.opacity(0.6)) {
-            builder.ratingsModal(onYesPressed: onYesPressed, onNoPressed: onNoPressed)
-        }
-    }
-
     func showCommentsView(delegate: CommentsDelegate) {
         router.showScreen(.sheet) { router in
             self.builder.commentsView(router: router, delegate: delegate)

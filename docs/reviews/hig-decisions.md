@@ -62,7 +62,7 @@ qualified to confirm.
 | 13d | The + button on Training | **A menu** with New Program, New Workout, New Exercise. The Add Training sheet module is removed. | Yes |
 | 13e | Muscle picker | Artwork is planned: **keep the grid**, mark the placeholder with a `// TODO:`, and **show Primary and Secondary clearly** on each tile, with a line explaining the taps. | Yes |
 | 13f | Disabled rows in Notification Settings | **Left as they are.** | No change |
-| 13g | Recipe title | Not answered. Default taken: **move the title into the content** as a large title that can wrap. | Yes, unless the owner objects |
+| 13g | Recipe title | **Match the other detail screens**: present the title the way Food detail, Workout template detail and the other detail views do. | Yes |
 
 ### Decided earlier the same day
 

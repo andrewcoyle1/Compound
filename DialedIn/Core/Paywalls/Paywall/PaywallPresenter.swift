@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import RevenueCat
 
 @Observable
 @MainActor
@@ -15,6 +16,8 @@ class PaywallPresenter {
     private(set) var loadErrorMessage: String?
     /// The plan chosen on the custom paywall. Subscribe stays disabled until there is one.
     private(set) var selectedProduct: AnyProduct?
+    /// Ask to Buy: the purchase is waiting for a parent to approve it. Shown inline, not as an error.
+    private(set) var isPurchasePending: Bool = false
     
     var paywallTest: PaywallTestOption {
         interactor.paywallTest
@@ -49,6 +52,12 @@ class PaywallPresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
     
+    /// The StoreKit and RevenueCat variants load their own products.
+    func onViewTask() async {
+        guard paywallTest == .custom else { return }
+        await onLoadProducts()
+    }
+
     func onLoadProducts() async {
         isLoadingProducts = true
         loadErrorMessage = nil
@@ -65,9 +74,9 @@ class PaywallPresenter {
                 interactor.trackEvent(event: Event.loadProductsSuccess(count: fetchedProducts.count, variant: paywallTest))
             }
         } catch {
-            loadErrorMessage = error.localizedDescription
+            // The screen's own error state says this; an alert on top said it twice.
+            loadErrorMessage = error.userFacingMessage
             interactor.trackEvent(event: Event.loadProductsFail(error: error, variant: paywallTest))
-            router.showAlert(error: error)
         }
         
         isLoadingProducts = false
@@ -123,7 +132,7 @@ class PaywallPresenter {
                 }
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Restore Purchases"), error: error)
             }
         }
     }
@@ -150,9 +159,18 @@ class PaywallPresenter {
                     onPurchaseSuccess()
                 }
             } catch {
-                interactor.trackEvent(event: Event.purchaseFail(error: error))
-                interactor.playHaptic(option: .error)
-                router.showAlert(error: error)
+                switch PaywallPresenter.outcome(of: error) {
+                case .cancelled:
+                    // Closing Apple's purchase sheet is a choice, not a failure.
+                    interactor.trackEvent(event: Event.purchaseCancelled(product: product))
+                case .pending:
+                    interactor.trackEvent(event: Event.purchasePending(product: product))
+                    isPurchasePending = true
+                case .failed:
+                    interactor.trackEvent(event: Event.purchaseFail(error: error))
+                    interactor.playHaptic(option: .error)
+                    router.showAlert(title: String(localized: "Unable to Complete Purchase"), error: error)
+                }
             }
         }
     }
@@ -173,6 +191,7 @@ class PaywallPresenter {
                 onPurchaseSuccess()
             case .pending:
                 interactor.trackEvent(event: Event.purchasePending(product: product))
+                isPurchasePending = true
             case .userCancelled:
                 interactor.trackEvent(event: Event.purchaseCancelled(product: product))
             default:
@@ -184,6 +203,30 @@ class PaywallPresenter {
         }
     }
     
+    enum PurchaseErrorOutcome { case cancelled, pending, failed }
+
+    /// Sorts a thrown purchase error. The purchase services report cancel and Ask to Buy as
+    /// errors: `StoreKitPurchaseService` throws `userCancelledPurchase`, and `failedToPurchase` for
+    /// its one other non-success result, `.pending`; RevenueCat throws its cancelled and
+    /// payment-pending codes.
+    /// ponytail: StoreKitPurchaseService.Error is internal to SwiftfulPurchasing, so its cases are
+    /// matched by name; a public error type in the package would replace this.
+    static func outcome(of error: Error) -> PurchaseErrorOutcome {
+        let nsError = error as NSError
+        if nsError.domain == ErrorCode.errorDomain {
+            switch nsError.code {
+            case ErrorCode.purchaseCancelledError.rawValue: return .cancelled
+            case ErrorCode.paymentPendingError.rawValue: return .pending
+            default: return .failed
+            }
+        }
+        switch String(describing: error) {
+        case "userCancelledPurchase": return .cancelled
+        case "failedToPurchase": return .pending
+        default: return .failed
+        }
+    }
+
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear

@@ -9,9 +9,11 @@ import RevenueCat
 import RevenueCatUI
 
 struct RevenueCatPaywallView: View {
-    
+
+    var displayCloseButton: Bool = true
+
     var body: some View {
-        RevenueCatUI.PaywallView(displayCloseButton: true)
+        RevenueCatUI.PaywallView(displayCloseButton: displayCloseButton)
     }
 }
 

@@ -46,7 +46,8 @@ struct PaywallView: View {
                     )
                 }
             case .revenueCat:
-                RevenueCatPaywallView()
+                // Outside onboarding the toolbar already has a close button.
+                RevenueCatPaywallView(displayCloseButton: presenter.isOnboarding)
             case .storeKit:
                 StoreKitPaywallView(
                     productIds: presenter.productIds,
@@ -63,8 +64,14 @@ struct PaywallView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
+        .safeAreaInset(edge: .top) {
+            if presenter.isPurchasePending {
+                InlineMessage(.info, "Waiting for approval. Your subscription starts once the purchase is approved.")
+                    .padding(.horizontal)
+            }
+        }
         .task {
-            await presenter.onLoadProducts()
+            await presenter.onViewTask()
         }
         .toolbar {
             if !presenter.isOnboarding {

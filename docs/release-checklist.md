@@ -29,9 +29,11 @@ Things that must be true before a build goes to the App Store. Each is marked in
 
 ## Check once
 
-- [ ] **The Production build's optimisation level.** It is `-Osize` to avoid a compiler crash in
-      Xcode 27.0 (see `CLAUDE.md`, Code Health Baseline). Try the default `-O` again with each
-      new Xcode, or build releases with Xcode 26.6.
+- [ ] **The Production build carries no coverage instrumentation.** Run
+      `xcodebuild -showBuildSettings -project DialedIn.xcodeproj -scheme 'DialedIn - Production' | grep CLANG_COVERAGE_MAPPING`
+      and expect no `YES`. Xcode 27 turns coverage on through the scheme's auto-created test plan,
+      which both slows the app and crashes the compiler at `-O` (see `CLAUDE.md`, Code Health
+      Baseline).
 
 - [ ] How long Google's Vertex AI keeps the photos and text sent for analysis, so the in-app
       disclosure stays true.

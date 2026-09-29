@@ -544,18 +544,26 @@ As of the UI framework merge, the Development and Mock schemes and the
 `WorkoutSessionActivityExtension` scheme build with **zero warnings**, and `swiftlint --strict`
 reports **zero violations** across 1,520 files, including the design-system custom rules.
 
-Under **Xcode 27.0** the Production scheme builds only because the app target's Release
-configuration sets `SWIFT_OPTIMIZATION_LEVEL = "-Osize"`. At the default `-O` the compiler
-crashes: an LLVM verifier failure, "Instruction does not dominate all uses". Xcode shows it as
-"Command SwiftCompile failed with a nonzero exit code".
+The Production scheme builds at the default `-O`. Its test action has
+`shouldAutocreateTestPlan = "NO"`, and that is load-bearing under **Xcode 27.0**:
 
-- The crash is reported against `CallToActionButton.o`. That is misleading: in a whole-module
-  build, shared and specialised generic code is emitted into the first file's unit, and that
-  file is first in the list. Marking that file's code `@_optimize(none)` changes nothing (tried
-  29 Sep 2026). The function at fault has not been identified.
-- It predates the UI framework and the HIG work. CI pins Xcode 26.6, which does not crash.
-- Put the setting back to the default when a toolchain builds Production at `-O`: delete the
-  one line from the Release configuration in `project.pbxproj` and build the scheme.
+- Xcode 27's auto-created test plan turns code coverage on, and the scheme applies that to every
+  build through it, not only to tests. Production was being compiled with `-profile-generate
+  -profile-coverage-mapping`.
+- Coverage instrumentation plus `-O` crashes the Swift 6.4 compiler: an LLVM verifier failure,
+  "Instruction does not dominate all uses", which Xcode shows as "Command SwiftCompile failed
+  with a nonzero exit code". The function is the optimiser's specialised copy of
+  `WeeklyReviewPresenter.init`, where `self.week` is assigned from a ternary. Without coverage
+  the same source compiles.
+- The crash is reported against whichever file is first in the target, because specialised code
+  is emitted into the first file's unit. Do not chase the named file.
+- A target-level `CLANG_COVERAGE_MAPPING = NO` does not help; the scheme overrides it. Check what
+  a scheme resolves to with `xcodebuild -showBuildSettings -scheme … | grep CLANG_COVERAGE_MAPPING`.
+- Editing the scheme in Xcode may write `shouldAutocreateTestPlan` back to `YES`. If Production
+  stops compiling, look there first.
+
+The Development and Mock schemes still auto-create a plan, so their builds are instrumented. They
+compile at `-Onone`, where it is harmless.
 
 Treat any new warning as something to
 fix rather than accumulate.

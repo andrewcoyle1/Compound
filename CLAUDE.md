@@ -175,6 +175,23 @@ your local SwiftLint, bump `SWIFTLINT_VERSION` too, and the reverse holds: bumpi
 fixing whatever the new rules report, as its own change rather than folded into an unrelated PR. If
 CI reports violations you cannot reproduce, compare `swiftlint version` first.
 
+## Branching
+
+Two long-lived branches, `main` and `development`.
+
+- **`development`** is the stable development build. Cut every feature, fix and agent branch from
+  it and merge back into it. Delete the branch, its worktree and its DerivedData on merge.
+- **`main`** is the release branch. Merges into it are periodic, by pull request from
+  `development`, and the repository owner decides when. Do not merge or push to `main` unprompted.
+
+CI runs on pull requests and on pushes to `main`, so a direct push to `development` is not checked
+by CI: compile and run the unit suite locally first.
+
+Before reviewing or changing code, `git fetch` and confirm the checkout is level with
+`origin/development`. Do not order branches by commit date, because a merge commit is stamped
+when it is merged: compare what each side has that the other lacks
+(`git rev-list --count --no-merges A..B`).
+
 ## First-Time Setup
 
 Copy example files and fill in credentials. All three destinations are gitignored, and the app

@@ -49,7 +49,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
             Button(presenter.blockMenuTitle, systemImage: presenter.isBlocked ? "hand.raised.slash" : "hand.raised") {
                 presenter.onBlockMenuPressed()
             }
-            Button("Report", systemImage: "exclamationmark.bubble") {
+            Button("Report…", systemImage: "exclamationmark.bubble") {
                 presenter.onReportPressed()
             }
         } label: {
@@ -93,11 +93,16 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                                 .foregroundStyle(.secondary)
                         }
                         if let goalText = presenter.weeklyGoalText {
-                            Button(goalText, systemImage: Symbol.goal) { presenter.onWeeklyGoalPressed() }
-                                .font(.label)
-                                .fontWeight(.medium)
-                                .buttonStyle(.borderless)
-                                .accessibilityHint("Changes your weekly session goal")
+                            Button {
+                                presenter.onWeeklyGoalPressed()
+                            } label: {
+                                Label(goalText, systemImage: Symbol.goal)
+                                    .tapTarget()
+                            }
+                            .font(.label)
+                            .fontWeight(.medium)
+                            .buttonStyle(.borderless)
+                            .accessibilityHint("Changes your weekly session goal")
                         }
                     }
 
@@ -121,11 +126,13 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                         // An "Activity 1" stat sat here, hardcoded. Nothing counts a user's activity, and
                         // followers/following beside it are real, which made the fake one look real too.
                         Stat(value: presenter.followersCount.formatted(), label: String(localized: "Followers"), size: .small)
+                            .tapTarget()
                             .tappableBackground()
                             .anyButton(.press) {
                                 presenter.onFollowersPressed()
                             }
                         Stat(value: presenter.followingCount.formatted(), label: String(localized: "Following"), size: .small)
+                            .tapTarget()
                             .tappableBackground()
                             .anyButton(.press) {
                                 presenter.onFollowingPressed()
@@ -202,6 +209,17 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .removeListRowFormatting()
+            } else if presenter.loadSessionsFailed {
+                ContentUnavailableView {
+                    Label("Unable to Load Workouts", systemImage: Symbol.warning)
+                } description: {
+                    Text("Check your connection and try again.")
+                } actions: {
+                    Button("Try Again") {
+                        presenter.onRetryLoadSessionsPressed(delegate: delegate)
+                    }
+                }
+                .removeListRowFormatting()
             } else if presenter.sessions.isEmpty {
                 ContentUnavailableView {
                     Label("No Workouts Yet", systemImage: Symbol.workout)
@@ -241,8 +259,11 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
 
             Spacer()
 
-            Button("See All") {
+            Button {
                 presenter.onMutualFollowersPressed()
+            } label: {
+                Text("See All")
+                    .tapTarget()
             }
             .font(.label)
             .foregroundStyle(.tint)

@@ -9,6 +9,13 @@ Findings the reviewers marked as needing a product decision. Each line is the qu
 | 2026-09-29 | **Glass buttons keep the system's size.** A glass `Button` only responds to taps on its visible glass, so its hit area cannot be widened without making the control bigger, and making it bigger broke the layouts. The small glass controls (Add set, the Equipment/Warmup/Targets/Swap/Superset chips, Prev/Auto, Nudge, Set goal, Accept, Decline) stay at their designed size, under 44 pt. Do not re-raise this as a finding. Plain buttons and glass menus still get `.tapTarget()`. | The tap-target findings for those controls in `hig-active-workout.md` (3), `hig-dashboard-social.md` (4) and `hig-foundations.md` (4); the open issue in `hig-screenshot-review.md` |
 | 2026-09-29 | **Notification settings get their own screen**, pushed from a gear button on Notifications. The screen is in progress. | `hig-dashboard-social.md` finding 8 |
 
+## Raised by the notification settings work (2026-09-29)
+
+- **Streak reminder and weekly digest default to on.** The HIG asks for explicit permission before promotional notifications. Are these promotional, and should they default to off? Today's default was kept.
+- **Meal reminders and come-back notifications** have no switch at all. Add a "Meal reminders" switch, default off? Keep the come-back notifications?
+- **A second route to Notification Settings** from Profile's settings. It is reached only from the gear on Notifications.
+- **Disabled rows:** the switches dim but the row titles stay at full contrast. Dim the titles too?
+
 ## Still open
 
 ## active-workout

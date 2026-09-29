@@ -5909,6 +5909,7 @@
       }
     },
     "Continue editing" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7098,6 +7099,7 @@
       }
     },
     "Delete drafted meal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8102,6 +8104,7 @@
       }
     },
     "Enable Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12792,6 +12795,7 @@
       }
     },
     "No %@ body muscles to show yet." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13693,6 +13697,16 @@
         }
       }
     },
+    "Notification Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes de notificaciones"
+          }
+        }
+      }
+    },
     "Notifications" : {
       "localizations" : {
         "es" : {
@@ -13704,6 +13718,7 @@
       }
     },
     "Notifications Disabled" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13724,11 +13739,32 @@
       }
     },
     "Notifications are currently disabled. To receive updates, please enable notifications in Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las notificaciones están desactivadas. Para recibir novedades, actívalas en Ajustes."
+          }
+        }
+      }
+    },
+    "Notifications are off. Turn them on to get the alerts below." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones están desactivadas. Actívalas para recibir los avisos de abajo."
+          }
+        }
+      }
+    },
+    "Notifications for Compound are turned off in Settings. Allow them there to use these switches." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones de Compound están desactivadas en Ajustes. Permítelas allí para usar estos interruptores."
           }
         }
       }
@@ -15875,6 +15911,16 @@
         }
       }
     },
+    "Reminders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorios"
+          }
+        }
+      }
+    },
     "Reminders and nudges to help you stay consistent." : {
       "localizations" : {
         "es" : {
@@ -17132,6 +17178,7 @@
       }
     },
     "Select the date for this measurement entry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17142,6 +17189,7 @@
       }
     },
     "Select the date for this weight entry" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18419,6 +18467,7 @@
       "shouldTranslate" : false
     },
     "Stay informed about workouts, nutrition tracking, and important updates. Enable notifications to never miss a beat." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19172,6 +19221,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La proporción de tu peso corporal que mueve este ejercicio."
+          }
+        }
+      }
+    },
+    "The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El recordatorio de racha solo llega el día en que tu racha terminaría. El resumen semanal llega el domingo por la tarde."
           }
         }
       }
@@ -20231,6 +20290,16 @@
         }
       }
     },
+    "Turn On Notifications" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar notificaciones"
+          }
+        }
+      }
+    },
     "Turn a section off to hide it from the Analytics tab. Everything stays reachable from the More list at the bottom of the tab." : {
       "localizations" : {
         "es" : {
@@ -20369,6 +20438,7 @@
       }
     },
     "Unable to Access Health" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21060,6 +21130,7 @@
       }
     },
     "Unable to add new meal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23261,6 +23332,7 @@
       }
     },
     "You already have an draft meal." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

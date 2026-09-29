@@ -43,15 +43,14 @@ final class CreateProgramUITests: XCTestCase {
         app.assertDismissed("CreateProgram.continue")
     }
 
-    /// Discarding from the design step closes the whole cover rather than stepping back one.
-    func testDiscardingFromTheDesignStepClosesTheFlow() {
+    /// Back from the design step is the system's button, so it returns to the icon step. It used
+    /// to be a drawn chevron that discarded the whole flow.
+    func testBackFromTheDesignStepReturnsToTheIconStep() {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_CREATE_PROGRAM")
         reachTheDesignStep(app)
 
-        app.tap("ProgramDesign.back")
-        app.waitFor(app.buttons["Discard"].firstMatch).tap()
+        app.waitFor(app.navigationBars.buttons.firstMatch).tap()
 
-        app.assertDismissed("ProgramDesign.back")
-        app.assertDismissed("ProgramIcon.continue")
+        XCTAssertTrue(app.waitFor(app.button("ProgramIcon.continue")).exists)
     }
 }

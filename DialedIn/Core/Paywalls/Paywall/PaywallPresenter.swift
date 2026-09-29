@@ -66,6 +66,10 @@ class PaywallPresenter {
         do {
             let fetchedProducts = try await interactor.getProducts(productIds: productIds)
             products = fetchedProducts
+            // The first plan starts chosen, so Subscribe is ready without a tap that only selects.
+            if !fetchedProducts.contains(where: { $0.id == selectedProduct?.id }) {
+                selectedProduct = fetchedProducts.first
+            }
             
             if fetchedProducts.isEmpty {
                 loadErrorMessage = String(localized: "No subscription options are available right now. Please try again in a moment.")

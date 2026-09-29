@@ -112,11 +112,13 @@ struct ProfilePresenterTests {
     func testTheSubscriptionStatusFollowsTheEntitlement() {
         let screen = makeScreen()
 
+        // Was "Free" and "Premium", tier names for a product that has one name (Compound) and
+        // no free version.
         screen.interactor.isPremium = false
-        #expect(screen.presenter.subscriptionStatus == "Free")
+        #expect(screen.presenter.subscriptionStatus == "Inactive")
 
         screen.interactor.isPremium = true
-        #expect(screen.presenter.subscriptionStatus == "Premium")
+        #expect(screen.presenter.subscriptionStatus == "Active")
     }
 
     // MARK: - Nutrition Plan

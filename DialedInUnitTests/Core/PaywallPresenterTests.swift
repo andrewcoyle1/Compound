@@ -141,6 +141,8 @@ struct PaywallPurchasePresenterTests {
         await screen.presenter.onLoadProducts()
 
         #expect(screen.presenter.products.map(\.id) == ["monthly", "yearly"])
+        // The first plan starts chosen; each card used to need a tap on a "Start" chip first.
+        #expect(screen.presenter.selectedProduct?.id == "monthly")
         #expect(screen.presenter.loadErrorMessage == nil)
         #expect(!screen.presenter.isLoadingProducts)
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Load_Success"))

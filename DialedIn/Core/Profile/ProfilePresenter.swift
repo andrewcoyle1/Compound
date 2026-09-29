@@ -81,7 +81,9 @@ class ProfilePresenter {
     /// The screen that used to state this read a stored property nothing ever assigned, so it said
     /// FREE to everyone, premium subscribers included. This reads the entitlement directly.
     var subscriptionStatus: String {
-        interactor.isPremium ? String(localized: "Premium") : String(localized: "Free")
+        // "Premium" and "Free" named tiers that do not exist: there is one product, Compound, and
+        // no free version.
+        interactor.isPremium ? String(localized: "Active") : String(localized: "Inactive")
     }
 
     /// Apple's Manage Subscriptions sheet: plan, price, renewal date, cancel. Bound by the view.

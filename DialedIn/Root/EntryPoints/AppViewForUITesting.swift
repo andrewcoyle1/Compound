@@ -142,6 +142,10 @@ extension AppViewForUITesting {
             ("STARTSCREEN_MEASUREMENT_DETAIL", { builder.bodyMeasurementDetailView(router: $0, kind: .waist).any() }),
             ("STARTSCREEN_PROFILE", { builder.profileView(router: $0).any() }),
             ("STARTSCREEN_ACCOUNT", { builder.accountView(router: $0, delegate: AccountDelegate()).any() }),
+            ("STARTSCREEN_DELETE_ACCOUNT", { builder.deleteAccountView(router: $0).any() }),
+            ("STARTSCREEN_SIRI", { builder.siriView(router: $0, delegate: SiriDelegate()).any() }),
+            ("STARTSCREEN_WHY_SUBSCRIBE", { builder.subscriptionView(router: $0).any() }),
+            ("STARTSCREEN_PAYWALL", { builder.paywallView(router: $0, isOnboarding: true).any() }),
             ("STARTSCREEN_SEARCH", { builder.searchView(router: $0).any() }),
             ("STARTSCREEN_FOLLOWERS", {
                 builder.followersListView(router: $0, delegate: FollowersListDelegate(followers: UserModel.mocks)).any()

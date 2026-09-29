@@ -88,6 +88,12 @@ class WorkoutSettingsPresenter {
         set { settings.showBodyweightContribution = newValue; save() }
     }
 
+    /// Read when a workout starts its Live Activity, so it applies from the next workout.
+    var showOnLockScreen: Bool {
+        get { settings.showsOnLockScreen }
+        set { settings.showOnLockScreen = newValue; save() }
+    }
+
     // MARK: - Warm-Up Settings
 
     var addSmartWarmUps: Bool {

@@ -398,6 +398,22 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
 // FCM push for social activity (likes / comments / mentions / follows / nudges)
 // ---------------------------------------------------------------------------
 
+// The app icon's badge: the recipient's unread notifications plus the follow requests waiting on
+// them, as the bell counts them. The new notification or request is already written, so it counts.
+// ponytail: the bell counts grouped rows (three likes on one session are one), this counts documents.
+async function unreadBadgeCount(userRef) {
+    try {
+        const [unread, requests] = await Promise.all([
+            userRef.collection("notifications").where("is_read", "==", false).count().get(),
+            userRef.collection("follow_requests").where("status", "==", "pending").count().get(),
+        ]);
+        return unread.data().count + requests.data().count;
+    } catch (error) {
+        console.error(`Unread count failed for ${userRef.id}: ${error.message}`);
+        return 1;
+    }
+}
+
 // The app writes users/{uid}/notifications for the in-app bell; this turns each new doc into a
 // push so it still arrives when the app is closed. The token and opt-outs are private to the owner,
 // in users/{uid}/private/settings; pushRecipientSettings falls back to the legacy user-doc fields.
@@ -420,7 +436,7 @@ export const onActivityNotificationCreated = onDocumentCreated(
             userRef.collection("private").doc("settings").get(),
         ]);
         const recipient = pushRecipientSettings(privateDoc.data(), userDoc.data());
-        const message = buildActivityPush(notification, recipient);
+        const message = buildActivityPush(notification, recipient, await unreadBadgeCount(userRef));
         if (!message) {
             console.log(`No push for user ${userId} (${notification.type}): no token or opted out.`);
             return;
@@ -513,7 +529,7 @@ export const onFollowRequestCreated = onDocumentCreated(
             userRef.get(),
             userRef.collection("private").doc("settings").get(),
         ]);
-        const message = buildFollowRequestPush(request, pushRecipientSettings(privateDoc.data(), userDoc.data()), userDoc.data());
+        const message = buildFollowRequestPush(request, pushRecipientSettings(privateDoc.data(), userDoc.data()), userDoc.data(), await unreadBadgeCount(userRef));
         if (!message) return;
 
         try {

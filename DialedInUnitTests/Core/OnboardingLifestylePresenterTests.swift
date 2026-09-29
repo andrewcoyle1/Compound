@@ -121,9 +121,9 @@ struct ActivityPresenterTests {
 
     private final class Router: ActivityRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var cardioDelegates: [CardioFitnessDelegate] = []
+        private(set) var expenditureDelegates: [ExpenditureDelegate] = []
 
-        func showCardioFitnessView(delegate: CardioFitnessDelegate) { cardioDelegates.append(delegate) }
+        func showExpenditureView(delegate: ExpenditureDelegate) { expenditureDelegates.append(delegate) }
         func showDevSettingsView() { }
     }
 
@@ -153,7 +153,7 @@ struct ActivityPresenterTests {
         #expect(sut.canSubmit == false)
         sut.onContinuePressed(delegate: makeDelegate())
 
-        #expect(router.cardioDelegates.isEmpty)
+        #expect(router.expenditureDelegates.isEmpty)
     }
 
     @Test("The picked activity level is the one carried to the next screen")
@@ -165,7 +165,7 @@ struct ActivityPresenterTests {
         #expect(sut.canSubmit)
         sut.onContinuePressed(delegate: makeDelegate())
 
-        #expect(router.cardioDelegates.map(\.activityLevel) == [.active])
+        #expect(router.expenditureDelegates.map(\.activityLevel) == [.active])
     }
 
     @Test("The unit preferences survive the activity step")
@@ -178,97 +178,38 @@ struct ActivityPresenterTests {
 
         // The weight unit is a display preference set three screens ago. Losing it here would show
         // a pounds user their goal in kilograms for the rest of the app.
-        #expect(router.cardioDelegates.map(\.weightUnitPreference) == [.pounds])
-        #expect(router.cardioDelegates.map(\.exerciseFrequency) == [.threeToFour])
+        #expect(router.expenditureDelegates.map(\.weightUnitPreference) == [.pounds])
+        #expect(router.expenditureDelegates.map(\.exerciseFrequency) == [.threeToFour])
     }
 
-    @Test("Moving on is tracked")
-    func testMovingOnIsTracked() {
-        let interactor = Interactor()
-        let sut = ActivityPresenter(interactor: interactor, router: Router())
-        sut.selectedActivityLevel = .moderate
-
-        sut.onContinuePressed(delegate: makeDelegate())
-
-        #expect(interactor.trackedEventNames == ["ActivityLevel_Navigate"])
-    }
-}
-
-// MARK: - Step 8: cardio fitness
-
-/// The last question before the number. It is the only one of the three that does not feed the
-/// expenditure arithmetic, but it still has to reach the profile.
-@MainActor
-struct CardioFitnessPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, CardioFitnessInteractor { }
-
-    private final class Router: CardioFitnessRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var expenditureDelegates: [ExpenditureDelegate] = []
-
-        func showExpenditureView(delegate: ExpenditureDelegate) { expenditureDelegates.append(delegate) }
-        func showDevSettingsView() { }
-    }
-
-    private func makeDelegate() -> CardioFitnessDelegate {
-        CardioFitnessDelegate(
-            delegate: ActivityDelegate(
-                delegate: ExerciseFrequencyDelegate(
-                    delegate: WeightDelegate(
-                        delegate: HeightDelegate(
-                            delegate: DateOfBirthDelegate(gender: .male),
-                            dateOfBirth: lifestyleBirthDate(yearsAgo: 25)
-                        ),
-                        heightInCentimeters: 178,
-                        lengthUnitPreference: .inches
-                    ),
-                    weightInKilograms: 74,
-                    weightUnitPreference: .kilograms
-                ),
-                exerciseFrequency: .oneToTwo
-            ),
-            activityLevel: .moderate
-        )
-    }
-
-    @Test("Continue does nothing until a cardio fitness level has been picked")
-    func testAFitnessLevelMustBePickedToMoveOn() {
-        let router = Router()
-        let sut = CardioFitnessPresenter(interactor: Interactor(), router: router)
-
-        #expect(sut.canSubmit == false)
-        sut.onContinuePressed(delegate: makeDelegate())
-
-        #expect(router.expenditureDelegates.isEmpty)
-    }
+    // The cardio fitness step used to sit between this one and the expenditure screen; it left
+    // onboarding (decision 8c), so these two checks moved here from its suite.
 
     @Test("Every answer since the gender step arrives at the expenditure screen together")
     func testEveryAnswerSinceTheGenderStepArrivesTogether() {
         let router = Router()
-        let sut = CardioFitnessPresenter(interactor: Interactor(), router: router)
-        sut.selectedCardioFitness = .novice
+        let sut = ActivityPresenter(interactor: Interactor(), router: router)
+        sut.selectedActivityLevel = .moderate
 
         sut.onContinuePressed(delegate: makeDelegate())
 
         // This delegate is the whole of what the expenditure screen writes to the profile. Anything
         // missing here is a field onboarding will ask for again.
         let arrived = router.expenditureDelegates.first
-        #expect(arrived?.gender == .male)
-        #expect(arrived?.heightInCentimetres == 178)
-        #expect(arrived?.lengthUnitPreference == .inches)
-        #expect(arrived?.weightInKilograms == 74)
-        #expect(arrived?.weightUnitPreference == .kilograms)
-        #expect(arrived?.exerciseFrequency == .oneToTwo)
+        #expect(arrived?.gender == .female)
+        #expect(arrived?.heightInCentimetres == 165)
+        #expect(arrived?.lengthUnitPreference == .centimeters)
+        #expect(arrived?.weightInKilograms == 62)
+        #expect(arrived?.weightUnitPreference == .pounds)
+        #expect(arrived?.exerciseFrequency == .threeToFour)
         #expect(arrived?.activityLevel == .moderate)
-        #expect(arrived?.cardioFitnessLevel == .novice)
     }
 
     @Test("The date of birth is passed through unchanged rather than re-derived")
     func testTheDateOfBirthIsPassedThroughUnchanged() {
         let router = Router()
-        let sut = CardioFitnessPresenter(interactor: Interactor(), router: router)
-        sut.selectedCardioFitness = .beginner
+        let sut = ActivityPresenter(interactor: Interactor(), router: router)
+        sut.selectedActivityLevel = .light
 
         // Captured once: the delegate builds its date from `Date()`, so two calls never match.
         let delegate = makeDelegate()
@@ -280,11 +221,11 @@ struct CardioFitnessPresenterTests {
     @Test("Moving on is tracked")
     func testMovingOnIsTracked() {
         let interactor = Interactor()
-        let sut = CardioFitnessPresenter(interactor: interactor, router: Router())
-        sut.selectedCardioFitness = .elite
+        let sut = ActivityPresenter(interactor: interactor, router: Router())
+        sut.selectedActivityLevel = .moderate
 
         sut.onContinuePressed(delegate: makeDelegate())
 
-        #expect(interactor.trackedEventNames == ["CardioFitness_Navigate"])
+        #expect(interactor.trackedEventNames == ["ActivityLevel_Navigate"])
     }
 }

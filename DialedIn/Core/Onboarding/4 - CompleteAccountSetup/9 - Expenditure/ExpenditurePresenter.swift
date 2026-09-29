@@ -225,8 +225,9 @@ class ExpenditurePresenter {
                     UserModel.CodingKeys.submittedWeightKilograms.rawValue: delegate.weightInKilograms,
                     UserModel.CodingKeys.submittedWeightUnitPreference.rawValue: delegate.weightUnitPreference.rawValue,
                     UserModel.CodingKeys.submittedDailyActivityLevel.rawValue: delegate.activityLevel.rawValue,
-                    UserModel.CodingKeys.submittedExerciseFrequency.rawValue: delegate.exerciseFrequency.rawValue,
-                    UserModel.CodingKeys.submittedCardioFitnessLevel.rawValue: delegate.cardioFitnessLevel.rawValue
+                    UserModel.CodingKeys.submittedExerciseFrequency.rawValue: delegate.exerciseFrequency.rawValue
+                    // Cardio fitness is no longer asked (decision 8c), so it is not written: a
+                    // profile that already has one keeps it.
                 ]
                 try await interactor.saveUserCompleteAccountSetup(input: input)
                 interactor.trackEvent(event: Event.profileSaveSuccess)

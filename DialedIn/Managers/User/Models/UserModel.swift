@@ -369,8 +369,9 @@ struct UserModel: DataSyncModelProtocol, Equatable {
               submittedHeightCentimeters != nil,
               submittedWeightKilograms != nil,
               submittedExerciseFrequency != nil,
-              submittedDailyActivityLevel != nil,
-              submittedCardioFitnessLevel != nil else {
+              submittedDailyActivityLevel != nil else {
+            // Cardio fitness is not required: onboarding stopped asking for it (decision 8c), so
+            // requiring it would send everyone who joined since back to account setup.
             return .completeAccountSetup
         }
         // Compared against the current version, not merely checked for presence. A health notice

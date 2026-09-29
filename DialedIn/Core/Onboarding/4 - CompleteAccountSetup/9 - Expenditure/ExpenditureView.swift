@@ -16,9 +16,8 @@ struct ExpenditureDelegate {
     let weightUnitPreference: WeightUnitPreference
     let exerciseFrequency: ExerciseFrequency
     let activityLevel: ActivityLevel
-    let cardioFitnessLevel: CardioFitnessLevel
-    
-    init(delegate: CardioFitnessDelegate, cardioFitnessLevel: CardioFitnessLevel) {
+
+    init(delegate: ActivityDelegate, activityLevel: ActivityLevel) {
         self.gender = delegate.gender
         self.dateOfBirth = delegate.dateOfBirth
         self.heightInCentimetres = delegate.heightInCentimetres
@@ -26,12 +25,11 @@ struct ExpenditureDelegate {
         self.weightInKilograms = delegate.weightInKilograms
         self.weightUnitPreference = delegate.weightUnitPreference
         self.exerciseFrequency = delegate.exerciseFrequency
-        self.activityLevel = delegate.activityLevel
-        self.cardioFitnessLevel = cardioFitnessLevel
+        self.activityLevel = activityLevel
     }
-    
+
     static var mock: Self {
-        Self(delegate: .mock, cardioFitnessLevel: .intermediate)
+        Self(delegate: .mock, activityLevel: .active)
     }
 
 }

@@ -46,8 +46,7 @@ private func expenditureDelegate(
     weightKg: Double = 80,
     weightUnit: WeightUnitPreference = .kilograms,
     exerciseFrequency: ExerciseFrequency = .never,
-    activityLevel: ActivityLevel = .sedentary,
-    cardioFitnessLevel: CardioFitnessLevel = .intermediate
+    activityLevel: ActivityLevel = .sedentary
 ) -> ExpenditureDelegate {
     let height = HeightDelegate(
         delegate: DateOfBirthDelegate(gender: gender),
@@ -64,8 +63,7 @@ private func expenditureDelegate(
         weightUnitPreference: weightUnit
     )
     let activity = ActivityDelegate(delegate: frequency, exerciseFrequency: exerciseFrequency)
-    let cardio = CardioFitnessDelegate(delegate: activity, activityLevel: activityLevel)
-    return ExpenditureDelegate(delegate: cardio, cardioFitnessLevel: cardioFitnessLevel)
+    return ExpenditureDelegate(delegate: activity, activityLevel: activityLevel)
 }
 
 @MainActor
@@ -520,8 +518,7 @@ struct ExpenditurePresenterSaveTests {
             weightKg: 62.5,
             weightUnit: .pounds,
             exerciseFrequency: .fiveToSix,
-            activityLevel: .light,
-            cardioFitnessLevel: .advanced
+            activityLevel: .light
         )
         sut.estimateExpenditure(delegate: delegate)
 
@@ -538,7 +535,9 @@ struct ExpenditurePresenterSaveTests {
         #expect(saved?["submitted_weight_unit_preference"] as? String == "pounds")
         #expect(saved?["submitted_daily_activity_level"] as? String == "light")
         #expect(saved?["submitted_exercise_frequency"] as? String == "5-6")
-        #expect(saved?["submitted_cardio_fitness_level"] as? String == "advanced")
+        // Cardio fitness is no longer asked (decision 8c), so it is not written, and a profile
+        // that already holds one keeps it.
+        #expect(saved?["submitted_cardio_fitness_level"] == nil)
     }
 
     @Test("Saving goes straight to the disclaimer")

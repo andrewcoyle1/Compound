@@ -49,7 +49,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showMuscleGroupDetailView(muscle: Muscles, delegate: MuscleGroupDetailDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.muscleGroupDetailView(router: router, delegate: delegate, muscle: muscle, themeColor: themeColor)
         }
     }

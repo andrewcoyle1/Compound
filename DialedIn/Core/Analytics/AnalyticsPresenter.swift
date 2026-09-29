@@ -159,7 +159,7 @@ class AnalyticsPresenter {
     }
     
     func onSeeAllBodyMetricsPressed() {
-        router.showBodyMetricsView(delegate: BodyMetricsDelegate())
+        router.showBodyMetricsView(delegate: BodyMetricsDelegate(isPushed: true))
     }
     
     func onSeeAllMuscleGroupsPressed() {
@@ -171,7 +171,7 @@ class AnalyticsPresenter {
     }
 
     func onExercisePressed(templateId: String, name: String, themeColor: Color?) {
-        router.showExerciseDetailView(templateId: templateId, name: name, delegate: ExerciseDetailDelegate(), themeColor: themeColor)
+        router.showExerciseDetailView(templateId: templateId, name: name, delegate: ExerciseDetailDelegate(isPushed: true), themeColor: themeColor)
     }
     
     func onSeeAllExercisesPressed() {

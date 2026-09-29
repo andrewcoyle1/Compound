@@ -42,7 +42,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showFoodLoggingConsistencyView(delegate: FoodLoggingConsistencyDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.foodLoggingConsistencyView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

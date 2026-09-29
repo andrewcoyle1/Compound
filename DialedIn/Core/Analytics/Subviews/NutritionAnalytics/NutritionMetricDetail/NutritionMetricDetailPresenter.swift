@@ -162,7 +162,7 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
 
 extension CoreRouter {
     func showNutritionMetricDetailView(metric: NutritionMetric, delegate: NutritionMetricDetailDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.nutritionMetricDetailView(router: router, metric: metric, delegate: delegate, themeColor: themeColor)
         }
     }

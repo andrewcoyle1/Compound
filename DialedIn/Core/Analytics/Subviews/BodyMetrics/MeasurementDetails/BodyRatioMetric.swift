@@ -154,7 +154,7 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
 
 extension CoreRouter {
     func showBodyRatioView(delegate: BodyRatioDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.bodyRatioView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

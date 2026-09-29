@@ -55,13 +55,6 @@ struct ExerciseAnalyticsView: View {
             presenter.onViewDisappear()
         }
         .scrollIndicators(.hidden)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
     }
 }
 
@@ -82,7 +75,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showExerciseAnalyticsView(delegate: ExerciseAnalyticsDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.exerciseAnalyticsView(router: router, delegate: delegate)
         }
     }

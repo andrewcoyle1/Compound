@@ -48,7 +48,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showGoalProgressView(delegate: GoalProgressDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.goalProgressView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

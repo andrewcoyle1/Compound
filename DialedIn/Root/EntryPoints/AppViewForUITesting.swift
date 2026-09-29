@@ -150,6 +150,11 @@ extension AppViewForUITesting {
             ("STARTSCREEN_BODY_METRICS", { builder.bodyMetricsView(router: $0, delegate: BodyMetricsDelegate()).any() }),
             ("STARTSCREEN_SCALE_WEIGHT", { builder.scaleWeightView(router: $0, delegate: ScaleWeightDelegate()).any() }),
             ("STARTSCREEN_MEASUREMENT_DETAIL", { builder.bodyMeasurementDetailView(router: $0, kind: .waist).any() }),
+            ("STARTSCREEN_LOG_WEIGHT", { builder.logWeightView(router: $0).any() }),
+            ("STARTSCREEN_LOG_MEASUREMENT", { builder.logMeasurementView(router: $0, kind: .waist).any() }),
+            ("STARTSCREEN_NUTRITION_ANALYTICS", {
+                builder.nutritionAnalyticsView(router: $0, delegate: NutritionAnalyticsDelegate()).any()
+            }),
             ("STARTSCREEN_PROFILE", { builder.profileView(router: $0).any() }),
             ("STARTSCREEN_ACCOUNT", { builder.accountView(router: $0, delegate: AccountDelegate()).any() }),
             ("STARTSCREEN_DELETE_ACCOUNT", { builder.deleteAccountView(router: $0).any() }),

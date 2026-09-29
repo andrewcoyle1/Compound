@@ -30,13 +30,6 @@ struct HabitsView: View {
         .onFirstTask {
             await presenter.onFirstTask()
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
     }
     
     private var generalSection: some View {
@@ -106,7 +99,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showHabitsView(delegate: HabitsDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.habitsView(router: router, delegate: delegate)
         }
     }

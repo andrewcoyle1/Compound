@@ -48,7 +48,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWorkoutView(delegate: WorkoutDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.workoutView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

@@ -48,7 +48,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWeightTrendView(delegate: WeightTrendDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.weightTrendView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

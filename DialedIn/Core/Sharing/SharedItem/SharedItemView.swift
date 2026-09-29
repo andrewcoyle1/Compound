@@ -8,6 +8,9 @@ import SwiftUI
 struct SharedItemDelegate {
     let share: ShareModel
     let senderName: String
+    /// Pushed when opened from inside the Notifications sheet, where the system Back button
+    /// replaces its own Close. Sheeted everywhere else.
+    var isPushed: Bool = false
 }
 
 /// A shared template or program, read-only, with the choice to copy it into the library.
@@ -44,9 +47,11 @@ struct SharedItemView: View {
         .navigationTitle(presenter.delegate.share.payload.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onClosePressed()
+            if !presenter.delegate.isPushed {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
+                        presenter.onClosePressed()
+                    }
                 }
             }
         }
@@ -88,7 +93,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showSharedItemView(delegate: SharedItemDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
             builder.sharedItemView(router: router, delegate: delegate)
         }
     }

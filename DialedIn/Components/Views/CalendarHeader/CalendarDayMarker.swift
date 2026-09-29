@@ -53,6 +53,13 @@ enum CalendarDayMarker: Hashable, Sendable {
         }
     }
 
+    /// Whether the ring should draw dashed rather than solid. Met and over-goal used to differ
+    /// only by hue (green vs. red), which is invisible to colour-blind users; over-goal now also
+    /// changes shape.
+    var ringIsDashed: Bool {
+        isOverGoal
+    }
+
     /// Whether the day has anything on it at all.
     var isEmpty: Bool {
         switch self {

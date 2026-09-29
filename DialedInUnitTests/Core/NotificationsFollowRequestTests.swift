@@ -77,7 +77,7 @@ struct NotificationsFollowRequestTests {
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { }
-        func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) { }
+        func showWorkoutSessionThreadPushed(delegate: WorkoutSessionDetailDelegate) { }
         func showSocialProfileView(delegate: SocialProfileDelegate) { }
         func showSharedItemView(delegate: SharedItemDelegate) { }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }

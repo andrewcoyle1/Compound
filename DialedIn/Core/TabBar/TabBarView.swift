@@ -76,39 +76,16 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
         // is where `.sidebarAdaptable` shows the sidebar.
         .layoutMode(horizontalSizeClass == .compact ? .tabBar : .splitView)
         .tabBarMinimizeBehavior(.onScrollDown)
+        // A workout in progress and a draft meal can both exist; only the workout shows here —
+        // the draft meal stays reachable from the Nutrition tab. No horizontal scroll: the
+        // second item used to sit off-screen with no indicator that it was there.
         .tabViewBottomAccessory(isEnabled: presenter.showTabAccessory) {
-            ScrollView(.horizontal) {
-                HStack(alignment: .center) {
-                    if let active = presenter.activeSession {
-                        trainingAccessoryView(TrainingAccessoryDelegate(active: active))
-                            .frame(width: presenter.tabAccessoryWidth)
-                    }
-                    if let draftMeal = presenter.draftMeal {
-                        mealAccessoryView(MealAccessoryDelegate(draftMeal: draftMeal))
-                            .frame(width: presenter.tabAccessoryWidth)
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollIndicators(.hidden)
-            .scrollTargetBehavior(.viewAligned)
-            .background {
-                GeometryReader { geo in
-                    Color.clear.preference(key: WidthPreferenceKey.self, value: geo.size.width)
-                }
-            }
-            .onPreferenceChange(WidthPreferenceKey.self) { width in
-                self.presenter.tabAccessoryWidth = width
+            if let active = presenter.activeSession {
+                trainingAccessoryView(TrainingAccessoryDelegate(active: active))
+            } else if let draftMeal = presenter.draftMeal {
+                mealAccessoryView(MealAccessoryDelegate(draftMeal: draftMeal))
             }
         }
-    }
-}
-
-struct WidthPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat = 400
-    
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = nextValue()
     }
 }
 

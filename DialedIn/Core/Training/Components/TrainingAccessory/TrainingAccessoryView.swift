@@ -12,11 +12,12 @@ struct TrainingAccessoryDelegate {
 }
 
 struct TrainingAccessoryView: View {
-    
+
     @State var presenter: TrainingAccessoryPresenter
-    
+    @Environment(\.tabViewBottomAccessoryPlacement) private var placement
+
     let delegate: TrainingAccessoryDelegate
-    
+
     var body: some View {
         Button {
             presenter.reopenActiveSession()
@@ -27,16 +28,40 @@ struct TrainingAccessoryView: View {
                 .tappableBackground()
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityAddTraits(.isButton)
     }
-        
+
+    private var isInline: Bool {
+        placement == .inline
+    }
+
+    /// "Resume workout, Push Day, 12 minutes" — one label for the whole button now that the
+    /// pieces (name, timer, thumbnails) no longer need to be spoken separately.
+    private var accessibilityLabel: String {
+        let elapsedMinutes = max(0, Int(Date().timeIntervalSince(delegate.active.dateCreated) / 60))
+        return String(localized: "Resume workout, \(delegate.active.name), \(elapsedMinutes) minutes")
+    }
+
+    @ViewBuilder
     private var workoutDescriptionSection: some View {
-        HStack {
-            VStack(alignment: .leading) {
+        if isInline {
+            // No room to spare inline: one line, no thumbnails.
+            HStack {
                 workoutName
+                Spacer()
                 timeSection(workoutSession: delegate.active)
             }
-            Spacer()
-            exerciseImagesSection
+        } else {
+            HStack {
+                VStack(alignment: .leading) {
+                    workoutName
+                    timeSection(workoutSession: delegate.active)
+                }
+                Spacer()
+                exerciseImagesSection
+            }
         }
     }
 

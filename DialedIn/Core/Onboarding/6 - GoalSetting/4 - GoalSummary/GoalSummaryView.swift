@@ -88,9 +88,8 @@ struct GoalSummaryView: View {
                             .accessibilityHidden(true)
                         Text(change.text)
                     }
-                    .foregroundStyle(change.isGain ? Color.success : Color.danger)
                 }
-                LabeledContent("Weekly Rate", value: "\(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit))/week")
+                LabeledContent("Weekly Rate", value: presenter.weeklyRateText(delegate: delegate))
             }
         } header: {
             Text("Weight Details")
@@ -103,7 +102,7 @@ struct GoalSummaryView: View {
             if presenter.estimatedWeeks(delegate: delegate) > 0 {
                 summaryRow(
                     title: "Estimated Timeline",
-                    value: Text("\(presenter.estimatedWeeks(delegate: delegate)) weeks (\(presenter.estimatedMonths(delegate: delegate)) months)"),
+                    value: Text(presenter.estimatedTimelineText(delegate: delegate)),
                     detail: Text("Based on your selected rate of \(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit)) per week"),
                     systemImage: Symbol.calendar
                 )

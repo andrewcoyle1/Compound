@@ -35,7 +35,7 @@ struct StravaConnectView: View {
         .bottomCTA {
             if presenter.isConnected {
                 Label("Strava Connected", systemImage: Symbol.success)
-                    .foregroundStyle(Color.success)
+                    .foregroundStyle(.primary)
                     .font(.sectionTitle)
                     .padding(.bottom, Spacing.s)
 
@@ -45,12 +45,14 @@ struct StravaConnectView: View {
                     Text("Continue")
                 }
             } else {
+                // Kept on the app accent rather than Strava's own orange, which put white label
+                // text on system orange at about 2.3:1 — under the 4.5:1 minimum. The icon above
+                // already carries the brand.
                 CallToActionButton(isLoading: presenter.isConnecting) {
                     presenter.onConnectPressed()
                 } label: {
                     Text("Connect Strava")
                 }
-                .tint(Color.strava)
 
                 Button {
                     presenter.onSkipPressed()

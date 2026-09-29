@@ -1,5 +1,52 @@
 # Analytics, charts and body metrics: HIG review (2026-09-28)
 
+## Resolution (2026-09-28, branch hig/analytics)
+
+Worked in `~/.wt-hig-analytics`, ownership limited to `Core/Analytics/` plus tests. Findings marked
+`Decision needed: yes` (1, 2, 8) were skipped, untouched, per the brief.
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | skipped: decision | Weight/measurement precision — waiting on wheel-vs-NumberField call. |
+| 2 | skipped: decision | Sheets-vs-push navigation — waiting on the call. |
+| 3 | fixed | `NutritionAnalyticsView`/`Presenter`: added the same `role: .close` toolbar item its sibling "See All" sheets carry. |
+| 4 | needs a change elsewhere | `Components/Views/AnalyticsCard.swift`/`AnalyticsSection.swift` — not owned here. |
+| 5 | needs a change elsewhere | `Components/Views/AnalyticsSection.swift`/`AnalyticsCard.swift` + a package change to `ContributionGridView` — not owned here. |
+| 6 | fixed (app-side half) | `WeightTrendPresenter`: Scale Weight now draws as bars and Trend Weight as the line (`chartType: .combo`, `lineSeriesColor`), the same pattern `EnergyBalancePresenter` already used, so the series read apart by shape as well as colour. The other half — spacing between `MacroStackedBarChart` segments — is `Components/Views/Charts/`, needs a change elsewhere. |
+| 7 | needs a package change | `pkg:Screen/ChartAccessories.swift` white-on-accent text — package, not owned here. |
+| 8 | skipped: decision | Untracked-nutrient cards — waiting on the call. |
+| 9 | needs a change elsewhere | `Components/Views/SectionHeaderView.swift` "See All" tap target — not owned here. |
+| 10 | needs a change elsewhere | `pkg:Marks/SeriesSummary.swift` (package), `Components/Views/MetricAllDataView.swift`, `Core/Onboarding/Components/WeeklyMacroChart.swift`, `Components/Views/ActivityRingView.swift` — none in `Core/Analytics/`. |
+| 11 | needs a change elsewhere | Adding `isLoading` requires editing `MetricDetailPresenter`'s protocol and `MetricDetailView`'s rendering, both in `Components/Views/MetricDetailView.swift`. Most of the affected presenters (Steps, VisualBodyFatMetric, MuscleGroupDetail, ExerciseDetail, NutritionMetricDetail, FoodLoggingConsistency, GoalProgress, NutritionTargetChart) are owned here, but the protocol they'd conform to is not. |
+| 12 | needs a change elsewhere | `Components/Views/ActivityRingView.swift` — not owned here. |
+| 13 | fixed | `StepsPresenter`, `VisualBodyFatMetric`: "Health"/"the Health app" → "Apple Health"/"the Apple Health app" in the sync action title and both alert strings; also wrapped a bare alert-subtitle literal in `String(localized:)`. |
+| 14 | needs a change elsewhere | `pkg:Marks/ChartAccessibility.swift`, `pkg:Charts/TimeSeriesChart.swift` (package) + `Components/Views/Charts/SetsBarChart.swift` + `Core/Onboarding/Components/WeeklyMacroChart.swift` — none in `Core/Analytics/`. |
+| 15 | fixed | `NutritionTargetChartView`: added a `SectionHeaderView` title ("This Week Against Your Targets") and a one-line key under the grid. `NutritionTargetChartPresenter`: day order and today-index now built from `Calendar.current.firstWeekday` instead of hardcoded Monday (renamed `mondayStartOfCurrentWeek`→`startOfCurrentWeek`, `todayIndexMondayStart`→`todayIndexInWeek`; removed a duplicate `dayNames`). |
+| 16 | fixed | `ProgressPhotosView`: removed the leading close button (redundant beside the system Back button on a pushed screen); added a toolbar Delete action, enabled when exactly one photo is selected, alongside the existing context-menu and VoiceOver-action delete. |
+| 17 | fixed | `AnalyticsPresenter`/`InsightsAndAnalyticsPresenter`: "450 deficit kcal" → one string, "450 kcal deficit"; `EnergyBalancePresenter`'s three-button draft-meal alert → `router.showDraftMealDialog(onContinue:onStartNew:)`. |
+
+**Smaller items, fixed:** `TargetCellView`'s rotated `ProgressView` → a plain drawn bar; the
+Expenditure card's sparkline (one TDEE figure repeated 7×) → reads `expenditureHistory`, the same
+data the detail screen charts; `AnalyticsView`'s `ScrollView(.horizontal)` around a single header
+card → a plain `HStack`; `MuscleGroupsView`'s untranslatable `"No \(header.lowercased())…"` →
+per-region literal strings; `LogMeasurementView`/`LogWeightView`'s date section, which repeated
+"Date" as header, label and footer → the labeled `DatePicker` alone; "steps", "sets" and "No Goal
+Set" literals → `String(localized:)`.
+
+**hig-handoffs.md "Core/Analytics" section, all three items fixed:** `ProgressPhotosView`/
+`ProgressPhotoCompareView` image descriptions + toolbar spacer (done differently than the literal
+instruction — the close button was removed per finding 16's own reasoning, rather than moved to
+`.cancellationAction`, since it was redundant on a pushed screen); `EnergyBalancePresenter`'s
+draft-meal alert → `showDraftMealDialog`; `LogWeightPresenter`'s `showAlert(error:)` →
+`showAlert(title:error:)`.
+
+**Smaller items, not fixed (needs a change elsewhere):** the ~44 `MetricConfiguration` string
+fields and ~25 `TimeSeries(name:)` series names that never reach the string catalog — the root
+cause is those types being typed plain `String` rather than something the extractor can see
+(`Components/Models/MetricConfiguration.swift`, `QuickCharts`), which is a much larger pass than
+fits alongside everything else here; `Utilities/UnitConversion.swift:59`'s `String(format:)` — not
+`Core/Analytics/`; `pkg:Screen/ChartScreen.swift`'s Close button role — package.
+
 Reviewed against the live HIG with the `apple-hig` skill, `--platform ios`. Pages read:
 `designing-for-ios`, `charting-data`, `charts`, `activity-rings`, `healthkit`, `color`,
 `dark-mode`, `accessibility`, `voiceover`, `typography`, `gauges`, `progress-indicators`,

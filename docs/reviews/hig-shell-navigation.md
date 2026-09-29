@@ -25,6 +25,16 @@ says so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Decisions built (2026-09-29, branch hig/shell)
+
+| # | Status | What changed |
+|---|---|---|
+| 13a | built | `CalendarDayMarker.ringIsDashed` (true once over goal); `CalendarDayCell` strokes the ring dashed instead of solid for that case, so met and over-goal differ by shape, not just hue. Unit tests in `CalendarDayMarkerRingStyleTests`. |
+| 13c | built | `TabBarView`'s accessory shows only the active workout when both a workout and a draft meal are open (no more horizontal scroll or width tracking); `TrainingAccessoryView` and `MealAccessoryView` read `tabViewBottomAccessoryPlacement` and drop to one line with no thumbnails when `.inline`; each button carries one `accessibilityLabel` ("Resume workout, …" / "Continue draft meal, …"). |
+| 12a | built | `Commands` block on `DialedInApp`'s `WindowGroup`: Command-1…4 switch tabs, Command-F opens Search, each via `DeepLink.tab(_:).post()`. Mac Catalyst itself untouched. |
+| 7c | built | `DashboardPresenter.onViewAppear` now calls `ReminderOfferFlow.offerStreakReminderIfNeeded()`; `DashboardInteractor` inherits `ReminderOfferInteractor`; `ReminderOfferFlow.swift` itself untouched. Tests in `DashboardPresenterTests`. |
+| 6 | built (Notifications call site) | Notifications pushes what it opens instead of sheeting: `WorkoutSessionDetailDelegate(isPushed: true)` for a liked/commented/mentioned workout; new `SharedItemDelegate.isPushed` (hides its own Close button, mirrors the workout delegate) for a share. A comment/mention notification now pushes the workout then pushes its comments (`NotificationsRouter.showWorkoutSessionThreadPushed`) instead of stacking two sheets inside the sheet. Challenge and profile already pushed. |
+
 ## Resolution (2026-09-28, branch hig/shell)
 
 | # | Status | What changed |

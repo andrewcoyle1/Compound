@@ -19,7 +19,7 @@ struct NameProgramView: View {
                 TextField("Enter program name", text: $presenter.programName)
                     .accessibilityIdentifier("NameProgram.name")
             } header: {
-                Text("Program name")
+                Text("Program Name")
             } footer: {
                 Text("What would you like to name this program?")
             }

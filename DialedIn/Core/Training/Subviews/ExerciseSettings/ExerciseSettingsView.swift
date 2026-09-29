@@ -22,9 +22,22 @@ struct ExerciseSettingsView: View {
                 ) {
                     presenter.onInfoPressed()
                 }
-                editRow(title: String(localized: "Weights"), subtitle: presenter.weightsSubtitle, systemImage: Symbol.weight) {
-                    presenter.onWeightsPressed()
+                Picker(selection: Binding(get: { presenter.unitPreference.weightUnit }, set: { presenter.onSelectWeightUnit($0) })) {
+                    ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
+                        Text(unit.displayName).tag(unit)
+                    }
+                } label: {
+                    Label("Weight Unit", systemImage: Symbol.weight)
                 }
+                .pickerStyle(.menu)
+                Picker(selection: Binding(get: { presenter.unitPreference.distanceUnit }, set: { presenter.onSelectDistanceUnit($0) })) {
+                    ForEach(ExerciseDistanceUnit.allCases, id: \.self) { unit in
+                        Text(unit.displayName).tag(unit)
+                    }
+                } label: {
+                    Label("Distance Unit", systemImage: Symbol.cardio)
+                }
+                .pickerStyle(.menu)
                 editRow(title: String(localized: "Rest Timer"), subtitle: presenter.restSubtitle, systemImage: Symbol.rest) {
                     presenter.onRestTimerPressed()
                 }
@@ -63,13 +76,9 @@ struct ExerciseSettingsView: View {
         }
     }
 
+    /// The whole row opens the editor. Only a 20 pt "Edit" chip at its end used to.
     private func editRow(title: String, subtitle: String, systemImage: String, action: @escaping () -> Void) -> some View {
-        ListRow(
-            title: title,
-            subtitle: subtitle,
-            systemImage: systemImage,
-            accessory: .custom(AnyView(RowChipButton(subject: title, action: action)))
-        )
+        ListRowButton(title: title, subtitle: subtitle, systemImage: systemImage, action: action)
     }
 }
 

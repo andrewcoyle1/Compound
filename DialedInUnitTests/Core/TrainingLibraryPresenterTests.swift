@@ -112,15 +112,6 @@ struct TrainingExerciseSettingsPresenterTests {
 
     // MARK: - Subtitles
 
-    @Test("Test The Units Row Names Both Units")
-    func testTheUnitsRowNamesBothUnits() {
-        let screen = makeScreen(
-            preference: ExerciseUnitPreference(exerciseModelId: "bench", weightUnit: .pounds, distanceUnit: .miles)
-        )
-
-        #expect(screen.presenter.weightsSubtitle == "Pounds · Miles")
-    }
-
     /// With no override the row has to show the global default, so the user can see what they are
     /// about to change before they change it.
     @Test("Test Rest Shows The Global Default When Nothing Is Overridden")
@@ -165,7 +156,8 @@ struct TrainingExerciseSettingsPresenterTests {
         screen.presenter.onSelectWeightUnit(.pounds)
 
         #expect(screen.interactor.savedWeightUnits == [.pounds])
-        #expect(screen.presenter.weightsSubtitle == "Pounds · Miles")
+        #expect(screen.presenter.unitPreference.weightUnit == .pounds)
+        #expect(screen.presenter.unitPreference.distanceUnit == .miles)
     }
 
     @Test("Test Choosing A Distance Unit Saves It And Keeps The Weight Unit")
@@ -177,7 +169,8 @@ struct TrainingExerciseSettingsPresenterTests {
         screen.presenter.onSelectDistanceUnit(.miles)
 
         #expect(screen.interactor.savedDistanceUnits == [.miles])
-        #expect(screen.presenter.weightsSubtitle == "Pounds · Miles")
+        #expect(screen.presenter.unitPreference.weightUnit == .pounds)
+        #expect(screen.presenter.unitPreference.distanceUnit == .miles)
     }
 
     // MARK: - Rest
@@ -571,7 +564,7 @@ struct TrainingProgramManagementPresenterTests {
         ])
         // And reported to the user: the program is still in the list, so the confirmed delete
         // otherwise reads as having done nothing.
-        #expect(screen.router.alertTitles == ["Unable to delete program"])
+        #expect(screen.router.alertTitles == ["Unable to Delete Program"])
     }
 
     /// Swiping a saved program asks first, and the question does not talk about scheduled workouts

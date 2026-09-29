@@ -294,6 +294,22 @@ struct CheckInPresenterTests {
         #expect(presenter.steps.contains(.weighIn))
     }
 
+    /// The wheels open on the last weight to the tenth, not rounded down to a whole kilogram.
+    @Test("Test The Weigh In Opens On The Last Weight To The Tenth")
+    func testTheWeighInOpensOnTheLastWeightToTheTenth() {
+        let interactor = makeInteractor()
+        interactor.nutritionStrategySettings = settings()
+        let fiveDaysAgo = calendar.date(byAdding: .day, value: -5, to: Date()) ?? Date()
+        interactor.bodyMeasurements = [
+            BodyMeasurementEntry(authorId: "user-1", weightKg: 82.4, date: fiveDaysAgo)
+        ]
+
+        let presenter = start(interactor)
+
+        #expect(presenter.selectedKilograms == 82)
+        #expect(presenter.selectedKilogramsTenths == 4)
+    }
+
     // MARK: - Content
 
     /// The introduction counts the week rather than the whole log.

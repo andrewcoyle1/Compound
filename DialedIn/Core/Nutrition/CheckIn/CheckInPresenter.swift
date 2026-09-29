@@ -39,7 +39,9 @@ class CheckInPresenter {
     // The weigh-in step's input, bound straight to the shared `WeightPickerInput`.
     var unit: UnitOfWeight = .kilograms
     var selectedKilograms: Int = 70
+    var selectedKilogramsTenths: Int = 0
     var selectedPounds: Int = 154
+    var selectedPoundsTenths: Int = 0
 
     private var weekStart: Date = Date()
     private var hasStarted = false
@@ -182,8 +184,8 @@ class CheckInPresenter {
             .max { $0.date < $1.date }?
             .weightKg
         if let weightKg = latest ?? user.submittedWeightKilograms {
-            selectedKilograms = Int(weightKg)
-            selectedPounds = Int(UnitConversion.kgToLbs(weightKg))
+            (selectedKilograms, selectedKilogramsTenths) = DecimalWheelValue.split(weightKg)
+            (selectedPounds, selectedPoundsTenths) = DecimalWheelValue.split(UnitConversion.kgToLbs(weightKg))
         }
     }
 
@@ -230,8 +232,10 @@ class CheckInPresenter {
 
     private var weightKg: Double {
         switch unit {
-        case .kilograms: return Double(selectedKilograms)
-        case .pounds:    return UnitConversion.lbsToKg(Double(selectedPounds))
+        case .kilograms:
+            return DecimalWheelValue.combine(whole: selectedKilograms, tenths: selectedKilogramsTenths)
+        case .pounds:
+            return UnitConversion.lbsToKg(DecimalWheelValue.combine(whole: selectedPounds, tenths: selectedPoundsTenths))
         }
     }
 

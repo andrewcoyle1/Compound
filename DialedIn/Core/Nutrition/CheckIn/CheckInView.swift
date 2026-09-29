@@ -85,7 +85,9 @@ struct CheckInView: View {
         WeightPickerInput(
             unit: $presenter.unit,
             selectedKilograms: $presenter.selectedKilograms,
-            selectedPounds: $presenter.selectedPounds
+            selectedKilogramsTenths: $presenter.selectedKilogramsTenths,
+            selectedPounds: $presenter.selectedPounds,
+            selectedPoundsTenths: $presenter.selectedPoundsTenths
         )
         Section {
             Button("Log Weight") {

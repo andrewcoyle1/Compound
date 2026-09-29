@@ -84,9 +84,6 @@ class WorkoutTrackerPresenter {
     /// A write after that would put an ended session back as the active one.
     var isDone = false
     
-    // Notification identifier for rest timer
-    let restTimerNotificationId = "workout-rest-timer"
-    
     var exercisesCount: String {
         String(localized: "\(workoutSession.exercises.count) exercises")
     }

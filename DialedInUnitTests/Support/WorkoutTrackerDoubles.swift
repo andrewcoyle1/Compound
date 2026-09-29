@@ -196,7 +196,6 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         progressionSuggestionsByTemplateId
     }
 
-    func schedulePushNotification(delegate: PushNotificationDelegate) async throws { }
     func startRest(durationSeconds: Int, session: WorkoutSessionModel, currentExerciseIndex: Int) {
         startedRests.append(durationSeconds)
         restEndTime = Date().addingTimeInterval(TimeInterval(durationSeconds))

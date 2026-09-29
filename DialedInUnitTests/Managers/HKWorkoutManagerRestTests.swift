@@ -39,7 +39,7 @@ struct HKWorkoutManagerRestTests {
         // would otherwise be read back as a rest in progress.
         SharedWorkoutStorage.clearRestEndTime()
         let spy = LiveActivityUpdaterSpy()
-        return (HKWorkoutManager(logger: LogManager(), liveActivityUpdater: spy), spy)
+        return (HKWorkoutManager(logger: LogManager(), liveActivityUpdater: spy, restOverNotifier: RestOverNotifierSpy()), spy)
     }
 
     private var session: WorkoutSessionModel {
@@ -153,7 +153,7 @@ struct HKWorkoutManagerRestTests {
     @Test("Test A Rest Announces Itself Even With No Live Activity Updater")
     func testARestAnnouncesItselfWithNoLiveActivityUpdater() async {
         SharedWorkoutStorage.clearRestEndTime()
-        let manager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: nil)
+        let manager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: nil, restOverNotifier: RestOverNotifierSpy())
         let posts = RestCompletionSpy(manager)
 
         manager.startRest(duration: Self.briefRest, session: session)
@@ -288,7 +288,7 @@ struct HKWorkoutManagerRestTests {
     func testAManagerReleasedMidRestIsDeallocated() {
         SharedWorkoutStorage.clearRestEndTime()
         let spy = LiveActivityUpdaterSpy()
-        var manager: HKWorkoutManager? = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: spy)
+        var manager: HKWorkoutManager? = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: spy, restOverNotifier: RestOverNotifierSpy())
         weak let weakManager = manager
         manager?.startRest(durationSeconds: 3600, session: session)
 

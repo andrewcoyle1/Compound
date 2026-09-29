@@ -27,4 +27,15 @@ protocol LiveActivityUpdating: AnyObject {
         session: WorkoutSessionModel,
         isCompleted: Bool
     )
+
+    /// True while an activity is on screen to carry the rest-over alert.
+    var isShowingLiveActivity: Bool { get }
+
+    /// What the rest-over alert says about the set after this rest, "Next: Bench Press, 60 kg × 8",
+    /// or nil when nothing is left.
+    func restOverMessage(session: WorkoutSessionModel, currentExerciseIndex: Int) -> String?
+
+    /// Clears the rest, as `updateRestAndActive` does, and alerts: the activity lights the screen,
+    /// plays the alert sound and shows what is next.
+    func announceRestOver(isActive: Bool)
 }

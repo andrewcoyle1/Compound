@@ -138,7 +138,7 @@ struct LiveActivityScenarioTests {
             logger: LogManager(services: [log]), activityLookup: system.lookup, weightUnit: weightUnit
         )
         system.initialState = activity.makeContentState(session: session, isActive: false, currentExerciseIndex: 0, restEndsAt: nil)
-        let hkWorkoutManager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: activity)
+        let hkWorkoutManager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: activity, restOverNotifier: RestOverNotifierSpy())
         let handler = AppLiveActivityIntentHandler(
             workoutSessionManager: sessions,
             hkWorkoutManager: hkWorkoutManager,

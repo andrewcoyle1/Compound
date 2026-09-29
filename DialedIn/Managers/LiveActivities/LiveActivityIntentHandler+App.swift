@@ -128,7 +128,12 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
 
         // `startRest` cancels the running timer, reschedules on the new end and pushes, so the
         // adjustment goes through the one place that owns the rest rather than moving a date.
-        hkWorkoutManager.startRest(duration: remaining, session: session, currentExerciseIndex: exerciseIndex)
+        hkWorkoutManager.startRest(
+            duration: remaining,
+            session: session,
+            currentExerciseIndex: exerciseIndex,
+            alertSound: workoutSettingsManager.workoutSettings.restTimerPlaySound
+        )
         push(session, exerciseIndex: exerciseIndex)
     }
 
@@ -212,7 +217,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         hkWorkoutManager.startRest(
             durationSeconds: duration,
             session: session,
-            currentExerciseIndex: exerciseIndex
+            currentExerciseIndex: exerciseIndex,
+            alertSound: settings.restTimerPlaySound
         )
     }
 

@@ -119,10 +119,8 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
         gymProfile: GymProfileModel?
     ) async -> [String: ProgressionSuggestion]
 
-    // MARK: - Rest & Notifications
+    // MARK: - Rest
 
-    func schedulePushNotification(delegate: PushNotificationDelegate) async throws
-    
     /// Start a rest timer for the specified duration in seconds,
     /// associated with the current session/exercise state.
     func startRest(

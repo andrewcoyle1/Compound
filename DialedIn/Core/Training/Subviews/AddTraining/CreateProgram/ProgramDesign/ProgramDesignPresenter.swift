@@ -18,6 +18,22 @@ class ProgramDesignPresenter {
     var program: TrainingProgram
     private(set) var isSaving: Bool = false
 
+    /// The program as the screen opened it, to tell an edit from a look.
+    private let initialProgram: TrainingProgram
+
+    /// Close used to ask "discard your changes?" even when nothing had changed, and the swipe on
+    /// the edit sheet dropped real changes without asking. Both now follow this.
+    /// `TrainingProgram` is not `Equatable`, so the fields the screen edits are compared one by one.
+    var hasUnsavedChanges: Bool {
+        program.name != initialProgram.name
+            || program.icon != initialProgram.icon
+            || program.colour != initialProgram.colour
+            || program.numMicrocycles != initialProgram.numMicrocycles
+            || program.deload != initialProgram.deload
+            || program.periodisation != initialProgram.periodisation
+            || program.workoutTemplates != initialProgram.workoutTemplates
+    }
+
     /// A program of rest days alone has nothing to activate, and a second tap mid-save wrote twice.
     var canSave: Bool {
         !isSaving && dayPlans.contains { !$0.exercises.isEmpty }
@@ -69,13 +85,14 @@ class ProgramDesignPresenter {
             let restDay = WorkoutTemplateModel(
                 id: UUID().uuidString,
                 authorId: interactor.userId ?? "",
-                name: "Rest",
+                name: Self.restDayName,
                 exercises: []
             )
             self.selectedWorkoutTemplateModel = restDay
             program.workoutTemplates = [restDay]
         }
         self.program = program
+        self.initialProgram = program
     }
 
     func onViewAppear() {
@@ -90,7 +107,7 @@ class ProgramDesignPresenter {
         let newWorkoutTemplateModel = WorkoutTemplateModel(
             id: UUID().uuidString,
             authorId: userId,
-            name: "Rest Day",
+            name: Self.restDayName,
             exercises: []
         )
         dayPlans.append(
@@ -134,22 +151,22 @@ class ProgramDesignPresenter {
         router.showProgramSettingsView(program: program)
     }
     
+    /// A choice that follows the person's own tap, so an action sheet, answered with verbs.
     func onActivatePressed(delegate: ProgramDesignDelegate) {
         guard canSave else { return }
-        router.showAlert(title: String(localized: "Save Workout Templates"), subtitle: String(localized: "Would you like to save the workout templates in the training program for use independently?")) {
+        router.showConfirmationDialog(
+            title: String(localized: "Save Workout Templates?"),
+            subtitle: String(localized: "Each workout day can also be saved to your library, to start on its own.")
+        ) {
             AnyView(
                 VStack {
-                    Button {
+                    Button("Save Templates") {
                         Task { await self.saveTemplatesAndActivate(delegate: delegate) }
-                    } label: {
-                        Text("Yes")
                     }
-                    Button {
+                    Button("Don't Save") {
                         Task { await self.activateProgram(delegate: delegate) }
-                    } label: {
-                        Text("No")
                     }
-                    Button(role: .close) { }
+                    Button("Cancel", role: .cancel) { }
                 }
             )
         }
@@ -170,7 +187,7 @@ class ProgramDesignPresenter {
             }
         } catch {
             interactor.playHaptic(option: .error)
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Save Templates"), error: error)
             return
         }
 
@@ -197,32 +214,55 @@ class ProgramDesignPresenter {
             }
         } catch {
             interactor.playHaptic(option: .error)
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Activate Program"), error: error)
         }
     }
 
-    /// Confirming used to pop one screen, back to the icon picker, with the program intact.
-    /// Under onboarding this screen is pushed, so one screen back is all there is to discard;
-    /// as a cover or the edit sheet the whole environment goes.
-    func onDismissPressed(delegate: ProgramDesignDelegate) {
-        router.showAlert(
-            title: String(localized: "Discard Program"),
-            subtitle: String(localized: "Are you sure you want to discard your changes?"),
-            buttons: {
-                AnyView(
-                    HStack {
-                        Button(role: .cancel) { }
-                        Button("Discard", role: .destructive) {
-                            if delegate.onComplete == nil {
-                                self.router.dismissEnvironment()
-                            } else {
-                                self.router.dismissScreen()
-                            }
-                        }
+    /// The close button on the edit sheet. It leaves at once when nothing changed and asks first
+    /// when something did. The create flow keeps the system back button instead, which steps back to
+    /// the icon picker.
+    func onClosePressed() {
+        guard hasUnsavedChanges else {
+            router.dismissEnvironment()
+            return
+        }
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in self?.router.dismissEnvironment() }
+        }
+    }
+
+    // MARK: - Editing a saved program
+
+    /// Share and Delete were reachable only from the library row's touch-and-hold and swipe.
+    func onSharePressed() {
+        router.showShareToFollowerView(delegate: ShareToFollowerDelegate(payload: .program(program)))
+    }
+
+    func onDeletePressed() {
+        router.showConfirmationDialog(
+            title: String(localized: "Delete Program?"),
+            subtitle: String(localized: "“\(program.name)” will be deleted. This can't be undone.")
+        ) {
+            AnyView(
+                VStack {
+                    Button("Delete Program", role: .destructive) {
+                        Task { await self.deleteProgram() }
                     }
-                )
-            }
-        )
+                    Button("Cancel", role: .cancel) { }
+                }
+            )
+        }
+    }
+
+    func deleteProgram() async {
+        do {
+            try await interactor.deleteTrainingProgram(programId: program.id)
+            interactor.playHaptic(option: .success)
+            router.dismissEnvironment()
+        } catch {
+            interactor.playHaptic(option: .error)
+            router.showAlert(title: String(localized: "Unable to Delete Program"), error: error)
+        }
     }
 
     func onSavePressed(delegate: ProgramDesignDelegate) {
@@ -236,7 +276,7 @@ class ProgramDesignPresenter {
                 router.dismissEnvironment()
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Save Program"), error: error)
             }
         }
     }
@@ -248,9 +288,9 @@ class ProgramDesignPresenter {
             let isRestDay = plans[index].exercises.isEmpty
             let desiredName: String
             if isRestDay {
-                desiredName = "Rest Day"
+                desiredName = Self.restDayName
             } else {
-                desiredName = "Workout \(letterForWorkoutIndex(workoutIndex))"
+                desiredName = Self.workoutDayName(letterForWorkoutIndex(workoutIndex))
                 workoutIndex += 1
             }
             
@@ -267,13 +307,21 @@ class ProgramDesignPresenter {
     
     private func isDefaultWorkoutTemplateModelName(_ name: String) -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed == "Rest" || trimmed == "Rest Day" {
+        // The English names stay recognised: programs saved before the names were localized carry them.
+        if ["Rest", "Rest Day", Self.restDayName].contains(trimmed) {
             return true
         }
-        if trimmed.hasPrefix("Workout "), let suffix = trimmed.split(separator: " ").last {
-            return suffix.count == 1 && suffix.first?.isLetter == true
+        if trimmed.hasPrefix("Workout "), let suffix = trimmed.split(separator: " ").last,
+           suffix.count == 1, suffix.first?.isLetter == true {
+            return true
         }
-        return false
+        return (0...dayPlans.count).contains { trimmed == Self.workoutDayName(letterForWorkoutIndex($0)) }
+    }
+
+    private static var restDayName: String { String(localized: "Rest Day") }
+
+    private static func workoutDayName(_ letter: String) -> String {
+        String(localized: "Workout \(letter)", comment: "A program day's default name; the letter counts the workout days A, B, C.")
     }
     
     private func letterForWorkoutIndex(_ index: Int) -> String {

@@ -70,17 +70,21 @@ struct ProgressPhotosView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
+        // Pushed onto the tab's navigation stack, so the system Back button already dismisses it;
+        // a close item beside Back showed both at once, and its action only duplicated Back's pop.
         ToolbarItem(placement: .topBarTrailing) {
             Button("Compare") {
                 presenter.onComparePressed()
             }
             .disabled(!presenter.canCompare)
         }
+        ToolbarItem(placement: .topBarTrailing) {
+            Button("Delete", systemImage: Symbol.delete, role: .destructive) {
+                presenter.onDeleteToolbarPressed()
+            }
+            .disabled(presenter.selectedPhotoForDelete == nil)
+        }
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -112,7 +116,11 @@ struct ProgressPhotosView: View {
         return Color.clear
             .aspectRatio(3 / 4, contentMode: .fit)
             .overlay {
-                ImageLoaderView(urlString: photo.imageUrl ?? "", resizingMode: .fill)
+                ImageLoaderView(
+                    urlString: photo.imageUrl ?? "",
+                    resizingMode: .fill,
+                    imageDescription: "\(photo.pose.title) photo, \(presenter.caption(for: photo))"
+                )
             }
             .overlay(alignment: .bottomLeading) {
                 Text(photo.pose.title)

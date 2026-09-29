@@ -66,6 +66,10 @@ class PaywallPresenter {
         do {
             let fetchedProducts = try await interactor.getProducts(productIds: productIds)
             products = fetchedProducts
+            // The first plan starts chosen, so Subscribe is ready without a tap that only selects.
+            if !fetchedProducts.contains(where: { $0.id == selectedProduct?.id }) {
+                selectedProduct = fetchedProducts.first
+            }
             
             if fetchedProducts.isEmpty {
                 loadErrorMessage = String(localized: "No subscription options are available right now. Please try again in a moment.")
@@ -81,6 +85,15 @@ class PaywallPresenter {
         
         isLoadingProducts = false
     }
+    /// Onboarding only: someone who will not subscribe can still reach their account or sign out.
+    func onAccountPressed() {
+        PaywallExits(interactor: interactor, router: router, screenName: "PaywallView").onAccountPressed()
+    }
+
+    func onSignOutPressed() {
+        PaywallExits(interactor: interactor, router: router, screenName: "PaywallView").onSignOutPressed()
+    }
+
     func onBackButtonPressed() {
         interactor.trackEvent(event: Event.backButtonPressed)
         router.dismissScreen()

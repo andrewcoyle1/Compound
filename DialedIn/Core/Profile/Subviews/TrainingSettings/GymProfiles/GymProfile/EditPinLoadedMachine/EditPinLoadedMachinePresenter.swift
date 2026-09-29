@@ -84,10 +84,6 @@ class EditPinLoadedMachinePresenter {
         router.showEditWeightRangeView(delegate: EditWeightRangeDelegate(equipmentName: pinLoadedMachine.name, range: range))
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let pinLoadedMachineBinding = Binding(
             get: { self.pinLoadedMachine },

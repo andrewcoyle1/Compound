@@ -39,6 +39,7 @@ struct ProfilePresenterTests {
 
         func showAccountView(delegate: AccountDelegate) { shown.append("account") }
         func showNotificationsView() { shown.append("notifications") }
+        func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { shown.append("notificationSettings") }
         func showExercisesView() { shown.append("exercises") }
         func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
         func showGymProfilesView() { shown.append("gymProfiles") }
@@ -111,11 +112,13 @@ struct ProfilePresenterTests {
     func testTheSubscriptionStatusFollowsTheEntitlement() {
         let screen = makeScreen()
 
+        // Was "Free" and "Premium", tier names for a product that has one name (Compound) and
+        // no free version.
         screen.interactor.isPremium = false
-        #expect(screen.presenter.subscriptionStatus == "Free")
+        #expect(screen.presenter.subscriptionStatus == "Inactive")
 
         screen.interactor.isPremium = true
-        #expect(screen.presenter.subscriptionStatus == "Premium")
+        #expect(screen.presenter.subscriptionStatus == "Active")
     }
 
     // MARK: - Nutrition Plan
@@ -161,6 +164,17 @@ struct ProfilePresenterTests {
         screen.presenter.onWorkoutSettingsPressed()
 
         #expect(screen.router.shown == ["gymProfiles", "exercises", "workoutSettings"])
+    }
+
+    /// Notification Settings was reachable only from the gear on Notifications.
+    @Test("Test The Notification Settings Row Opens Notification Settings")
+    func testTheNotificationSettingsRowOpensNotificationSettings() {
+        let screen = makeScreen()
+
+        screen.presenter.onNotificationSettingsPressed()
+
+        #expect(screen.router.shown == ["notificationSettings"])
+        #expect(screen.interactor.trackedEventNames == ["ProfileView_NotificationSettings_Press"])
     }
 
     // MARK: - Ratings

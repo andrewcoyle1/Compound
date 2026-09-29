@@ -26,13 +26,6 @@ struct AboutView: View {
                 Text("View Licenses")
             }
         }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -70,7 +63,8 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAboutView(delegate: AboutDelegate) {
-        router.showScreen(.sheetConfig(config: .compact)) { router in
+        // Pushed inside the Profile sheet, like every other screen browsed from it.
+        router.showScreen(.push) { router in
             builder.aboutView(router: router, delegate: delegate)
         }
     }

@@ -35,8 +35,14 @@ class IntegrationsPresenter {
             do {
                 try await interactor.stravaAuthenticate()
                 stravaIsConnected = interactor.stravaIsConnected
+            } catch where SignInCancellation.isCancellation(error) {
+                // Closing Strava's sign-in page is a choice, not a failed connection.
             } catch {
-                router.showSimpleAlert(title: String(localized: "Connection Failed"), subtitle: error.localizedDescription)
+                // The raw error is written for developers ("The operation couldn't be completed").
+                router.showSimpleAlert(
+                    title: String(localized: "Unable to Connect Strava"),
+                    subtitle: String(localized: "Check your internet connection and try again.")
+                )
             }
         }
     }

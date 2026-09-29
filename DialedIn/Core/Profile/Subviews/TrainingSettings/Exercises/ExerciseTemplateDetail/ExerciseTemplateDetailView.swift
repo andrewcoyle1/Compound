@@ -112,11 +112,6 @@ struct ExerciseModelDetailView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
         #if DEBUG || MOCK
         ToolbarItem(placement: .topBarLeading) {
             Button {
@@ -454,8 +449,10 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
+    /// Browsing, so a push wherever it is opened from (Profile's exercise list, a workout
+    /// template, a tracked exercise's settings); the system Back button replaces its Close button.
     func showExerciseModelDetailView(delegate: ExerciseModelDetailDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.exerciseModelDetailView(router: router, delegate: delegate)
         }
     }

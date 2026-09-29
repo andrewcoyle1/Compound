@@ -51,11 +51,8 @@ struct FoodLogSettingsView: View {
                     subtitle: nil,
                     isOn: $presenter.showCalendarWeekBanner
                 )
-                ListRowToggle(
-                    title: String(localized: "Premove"),
-                    subtitle: String(localized: "Pre-log meals before eating"),
-                    isOn: $presenter.premove
-                )
+                // swiftlint:disable:next todo
+                // TODO: The Premove switch is hidden: `FoodLogSettings.premove` is saved but nothing reads it. Restore a "Premove" `ListRowToggle` bound to `presenter.premove` here once the timeline can pre-log meals.
             } header: {
                 Text("Timeline Options")
             }

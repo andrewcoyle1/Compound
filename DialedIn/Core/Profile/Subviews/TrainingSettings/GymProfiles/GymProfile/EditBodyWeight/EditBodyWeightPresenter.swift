@@ -74,10 +74,6 @@ class EditBodyWeightPresenter {
         bodyWeight = updated
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let bodyWeightBinding = Binding(
             get: { self.bodyWeight },

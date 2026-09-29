@@ -74,10 +74,6 @@ class EditFixedWeightBarPresenter {
         fixedWeightBar = updated
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let fixedWeightBarBinding = Binding(
             get: { self.fixedWeightBar },

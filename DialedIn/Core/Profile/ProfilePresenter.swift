@@ -69,13 +69,21 @@ class ProfilePresenter {
     func onNotificationsPressed() {
         router.showNotificationsView()
     }
+
+    /// The same screen as the gear on Notifications, so settings can be found from settings.
+    func onNotificationSettingsPressed() {
+        interactor.trackEvent(eventName: "ProfileView_NotificationSettings_Press", parameters: nil, type: .analytic)
+        router.showNotificationSettingsView(delegate: NotificationSettingsDelegate())
+    }
     
     /// What the user is paying for, shown on the Subscription row.
     ///
     /// The screen that used to state this read a stored property nothing ever assigned, so it said
     /// FREE to everyone, premium subscribers included. This reads the entitlement directly.
     var subscriptionStatus: String {
-        interactor.isPremium ? String(localized: "Premium") : String(localized: "Free")
+        // "Premium" and "Free" named tiers that do not exist: there is one product, Compound, and
+        // no free version.
+        interactor.isPremium ? String(localized: "Active") : String(localized: "Inactive")
     }
 
     /// Apple's Manage Subscriptions sheet: plan, price, renewal date, cancel. Bound by the view.
@@ -114,9 +122,9 @@ class ProfilePresenter {
         UIApplication.shared.open(url)
     }
 
-    /// Knowledge Base and Roadmap have nowhere to go yet — neither site exists, and
-    /// `Constants` has no URL for either. They say so rather than doing nothing: a row that
-    /// swallows a tap reads as a bug, and the rows are worth keeping as the plan they represent.
+    /// Knowledge Base and Roadmap have nowhere to go yet — neither site exists, and `Constants` has
+    /// no URL for either — so their rows are hidden (see the markers in `ProfileView`). These stay
+    /// for when they come back.
     func onKnowledgeBasePressed() {
         interactor.trackEvent(eventName: "ProfileView_KnowledgeBase_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(

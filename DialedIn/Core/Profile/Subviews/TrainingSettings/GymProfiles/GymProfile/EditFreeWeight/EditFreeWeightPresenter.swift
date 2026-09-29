@@ -76,10 +76,6 @@ class EditFreeWeightPresenter {
         freeWeight = updated
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let freeWeightBinding = Binding(
             get: { self.freeWeight },

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol PaywallInteractor: GlobalInteractor {
+protocol PaywallInteractor: PaywallExitsInteractor {
     var currentUser: UserModel? { get }
     var paywallTest: PaywallTestOption { get }
     func getProducts(productIds: [String]) async throws -> [AnyProduct]

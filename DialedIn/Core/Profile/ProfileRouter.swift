@@ -9,6 +9,7 @@
 protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showAccountView(delegate: AccountDelegate)
     func showNotificationsView()
+    func showNotificationSettingsView(delegate: NotificationSettingsDelegate)
     func showExercisesView()
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate)
     func showGymProfilesView()

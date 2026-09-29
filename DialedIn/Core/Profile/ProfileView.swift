@@ -86,6 +86,9 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Subscription"), systemImage: "tag", accessory: .value(presenter.subscriptionStatus)) {
                 presenter.onSubscriptionPressed()
             }
+            ListRowButton(title: String(localized: "Notification Settings"), systemImage: Symbol.notifications) {
+                presenter.onNotificationSettingsPressed()
+            }
             ListRowButton(title: String(localized: "Integrations"), systemImage: "app.connected.to.app.below.fill") {
                 presenter.onIntegrationsPressed()
             }
@@ -146,12 +149,10 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Invite a friend"), systemImage: "person.badge.plus") {
                 Task { await presenter.onInviteFriendPressed() }
             }
-            ListRowButton(title: String(localized: "Knowledge Base"), systemImage: Symbol.knowledgeBase) {
-                presenter.onKnowledgeBasePressed()
-            }
-            ListRowButton(title: String(localized: "Roadmap"), systemImage: Symbol.roadmap) {
-                presenter.onRoadmapPressed()
-            }
+            // swiftlint:disable:next todo
+            // TODO: Knowledge Base is hidden: there is no help site. Add a row calling `presenter.onKnowledgeBasePressed()` here once one is published, and point that at its URL in `Constants`.
+            // swiftlint:disable:next todo
+            // TODO: Roadmap is hidden: there is no public roadmap. Add a row calling `presenter.onRoadmapPressed()` here once one is published, and point that at its URL in `Constants`.
             ListRowButton(title: String(localized: "Support"), systemImage: "questionmark.circle") {
                 presenter.onSupportPressed()
             }
@@ -168,12 +169,10 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Legal"), systemImage: Symbol.legal) {
                 presenter.onLegalPressed()
             }
-            ListRowButton(title: String(localized: "App Icon"), systemImage: "app.grid") {
-                presenter.onAppIconPressed()
-            }
-            ListRowButton(title: String(localized: "Tutorials"), systemImage: Symbol.tutorials) {
-                presenter.onTutorialPressed()
-            }
+            // swiftlint:disable:next todo
+            // TODO: App Icon is hidden: the asset catalog has one icon. Add a row calling `presenter.onAppIconPressed()` here once alternate icons ship and `AppIconView` offers them.
+            // swiftlint:disable:next todo
+            // TODO: Tutorials is hidden: there are no tutorials. Add a row calling `presenter.onTutorialPressed()` here once `TutorialsView` has content.
             ListRowButton(title: String(localized: "About"), systemImage: Symbol.info) {
                 presenter.onAboutPressed()
             }

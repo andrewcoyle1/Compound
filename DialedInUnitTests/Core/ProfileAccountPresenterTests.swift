@@ -28,13 +28,11 @@ struct ProfileAccountPresenterTests {
         var currentUser: UserModel?
 
         private(set) var didSignOut = false
-        private(set) var didDeleteAccount = false
         private(set) var didDeleteUserProfile = false
         private(set) var savedData: [[String: any DMCodableSendable]] = []
         private(set) var uploadedImageCount = 0
 
         var signOutError: Error?
-        var deleteAccountError: Error?
         var updateUserError: Error?
         var updateImageError: Error?
 
@@ -45,11 +43,6 @@ struct ProfileAccountPresenterTests {
 
         func deleteUserProfile() {
             didDeleteUserProfile = true
-        }
-
-        func deleteAccount() async throws {
-            if let deleteAccountError { throw deleteAccountError }
-            didDeleteAccount = true
         }
 
         func updateProfileImageUrl(image: PlatformImage) async throws {
@@ -88,6 +81,12 @@ struct ProfileAccountPresenterTests {
 
         func showEditUsernameView() {
             editUsernameShownCount += 1
+        }
+
+        private(set) var deleteAccountShownCount = 0
+
+        func showDeleteAccountView() {
+            deleteAccountShownCount += 1
         }
 
         private(set) var alertTitles: [String] = []
@@ -186,6 +185,7 @@ struct ProfileAccountPresenterTests {
             submittedGender: .male,
             submittedHeightCentimeters: 182.5,
             submittedExerciseFrequency: .threeToFour,
+            submittedDailyActivityLevel: .light,
             submittedCardioFitnessLevel: .intermediate
         ))
 
@@ -198,6 +198,7 @@ struct ProfileAccountPresenterTests {
         #expect(screen.presenter.heightText == "182.5")
         #expect(screen.presenter.selectedExerciseFrequency == .threeToFour)
         #expect(screen.presenter.selectedCardioFitnessLevel == .intermediate)
+        #expect(screen.presenter.selectedActivityLevel == .light)
     }
 
     /// Nothing stored means nothing to prefill — in particular the date of birth keeps its "today"
@@ -305,6 +306,7 @@ struct ProfileAccountPresenterTests {
         screen.presenter.selectedGender = .male
         screen.presenter.selectedCardioFitnessLevel = .advanced
         screen.presenter.selectedExerciseFrequency = .fiveToSix
+        screen.presenter.selectedActivityLevel = .veryActive
 
         await screen.presenter.saveProfile()
 
@@ -314,6 +316,20 @@ struct ProfileAccountPresenterTests {
         #expect(string(saved ?? [:], .submittedGender) == Gender.male.rawValue)
         #expect(string(saved ?? [:], .submittedCardioFitnessLevel) == CardioFitnessLevel.advanced.rawValue)
         #expect(string(saved ?? [:], .submittedExerciseFrequency) == ExerciseFrequency.fiveToSix.rawValue)
+        #expect(string(saved ?? [:], .submittedDailyActivityLevel) == ActivityLevel.veryActive.rawValue)
+    }
+
+    /// "Prefer not to say" is one of the answers onboarding offers, so Account offers it too and
+    /// saves it under its own raw value.
+    @Test("Test Prefer Not To Say Is Saved As A Sex")
+    func testPreferNotToSayIsSavedAsASex() async {
+        let screen = makeScreen()
+        screen.presenter.firstName = "Andrew"
+        screen.presenter.selectedGender = .preferNotToSay
+
+        await screen.presenter.saveProfile()
+
+        #expect(string(screen.interactor.savedData.first ?? [:], .submittedGender) == "prefer_not_to_say")
     }
 
     /// A name typed with a trailing space is still that name. Storing the space would show up in
@@ -343,6 +359,7 @@ struct ProfileAccountPresenterTests {
         #expect(saved?[UserModel.CodingKeys.submittedGender.rawValue] == nil)
         #expect(saved?[UserModel.CodingKeys.submittedCardioFitnessLevel.rawValue] == nil)
         #expect(saved?[UserModel.CodingKeys.submittedExerciseFrequency.rawValue] == nil)
+        #expect(saved?[UserModel.CodingKeys.submittedDailyActivityLevel.rawValue] == nil)
     }
 
     @Test("Test A Successful Save Is Tracked")
@@ -516,66 +533,19 @@ struct ProfileAccountPresenterTests {
 
     // MARK: - Delete account
 
-    /// The whole point of the confirmation. Pressing Delete Account raises the alert and does
-    /// nothing else — the account, and everything logged against it, is still there.
-    ///
-    /// The alert goes out through `showAlert(title:subtitle:buttons:)`, a `GlobalRouter` extension
-    /// that dispatches statically and so never reaches the double. That it appeared cannot be
-    /// asserted here; that nothing was destroyed can, and that is the half that protects the user.
-    @Test("Test Pressing Delete Account Destroys Nothing Until Confirmed")
-    func testPressingDeleteAccountDestroysNothingUntilConfirmed() async {
+    /// Delete Account opens the confirmation screen and deletes nothing. It used to raise an alert
+    /// that said nothing about the subscription, the sign-in or the timing; the deletion itself is
+    /// now `DeleteAccountPresenterTests`.
+    @Test("Test Pressing Delete Account Opens The Confirmation And Destroys Nothing")
+    func testPressingDeleteAccountOpensTheConfirmationAndDestroysNothing() {
         let screen = makeScreen()
 
         screen.presenter.onDeleteAccountPressed()
 
-        #expect(!screen.interactor.didDeleteAccount)
+        #expect(screen.router.deleteAccountShownCount == 1)
+        #expect(screen.router.alertTitles.isEmpty)
         #expect(!screen.router.didSwitchToOnboarding)
         #expect(screen.interactor.trackedEventNames == ["Settings_DeleteAccount_Start"])
-        #expect(!screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_StartConfirm"))
-    }
-
-    /// The confirmation offered only Delete, so the one way out of it was to delete the account.
-    /// The buttons are an opaque `AnyView`; the Cancel button is found by reflecting over it.
-    @Test("Test The Delete Account Alert Can Be Cancelled")
-    func testTheDeleteAccountAlertCanBeCancelled() {
-        let screen = makeScreen()
-
-        screen.presenter.onDeleteAccountPressed()
-
-        #expect(screen.router.alertTitles == ["Delete Account?"])
-        var described = ""
-        dump(screen.router.alertButtons.first, to: &described)
-        #expect(described.contains("\"Cancel\""))
-        #expect(described.contains("cancel"))
-        #expect(!screen.interactor.didDeleteAccount)
-    }
-
-    @Test("Test Confirming Deletion Deletes The Account And Returns To Onboarding")
-    func testConfirmingDeletionDeletesTheAccountAndReturnsToOnboarding() async {
-        let screen = makeScreen()
-
-        screen.presenter.onDeleteAccountConfirmed()
-
-        await TestManagers.eventually { screen.router.didSwitchToOnboarding }
-        #expect(screen.interactor.didDeleteAccount)
-        #expect(screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_StartConfirm"))
-        #expect(screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_Success"))
-    }
-
-    /// A deletion that fails is the worst half-state available: the account still exists, so the
-    /// user must stay in it rather than be dropped onto onboarding with no way back to the data
-    /// that was not deleted after all.
-    @Test("Test A Failed Deletion Leaves The User In Their Account")
-    func testAFailedDeletionLeavesTheUserInTheirAccount() async {
-        let screen = makeScreen()
-        screen.interactor.deleteAccountError = URLError(.networkConnectionLost)
-
-        screen.presenter.onDeleteAccountConfirmed()
-
-        await TestManagers.eventually { screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_Fail") }
-        #expect(!screen.router.didSwitchToOnboarding)
-        #expect(!screen.interactor.didDeleteAccount)
-        #expect(!screen.interactor.trackedEventNames.contains("Settings_DeleteAccount_Success"))
     }
 
     // MARK: - Tracking

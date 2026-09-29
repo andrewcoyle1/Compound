@@ -272,7 +272,9 @@ struct NutritionSettingsExpenditureTests {
         }
     }
 
-    private final class Router: ExpenditureSettingsRouter { }
+    private final class Router: ExpenditureSettingsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     private struct Screen {
         let presenter: ExpenditureSettingsPresenter
@@ -451,7 +453,9 @@ struct NutritionSettingsStrategyTests {
         }
     }
 
-    private final class Router: StrategySettingsRouter { }
+    private final class Router: StrategySettingsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     private struct Screen {
         let presenter: StrategySettingsPresenter

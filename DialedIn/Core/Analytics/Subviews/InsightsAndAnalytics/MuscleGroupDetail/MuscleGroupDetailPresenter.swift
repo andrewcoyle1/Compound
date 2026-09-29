@@ -78,14 +78,8 @@ class MuscleGroupDetailPresenter {
             let day = startOfDay(sessionDate)
             for exercise in session.exercises {
                 guard let template = templates[exercise.templateId],
-                      let isSecondary = template.muscleGroups[muscle] else { continue }
-                let completedSets = exercise.sets
-                    .filter { !$0.isWarmup && $0.completedAt != nil }
-                    .count
-                if completedSets > 0 {
-                    let factor: Double = isSecondary == .secondary ? 0.5 : 1.0
-                    setsByDay[day, default: 0] += Double(completedSets) * factor
-                }
+                      let sets = MuscleVolume.weightedSets(exercise, template: template)[muscle] else { continue }
+                setsByDay[day, default: 0] += sets
             }
         }
         return setsByDay

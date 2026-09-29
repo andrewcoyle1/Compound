@@ -21,6 +21,9 @@ extension View {
 private struct MinimizingLargeTitleBar: ViewModifier {
 
     func body(content: Content) -> some View {
+        // The minimisation modifiers exist only in the iOS 27 SDK (Xcode 27, Swift 6.4); CI still
+        // builds with Xcode 26.6, where `#available` alone does not stop the symbols failing to compile.
+        #if compiler(>=6.4)
         if #available(iOS 27, *) {
             content
                 .toolbarTitleDisplayMode(.inlineLarge)
@@ -31,5 +34,9 @@ private struct MinimizingLargeTitleBar: ViewModifier {
             content
                 .toolbarTitleDisplayMode(.inlineLarge)
         }
+        #else
+        content
+            .toolbarTitleDisplayMode(.inlineLarge)
+        #endif
     }
 }

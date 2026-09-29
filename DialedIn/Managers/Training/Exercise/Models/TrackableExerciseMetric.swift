@@ -24,33 +24,33 @@ enum TrackableExerciseMetric: String, DataSyncModelProtocol, PickableItem {
     
     var name: String {
         switch self {
-        case .reps: return "Reps"
-        case .repsPerSide: return "Reps Per Side"
-        case .weight: return "Weight"
-        case .weightPerSide: return "Weight Per Side"
-        case .weightPerSidePersistent: return "Weight Per Side (Persistent)"
-        case .weightPerSideAssistance: return "Weight Per Side (Assistance)"
-        case .duration: return "Duration"
-        case .durationPerSide: return "Duration Per Side"
-        case .distanceShort: return "Distance Short"
-        case .distanceShortPerSide: return "Distance Short Per Side"
-        case .distanceLong: return "Distance Long"  
+        case .reps: return String(localized: "Reps")
+        case .repsPerSide: return String(localized: "Reps Per Side")
+        case .weight: return String(localized: "Weight")
+        case .weightPerSide: return String(localized: "Weight Per Side")
+        case .weightPerSidePersistent: return String(localized: "Weight Per Side (Persistent)")
+        case .weightPerSideAssistance: return String(localized: "Weight Per Side (Assistance)")
+        case .duration: return String(localized: "Duration")
+        case .durationPerSide: return String(localized: "Duration Per Side")
+        case .distanceShort: return String(localized: "Distance Short")
+        case .distanceShortPerSide: return String(localized: "Distance Short Per Side")
+        case .distanceLong: return String(localized: "Distance Long")  
         }
     }
 
     var description: String? {
         switch self {
-        case .reps: return "Track the number of repetitions performed."
-        case .repsPerSide: return "Track the number of repetitions performed per side."
-        case .weight: return "Track the load used for each set."
-        case .weightPerSide: return "Track the load used for each set per side."
-        case .weightPerSidePersistent: return "Track singular weight used on both sides."
-        case .weightPerSideAssistance: return "Track assisted or supported weight."
-        case .duration: return "Track time for each set."
-        case .durationPerSide: return "Track time for each set per side."
-        case .distanceShort: return "Track short distances, like sprints or carries."
-        case .distanceShortPerSide: return "Track short distances per side."
-        case .distanceLong: return "Track long distances, like runs or rows."
+        case .reps: return String(localized: "Track the number of repetitions performed.")
+        case .repsPerSide: return String(localized: "Track the number of repetitions performed per side.")
+        case .weight: return String(localized: "Track the load used for each set.")
+        case .weightPerSide: return String(localized: "Track the load used for each set per side.")
+        case .weightPerSidePersistent: return String(localized: "Track singular weight used on both sides.")
+        case .weightPerSideAssistance: return String(localized: "Track assisted or supported weight.")
+        case .duration: return String(localized: "Track time for each set.")
+        case .durationPerSide: return String(localized: "Track time for each set per side.")
+        case .distanceShort: return String(localized: "Track short distances, like sprints or carries.")
+        case .distanceShortPerSide: return String(localized: "Track short distances per side.")
+        case .distanceLong: return String(localized: "Track long distances, like runs or rows.")
         }
     }
 }

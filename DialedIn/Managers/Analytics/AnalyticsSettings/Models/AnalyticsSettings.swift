@@ -65,12 +65,12 @@ enum AnalyticsSection: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .insightsAndAnalytics: return "Insights & Analytics"
-        case .habits:               return "Habits"
-        case .nutrition:            return "Nutrition"
-        case .bodyMetrics:          return "Body Metrics"
-        case .muscleGroups:         return "Muscle Groups"
-        case .exercises:            return "Exercises"
+        case .insightsAndAnalytics: return String(localized: "Insights & Analytics")
+        case .habits:               return String(localized: "Habits")
+        case .nutrition:            return String(localized: "Nutrition")
+        case .bodyMetrics:          return String(localized: "Body Metrics")
+        case .muscleGroups:         return String(localized: "Muscle Groups")
+        case .exercises:            return String(localized: "Exercises")
         }
     }
 

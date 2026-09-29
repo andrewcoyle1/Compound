@@ -104,10 +104,10 @@ struct ProgressionSuggestion: Equatable {
         var hint: String {
             switch self {
             case .noHistory:      return ""
-            case .progressWeight: return "Add weight"
-            case .addReps:        return "Add a rep"
-            case .hold:           return "Repeat last session"
-            case .deload:         return "Lighter this week"
+            case .progressWeight: return String(localized: "Add weight")
+            case .addReps:        return String(localized: "Add a rep")
+            case .hold:           return String(localized: "Repeat last session")
+            case .deload:         return String(localized: "Lighter this week")
             }
         }
     }

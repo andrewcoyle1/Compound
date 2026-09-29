@@ -43,7 +43,7 @@ extension WorkoutTrackerPresenter {
 
         let hint = rationale.hint
         guard !hint.isEmpty else { return nil }
-        return "Smart Progression: \(hint.prefix(1).lowercased())\(hint.dropFirst())"
+        return String(localized: "Smart Progression: \(String(describing: hint.prefix(1).lowercased()))\(String(describing: hint.dropFirst()))")
     }
 
     // MARK: - Live adjustment

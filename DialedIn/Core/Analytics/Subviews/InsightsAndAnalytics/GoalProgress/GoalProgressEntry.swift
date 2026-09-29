@@ -19,7 +19,7 @@ extension GoalProgressEntry: @MainActor MetricEntry {
     }
 
     var displayValue: String {
-        "\(weightKg.formatted(.number.precision(.fractionLength(1)))) kg (\(Int(progressPercent))%)"
+        String(localized: "\(weightKg.formatted(.number.precision(.fractionLength(1)))) kg (\(String(describing: Int(progressPercent)))%)")
     }
 
     var systemImageName: String {

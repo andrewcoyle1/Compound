@@ -95,7 +95,7 @@ struct ExerciseModelDetailView: View {
         let sets = "\(performance.workingSets) × sets"
         let reps = "\(performance.totalReps) reps"
         let top = presenter.formattedWeight(performance.heaviestWeightKg)
-        return "\(sets) · \(reps) · top \(top)"
+        return String(localized: "\(String(describing: sets)) · \(String(describing: reps)) · top \(String(describing: top))")
     }
     
     private var pickerSection: some View {
@@ -132,6 +132,21 @@ struct ExerciseModelDetailView: View {
             .accessibilityLabel("Developer settings")
         }
         #endif
+        if presenter.canDelete(exercise: delegate.exerciseModel) {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(role: .destructive) {
+                        presenter.showDeleteConfirmation(exercise: delegate.exerciseModel)
+                    } label: {
+                        Label("Delete Exercise", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .disabled(presenter.isDeleting)
+                .accessibilityLabel("Exercise options")
+            }
+        }
     }
 }
 
@@ -303,7 +318,7 @@ private extension ExerciseModelDetailView {
                 Text("Bodyweight")
                     .fontWeight(.semibold)
                 Spacer()
-                Text(delegate.exerciseModel.isBodyweight ? "Yes" : "No")
+                Text(delegate.exerciseModel.isBodyweight ? String(localized: "Yes") : String(localized: "No"))
             }
         } header: {
             HStack(alignment: .firstTextBaseline) {
@@ -322,7 +337,7 @@ private extension ExerciseModelDetailView {
             ScrollView(.horizontal) {
                 HStack {
                     ForEach(muscles, id: \.key) { muscle, isSecondary in
-                        Text("\(muscle.name): \(isSecondary == .secondary ? "Secondary" : "Primary")")
+                        Text("\(muscle.name): \(isSecondary == .secondary ? String(localized: "Secondary") : String(localized: "Primary"))")
                     }
                 }
             }
@@ -484,7 +499,7 @@ private extension ExerciseModelDetailView {
                 Text("System Exercise")
                     .fontWeight(.semibold)
                 Spacer()
-                Text(delegate.exerciseModel.isSystemExercise ? "Yes" : "No")
+                Text(delegate.exerciseModel.isSystemExercise ? String(localized: "Yes") : String(localized: "No"))
             }
             HStack(alignment: .firstTextBaseline) {
                 Text("Date Created")

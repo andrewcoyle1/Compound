@@ -1,9 +1,16 @@
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { requireAuth, cleanJson, normaliseName } from "./lib.js";
-import { GoogleAuth } from "google-auth-library";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { getMessaging } from "firebase-admin/messaging";
+import {
+    requireAuth, cleanJson, normaliseName, buildActivityPush, newlyBlockedIds, pushRecipientSettings,
+    planFollowAccepted, buildFollowAcceptedNotification,
+    buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
+    buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
+    isNudgeOnCooldown, toDate,
+} from "./lib.js";
 import { genkit } from "genkit";
 import { vertexAI, gemini20Flash, imagen3Fast } from "@genkit-ai/vertexai";
 
@@ -11,7 +18,6 @@ initializeApp();
 
 const PROJECT_ID = "dialed-c3cb5";
 const REGION = "us-central1";
-const FCM_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
 
 // Every callable requires a valid App Check token, so only genuine app instances
 // (attested via App Attest, or an allowlisted debug token) can invoke them. These
@@ -389,83 +395,546 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
 });
 
 // ---------------------------------------------------------------------------
-// FCM push notifications for activity (likes / comments)
+// FCM push for social activity (likes / comments / mentions / follows / nudges)
 // ---------------------------------------------------------------------------
 
-const fcmAuth = new GoogleAuth({
-    scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
-});
-
-async function sendPush(fcmToken, title, body, extraData) {
-    const client = await fcmAuth.getClient();
-    const tokenResult = await client.getAccessToken();
-    const accessToken = tokenResult.token;
-
-    const message = {
-        token: fcmToken,
-        notification: { title, body },
-        apns: {
-            payload: {
-                aps: { badge: 1, sound: "default" },
-            },
-        },
-        data: extraData,
-    };
-
-    const res = await fetch(FCM_URL, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message }),
-    });
-
-    const responseText = await res.text();
-    if (!res.ok) {
-        throw new Error(`FCM HTTP ${res.status}: ${responseText}`);
-    }
-    return responseText;
-}
-
+// The app writes users/{uid}/notifications for the in-app bell; this turns each new doc into a
+// push so it still arrives when the app is closed. The token and opt-outs are private to the owner,
+// in users/{uid}/private/settings; pushRecipientSettings falls back to the legacy user-doc fields.
+// Message building and the opt-out check live in lib.js so they can be tested without Firestore.
 export const onActivityNotificationCreated = onDocumentCreated(
-    "users/{userId}/notifications/{notificationId}",
+    { document: "users/{userId}/notifications/{notificationId}", region: REGION },
     async (event) => {
-        const snap = event.data;
-        if (!snap) return null;
+        const notification = event.data?.data();
+        if (!notification) return;
 
-        const data = snap.data();
         const userId = event.params.userId;
-
-        const db = getFirestore();
-        const userDoc = await db.collection("users").doc(userId).get();
-        const fcmToken = userDoc.data()?.fcm_token;
-
-        if (!fcmToken) {
-            console.log(`No FCM token for user ${userId} — skipping push.`);
-            return null;
+        const userRef = getFirestore().collection("users").doc(userId);
+        if (notification.type === "nudge" && await nudgeOnCooldown(userRef, event.data, notification)) {
+            await event.data.ref.delete();
+            console.log(`Nudge from ${notification.actor_id} to ${userId} dropped: cooldown.`);
+            return;
+        }
+        const [userDoc, privateDoc] = await Promise.all([
+            userRef.get(),
+            userRef.collection("private").doc("settings").get(),
+        ]);
+        const recipient = pushRecipientSettings(privateDoc.data(), userDoc.data());
+        const message = buildActivityPush(notification, recipient);
+        if (!message) {
+            console.log(`No push for user ${userId} (${notification.type}): no token or opted out.`);
+            return;
         }
 
-        const isLike = data.type === "like";
-        const actorName = data.actor_name || "Someone";
-        const commentText = data.comment_text || "";
-
-        const title = isLike ? "New Like" : "New Comment";
-        const body = isLike
-            ? `${actorName} liked your workout`
-            : `${actorName} commented: "${commentText.substring(0, 60)}"`;
-
         try {
-            const result = await sendPush(fcmToken, title, body, {
-                type: data.type || "",
-                session_id: data.session_id || "",
-                actor_id: data.actor_id || "",
-            });
-            console.log(`Push sent to user ${userId} for ${data.type}: ${result}`);
+            await getMessaging().send(message);
         } catch (error) {
             console.error(`Error sending push to user ${userId}: ${error.message}`);
         }
-
-        return null;
     }
 );
+
+// ---------------------------------------------------------------------------
+// Blocking: end the blocked person's follow
+// ---------------------------------------------------------------------------
+
+// A follow lives in the follower's own following_ids, which the blocker cannot write and rules
+// cannot refuse on the blocker's behalf. So when users/{uid}.blocked_user_ids gains an id, this
+// takes uid out of that person's following_ids and drops any pending follow request they sent.
+// The blocked person's document changing re-fires this trigger, but their block list is unchanged,
+// so it returns at once.
+export const onUserBlockListChanged = onDocumentUpdated(
+    { document: "users/{uid}", region: REGION },
+    async (event) => {
+        const blocked = newlyBlockedIds(event.data?.before?.data(), event.data?.after?.data());
+        if (blocked.length === 0) return;
+
+        const uid = event.params.uid;
+        const users = getFirestore().collection("users");
+        const results = await Promise.allSettled(blocked.flatMap((blockedId) => [
+            // update, not set: a deleted account must not come back as a stub document.
+            users.doc(blockedId).update({ following_ids: FieldValue.arrayRemove(uid) }),
+            // A no-op when there is no request, or no follow_requests collection at all.
+            users.doc(uid).collection("follow_requests").doc(blockedId).delete(),
+        ]));
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(`Block cleanup for user ${uid}: ${result.reason?.message}`);
+            }
+        }
+    }
+);
+
+// ---------------------------------------------------------------------------
+// Follow requests to private profiles
+// ---------------------------------------------------------------------------
+
+// The target of a request accepts it by setting status to "accepted", but a client can only write
+// its own users/{uid} document, so the follow itself is written here: the target joins the
+// requester's following_ids, the requester gets a followAccepted notification (which
+// onActivityNotificationCreated turns into a push), and the request is deleted. A declined request
+// is left for the requester to see as declined; nothing else happens.
+export const onFollowRequestUpdated = onDocumentUpdated(
+    { document: "users/{targetId}/follow_requests/{requesterId}", region: REGION },
+    async (event) => {
+        const plan = planFollowAccepted(event.data?.before?.data(), event.data?.after?.data(), event.params);
+        if (!plan) return;
+
+        const db = getFirestore();
+        const targetDoc = await db.collection("users").doc(plan.targetId).get();
+        const batch = db.batch();
+        batch.update(db.collection("users").doc(plan.requesterId), {
+            following_ids: FieldValue.arrayUnion(plan.targetId),
+        });
+        batch.set(
+            db.collection("users").doc(plan.requesterId).collection("notifications").doc(plan.notificationId),
+            buildFollowAcceptedNotification(targetDoc.data(), plan)
+        );
+        batch.delete(event.data.after.ref);
+        await batch.commit();
+    }
+);
+
+// ---------------------------------------------------------------------------
+// Follow requests, live: push, removing a follower, cleanup and auto-accept
+// ---------------------------------------------------------------------------
+
+// A new request pushes "<Name> wants to follow you" to the target, under the follows preference.
+// The payload's type is follow_request, which the app opens on its notifications screen.
+export const onFollowRequestCreated = onDocumentCreated(
+    { document: "users/{targetId}/follow_requests/{requesterId}", region: REGION },
+    async (event) => {
+        const request = event.data?.data();
+        if (!request) return;
+
+        const targetId = event.params.targetId;
+        const userRef = getFirestore().collection("users").doc(targetId);
+        const [userDoc, privateDoc] = await Promise.all([
+            userRef.get(),
+            userRef.collection("private").doc("settings").get(),
+        ]);
+        const message = buildFollowRequestPush(request, pushRecipientSettings(privateDoc.data(), userDoc.data()), userDoc.data());
+        if (!message) return;
+
+        try {
+            await getMessaging().send(message);
+        } catch (error) {
+            console.error(`Error sending follow request push to user ${targetId}: ${error.message}`);
+        }
+    }
+);
+
+// A follow lives in the follower's own following_ids, which the person followed cannot write, so
+// removing a follower comes through here. The follow notification it left in the caller's bell goes
+// too. There is no follower count stored anywhere to decrement.
+export const removeFollower = onCall(CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    const followerId = removeFollowerTarget(request.data, uid);
+    if (!followerId) {
+        throw new HttpsError("invalid-argument", "followerId is required");
+    }
+
+    const users = getFirestore().collection("users");
+    try {
+        // update, not set: a deleted account must not come back as a stub document.
+        await users.doc(followerId).update({ following_ids: FieldValue.arrayRemove(uid) });
+    } catch (error) {
+        if (error.code !== 5) throw error; // 5 = NOT_FOUND: the follower's account is gone already.
+    }
+    await users.doc(uid).collection("notifications").doc(`follow_${followerId}`).delete();
+    return { removed: followerId };
+});
+
+// When following_ids loses an id (an unfollow, a block, or removeFollower), any pending request
+// between the pair is deleted, in both directions.
+export const onUserFollowingChanged = onDocumentUpdated(
+    { document: "users/{uid}", region: REGION },
+    async (event) => {
+        const removed = removedFollowingIds(event.data?.before?.data(), event.data?.after?.data());
+        if (removed.length === 0) return;
+
+        const uid = event.params.uid;
+        const users = getFirestore().collection("users");
+        const results = await Promise.allSettled(removed.flatMap((otherId) => [
+            users.doc(otherId).collection("follow_requests").doc(uid).delete(),
+            users.doc(uid).collection("follow_requests").doc(otherId).delete(),
+        ]));
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(`Follow request cleanup for user ${uid}: ${result.reason?.message}`);
+            }
+        }
+    }
+);
+
+// A profile going from private to public accepts every pending request, as Instagram does. Each
+// becomes an ordinary acceptance, so onFollowRequestUpdated writes the follow and the notification.
+export const onUserPrivacyChanged = onDocumentUpdated(
+    { document: "users/{uid}", region: REGION },
+    async (event) => {
+        const before = event.data?.before?.data();
+        const after = event.data?.after?.data();
+        if (!planAutoAccept(before, after, [])) return;
+
+        const requestsRef = getFirestore().collection("users").doc(event.params.uid).collection("follow_requests");
+        const pending = await requestsRef.where("status", "==", "pending").get();
+        const accept = planAutoAccept(before, after, pending.docs.map((doc) => ({ id: doc.id, data: doc.data() })));
+
+        // A batch takes at most 500 writes.
+        for (let start = 0; start < accept.length; start += 500) {
+            const batch = getFirestore().batch();
+            for (const requesterId of accept.slice(start, start + 500)) {
+                batch.update(requestsRef.doc(requesterId), { status: "accepted" });
+            }
+            await batch.commit();
+        }
+    }
+);
+
+// ---------------------------------------------------------------------------
+// Usernames
+// ---------------------------------------------------------------------------
+
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { planUsernameRelease, shouldReleaseReservation } from "./lib.js";
+
+// The app reserves usernames/{handle} before setting users/{uid}.username, and rules only let the
+// owner delete a reservation. When a username changes, or the account is deleted, the old handle is
+// released here so someone else can claim it. Written, not just updated, so deletion is covered too.
+export const onUsernameChanged = onDocumentWritten(
+    { document: "users/{uid}", region: REGION },
+    async (event) => {
+        const handle = planUsernameRelease(event.data?.before?.data(), event.data?.after?.data());
+        if (!handle) return;
+
+        const db = getFirestore();
+        const ref = db.collection("usernames").doc(handle);
+        await db.runTransaction(async (tx) => {
+            const snap = await tx.get(ref);
+            if (snap.exists && shouldReleaseReservation(snap.data(), event.params.uid)) {
+                tx.delete(ref);
+            }
+        });
+    }
+);
+
+// Scheduled pushes: nudge cooldown, streak reminder, Sunday digest
+// ---------------------------------------------------------------------------
+
+// Whether the same actor nudged this recipient within 24 hours before this nudge. Queries on
+// actor_id alone (a single-field index) and filters the type here.
+async function nudgeOnCooldown(userRef, snapshot, notification) {
+    const earlier = await userRef.collection("notifications").where("actor_id", "==", notification.actor_id).get();
+    const latest = earlier.docs
+        .filter((doc) => doc.id !== snapshot.id && doc.data().type === "nudge")
+        .map((doc) => toDate(doc.data().date_created))
+        .filter(Boolean)
+        .sort((a, b) => b - a)[0];
+    return isNudgeOnCooldown(latest, toDate(notification.date_created) ?? new Date());
+}
+
+// Every users/{uid}/private/settings doc, with its uid. Both scheduled pushes run hourly and pick
+// the users whose local hour matches, so each walks all of them.
+// ponytail: a full scan of the private group every hour; store a UTC send hour and query on it
+// once the user count makes this slow.
+async function allPrivateSettings() {
+    const snap = await getFirestore().collectionGroup("private").get();
+    return snap.docs
+        .filter((doc) => doc.id === "settings" && doc.ref.parent.parent)
+        .map((doc) => ({ uid: doc.ref.parent.parent.id, settings: doc.data() }));
+}
+
+async function sendAll(label, messages) {
+    const results = await Promise.allSettled(messages.map((message) => getMessaging().send(message)));
+    const failed = results.filter((result) => result.status === "rejected");
+    for (const result of failed) console.error(`${label} push failed: ${result.reason?.message}`);
+    console.log(`${label}: sent ${messages.length - failed.length} of ${messages.length}.`);
+}
+
+// Hourly, on the hour. In each user's reminder hour (local), a user with a live streak who has not
+// trained today is told it ends at midnight. The streak is StreakManager's document at
+// user_streaks/{uid}/workout/current_streak (SwiftfulGamification's FirebaseRemoteStreakService).
+export const streakReminder = onSchedule(
+    { schedule: "0 * * * *", timeZone: "Etc/UTC", region: REGION },
+    async () => {
+        const now = new Date();
+        const db = getFirestore();
+        const messages = await Promise.all((await allPrivateSettings()).map(async ({ uid, settings }) => {
+            if (!isStreakReminderDue(settings, now)) return null;
+            const streak = await db.collection("user_streaks").doc(uid).collection("workout").doc("current_streak").get();
+            return buildStreakReminderPush(settings, streak.data(), now);
+        }));
+        await sendAll("Streak reminder", messages.filter(Boolean));
+    }
+);
+
+// Hourly, on the hour, sending to the users for whom it is Sunday 18:00: how many sessions they
+// and the people they follow logged in the last seven days. Nobody followed, no digest.
+export const weeklyDigest = onSchedule(
+    { schedule: "0 * * * *", timeZone: "Etc/UTC", region: REGION },
+    async () => {
+        const now = new Date();
+        const since = digestWindowStart(now);
+        const users = getFirestore().collection("users");
+        const sessionsSince = async (uid) => countTrainingSessions(
+            (await users.doc(uid).collection("workout_sessions").where("date_created", ">=", since).get()).docs.map((d) => d.data())
+        );
+        const due = (await allPrivateSettings()).filter(({ settings }) => isWeeklyDigestDue(settings, now));
+        const messages = await Promise.all(due.map(async ({ uid, settings }) => {
+            const following = ((await users.doc(uid).get()).data()?.following_ids ?? []).filter((id) => id !== uid);
+            if (following.length === 0) return null;
+            const [mine, ...circle] = await Promise.all([uid, ...following].map(sessionsSince));
+            return buildWeeklyDigestPush(settings, {
+                mine, circle: circle.reduce((a, b) => a + b, 0), followingCount: following.length,
+            });
+        }));
+        await sendAll("Weekly digest", messages.filter(Boolean));
+    }
+);
+
+// Account deletion cleanup
+// ---------------------------------------------------------------------------
+
+// Imported here rather than at the top so this block merges without touching the shared import lines.
+import { onDocumentDeleted } from "firebase-functions/v2/firestore";
+import { getStorage } from "firebase-admin/storage";
+import { planUserDeletion } from "./lib.js";
+
+// The app deletes only users/{uid} (after stopping its listeners) and then the Auth user. This removes
+// everything else: every subcollection, the user's id in other people's following_ids,
+// blocked_user_ids and liked_by_user_ids, their sent follow requests, comments (theirs, and others' on
+// their sessions), notifications they caused, username reservations, exercises, diet plan and Storage
+// uploads. What to write is decided by planUserDeletion in lib.js.
+export const onUserDeleted = onDocumentDeleted(
+    { document: "users/{uid}", region: REGION, timeoutSeconds: 540, memory: "512MiB" },
+    async (event) => {
+        const uid = event.params.uid;
+        const db = getFirestore();
+        const userRef = db.collection("users").doc(uid);
+        const paths = (query) => query.select().get().then((snap) => snap.docs.map((doc) => doc.ref.path));
+        const ids = (collection) => collection.listDocuments().then((refs) => refs.map((ref) => ref.id));
+
+        // Everything is read before the recursive delete, which takes the recipe and food ids with it.
+        const comments = db.collection("workout_session_comments");
+        const [
+            followers, blockers, followRequests, likedSessions, commentsByUser, commentsOnSessions,
+            notifications, usernames, exercises, recipeTemplates, foods,
+        ] = await Promise.all([
+            paths(db.collection("users").where("following_ids", "array-contains", uid)),
+            paths(db.collection("users").where("blocked_user_ids", "array-contains", uid)),
+            paths(db.collectionGroup("follow_requests").where("requester_id", "==", uid)),
+            paths(db.collectionGroup("workout_sessions").where("liked_by_user_ids", "array-contains", uid)),
+            paths(comments.where("author_id", "==", uid)),
+            paths(comments.where("session_author_id", "==", uid)),
+            paths(db.collectionGroup("notifications").where("actor_id", "==", uid)),
+            paths(db.collection("usernames").where("user_id", "==", uid)),
+            db.collection("exercise_templates").where("author_id", "==", uid).select().get()
+                .then((snap) => snap.docs.map((doc) => doc.id)),
+            ids(userRef.collection("recipe_templates")),
+            ids(userRef.collection("foods")),
+        ]);
+
+        await db.recursiveDelete(userRef);
+
+        const plan = planUserDeletion(uid, {
+            followers, blockers, followRequests, likedSessions,
+            comments: [...commentsByUser, ...commentsOnSessions],
+            notifications, usernames, exercises, recipeTemplates, foods,
+        });
+        for (const writes of plan.batches) {
+            const batch = db.batch();
+            for (const write of writes) {
+                const ref = db.doc(write.path);
+                if (write.type === "delete") batch.delete(ref);
+                else batch.update(ref, { [write.field]: FieldValue.arrayRemove(write.value) });
+            }
+            try {
+                await batch.commit();
+            } catch (error) {
+                // One document deleted meanwhile fails its batch; the others still run.
+                console.error(`Account cleanup for user ${uid}: ${error.message}`);
+            }
+        }
+
+        const bucket = getStorage().bucket();
+        const results = await Promise.allSettled([
+            ...plan.storagePrefixes.map((prefix) => bucket.deleteFiles({ prefix })),
+            ...plan.storageFiles.map((file) => bucket.file(file).delete({ ignoreNotFound: true })),
+        ]);
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error(`Storage cleanup for user ${uid}: ${result.reason?.message}`);
+            }
+        }
+    }
+);
+
+// Report moderation
+// ---------------------------------------------------------------------------
+
+import { planReportModeration } from "./lib.js";
+
+// A new reports/{id}: once three distinct people have open reports on the same session or comment,
+// set hidden: true on it (the app then shows it only to its author) and queue it for review in
+// moderation_queue/{targetId}. What to write is decided by planReportModeration in lib.js. Queries on
+// target_id alone, a single-field index, and filters status and type there.
+export const onReportCreated = onDocumentCreated(
+    { document: "reports/{reportId}", region: REGION },
+    async (event) => {
+        const report = event.data?.data();
+        if (!report?.target_id) return;
+        const db = getFirestore();
+        const snap = await db.collection("reports").where("target_id", "==", report.target_id).get();
+        const plan = planReportModeration(report, snap.docs.map((doc) => doc.data()));
+        if (!plan) return;
+
+        await db.collection("moderation_queue").doc(plan.queueId).set(
+            { ...plan.queue, date_updated: FieldValue.serverTimestamp() },
+            { merge: true }
+        );
+        if (!plan.hidePath) return;
+        try {
+            await db.doc(plan.hidePath).update({ hidden: true });
+        } catch (error) {
+            // The content was deleted meanwhile, or the report named the wrong author.
+            console.error(`Report moderation: could not hide ${plan.hidePath}: ${error.message}`);
+        }
+    }
+);
+
+// ---------------------------------------------------------------------------
+// Challenges
+// ---------------------------------------------------------------------------
+
+import { sessionJustEnded, activeChallengesFor, planChallengeProgress } from "./lib.js";
+
+// When a member finishes a session, each running challenge they are in gains one session in
+// challenges/{id}/progress/{uid}, which only this function writes. Reaching the target writes a
+// challenge_complete notification, which onActivityNotificationCreated turns into the push. The
+// counted session ids ride along in the progress doc, so a retried trigger does not count twice.
+export const onWorkoutSessionEndedForChallenges = onDocumentWritten(
+    { document: "users/{uid}/workout_sessions/{sessionId}", region: REGION },
+    async (event) => {
+        const after = event.data?.after?.data();
+        if (!sessionJustEnded(event.data?.before?.data(), after)) return;
+
+        const { uid, sessionId } = event.params;
+        const db = getFirestore();
+        const snap = await db.collection("challenges").where("member_ids", "array-contains", uid).get();
+        const challenges = activeChallengesFor(snap.docs.map((doc) => ({ ...doc.data(), id: doc.id })), uid, after.ended_at);
+        if (challenges.length === 0) return;
+
+        const user = (await db.collection("users").doc(uid).get()).data();
+        for (const challenge of challenges) {
+            const progressRef = db.collection("challenges").doc(challenge.id).collection("progress").doc(uid);
+            try {
+                await db.runTransaction(async (tx) => {
+                    const plan = planChallengeProgress(challenge, uid, sessionId, (await tx.get(progressRef)).data(), user);
+                    if (!plan) return;
+                    tx.set(progressRef, plan.progress);
+                    if (plan.notification) {
+                        tx.set(db.collection("users").doc(uid).collection("notifications").doc(plan.notificationId), plan.notification);
+                    }
+                });
+            } catch (error) {
+                console.error(`Challenge ${challenge.id} progress for user ${uid}: ${error.message}`);
+            }
+        }
+    }
+);
+
+// ---------------------------------------------------------------------------
+// Invites
+// ---------------------------------------------------------------------------
+
+import {
+    normaliseInviteCode, planInviteAcceptance, inviteOutcome, buildFollowNotification, buildInviteFollowRequest,
+} from "./lib.js";
+
+// A compound://join/<code> link or a typed code. Follows both ways between the caller and the
+// inviter, as a follow request where the one to be followed is private, and counts the use. Every
+// write is someone else's document at least once, so it happens here. One transaction, so two
+// acceptances cannot both take the last use. Returns the inviter's id for the app to open their
+// profile, and what each direction became.
+export const acceptInvite = onCall(CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    const code = normaliseInviteCode(request.data?.code);
+    if (!code) throw new HttpsError("invalid-argument", "That doesn't look like an invite code.");
+
+    const db = getFirestore();
+    const users = db.collection("users");
+    const inviteRef = db.collection("invites").doc(code);
+
+    return db.runTransaction(async (tx) => {
+        const inviteDoc = await tx.get(inviteRef);
+        const invite = inviteDoc.data();
+        const [inviterDoc, inviteeDoc] = invite
+            ? await Promise.all([tx.get(users.doc(invite.inviter_id)), tx.get(users.doc(uid))])
+            : [null, null];
+        const plan = planInviteAcceptance({
+            callerId: uid, invite, inviter: inviterDoc?.data(), invitee: inviteeDoc?.data(),
+        });
+        if (plan.error) throw new HttpsError(...plan.error);
+
+        const { inviterId } = plan;
+        const inviter = inviterDoc.data();
+        const invitee = inviteeDoc.data();
+        const now = new Date();
+        const apply = (direction, followerId, follower, followedId) => {
+            if (direction === "follow") {
+                // update, not set: a missing user document must not come back as a stub.
+                tx.update(users.doc(followerId), { following_ids: FieldValue.arrayUnion(followedId) });
+                tx.set(
+                    users.doc(followedId).collection("notifications").doc(`follow_${followerId}`),
+                    buildFollowNotification(follower, { followerId, followedId }, now)
+                );
+            } else if (direction === "request") {
+                tx.set(
+                    users.doc(followedId).collection("follow_requests").doc(followerId),
+                    buildInviteFollowRequest(follower, followerId, now)
+                );
+            }
+        };
+        apply(plan.inviteeFollows, uid, invitee, inviterId);
+        apply(plan.inviterFollows, inviterId, inviter, uid);
+        if (plan.countsUse) tx.update(inviteRef, { uses: FieldValue.increment(1) });
+
+        return {
+            inviter_id: inviterId,
+            you_follow: inviteOutcome(plan.inviteeFollows),
+            they_follow: inviteOutcome(plan.inviterFollows),
+        };
+    });
+});
+
+// MARK: - Web share page
+
+import { onRequest } from "firebase-functions/v2/https";
+import { buildSessionPageHtml, notFoundPageHtml, parseSessionPath } from "./lib.js";
+
+// Hosting rewrites /s/** here (firebase.json). Public and unauthenticated by design, so it reads
+// with the Admin SDK and lets buildSessionPageHtml refuse private authors and hidden sessions,
+// answering every refusal with the same 404 so the page never confirms a session exists.
+export const sessionPage = onRequest({ region: REGION }, async (req, res) => {
+    const notFound = () => res.status(404).set("Cache-Control", "public, max-age=60").send(notFoundPageHtml());
+    const ids = parseSessionPath(req.path);
+    if (req.method !== "GET" && req.method !== "HEAD") return res.status(405).send("");
+    if (!ids) return notFound();
+
+    const author = getFirestore().collection("users").doc(ids.authorId);
+    const [authorDoc, sessionDoc] = await Promise.all([author.get(), author.collection("workout_sessions").doc(ids.sessionId).get()]);
+    const session = sessionDoc.exists ? { id: sessionDoc.id, ...sessionDoc.data() } : null;
+    if (!buildSessionPageHtml({ session, author: authorDoc.data() })) return notFound();
+
+    // Records need the author's earlier sessions, read only once the page is known to render.
+    // ponytail: reads every earlier session per uncached view; stamp PR lines on the session if that bill shows up.
+    const prior = await author.collection("workout_sessions").where("date_created", "<", session.date_created).get();
+    const html = buildSessionPageHtml({
+        session,
+        author: authorDoc.data(),
+        priorSessions: prior.docs.map((d) => ({ id: d.id, ...d.data() })),
+        url: `https://${PROJECT_ID}.web.app/s/${ids.authorId}/${ids.sessionId}`,
+    });
+    // Short CDN cache: going private takes effect within ten minutes.
+    res.set("Cache-Control", "public, max-age=300, s-maxage=600").send(html);
+});

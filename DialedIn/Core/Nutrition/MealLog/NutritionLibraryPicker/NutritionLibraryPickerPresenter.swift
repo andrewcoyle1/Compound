@@ -68,12 +68,12 @@ enum NutritionPickerMode: String, CaseIterable, DataSyncModelProtocol {
     
     var title: String {
         switch self {
-        case .barcode: return "Barcode"
-        case .search: return "Search"
-        case .aiScanner: return "AI"
-        case .quickAdd: return "Quick Add"
-        case .library: return "Library"
-        case .describe: return "Describe"
+        case .barcode: return String(localized: "Barcode")
+        case .search: return String(localized: "Search")
+        case .aiScanner: return String(localized: "AI")
+        case .quickAdd: return String(localized: "Quick Add")
+        case .library: return String(localized: "Library")
+        case .describe: return String(localized: "Describe")
         }
     }
     

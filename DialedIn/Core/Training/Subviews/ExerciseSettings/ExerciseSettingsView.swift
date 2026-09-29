@@ -17,7 +17,7 @@ struct ExerciseSettingsView: View {
             Section {
                 CustomLabelButtonView(
                     symbolName: "info.circle",
-                    title: "Info",
+                    title: String(localized: "Info"),
                     subtitle: delegate.exercise.description ?? "View instructions, exercise details, and history"
                 ) {
                     Button {
@@ -29,7 +29,7 @@ struct ExerciseSettingsView: View {
                 }
                 CustomLabelButtonView(
                     symbolName: "scalemass",
-                    title: "Weights",
+                    title: String(localized: "Weights"),
                     subtitle: presenter.weightsSubtitle
                 ) {
                     Button {
@@ -41,7 +41,7 @@ struct ExerciseSettingsView: View {
                 }
                 CustomLabelButtonView(
                     symbolName: "timer",
-                    title: "Rest Timer",
+                    title: String(localized: "Rest Timer"),
                     subtitle: presenter.restSubtitle
                 ) {
                     Button {
@@ -57,7 +57,7 @@ struct ExerciseSettingsView: View {
                 if presenter.isPerSide {
                     CustomLabelButtonView(
                         symbolName: "arrow.trianglehead.branch",
-                        title: "Rest Between Left/Right Sets",
+                        title: String(localized: "Rest Between Left/Right Sets"),
                         subtitle: presenter.sideSetRestSubtitle
                     ) {
                         Button {
@@ -70,7 +70,7 @@ struct ExerciseSettingsView: View {
                 }
                 CustomLabelButtonView(
                     symbolName: "text.page",
-                    title: "Exercise Note",
+                    title: String(localized: "Exercise Note"),
                     subtitle: presenter.noteSubtitle
                 ) {
                     Button {

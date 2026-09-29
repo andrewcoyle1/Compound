@@ -46,11 +46,16 @@ enum TestManagers {
         )
     }
 
-    static func userManager(user: UserModel?, following: [UserModel] = []) -> UserManager {
+    static func userManager(
+        user: UserModel?,
+        following: [UserModel] = [],
+        privateSettings: PrivateUserSettings? = nil
+    ) -> UserManager {
         UserManager(
             queryService: MockUserQueryService(),
             userSyncEngine: documentEngine(user, key: "user"),
-            followingUsersSyncEngine: collectionEngine(following, key: "following-users")
+            followingUsersSyncEngine: collectionEngine(following, key: "following-users"),
+            privateSettingsSyncEngine: documentEngine(privateSettings, key: "private-user-settings")
         )
     }
 
@@ -269,11 +274,15 @@ enum TestManagers {
 
     static func trainingProgramManager(
         programs: [TrainingProgram] = [],
-        logManager: LogManager? = nil
+        prebuilt: [TrainingProgram] = [],
+        logManager: LogManager? = nil,
+        userDefaults: UserDefaults = .standard
     ) -> TrainingProgramManager {
         TrainingProgramManager(
             trainingProgramSyncEngine: collectionEngine(programs, key: "training-programs"),
-            logManager: logManager ?? LogManager(services: [])
+            systemProgramPersistence: MockLocalCollectionPersistence(collection: prebuilt),
+            logManager: logManager ?? LogManager(services: []),
+            userDefaults: userDefaults
         )
     }
 

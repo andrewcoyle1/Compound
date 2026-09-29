@@ -48,11 +48,16 @@ class UnitsPresenter {
 
     private func save() {
         Task {
-            try? await interactor.updateUnitPreferences(
-                length: storedLength,
-                weight: storedWeight,
-                distance: storedDistance
-            )
+            do {
+                try await interactor.updateUnitPreferences(
+                    length: storedLength,
+                    weight: storedWeight,
+                    distance: storedDistance
+                )
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
         }
     }
 
@@ -70,9 +75,11 @@ extension UnitsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case saveFail(error: Error)
         
         var eventName: String {
             switch self {
+            case .saveFail: return "UnitsView_Save_Fail"
             case .onAppear: return "UnitsView_Appear"
             case .onDisappear: return "UnitsView_Disappear"
             }
@@ -80,6 +87,7 @@ extension UnitsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             default:
                 return nil
             }
@@ -87,6 +95,7 @@ extension UnitsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

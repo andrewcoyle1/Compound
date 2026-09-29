@@ -20,7 +20,7 @@ class FirebaseActivityNotificationService: ActivityNotificationService {
     func fetchNotifications(userId: String) async throws -> [ActivityNotificationModel] {
         let snapshot = try await collection(userId: userId)
             .order(by: "date_created", descending: true)
-            .limit(to: 50)
+            .limit(to: ActivityNotificationManager.pageSize)
             .getDocuments()
         return snapshot.documents.compactMap { Self.parse(doc: $0) }
     }
@@ -40,6 +40,15 @@ class FirebaseActivityNotificationService: ActivityNotificationService {
         }
         if let commentText = notification.commentText {
             data["comment_text"] = commentText
+        }
+        if let shareId = notification.shareId {
+            data["share_id"] = shareId
+        }
+        if notification.isReply {
+            data["is_reply"] = true
+        }
+        if let challengeId = notification.challengeId {
+            data["challenge_id"] = challengeId
         }
         try await collection(userId: userId).document(notification.id).setData(data)
     }
@@ -76,6 +85,28 @@ class FirebaseActivityNotificationService: ActivityNotificationService {
         listener = nil
     }
 
+    // MARK: - GroupedNotifications
+
+    // ponytail: a date cursor skips notifications sharing the exact timestamp of a page's last one;
+    // switch to a document-snapshot cursor if that ever shows up.
+    func fetchNotifications(userId: String, before: Date) async throws -> [ActivityNotificationModel] {
+        let snapshot = try await collection(userId: userId)
+            .order(by: "date_created", descending: true)
+            .start(after: [Timestamp(date: before)])
+            .limit(to: ActivityNotificationManager.pageSize)
+            .getDocuments()
+        return snapshot.documents.compactMap { Self.parse(doc: $0) }
+    }
+
+    func markRead(ids: [String], userId: String) async throws {
+        guard !ids.isEmpty else { return }
+        let batch = Firestore.firestore().batch()
+        for id in ids {
+            batch.updateData(["is_read": true], forDocument: collection(userId: userId).document(id))
+        }
+        try await batch.commit()
+    }
+
     private static func parse(doc: QueryDocumentSnapshot) -> ActivityNotificationModel? {
         let data = doc.data()
         guard
@@ -97,7 +128,10 @@ class FirebaseActivityNotificationService: ActivityNotificationService {
             sessionAuthorId: sessionAuthorId,
             commentText: data["comment_text"] as? String,
             dateCreated: dateCreatedTimestamp.dateValue(),
-            isRead: data["is_read"] as? Bool ?? false
+            isRead: data["is_read"] as? Bool ?? false,
+            shareId: data["share_id"] as? String,
+            isReply: data["is_reply"] as? Bool ?? false,
+            challengeId: data["challenge_id"] as? String
         )
     }
 }

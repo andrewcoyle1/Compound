@@ -105,6 +105,7 @@ struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable {
     func withUpdated(_ update: CircumferenceUpdate) -> BodyMeasurementEntry {
         if let result = applyUpperBodyUpdate(update) { return result }
         if let result = applyArmsUpdate(update) { return result }
+        // Safe: the three helpers cover every case; BodyMeasurementTests round-trips each kind.
         return applyLegsUpdate(update)!
     }
 

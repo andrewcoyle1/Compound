@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol ProfileRouter: GlobalRouter {
+protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showAccountView(delegate: AccountDelegate)
     func showNotificationsView()
     func showExercisesView()

@@ -22,6 +22,8 @@ struct DashboardView<
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.layoutMode) private var layoutMode
+    /// The card titles grow with Dynamic Type; a fixed 30pt clipped them at accessibility sizes.
+    @ScaledMetric(relativeTo: .headline) private var carouselTitleHeight = DashboardCard<EmptyView>.titleHeight
     @State var presenter: DashboardPresenter
     let delegate: DashboardDelegate
 
@@ -35,6 +37,7 @@ struct DashboardView<
     
     var body: some View {
         List {
+            if presenter.needsUsername { UsernameBannerView { presenter.onPickUsernamePressed() } }
             cardsSection
             workoutFeedSection
         }
@@ -49,8 +52,17 @@ struct DashboardView<
             presenter.onViewDisappear(delegate: delegate)
         }
         .toolbar { toolbarContent }
+        // A push tap about a session — see `DeepLink.post()`.
+        .onNotificationReceived(name: Constants.openWorkoutSession) { notification in
+            presenter.onOpenWorkoutSessionNotificationReceived(notification)
+        }
+        // A follow-request push tap — see `DeepLink.post()`.
+        .onNotificationReceived(name: Constants.openNotifications) { _ in presenter.onPushNotificationsPressed() }
+        .onNotificationReceived(name: Constants.acceptInvite) { presenter.onAcceptInviteNotificationReceived($0) }
         .task {
             await presenter.loadNotifications()
+            await presenter.loadSuggestedUsers()
+            await presenter.loadChallenges()
         }
     }
     
@@ -75,7 +87,7 @@ struct DashboardView<
     }
 
     private var carouselHeight: CGFloat {
-        DashboardCard<EmptyView>.contentHeight + DashboardCard<EmptyView>.titleHeight
+        DashboardCard<EmptyView>.contentHeight + carouselTitleHeight
     }
 
     /// A single card deliberately stops short of the full width. The paged `TabView` this replaced
@@ -133,7 +145,41 @@ struct DashboardView<
     /// header that only appeared when the feed was non-empty in exactly the right way.
     private var workoutFeedSection: some View {
         Section {
-            if presenter.feedSessions.isEmpty {
+            if let summary = presenter.weeklySummary {
+                CircleWeeklySummaryCard(summary: summary) { presenter.onWeeklySummaryDismissed() }
+                    .removeListRowFormatting()
+                    .listRowSeparator(.hidden)
+            }
+            // MARK: - WeeklyReview
+            if presenter.showsWeeklyReviewCard { WeeklyReviewCard { presenter.onWeeklyReviewPressed() }.removeListRowFormatting().listRowSeparator(.hidden) }
+            // MARK: - RatingReferral
+            if presenter.showsInviteCard { InviteFriendCard { presenter.onInviteCardPressed() } onDismiss: { presenter.onInviteCardDismissed() }.removeListRowFormatting().listRowSeparator(.hidden) }
+            if !presenter.circleMembers.isEmpty {
+                CircleActivityStripView(
+                    members: presenter.circleMembers,
+                    onMemberPressed: { presenter.onCircleMemberPressed($0) },
+                    onNudgePressed: { presenter.onNudgePressed($0) },
+                    onSetGoalPressed: presenter.showsWeeklyGoalPrompt ? { presenter.onSetWeeklyGoalPressed() } : nil
+                )
+                .removeListRowFormatting()
+                .listRowSeparator(.hidden)
+                CircleLeaderboardView(
+                    standings: presenter.circleStandings,
+                    currentUserId: presenter.currentUserId,
+                    onRowPressed: { presenter.onLeaderboardRowPressed($0) }
+                )
+                .removeListRowFormatting()
+                .listRowSeparator(.hidden)
+            }
+            // MARK: - Challenges
+            if presenter.showsChallengesSection { challengesSection }
+            if presenter.isFeedLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
+                    .removeListRowFormatting()
+                    .listRowSeparator(.hidden)
+            } else if presenter.feedSessions.isEmpty {
                 ContentUnavailableView {
                     Label("No Activity Yet", systemImage: "figure.run")
                 } description: {
@@ -144,6 +190,7 @@ struct DashboardView<
                     }
                 }
                 .removeListRowFormatting()
+                suggestedPeopleRows
             } else {
                 ForEach(presenter.feedSessions) { session in
                     if let author = presenter.author(for: session) {
@@ -157,8 +204,8 @@ struct DashboardView<
             }
         } header: {
             SectionHeaderView(
-                title: "Workout Feed",
-                actionTitle: "Find People",
+                title: String(localized: "Workout Feed"),
+                actionTitle: String(localized: "Find People"),
                 onActionPressed: presenter.feedSessions.isEmpty ? nil : { presenter.onFindPeoplePressed() }
             )
         }
@@ -170,6 +217,24 @@ struct DashboardView<
         .listSectionSeparator(.hidden)
     }
     
+    /// A handful of people to follow, so a new user has a feed by the time they scroll back up.
+    @ViewBuilder
+    private var suggestedPeopleRows: some View {
+        ForEach(presenter.visibleSuggestedUsers) { user in
+            UserRowView(user: user) {
+                FollowButton(state: presenter.followState(for: user)) {
+                    presenter.onFollowButtonPressed(user: user)
+                }
+            }
+            .tappableBackground()
+            .anyButton(.highlight) {
+                presenter.onSuggestedUserPressed(user: user)
+            }
+            .padding(.horizontal)
+            .removeListRowFormatting()
+        }
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         
@@ -193,7 +258,7 @@ struct DashboardView<
                 Image(systemName: "bell")
             }
             .accessibilityLabel("Notifications")
-            .badge(presenter.activityNotifications.filter({ !$0.isRead }).count)
+            .badge(presenter.bellBadgeCount)
         }
         
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
@@ -264,4 +329,19 @@ extension CoreRouter {
         }
     }
     
+}
+
+// MARK: - Challenges
+
+extension DashboardView {
+    var challengesSection: some View {
+        ChallengesDashboardSection(
+            cards: presenter.challengeCards,
+            currentUserId: presenter.currentUserId,
+            onCardPressed: { presenter.onChallengePressed($0) },
+            onCreatePressed: { presenter.onCreateChallengePressed() }
+        )
+        .removeListRowFormatting()
+        .listRowSeparator(.hidden)
+    }
 }

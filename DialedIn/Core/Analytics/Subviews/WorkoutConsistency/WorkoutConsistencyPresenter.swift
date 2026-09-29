@@ -85,7 +85,7 @@ extension WorkoutConsistencyPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Workouts",
+            title: String(localized: "Workouts"),
             analyticsName: "WorkoutConsistencyView",
             yAxisSuffix: "",
             seriesNames: ["Sets"],

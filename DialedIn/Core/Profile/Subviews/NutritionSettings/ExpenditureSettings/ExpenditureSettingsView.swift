@@ -15,7 +15,7 @@ struct ExpenditureSettingsView: View {
 
             Section {
                 CustomLabelButtonView(
-                    title: "Estimation Method",
+                    title: String(localized: "Estimation Method"),
                     subtitle: presenter.estimationMethod.title) {
                         editMenu(
                             options: presenter.estimationMethods,
@@ -24,7 +24,7 @@ struct ExpenditureSettingsView: View {
                         )
                     }
                 CustomLabelButtonView(
-                    title: "Calculation Start Date",
+                    title: String(localized: "Calculation Start Date"),
                     subtitle: presenter.calculationStartDateLabel) {
                         Text("Edit")
                             .padding(.horizontal, 8)
@@ -35,7 +35,7 @@ struct ExpenditureSettingsView: View {
                             }
                     }
                 CustomLabelButtonView(
-                    title: "BMR Equation",
+                    title: String(localized: "BMR Equation"),
                     subtitle: presenter.bmrEquation.title) {
                         editMenu(
                             options: presenter.bmrEquations,
@@ -49,7 +49,7 @@ struct ExpenditureSettingsView: View {
 
             Section {
                 CustomLabelButtonView(
-                    title: "Calculation Mode",
+                    title: String(localized: "Calculation Mode"),
                     subtitle: presenter.calculationMode.title) {
                         editMenu(
                             options: presenter.calculationModes,
@@ -58,7 +58,7 @@ struct ExpenditureSettingsView: View {
                         )
                     }
                 CustomLabelButtonView(
-                    title: "Algorithm",
+                    title: String(localized: "Algorithm"),
                     subtitle: presenter.algorithmVersion.title) {
                         editMenu(
                             options: presenter.algorithmVersions,
@@ -74,16 +74,16 @@ struct ExpenditureSettingsView: View {
 
             Section {
                 CustomToggleView(
-                    title: "Step-Informed Updates",
-                    subtitle: "Uses step trends to speed up expenditure updates during periods where the step data improves confidence",
+                    title: String(localized: "Step-Informed Updates"),
+                    subtitle: String(localized: "Uses step trends to speed up expenditure updates during periods where the step data improves confidence"),
                     bool: Binding(
                         get: { presenter.stepInformedUpdates },
                         set: { presenter.stepInformedUpdates = $0 }
                     )
                 )
                 CustomToggleView(
-                    title: "Predictive Goal Adjustment",
-                    subtitle: "Applies a predictive adjustment to expenditure based on the likely impact of goal changes",
+                    title: String(localized: "Predictive Goal Adjustment"),
+                    subtitle: String(localized: "Applies a predictive adjustment to expenditure based on the likely impact of goal changes"),
                     bool: Binding(
                         get: { presenter.predictiveGoalAdjustments },
                         set: { presenter.predictiveGoalAdjustments = $0 }

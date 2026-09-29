@@ -97,6 +97,21 @@ struct FoodItemSearchPresenterTests {
         #expect(screen.presenter.historyFoods.map(\.name) == ["Oats", "Milk"])
     }
 
+    /// Offline the remote search is not tried, and no alert rises per keystroke: the failed state
+    /// says why the online results are missing.
+    @Test("Test Offline The Remote Search Is Skipped And Marked Failed")
+    func testOfflineTheRemoteSearchIsSkippedAndMarkedFailed() async {
+        let screen = makeScreen()
+        screen.interactor.isOffline = true
+
+        screen.presenter.onSearchTextChanged("oat")
+        await waitPastTheDebounce()
+
+        #expect(screen.interactor.queries.isEmpty)
+        #expect(screen.presenter.searchFailed)
+        #expect(!screen.presenter.isSearching)
+    }
+
     @Test("Test A Query Reaches The Remote Search")
     func testAQueryReachesTheRemoteSearch() async {
         let screen = makeScreen()

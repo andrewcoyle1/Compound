@@ -120,6 +120,7 @@ class StepsManager {
     ) async -> Date? {
         var newestDate = lastSync
         for sample in samples {
+            // Safe: `newestDate == nil ||` short-circuits before the unwrap.
             if newestDate == nil || sample.date > newestDate! {
                 newestDate = sample.date
             }

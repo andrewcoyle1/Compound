@@ -35,7 +35,7 @@ class WorkoutTemplateDetailPresenter {
     }
     
     func showDeleteConfirmation(workoutTemplate: WorkoutTemplateModel) {
-        router.showAlert(title: "Delete Workout", subtitle: "Are you sure you want to delete '\(workoutTemplate.name)'? This action cannot be undone.", buttons: {
+        router.showAlert(title: String(localized: "Delete Workout"), subtitle: String(localized: "Are you sure you want to delete '\(workoutTemplate.name)'? This action cannot be undone."), buttons: {
             AnyView(
                 HStack {
                     Button("Delete", role: .destructive) {
@@ -52,37 +52,7 @@ class WorkoutTemplateDetailPresenter {
     }
 
     func targetMuscleSummaries(exercises: [WorkoutTemplateExercise]) -> [TargetMuscleSummary] {
-        guard !exercises.isEmpty else { return [] }
-        
-        var weightedSetCounts: [Muscles: Double] = [:]
-        var exerciseCounts: [Muscles: Int] = [:]
-        
-        for workoutExercise in exercises {
-            let setCount = Double(workoutExercise.setTargets.count)
-            guard setCount > 0 else { continue }
-            
-            var seenInThisExercise = Set<Muscles>()
-            for (muscle, isSecondary) in workoutExercise.exercise.muscleGroups {
-                let factor: Double = isSecondary == .secondary ? 0.5 : 1.0
-                weightedSetCounts[muscle, default: 0] += (setCount * factor)
-                
-                if !seenInThisExercise.contains(muscle) {
-                    exerciseCounts[muscle, default: 0] += 1
-                    seenInThisExercise.insert(muscle)
-                }
-            }
-        }
-        
-        let allMuscles = Set(weightedSetCounts.keys).union(exerciseCounts.keys)
-        return allMuscles
-            .map { muscle in
-                TargetMuscleSummary(
-                    muscle: muscle,
-                    weightedTargetSets: weightedSetCounts[muscle, default: 0],
-                    exerciseCount: exerciseCounts[muscle, default: 0]
-                )
-            }
-            .sorted { $0.muscle.name < $1.muscle.name }
+        MuscleVolume.targetSummaries(exercises: exercises)
     }
     
     func formattedSetCount(_ value: Double) -> String {
@@ -104,7 +74,7 @@ class WorkoutTemplateDetailPresenter {
             onDismiss()
         } catch {
             isDeleting = false
-            router.showSimpleAlert(title: "Failed to delete workout", subtitle: "Please try again later")
+            router.showSimpleAlert(title: String(localized: "Failed to delete workout"), subtitle: String(localized: "Please try again later"))
         }
     }
 
@@ -135,8 +105,8 @@ class WorkoutTemplateDetailPresenter {
         }
         
         router.showAlert(
-            title: "Workout In Progress",
-            subtitle: "You already have '\(activeSession.name)' in progress. What would you like to do?",
+            title: String(localized: "Workout In Progress"),
+            subtitle: String(localized: "You already have '\(activeSession.name)' in progress. What would you like to do?"),
             buttons: {
                 AnyView(
                     VStack {
@@ -174,7 +144,7 @@ class WorkoutTemplateDetailPresenter {
                 self.router.dismissScreen()
                 onStartWorkout?()
             } catch {
-                self.router.showSimpleAlert(title: "Unable to start workout", subtitle: "Please try again.")
+                self.router.showSimpleAlert(title: String(localized: "Unable to start workout"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -198,5 +168,9 @@ class WorkoutTemplateDetailPresenter {
 
     func onEditWorkoutPressed(template: WorkoutTemplateModel) {
         router.showCreateWorkoutView(delegate: CreateWorkoutDelegate(workoutTemplate: template))
+    }
+
+    func onSharePressed(template: WorkoutTemplateModel) {
+        router.showShareToFollowerView(delegate: ShareToFollowerDelegate(payload: .template(template)))
     }
 }

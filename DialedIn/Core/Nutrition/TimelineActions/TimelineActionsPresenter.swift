@@ -30,7 +30,14 @@ class TimelineActionsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveFoodLogSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveFoodLogSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     func onCopyDayPressed(delegate: TimelineActionsDelegate) {
@@ -42,10 +49,11 @@ class TimelineActionsPresenter {
     /// new entry rather than a move, and keeps its time of day.
     func onCopyDayConfirmed(delegate: TimelineActionsDelegate) {
         guard let authorId = interactor.currentUser?.userId else { return }
+        // Silent: local read; a failure falls through to the "Nothing to copy" alert below.
         let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
         guard !meals.isEmpty else {
             isChoosingCopyDestination = false
-            router.showSimpleAlert(title: "Nothing to copy", subtitle: "This day has no meals logged.")
+            router.showSimpleAlert(title: String(localized: "Nothing to copy"), subtitle: String(localized: "This day has no meals logged."))
             return
         }
 
@@ -60,7 +68,7 @@ class TimelineActionsPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
-                router.showSimpleAlert(title: "Unable to copy day", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to copy day"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -85,17 +93,18 @@ class TimelineActionsPresenter {
     }
 
     func onClearDayPressed(delegate: TimelineActionsDelegate) {
+        // Silent: local read; a failure falls through to the empty-day guard below.
         let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
         guard !meals.isEmpty else {
-            router.showSimpleAlert(title: "Nothing to clear", subtitle: "This day has no meals logged.")
+            router.showSimpleAlert(title: String(localized: "Nothing to clear"), subtitle: String(localized: "This day has no meals logged."))
             return
         }
 
         // Destructive and not undoable, so it is confirmed before anything is deleted.
-        let noun = meals.count == 1 ? "meal" : "meals"
+        let noun = meals.count == 1 ? String(localized: "meal") : String(localized: "meals")
         router.showAlert(
-            title: "Clear this day?",
-            subtitle: "\(meals.count) logged \(noun) will be deleted. This cannot be undone.",
+            title: String(localized: "Clear this day?"),
+            subtitle: String(localized: "\(String(describing: meals.count)) logged \(noun) will be deleted. This cannot be undone."),
             buttons: {
                 AnyView(
                     Group {
@@ -123,7 +132,7 @@ class TimelineActionsPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
-                router.showSimpleAlert(title: "Unable to clear day", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to clear day"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -150,9 +159,11 @@ extension TimelineActionsPresenter {
         case onCopyDay(count: Int)
         case onClearDay(count: Int)
         case onActionFail(error: Error)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "TimelineActionsView_Save_Fail"
             case .onAppear:                 return "TimelineActionsView_Appear"
             case .onDisappear:              return "TimelineActionsView_Disappear"
             case .onCopyDay:                return "TimelineActionsView_CopyDay"
@@ -163,6 +174,7 @@ extension TimelineActionsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             case .onCopyDay(count: let count), .onClearDay(count: let count):
@@ -174,6 +186,7 @@ extension TimelineActionsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             case .onActionFail:
                 return .severe
             default:

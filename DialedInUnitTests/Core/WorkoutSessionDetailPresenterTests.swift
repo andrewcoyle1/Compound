@@ -50,6 +50,7 @@ struct WorkoutSessionDetailPresenterTests {
             preferences[templateId] = preference
         }
 
+        func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { [] }
         func deleteWorkoutSession(id: String) async throws {
             deletedSessionIds.append(id)
         }

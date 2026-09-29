@@ -35,7 +35,14 @@ class FavouriteMeasurementsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveFoodLogSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveFoodLogSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     /// Re-read rather than trusting the snapshot taken at init: `save()` writes the whole
@@ -50,15 +57,27 @@ class FavouriteMeasurementsPresenter {
 extension FavouriteMeasurementsPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "FavouriteMeasurementsView_Save_Fail"
             case .onAppear: return "FavouriteMeasurementsView_Appear"
             }
         }
 
-        var parameters: [String: Any]? { nil }
+        var parameters: [String: Any]? {
+            switch self {
+            case .saveFail(error: let error): return error.eventParameters
+            default: return nil
+            }
+        }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .saveFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }

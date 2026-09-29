@@ -99,4 +99,5 @@ final class AnalyticsRouterDouble: AnalyticsRouter {
         shown.append("exerciseDetail")
     }
     func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate) { shown.append("customiseAnalytics") }
+    func showWeeklyReviewView() { shown.append("weeklyReview") }
 }

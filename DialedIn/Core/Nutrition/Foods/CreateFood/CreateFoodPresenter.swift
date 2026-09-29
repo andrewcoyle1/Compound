@@ -107,7 +107,7 @@ class CreateFoodPresenter {
     func onLearnMorePressed() {
         interactor.trackEvent(event: Event.learnMorePressed)
         router.showSimpleAlert(
-            title: "Contributing Foods",
+            title: String(localized: "Contributing Foods"),
             subtitle: """
             With this on, foods you create are shared to the public database so other people can find \
             and log them. Your name is not attached, and the food stays in your own library either way. \

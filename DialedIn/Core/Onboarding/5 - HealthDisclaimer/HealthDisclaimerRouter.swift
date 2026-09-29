@@ -23,7 +23,7 @@ extension CoreRouter: HealthDisclaimerRouter {
             dismissOnBackgroundTap: true,
             destination: {
                 CustomModalView(
-                    title: "Confirm and Continue",
+                    title: String(localized: "Confirm and Continue"),
                     subtitle: """
                     By continuing, you confirm that:
                     • You have read and accept the Health Disclaimer.

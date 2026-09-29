@@ -81,12 +81,21 @@ class GymProfilePresenter {
     var filteredPinLoadedMachines: [Binding<PinLoadedMachine>] {
         filteredBindings(for: \.pinLoadedMachines)
     }
+
+    /// A filter that hides every section, so the screen can say so instead of going blank.
+    var hasNoMatchingEquipment: Bool {
+        !trimmedSearchQuery.isEmpty
+            && filteredFreeWeights.isEmpty && filteredLoadableBars.isEmpty && filteredFixedWeightBars.isEmpty
+            && filteredBands.isEmpty && filteredBodyWeights.isEmpty && filteredSupportEquipment.isEmpty
+            && filteredAccessoryEquipment.isEmpty && filteredLoadableAccessoryEquipment.isEmpty
+            && filteredCableMachines.isEmpty && filteredPlateLoadedMachines.isEmpty && filteredPinLoadedMachines.isEmpty
+    }
     
     func onBackButtonPressed() {
         guard !gymProfile.name.isEmpty else {
             router.showAlert(
-                title: "Discard Gym Profile",
-                subtitle: "To save the gym profile, you must give it a name.",
+                title: String(localized: "Discard Gym Profile"),
+                subtitle: String(localized: "To save the gym profile, you must give it a name."),
                 buttons: {
                     AnyView(
                         Button(role: .destructive) {
@@ -115,7 +124,7 @@ class GymProfilePresenter {
                 // `onComplete` is what leaves this screen, so a silent failure leaves Back and
                 // Continue looking broken. Say why nothing moved.
                 router.showSimpleAlert(
-                    title: "Unable to Save Gym Profile",
+                    title: String(localized: "Unable to Save Gym Profile"),
                     subtitle: "Please check your internet connection and try again."
                 )
             }
@@ -304,9 +313,9 @@ enum ListFilter: CaseIterable {
     var description: String {
         switch self {
         case .all:
-            return "All"
+            return String(localized: "All")
         case .selected:
-            return "Selected"
+            return String(localized: "Selected")
         }
     }
 }

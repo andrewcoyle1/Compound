@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol ProfileInteractor: GlobalInteractor {
+protocol ProfileInteractor: GlobalInteractor, InviteLinkInteractor {
     var currentUser: UserModel? { get }
     var currentGoal: WeightGoal? { get }
     var currentDietPlan: DietPlan? { get }

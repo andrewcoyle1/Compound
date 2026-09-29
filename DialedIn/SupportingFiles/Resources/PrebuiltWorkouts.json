@@ -181,6 +181,56 @@
         "system-dumbbell-seated-shoulder-press",
         "system-cable-pushdown-straight-bar"
       ]
+    },
+    {
+      "workoutId": "workout-531-press",
+      "name": "5/3/1 Press Day",
+      "description": "Overhead press main lift on the 5/3/1 wave, with pressing and pulling assistance",
+      "isSystemWorkout": true,
+      "exerciseIds": [
+        "system-dumbbell-seated-shoulder-press",
+        "system-chest-dip",
+        "system-cable-neutral-grip-lat-pulldown",
+        "system-standing-lateral-raise-cable",
+        "system-cable-standing-supinated-face-pull"
+      ]
+    },
+    {
+      "workoutId": "workout-531-deadlift",
+      "name": "5/3/1 Deadlift Day",
+      "description": "Deadlift main lift on the 5/3/1 wave, with single-leg and hamstring assistance",
+      "isSystemWorkout": true,
+      "exerciseIds": [
+        "system-barbell-sumo-deadlift",
+        "system-bulgarian-split-squat",
+        "system-lying-leg-curl",
+        "system-seated-row"
+      ]
+    },
+    {
+      "workoutId": "workout-531-bench",
+      "name": "5/3/1 Bench Day",
+      "description": "Bench press main lift on the 5/3/1 wave, with chest, back and arm assistance",
+      "isSystemWorkout": true,
+      "exerciseIds": [
+        "system-barbell-bench-press",
+        "system-dumbbell-bench-press",
+        "system-t-bar-row",
+        "system-cable-pushdown-straight-bar",
+        "system-ez-barbell-preacher-curl"
+      ]
+    },
+    {
+      "workoutId": "workout-531-squat",
+      "name": "5/3/1 Squat Day",
+      "description": "Squat main lift on the 5/3/1 wave, with quad, hamstring and calf assistance",
+      "isSystemWorkout": true,
+      "exerciseIds": [
+        "system-barbell-squat",
+        "system-seated-leg-extension",
+        "system-lying-leg-curl",
+        "system-calf-press-leg-press"
+      ]
     }
   ]
 }

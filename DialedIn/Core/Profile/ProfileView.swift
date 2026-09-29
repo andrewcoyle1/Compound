@@ -199,6 +199,12 @@ struct ProfileView: View {
     private var communityAndSupportSection: some View {
         Section {
             Group {
+                Label("Invite a friend", systemImage: "person.badge.plus")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .tappableBackground()
+                    .anyButton {
+                        Task { await presenter.onInviteFriendPressed() }
+                    }
                 Label("Knowledge Base", systemImage: "book.closed")
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                     .tappableBackground()
@@ -332,7 +338,18 @@ extension CoreRouter {
         logger: nil
     )
     let userQueryService = MockUserQueryService()
-    container.register(UserManager.self, service: UserManager(queryService: userQueryService, userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine))
+    let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
+        remote: MockRemoteDocumentService(),
+        managerKey: "private_user_settings",
+        enableLocalPersistence: true,
+        logger: nil
+    )
+    container.register(UserManager.self, service: UserManager(
+        queryService: userQueryService,
+        userSyncEngine: userSyncEngine,
+        followingUsersSyncEngine: followingUsersSyncEngine,
+        privateSettingsSyncEngine: privateSettingsSyncEngine
+    ))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     return RouterView { router in
         builder.profileView(router: router)

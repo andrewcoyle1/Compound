@@ -76,12 +76,6 @@ class ExerciseModelManager {
         try await userExerciseSyncEngine.deleteDocument(id: exerciseId)
     }
     
-    func deleteAllExercises() async throws {
-        for exercise in userExercises {
-            try await userExerciseSyncEngine.deleteDocument(id: exercise.id)
-        }
-    }
-    
     // SYSTEM EXERCISE SEEDING
     
     /// Seed pre-built exercises if not already seeded
@@ -166,10 +160,6 @@ extension CoreInteractor {
  
     func deleteExerciseModel(exerciseId: String) async throws {
         try await exerciseModelManager.deleteExerciseModel(exerciseId: exerciseId)
-    }
-    
-    func deleteAllExercises() async throws {
-        try await exerciseModelManager.deleteAllExercises()
     }
     
     func seedExercisesIfNeeded() throws {

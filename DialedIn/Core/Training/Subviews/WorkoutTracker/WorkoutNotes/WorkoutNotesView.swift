@@ -10,6 +10,13 @@ import SwiftUI
 struct WorkoutNotesDelegate {
     var notes: Binding<String>
     let onSave: () -> Void
+    var title: String = "Workout Notes"
+    /// Shown greyed above the editor, e.g. the note left on this exercise last session.
+    var hint: String?
+    var saveTitle: String = "Save"
+    /// Runs once the sheet is fully gone, whichever button closed it. The finish screen uses it
+    /// to end the workout only after its own sheet is out of the way.
+    var onDidDismiss: (() -> Void)?
 }
 
 struct WorkoutNotesView: View {
@@ -19,14 +26,21 @@ struct WorkoutNotesView: View {
     var delegate: WorkoutNotesDelegate
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading) {
+            if let hint = delegate.hint {
+                Text("Last time: \(hint)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.top)
+            }
             TextEditor(text: delegate.notes)
                 .padding()
                 .background(Color.secondaryBackground, in: .rect(cornerRadius: 24))
                 .padding()
             Spacer()
         }
-        .navigationTitle("Workout Notes")
+        .navigationTitle(delegate.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent
@@ -42,7 +56,7 @@ struct WorkoutNotesView: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Save") {
+            Button(delegate.saveTitle) {
                 delegate.onSave()
                 presenter.onDismissPressed()
             }
@@ -64,7 +78,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutNotesView(delegate: WorkoutNotesDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.sheet, onDidDismiss: delegate.onDidDismiss) { router in
             builder.workoutNotesView(router: router, delegate: delegate)
         }
     }

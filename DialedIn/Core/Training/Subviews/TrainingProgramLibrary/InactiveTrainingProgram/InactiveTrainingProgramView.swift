@@ -3,6 +3,9 @@ import SwiftUI
 struct InactiveTrainingProgramDelegate {
     
     var inactivePrograms: [TrainingProgram]
+    /// Each row gets a trailing destructive swipe when this is set; the library passes its own
+    /// delete confirmation so the alert and the delete stay on the screen that owns them.
+    var onDelete: ((TrainingProgram) -> Void)?
     
     var eventParameters: [String: Any]? {
         nil
@@ -24,6 +27,15 @@ struct InactiveTrainingProgramView<ProgramDisclosure: View>: View {
                         trainingProgram: program
                     )
                 )
+                .swipeActions(edge: .trailing) {
+                    if let onDelete = delegate.onDelete {
+                        Button(role: .destructive) {
+                            onDelete(program)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
             }
         }
         .onAppear {

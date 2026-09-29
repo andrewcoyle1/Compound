@@ -59,7 +59,14 @@ class StrategySettingsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveNutritionStrategySettings(settings) }
+        Task {
+            do {
+                try await interactor.saveNutritionStrategySettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
     
     /// Re-read rather than trusting the snapshot taken at init: `save()` writes the whole
@@ -84,9 +91,11 @@ extension StrategySettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case saveFail(error: Error)
         
         var eventName: String {
             switch self {
+            case .saveFail: return "StrategySettingsView_Save_Fail"
             case .onAppear: return "StrategySettingsView_Appear"
             case .onDisappear: return "StrategySettingsView_Disappear"
             }
@@ -94,6 +103,7 @@ extension StrategySettingsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             default:
                 return nil
             }
@@ -101,6 +111,7 @@ extension StrategySettingsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

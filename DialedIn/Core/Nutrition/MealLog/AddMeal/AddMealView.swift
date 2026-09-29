@@ -26,7 +26,7 @@ struct AddMealView: View {
                     breakdownSection(for: category)
                 }
             }
-            CustomToggleView(symbolName: "carrot", title: "Show all nutrients", subtitle: nil, bool: $presenter.showAllNutrients)
+            CustomToggleView(symbolName: "carrot", title: String(localized: "Show all nutrients"), subtitle: nil, bool: $presenter.showAllNutrients)
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $presenter.isEditingMealTime) {
@@ -87,7 +87,7 @@ struct AddMealView: View {
     private var yourPlateSection: some View {
         Section {
             if presenter.mealLog.items.isEmpty {
-                CustomLabelButtonView(symbolName: "info", title: "Your plate is empty", subtitle: "Add foods using Search, Scan or AI.") {
+                CustomLabelButtonView(symbolName: "info", title: String(localized: "Your plate is empty"), subtitle: String(localized: "Add foods using Search, Scan or AI.")) {
                     Button {
                         presenter.onShowPickerPressed()
                     } label: {
@@ -148,8 +148,8 @@ struct AddMealView: View {
         Section {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 100)), count: 2)) {
                 AnalyticsCard(
-                    title: "Calories",
-                    subtitle: "\(Int(presenter.displayCalories)) kcal \(presenter.scopeLabel)",
+                    title: String(localized: "Calories"),
+                    subtitle: String(localized: "\(String(describing: Int(presenter.displayCalories))) kcal \(presenter.scopeLabel)"),
                     subsubtitle: "",
                     subsubsubtitle: "") {
                         MacroProgressChart(
@@ -159,8 +159,8 @@ struct AddMealView: View {
                             color: .blue)
                     }
                 AnalyticsCard(
-                    title: "Protein",
-                    subtitle: "\(presenter.displayProtein.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)",
+                    title: String(localized: "Protein"),
+                    subtitle: String(localized: "\(presenter.displayProtein.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
                     subsubtitle: "",
                     subsubsubtitle: "") {
                         MacroProgressChart(
@@ -170,8 +170,8 @@ struct AddMealView: View {
                             color: .proteinColor)
                     }
                 AnalyticsCard(
-                    title: "Fat",
-                    subtitle: "\(presenter.displayFat.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)",
+                    title: String(localized: "Fat"),
+                    subtitle: String(localized: "\(presenter.displayFat.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
                     subsubtitle: "",
                     subsubsubtitle: "") {
                         MacroProgressChart(
@@ -181,8 +181,8 @@ struct AddMealView: View {
                             color: .fatColor)
                     }
                 AnalyticsCard(
-                    title: "Carbs",
-                    subtitle: "\(presenter.displayCarbs.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)",
+                    title: String(localized: "Carbs"),
+                    subtitle: String(localized: "\(presenter.displayCarbs.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
                     subsubtitle: "",
                     subsubsubtitle: "") {
                         MacroProgressChart(

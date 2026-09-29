@@ -91,7 +91,7 @@ class IngredientListBuilderPresenter {
                 sourceId: food.ingredientId,
                 displayName: food.name,
                 amount: food.portionQuantityCalculated ?? baseAmount,
-                unit: food.portionNameCalculated ?? (food.measurementMethod == .volume ? "ml" : "g"),
+                unit: food.portionNameCalculated ?? (food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")),
                 resolvedGrams: food.measurementMethod != .volume ? baseAmount : nil,
                 resolvedMilliliters: food.measurementMethod == .volume ? baseAmount : nil,
                 nutrients: nutrients

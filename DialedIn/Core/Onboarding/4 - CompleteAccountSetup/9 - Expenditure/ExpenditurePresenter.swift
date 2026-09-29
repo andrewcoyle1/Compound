@@ -134,11 +134,11 @@ class ExpenditurePresenter {
     
     func exerciseDescription(exerciseFrequency: ExerciseFrequency) -> String {
         switch exerciseFrequency {
-        case .never: return "No structured exercise"
-        case .oneToTwo: return "1–2 sessions per week"
-        case .threeToFour: return "3–4 sessions per week"
-        case .fiveToSix: return "5–6 sessions per week"
-        case .daily: return "Exercise most days"
+        case .never: return String(localized: "No structured exercise")
+        case .oneToTwo: return String(localized: "1–2 sessions per week")
+        case .threeToFour: return String(localized: "3–4 sessions per week")
+        case .fiveToSix: return String(localized: "5–6 sessions per week")
+        case .daily: return String(localized: "Exercise most days")
         }
     }
     
@@ -250,8 +250,8 @@ class ExpenditurePresenter {
             } catch {
                 interactor.trackEvent(event: Event.profileSaveFail(error: error))
                 router.showAlert(
-                    title: "Unable to Save Profile",
-                    subtitle: "Please check your internet connection and try again.",
+                    title: String(localized: "Unable to Save Profile"),
+                    subtitle: String(localized: "Please check your internet connection and try again."),
                     buttons: {
                         AnyView(
                             HStack {

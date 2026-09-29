@@ -38,7 +38,7 @@ class ExerciseEquipmentPresenter {
     }
 
     func variationName(for index: Int) -> String {
-        "Variation \(index + 1)"
+        String(localized: "Variation \(String(describing: index + 1))")
     }
 
     func onAddVariationPressed() {
@@ -90,14 +90,14 @@ class ExerciseEquipmentPresenter {
 
     func resistanceSubtitle(for variation: EquipmentVariationDraft) -> String {
         guard !variation.resistanceEquipment.isEmpty else {
-            return "Equipment that adds load to the exercise"
+            return String(localized: "Equipment that adds load to the exercise")
         }
         return variation.resistanceEquipment.map { name(for: $0) }.joined(separator: ", ")
     }
 
     func supportSubtitle(for variation: EquipmentVariationDraft) -> String {
         guard !variation.supportEquipment.isEmpty else {
-            return "Equipment that assists, stabilizes, or makes the movement possible"
+            return String(localized: "Equipment that assists, stabilizes, or makes the movement possible")
         }
         return variation.supportEquipment.map { name(for: $0) }.joined(separator: ", ")
     }

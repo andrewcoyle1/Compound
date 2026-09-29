@@ -34,7 +34,14 @@ class SmartProgressionSettingsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveWorkoutSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveWorkoutSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     func onViewAppear(delegate: SmartProgressionSettingsDelegate) {
@@ -55,9 +62,11 @@ extension SmartProgressionSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: SmartProgressionSettingsDelegate)
         case onDisappear(delegate: SmartProgressionSettingsDelegate)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "SmartProgressionSettingsView_Save_Fail"
             case .onAppear:                 return "SmartProgressionSettingsView_Appear"
             case .onDisappear:              return "SmartProgressionSettingsView_Disappear"
             }
@@ -65,6 +74,7 @@ extension SmartProgressionSettingsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
 //            default:
@@ -74,6 +84,7 @@ extension SmartProgressionSettingsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

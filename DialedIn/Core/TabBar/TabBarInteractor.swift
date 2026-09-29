@@ -9,6 +9,9 @@
 protocol TabBarInteractor: GlobalInteractor {
     var activeSession: WorkoutSessionModel? { get }
     var draftMeal: MealLogModel? { get }
+    var activityNotifications: [ActivityNotificationModel] { get }
+    var incomingFollowRequests: [FollowRequestModel] { get }
+    func consumePendingDeepLink() -> DeepLink?
 }
 
 extension CoreInteractor: TabBarInteractor { }

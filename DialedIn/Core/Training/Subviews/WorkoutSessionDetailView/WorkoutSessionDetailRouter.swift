@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol WorkoutSessionDetailRouter: GlobalRouter {
+protocol WorkoutSessionDetailRouter: ShareSheetRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif

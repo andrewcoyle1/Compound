@@ -52,6 +52,7 @@ class NutritionTargetChartPresenter {
         let calendar = Calendar.current
         let symbols = calendar.veryShortWeekdaySymbols // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
         // Reorder to start with Monday: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+        // Safe: a calendar always has seven weekday symbols.
         return Array(symbols[1...] + [symbols[0]])
     }
 
@@ -92,6 +93,7 @@ class NutritionTargetChartPresenter {
         for offset in 0..<Self.daysInWeek {
             let date = Calendar.current.date(byAdding: .day, value: offset, to: start) ?? start
             let key = date.dayKey
+            // Silent: local read for a chart; a missing day is a gap.
             if let dayTotals = try? interactor.getDailyTotals(dayKey: key) {
                 totals.append(dayTotals)
             } else {

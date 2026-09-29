@@ -65,7 +65,7 @@ class AddFreeWeightPresenter {
         guard freeWeight.wrappedValue.range.contains(where: {
             $0.availableWeights == freeWeightAvailable.availableWeights && $0.unit == freeWeightAvailable.unit
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "This weight is already added.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
             return 
         }
         self.freeWeight.wrappedValue.range.append(self.freeWeightAvailable)

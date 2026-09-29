@@ -11,8 +11,8 @@ struct OptimisationView: View {
         List {
             Section {
                 CustomToggleView(
-                    title: "Quick Add",
-                    subtitle: "Use default portion and skip the amount entry screen",
+                    title: String(localized: "Quick Add"),
+                    subtitle: String(localized: "Use default portion and skip the amount entry screen"),
                     bool: $presenter.quickAddEnabled
                 )
             }

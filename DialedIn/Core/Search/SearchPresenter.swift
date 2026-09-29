@@ -13,6 +13,7 @@ class SearchPresenter {
     
     private let interactor: SearchInteractor
     private let router: SearchRouter
+    private let followFlow: FollowFlow
     
     var searchString: String = ""
     
@@ -63,7 +64,7 @@ class SearchPresenter {
     }
     
     var filteredUsers: [UserModel] {
-        (interactor.followingUsers + users).filter { matches([$0.firstNameCalculated]) }
+        (interactor.followingUsers + users).filter { matches([$0.firstNameCalculated, $0.username]) }
     }
     
     private(set) var users: [UserModel] = []
@@ -95,8 +96,8 @@ class SearchPresenter {
             || !filteredUsers.isEmpty
     }
 
-    func isFollowing(userId: String) -> Bool {
-        interactor.followingIds.contains(userId)
+    func followState(for user: UserModel) -> FollowState {
+        followFlow.state(for: user)
     }
 
     init(
@@ -105,6 +106,7 @@ class SearchPresenter {
     ) {
         self.interactor = interactor
         self.router = router
+        self.followFlow = FollowFlow(interactor: interactor, router: router)
     }
 
     func performUnifiedSearch() {
@@ -115,7 +117,9 @@ class SearchPresenter {
             return
         }
 
-        let query = trimmedSearchString
+        // Not `trimmedSearchString`, which strips a leading `@`: that `@` is what routes a query to
+        // handles only. See `Username.searchRoute`.
+        let query = searchString.trimmingCharacters(in: .whitespacesAndNewlines)
         // Raised here, not in the task, so the header shows the spinner on the same tick. A task
         // superseded by a newer query leaves the flag to that query.
         isLoadingPeople = true
@@ -124,6 +128,7 @@ class SearchPresenter {
             try? await Task.sleep(for: .milliseconds(350))
             guard !Task.isCancelled else { return }
 
+            // Silent: search-as-you-type; a failed query shows no results rather than an alert per keystroke.
             let fetchedUsers = (try? await interactor.searchUsers(query: query)) ?? []
             guard !Task.isCancelled else { return }
 
@@ -291,7 +296,7 @@ class SearchPresenter {
             try await start()
             router.showWorkoutTrackerView()
         } catch {
-            router.showSimpleAlert(title: "Could Not Start Workout", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Could Not Start Workout"), subtitle: String(localized: "Please try again."))
         }
     }
 
@@ -299,8 +304,8 @@ class SearchPresenter {
         guard let userId = currentUser?.userId else { return }
         if let meal = interactor.draftMeal {
             router.showAlert(
-                title: "Unable to add new meal",
-                subtitle: "You already have an draft meal.",
+                title: String(localized: "Unable to add new meal"),
+                subtitle: String(localized: "You already have an draft meal."),
                 buttons: {
                     AnyView(
                         VStack {
@@ -340,24 +345,8 @@ class SearchPresenter {
         }
     }
 
-    func onFollowPressed(user: UserModel) {
-        Task {
-            do {
-                try await interactor.followUser(userId: user.userId)
-            } catch {
-                router.showSimpleAlert(title: "Unable to follow user", subtitle: "Please try again.")
-            }
-        }
-    }
-
-    func onUnfollowPressed(user: UserModel) {
-        Task {
-            do {
-                try await interactor.unfollowUser(userId: user.userId)
-            } catch {
-                router.showSimpleAlert(title: "Unable to unfollow user", subtitle: "Please try again.")
-            }
-        }
+    func onFollowButtonPressed(user: UserModel) {
+        followFlow.onButtonPressed(user: user)
     }
 
     /// The way to the screen that fills the shortcut row.
@@ -367,5 +356,20 @@ class SearchPresenter {
 
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {
         router.showProfileViewZoom(transitionId: transitionId, namespace: namespace)
+    }
+
+    // MARK: - Invite code
+
+    /// For an invite link received on another device: the code is typed in here instead.
+    var isEnteringInviteCode = false
+    var inviteCodeInput = ""
+
+    func onEnterInviteCodePressed() {
+        inviteCodeInput = ""
+        isEnteringInviteCode = true
+    }
+
+    func onInviteCodeSubmitted() async {
+        await InviteAcceptFlow(interactor: interactor, router: router).accept(code: inviteCodeInput)
     }
 }

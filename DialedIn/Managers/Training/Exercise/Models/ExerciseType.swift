@@ -17,11 +17,11 @@ enum ExerciseType: String, Equatable, CaseIterable, DataSyncModelProtocol, Picka
     
     var name: String {
         switch self {
-        case .compoundUpper: return "Upper Compound"
-        case .compoundLower: return "Lower Compound"
-        case .isolationUpper: return "Upper Isolation"
-        case .isolationLower: return "Lower Isolation"
-        case .core: return "Core"
+        case .compoundUpper: return String(localized: "Upper Compound")
+        case .compoundLower: return String(localized: "Lower Compound")
+        case .isolationUpper: return String(localized: "Upper Isolation")
+        case .isolationLower: return String(localized: "Lower Isolation")
+        case .core: return String(localized: "Core")
         }
     }
     

@@ -76,26 +76,26 @@ enum PreferredDiet: String, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .balanced:
-            return "Balanced"
+            return String(localized: "Balanced")
         case .lowFat:
-            return "Low Fat"
+            return String(localized: "Low Fat")
         case .lowCarb:
-            return "Low Carb"
+            return String(localized: "Low Carb")
         case .keto:
-            return "Keto"
+            return String(localized: "Keto")
         }
     }
     
     var detailedDescription: String {
         switch self {
         case .balanced:
-            return "Standard distribution of carbs and fat."
+            return String(localized: "Standard distribution of carbs and fat.")
         case .lowFat:
-            return "Fat will be reduced to prioritize carb and protein intake."
+            return String(localized: "Fat will be reduced to prioritize carb and protein intake.")
         case .lowCarb:
-            return "Carbs will be reduced to prioritize fat and protein intake."
+            return String(localized: "Carbs will be reduced to prioritize fat and protein intake.")
         case .keto:
-            return "Carbs will be very restricted to allow for higher fat intake."
+            return String(localized: "Carbs will be very restricted to allow for higher fat intake.")
         }
     }
 }

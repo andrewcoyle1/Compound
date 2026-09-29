@@ -34,6 +34,8 @@ struct FoodPhotoScannerPresenterTests {
 
     private final class Router: FoodPhotoScannerRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        private(set) var alertTitles: [String] = []
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -112,6 +114,21 @@ struct FoodPhotoScannerPresenterTests {
 
     /// A failure must stop the spinner. A spinner that never stops is indistinguishable from a
     /// request still in flight, and the user has no way back.
+    /// The analyser is a Cloud Function: offline, the photo is not sent and no spinner starts.
+    @Test("Test Offline A Photo Is Not Sent And Says You're Offline")
+    func testOfflineAPhotoIsNotSentAndSaysYoureOffline() async {
+        let interactor = Interactor()
+        interactor.isOffline = true
+        let router = Router()
+        let presenter = FoodPhotoScannerPresenter(interactor: interactor, router: router)
+
+        await presenter.onCapture(image)
+
+        #expect(router.alertTitles == [OfflineError.title])
+        #expect(interactor.analysedByteCounts.isEmpty)
+        #expect(!presenter.isAnalysing)
+    }
+
     @Test("Test A Failed Analysis Stops The Spinner And Is Reported")
     func testAFailedAnalysisStopsTheSpinnerAndIsReported() async {
         let screen = makeScreen()
@@ -233,6 +250,8 @@ struct MealDescribePresenterTests {
 
     private final class Router: MealDescribeRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        private(set) var alertTitles: [String] = []
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     /// Main-actor isolated so it is `Sendable` for the pick closure.
@@ -292,6 +311,21 @@ struct MealDescribePresenterTests {
 
         #expect(screen.interactor.describedTexts.isEmpty)
         #expect(!screen.presenter.isAnalysing)
+    }
+
+    @Test("Test Offline A Description Is Not Sent And Says You're Offline")
+    func testOfflineADescriptionIsNotSentAndSaysYoureOffline() async {
+        let interactor = Interactor()
+        interactor.isOffline = true
+        let router = Router()
+        let presenter = MealDescribePresenter(interactor: interactor, router: router)
+        presenter.descriptionText = "Porridge with honey"
+
+        await presenter.onLogFoodsPressed()
+
+        #expect(router.alertTitles == [OfflineError.title])
+        #expect(interactor.describedTexts.isEmpty)
+        #expect(!presenter.isAnalysing)
     }
 
     @Test("Test A Failed Description Stops The Spinner And Is Reported")

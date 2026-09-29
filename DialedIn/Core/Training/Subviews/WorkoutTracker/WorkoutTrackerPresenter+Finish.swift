@@ -24,16 +24,16 @@ extension WorkoutTrackerPresenter {
         static let retrying = AppToast(
             id: id,
             style: .progress,
-            message: "Couldn't save your workout. Retrying…",
+            message: String(localized: "Couldn't save your workout. Retrying…"),
             duration: .seconds(6)
         )
 
-        static let saved = AppToast(id: id, style: .success, message: "Workout saved.")
+        static let saved = AppToast(id: id, style: .success, message: String(localized: "Workout saved."))
 
         static let failed = AppToast(
             id: id,
             style: .failure,
-            message: "Couldn't save your workout. It's still on this device — resume it from Training.",
+            message: String(localized: "Couldn't save your workout. It's still on this device — resume it from Training."),
             duration: .seconds(8)
         )
     }

@@ -37,7 +37,7 @@ private struct PreviewView: View {
     var body: some View {
         AsyncCallToActionButton(
             isLoading: isLoading,
-            title: "Finish",
+            title: String(localized: "Finish"),
             action: {
                 isLoading = true
                 

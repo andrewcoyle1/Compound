@@ -120,22 +120,6 @@ struct WorkoutTemplateManagerTests {
         #expect(removed)
     }
 
-    /// Account deletion runs this, and it must not take the shipped library with it — those
-    /// templates are seeded once per install, not per account.
-    @Test("Test Deleting Every Template Leaves The Seeded Library Alone")
-    func testDeletingEveryTemplateLeavesTheSeededLibraryAlone() async throws {
-        let manager = await TestManagers.signedInWorkoutTemplateManager(
-            user: [template(id: "w1", name: "Push"), template(id: "w2", name: "Pull")],
-            system: [template(id: "s1", name: "Seeded", authorId: "official")]
-        )
-
-        try await manager.deleteAllWorkoutTemplateForAuthor()
-
-        let removed = await TestManagers.eventually { manager.userWorkoutTemplates.isEmpty }
-        #expect(removed)
-        #expect(manager.systemWorkoutTemplates.map(\.id) == ["s1"])
-    }
-
     @Test("Test Signing Out Empties The User's Library")
     func testSigningOutEmptiesTheUsersLibrary() async {
         let manager = await TestManagers.signedInWorkoutTemplateManager(

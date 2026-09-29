@@ -74,26 +74,26 @@ enum ProteinIntake: String, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .low:
-            return "Low"
+            return String(localized: "Low")
         case .moderate:
-            return "Moderate"
+            return String(localized: "Moderate")
         case .high:
-            return "High"
+            return String(localized: "High")
         case .veryHigh:
-            return "Very High"
+            return String(localized: "Very High")
         }
     }
     
     var detailedDescription: String {
         switch self {
         case .low:
-            return "On the low side of the optimal range."
+            return String(localized: "On the low side of the optimal range.")
         case .moderate:
-            return "In the middle of the optimal range."
+            return String(localized: "In the middle of the optimal range.")
         case .high:
-            return "On the high end of the optimal range."
+            return String(localized: "On the high end of the optimal range.")
         case .veryHigh:
-            return "Highest recommended intake."
+            return String(localized: "Highest recommended intake.")
         }
     }
 }

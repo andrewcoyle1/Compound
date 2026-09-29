@@ -167,8 +167,8 @@ struct CreateFoodView: View {
     private var submitToPublicDatabaseSection: some View {
         Section {
             CustomToggleView(
-                title: "Submit Foods to the Public Database?",
-                subtitle: "Toggle this option to contribute new foods",
+                title: String(localized: "Submit Foods to the Public Database?"),
+                subtitle: String(localized: "Toggle this option to contribute new foods"),
                 bool: $presenter.contributeToPublicDatabase
             )
             .removeListRowFormatting()

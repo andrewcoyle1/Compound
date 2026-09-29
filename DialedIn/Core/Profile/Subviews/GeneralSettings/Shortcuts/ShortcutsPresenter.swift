@@ -61,7 +61,14 @@ class ShortcutsPresenter {
         settings.setQuickActions(actions)
         interactor.trackEvent(event: event)
         let settings = settings
-        Task { try? await interactor.saveShortcutSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveShortcutSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     /// Re-read rather than trusting the snapshot taken at init: `apply(_:event:)` writes the whole
@@ -86,9 +93,11 @@ extension ShortcutsPresenter {
         case actionsRemoved(count: Int)
         case actionsReordered
         case defaultsRestored
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "ShortcutsView_Save_Fail"
             case .onAppear:         return "ShortcutsView_Appear"
             case .onDisappear:      return "ShortcutsView_Disappear"
             case .actionAdded:      return "ShortcutsView_Action_Added"
@@ -100,6 +109,7 @@ extension ShortcutsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .actionAdded(action: let action):
                 return ["action": action.rawValue]
             case .actionsRemoved(count: let count):
@@ -111,6 +121,7 @@ extension ShortcutsPresenter {
 
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

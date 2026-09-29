@@ -171,7 +171,7 @@ enum NutritionVolumeUnit: String, PickableUnit {
     var name: String {
         switch self {
         case .millileter: return "milliliters"
-        case .flOunce: return "fluid ounces"
+        case .flOunce: return String(localized: "fluid ounces")
         }
     }
     
@@ -191,8 +191,8 @@ enum EnergyUnit: String, PickableUnit {
     
     var name: String {
         switch self {
-        case .kcal: return "Kilocalories"
-        case .kjoule: return "Kilojoules"
+        case .kcal: return String(localized: "Kilocalories")
+        case .kjoule: return String(localized: "Kilojoules")
         }
     }
     

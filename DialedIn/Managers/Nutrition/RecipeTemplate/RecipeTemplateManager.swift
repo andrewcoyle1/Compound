@@ -44,12 +44,6 @@ class RecipeTemplateManager {
     func deleteRecipeTemplate(id: String) async throws {
         try await userRecipeTemplateSyncEngine.deleteDocument(id: id)
     }
-    
-    func deleteAllRecipeTemplates() async throws {
-        for recipe in userRecipeTemplates {
-            try await userRecipeTemplateSyncEngine.deleteDocument(id: recipe.id)
-        }
-    }
 }
  
 extension CoreInteractor {

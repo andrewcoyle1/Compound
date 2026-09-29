@@ -94,7 +94,12 @@ class WorkoutSettingsPresenter {
 
     private func save() {
         Task {
-            try? await interactor.saveWorkoutSettings(settings)
+            do {
+                try await interactor.saveWorkoutSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
         }
     }
 }
@@ -104,9 +109,11 @@ extension WorkoutSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: WorkoutSettingsDelegate)
         case onDisappear(delegate: WorkoutSettingsDelegate)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "WorkoutSettingsView_Save_Fail"
             case .onAppear:                 return "WorkoutSettingsView_Appear"
             case .onDisappear:              return "WorkoutSettingsView_Disappear"
             }
@@ -114,6 +121,7 @@ extension WorkoutSettingsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             }
@@ -121,6 +129,7 @@ extension WorkoutSettingsPresenter {
 
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

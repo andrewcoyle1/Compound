@@ -51,7 +51,14 @@ class CustomiseAnalyticsPresenter {
 
     private func save() {
         let settings = settings
-        Task { try? await interactor.saveAnalyticsSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveAnalyticsSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
     
     /// Re-read rather than trusting the snapshot taken at init: `save()` writes the whole
@@ -75,9 +82,11 @@ extension CustomiseAnalyticsPresenter {
         case onDisappear
         case sectionVisibilityChanged(section: AnalyticsSection, isVisible: Bool)
         case showAllPressed
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "CustomiseAnalyticsView_Save_Fail"
             case .onAppear:                 return "CustomiseAnalyticsView_Appear"
             case .onDisappear:              return "CustomiseAnalyticsView_Disappear"
             case .sectionVisibilityChanged: return "CustomiseAnalyticsView_SectionVisibility_Changed"
@@ -87,6 +96,7 @@ extension CustomiseAnalyticsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .sectionVisibilityChanged(section: let section, isVisible: let isVisible):
                 return ["section": section.rawValue, "is_visible": isVisible]
             default:
@@ -96,6 +106,7 @@ extension CustomiseAnalyticsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

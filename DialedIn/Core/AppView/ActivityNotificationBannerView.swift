@@ -14,13 +14,27 @@ struct ActivityNotificationBannerView: View {
     private var message: String {
         switch notification.type {
         case .like:
-            return "\(notification.actorName) liked your workout"
+            return String(localized: "\(notification.actorName) liked your workout")
         case .comment:
             if let text = notification.commentText, !text.isEmpty {
                 let preview = text.count > 40 ? String(text.prefix(40)) + "…" : text
-                return "\(notification.actorName) commented: \"\(preview)\""
+                return String(localized: "\(notification.actorName) commented: \"\(preview)\"")
             }
-            return "\(notification.actorName) commented on your workout"
+            return String(localized: "\(notification.actorName) commented on your workout")
+        case .follow:
+            return String(localized: "\(notification.actorName) started following you")
+        case .nudge:
+            return String(localized: "\(notification.actorName) nudged you to train")
+        case .mention:
+            let text = notification.commentText ?? ""
+            let preview = text.count > 40 ? String(text.prefix(40)) + "…" : text
+            return String(localized: "\(notification.actorName) mentioned you: \"\(preview)\"")
+        case .followAccepted:
+            return String(localized: "\(notification.actorName) accepted your follow request")
+        case .share:
+            return String(localized: "\(notification.actorName) shared \(notification.commentText ?? "a workout") with you")
+        case .challengeComplete:
+            return String(localized: "You finished \(notification.commentText ?? "a challenge")")
         }
     }
 

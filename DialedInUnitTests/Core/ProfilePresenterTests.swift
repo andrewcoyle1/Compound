@@ -25,6 +25,12 @@ struct ProfilePresenterTests {
         var currentGoal: WeightGoal?
         var currentDietPlan: DietPlan?
         var isPremium: Bool = false
+        var invite = InviteModel(code: "PUSH2345", inviterId: "me")
+        var inviteFails = false
+        func myInvite() async throws -> InviteModel {
+            if inviteFails { throw InviteError.unavailable }
+            return invite
+        }
     }
 
     private final class Router: ProfileRouter {
@@ -50,6 +56,8 @@ struct ProfilePresenterTests {
         func showExpenditureSettingsView(delegate: ExpenditureSettingsDelegate) { shown.append("expenditureSettings") }
         func showStrategySettingsView(delegate: StrategySettingsDelegate) { shown.append("strategySettings") }
         func showPreferredDietView(isFromSettings: Bool) { shown.append("preferredDiet-\(isFromSettings)") }
+        func showShareSheet(items: [Any]) { shown.append("share: \(items.first as? String ?? "")") }
+        func showSimpleAlert(title: String, subtitle: String?) { shown.append("alert: \(title)") }
         private(set) var ratingsYesPressed: (() -> Void)?
         private(set) var ratingsNoPressed: (() -> Void)?
 
@@ -173,5 +181,40 @@ struct ProfilePresenterTests {
     @Test("Test The Ratings Yes Event Is Named For The Profile Screen")
     func testTheRatingsYesEventIsNamedForTheProfileScreen() {
         #expect(ProfilePresenter.Event.ratingsYesPressed.eventName == "ProfileView_RatingsYes_Pressed")
+    }
+
+    // MARK: - Invites
+
+    /// The row shares the user's own link in the message a friend receives.
+    @Test("Test Invite A Friend Shares The Invite Link")
+    func testInviteAFriendSharesTheInviteLink() async {
+        let screen = makeScreen()
+
+        await screen.presenter.onInviteFriendPressed()
+
+        #expect(screen.router.shown == ["share: Train with me on Compound: compound://join/PUSH2345"])
+        #expect(screen.interactor.trackedEventNames == ["ProfileView_InviteFriend_Press"])
+    }
+
+    /// Creating the invite is a server write the first time, so offline it is not started.
+    @Test("Test Offline Invite Says You're Offline Instead Of Sharing")
+    func testOfflineInviteSaysYoureOfflineInsteadOfSharing() async {
+        let screen = makeScreen()
+        screen.interactor.isOffline = true
+
+        await screen.presenter.onInviteFriendPressed()
+
+        #expect(screen.router.shown == ["alert: \(OfflineError.title)"])
+    }
+
+    /// No invite, no share sheet with nothing in it.
+    @Test("Test A Failed Invite Says So Instead Of Sharing")
+    func testAFailedInviteSaysSoInsteadOfSharing() async {
+        let screen = makeScreen()
+        screen.interactor.inviteFails = true
+
+        await screen.presenter.onInviteFriendPressed()
+
+        #expect(screen.router.shown == ["alert: Couldn't create invite"])
     }
 }

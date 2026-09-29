@@ -23,7 +23,14 @@ class PrevWORefSettingsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveWorkoutSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveWorkoutSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     /// Re-read rather than trusting the snapshot taken at init: `save()` writes the whole
@@ -44,9 +51,11 @@ extension PrevWORefSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: PrevWORefSettingsDelegate)
         case onDisappear(delegate: PrevWORefSettingsDelegate)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "PreviousWorkoutReferenceSettingsView_Save_Fail"
             case .onAppear:                 return "PreviousWorkoutReferenceSettingsView_Appear"
             case .onDisappear:              return "PreviousWorkoutReferenceSettingsView_Disappear"
             }
@@ -54,6 +63,7 @@ extension PrevWORefSettingsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
 //            default:
@@ -63,6 +73,7 @@ extension PrevWORefSettingsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

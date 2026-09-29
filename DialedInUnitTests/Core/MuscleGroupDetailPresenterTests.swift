@@ -148,6 +148,33 @@ struct MuscleGroupDetailPresenterTests {
 
     // MARK: - Which sets count
 
+    /// A unilateral set is logged as a left and a right row, but it is one set of work. This chart
+    /// used to count both rows while the Muscle Groups cards counted one, so the two disagreed.
+    @Test("Test A Left And Right Pair Counts As One Set")
+    func testALeftAndRightPairCountsAsOneSet() async throws {
+        let sides: [SetSide] = [.left, .right]
+        let pair = sides.enumerated().map { offset, side in
+            WorkoutSetModel(
+                id: "pair-\(offset)",
+                authorId: "author-1",
+                index: 1,
+                reps: 8,
+                side: side,
+                isWarmup: false,
+                completedAt: start,
+                dateCreated: start
+            )
+        }
+        let presenter = makePresenter(
+            sessions: [session(id: "s1", sets: pair)],
+            exercises: [exercise(id: "exercise-1", muscles: [.chest: .primary])]
+        )
+
+        await presenter.loadData()
+
+        #expect(try #require(presenter.entries.first).sets == 1)
+    }
+
     /// A set that was planned but never done is not work performed.
     @Test("Test Unfinished Sets Are Not Counted")
     func testUnfinishedSetsAreNotCounted() async throws {

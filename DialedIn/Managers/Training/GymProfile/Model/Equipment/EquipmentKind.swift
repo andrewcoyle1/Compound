@@ -27,27 +27,27 @@ extension EquipmentKind {
     var sectionTitle: String {
         switch self {
         case .freeWeight:
-            return "Free Weights"
+            return String(localized: "Free Weights")
         case .loadableBar:
-            return "Loadable Bars"
+            return String(localized: "Loadable Bars")
         case .fixedWeightBar:
-            return "Fixed Weight Bars"
+            return String(localized: "Fixed Weight Bars")
         case .bands:
-            return "Bands"
+            return String(localized: "Bands")
         case .bodyWeight:
-            return "Body Weights"
+            return String(localized: "Body Weights")
         case .supportEquipment:
-            return "Support Equipment"
+            return String(localized: "Support Equipment")
         case .accessoryEquipment:
-            return "Accessory Equipment"
+            return String(localized: "Accessory Equipment")
         case .loadableAccessoryEquipment:
-            return "Loadable Accessory Equipment"
+            return String(localized: "Loadable Accessory Equipment")
         case .cableMachine:
-            return "Cable Machines"
+            return String(localized: "Cable Machines")
         case .plateLoadedMachine:
-            return "Plate Loaded Machines"
+            return String(localized: "Plate Loaded Machines")
         case .pinLoadedMachine:
-            return "Pin Loaded Machines"
+            return String(localized: "Pin Loaded Machines")
         }
     }
 }

@@ -20,7 +20,7 @@ extension MuscleGroupDetailEntry: @MainActor MetricEntry {
     }
 
     var displayValue: String {
-        "\(sets.formatted(.number.precision(.fractionLength(0...1)))) sets"
+        String(localized: "\(sets.formatted(.number.precision(.fractionLength(0...1)))) sets")
     }
 
     var systemImageName: String {

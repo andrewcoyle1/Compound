@@ -13,7 +13,7 @@ struct NutritionCard: View {
     let onLogMealTapped: () -> Void
     
     var body: some View {
-        DashboardCard(title: "Today's Nutrition") {
+        DashboardCard(title: String(localized: "Today's Nutrition")) {
             cardItem
         }
     }
@@ -44,7 +44,7 @@ struct NutritionCard: View {
                         .foregroundStyle(.secondary)
                     Spacer()
                     let remaining = calorieTarget - calories
-                    Text(remaining > 0 ? "\(Int(remaining)) remaining" : "Goal reached!")
+                    Text(remaining > 0 ? String(localized: "\(String(describing: Int(remaining))) remaining") : String(localized: "Goal reached!"))
                         .font(.caption)
                         .foregroundStyle(remaining > 0 ? Color.secondary : Color.orange)
                 }

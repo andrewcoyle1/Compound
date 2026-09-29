@@ -260,6 +260,7 @@ private func previewDelegate() -> CalendarHeaderDelegate {
                 } label: {
                     Image(systemName: "calendar")
                 }
+                .accessibilityLabel("Show calendar")
             }
         }
         .safeAreaInset(edge: .top) {

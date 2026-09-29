@@ -9,6 +9,7 @@
 protocol TrainingProgramLibraryInteractor: GlobalInteractor {
     var activeTrainingProgram: TrainingProgram? { get }
     var trainingPrograms: [TrainingProgram] { get }
+    var prebuiltPrograms: [TrainingProgram] { get }
     func setActiveTrainingProgram(programId: String) async throws
     func deleteTrainingProgram(programId: String) async throws
 }

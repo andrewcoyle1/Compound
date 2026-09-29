@@ -25,6 +25,9 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
             if presenter.savedPrograms.isEmpty && presenter.activeTrainingProgram == nil {
                 emptyState
             }
+            if !presenter.prebuiltPrograms.isEmpty {
+                templatesSection
+            }
         }
         .navigationTitle("My Programs")
         .navigationBarTitleDisplayMode(.inline)
@@ -49,15 +52,12 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
 
     private var savedProgramsSection: some View {
         Section {
-            inactiveProgramSection(InactiveTrainingProgramDelegate(inactivePrograms: presenter.nonActiveTrainingPrograms))
-//            ForEach(presenter.nonActiveTrainingPrograms) { program in
-//                savedProgramRow(program)
-//                    .swipeActions(edge: .trailing) {
-//                        Button(role: .destructive) {
-//                            presenter.showDeleteAlert(program: program)
-//                        }
-//                    }
-//            }
+            inactiveProgramSection(
+                InactiveTrainingProgramDelegate(
+                    inactivePrograms: presenter.nonActiveTrainingPrograms,
+                    onDelete: { presenter.showDeleteAlert(program: $0) }
+                )
+            )
         } header: {
             Text("Saved Programs")
         } footer: {
@@ -65,35 +65,26 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
         }
     }
     
-    private func savedProgramRow(_ program: TrainingProgram) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color(hex: program.colour).opacity(0.2))
-                
-                Image(systemName: program.icon)
-                    .foregroundStyle(Color(hex: program.colour))
+    private var templatesSection: some View {
+        Section {
+            ForEach(presenter.prebuiltPrograms) { program in
+                HStack {
+                    TrainingProgramHeader(program: program)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(.secondary)
+                }
+                .anyButton {
+                    presenter.onPrebuiltProgramPressed(program)
+                }
             }
-            .frame(width: 40, height: 40)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(program.name)
-                    .font(.headline)
-                
-                Text("\(program.workoutTemplates.count) days • \(program.numMicrocycles) cycles")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
-            Spacer()
-        }
-        .padding(.vertical, 4)
-        .contentShape(Rectangle())
-        .anyButton {
-            presenter.onSavedProgramPressed(program)
+        } header: {
+            Text("Templates")
+        } footer: {
+            Text("Starting a template saves your own copy and makes it your active program.")
         }
     }
-        
+
     private var emptyState: some View {
         ContentUnavailableView {
             Label("No Programs", systemImage: "calendar.badge.clock")

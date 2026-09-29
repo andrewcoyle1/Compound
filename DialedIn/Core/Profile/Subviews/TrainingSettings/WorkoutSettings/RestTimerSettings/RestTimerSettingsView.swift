@@ -38,8 +38,8 @@ struct RestTimerSettingsView: View {
         Section {
             CustomLabelButtonView(
                 symbolName: "heart.fill",
-                title: "Timer Duration",
-                subtitle: "Configure rest duration for different exercise types") {
+                title: String(localized: "Timer Duration"),
+                subtitle: String(localized: "Configure rest duration for different exercise types")) {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.secondary)
                         .padding()
@@ -50,20 +50,20 @@ struct RestTimerSettingsView: View {
                 }
             CustomToggleView(
                 symbolName: "flag",
-                title: "Rest After Last Warm-Up Set",
-                subtitle: "Rest before the first working set. Warm-up sets never rest between themselves",
+                title: String(localized: "Rest After Last Warm-Up Set"),
+                subtitle: String(localized: "Rest before the first working set. Warm-up sets never rest between themselves"),
                 bool: $presenter.restAfterLastWarmUp
             )
             CustomToggleView(
                 symbolName: "checkmark.circle.fill",
-                title: "Rest Between Exercises",
-                subtitle: "Use rest timers when moving between exercises",
+                title: String(localized: "Rest Between Exercises"),
+                subtitle: String(localized: "Use rest timers when moving between exercises"),
                 bool: $presenter.restBetweenExercises
             )
             CustomToggleView(
                 symbolName: "signpost.right.and.left.fill",
-                title: "Rest Between Left/Right Sets",
-                subtitle: "Use rest timers in between left and right sets",
+                title: String(localized: "Rest Between Left/Right Sets"),
+                subtitle: String(localized: "Use rest timers in between left and right sets"),
                 bool: $presenter.restBetweenSideSets
             )
         } header: {
@@ -75,20 +75,20 @@ struct RestTimerSettingsView: View {
         Section {
             CustomToggleView(
                 symbolName: "timer",
-                title: "Use Rest Timers",
-                subtitle: "Rest timers will count down after each exercise set",
+                title: String(localized: "Use Rest Timers"),
+                subtitle: String(localized: "Rest timers will count down after each exercise set"),
                 bool: $presenter.useRestTimers
             )
             CustomToggleView(
                 symbolName: "music.note",
-                title: "Play Sound",
-                subtitle: "Play sound when rest time is over",
+                title: String(localized: "Play Sound"),
+                subtitle: String(localized: "Play sound when rest time is over"),
                 bool: $presenter.restTimerPlaySound
             )
             CustomToggleView(
                 symbolName: "apple.haptics.and.exclamationmark.triangle",
-                title: "Vibrate",
-                subtitle: "Vibrate when rest time is over",
+                title: String(localized: "Vibrate"),
+                subtitle: String(localized: "Vibrate when rest time is over"),
                 bool: $presenter.restTimerVibrate
             )
         } header: {
@@ -100,7 +100,7 @@ struct RestTimerSettingsView: View {
         Section {
             CustomLabelButtonView(
                 symbolName: "figure.yoga",
-                title: "Rest After Last Warm-Up Set",
+                title: String(localized: "Rest After Last Warm-Up Set"),
                 subtitle: presenter.formattedScaling(presenter.warmUpRestScaling)) {
                     Text("Edit")
                         .padding(.horizontal, 8)
@@ -112,7 +112,7 @@ struct RestTimerSettingsView: View {
                 }
             CustomLabelButtonView(
                 symbolName: "checkmark.circle.fill",
-                title: "Rest Between Exercises",
+                title: String(localized: "Rest Between Exercises"),
                 subtitle: presenter.formattedScaling(presenter.betweenExercisesRestScaling)) {
                     Text("Edit")
                         .padding(.horizontal, 8)
@@ -124,7 +124,7 @@ struct RestTimerSettingsView: View {
                 }
             CustomLabelButtonView(
                 symbolName: "signpost.right.and.left.fill",
-                title: "Rest Between Left/Right Sets",
+                title: String(localized: "Rest Between Left/Right Sets"),
                 subtitle: presenter.formattedScaling(presenter.sideSetRestScaling)) {
                     Text("Edit")
                         .padding(.horizontal, 8)

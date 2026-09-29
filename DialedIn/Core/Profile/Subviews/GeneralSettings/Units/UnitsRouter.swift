@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol UnitsRouter {
+protocol UnitsRouter: GlobalRouter {
     
 }
 

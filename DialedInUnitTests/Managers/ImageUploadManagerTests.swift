@@ -34,7 +34,7 @@ private actor ImageUploadRecordingService: ImageUploadService {
         self.deleteError = deleteError
     }
 
-    func uploadImage(image: PlatformImage, path: String) async throws -> URL {
+    func uploadImage(image: PlatformImage, path: String, maxDimension: CGFloat, quality: CGFloat) async throws -> URL {
         uploadedPaths.append(path)
         uploadedSizes.append(image.size)
         if let uploadError { throw uploadError }

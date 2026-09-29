@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol ExpenditureSettingsRouter {
+protocol ExpenditureSettingsRouter: GlobalRouter {
     
 }
 

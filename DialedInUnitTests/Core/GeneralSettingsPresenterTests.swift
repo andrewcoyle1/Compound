@@ -29,7 +29,9 @@ struct GeneralSettingsShortcutsTests {
         }
     }
 
-    private final class Router: ShortcutsRouter { }
+    private final class Router: ShortcutsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     private struct Screen {
         let presenter: ShortcutsPresenter
@@ -192,7 +194,9 @@ struct GeneralSettingsAnalyticsTests {
         }
     }
 
-    private final class Router: CustomiseAnalyticsRouter { }
+    private final class Router: CustomiseAnalyticsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     private struct Screen {
         let presenter: CustomiseAnalyticsPresenter
@@ -334,7 +338,9 @@ struct GeneralSettingsUnitsTests {
         }
     }
 
-    private final class Router: UnitsRouter { }
+    private final class Router: UnitsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     private struct Screen {
         let presenter: UnitsPresenter

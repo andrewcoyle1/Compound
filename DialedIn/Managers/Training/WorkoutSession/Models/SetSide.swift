@@ -40,8 +40,8 @@ enum SetSide: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var name: String {
         switch self {
-        case .left: return "Left"
-        case .right: return "Right"
+        case .left: return String(localized: "Left")
+        case .right: return String(localized: "Right")
         }
     }
 

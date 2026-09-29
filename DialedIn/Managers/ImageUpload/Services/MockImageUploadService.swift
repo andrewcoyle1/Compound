@@ -7,7 +7,7 @@
 
 import SwiftUI
 struct MockImageUploadService: ImageUploadService {
-    func uploadImage(image: PlatformImage, path: String) async throws -> URL {
+    func uploadImage(image: PlatformImage, path: String, maxDimension: CGFloat, quality: CGFloat) async throws -> URL {
         URL(string: "https://example.com/image.png")!
     }
     

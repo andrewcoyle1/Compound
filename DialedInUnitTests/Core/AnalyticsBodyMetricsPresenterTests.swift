@@ -38,6 +38,7 @@ struct AnalyticsBodyMetricsPresenterTests {
         func showBodyRatioView(delegate: BodyRatioDelegate, themeColor: Color?) { shown.append("ratio-\(delegate.kind.rawValue)") }
         func showBodyMeasurementDetailView(kind: BodyMeasurementKind, themeColor: Color?) { shown.append("detail-\(kind)") }
         func showLogMeasurementView(kind: BodyMeasurementKind) { shown.append("log-\(kind)") }
+        func showProgressPhotosView() { }
     }
 
     private struct Screen {

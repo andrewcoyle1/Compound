@@ -134,7 +134,7 @@ private enum LoadError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noVariations:
-            return "No equipment variations defined for this exercise."
+            return String(localized: "No equipment variations defined for this exercise.")
         }
     }
 }

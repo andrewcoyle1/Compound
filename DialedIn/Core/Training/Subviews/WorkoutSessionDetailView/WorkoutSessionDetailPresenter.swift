@@ -97,8 +97,8 @@ class WorkoutSessionDetailPresenter {
         
     func showDiscardChangesAlert(session: WorkoutSessionModel) {
         router.showAlert(
-            title: "Discard changes?",
-            subtitle: "You have unsaved changes. This will discard them.",
+            title: String(localized: "Discard changes?"),
+            subtitle: String(localized: "You have unsaved changes. This will discard them."),
             buttons: {
                 AnyView(
                     VStack {
@@ -163,7 +163,7 @@ class WorkoutSessionDetailPresenter {
                 try await interactor.saveWorkoutSession(session)
             } catch {
                 router.showSimpleAlert(
-                    title: "Save Failed",
+                    title: String(localized: "Save Failed"),
                     subtitle: "Unable to save the change. Please try again."
                 )
             }
@@ -195,7 +195,7 @@ class WorkoutSessionDetailPresenter {
             dismissScreen()
         } catch {
             router.showSimpleAlert(
-                title: "Save Failed",
+                title: String(localized: "Save Failed"),
                 subtitle: "Unable to save changes. Please try again."
             )
         }
@@ -377,8 +377,8 @@ class WorkoutSessionDetailPresenter {
     
     func onDeletePressed(session: WorkoutSessionModel) {
         router.showAlert(
-            title: "Delete Workout?",
-            subtitle: "Are you sure you want to delete this workout? This cannot be undone.") {
+            title: String(localized: "Delete Workout?"),
+            subtitle: String(localized: "Are you sure you want to delete this workout? This cannot be undone.")) {
                 AnyView(
                     HStack {
                         Button(role: .cancel) { }
@@ -390,10 +390,16 @@ class WorkoutSessionDetailPresenter {
             }
     }
 
+    /// Dismisses only once the delete has landed, so a failure can still be shown on this screen.
     func deleteSession(session: WorkoutSessionModel) {
-        router.dismissScreen()
         Task {
-            try? await interactor.deleteWorkoutSession(id: session.id)
+            do {
+                try await interactor.deleteWorkoutSession(id: session.id)
+                router.dismissScreen()
+            } catch {
+                interactor.trackEvent(event: Event.deleteSessionFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Delete Workout"), subtitle: String(localized: "Please try again."))
+            }
         }
     }
 
@@ -412,9 +418,73 @@ class WorkoutSessionDetailPresenter {
         )
     }
 
+    // MARK: - Share Image
+
+    /// First name and avatar of the author only, and no comments. The author may still be loading
+    /// when this is tapped, in which case the card goes out without a name rather than waiting.
+    func shareCardContent(session: WorkoutSessionModel) -> ShareCardContent {
+        ShareCardContent.make(session: session, author: author, history: interactor.workoutSessions(authoredBy: session.authorId))
+    }
+
+    func onShareImagePressed(session: WorkoutSessionModel, format: WorkoutShareCardView.Format) {
+        let content = shareCardContent(session: session)
+        router.showLoadingModal()
+        Task {
+            let image = await ShareCardRenderer.renderCard(content, format: format)
+            router.dismissModal()
+            if let image {
+                router.showShareSheet(items: [image])
+            } else {
+                router.showSimpleAlert(title: String(localized: "Unable to Create Image"), subtitle: String(localized: "Please try again."))
+            }
+        }
+    }
+
+    // MARK: - Copy Link
+
+    /// The session's public web page, absent where that page would refuse it — including while
+    /// the author is still loading, since a private author's link would only 404.
+    func webLink(session: WorkoutSessionModel) -> URL? {
+        SessionWebLink.url(for: session, author: author)
+    }
+
+    func onCopyLinkPressed(_ link: URL, session: WorkoutSessionModel) {
+        UIPasteboard.general.url = link
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.copyLink(sessionId: session.id))
+    }
+
 #if DEV || MOCK
 func onDevSettingsPressed() {
     router.showDevSettingsView()
 }
 #endif
+}
+
+extension WorkoutSessionDetailPresenter {
+    enum Event: LoggableEvent {
+        case deleteSessionFail(error: Error)
+        case copyLink(sessionId: String)
+
+        var eventName: String {
+            switch self {
+            case .deleteSessionFail: return "WorkoutSessionDetailView_DeleteSession_Fail"
+            case .copyLink: return "WorkoutSessionDetailView_CopyLink"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .deleteSessionFail(error: let error): return error.eventParameters
+            case .copyLink(let sessionId): return ["session_id": sessionId]
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteSessionFail: return .severe
+            case .copyLink: return .analytic
+            }
+        }
+    }
 }

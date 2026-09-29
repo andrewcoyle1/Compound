@@ -65,7 +65,7 @@ class HealthDisclaimerPresenter {
                 
                 router.dismissModal()
                 router.showSimpleAlert(
-                    title: "Unable to save",
+                    title: String(localized: "Unable to save"),
                     subtitle: "We were unable to save your consent. Please check your internet connection and try again."
                 )
             }

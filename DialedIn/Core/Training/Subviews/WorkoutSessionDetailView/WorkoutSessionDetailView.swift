@@ -137,12 +137,12 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
     
     private var workoutDetailsSection: some View {
         Section {
-            CustomLabelButtonView(symbolName: "scalemass", title: "Volume") {
+            CustomLabelButtonView(symbolName: "scalemass", title: String(localized: "Volume")) {
                 Text(presenter.volumeFormatted(session: session))
             }
             CustomLabelButtonView(
                 symbolName: "arrow.right",
-                title: "Start Time",
+                title: String(localized: "Start Time"),
                 subtitle: session.dateCreated.formatted(date: .long, time: .shortened)
             ) {
                 Text("Edit")
@@ -156,7 +156,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
                 CustomLabelButtonView(
                     symbolName: "clock",
-                    title: "Duration",
+                    title: String(localized: "Duration"),
                     subtitle: Date.formatDuration(duration)
                 ) {
                     Text("Edit")
@@ -171,7 +171,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
 
             CustomLabelButtonView(
                 symbolName: "pencil",
-                title: "Edit Workout",
+                title: String(localized: "Edit Workout"),
                 subtitle: "Go to the workout editor"
             ) {
                 Text("Edit")
@@ -182,6 +182,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         presenter.enterEditMode(session: session)
                     }
             }
+
+            notesEditor()
         } header: {
             Text("Workout Details")
         }
@@ -192,6 +194,10 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         Section {
             ForEach(session.exercises) { exercise in
                 DisclosureGroup {
+                    if let note = exercise.notes {
+                        Label(note, systemImage: "note.text")
+                            .font(.subheadline)
+                    }
                     ForEach(exercise.workingSets, id: \.id) { set in
                         SetDetailRow(
                             set: set,
@@ -284,6 +290,23 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             }
         }
         
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                ForEach(WorkoutShareCardView.Format.allCases, id: \.self) { format in
+                    Button(format.title) {
+                        presenter.onShareImagePressed(session: session, format: format)
+                    }
+                }
+                if let link = presenter.webLink(session: session) {
+                    Button("Copy Link", systemImage: "link") {
+                        presenter.onCopyLinkPressed(link, session: session)
+                    }
+                }
+            } label: {
+                Label("Share Image", systemImage: "square.and.arrow.up")
+            }
+        }
+
         if presenter.isAuthor(sessionAuthorId: session.authorId) {
 //            ToolbarItem(placement: .topBarTrailing) {
 //                if presenter.isEditMode {
@@ -388,6 +411,20 @@ extension CoreRouter {
         router.showScreen(.sheet) { router in
             builder.workoutSessionDetailView(router: router, delegate: delegate)
         }
+    }
+
+    /// The session with its comments already open on top, for a comment or mention notification.
+    /// One `showScreens` call so the comments sheet is presented from the detail sheet's router,
+    /// not from the screen that asked.
+    func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) {
+        router.showScreens(destinations: [
+            AnyDestination(segue: .sheet) { router in
+                builder.workoutSessionDetailView(router: router, delegate: delegate)
+            },
+            AnyDestination(segue: .sheet) { router in
+                builder.commentsView(router: router, delegate: CommentsDelegate(session: delegate.initialSession))
+            }
+        ])
     }
 }
 

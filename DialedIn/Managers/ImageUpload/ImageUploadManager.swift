@@ -19,6 +19,10 @@ class ImageUploadManager {
     func uploadImage(image: PlatformImage, path: String) async throws -> URL {
         try await service.uploadImage(image: image, path: path)
     }
+
+    func uploadImage(image: PlatformImage, path: String, maxDimension: CGFloat, quality: CGFloat) async throws -> URL {
+        try await service.uploadImage(image: image, path: path, maxDimension: maxDimension, quality: quality)
+    }
     
     func deleteImage(path: String) async throws {
         try await service.deleteImage(path: path)

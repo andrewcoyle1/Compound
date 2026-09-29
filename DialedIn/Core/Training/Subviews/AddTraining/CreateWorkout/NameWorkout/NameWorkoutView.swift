@@ -27,7 +27,7 @@ struct NameWorkoutView: View {
                 Text("Workout name")
             }
         }
-        .navigationTitle(delegate.workoutTemplate == nil ? "Name Workout" : "Edit Workout")
+        .navigationTitle(delegate.workoutTemplate == nil ? String(localized: "Name Workout") : String(localized: "Edit Workout"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // Editing opens straight onto this screen, so it needs the close the splash normally has.

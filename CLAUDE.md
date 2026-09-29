@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Start with `docs/codebase-map.md`** before searching: it explains how to predict a file's path
+from its name and lists every screen module, manager, sync model, Cloud Function, Firestore path
+and test suite with a link. It is generated; after adding or moving files run
+`python3 scripts/codebase-map.py` and commit the result.
+
 ## Build & Development
 
 **Package manager**: Swift Package Manager only — there is no Podfile and no `.xcworkspace`. Open

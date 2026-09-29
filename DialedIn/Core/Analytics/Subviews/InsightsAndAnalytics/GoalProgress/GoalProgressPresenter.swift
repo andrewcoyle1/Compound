@@ -158,7 +158,7 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Goal Progress",
+            title: String(localized: "Goal Progress"),
             analyticsName: "GoalProgressView",
             yAxisSuffix: "%",
             seriesNames: ["Progress"],

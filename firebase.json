@@ -5,5 +5,21 @@
   },
   "functions": {
     "source": "functions"
+  },
+  "hosting": {
+    "public": "hosting",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "rewrites": [
+      {
+        "source": "/s/**",
+        "function": {
+          "functionId": "sessionPage",
+          "region": "us-central1"
+        }
+      }
+    ]
   }
 }

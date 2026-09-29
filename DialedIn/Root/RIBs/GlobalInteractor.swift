@@ -18,4 +18,12 @@ protocol GlobalInteractor {
     /// every screen may need, and it has to be reachable from work that outlives the screen that
     /// started it.
     func showAppToast(_ toast: AppToast)
+
+    /// No network, so an action that needs the server should not start. A requirement, with the
+    /// live answer as its default, so a test double can say it is offline.
+    var isOffline: Bool { get }
+}
+
+extension GlobalInteractor {
+    var isOffline: Bool { NetworkMonitor.shared.isOffline }
 }

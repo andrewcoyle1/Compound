@@ -1,0 +1,76 @@
+{
+  "programs": [
+    {
+      "programId": "program-push-pull-legs",
+      "name": "Push/Pull/Legs",
+      "icon": "figure.strengthtraining.traditional",
+      "colour": "#FF3B30",
+      "numMicrocycles": 8,
+      "deload": "end",
+      "periodisation": false,
+      "days": [
+        "workout-push-1",
+        "workout-pull-1",
+        "workout-legs-1",
+        "workout-push-2",
+        "workout-pull-2",
+        "workout-legs-2",
+        "rest"
+      ]
+    },
+    {
+      "programId": "program-upper-lower",
+      "name": "Upper/Lower",
+      "icon": "arrow.up.arrow.down",
+      "colour": "#007AFF",
+      "numMicrocycles": 8,
+      "deload": "end",
+      "periodisation": false,
+      "days": [
+        "workout-upper-1",
+        "workout-lower-1",
+        "rest",
+        "workout-upper-2",
+        "workout-lower-2",
+        "rest",
+        "rest"
+      ]
+    },
+    {
+      "programId": "program-full-body",
+      "name": "Full Body",
+      "icon": "figure.mixed.cardio",
+      "colour": "#34C759",
+      "numMicrocycles": 8,
+      "deload": "none",
+      "periodisation": false,
+      "days": [
+        "workout-full-body-1",
+        "rest",
+        "workout-full-body-2",
+        "rest",
+        "workout-full-body-3",
+        "rest",
+        "rest"
+      ]
+    },
+    {
+      "programId": "program-531",
+      "name": "5/3/1",
+      "icon": "chart.line.uptrend.xyaxis",
+      "colour": "#FF9500",
+      "numMicrocycles": 4,
+      "deload": "end",
+      "periodisation": true,
+      "days": [
+        "workout-531-press",
+        "workout-531-deadlift",
+        "rest",
+        "workout-531-bench",
+        "workout-531-squat",
+        "rest",
+        "rest"
+      ]
+    }
+  ]
+}

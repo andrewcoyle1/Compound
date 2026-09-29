@@ -36,7 +36,11 @@ struct FirebaseCommentsService: CommentsManagerService {
                 authorName: data["author_name"] as? String,
                 authorImageUrl: data["author_image_url"] as? String,
                 text: text,
-                dateCreated: dateCreatedTimestamp.dateValue()
+                dateCreated: dateCreatedTimestamp.dateValue(),
+                parentId: data["parent_id"] as? String,
+                mentionedUserIds: data["mentioned_user_ids"] as? [String] ?? [],
+                likedByUserIds: data["liked_by_user_ids"] as? [String] ?? [],
+                hidden: data["hidden"] as? Bool
             )
         }
     }
@@ -50,13 +54,21 @@ struct FirebaseCommentsService: CommentsManagerService {
             "author_name": comment.authorName as Any,
             "author_image_url": comment.authorImageUrl as Any,
             "text": comment.text,
-            "date_created": Timestamp(date: comment.dateCreated)
+            "date_created": Timestamp(date: comment.dateCreated),
+            "parent_id": comment.parentId as Any,
+            "mentioned_user_ids": comment.mentionedUserIds
         ])
     }
 
     func deleteComment(id: String) async throws {
         try await collection.document(id).updateData([
             "deleted_at": Timestamp(date: Date())
+        ])
+    }
+
+    func toggleCommentLike(id: String, userId: String, isLiked: Bool) async throws {
+        try await collection.document(id).updateData([
+            "liked_by_user_ids": isLiked ? FieldValue.arrayUnion([userId]) : FieldValue.arrayRemove([userId])
         ])
     }
 }

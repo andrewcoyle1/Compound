@@ -527,6 +527,8 @@ struct AnalyticsMuscleGroupsPresenterTests {
         func showMuscleGroupDetailView(muscle: Muscles, delegate: MuscleGroupDetailDelegate, themeColor: Color?) {
             openedMuscles.append(muscle)
         }
+
+        func showMuscleBalanceView() { }
     }
 
     private struct Screen {

@@ -23,9 +23,9 @@ extension WorkoutEntry: @MainActor MetricEntry {
 
     var displayValue: String {
         if volumeKg > 0 {
-            return "\(sets) sets · \(volumeKg.formatted(.number.precision(.fractionLength(1)))) kg"
+            return String(localized: "\(String(describing: sets)) sets · \(volumeKg.formatted(.number.precision(.fractionLength(1)))) kg")
         }
-        return "\(sets) sets"
+        return String(localized: "\(sets) sets")
     }
 
     var systemImageName: String {

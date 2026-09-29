@@ -61,9 +61,9 @@ extension WorkoutTrackerPresenter {
         var errorDescription: String? {
             switch self {
             case .noLocalActiveWorkout:
-                return "No local active workout available"
+                return String(localized: "No local active workout available")
             case .noActiveWorkout:
-                return "No active workout available"
+                return String(localized: "No active workout available")
             }
         }
     }

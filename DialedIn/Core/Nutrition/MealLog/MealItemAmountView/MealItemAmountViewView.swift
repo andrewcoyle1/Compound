@@ -31,7 +31,7 @@ struct MealItemAmountViewDelegate {
     var unit: String {
         switch mode {
         case .addFood(let food):
-            return food.measurementMethod == .volume ? "ml" : "g"
+            return food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")
         case .editItem(let item):
             return item.unit
         }
@@ -75,9 +75,14 @@ struct MealItemAmountViewView: View {
                         .keyboardType(.decimalPad)
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity)
-                    Text(delegate.unit)
-                        .foregroundStyle(.secondary)
-                        .padding(.trailing, 8)
+                    if case .addFood(let food) = delegate.mode, !food.servingUnits.isEmpty {
+                        ServingUnitPicker(baseLabel: delegate.unit, units: food.servingUnits, selection: $presenter.selectedUnit)
+                            .padding(.trailing, 8)
+                    } else {
+                        Text(presenter.unitLabel(delegate: delegate))
+                            .foregroundStyle(.secondary)
+                            .padding(.trailing, 8)
+                    }
                 }
             }
             ToolbarItem(placement: .bottomBar) {

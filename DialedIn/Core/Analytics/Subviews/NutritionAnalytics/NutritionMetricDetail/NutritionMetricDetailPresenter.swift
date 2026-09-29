@@ -96,6 +96,7 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
         var newEntries: [NutritionMetricEntry] = []
 
         if metric == .macros {
+            // Silent: local reads for a chart; no data draws an empty chart.
             let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
             for item in totalsData {
                 guard let date = Date(dayKey: item.dayKey) else { continue }

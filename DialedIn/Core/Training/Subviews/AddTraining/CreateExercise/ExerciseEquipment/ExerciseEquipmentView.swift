@@ -17,7 +17,7 @@ struct ExerciseEquipmentView: View {
     var body: some View {
         List {
             Section {
-                ActionRow(title: "Bodyweight Exercise", subtitle: "This exercise is performed with bodyweight, without additional resistance.") {
+                ActionRow(title: String(localized: "Bodyweight Exercise"), subtitle: String(localized: "This exercise is performed with bodyweight, without additional resistance.")) {
                     Toggle(isOn: $presenter.bodyweightExercise) { }
                         .accessibilityIdentifier("ExerciseEquipment.bodyweight")
                 }
@@ -28,7 +28,7 @@ struct ExerciseEquipmentView: View {
                 ForEach(Array(presenter.variations.enumerated()), id: \.element.id) { index, variation in
                     Section {
                         ActionRow(
-                            title: "Resistance",
+                            title: String(localized: "Resistance"),
                             subtitle: presenter.resistanceSubtitle(for: variation),
                             subsubtitle: variation.resistanceEquipment.isEmpty ? "Required" : nil
                         ) {
@@ -42,7 +42,7 @@ struct ExerciseEquipmentView: View {
                         }
 
                         ActionRow(
-                            title: "Support",
+                            title: String(localized: "Support"),
                             subtitle: presenter.supportSubtitle(for: variation),
                             subsubtitle: variation.supportEquipment.isEmpty ? "Optional" : nil
                         ) {

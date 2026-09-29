@@ -49,7 +49,7 @@ class CreateRecipePresenter {
     func onNextPressed() {
         guard let servingQuantity else {
             router.showSimpleAlert(
-                title: "Enter all required details",
+                title: String(localized: "Enter all required details"),
                 subtitle: "Please specify the serving quantity of the dish"
             )
             return

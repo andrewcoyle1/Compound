@@ -33,6 +33,11 @@ struct ExerciseListBuilderView: View {
                 filteredExercisesSection
             }
         }
+        .overlay {
+            if !presenter.searchText.isEmpty && presenter.filteredExercises.isEmpty {
+                ContentUnavailableView.search(text: presenter.searchText)
+            }
+        }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search exercises"))
         .scrollIndicators(.hidden)
         .toolbarVisibility(.hidden)
@@ -57,7 +62,6 @@ struct ExerciseListBuilderView: View {
             GlassEffectContainer(spacing: 8) {
                 HStack {
                     resetChip
-                        .padding(.leading)
 
                     gymChip
 
@@ -111,6 +115,8 @@ struct ExerciseListBuilderView: View {
             }
         }
         .scrollIndicators(.hidden)
+        // The reset chip used to carry the leading inset, and it is hidden until a filter is active.
+        .contentMargins(.horizontal, 16, for: .scrollContent)
     }
 
     /// Only offered when something is actually filtered — a reset that resets nothing reads as a

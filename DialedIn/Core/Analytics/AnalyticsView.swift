@@ -127,9 +127,13 @@ struct AnalyticsView<NutritionChart: View>: View {
                 }
             }
 
+            moreRow(title: String(localized: "Weekly Review"), systemImage: "chart.bar.doc.horizontal") {
+                presenter.onWeeklyReviewPressed()
+            }
+
             // "house" here was copied from the Dashboard tab and said nothing about what the row
             // does.
-            moreRow(title: "Customise Analytics", systemImage: "slider.horizontal.3") {
+            moreRow(title: String(localized: "Customise Analytics"), systemImage: "slider.horizontal.3") {
                 presenter.onCustomiseAnalyticsPressed()
             }
         } header: {
@@ -187,7 +191,7 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 AnalyticsCard(
-                    title: "Workouts",
+                    title: String(localized: "Workouts"),
                     subtitle: presenter.workoutSubtitle,
                     subsubtitle: presenter.workoutLatestValueText,
                     subsubsubtitle: presenter.workoutUnitText,
@@ -205,7 +209,7 @@ private extension AnalyticsView {
                 }
 
                 SparklineAnalyticsCard(
-                    title: "Expenditure",
+                    title: String(localized: "Expenditure"),
                     subtitle: presenter.expenditureSubtitle,
                     value: presenter.expenditureLatestValueText,
                     unit: presenter.expenditureUnitText,
@@ -215,7 +219,7 @@ private extension AnalyticsView {
                 )
 
                 SparklineAnalyticsCard(
-                    title: "Weight Trend",
+                    title: String(localized: "Weight Trend"),
                     subtitle: presenter.weightTrendSubtitle,
                     value: presenter.weightTrendLatestValueText,
                     unit: presenter.weightTrendUnitText,
@@ -227,7 +231,7 @@ private extension AnalyticsView {
                 // Was hardcoded to "14%" over "Last 7 Days" — a placeholder that showed the same
                 // number to every user, including users with no goal at all.
                 AnalyticsCard(
-                    title: "Goal Progress",
+                    title: String(localized: "Goal Progress"),
                     subtitle: presenter.goalProgressSubtitle,
                     subsubtitle: presenter.goalProgressLatestValueText,
                     subsubsubtitle: presenter.goalProgressUnitText,
@@ -246,7 +250,7 @@ private extension AnalyticsView {
                 }
 
                 AnalyticsCard(
-                    title: "Energy Balance",
+                    title: String(localized: "Energy Balance"),
                     subtitle: presenter.energyBalanceSubtitle,
                     subsubtitle: presenter.energyBalanceLatestValueText,
                     subsubsubtitle: presenter.energyBalanceUnitText,
@@ -264,7 +268,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Insights & Analytics",
+                title: String(localized: "Insights & Analytics"),
                 onActionPressed: { presenter.onSeeAllInsightsPressed() }
             )
         }
@@ -274,14 +278,14 @@ private extension AnalyticsView {
         Section {
             AnalyticsCardGrid {
                 ConsistencyAnalyticsCard(
-                    title: "Weigh In",
+                    title: String(localized: "Weigh In"),
                     value: "\(presenter.weighInCountThisWeek)",
                     themeColor: .green,
                     data: presenter.weighInContributionData,
                     action: { presenter.onWeighInConsistencyPressed(themeColor: .green) }
                 )
                 ConsistencyAnalyticsCard(
-                    title: "Workouts",
+                    title: String(localized: "Workouts"),
                     value: "\(presenter.workoutCountThisWeek)",
                     themeColor: .orange,
                     data: presenter.workoutContributionData,
@@ -290,7 +294,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Habits",
+                title: String(localized: "Habits"),
                 onActionPressed: { presenter.onSeeAllHabitsPressed() }
             )
         }
@@ -301,8 +305,8 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 AnalyticsCard(
-                    title: "Macros",
-                    subtitle: presenter.macrosLast7Days.isEmpty ? "No Data" : "Last 7 Days",
+                    title: String(localized: "Macros"),
+                    subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Last 7 Days"),
                     subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : Int(presenter.macrosAverageCalories).formatted(),
                     subsubsubtitle: "kcal",
                     themeColor: proteinColor,
@@ -318,8 +322,8 @@ private extension AnalyticsView {
                     presenter.onMacrosPressed(themeColor: proteinColor)
                 }
                 AnalyticsCard(
-                    title: "Protein",
-                    subtitle: presenter.macrosLast7Days.isEmpty ? "No Data" : "Today",
+                    title: String(localized: "Protein"),
+                    subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Today"),
                     subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : presenter.proteinCurrent.formatted(.number.precision(.fractionLength(1))),
                     subsubsubtitle: "g",
                     themeColor: proteinColor,
@@ -339,7 +343,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Nutrition",
+                title: String(localized: "Nutrition"),
                 onActionPressed: { presenter.onSeeAllNutritionAnalyticsPressed() }
             )
         }
@@ -351,7 +355,7 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 SparklineAnalyticsCard(
-                    title: "Scale Weight",
+                    title: String(localized: "Scale Weight"),
                     subtitle: presenter.scaleWeightSubtitle,
                     value: presenter.scaleWeightLatestValueText,
                     unit: presenter.scaleWeightUnitText,
@@ -360,7 +364,7 @@ private extension AnalyticsView {
                     action: { presenter.onScaleWeightPressed(themeColor: scaleWeightColor) }
                 )
                 SparklineAnalyticsCard(
-                    title: "Visual Body Fat",
+                    title: String(localized: "Visual Body Fat"),
                     subtitle: presenter.bodyFatSubtitle,
                     value: presenter.bodyFatLatestValueText,
                     unit: presenter.bodyFatUnitText,
@@ -371,7 +375,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Body Metrics",
+                title: String(localized: "Body Metrics"),
                 onActionPressed: { presenter.onSeeAllBodyMetricsPressed() }
             )
         }
@@ -382,12 +386,12 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 if presenter.muscleGroupCards.isEmpty {
-                    AnalyticsEmptyCard(message: "Log a workout to see your weekly sets by muscle group.")
+                    AnalyticsEmptyCard(message: String(localized: "Log a workout to see your weekly sets by muscle group."))
                 } else {
                     ForEach(presenter.muscleGroupCards, id: \.muscle) { item in
                         AnalyticsCard(
                             title: item.muscle.name,
-                            subtitle: "Last 7 Days",
+                            subtitle: String(localized: "Last 7 Days"),
                             subsubtitle: item.totalSets.formatted(.number.precision(.fractionLength(0...1))),
                             subsubsubtitle: "sets",
                             themeColor: muscleGroupColor,
@@ -403,7 +407,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Muscle Groups",
+                title: String(localized: "Muscle Groups"),
                 onActionPressed: { presenter.onSeeAllMuscleGroupsPressed() }
             )
         }
@@ -414,12 +418,12 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 if presenter.exerciseCards.isEmpty {
-                    AnalyticsEmptyCard(message: "Log a workout to track your estimated one-rep max.")
+                    AnalyticsEmptyCard(message: String(localized: "Log a workout to track your estimated one-rep max."))
                 } else {
                     ForEach(presenter.exerciseCards) { item in
                         SparklineAnalyticsCard(
                             title: item.name,
-                            subtitle: "Last 7 Workouts",
+                            subtitle: String(localized: "Last 7 Workouts"),
                             value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : "--",
                             unit: item.unitText,
                             themeColor: exerciseColor,
@@ -437,7 +441,7 @@ private extension AnalyticsView {
             }
         } header: {
             SectionHeaderView(
-                title: "Exercises",
+                title: String(localized: "Exercises"),
                 onActionPressed: { presenter.onSeeAllExercisesPressed() }
             )
         }
@@ -448,7 +452,7 @@ private extension AnalyticsView {
         return Section {
             AnalyticsCardGrid {
                 SparklineAnalyticsCard(
-                    title: "Steps",
+                    title: String(localized: "Steps"),
                     subtitle: presenter.stepsSubtitle,
                     value: presenter.stepsLatestValueText,
                     unit: presenter.stepsUnitText,
@@ -458,7 +462,7 @@ private extension AnalyticsView {
                 )
             }
         } header: {
-            SectionHeaderView(title: "General")
+            SectionHeaderView(title: String(localized: "General"))
         }
     }
 }

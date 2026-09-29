@@ -60,8 +60,17 @@ struct CoreInteractor: GlobalInteractor {
     let premiumEntitlementResolution: PremiumEntitlementResolution
     let hapticManager: HapticManager
     let soundEffectManager: SoundEffectManager
+    // MARK: - Sharing
+    let shareManager: ShareManager
+    // MARK: - Challenges
+    let challengeManager: ChallengeManager
+    // MARK: - Invites
+    let inviteManager: InviteManager
+    // MARK: - ProgressPhotos
+    let progressPhotoManager: ProgressPhotoManager
 
     init(container: DependencyContainer) {
+        // Safe: Dependencies registers every one of these for every BuildConfiguration.
         self.authManager = container.resolve(AuthManager.self)!
         self.userManager = container.resolve(UserManager.self)!
         self.abTestManager = container.resolve(ABTestManager.self)!
@@ -106,6 +115,14 @@ struct CoreInteractor: GlobalInteractor {
 
         self.hapticManager = container.resolve(HapticManager.self)!
         self.soundEffectManager = container.resolve(SoundEffectManager.self)!
+        // MARK: - Sharing
+        self.shareManager = container.resolve(ShareManager.self)!
+        // MARK: - Challenges
+        self.challengeManager = container.resolve(ChallengeManager.self)!
+        // MARK: - Invites
+        self.inviteManager = container.resolve(InviteManager.self)!
+        // MARK: - ProgressPhotos
+        self.progressPhotoManager = container.resolve(ProgressPhotoManager.self)!
     }
 
     // MARK: Shared
@@ -131,7 +148,9 @@ struct CoreInteractor: GlobalInteractor {
         async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
         async let gymProfileSignIn: () = gymProfileManager.signIn()
         async let trainingProgramSignIn: () = trainingProgramManager.signIn(userId: user.uid)
-        let followingIds = userManager.currentUser?.followingIds ?? []
+        // Not `currentUser` directly: on a fresh install the listener has not delivered the
+        // profile yet, and an empty list here left the feed and the circle empty until relaunch.
+        let followingIds = await userManager.currentUserOrFetched(userId: user.uid)?.followingIds ?? []
         async let workoutSessionSignIn: () = workoutSessionManager.signIn(userId: user.uid, followingIds: followingIds)
         async let followingUsersSignIn: () = userManager.refreshFollowingUsers(followingIds: followingIds)
         async let exerciseSignIn: () = exerciseModelManager.signIn(userId: user.uid)
@@ -170,6 +189,10 @@ struct CoreInteractor: GlobalInteractor {
         // workout templates try to resolve exercises by ID.
         try? exerciseModelManager.seedExercisesIfNeeded()
         try? workoutTemplateManager.seedWorkoutTemplatesIfNeeded(exercises: exerciseModelManager.allExercises)
+        try? trainingProgramManager.seedProgramsIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
+
+        // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
+        routePendingDeepLinkAfterLogIn()
 
         try await purchaseManager.logIn(
             userId: user.uid,
@@ -184,7 +207,7 @@ struct CoreInteractor: GlobalInteractor {
         // (offline, most often) this line is skipped, `logIn` rethrows, and the caller retries — so
         // the question gets asked again rather than answered wrongly.
         premiumEntitlementResolution.markResolved()
-        logManager.addUserProperties(dict: Utilities.eventParameters, isHighPriority: false)
+        logManager.addUserProperties(dict: Utilities.offDeviceEventParameters, isHighPriority: false)
 
         activityNotificationManager.startListening(userId: user.uid)
     }
@@ -194,27 +217,8 @@ struct CoreInteractor: GlobalInteractor {
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
-        stepsManager.signOut()
-        workoutTemplateManager.signOut()
-        workoutSessionManager.signOut()
-        gymProfileManager.signOut()
-        trainingProgramManager.signOut()
-        exerciseModelManager.signOut()
-        workoutSettingsManager.signOut()
-        foodLogSettingsManager.signOut()
-        nutritionStrategySettingsManager.signOut()
-        nutritionStrategyManager.signOut()
-        analyticsSettingsManager.signOut()
-        shortcutSettingsManager.signOut()
-        exerciseSettingsManager.signOut()
-        recipeTemplateManager.signOut()
-        foodManager.signOut()
-        nutritionManager.signOut()
-        mealLogManager.signOut()
-        bodyMeasurementsManager.signOut()
-        goalManager.signOut()
-        streakManager.logOut()
-        activityNotificationManager.stopListening()
+        stopListeningBeforeAccountDeletion()
+        pushManager.setReadyForDeepLinks(false)
     }
     
     func deleteAccount() async throws {
@@ -231,36 +235,13 @@ struct CoreInteractor: GlobalInteractor {
 
         // Delete auth
         try await authManager.deleteAccountWithReauthentication(option: option, revokeToken: false) {
-            // Delete User profile (Firestore)
-            // Note: this must be done within this closure
-            // So that it completes before auth is revoked
-            // Once auth is revoked, security rules may restrict user from reading/writing to Firestore
-            async let deleteExerciseModels: () = exerciseModelManager.deleteAllExercises()
-            async let deleteWorkoutTemplates: () = workoutTemplateManager.deleteAllWorkoutTemplateForAuthor()
-            async let deleteWorkoutSessions: () = workoutSessionManager.deleteAllWorkoutSessionsForAuthor(authorId: auth.uid)
-            async let deleteRecipeTemplates: () = recipeTemplateManager.deleteAllRecipeTemplates()
-            async let deleteFoods: () = foodManager.deleteAllFoods()
-            async let deleteMealLogs: () = mealLogManager.deleteAllMealLogsForAuthor(authorId: auth.uid)
-            async let deleteWeightEntries: () = bodyMeasurementsManager.deleteAllWeightEntriesForUser()
-            async let deleteStepsEntries: () = stepsManager.signOut()
-            async let deleteGoals: () = goalManager.deleteGoal()
-            async let deleteUser: () = userManager.deleteCurrentUser()
-
-            _ = try await (
-                deleteExerciseModels,
-                deleteWorkoutTemplates,
-                deleteWorkoutSessions,
-                deleteRecipeTemplates,
-                deleteFoods,
-                deleteMealLogs,
-                deleteWeightEntries,
-                deleteStepsEntries,
-                deleteGoals,
-                deleteUser
-            )
-            
+            // Must run inside this closure, before Auth is revoked and the rules shut the user out.
+            // Only the user document is deleted here; the onUserDeleted Cloud Function deletes the
+            // rest, so every listener is stopped first rather than left watching it disappear.
+            stopListeningBeforeAccountDeletion()
+            try await userManager.deleteCurrentUser(userId: auth.uid)
         }
-        
+
         // Delete Purchases (RevenueCat)
         try await purchaseManager.logOut()
         

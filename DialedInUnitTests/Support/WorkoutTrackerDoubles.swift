@@ -221,7 +221,11 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     private(set) var shown: [String] = []
 
     func showExercisesPickerView(delegate: ExercisesPickerDelegate) { shown.append("exercisesPicker") }
-    func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { shown.append("workoutNotes") }
+    private(set) var notesDelegates: [WorkoutNotesDelegate] = []
+    func showWorkoutNotesView(delegate: WorkoutNotesDelegate) {
+        shown.append("workoutNotes")
+        notesDelegates.append(delegate)
+    }
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
     func showGymProfileView(delegate: GymProfileDelegate) { shown.append("gymProfile") }
     func dismissScreen() { shown.append("dismiss") }

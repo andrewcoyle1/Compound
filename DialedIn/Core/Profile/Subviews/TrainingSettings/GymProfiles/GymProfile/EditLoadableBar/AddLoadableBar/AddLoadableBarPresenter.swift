@@ -41,7 +41,7 @@ class AddLoadableBarPresenter {
         guard loadableBar.wrappedValue.baseWeights.contains(where: {
             $0.baseWeight == loadableBarBaseWeight.baseWeight && $0.unit == loadableBarBaseWeight.unit
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "This weight is already added.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
             return 
         }
         self.loadableBar.wrappedValue.baseWeights.append(self.loadableBarBaseWeight)

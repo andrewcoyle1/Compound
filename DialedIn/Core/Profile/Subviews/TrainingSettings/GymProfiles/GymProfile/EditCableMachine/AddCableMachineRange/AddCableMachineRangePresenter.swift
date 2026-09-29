@@ -41,12 +41,12 @@ class AddCableMachineRangePresenter {
     
     func onSavePressed() {
         guard range.minWeight < range.maxWeight else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "The range start must be less than the range end.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "The range start must be less than the range end."))
             return
         }
         
         guard range.increment > 0 else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "The increment must be greater than zero.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "The increment must be greater than zero."))
             return
         }
         
@@ -55,7 +55,7 @@ class AddCableMachineRangePresenter {
             $0.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 .localizedCaseInsensitiveCompare(normalizedName) == .orderedSame
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "A range with this name already exists.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "A range with this name already exists."))
             return
         }
         
@@ -65,7 +65,7 @@ class AddCableMachineRangePresenter {
             $0.increment == range.increment &&
             $0.unit == range.unit
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "This range is already added.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This range is already added."))
             return
         }
         

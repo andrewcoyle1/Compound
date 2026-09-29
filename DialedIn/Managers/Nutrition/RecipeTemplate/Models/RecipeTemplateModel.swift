@@ -331,27 +331,10 @@ extension RecipeTemplateModel: Hashable {
 
 extension RecipeTemplateModel: FoodItem {
 
-    private func totalNutrient(_ keyPath: (FoodModel) -> Double?) -> Double? {
-        var total: Double = 0
-        var found = false
-        for recipeIngredient in ingredients {
-            guard let per100 = keyPath(recipeIngredient.ingredient) else { continue }
-            found = true
-            let grams: Double
-            switch recipeIngredient.unit {
-            case .grams:       grams = recipeIngredient.amount
-            case .milliliters: grams = recipeIngredient.amount
-            case .units:       grams = recipeIngredient.amount * 100
-            }
-            total += per100 * (grams / 100.0)
-        }
-        return found ? total : nil
-    }
-
-    var calories: Double? { totalNutrient { $0.calories }.map { $0 / max(servingQuantity, 1) } }
-    var protein: Double? { totalNutrient { $0.protein }.map { $0 / max(servingQuantity, 1) } }
-    var carbs: Double? { totalNutrient { $0.carbs }.map { $0 / max(servingQuantity, 1) } }
-    var fats: Double? { totalNutrient { $0.fatTotal }.map { $0 / max(servingQuantity, 1) } }
+    var calories: Double? { NutritionScaling.perServing(self)[.calories] }
+    var protein: Double? { NutritionScaling.perServing(self)[.protein] }
+    var carbs: Double? { NutritionScaling.perServing(self)[.carbs] }
+    var fats: Double? { NutritionScaling.perServing(self)[.fatTotal] }
     var portionQuantityCalculated: Double? { 1 }
     var portionNameCalculated: String? { "serving" }
 }

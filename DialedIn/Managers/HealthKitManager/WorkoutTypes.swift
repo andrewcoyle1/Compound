@@ -94,17 +94,17 @@ extension HKWorkoutActivityType {
     var name: String {
         switch self {
         case .running:
-            return "Run"
+            return String(localized: "Run")
         case .cycling:
-            return "Cycle"
+            return String(localized: "Cycle")
         case .walking:
-            return "Walk"
+            return String(localized: "Walk")
         case .rowing:
-            return "Row"
+            return String(localized: "Row")
         case .yoga:
-            return "Yoga"
+            return String(localized: "Yoga")
         case .traditionalStrengthTraining:
-            return "Strength Training"
+            return String(localized: "Strength Training")
         default:
             return ""
         }
@@ -134,13 +134,14 @@ extension HKWorkoutSessionLocationType: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
         case .indoor:
-            "Indoor"
+            String(localized: "Indoor")
         case .outdoor:
-            "Outdoor"
+            String(localized: "Outdoor")
         case .unknown:
-            "Unknown"
+            String(localized: "Unknown")
         @unknown default:
-            fatalError("Unknown HKWorkoutSessionLocationType in \(#function)")
+            // A location type added in a later SDK must not crash a description.
+            String(localized: "Unknown")
         }
     }
 }

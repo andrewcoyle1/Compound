@@ -20,6 +20,7 @@ typealias FirebaseRemoteCollectionGroupService = SwiftfulDataManagersFirebase.Fi
 typealias MockRemoteDocumentService = SwiftfulDataManagers.MockRemoteDocumentService
 typealias MockRemoteCollectionService = SwiftfulDataManagers.MockRemoteCollectionService
 typealias MockRemoteCollectionGroupService = SwiftfulDataManagers.MockRemoteCollectionGroupService
+typealias QueryBuilder = SwiftfulDataManagers.QueryBuilder
 
 typealias LocalDocumentPersistence = SwiftfulDataManagers.LocalDocumentPersistence
 typealias MockLocalDocumentPersistence = SwiftfulDataManagers.MockLocalDocumentPersistence

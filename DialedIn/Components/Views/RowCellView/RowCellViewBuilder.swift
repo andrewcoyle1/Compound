@@ -40,7 +40,7 @@ struct RowCellViewBuilder: View {
             return "xxxx xxxx xxxxx xxxx"
         }
         
-        return "Error"
+        return String(localized: "Error")
     }
     
     // Placeholders for collection properties
@@ -51,7 +51,7 @@ struct RowCellViewBuilder: View {
     
     var collectionName: String {
         // Could be replaced by a closure to provide name if needed
-        return "Collection Name"
+        return String(localized: "Collection Name")
     }
 
     var body: some View {

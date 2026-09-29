@@ -68,11 +68,11 @@ class AddBandPresenter {
         guard band.wrappedValue.range.contains(where: {
             $0.availableResistance == bandAvailable.availableResistance && $0.unit == bandAvailable.unit
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "This weight is already added.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
             return 
         }
         guard bandAvailable.name.isEmpty == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "Please enter a name for this weight.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "Please enter a name for this weight."))
             return
         }
         self.band.wrappedValue.range.append(self.bandAvailable)

@@ -30,8 +30,23 @@ class MealItemAmountViewPresenter {
     /// amount and the nutrients scaled from it are written straight onto the meal item.
     var amountValue: Double { .enteredAmount(amountText) }
 
+    /// What a new food's amount is counted in: a serving unit such as a slice, or nil for the
+    /// food's grams/ml. Only offered when adding a food — an edit keeps the unit it was logged in.
+    /// Changing it rewrites the amount the way `IngredientAmountPresenter.selectedUnit` does.
+    var selectedUnit: ServingUnit? {
+        didSet {
+            guard selectedUnit != oldValue else { return }
+            let previous = NutritionScaling.baseAmount(amountValue, in: oldValue)
+            amountText = selectedUnit == nil ? String(format: "%g", NutritionScaling.rounded(previous)) : "1"
+        }
+    }
+
+    func unitLabel(delegate: MealItemAmountViewDelegate) -> String {
+        selectedUnit?.name ?? delegate.unit
+    }
+
     private var scale: Double {
-        isAddFoodMode ? amountValue / 100 : amountValue
+        isAddFoodMode ? NutritionScaling.baseAmount(amountValue, in: selectedUnit) / 100 : amountValue
     }
 
     func scaledValue(for key: NutrientKey) -> Double {
@@ -52,21 +67,10 @@ class MealItemAmountViewPresenter {
     }
     
     func onConfirmPressed(delegate: MealItemAmountViewDelegate) {
-        let scaledNutrients = unitNutrients.mapValues { $0 * scale }
         let item: MealItemModel
         switch delegate.mode {
         case .addFood(let food):
-            item = MealItemModel(
-                itemId: UUID().uuidString,
-                sourceType: .ingredient,
-                sourceId: food.ingredientId,
-                displayName: food.name,
-                amount: amountValue,
-                unit: delegate.unit,
-                resolvedGrams: food.measurementMethod != .volume ? amountValue : nil,
-                resolvedMilliliters: food.measurementMethod == .volume ? amountValue : nil,
-                nutrients: scaledNutrients
-            )
+            item = food.mealItem(amount: amountValue, unit: selectedUnit)
         case .editItem(let existing):
             let ratio = existing.amount > 0 ? amountValue / existing.amount : 0
             item = MealItemModel(
@@ -78,7 +82,7 @@ class MealItemAmountViewPresenter {
                 unit: existing.unit,
                 resolvedGrams: existing.resolvedGrams.map { $0 * ratio },
                 resolvedMilliliters: existing.resolvedMilliliters.map { $0 * ratio },
-                nutrients: scaledNutrients
+                nutrients: unitNutrients.mapValues { $0 * scale }
             )
         }
         onConfirm(item)

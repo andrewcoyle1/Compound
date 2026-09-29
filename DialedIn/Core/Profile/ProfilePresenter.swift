@@ -75,7 +75,7 @@ class ProfilePresenter {
     /// The screen that used to state this read a stored property nothing ever assigned, so it said
     /// FREE to everyone, premium subscribers included. This reads the entitlement directly.
     var subscriptionStatus: String {
-        interactor.isPremium ? "PREMIUM" : "FREE"
+        interactor.isPremium ? String(localized: "PREMIUM") : String(localized: "FREE")
     }
 
     func onSubscriptionPressed() {
@@ -97,7 +97,7 @@ class ProfilePresenter {
         let emailString = "mailto:\(Constants.supportEmail)"
         guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else {
             router.showSimpleAlert(
-                title: "Unable to Open Mail",
+                title: String(localized: "Unable to Open Mail"),
                 subtitle: "Email \(Constants.supportEmail) and we will get back to you."
             )
             return
@@ -111,7 +111,7 @@ class ProfilePresenter {
     func onKnowledgeBasePressed() {
         interactor.trackEvent(eventName: "ProfileView_KnowledgeBase_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(
-            title: "Knowledge Base",
+            title: String(localized: "Knowledge Base"),
             subtitle: "There is no help site yet. In the meantime, Support emails us directly and we will answer you there."
         )
     }
@@ -119,9 +119,16 @@ class ProfilePresenter {
     func onRoadmapPressed() {
         interactor.trackEvent(eventName: "ProfileView_Roadmap_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(
-            title: "Roadmap",
+            title: String(localized: "Roadmap"),
             subtitle: "The public roadmap is not published yet. Send feature requests through Support and they will go on the list."
         )
+    }
+
+    /// Creates the user's invite the first time, then hands the link to the share sheet.
+    func onInviteFriendPressed() async {
+        guard interactor.ensureOnline(or: router) else { return }
+        interactor.trackEvent(eventName: "ProfileView_InviteFriend_Press", parameters: nil, type: .analytic)
+        await InviteShareFlow(interactor: interactor, router: router).share()
     }
 
     func onShortcutsPressed() {

@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol FollowersListInteractor: GlobalInteractor { }
+protocol FollowersListInteractor: FollowInteractor {
+    func removeFollower(userId: String) async throws
+}
 
 extension CoreInteractor: FollowersListInteractor { }

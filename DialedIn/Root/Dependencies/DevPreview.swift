@@ -53,6 +53,15 @@ class DevPreview {
         container.register(ActivityNotificationManager.self, service: activityNotificationManager)
         container.register(StravaManager.self, service: stravaManager)
         container.register(OpenFoodFactsServiceContainer.self, service: OpenFoodFactsServiceContainer(openFoodFactsService))
+        container.register(ShareManager.self, service: ShareManager(service: MockShareService()))
+        // MARK: - Challenges
+        container.register(ChallengeManager.self, service: ChallengeManager(service: MockChallengeService()))
+        // MARK: - Invites
+        container.register(InviteManager.self, service: InviteManager(service: MockInviteService()))
+        // MARK: - ProgressPhotos
+        container.register(ProgressPhotoManager.self, service: progressPhotoManager)
+        // `CoreInteractor.init` resolves every manager, and this one had never been registered here.
+        container.register(NutritionStrategyManager.self, service: nutritionStrategyManager)
 
         return container
     }
@@ -117,7 +126,18 @@ class DevPreview {
             enableLocalPersistence: false,
             logger: logManager
         )
-        let userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+        let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
+            remote: MockRemoteDocumentService(),
+            managerKey: "private_user_settings",
+            enableLocalPersistence: false,
+            logger: logManager
+        )
+        let userManager = UserManager(
+            queryService: MockUserQueryService(),
+            userSyncEngine: userSyncEngine,
+            followingUsersSyncEngine: followingUsersSyncEngine,
+            privateSettingsSyncEngine: privateSettingsSyncEngine
+        )
         
         self.authManager = AuthManager(service: MockAuthService(scenario: isSignedIn ? .existingSignedIn : .newAnonymous), logger: logManager)
         self.userManager = userManager
@@ -207,7 +227,7 @@ class DevPreview {
             enableLocalPersistence: false,
             logger: logManager
         )
-        self.trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, logManager: logManager)
+        self.trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.programs), logManager: logManager)
         let gymProfileSyncEngine = CollectionSyncEngine<GymProfileModel>(
             remote: MockRemoteCollectionService(collection: GymProfileModel.mocks),
             managerKey: Keys.gymProfileManagerKey,
@@ -340,4 +360,35 @@ class DevPreview {
             }
         }
     }
+
+    // MARK: - ProgressPhotos
+    lazy var nutritionStrategyManager = NutritionStrategyManager(
+        dayAnnotationSyncEngine: CollectionSyncEngine<NutritionDayAnnotation>(
+            remote: MockRemoteCollectionService(collection: []),
+            managerKey: Keys.nutritionDayAnnotationManagerKey,
+            enableLocalPersistence: false,
+            logger: logManager
+        ),
+        loggingBreakSyncEngine: DocumentSyncEngine<LoggingBreak>(
+            remote: MockRemoteDocumentService(document: nil),
+            managerKey: Keys.loggingBreakManagerKey,
+            enableLocalPersistence: false,
+            logger: logManager
+        ),
+        checkInRecordSyncEngine: DocumentSyncEngine<CheckInRecord>(
+            remote: MockRemoteDocumentService(document: nil),
+            managerKey: Keys.checkInRecordManagerKey,
+            enableLocalPersistence: false,
+            logger: logManager
+        )
+    )
+
+    lazy var progressPhotoManager = ProgressPhotoManager(
+        syncEngine: CollectionSyncEngine<ProgressPhotoModel>(
+            remote: MockRemoteCollectionService(collection: ProgressPhotoModel.mocks),
+            managerKey: "progress_photos",
+            enableLocalPersistence: false
+        ),
+        imageUploadManager: imageUploadManager
+    )
 }

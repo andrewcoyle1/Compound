@@ -28,8 +28,8 @@ struct TimerDurationView: View {
                         }
                 }
                 CustomLabelButtonView(
-                    title: "Reset Defaults",
-                    subtitle: "Reset timers to default settings") {
+                    title: String(localized: "Reset Defaults"),
+                    subtitle: String(localized: "Reset timers to default settings")) {
                         Text("Reset")
                             .padding(.horizontal, 8)
                             .padding(8)
@@ -62,8 +62,8 @@ struct TimerDurationView: View {
                         }
                 }
                 CustomLabelButtonView(
-                    title: "Add Exercise Timer",
-                    subtitle: "Set timers for specific exercises") {
+                    title: String(localized: "Add Exercise Timer"),
+                    subtitle: String(localized: "Set timers for specific exercises")) {
                         Text("Add")
                             .padding(.horizontal, 8)
                             .padding(8)

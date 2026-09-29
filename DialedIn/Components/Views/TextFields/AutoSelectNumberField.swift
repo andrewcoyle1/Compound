@@ -49,13 +49,24 @@ struct AutoSelectNumberField: View {
             }
             .onChange(of: value) { _, newValue in
                 if !isFocused {
-                    text = newValue.map(\.description) ?? ""
+                    text = newValue.map(Self.text(for:)) ?? ""
                 }
             }
             .onAppear {
-                text = value.map(\.description) ?? ""
+                text = value.map(Self.text(for:)) ?? ""
             }
             .keyboardType(keyboardType)
+            // Shrinks rather than truncating to "4…" when a large text size outgrows the field.
+            .minimumScaleFactor(0.5)
+    }
+
+    /// Whole numbers without the ".0" `description` adds: reps read "10", not "10.0". Kept in
+    /// the "." form `Double(_:)` parses back, rather than a localised one.
+    static func text(for value: Double) -> String {
+        if value == value.rounded(), abs(value) < 1e15 {
+            return String(Int(value))
+        }
+        return value.description
     }
 }
 

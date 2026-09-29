@@ -15,4 +15,8 @@ protocol ActivityNotificationService: AnyObject {
     func markAllRead(userId: String) async throws
     func startListening(userId: String, onNew: @escaping (ActivityNotificationModel) -> Void)
     func stopListening()
+    // MARK: - GroupedNotifications
+    /// The next page: up to `ActivityNotificationManager.pageSize` notifications older than `before`, newest first.
+    func fetchNotifications(userId: String, before: Date) async throws -> [ActivityNotificationModel]
+    func markRead(ids: [String], userId: String) async throws
 }

@@ -15,7 +15,7 @@ struct TutorialsView: View {
         // Was `Text("Hello, World!")` under a "Reset Tutorials" header, with a Reset CTA wired to an
         // empty presenter function. Nothing in the app tracks tutorial progress, so nothing to reset.
         FeatureUnavailableView(
-            title: "Tutorials",
+            title: String(localized: "Tutorials"),
             systemImage: "book",
             summary: "There are no tutorials to reset yet. When the app starts showing first-run guidance, this is where you will be able to see it again."
         )

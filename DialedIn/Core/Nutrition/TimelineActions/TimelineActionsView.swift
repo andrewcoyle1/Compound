@@ -17,19 +17,19 @@ struct TimelineActionsView: View {
     var body: some View {
         List {
             Section {
-                CustomLabelButtonView(symbolName: "pages", title: "Copy Day") { EmptyView() }
+                CustomLabelButtonView(symbolName: "pages", title: String(localized: "Copy Day")) { EmptyView() }
                     .tappableBackground()
                     .anyButton(.highlight) {
                         presenter.onCopyDayPressed(delegate: delegate)
                     }
-                CustomLabelButtonView(symbolName: "trash", title: "Clear Day") { EmptyView() }
+                CustomLabelButtonView(symbolName: "trash", title: String(localized: "Clear Day")) { EmptyView() }
                     .tappableBackground()
                     .anyButton(.highlight) {
                         presenter.onClearDayPressed(delegate: delegate)
                     }
                 CustomToggleView(
                     symbolName: "chevron.up",
-                    title: "Hide Food Details",
+                    title: String(localized: "Hide Food Details"),
                     bool: Binding(
                         get: { presenter.hideFoodDetails },
                         set: { presenter.hideFoodDetails = $0 }
@@ -37,7 +37,7 @@ struct TimelineActionsView: View {
                 )
                 CustomToggleView(
                     symbolName: "hourglass",
-                    title: "Hide Empty Hours",
+                    title: String(localized: "Hide Empty Hours"),
                     bool: Binding(
                         get: { presenter.hideEmptyHours },
                         set: { presenter.hideEmptyHours = $0 }

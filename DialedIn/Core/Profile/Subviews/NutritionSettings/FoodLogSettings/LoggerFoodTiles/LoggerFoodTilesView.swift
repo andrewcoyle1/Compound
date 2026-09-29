@@ -11,23 +11,23 @@ struct LoggerFoodTilesView: View {
         List {
             Section {
                 CustomToggleView(
-                    title: "Show Food Image",
-                    subtitle: "Display food image in search result rows",
+                    title: String(localized: "Show Food Image"),
+                    subtitle: String(localized: "Display food image in search result rows"),
                     bool: $presenter.showFoodImageInLogger
                 )
                 CustomToggleView(
-                    title: "Show Calories",
-                    subtitle: "Display calorie count in search result rows",
+                    title: String(localized: "Show Calories"),
+                    subtitle: String(localized: "Display calorie count in search result rows"),
                     bool: $presenter.showCaloriesInLogger
                 )
                 CustomToggleView(
-                    title: "Show Macros",
-                    subtitle: "Display P/F/C macros in search result rows",
+                    title: String(localized: "Show Macros"),
+                    subtitle: String(localized: "Display P/F/C macros in search result rows"),
                     bool: $presenter.showMacrosInLogger
                 )
                 CustomToggleView(
-                    title: "Show Portion",
-                    subtitle: "Display portion size in search result rows",
+                    title: String(localized: "Show Portion"),
+                    subtitle: String(localized: "Display portion size in search result rows"),
                     bool: $presenter.showPortionInLogger
                 )
             }

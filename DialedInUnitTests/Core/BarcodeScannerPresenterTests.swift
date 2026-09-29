@@ -70,6 +70,8 @@ struct BarcodeScannerPresenterTests {
     /// through its own state and its analytics instead.
     private final class Router: BarcodeScannerRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        private(set) var alertTitles: [String] = []
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -306,6 +308,42 @@ struct BarcodeScannerPresenterTests {
 
     /// The analyser failing leaves the user something to read and the spinner stopped — a parse
     /// that fails silently reads as one that is still running.
+    @Test("Test Offline A Label Is Not Sent And Says You're Offline")
+    func testOfflineALabelIsNotSentAndSaysYoureOffline() async {
+        let interactor = Interactor()
+        interactor.isOffline = true
+        let router = Router()
+        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router)
+        presenter.scannedCode = "Energy 46kcal"
+
+        await presenter.onParseLabelPressed()
+
+        #expect(router.alertTitles == [OfflineError.title])
+        #expect(interactor.analysedTexts.isEmpty)
+        #expect(!presenter.isParsingLabel)
+    }
+
+    /// The library is on the device, so a food already in it is still found offline; only the
+    /// remote lookup is refused.
+    @Test("Test Offline A Barcode Is Found Locally Or Says You're Offline")
+    func testOfflineABarcodeIsFoundLocallyOrSaysYoureOffline() async {
+        let interactor = Interactor()
+        interactor.isOffline = true
+        interactor.localFoods = ["111": FoodModel(name: "Local Oats", barcode: "111")]
+        let router = Router()
+        let presenter = BarcodeScannerPresenter(interactor: interactor, router: router)
+
+        presenter.onBarcodeDetected("111")
+        await TestManagers.eventually { !presenter.isLookingUpBarcode }
+        #expect(presenter.parsedIngredient?.name == "Local Oats")
+        #expect(router.alertTitles.isEmpty)
+
+        presenter.onBarcodeDetected("222")
+        await TestManagers.eventually { !presenter.isLookingUpBarcode }
+        #expect(router.alertTitles == [OfflineError.title])
+        #expect(interactor.lookedUpCodes.isEmpty)
+    }
+
     @Test("Test A Failed Parse Is Reported And Stops The Spinner")
     func testAFailedParseIsReportedAndStopsTheSpinner() async {
         let screen = makeScreen()

@@ -106,22 +106,22 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
     var title: String {
         switch self {
         case .anyExercise:
-            return "Any workout"
+            return String(localized: "Any workout")
         case .sameWorkout:
-            return "This workout"
+            return String(localized: "This workout")
         case .workoutsInProgram:
-            return "This workout within the current program"
+            return String(localized: "This workout within the current program")
         }
     }
 
     var subtitle: String {
         switch self {
         case .anyExercise:
-            return "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all."
+            return String(localized: "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all.")
         case .sameWorkout:
-            return "Previous values come from the last time you completed this workout, in any program. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead."
+            return String(localized: "Previous values come from the last time you completed this workout, in any program. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.")
         case .workoutsInProgram:
-            return "Previous values come from the last time you completed this workout within the current program. If there is none for an exercise, the last time you performed it anywhere is shown instead."
+            return String(localized: "Previous values come from the last time you completed this workout within the current program. If there is none for an exercise, the last time you performed it anywhere is shown instead.")
         }
     }
 }
@@ -135,20 +135,20 @@ enum InitialLogFillOption: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .smartProgression: return "Smart Progression values"
-        case .previousValues:   return "Previous workout values"
-        case .empty:            return "Leave empty"
+        case .smartProgression: return String(localized: "Smart Progression values")
+        case .previousValues:   return String(localized: "Previous workout values")
+        case .empty:            return String(localized: "Leave empty")
         }
     }
 
     var subtitle: String {
         switch self {
         case .smartProgression:
-            return "Prefill each set with the values Smart Progression suggests for your next session."
+            return String(localized: "Prefill each set with the values Smart Progression suggests for your next session.")
         case .previousValues:
-            return "Prefill each set with exactly what you logged last time, with no progression applied."
+            return String(localized: "Prefill each set with exactly what you logged last time, with no progression applied.")
         case .empty:
-            return "Start every set blank and enter the values yourself."
+            return String(localized: "Start every set blank and enter the values yourself.")
         }
     }
 }
@@ -161,17 +161,17 @@ enum ProgressionAdjustmentMode: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .weightFirst: return "Weight-first"
-        case .repsFirst:   return "Reps-first"
+        case .weightFirst: return String(localized: "Weight-first")
+        case .repsFirst:   return String(localized: "Reps-first")
         }
     }
 
     var subtitle: String {
         switch self {
         case .weightFirst:
-            return "Add weight once you reach the top of the rep range, then reset reps to the bottom."
+            return String(localized: "Add weight once you reach the top of the rep range, then reset reps to the bottom.")
         case .repsFirst:
-            return "Add reps up to the top of the range before adding any weight."
+            return String(localized: "Add reps up to the top of the range before adding any weight.")
         }
     }
 }

@@ -28,6 +28,7 @@ struct SearchView: View {
                     quickActionsSection
                     recentSearchesSection
                 }
+                inviteCodeSection
             } else if presenter.hasResults || presenter.isLoadingPeople {
                 usersSection
                 exercisesSection
@@ -60,6 +61,30 @@ struct SearchView: View {
             await presenter.loadRecentSearches()
         }
         .scrollIndicators(.hidden)
+        .alert("Enter invite code", isPresented: $presenter.isEnteringInviteCode) {
+            TextField("Code", text: $presenter.inviteCodeInput)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            Button("Join") {
+                Task { await presenter.onInviteCodeSubmitted() }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("The 8-character code from a friend's invite link.")
+        }
+    }
+
+    /// For an invite link opened on another device than the one with the app.
+    private var inviteCodeSection: some View {
+        Section {
+            Label("Enter invite code", systemImage: "person.badge.plus")
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .tappableBackground()
+                .anyButton(.highlight) {
+                    presenter.onEnterInviteCodePressed()
+                }
+                .foregroundStyle(.primary)
+        }
     }
 
     /// One horizontal row rather than the two-column grid it replaced: shortcuts are a way in,
@@ -149,11 +174,9 @@ struct SearchView: View {
             Section {
                 ForEach(presenter.filteredUsers) { user in
                     UserRowView(user: user) {
-                        FollowButton(
-                            isFollowing: presenter.isFollowing(userId: user.userId),
-                            onFollowPressed: { presenter.onFollowPressed(user: user) },
-                            onUnfollowPressed: { presenter.onUnfollowPressed(user: user) }
-                        )
+                        FollowButton(state: presenter.followState(for: user)) {
+                            presenter.onFollowButtonPressed(user: user)
+                        }
                     }
                     .tappableBackground()
                     .anyButton(.highlight) {
@@ -177,7 +200,7 @@ struct SearchView: View {
     private var exercisesSection: some View {
         if !presenter.filteredExercises.isEmpty {
             searchItemSection(
-                header: "Exercises",
+                header: String(localized: "Exercises"),
                 items: presenter.filteredExercises,
                 action: { item in
                     guard let item = item as? ExerciseModel else { return }
@@ -220,7 +243,7 @@ struct SearchView: View {
     private var recipesSection: some View {
         if !presenter.filteredRecipeTemplates.isEmpty {
             searchItemSection(
-                header: "Recipes",
+                header: String(localized: "Recipes"),
                 items: presenter.filteredRecipeTemplates,
                 action: { item in
                     guard let item = item as? RecipeTemplateModel else { return }
@@ -234,7 +257,7 @@ struct SearchView: View {
     private var ingredientsSection: some View {
         if !presenter.filteredFoods.isEmpty {
             searchItemSection(
-                header: "Foods",
+                header: String(localized: "Foods"),
                 items: presenter.filteredFoods,
                 action: { item in
                     guard let item = item as? FoodModel else { return }

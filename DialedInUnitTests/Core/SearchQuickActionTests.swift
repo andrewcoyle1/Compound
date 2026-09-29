@@ -29,6 +29,9 @@ struct SearchQuickActionTests {
         var followingUsers: [UserModel] = []
         var activeSession: WorkoutSessionModel?
         private(set) var blankWorkoutStarts = 0
+        func acceptInvite(code: String) async throws -> (inviter: UserModel, acceptance: InviteAcceptance) {
+            throw InviteError.notFound
+        }
 
         func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws { }
         func startBlankWorkout() async throws { blankWorkoutStarts += 1 }
@@ -38,6 +41,9 @@ struct SearchQuickActionTests {
         func clearRecentSearches() { recentSearchQueries = [] }
         func followUser(userId: String) async throws { }
         func unfollowUser(userId: String) async throws { }
+        var sentFollowRequestIds: Set<String> = []
+        func sendFollowRequest(to user: UserModel) async throws { sentFollowRequestIds.insert(user.userId) }
+        func cancelFollowRequest(userId: String) async throws { sentFollowRequestIds.remove(userId) }
     }
 
     private final class Router: SearchRouter {

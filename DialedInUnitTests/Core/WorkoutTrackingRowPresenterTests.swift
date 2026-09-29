@@ -24,6 +24,7 @@ struct SetTrackerRowPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, SetTrackerRowInteractor {
         var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "user-1")
+        var favouriteGymProfile: GymProfileModel?
         var allExercises: [ExerciseModel] = []
         var preferences: [String: ExerciseUnitPreference] = [:]
         var restOverrides: [String: Int] = [:]

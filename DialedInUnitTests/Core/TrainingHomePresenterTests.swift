@@ -435,6 +435,7 @@ struct TrainingTemplateDetailPresenterTests {
     }
 
     private final class Router: WorkoutTemplateDetailRouter {
+        func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var exerciseDetailDelegates: [ExerciseModelDetailDelegate] = []

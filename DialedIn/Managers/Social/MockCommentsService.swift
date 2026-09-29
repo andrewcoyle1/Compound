@@ -45,4 +45,13 @@ class MockCommentsService: CommentsManagerService {
             comments[index].deletedAt = Date()
         }
     }
+
+    func toggleCommentLike(id: String, userId: String, isLiked: Bool) async throws {
+        try await simulateRequest()
+        guard let index = comments.firstIndex(where: { $0.id == id }) else { return }
+        comments[index].likedByUserIds.removeAll { $0 == userId }
+        if isLiked {
+            comments[index].likedByUserIds.append(userId)
+        }
+    }
 }

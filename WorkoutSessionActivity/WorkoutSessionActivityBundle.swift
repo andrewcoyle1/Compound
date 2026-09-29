@@ -13,6 +13,9 @@ import SwiftUI
 struct WorkoutSessionActivityBundle: WidgetBundle {
     var body: some Widget {
         WorkoutSessionActivity()
+        TodaysWorkoutWidget()
+        StreakWidget()
+        WeeklyRingWidget()
     }
 }
 #endif

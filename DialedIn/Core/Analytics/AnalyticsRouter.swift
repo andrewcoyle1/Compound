@@ -34,6 +34,7 @@ func showDevSettingsView()
     func showExerciseAnalyticsView(delegate: ExerciseAnalyticsDelegate)
     func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color?)
     func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate)
+    func showWeeklyReviewView()
 }
 
 extension CoreRouter: AnalyticsRouter { }

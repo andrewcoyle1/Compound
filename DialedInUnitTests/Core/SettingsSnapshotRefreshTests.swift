@@ -28,7 +28,9 @@ struct NutritionStrategyStaleSnapshotTests {
         }
     }
 
-    private final class Router: StrategySettingsRouter, ExpenditureSettingsRouter { }
+    private final class Router: StrategySettingsRouter, ExpenditureSettingsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     @Test("Test A Strategy Toggle Does Not Revert The Expenditure Screen")
     func testAStrategyToggleDoesNotRevertTheExpenditureScreen() async {
@@ -105,7 +107,9 @@ struct GeneralSettingsSnapshotRefreshTests {
         }
     }
 
-    private final class Router: CustomiseAnalyticsRouter, ShortcutsRouter { }
+    private final class Router: CustomiseAnalyticsRouter, ShortcutsRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
 
     @Test("Test Customise Analytics Picks Up A Change Made Elsewhere")
     func testCustomiseAnalyticsPicksUpAChangeMadeElsewhere() async {

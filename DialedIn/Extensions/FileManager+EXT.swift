@@ -23,6 +23,7 @@ extension FileManager {
     static func getDocumentURL(for key: String) -> URL {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)
+            // Safe: the user-domain documents directory always exists on iOS.
             .first!
             .appendingPathComponent("\(key).txt")
     }

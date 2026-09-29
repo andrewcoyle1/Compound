@@ -66,6 +66,10 @@ class MuscleGroupsPresenter {
         router.showMuscleGroupDetailView(muscle: muscle, delegate: MuscleGroupDetailDelegate(), themeColor: themeColor)
     }
 
+    func onMuscleBalancePressed() {
+        router.showMuscleBalanceView()
+    }
+
     func onDismissPressed() {
         router.dismissScreen()
     }

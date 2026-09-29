@@ -17,7 +17,7 @@ struct TodaysWorkoutCard: View {
     let delegate: TodaysWorkoutCardDelegate
     
     var body: some View {
-        DashboardCard(title: "Today's Workout", drawsSurface: false) {
+        DashboardCard(title: String(localized: "Today's Workout"), drawsSurface: false) {
             ZStack(alignment: .leading) {
                 if presenter.isTodayRestDay {
                     restDayCard

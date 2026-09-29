@@ -32,8 +32,8 @@ struct WorkoutSettingsView: View {
         Section {
             CustomLabelButtonView(
                 symbolName: "timer",
-                title: "Rest Timer",
-                subtitle: "Configure rest timer settings") {
+                title: String(localized: "Rest Timer"),
+                subtitle: String(localized: "Configure rest timer settings")) {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.secondary)
                         .padding()
@@ -44,8 +44,8 @@ struct WorkoutSettingsView: View {
                 }
             CustomLabelButtonView(
                 symbolName: "wand.and.stars",
-                title: "Smart Progression",
-                subtitle: "Configure smart progression settings") {
+                title: String(localized: "Smart Progression"),
+                subtitle: String(localized: "Configure smart progression settings")) {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.secondary)
                         .padding()
@@ -56,8 +56,8 @@ struct WorkoutSettingsView: View {
                 }
             CustomLabelButtonView(
                 symbolName: "arrow.trianglehead.counterclockwise",
-                title: "Previous Reference",
-                subtitle: "Any Workout") {
+                title: String(localized: "Previous Reference"),
+                subtitle: String(localized: "Any Workout")) {
                     Text("Edit")
                         .padding(.horizontal, 8)
                         .padding(8)
@@ -68,26 +68,26 @@ struct WorkoutSettingsView: View {
                 }
             CustomToggleView(
                 symbolName: "arrow.uturn.forward",
-                title: "Propagate Changes",
-                subtitle: "Weight and rep edits will propagate to all sets with the same weight and reps",
+                title: String(localized: "Propagate Changes"),
+                subtitle: String(localized: "Weight and rep edits will propagate to all sets with the same weight and reps"),
                 bool: $presenter.propagateChanges
             )
             CustomToggleView(
                 symbolName: "heart.fill",
-                title: "RIR Tracking",
-                subtitle: "Automatically populate RIR selection in the session log based on program",
+                title: String(localized: "Effort (RPE)"),
+                subtitle: String(localized: "Log how hard each set was, from RPE 6 to 10, on the reps keyboard"),
                 bool: $presenter.rirTracking
             )
             CustomToggleView(
                 symbolName: "arrow.trianglehead.2.clockwise",
-                title: "Superset Auto-Scroll",
-                subtitle: "Scroll automatically between superset exercises after set completion",
+                title: String(localized: "Superset Auto-Scroll"),
+                subtitle: String(localized: "Scroll automatically between superset exercises after set completion"),
                 bool: $presenter.supersetAutoScroll
             )
             CustomToggleView(
                 symbolName: "arrow.right.to.line.compact",
-                title: "Exercise Auto-Next",
-                subtitle: "Scroll next automatically when an exercise is completed",
+                title: String(localized: "Exercise Auto-Next"),
+                subtitle: String(localized: "Scroll next automatically when an exercise is completed"),
                 bool: $presenter.exerciseAutoNext
             )
 
@@ -101,20 +101,20 @@ struct WorkoutSettingsView: View {
         Section {
             CustomToggleView(
                 symbolName: "sun.max",
-                title: "Keep Alive",
-                subtitle: "Keep your phone alive during active workout sessions",
+                title: String(localized: "Keep Alive"),
+                subtitle: String(localized: "Keep your phone alive during active workout sessions"),
                 bool: $presenter.keepAlive
             )
             CustomToggleView(
                 symbolName: "timer",
-                title: "Workout Timer",
-                subtitle: "Show elapsed time during workout sessions",
+                title: String(localized: "Workout Timer"),
+                subtitle: String(localized: "Show elapsed time during workout sessions"),
                 bool: $presenter.showWorkoutTimer
             )
             CustomToggleView(
                 symbolName: "scalemass",
-                title: "Bodyweight Contribution",
-                subtitle: "Display scale weight and body weight contribution during workout sessions",
+                title: String(localized: "Bodyweight Contribution"),
+                subtitle: String(localized: "Display scale weight and body weight contribution during workout sessions"),
                 bool: $presenter.showBodyweightContribution
             )
             
@@ -126,8 +126,8 @@ struct WorkoutSettingsView: View {
         Section {
             CustomToggleView(
                 symbolName: "figure.yoga",
-                title: "Add Smart Warm-Ups",
-                subtitle: "Warm-Ups will be automatically added to exercises in your workout depending on how fresh your muscles are and how heavy the weight is",
+                title: String(localized: "Add Smart Warm-Ups"),
+                subtitle: String(localized: "Warm-Ups will be automatically added to exercises in your workout depending on how fresh your muscles are and how heavy the weight is"),
                 bool: $presenter.addSmartWarmUps
             )
 
@@ -142,8 +142,8 @@ struct WorkoutSettingsView: View {
         Section {
             CustomLabelButtonView(
                 symbolName: "list.star",
-                title: "Exercise Assessment",
-                subtitle: "A questionnaire about your experience with foundational movements that determines access to advanced exercises") {
+                title: String(localized: "Exercise Assessment"),
+                subtitle: String(localized: "A questionnaire about your experience with foundational movements that determines access to advanced exercises")) {
                     Image(systemName: "chevron.right")
                         .foregroundStyle(.secondary)
                         .foregroundStyle(.secondary)

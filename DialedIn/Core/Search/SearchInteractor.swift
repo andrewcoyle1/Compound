@@ -6,13 +6,12 @@
 //
 
 @MainActor
-protocol SearchInteractor: GlobalInteractor {
+protocol SearchInteractor: FollowInteractor, InviteAcceptInteractor {
     /// Which quick actions the Search tab shows — see `ShortcutsView`.
     var shortcutSettings: ShortcutSettings { get }
     var userImageUrl: String? { get }
     var currentUser: UserModel? { get }
     var draftMeal: MealLogModel? { get }
-    var followingIds: [String] { get }
     var recentSearchQueries: [String] { get }
     var allExercises: [ExerciseModel] { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
@@ -26,8 +25,6 @@ protocol SearchInteractor: GlobalInteractor {
     func searchUsers(query: String) async throws -> [UserModel]
     func addRecentSearch(query: String)
     func clearRecentSearches()
-    func followUser(userId: String) async throws
-    func unfollowUser(userId: String) async throws
 }
 
 extension CoreInteractor: SearchInteractor {
@@ -35,12 +32,9 @@ extension CoreInteractor: SearchInteractor {
         RecentSearchManager.recentSearchQueries
     }
 
-    var followingIds: [String] {
-        currentUser?.followingIds ?? []
-    }
-
     func searchUsers(query: String) async throws -> [UserModel] {
-        let results = try await userManager.searchUsers(query: query)
+        let results = try await userManager.searchUsersByNameOrHandle(query: query)
+        // Private profiles are found like any other; following one sends a request.
         return results.filter { $0.userId != currentUser?.userId }
     }
 

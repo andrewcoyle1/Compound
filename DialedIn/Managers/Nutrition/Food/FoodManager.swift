@@ -44,17 +44,6 @@ class FoodManager {
     func deleteFood(ingredientId id: String) async throws {
         try await foodSyncEngine.deleteDocument(id: id)
     }
-    
-    func deleteAllFoods() async {
-        await withTaskGroup(of: Void.self) { group in
-            for food in foods {
-                group.addTask {
-                    try? await self.deleteFood(ingredientId: food.id)
-                }
-            }
-            await group.waitForAll()
-        }
-    }
 }
  
 extension CoreInteractor {
@@ -66,5 +55,9 @@ extension CoreInteractor {
     
     func saveFood(_ ingredient: FoodModel, image: PlatformImage?) async throws {
         try await foodManager.saveFood(ingredient, image: image)
+    }
+
+    func deleteFood(ingredientId: String) async throws {
+        try await foodManager.deleteFood(ingredientId: ingredientId)
     }
     }

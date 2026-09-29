@@ -16,28 +16,28 @@ enum Muscles: String, CodingKeyRepresentable, CaseIterable, DataSyncModelProtoco
     
     var name: String {
         switch self {
-        case .triceps: return "Triceps"
-        case .upperTraps: return "Upper Traps"
-        case .obliques: return "Obliques"
-        case .neck: return "Neck"
-        case .lats: return "Lats"
-        case .forearms: return "Forearms"
-        case .sideDelts: return "Side Delts"
-        case .rearDelts: return "Rear Delts"
-        case .frontDelts: return "Front Delts"
-        case .chest: return "Chest"
-        case .biceps: return "Biceps"
-        case .upperBack: return "Upper Back"
-        case .lowerBack: return "Lower Back"
-        case .abs: return "Abs"
-        case .serratus: return "Serratus"
-        case .quads: return "Quads"
-        case .hamstrings: return "Hamstrings"
-        case .glutes: return "Glutes"
-        case .calves: return "Calves"
-        case .abductors: return "Abductors"
-        case .adductors: return "Adductors"
-        case .tibialis: return "Tibialis"
+        case .triceps: return String(localized: "Triceps")
+        case .upperTraps: return String(localized: "Upper Traps")
+        case .obliques: return String(localized: "Obliques")
+        case .neck: return String(localized: "Neck")
+        case .lats: return String(localized: "Lats")
+        case .forearms: return String(localized: "Forearms")
+        case .sideDelts: return String(localized: "Side Delts")
+        case .rearDelts: return String(localized: "Rear Delts")
+        case .frontDelts: return String(localized: "Front Delts")
+        case .chest: return String(localized: "Chest")
+        case .biceps: return String(localized: "Biceps")
+        case .upperBack: return String(localized: "Upper Back")
+        case .lowerBack: return String(localized: "Lower Back")
+        case .abs: return String(localized: "Abs")
+        case .serratus: return String(localized: "Serratus")
+        case .quads: return String(localized: "Quads")
+        case .hamstrings: return String(localized: "Hamstrings")
+        case .glutes: return String(localized: "Glutes")
+        case .calves: return String(localized: "Calves")
+        case .abductors: return String(localized: "Abductors")
+        case .adductors: return String(localized: "Adductors")
+        case .tibialis: return String(localized: "Tibialis")
         }
     }
 

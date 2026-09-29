@@ -29,9 +29,9 @@ struct TextValidationHelper {
         var errorDescription: String? {
             switch self {
             case .notEnoughCharacters(min: let min):
-                return "Please add at least \(min) characters."
+                return String(localized: "Please add at least \(min) characters.")
             case .hasBadWords:
-                return "Bad word detected. Please rephrase your message."
+                return String(localized: "Bad word detected. Please rephrase your message.")
             }
         }
     }

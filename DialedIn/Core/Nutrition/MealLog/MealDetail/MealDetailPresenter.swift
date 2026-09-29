@@ -54,8 +54,8 @@ class MealDetailPresenter {
     func onDeletePressed(meal: MealLogModel) {
         // Deleting a logged meal cannot be undone, so it is confirmed first.
         router.showAlert(
-            title: "Delete this meal?",
-            subtitle: "This cannot be undone.",
+            title: String(localized: "Delete this meal?"),
+            subtitle: String(localized: "This cannot be undone."),
             buttons: {
                 AnyView(
                     Group {
@@ -82,7 +82,7 @@ class MealDetailPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onDeleteFail(error: error))
-                router.showSimpleAlert(title: "Unable to delete meal", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to delete meal"), subtitle: String(localized: "Please try again."))
             }
         }
     }

@@ -25,6 +25,7 @@ enum WeightTrendCalculator {
     ) -> [(date: Date, value: Double)] {
         guard !data.isEmpty else { return [] }
         guard data.count > 1 else {
+            // Safe: the guard above rules out empty data.
             return [(date: data[0].date, value: data[0].value)]
         }
 

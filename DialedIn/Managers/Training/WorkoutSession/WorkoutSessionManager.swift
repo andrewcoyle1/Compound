@@ -29,6 +29,11 @@ class WorkoutSessionManager {
         followingWorkoutSessionSyncEngine.currentCollection
     }
 
+    /// Whether the following feed has answered once since sign-in, so an empty feed can be told
+    /// apart from one still loading. `startListening` returns once its bulk load has landed (or
+    /// failed, so an offline launch does not spin forever); following nobody answers at once.
+    private(set) var hasLoadedFollowingSessions = false
+
     // MARK: - Init
 
     init(
@@ -58,16 +63,19 @@ class WorkoutSessionManager {
     func refreshFollowingSync(followingIds: [String]) async {
         guard !followingIds.isEmpty else {
             followingWorkoutSessionSyncEngine.stopListening()
+            hasLoadedFollowingSessions = true
             return
         }
         await followingWorkoutSessionSyncEngine.startListening { query in
-            query.where("author_id", in: followingIds)
+            FollowingQueries.sessions(query, followingIds: followingIds)
         }
+        hasLoadedFollowingSessions = true
     }
 
     func signOut() {
         userWorkoutSessionSyncEngine.stopListening()
         followingWorkoutSessionSyncEngine.stopListening()
+        hasLoadedFollowingSessions = false
     }
 
     func updateActiveSession(_ session: WorkoutSessionModel) throws {
@@ -105,17 +113,6 @@ class WorkoutSessionManager {
     func deleteWorkoutSession(id: String) async throws {
         try await userWorkoutSessionSyncEngine.deleteDocument(id: id)
     }
-
-    func deleteAllWorkoutSessionsForAuthor(authorId: String) async throws {
-        await withTaskGroup(of: Void.self) { group in
-            for workoutSession in workoutSessions.filter({ $0.authorId == authorId }) {
-                group.addTask {
-                    try? await self.deleteWorkoutSession(id: workoutSession.id)
-                }
-            }
-            await group.waitForAll()
-        }
-    }
     
     // MARK: - Read
 
@@ -137,12 +134,38 @@ class WorkoutSessionManager {
         }
     }
 
+    /// Anyone's sessions, newest first. The user engine's path is the *reader's* own
+    /// `users/{uid}/workout_sessions`, so querying it for another author always came back empty;
+    /// the collection group spans every user's subcollection, which the rules let any signed-in
+    /// user read. Ordering needs the `author_id` + `date_created` index in `firestore.indexes.json`.
+    /// The filter repeats the query's because the mock remote ignores query filters.
     func getWorkoutSessionsForAuthor(authorId: String, limitTo: Int = 20) async throws -> [WorkoutSessionModel] {
-        try await userWorkoutSessionSyncEngine.getDocumentsAsync { query in
+        try await followingWorkoutSessionSyncEngine.getDocumentsAsync { query in
             query
                 .where("author_id", isEqualTo: authorId)
+                .order(by: "date_created", descending: true)
                 .limit(to: limitTo)
         }
+        .filter { $0.authorId == authorId }
+    }
+
+    /// One session by anyone, for a notification tap. Already-synced sessions (the reader's own and
+    /// those of people they follow) answer straight away; anything else is read through the same
+    /// collection group as `getWorkoutSessionsForAuthor`, which needs the `author_id` + `id` index in
+    /// `firestore.indexes.json`. The filter repeats the query's because the mock remote ignores it.
+    func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel {
+        if let synced = (workoutSessions + followingWorkoutSessions).first(where: { $0.id == id }) {
+            return synced
+        }
+        let found = try await followingWorkoutSessionSyncEngine.getDocumentsAsync { query in
+            query
+                .where("author_id", isEqualTo: authorId)
+                .where("id", isEqualTo: id)
+                .limit(to: 1)
+        }
+        .first { $0.id == id }
+        guard let found else { throw URLError(.fileDoesNotExist) }
+        return found
     }
 
     func likeSession(sessionId: String, authorId: String, userId: String) async throws {
@@ -228,6 +251,16 @@ extension CoreInteractor {
         workoutSessionManager.followingWorkoutSessions
     }
 
+    var hasLoadedFollowingSessions: Bool {
+        workoutSessionManager.hasLoadedFollowingSessions
+    }
+
+    /// Every session by `authorId` this device holds: the reader's own history, or what the
+    /// following feed has synced of someone they follow.
+    func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] {
+        authorId == currentUser?.userId ? workoutSessions : followingWorkoutSessions.filter { $0.authorId == authorId }
+    }
+
     var restEndTime: Date? {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         return hkWorkoutManager.restEndTime
@@ -248,10 +281,6 @@ extension CoreInteractor {
         try await workoutSessionManager.deleteWorkoutSession(id: id)
     }
 
-    func deleteAllWorkoutSessionsForAuthor(authorId: String) async throws {
-        try await workoutSessionManager.deleteAllWorkoutSessionsForAuthor(authorId: authorId)
-    }
-
     func getWorkoutSession(id: String) async throws -> WorkoutSessionModel {
         try await workoutSessionManager.getWorkoutSession(id: id)
     }
@@ -270,6 +299,14 @@ extension CoreInteractor {
 
     func getWorkoutSessionsForAuthor(authorId: String, limitTo: Int = 20) async throws -> [WorkoutSessionModel] {
         try await workoutSessionManager.getWorkoutSessionsForAuthor(authorId: authorId, limitTo: limitTo)
+    }
+
+    func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel {
+        try await workoutSessionManager.fetchWorkoutSession(id: id, authorId: authorId)
+    }
+
+    func fetchWorkoutSessions(authorId: String, limit: Int) async throws -> [WorkoutSessionModel] {
+        try await workoutSessionManager.getWorkoutSessionsForAuthor(authorId: authorId, limitTo: limit)
     }
 
     func getLastCompletedSessionForTemplate(
@@ -344,23 +381,21 @@ extension CoreInteractor {
 
     func addComment(_ comment: WorkoutSessionComment) async throws {
         try await commentsManager.addComment(comment)
-        guard comment.sessionAuthorId != comment.authorId else { return }
-        let notification = ActivityNotificationModel(
-            id: "comment_\(comment.id)",
-            type: .comment,
-            actorId: comment.authorId,
-            actorName: comment.authorName ?? "Someone",
-            actorImageUrl: comment.authorImageUrl,
-            sessionId: comment.sessionId,
-            sessionAuthorId: comment.sessionAuthorId,
-            commentText: comment.text,
-            dateCreated: comment.dateCreated,
-            isRead: false
-        )
-        try? await activityNotificationManager.addNotification(notification, userId: comment.sessionAuthorId)
+        var parentAuthorId: String?
+        if let parentId = comment.parentId {
+            parentAuthorId = try? await commentsManager.fetchComments(sessionId: comment.sessionId)
+                .first(where: { $0.id == parentId })?.authorId
+        }
+        for (recipient, notification) in comment.activityNotifications(parentAuthorId: parentAuthorId) {
+            try? await activityNotificationManager.addNotification(notification, userId: recipient)
+        }
     }
 
     func deleteComment(id: String) async throws {
         try await commentsManager.deleteComment(id: id)
+    }
+
+    func toggleCommentLike(id: String, userId: String, isLiked: Bool) async throws {
+        try await commentsManager.toggleCommentLike(id: id, userId: userId, isLiked: isLiked)
     }
 }

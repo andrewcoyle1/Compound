@@ -150,9 +150,9 @@ enum FoodLibraryOption: String, CaseIterable, Hashable, Identifiable {
     
     var title: String {
         switch self {
-        case .recipes: return "Recipes"
-        case .foods: return "Foods"
-        case .favourites: return "Favourites"
+        case .recipes: return String(localized: "Recipes")
+        case .foods: return String(localized: "Foods")
+        case .favourites: return String(localized: "Favourites")
         }
     }
     

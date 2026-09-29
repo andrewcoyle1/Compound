@@ -182,7 +182,7 @@ extension MetricConfiguration {
     private func seriesColors(color: Color?) -> [Color] {
         // The bars first, then the line, matching the order a combo chart's series are given in.
         if chartType == .combo, let lineSeriesColor {
-            return [color ?? ChartConfiguration().seriesColors[0], lineSeriesColor]
+            return [color ?? ChartConfiguration().seriesColors.first ?? .accentColor, lineSeriesColor]
         }
         if isMacrosChart {
             return [MacroProgressChart.proteinColor, MacroProgressChart.carbsColor, MacroProgressChart.fatColor]

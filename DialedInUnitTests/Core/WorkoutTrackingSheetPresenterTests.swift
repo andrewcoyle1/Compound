@@ -439,6 +439,7 @@ struct ExerciseTrackerPresenterTests {
 
     private final class Router: ExerciseTrackerRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        func showWorkoutNotesView(delegate: WorkoutNotesDelegate) { }
     }
 
     private func exercise(templateId: String = "template-1") -> WorkoutExerciseModel {

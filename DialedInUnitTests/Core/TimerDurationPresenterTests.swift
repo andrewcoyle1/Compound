@@ -25,7 +25,10 @@ struct TimerDurationExerciseOverrideTests {
         var allExerciseSettings: [ExerciseSettingsModel] = []
         private(set) var savedOverrides: [(id: String, seconds: Int?)] = []
 
+        var saveError: Error?
+
         func saveWorkoutSettings(_ workoutSettings: WorkoutSettings) async throws {
+            if let saveError { throw saveError }
             self.workoutSettings = workoutSettings
         }
 
@@ -34,16 +37,18 @@ struct TimerDurationExerciseOverrideTests {
         }
 
         func setExerciseRestOverride(_ seconds: Int?, for exerciseId: String) async throws {
+            if let saveError { throw saveError }
             savedOverrides.append((id: exerciseId, seconds: seconds))
         }
     }
 
     private final class Router: TimerDurationRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        private(set) var alertTitles: [String] = []
 
         func showAlert(error: Error) { }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
-        func showSimpleAlert(title: String, subtitle: String?) { }
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -111,5 +116,38 @@ struct TimerDurationExerciseOverrideTests {
             screen.interactor.workoutSettings.restDurationsByExerciseType["core"] == 60
         })
         #expect(screen.interactor.workoutSettings.defaultRestDurationSeconds == 150)
+    }
+
+    /// Both writes on this screen were `try?`-ed. A failure now raises one alert and one event.
+    @Test("Test A Failed Override Save Alerts Once")
+    func testAFailedOverrideSaveAlertsOnce() async {
+        let interactor = Interactor()
+        interactor.saveError = URLError(.notConnectedToInternet)
+        let router = Router()
+        let presenter = TimerDurationPresenter(interactor: interactor, router: router)
+
+        presenter.removeExerciseOverride(
+            TimerDurationPresenter.ExerciseOverride(id: "exercise-1", name: "Bench Press", seconds: 120)
+        )
+
+        #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
+        for _ in 0..<10 { await Task.yield() }
+        #expect(router.alertTitles == ["Unable to Save Settings"])
+        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Fail"])
+    }
+
+    @Test("Test A Failed Type Duration Save Alerts Once")
+    func testAFailedTypeDurationSaveAlertsOnce() async {
+        let interactor = Interactor()
+        interactor.saveError = URLError(.notConnectedToInternet)
+        let router = Router()
+        let presenter = TimerDurationPresenter(interactor: interactor, router: router)
+
+        presenter.resetDefaults()
+
+        #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
+        for _ in 0..<10 { await Task.yield() }
+        #expect(router.alertTitles == ["Unable to Save Settings"])
+        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Fail"])
     }
 }

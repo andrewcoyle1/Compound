@@ -105,8 +105,8 @@ enum UnitOfWeight: String, PickableUnit {
     
     var name: String {
         switch self {
-        case .kilograms: return "Kilograms"
-        case .pounds: return "Pounds"
+        case .kilograms: return String(localized: "Kilograms")
+        case .pounds: return String(localized: "Pounds")
         }
     }
     

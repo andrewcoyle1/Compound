@@ -31,66 +31,28 @@ class RecipeAmountPresenter {
         self.router = router
     }
 
-    /// Grams of an ingredient as used in the recipe. Millilitres are taken one-for-one with grams,
-    /// and a counted unit as 100g, which is the same assumption the recipe builder makes.
-    private func grams(of recipeIngredient: RecipeIngredientModel) -> Double {
-        switch recipeIngredient.unit {
-        case .grams:
-            return recipeIngredient.amount
-        case .milliliters:
-            return recipeIngredient.amount // approximation
-        case .units:
-            return recipeIngredient.amount * 100 // rough fallback
-        }
-    }
-
-    /// How much of the recipe one serving is. Floors at one so a recipe saved claiming no servings
-    /// reads as a single serving rather than dividing by zero.
-    private func servingDivisor(_ recipe: RecipeTemplateModel) -> Double {
-        max(recipe.servingQuantity, 1)
-    }
-
-    /// One serving's worth of a nutrient — the recipe's total divided across its servings.
-    private func aggregate(_ keyPath: (FoodModel) -> Double?, recipe: RecipeTemplateModel) -> Double? {
-        var total: Double = 0
-        var hasValue = false
-        for recipeIngredient in recipe.ingredients {
-            guard let per100 = keyPath(recipeIngredient.ingredient) else { continue }
-            hasValue = true
-            total += per100 * (grams(of: recipeIngredient) / 100.0)
-        }
-        return hasValue ? total / servingDivisor(recipe) : nil
-    }
-
     func baseCalories(recipe: RecipeTemplateModel) -> Double? {
-        aggregate({ $0.calories }, recipe: recipe)
+        NutritionScaling.perServing(recipe)[.calories]
     }
 
     func baseProtein(recipe: RecipeTemplateModel) -> Double? {
-        aggregate({ $0.protein }, recipe: recipe)
+        NutritionScaling.perServing(recipe)[.protein]
     }
 
     func baseCarbs(recipe: RecipeTemplateModel) -> Double? {
-        aggregate({ $0.carbs }, recipe: recipe)
+        NutritionScaling.perServing(recipe)[.carbs]
     }
 
     func baseFat(recipe: RecipeTemplateModel) -> Double? {
-        aggregate({ $0.fatTotal }, recipe: recipe)
+        NutritionScaling.perServing(recipe)[.fatTotal]
     }
 
     func add(recipe: RecipeTemplateModel, onConfirm: @escaping (MealItemModel) -> Void) {
-        var recipeNutrients = NutrientMap()
-        for recipeIngredient in recipe.ingredients {
-            let scale = grams(of: recipeIngredient) / 100.0
-            for (key, value) in recipeIngredient.ingredient.nutrients {
-                recipeNutrients[key, default: 0] += value * scale
-            }
-        }
         // Per serving first, then by how many servings were eaten. Scaling the whole recipe by the
         // servings instead logged the entire pot for every serving — a four-serving dish went in
         // at four times what was eaten.
-        let perServing = recipeNutrients.mapValues { $0 / servingDivisor(recipe) }
-        let scaledNutrients = perServing.mapValues { $0 * servings }
+        let scaledNutrients = NutritionScaling.nutrients(of: recipe)
+            .scaled(by: NutritionScaling.factor(servings: servings, of: recipe))
         let item = MealItemModel(
             itemId: UUID().uuidString,
             sourceType: .recipe,

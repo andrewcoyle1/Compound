@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol SearchRouter: GlobalRouter {
+protocol SearchRouter: GlobalRouter, InviteAcceptRouter {
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID)
     func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color?)
     func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate)

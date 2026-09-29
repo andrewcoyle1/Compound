@@ -13,7 +13,7 @@ public struct SharedWorkoutStorage {
     private static let restEndTimeKey = "workout.rest.endTime"
     private static let hkStartedSessionIdKey = "workout.hk.started.sessionId"
     
-    private static var sharedDefaults: UserDefaults? {
+    static var sharedDefaults: UserDefaults? {
         return UserDefaults(suiteName: appGroupIdentifier)
     }
     

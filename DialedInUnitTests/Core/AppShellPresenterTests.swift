@@ -322,6 +322,15 @@ struct AppShellTabBarPresenterTests {
     private final class Interactor: SpyGlobalInteractor, TabBarInteractor {
         var activeSession: WorkoutSessionModel?
         var draftMeal: MealLogModel?
+        var activityNotifications: [ActivityNotificationModel] = []
+        var incomingFollowRequests: [FollowRequestModel] = []
+        /// The real one is `PushManager`; its gating is covered in `PushPendingDeepLinkTests`.
+        var pendingDeepLink: DeepLink?
+
+        func consumePendingDeepLink() -> DeepLink? {
+            defer { pendingDeepLink = nil }
+            return pendingDeepLink
+        }
 
         private(set) var trackedParameters: [[String: Any]] = []
 
@@ -333,6 +342,7 @@ struct AppShellTabBarPresenterTests {
 
     private final class Router: TabBarRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        func showWorkoutTrackerView() { }
 
         func showAlert(error: Error) { }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
@@ -357,6 +367,46 @@ struct AppShellTabBarPresenterTests {
 
     private func meal() -> MealLogModel {
         MealLogModel(authorId: "user-1", dayKey: "2026-03-04", date: Date(timeIntervalSince1970: 0), items: [])
+    }
+
+    /// The Dashboard tab's badge is the unread count — a read notification, or a follow someone
+    /// has already seen, must not keep the badge up.
+    @Test("Test The Dashboard Badge Counts Only Unread Activity")
+    func testTheDashboardBadgeCountsOnlyUnreadActivity() {
+        let screen = makeScreen()
+        #expect(screen.presenter.unreadActivityCount == 0)
+
+        screen.interactor.activityNotifications = [
+            activity(id: "1", type: .like, isRead: false),
+            activity(id: "2", type: .follow, isRead: false),
+            activity(id: "3", type: .comment, isRead: true)
+        ]
+
+        #expect(screen.presenter.unreadActivityCount == 2)
+    }
+
+    /// A follow request waiting on an answer is something to act on, so it counts like unread activity.
+    @Test("Test The Dashboard Badge Includes Pending Follow Requests")
+    func testTheDashboardBadgeIncludesPendingFollowRequests() {
+        let screen = makeScreen()
+        screen.interactor.activityNotifications = [activity(id: "1", type: .like, isRead: false)]
+        screen.interactor.incomingFollowRequests = [
+            FollowRequestModel(requesterId: "r1", requesterName: "R1", requesterImageUrl: nil, dateCreated: Date(), status: .pending),
+            FollowRequestModel(requesterId: "r2", requesterName: "R2", requesterImageUrl: nil, dateCreated: Date(), status: .pending)
+        ]
+
+        #expect(screen.presenter.unreadActivityCount == 3)
+    }
+
+    private func activity(
+        id: String,
+        type: ActivityNotificationModel.ActivityType,
+        isRead: Bool
+    ) -> ActivityNotificationModel {
+        ActivityNotificationModel(
+            id: id, type: type, actorId: "a", actorName: "A", actorImageUrl: nil,
+            sessionId: "", sessionAuthorId: "user-1", commentText: nil, dateCreated: Date(), isRead: isRead
+        )
     }
 
     // MARK: - Where the app starts
@@ -418,9 +468,8 @@ struct AppShellTabBarPresenterTests {
     func testAPushPayloadSelectsTheSameTabAsALink() {
         let screen = makeScreen()
 
-        screen.presenter.onPushNotificationReceived(
-            Notification(name: Constants.selectTab, object: nil, userInfo: ["deep_link": "compound://tab/analytics"])
-        )
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/analytics"])
+        screen.presenter.onPushNotificationReceived()
 
         #expect(screen.presenter.selectedTabTitle == "Analytics")
     }
@@ -460,15 +509,74 @@ struct AppShellTabBarPresenterTests {
     func testAPushWithNoDestinationIsIgnored() {
         let screen = makeScreen()
 
-        screen.presenter.onPushNotificationReceived(
-            Notification(name: Constants.selectTab, object: nil, userInfo: ["body": "hello"])
-        )
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["body": "hello"])
+        screen.presenter.onPushNotificationReceived()
         screen.presenter.onSelectTabNotificationReceived(
             Notification(name: Constants.selectTab, object: nil, userInfo: nil)
         )
 
         #expect(screen.presenter.selectedTabTitle == "Dashboard")
         #expect(screen.interactor.trackedEventNames.isEmpty)
+    }
+
+    /// A like, comment or mention push carries the session and its author; the tab bar lands on
+    /// the Dashboard, which opens it. A comment or mention also opens the thread.
+    @Test("Test A Session Push Parses Its Fields And Selects The Dashboard")
+    func testASessionPushParsesItsFieldsAndSelectsTheDashboard() {
+        let payload: [AnyHashable: Any] = ["tab": "dashboard", "type": "mention", "session_id": "s1", "session_author_id": "u1", "actor_id": "a1"]
+        #expect(DeepLink(pushUserInfo: payload) == .session(id: "s1", authorId: "u1", openComments: true))
+        #expect(DeepLink(pushUserInfo: ["type": "like", "session_id": "s1", "session_author_id": "u1"]) == .session(id: "s1", authorId: "u1", openComments: false))
+        // A follow has no session, so it is just the Dashboard tab.
+        #expect(DeepLink(pushUserInfo: ["tab": "dashboard", "type": "follow", "session_id": "", "session_author_id": ""]) == .tab(.dashboard))
+
+        let screen = makeScreen()
+        screen.presenter.selectedTabTitle = "Training"
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: payload)
+        screen.presenter.onPushNotificationReceived()
+
+        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Session"])
+    }
+
+    /// A follow-request push lands on the Dashboard and asks it to open the notifications screen,
+    /// even if it also carries a tab.
+    @Test("Test A Follow Request Push Opens Notifications From The Dashboard")
+    func testAFollowRequestPushOpensNotificationsFromTheDashboard() async {
+        let payload: [AnyHashable: Any] = ["tab": "dashboard", "type": "follow_request", "session_id": "", "session_author_id": "", "actor_id": "a1"]
+        #expect(DeepLink(pushUserInfo: payload) == .notifications)
+
+        let screen = makeScreen()
+        screen.presenter.selectedTabTitle = "Training"
+        var opened = false
+        let observer = NotificationCenter.default.addObserver(forName: Constants.openNotifications, object: nil, queue: .main) { _ in
+            opened = true
+        }
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: payload)
+        screen.presenter.onPushNotificationReceived()
+
+        #expect(await TestManagers.eventually { opened })
+        #expect(screen.presenter.selectedTabTitle == "Dashboard")
+        #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Notifications"])
+    }
+
+    /// A push tapped to launch the app is waiting before the tab bar exists; the tab bar takes it
+    /// when it appears, and only once — a later appear or broadcast must not replay it.
+    @Test("Test A Pending Push Is Routed On Appear Exactly Once")
+    func testAPendingPushIsRoutedOnAppearExactlyOnce() {
+        let screen = makeScreen()
+        screen.interactor.pendingDeepLink = .tab(.nutrition)
+
+        screen.presenter.onViewAppear()
+        #expect(screen.presenter.selectedTabTitle == "Nutrition")
+
+        screen.presenter.selectedTabTitle = "Training"
+        screen.presenter.onViewAppear()
+        screen.presenter.onPushNotificationReceived()
+
+        #expect(screen.presenter.selectedTabTitle == "Training")
+        #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Tab"])
     }
 
     // MARK: - The accessory above the tab bar

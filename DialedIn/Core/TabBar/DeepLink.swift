@@ -16,6 +16,22 @@ enum DeepLink: Equatable {
 
     case tab(Tab)
 
+    /// One workout session, from a like, comment or mention push. Lands on the Dashboard, which
+    /// then opens it — with its comments on top when `openComments` is set.
+    case session(id: String, authorId: String, openComments: Bool)
+
+    /// The notifications screen, from a follow-request push. Lands on the Dashboard, which opens it
+    /// from its bell.
+    case notifications
+
+    /// `compound://join/<code>`, an invite a friend sent. Lands on the Dashboard, which accepts it
+    /// and opens the inviter's profile. The code is already normalised by `InviteCode`.
+    case join(code: String)
+
+    /// `compound://workout`, from the Today's Workout widget. Opens the tracker when a session is
+    /// under way, otherwise the Dashboard, whose today card starts one.
+    case workout
+
     /// The tab bar's roots. `search` is SwiftUI's own tab, owned through `Tab(role: .search)`;
     /// it still selects by title like the rest.
     enum Tab: String, CaseIterable, Identifiable {
@@ -57,6 +73,15 @@ enum DeepLink: Equatable {
             .value?
             .lowercased()
 
+        if host == "join" {
+            guard let raw = firstPath, let code = InviteCode.normalised(raw) else { return nil }
+            self = .join(code: code)
+            return
+        }
+        if host == "workout" {
+            self = .workout
+            return
+        }
         guard host == "tab" else { return nil }
         guard let name = firstPath ?? queryName, let tab = Tab(name: name) else { return nil }
         self = .tab(tab)
@@ -73,14 +98,42 @@ enum DeepLink: Equatable {
                 object: nil,
                 userInfo: ["tab": tab.rawValue]
             )
+        case .session(let id, let authorId, let openComments):
+            NotificationCenter.default.post(
+                name: Constants.openWorkoutSession,
+                object: nil,
+                userInfo: ["session_id": id, "session_author_id": authorId, "type": openComments ? "comment" : "like"]
+            )
+        case .notifications:
+            NotificationCenter.default.post(name: Constants.openNotifications, object: nil)
+        case .join(let code):
+            NotificationCenter.default.post(name: Constants.acceptInvite, object: nil, userInfo: ["code": code])
+        case .workout:
+            NotificationCenter.default.post(
+                name: Constants.selectTab,
+                object: nil,
+                userInfo: ["deep_link": WidgetSnapshotStore.workoutURL.absoluteString]
+            )
         }
     }
 
     /// The same destinations from a push payload, so a notification tap and a link agree on what
-    /// they mean. Reads `deep_link` as a full URL string, or `tab` as a bare name.
+    /// they mean. Reads `deep_link` as a full URL string, then `session_id` with
+    /// `session_author_id` (both non-empty) as a session, then `tab` as a bare name. A
+    /// `follow_request` type opens the notifications screen, where the request is answered.
     init?(pushUserInfo: [AnyHashable: Any]) {
         if let link = pushUserInfo["deep_link"] as? String, let url = URL(string: link) {
             self.init(url: url)
+            return
+        }
+        if pushUserInfo["type"] as? String == "follow_request" {
+            self = .notifications
+            return
+        }
+        if let id = pushUserInfo["session_id"] as? String, !id.isEmpty,
+           let authorId = pushUserInfo["session_author_id"] as? String, !authorId.isEmpty {
+            let type = pushUserInfo["type"] as? String
+            self = .session(id: id, authorId: authorId, openComments: type == "comment" || type == "mention")
             return
         }
         if let name = (pushUserInfo["tab"] as? String)?.lowercased(), let tab = Tab(name: name) {

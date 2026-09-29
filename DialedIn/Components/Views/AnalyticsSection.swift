@@ -90,7 +90,7 @@ struct ConsistencyAnalyticsCard: View {
     var body: some View {
         AnalyticsCard(
             title: title,
-            subtitle: "Last 30 Days",
+            subtitle: String(localized: "Last 30 Days"),
             subsubtitle: value,
             subsubsubtitle: "this week",
             themeColor: themeColor,

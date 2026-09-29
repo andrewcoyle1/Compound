@@ -31,6 +31,19 @@ struct RecipeListBuilderView: View {
                 filteredRecipeTemplatesSection
             }
         }
+        .overlay {
+            if !presenter.searchText.isEmpty && presenter.filteredRecipeTemplates.isEmpty {
+                ContentUnavailableView.search(text: presenter.searchText)
+            } else if presenter.searchText.isEmpty && presenter.userRecipeTemplates.isEmpty && presenter.systemRecipeTemplates.isEmpty {
+                ContentUnavailableView {
+                    Label("No Recipes", systemImage: "book.closed")
+                } description: {
+                    Text("Recipes you create appear here.")
+                } actions: {
+                    Button("Create a Recipe") { presenter.onAddRecipePressed() }
+                }
+            }
+        }
         .onAppear {
             presenter.onViewAppear()
         }

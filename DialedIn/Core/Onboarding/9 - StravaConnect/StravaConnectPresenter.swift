@@ -35,7 +35,7 @@ class StravaConnectPresenter {
                 interactor.trackEvent(event: Event.connectSuccess)
             } catch {
                 interactor.trackEvent(event: Event.connectFail(error: error))
-                router.showSimpleAlert(title: "Connection Failed", subtitle: error.localizedDescription)
+                router.showSimpleAlert(title: String(localized: "Connection Failed"), subtitle: error.localizedDescription)
             }
         }
     }

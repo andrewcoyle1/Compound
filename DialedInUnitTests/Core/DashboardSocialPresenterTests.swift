@@ -19,12 +19,15 @@ import SwiftUI
 @MainActor
 struct SocialWorkoutSessionRowTests {
 
-    private final class Interactor: SpyGlobalInteractor, WorkoutSessionRowInteractor {
+    final class Interactor: SpyGlobalInteractor, WorkoutSessionRowInteractor {
         var currentUser: UserModel? = DashboardFixture.user("me")
+        var history: [WorkoutSessionModel] = []
         var likeError: Error?
         var unlikeError: Error?
         private(set) var likes: [String] = []
         private(set) var unlikes: [String] = []
+
+        func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { history.filter { $0.authorId == authorId } }
 
         func likeSession(sessionId: String, authorId: String, userId: String) async throws {
             if let likeError { throw likeError }
@@ -35,9 +38,15 @@ struct SocialWorkoutSessionRowTests {
             if let unlikeError { throw unlikeError }
             unlikes.append("\(sessionId)|\(authorId)|\(userId)")
         }
+
+        func report(contentType: ReportContentType, contentId: String, authorUserId: String?, reason: ReportReason, notes: String?) async throws { }
+        var allExercises: [ExerciseModel] { [] }
+        var allWorkoutTemplates: [WorkoutTemplateModel] { [] }
+        func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws { }
     }
 
-    private final class Router: WorkoutSessionRowRouter {
+    final class Router: WorkoutSessionRowRouter {
+        func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var profileDelegates: [SocialProfileDelegate] = []
@@ -54,6 +63,8 @@ struct SocialWorkoutSessionRowTests {
             shown.append("comments")
             commentsDelegates.append(delegate)
         }
+
+        func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { }
     }
 
     private struct Screen {
@@ -66,9 +77,11 @@ struct SocialWorkoutSessionRowTests {
         session: WorkoutSessionModel,
         author: UserModel,
         signedInUser: UserModel? = nil,
-        signedOut: Bool = false
+        signedOut: Bool = false,
+        history: [WorkoutSessionModel] = []
     ) -> Screen {
         let interactor = Interactor()
+        interactor.history = history
         // The default has to be built here rather than in the parameter list: a default value is
         // evaluated outside the main actor, and the fixtures are main-actor isolated.
         interactor.currentUser = signedOut ? nil : (signedInUser ?? DashboardFixture.user("me"))
@@ -93,6 +106,7 @@ struct SocialWorkoutSessionRowTests {
             weightKg: weightKg,
             side: side,
             isWarmup: isWarmup,
+            completedAt: DashboardFixture.date(day: 2),
             dateCreated: DashboardFixture.date(day: 2)
         )
     }
@@ -332,6 +346,18 @@ struct SocialWorkoutSessionRowTests {
 
         #expect(screen.presenter.shareSummary == "Core · 1 exercises · 1 sets")
     }
+
+    /// The card's highlights come from the author's own history, asked of the interactor.
+    @Test("Test The Row Shows The Author's Records And Weekly Count")
+    func testTheRowShowsTheAuthorsRecordsAndWeeklyCount() {
+        let bench = { (weight: Double) in [self.exercise("Bench", sets: [self.set(1, reps: 5, weightKg: weight)])] }
+        let earlier = DashboardFixture.session(id: "a", author: "friend", on: DashboardFixture.date(day: 2), exercises: bench(90))
+        let session = DashboardFixture.session(id: "b", author: "friend", on: DashboardFixture.date(day: 4), exercises: bench(100))
+        let screen = makeScreen(session: session, author: DashboardFixture.user("friend"), history: [earlier, session])
+
+        #expect(screen.presenter.personalRecords == [.init(exerciseName: "Bench", detail: "100 kg × 5")])
+        #expect(screen.presenter.weeklyWorkoutText == "2nd workout of the week")
+    }
 }
 
 // MARK: - Comments
@@ -346,6 +372,8 @@ struct SocialCommentsPresenterTests {
     private final class Interactor: SpyGlobalInteractor, CommentsInteractor {
         var currentUser: UserModel? = DashboardFixture.user("me", firstName: "Andrew")
         var fetched: [WorkoutSessionComment] = []
+        var followingUsers: [UserModel] = []
+        func getUser(userId: String) async throws -> UserModel { throw URLError(.fileDoesNotExist) }
         var fetchError: Error?
         var addError: Error?
         var deleteError: Error?
@@ -368,6 +396,8 @@ struct SocialCommentsPresenterTests {
             if let deleteError { throw deleteError }
             deletedIds.append(id)
         }
+
+        func toggleCommentLike(id: String, userId: String, isLiked: Bool) async throws { }
 
         func report(
             contentType: ReportContentType,
@@ -527,15 +557,72 @@ struct SocialCommentsPresenterTests {
         screen.presenter.commentDraft = "  Strong session  "
 
         screen.presenter.onSendPressed()
-        await TestManagers.eventually { !screen.presenter.comments.isEmpty }
+        #expect(screen.presenter.comments.map(\.text) == ["Strong session"]) // before the write returns
+        await TestManagers.eventually { !screen.interactor.added.isEmpty }
 
         #expect(screen.interactor.added.map(\.text) == ["Strong session"])
         #expect(screen.interactor.added.first?.authorId == "me")
         #expect(screen.interactor.added.first?.sessionId == "session-x")
         #expect(screen.interactor.added.first?.sessionAuthorId == "friend")
         #expect(screen.presenter.commentDraft.isEmpty)
-        #expect(screen.presenter.isSending == false)
         #expect(screen.router.alertTitles.isEmpty)
+    }
+
+    // MARK: Replies
+
+    /// A thread is a comment followed by its replies, oldest first, and a reply whose parent has
+    /// been deleted is shown rather than lost.
+    @Test("Test Replies Sit Under Their Parent And Orphans Stay Visible")
+    func testRepliesSitUnderTheirParentAndOrphansStayVisible() {
+        var reply = comment("r1", author: "me", text: "Thanks", on: DashboardFixture.date(day: 3))
+        reply.parentId = "c1"
+        var orphan = comment("r2", text: "Lost", on: DashboardFixture.date(day: 4))
+        orphan.parentId = "gone"
+        let thread = CommentsPresenter.threaded([
+            comment("c2", on: DashboardFixture.date(day: 2)),
+            reply,
+            comment("c1", on: DashboardFixture.date(day: 1)),
+            orphan
+        ])
+
+        #expect(thread.map(\.id) == ["c1", "r1", "c2", "r2"])
+    }
+
+    /// Replying carries the parent's id, clears the target on send, and replying to a reply
+    /// joins that reply's thread rather than nesting deeper.
+    @Test("Test Replying Sends The Parent Id And Stays One Level Deep")
+    func testReplyingSendsTheParentIdAndStaysOneLevelDeep() async {
+        let screen = makeScreen()
+        var reply = comment("r1", text: "Thanks", on: DashboardFixture.date(day: 2))
+        reply.parentId = "c1"
+        screen.interactor.fetched = [comment("c1", on: DashboardFixture.date(day: 1)), reply]
+        screen.presenter.onViewAppear()
+        await TestManagers.eventually { screen.presenter.comments.count == 2 }
+        #expect(screen.presenter.isReply(reply))
+
+        screen.presenter.onReplyPressed(reply)
+        #expect(screen.presenter.replyingTo?.id == "c1")
+
+        screen.presenter.commentDraft = "Agreed"
+        screen.presenter.onSendPressed()
+        await TestManagers.eventually { !screen.interactor.added.isEmpty }
+
+        #expect(screen.interactor.added.first?.parentId == "c1")
+        #expect(screen.presenter.replyingTo == nil)
+        #expect(screen.presenter.comments.map(\.id) == ["c1", "r1", screen.interactor.added.first?.id ?? ""])
+    }
+
+    @Test("Test Cancelling A Reply Sends A Plain Comment")
+    func testCancellingAReplySendsAPlainComment() async {
+        let screen = makeScreen()
+        screen.presenter.onReplyPressed(comment("c1", on: DashboardFixture.date(day: 1)))
+        screen.presenter.onCancelReplyPressed()
+        screen.presenter.commentDraft = "Hello"
+
+        screen.presenter.onSendPressed()
+        await TestManagers.eventually { !screen.interactor.added.isEmpty }
+
+        #expect(screen.interactor.added.first?.parentId == nil)
     }
 
     @Test("Test An Empty Comment Cannot Be Posted")
@@ -614,9 +701,9 @@ struct SocialCommentsPresenterTests {
         await TestManagers.eventually { screen.presenter.comments.count == 2 }
 
         screen.presenter.onDeleteConfirmed(screen.presenter.comments[0])
-        await TestManagers.eventually { screen.presenter.comments.count == 1 }
+        #expect(screen.presenter.comments.map(\.id) == ["b"]) // before the write returns
+        await TestManagers.eventually { !screen.interactor.deletedIds.isEmpty }
 
-        #expect(screen.presenter.comments.map(\.id) == ["b"])
         #expect(screen.interactor.deletedIds == ["a"])
     }
 

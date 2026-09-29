@@ -59,19 +59,19 @@ enum SetTargetSetType: String, DataSyncModelProtocol {
 
     var name: String {
         switch self {
-        case .standard: return "Standard Set"
-        case .drop: return "Drop Set"
-        case .myo: return "Myo Set"
-        case .failure: return "Failure Set"
+        case .standard: return String(localized: "Standard Set")
+        case .drop: return String(localized: "Drop Set")
+        case .myo: return String(localized: "Myo Set")
+        case .failure: return String(localized: "Failure Set")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .standard: return "A normal set of a fixed weight and target repitions."
-        case .drop: return "A set where you continue repping to push muscle fatigue with progressively lower weight after reaching failure at a heavier load."
-        case .myo: return "A set where you continue repping to push muscle fatigue with progressively low reps while keeping the weight constant."
-        case .failure: return "A set where you perform reps until you can no longer maintain proper form (for compound exercises) or complete another rep (for isolation exercises)."
+        case .standard: return String(localized: "A normal set of a fixed weight and target repitions.")
+        case .drop: return String(localized: "A set where you continue repping to push muscle fatigue with progressively lower weight after reaching failure at a heavier load.")
+        case .myo: return String(localized: "A set where you continue repping to push muscle fatigue with progressively low reps while keeping the weight constant.")
+        case .failure: return String(localized: "A set where you perform reps until you can no longer maintain proper form (for compound exercises) or complete another rep (for isolation exercises).")
         }
     }
 }

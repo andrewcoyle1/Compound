@@ -178,6 +178,19 @@ struct GymProfilePresenterTests {
         #expect(screen.presenter.filteredFreeWeights.isEmpty)
     }
 
+    /// The screen shows a "no results" state only when a real query hid every section.
+    @Test("Test No Matching Equipment Needs A Query That Hides Everything")
+    func testNoMatchingEquipmentNeedsAQueryThatHidesEverything() {
+        let screen = makeScreen(freeWeights: [freeWeight("Dumbbells")])
+        #expect(!screen.presenter.hasNoMatchingEquipment)
+
+        screen.presenter.searchQuery = "dumb"
+        #expect(!screen.presenter.hasNoMatchingEquipment)
+
+        screen.presenter.searchQuery = "treadmill"
+        #expect(screen.presenter.hasNoMatchingEquipment)
+    }
+
     // MARK: - The selected filter
 
     @Test("Test The Selected Filter Shows Only Equipment The Gym Has")

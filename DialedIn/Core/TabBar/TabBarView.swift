@@ -41,6 +41,7 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
                 } label: {
                     Label(tab.title, systemImage: tab.systemImage)
                 }
+                .badge(tab.title == DeepLink.Tab.dashboard.title ? presenter.unreadActivityCount : 0)
             }
 
             Tab(value: searchTabTitle, role: .search) {
@@ -55,8 +56,11 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
         .onOpenURL { url in
             presenter.onOpenURL(url)
         }
-        .onNotificationReceived(name: .pushNotification) { notification in
-            presenter.onPushNotificationReceived(notification)
+        .onNotificationReceived(name: .pushNotification) { _ in
+            presenter.onPushNotificationReceived()
+        }
+        .onAppear {
+            presenter.onViewAppear()
         }
         // A screen inside a tab asking for a different tab — see `DeepLink.post()`.
         .onNotificationReceived(name: Constants.selectTab) { notification in
@@ -128,7 +132,7 @@ extension CoreBuilder {
     private var tabBarScreens: [TabBarScreen] {
         [
             TabBarScreen(
-                title: "Dashboard",
+                title: String(localized: "Dashboard"),
                 systemImage: "house",
                 screen: {
                     RouterView { router in
@@ -138,7 +142,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
-                title: "Training",
+                title: String(localized: "Training"),
                 systemImage: "dumbbell",
                 screen: {
                     RouterView { router in
@@ -148,7 +152,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
-                title: "Nutrition",
+                title: String(localized: "Nutrition"),
                 systemImage: "carrot",
                 screen: {
                     RouterView { router in
@@ -158,7 +162,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
-                title: "Analytics",
+                title: String(localized: "Analytics"),
                 systemImage: "chart.bar.xaxis",
                 screen: {
                     RouterView { router in

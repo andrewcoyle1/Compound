@@ -28,4 +28,8 @@ class CommentsManager {
     func deleteComment(id: String) async throws {
         try await service.deleteComment(id: id)
     }
+
+    func toggleCommentLike(id: String, userId: String, isLiked: Bool) async throws {
+        try await service.toggleCommentLike(id: id, userId: userId, isLiked: isLiked)
+    }
 }

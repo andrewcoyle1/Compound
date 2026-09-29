@@ -19,7 +19,7 @@ class WorkoutTemplateManager {
     private let userDefaults: UserDefaults
     private static let hasSeededKey = "hasSeededPrebuiltWorkouts"
     private static let seedingVersionKey = "prebuiltWorkoutsSeedingVersion"
-    private static let currentSeedingVersion = 3
+    private static let currentSeedingVersion = 4
 
     var hasSeeded: Bool {
         userDefaults.bool(forKey: Self.hasSeededKey)
@@ -131,12 +131,6 @@ class WorkoutTemplateManager {
 
     func deleteWorkoutTemplate(id: String) async throws {
         try await userWorkoutTemplateSyncEngine.deleteDocument(id: id)
-    }
-
-    func deleteAllWorkoutTemplateForAuthor() async throws {
-        for workoutTemplate in userWorkoutTemplates {
-            try await userWorkoutTemplateSyncEngine.deleteDocument(id: workoutTemplate.id)
-        }
     }
 
 }

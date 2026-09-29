@@ -78,7 +78,7 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Scale Weight",
+            title: String(localized: "Scale Weight"),
             analyticsName: "ScaleWeightView",
             yAxisSuffix: " \(weightUnit.abbreviation)",
             seriesNames: ["Weight"],
@@ -108,7 +108,7 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
             // straight back with nothing said about why. The alert told the user; nothing told us,
             // so a backend outage here looked like nobody deleting anything.
             interactor.trackEvent(event: Event.deleteEntryFail(error: error))
-            router.showSimpleAlert(title: "Unable to Delete Entry", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
         rebuildCaches()

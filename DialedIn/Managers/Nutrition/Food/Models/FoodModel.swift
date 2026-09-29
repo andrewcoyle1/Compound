@@ -160,6 +160,7 @@ struct FoodModel: DataSyncModelProtocol, SearchListItem, FoodItem {
 
     /// Display name for the portion unit, e.g. "pieces".
     var portionNameCalculated: String? {
+        // Safe: `$0 != nil &&` short-circuits before the unwrap.
         [portionName, weightPortionName, volumePortionName].first(where: { $0 != nil && !$0!.isEmpty }) ?? nil
     }
 

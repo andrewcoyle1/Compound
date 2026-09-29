@@ -28,7 +28,7 @@ class PaywallPresenter {
         var errorDescription: String? {
             switch self {
             case .noProductsReturned:
-                return "No products returned from the store."
+                return String(localized: "No products returned from the store.")
             }
         }
     }
@@ -57,7 +57,7 @@ class PaywallPresenter {
             products = fetchedProducts
             
             if fetchedProducts.isEmpty {
-                loadErrorMessage = "No subscription options are available right now. Please try again in a moment."
+                loadErrorMessage = String(localized: "No subscription options are available right now. Please try again in a moment.")
                 interactor.trackEvent(event: Event.loadProductsFail(error: PaywallLoadError.noProductsReturned, variant: paywallTest))
             } else {
                 interactor.trackEvent(event: Event.loadProductsSuccess(count: fetchedProducts.count, variant: paywallTest))
@@ -113,8 +113,8 @@ class PaywallPresenter {
                     // the one screen a paying customer has to get past.
                     interactor.trackEvent(event: Event.restorePurchaseEmpty)
                     router.showAlert(
-                        title: "Nothing to Restore",
-                        subtitle: "We couldn't find an active subscription on this Apple Account. Check that you are signed in with the account you subscribed with.",
+                        title: String(localized: "Nothing to Restore"),
+                        subtitle: String(localized: "We couldn't find an active subscription on this Apple Account. Check that you are signed in with the account you subscribed with."),
                         buttons: nil
                     )
                 }

@@ -38,9 +38,9 @@ struct InsightsAndAnalyticsView: View {
 
     private var activitySection: some View {
         let workoutColor = Color.orange
-        return analyticsSection(title: "Activity") {
+        return analyticsSection(title: String(localized: "Activity")) {
             AnalyticsCard(
-                title: "Workouts",
+                title: String(localized: "Workouts"),
                 subtitle: presenter.workoutSubtitle,
                 subsubtitle: presenter.workoutLatestValueText,
                 subsubsubtitle: presenter.workoutUnitText,
@@ -61,9 +61,9 @@ struct InsightsAndAnalyticsView: View {
 
     private var energySection: some View {
         let expenditureColor = Color.pink
-        return analyticsSection(title: "Energy") {
+        return analyticsSection(title: String(localized: "Energy")) {
             SparklineAnalyticsCard(
-                title: "Expenditure",
+                title: String(localized: "Expenditure"),
                 subtitle: presenter.expenditureSubtitle,
                 value: presenter.expenditureLatestValueText,
                 unit: presenter.expenditureUnitText,
@@ -72,7 +72,7 @@ struct InsightsAndAnalyticsView: View {
                 action: { presenter.onExpenditurePressed(themeColor: expenditureColor) }
             )
             AnalyticsCard(
-                title: "Energy Balance",
+                title: String(localized: "Energy Balance"),
                 subtitle: presenter.energyBalanceSubtitle,
                 subsubtitle: presenter.energyBalanceLatestValueText,
                 subsubsubtitle: presenter.energyBalanceUnitText,
@@ -92,9 +92,9 @@ struct InsightsAndAnalyticsView: View {
 
     private var bodySection: some View {
         let weightTrendColor = Color.purple
-        return analyticsSection(title: "Body") {
+        return analyticsSection(title: String(localized: "Body")) {
             SparklineAnalyticsCard(
-                title: "Weight Trend",
+                title: String(localized: "Weight Trend"),
                 subtitle: presenter.weightTrendSubtitle,
                 value: presenter.weightTrendLatestValueText,
                 unit: presenter.weightTrendUnitText,
@@ -108,9 +108,9 @@ struct InsightsAndAnalyticsView: View {
     private var goalsSection: some View {
         let goalProgressColor = Color.green
         // Was hardcoded to "14%" over "Last 7 Days", the same placeholder the Analytics tab carried.
-        return analyticsSection(title: "Goals") {
+        return analyticsSection(title: String(localized: "Goals")) {
             AnalyticsCard(
-                title: "Goal Progress",
+                title: String(localized: "Goal Progress"),
                 subtitle: presenter.goalProgressSubtitle,
                 subsubtitle: presenter.goalProgressLatestValueText,
                 subsubsubtitle: presenter.goalProgressUnitText,

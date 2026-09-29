@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol CustomiseAnalyticsRouter {
+protocol CustomiseAnalyticsRouter: GlobalRouter {
     
 }
 

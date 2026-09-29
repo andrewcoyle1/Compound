@@ -14,7 +14,7 @@ struct StrategySettingsView: View {
             Section {
                 CustomLabelButtonView(
                     symbolName: "calendar",
-                    title: "Check-in Day",
+                    title: String(localized: "Check-in Day"),
                     subtitle: presenter.checkInWeekdayName) {
                         Text("Edit")
                             .padding(.horizontal, 8)
@@ -26,8 +26,8 @@ struct StrategySettingsView: View {
                     }
                 CustomToggleView(
                     symbolName: "hare",
-                    title: "Fast Check-in",
-                    subtitle: presenter.fastCheckInEnabled ? "On" : "Off",
+                    title: String(localized: "Fast Check-in"),
+                    subtitle: presenter.fastCheckInEnabled ? String(localized: "On") : String(localized: "Off"),
                     bool: Binding(
                         get: { presenter.fastCheckInEnabled },
                         set: { presenter.fastCheckInEnabled = $0 }
@@ -40,7 +40,7 @@ struct StrategySettingsView: View {
             Section {
                 Label("Introduction", systemImage: "info")
                 CustomToggleView(
-                    title: "Partial Logging",
+                    title: String(localized: "Partial Logging"),
                     subtitle: nil,
                     bool: Binding(
                         get: { presenter.partialLoggingEnabled },
@@ -48,7 +48,7 @@ struct StrategySettingsView: View {
                     )
                 )
                 CustomToggleView(
-                    title: "Weigh-In",
+                    title: String(localized: "Weigh-In"),
                     subtitle: nil,
                     bool: Binding(
                         get: { presenter.weighInEnabled },
@@ -56,7 +56,7 @@ struct StrategySettingsView: View {
                     )
                 )
                 CustomToggleView(
-                    title: "Fasting",
+                    title: String(localized: "Fasting"),
                     subtitle: nil,
                     bool: Binding(
                         get: { presenter.fastingEnabled },
@@ -64,7 +64,7 @@ struct StrategySettingsView: View {
                     )
                 )
                 CustomToggleView(
-                    title: "Logging Break",
+                    title: String(localized: "Logging Break"),
                     subtitle: nil,
                     bool: Binding(
                         get: { presenter.loggingBreakEnabled },

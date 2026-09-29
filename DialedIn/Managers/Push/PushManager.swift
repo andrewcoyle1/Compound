@@ -15,7 +15,34 @@ class PushManager {
     let logManager: LogManager?
 
     var isAuthorised: UNAuthorizationStatus = .notDetermined
-    
+
+    /// Where the last tapped push wants to go, held until someone who can navigate takes it. A tap
+    /// that launches the app arrives before any screen is observing, so a broadcast alone was lost.
+    private(set) var pendingDeepLink: DeepLink?
+
+    /// Set by `CoreInteractor.logIn` once the sync engines are listening, cleared on sign-out. A
+    /// link consumed before then would open a session the managers cannot fetch yet.
+    private(set) var isReadyForDeepLinks = false
+
+    /// Stores the destination of a tapped push, parsed by the caller with `DeepLink(pushUserInfo:)`.
+    /// A payload with nowhere to go (nil) is ignored and leaves any earlier pending link alone.
+    func storePendingDeepLink(_ link: DeepLink?) {
+        guard let link else { return }
+        pendingDeepLink = link
+    }
+
+    /// Hands over the pending link exactly once, and only once signed in.
+    func consumePendingDeepLink() -> DeepLink? {
+        guard isReadyForDeepLinks, let link = pendingDeepLink else { return nil }
+        pendingDeepLink = nil
+        return link
+    }
+
+    func setReadyForDeepLinks(_ ready: Bool) {
+        isReadyForDeepLinks = ready
+        if !ready { pendingDeepLink = nil }
+    }
+
     init(logManager: LogManager? = nil) {
         self.logManager = logManager
     }
@@ -52,7 +79,9 @@ class PushManager {
         
         Task {
             do {
-        
+                // Scheduling without permission throws UNErrorDomain 2003 and logged a failure on every launch.
+                guard [.authorized, .provisional, .ephemeral].contains(try await checkPushNotificationAuthorisation()) else { return }
+
                 // Tomorrow
                 try await scheduleNotification(
                     title: "Keep up the momentum!",
@@ -202,6 +231,17 @@ extension CoreInteractor {
 
     func cancelMealReminderNotifications() {
         pushManager.cancelMealReminderNotifications()
+    }
+
+    func consumePendingDeepLink() -> DeepLink? {
+        pushManager.consumePendingDeepLink()
+    }
+
+    /// Called at the end of `logIn`: marks deep links routable and nudges a tab bar that is already
+    /// on screen to take one waiting from a cold-start tap.
+    func routePendingDeepLinkAfterLogIn() {
+        pushManager.setReadyForDeepLinks(true)
+        NotificationCenter.default.post(name: .pushNotification, object: nil)
     }
 
 }

@@ -101,7 +101,7 @@ class ExerciseListBuilderPresenter {
             let gymProfileId = filters.gymProfileId,
             let profile = gymProfiles.first(where: { $0.id == gymProfileId })
         else {
-            return "Gym"
+            return String(localized: "Gym")
         }
         return profile.name
     }

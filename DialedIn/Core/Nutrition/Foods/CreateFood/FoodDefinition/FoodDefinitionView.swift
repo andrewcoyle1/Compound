@@ -464,11 +464,11 @@ enum FoodDefinitionOption: CaseIterable {
     var name: String {
         switch self {
         case .usLabel:
-            return "US Label"
+            return String(localized: "US Label")
         case .nonUsLabel:
-            return "Non-US Label"
+            return String(localized: "Non-US Label")
         case .foodDetail:
-            return "Food Detail"
+            return String(localized: "Food Detail")
         }
     }
 }

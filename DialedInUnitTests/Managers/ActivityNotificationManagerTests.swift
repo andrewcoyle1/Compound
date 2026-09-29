@@ -326,6 +326,12 @@ private final class EmittingActivityNotificationService: ActivityNotificationSer
         stopCount += 1
     }
 
+    // MARK: - GroupedNotifications
+
+    func fetchNotifications(userId: String, before: Date) async throws -> [ActivityNotificationModel] { [] }
+
+    func markRead(ids: [String], userId: String) async throws { }
+
     func emit(_ notification: ActivityNotificationModel) {
         onNew?(notification)
     }

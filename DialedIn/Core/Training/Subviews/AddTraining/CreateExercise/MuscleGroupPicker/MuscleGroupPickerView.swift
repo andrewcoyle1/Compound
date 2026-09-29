@@ -48,7 +48,7 @@ struct MuscleGroupPickerView: View {
                 CallToActionButton(isPrimaryAction: !presenter.selectedMuscleGroups.isEmpty ? true : false) {
                     presenter.onNextPressed(delegate: delegate)
                 } label: {
-                    Text(!presenter.selectedMuscleGroups.isEmpty ? "Next" : "Skip")
+                    Text(!presenter.selectedMuscleGroups.isEmpty ? String(localized: "Next") : String(localized: "Skip"))
                 }
                 .accessibilityIdentifier("MuscleGroupPicker.next")
             }
@@ -99,7 +99,7 @@ struct MuscleGroupPickerView: View {
                 ZStack {
                     Circle()
                         .foregroundStyle(colorScheme.backgroundPrimary)
-                    Text(selected == .primary ? "P" : "S")
+                    Text(selected == .primary ? String(localized: "P") : String(localized: "S"))
                         .font(.caption)
                         .foregroundStyle(.primary)
                 }

@@ -24,7 +24,7 @@ struct ExercisesPickerView<ExerciseList: View>: View {
             selectedExercises: presenter.workingExercises.map(\.exercise)
         )
         exerciseListViewBuilder(listDelegate)
-            .navigationTitle(presenter.workingExercises.isEmpty ? "Select at least one exercise" : "\(presenter.workingExercises.count) exercises selected")
+            .navigationTitle(presenter.workingExercises.isEmpty ? String(localized: "Select at least one exercise") : String(localized: "\(presenter.workingExercises.count) exercises selected"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarVisibility(.visible)
             .toolbar {

@@ -85,22 +85,22 @@ enum OverarchingObjective: Codable, CaseIterable {
     var description: String {
         switch self {
         case .loseWeight:
-            "Lose weight"
+            String(localized: "Lose weight")
         case .maintain:
-            "Maintain"
+            String(localized: "Maintain")
         case .gainWeight:
-            "Gain weight"
+            String(localized: "Gain weight")
         }
     }
     
     var detailedDescription: String {
         switch self {
         case .loseWeight:
-            "Goal of losing weight"
+            String(localized: "Goal of losing weight")
         case .maintain:
-            "Goal of maintaining weight"
+            String(localized: "Goal of maintaining weight")
         case .gainWeight:
-            "Goal of gaining weight"
+            String(localized: "Goal of gaining weight")
         }
     }
 }

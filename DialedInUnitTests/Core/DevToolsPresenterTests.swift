@@ -112,7 +112,9 @@ struct DevToolsSettingsPresenterTests {
         static let exercisesVersion = "prebuiltExercisesSeedingVersionV2"
         static let workoutsSeeded = "hasSeededPrebuiltWorkouts"
         static let workoutsVersion = "prebuiltWorkoutsSeedingVersion"
-        static let all = [exercisesSeeded, exercisesVersion, workoutsSeeded, workoutsVersion]
+        static let programsSeeded = "hasSeededPrebuiltPrograms"
+        static let programsVersion = "prebuiltProgramsSeedingVersion"
+        static let all = [exercisesSeeded, exercisesVersion, workoutsSeeded, workoutsVersion, programsSeeded, programsVersion]
     }
 
     /// Marks every seeding flag as already done, and hands back a closure that puts the defaults
@@ -123,6 +125,8 @@ struct DevToolsSettingsPresenterTests {
         UserDefaults.standard.set(9, forKey: SeedingKey.exercisesVersion)
         UserDefaults.standard.set(true, forKey: SeedingKey.workoutsSeeded)
         UserDefaults.standard.set(9, forKey: SeedingKey.workoutsVersion)
+        UserDefaults.standard.set(true, forKey: SeedingKey.programsSeeded)
+        UserDefaults.standard.set(9, forKey: SeedingKey.programsVersion)
         return {
             for (key, value) in previous {
                 if let value {
@@ -172,6 +176,21 @@ struct DevToolsSettingsPresenterTests {
         #expect(!isSeeded(SeedingKey.workoutsVersion))
         #expect(isSeeded(SeedingKey.exercisesSeeded))
         #expect(isSeeded(SeedingKey.exercisesVersion))
+    }
+
+    /// The same for programs: these are the keys `TrainingProgramManager` reads.
+    @Test("Test Resetting Programs Clears Only The Program Keys")
+    func testResettingProgramsClearsOnlyTheProgramKeys() async {
+        let restore = markEverythingSeeded()
+        defer { restore() }
+        let screen = makeScreen()
+
+        await screen.presenter.resetProgramSeeding()
+
+        #expect(!isSeeded(SeedingKey.programsSeeded))
+        #expect(!isSeeded(SeedingKey.programsVersion))
+        #expect(isSeeded(SeedingKey.workoutsSeeded))
+        #expect(isSeeded(SeedingKey.exercisesSeeded))
     }
 
     /// "Reset all" means all four. Workouts reference exercises by id, so half a reset leaves
@@ -427,6 +446,39 @@ struct DevToolsNotificationsPresenterTests {
         func deleteActivityNotification(id: String) async throws { deletedIds.append(id) }
 
         func clearAllDeliveredNotifications() { clearDeliveredCount += 1 }
+
+        var privateUserSettings = PrivateUserSettings()
+        // Follow requests and follow back are covered in `NotificationsFollowRequestTests`.
+        var incomingFollowRequests: [FollowRequestModel] = []
+        var sentFollowRequestIds: Set<String> = []
+        func fetchIncomingFollowRequests() async throws { }
+        func respondToFollowRequest(requesterId: String, accept: Bool) async throws { }
+        func getUser(userId: String) async throws -> UserModel { UserModel(userId: userId) }
+        func followUser(userId: String) async throws { }
+        func unfollowUser(userId: String) async throws { }
+        func sendFollowRequest(to user: UserModel) async throws { }
+        func cancelFollowRequest(userId: String) async throws { }
+
+        var currentUser: UserModel? = UserModel(userId: "user-1")
+        var preferenceError: Error?
+        private(set) var preferenceWrites: [String: Bool] = [:]
+
+        /// Records the private-settings key the real `UserManager` would write, so a test can check
+        /// the value lands under the field the Cloud Function reads.
+        func updateSocialNotificationPreferences(type: ActivityNotificationModel.ActivityType, isEnabled: Bool) async throws {
+            if let preferenceError { throw preferenceError }
+            preferenceWrites[PrivateUserSettings.socialPushKey(for: type).rawValue] = isEnabled
+        }
+
+        func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel { throw DevToolsTestError.failed }
+        func fetchShare(id: String) async throws -> ShareModel { throw DevToolsTestError.failed }
+        func fetchChallenge(id: String) async throws -> ChallengeModel { throw DevToolsTestError.failed }
+        func updatePrivateUserSettings(_ change: (inout PrivateUserSettings) -> Void) async throws { change(&privateUserSettings) }
+
+        // MARK: - GroupedNotifications
+        var canLoadMoreActivityNotifications = false
+        func fetchMoreActivityNotifications() async throws { }
+        func markActivityNotificationsRead(ids: [String]) async throws { }
     }
 
     private final class Router: NotificationsRouter {
@@ -436,6 +488,11 @@ struct DevToolsNotificationsPresenterTests {
         func showAlert(error: Error) { alertedErrors.append(error) }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { }
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { }
+        func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) { }
+        func showSocialProfileView(delegate: SocialProfileDelegate) { }
+        func showSharedItemView(delegate: SharedItemDelegate) { }
+        func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }
     }
 
     private struct Screen {
@@ -586,5 +643,55 @@ struct DevToolsNotificationsPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["NotificationsView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["NotificationsView_Disappear"])
+    }
+
+    // MARK: - Social push switches
+
+    /// A user who has never written the private settings document has no preference fields, and
+    /// must keep getting pushes: every switch reads on.
+    @Test("Test Social Push Switches Default To On When The Private Settings Have No Preferences")
+    func testSocialPushSwitchesDefaultToOnWhenThePrivateSettingsHaveNoPreferences() {
+        let screen = makeScreen()
+        #expect(screen.presenter.isLikesPushEnabled)
+        #expect(screen.presenter.isCommentsPushEnabled)
+        #expect(screen.presenter.isFollowsPushEnabled)
+        #expect(screen.presenter.isNudgesPushEnabled)
+
+        screen.interactor.privateUserSettings = PrivateUserSettings(socialPushLikes: false, socialPushFollows: true)
+        #expect(!screen.presenter.isLikesPushEnabled)
+        #expect(screen.presenter.isCommentsPushEnabled)
+        #expect(screen.presenter.isFollowsPushEnabled)
+    }
+
+    /// Each switch writes its own key, and only that key, the moment it flips. The key names are
+    /// the contract with `SOCIAL_PUSH_PREFERENCE_KEYS` in functions/lib.js.
+    @Test("Test Flipping A Social Push Switch Writes Its Own Key")
+    func testFlippingASocialPushSwitchWritesItsOwnKey() async {
+        let screen = makeScreen()
+
+        screen.presenter.isCommentsPushEnabled = false
+        #expect(await TestManagers.eventually { screen.interactor.preferenceWrites == ["social_push_comments": false] })
+
+        screen.presenter.isLikesPushEnabled = false
+        screen.presenter.isFollowsPushEnabled = false
+        screen.presenter.isNudgesPushEnabled = false
+        let expected = ["social_push_comments": false, "social_push_likes": false, "social_push_follows": false, "social_push_nudges": false]
+        #expect(await TestManagers.eventually { screen.interactor.preferenceWrites == expected })
+        #expect(screen.interactor.trackedEventNames.contains("NotificationsView_SocialPush_Toggle"))
+        #expect(screen.router.alertedErrors.isEmpty)
+    }
+
+    /// A write that fails says so, and the switch still reads the stored value rather than the
+    /// one the user tried to set.
+    @Test("Test A Failed Social Push Write Shows An Alert")
+    func testAFailedSocialPushWriteShowsAnAlert() async {
+        let screen = makeScreen()
+        screen.interactor.preferenceError = DevToolsTestError.failed
+
+        screen.presenter.isLikesPushEnabled = false
+
+        #expect(await TestManagers.eventually { screen.router.alertedErrors.count == 1 })
+        #expect(screen.interactor.preferenceWrites.isEmpty)
+        #expect(screen.presenter.isLikesPushEnabled)
     }
 }

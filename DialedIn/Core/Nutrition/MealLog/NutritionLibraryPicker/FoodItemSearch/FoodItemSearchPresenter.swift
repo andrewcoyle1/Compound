@@ -60,6 +60,13 @@ class FoodItemSearchPresenter {
             openFoodFactsFoods = []
             return
         }
+        // No alert: this runs per keystroke. The library's own results still show, and the failed
+        // state says why the online ones are missing.
+        guard !interactor.isOffline else {
+            openFoodFactsFoods = []
+            searchFailed = true
+            return
+        }
         searchTask = Task {
             try? await Task.sleep(for: searchDebounce)
             guard !Task.isCancelled else { return }

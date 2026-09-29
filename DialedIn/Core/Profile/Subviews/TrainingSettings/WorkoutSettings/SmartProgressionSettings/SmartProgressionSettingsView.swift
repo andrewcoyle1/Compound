@@ -16,7 +16,7 @@ struct SmartProgressionSettingsView: View {
             Section {
                 CustomLabelButtonView(
                     symbolName: "book.pages",
-                    title: "Initial log fill",
+                    title: String(localized: "Initial log fill"),
                     subtitle: presenter.initialLogFill.title) {
                         editMenu(
                             options: presenter.initialLogFillOptions,
@@ -27,13 +27,13 @@ struct SmartProgressionSettingsView: View {
                     }
                 CustomToggleView(
                     symbolName: "arrow.trianglehead.branch",
-                    title: "Apply in session",
-                    subtitle: "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout",
+                    title: String(localized: "Apply in session"),
+                    subtitle: String(localized: "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout"),
                     bool: $presenter.applyInSession
                 )
                 CustomLabelButtonView(
                     symbolName: "dot.squareshape",
-                    title: "Adjustment Mode",
+                    title: String(localized: "Adjustment Mode"),
                     subtitle: presenter.adjustmentMode.title) {
                         editMenu(
                             options: presenter.adjustmentModes,

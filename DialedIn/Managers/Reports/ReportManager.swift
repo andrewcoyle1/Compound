@@ -8,36 +8,31 @@
 import Foundation
 import SwiftUI
 
+/// What a report is about. Stored as `target_type`, which the rules limit to these three.
 enum ReportContentType: String, Codable {
-    case deck
-    case collection
-    case card
-    /// A comment on a workout session — the first content in this app anything can actually report.
+    /// A comment on a workout session.
     case comment
+    /// A finished workout session in the feed.
+    case session
+    /// A user's profile.
+    case user
 }
 
+/// Why something was reported. Stored as `reason`; `firestore.rules` lists the same raw values.
 enum ReportReason: String, CaseIterable, Codable, Identifiable {
     case spam
-    case hatefulOrHarassment
-    case sexualOrPornographic
-    case violenceOrThreats
-    case selfHarm
-    case illegal
-    case misleading
+    case harassment
+    case inappropriate
     case other
-    
+
     var id: String { rawValue }
-    
+
     var displayName: String {
         switch self {
-        case .spam: return "Spam"
-        case .hatefulOrHarassment: return "Hateful or harassment"
-        case .sexualOrPornographic: return "Sexual or pornographic"
-        case .violenceOrThreats: return "Violence or threats"
-        case .selfHarm: return "Self-harm"
-        case .illegal: return "Illegal content"
-        case .misleading: return "Misleading"
-        case .other: return "Other"
+        case .spam: return String(localized: "Spam")
+        case .harassment: return String(localized: "Harassment")
+        case .inappropriate: return String(localized: "Inappropriate")
+        case .other: return String(localized: "Other")
         }
     }
 }

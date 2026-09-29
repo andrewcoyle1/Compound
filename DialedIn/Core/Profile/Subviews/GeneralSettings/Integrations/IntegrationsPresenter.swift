@@ -31,7 +31,7 @@ class IntegrationsPresenter {
             do {
                 try await interactor.stravaAuthenticate()
             } catch {
-                router.showSimpleAlert(title: "Connection Failed", subtitle: error.localizedDescription)
+                router.showSimpleAlert(title: String(localized: "Connection Failed"), subtitle: error.localizedDescription)
             }
         }
     }
@@ -46,9 +46,9 @@ class IntegrationsPresenter {
             defer { isTestingStravaUpload = false }
             do {
                 try await interactor.stravaTestUpload()
-                router.showSimpleAlert(title: "Upload Successful", subtitle: "Check your Strava account for \"DialedIn Test Upload\".")
+                router.showSimpleAlert(title: String(localized: "Upload Successful"), subtitle: String(localized: "Check your Strava account for \"DialedIn Test Upload\"."))
             } catch {
-                router.showSimpleAlert(title: "Upload Failed", subtitle: error.localizedDescription)
+                router.showSimpleAlert(title: String(localized: "Upload Failed"), subtitle: error.localizedDescription)
             }
         }
     }

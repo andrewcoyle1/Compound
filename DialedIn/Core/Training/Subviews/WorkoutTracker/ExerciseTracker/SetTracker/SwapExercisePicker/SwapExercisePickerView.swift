@@ -23,7 +23,7 @@ struct SwapExercisePickerView: View {
                     }
                 }
             }
-            .searchable(text: $presenter.searchText, prompt: "Search exercises")
+            .searchable(text: $presenter.searchText, prompt: String(localized: "Search exercises"))
             .navigationTitle("Swap Exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

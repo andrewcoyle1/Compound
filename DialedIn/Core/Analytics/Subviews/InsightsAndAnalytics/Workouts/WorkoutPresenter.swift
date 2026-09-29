@@ -88,7 +88,7 @@ extension WorkoutPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Workouts",
+            title: String(localized: "Workouts"),
             analyticsName: "WorkoutsView",
             yAxisSuffix: "",
             seriesNames: ["Sets"],

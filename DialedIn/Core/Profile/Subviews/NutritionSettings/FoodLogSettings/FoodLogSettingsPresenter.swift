@@ -82,15 +82,15 @@ class FoodLogSettingsPresenter {
     }
 
     var alignmentSubtitle: String {
-        timestampSide == .left ? "Left" : "Right"
+        timestampSide == .left ? String(localized: "Left") : String(localized: "Right")
     }
 
     private func hourLabel(_ hour: Int) -> String {
         switch hour {
-        case 0: return "12 AM"
-        case 12: return "12 PM"
-        case 1..<12: return "\(hour) AM"
-        default: return "\(hour - 12) PM"
+        case 0: return String(localized: "12 AM")
+        case 12: return String(localized: "12 PM")
+        case 1..<12: return String(localized: "\(String(describing: hour)) AM")
+        default: return String(localized: "\(String(describing: hour - 12)) PM")
         }
     }
 
@@ -101,7 +101,14 @@ class FoodLogSettingsPresenter {
     }
 
     private func save() {
-        Task { try? await interactor.saveFoodLogSettings(settings) }
+        Task {
+            do {
+                try await interactor.saveFoodLogSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     func onViewAppear() {
@@ -125,7 +132,7 @@ class FoodLogSettingsPresenter {
 
     func onEditAlignmentPressed() {
         router.showAlert(
-            title: "Timestamp Side",
+            title: String(localized: "Timestamp Side"),
             subtitle: nil,
             buttons: {
                 AnyView(
@@ -168,9 +175,11 @@ extension FoodLogSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "FoodLogSettingsView_Save_Fail"
             case .onAppear: return "FoodLogSettingsView_Appear"
             case .onDisappear: return "FoodLogSettingsView_Disappear"
             }
@@ -178,6 +187,7 @@ extension FoodLogSettingsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             default:
                 return nil
             }
@@ -185,6 +195,7 @@ extension FoodLogSettingsPresenter {
 
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

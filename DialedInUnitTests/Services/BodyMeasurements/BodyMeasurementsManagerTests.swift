@@ -98,14 +98,4 @@ struct BodyMeasurementsManagerTests {
         #expect(removed)
         #expect(!manager.bodyMeasurements.map(\.id).contains("e2"))
     }
-
-    @Test("Test Deleting Everything Empties The History")
-    func testDeletingEverythingEmptiesTheHistory() async throws {
-        let manager = await TestManagers.signedInBodyMeasurementsManager(entries: threeWeighIns)
-
-        try await manager.deleteAllWeightEntriesForUser()
-
-        let emptied = await TestManagers.eventually { manager.bodyMeasurements.isEmpty }
-        #expect(emptied)
-    }
 }

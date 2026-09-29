@@ -19,11 +19,11 @@ struct EnergyBalanceEntry: Identifiable {
     var balanceLabel: String {
         let value = Int(balance.rounded())
         if value > 0 {
-            return "\(value) deficit"
+            return String(localized: "\(String(describing: value)) deficit")
         } else if value < 0 {
-            return "\(-value) surplus"
+            return String(localized: "\(String(describing: -value)) surplus")
         }
-        return "Balanced"
+        return String(localized: "Balanced")
     }
 }
 

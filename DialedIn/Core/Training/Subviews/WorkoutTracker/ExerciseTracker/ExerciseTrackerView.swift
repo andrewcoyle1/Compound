@@ -17,10 +17,14 @@ struct ExerciseTrackerDelegate {
     var progressionHint: String?
     /// What the engine suggests for this exercise's working sets, shown by the Auto column.
     var progressionSuggestion: ProgressionSuggestion?
+    /// The note this exercise was left with last session, shown as a hint when writing this one.
+    var previousNote: String?
     var onSetSupersetGroup: @MainActor (String, String?) -> Void = { _, _ in }
     var onDeleteExercise: @MainActor () -> Void = { }
     /// Called with the set that was just logged, so the screen can re-suggest what is left.
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
+    /// Saves this session's note on the exercise; an empty string clears it.
+    var onUpdateNote: @MainActor (String) -> Void = { _ in }
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -90,10 +94,36 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
                 }
+
+                if let sessionNote = exercise.notes {
+                    Label(sessionNote, systemImage: "note.text")
+                        .font(.caption)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                }
             }
+
+            Spacer(minLength: 0)
+
+            noteButton(exercise)
         }
         .tappableBackground()
         .listRowInsets(.vertical, .zero)
+    }
+
+    /// Borderless so a tap opens the note sheet rather than toggling the card it sits on.
+    private func noteButton(_ exercise: WorkoutExerciseModel) -> some View {
+        Button {
+            presenter.onNotePressed(
+                for: exercise,
+                previousNote: delegate.previousNote,
+                onSave: delegate.onUpdateNote
+            )
+        } label: {
+            Image(systemName: exercise.notes == nil ? "note.text.badge.plus" : "note.text")
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(exercise.notes == nil ? String(localized: "Add note") : String(localized: "Edit note"))
     }
 }
 

@@ -14,7 +14,7 @@ struct ExerciseAssessmentView: View {
     var body: some View {
         // Was `Text("Hello, World!")`. What the assessment actually is has not been decided.
         FeatureUnavailableView(
-            title: "Exercise Assessment",
+            title: String(localized: "Exercise Assessment"),
             systemImage: "figure.strengthtraining.traditional",
             summary: "Guided strength assessments are not available yet. The plan is to estimate your working weights from a short set of test lifts, so a new programme starts at the right load."
         )

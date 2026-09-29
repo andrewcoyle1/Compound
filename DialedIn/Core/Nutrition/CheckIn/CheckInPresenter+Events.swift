@@ -17,9 +17,11 @@ extension CheckInPresenter {
         case proposalAccepted(proposal: TargetProposal)
         case completed(weekStart: Date)
         case dismissed(step: CheckInStep?)
+        case completeFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .completeFail: return "CheckInView_Complete_Fail"
             case .onAppear:         return "CheckInView_Appear"
             case .onDisappear:      return "CheckInView_Disappear"
             case .stepShown:        return "CheckInView_Step_Shown"
@@ -32,6 +34,7 @@ extension CheckInPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .completeFail(error: let error): return error.eventParameters
             case .onAppear(let weekStart, let steps):
                 return [
                     "check_in_week_start": weekStart,
@@ -60,7 +63,10 @@ extension CheckInPresenter {
         }
 
         var type: LogType {
-            .analytic
+            switch self {
+            case .completeFail: return .severe
+            default: return .analytic
+            }
         }
     }
 }

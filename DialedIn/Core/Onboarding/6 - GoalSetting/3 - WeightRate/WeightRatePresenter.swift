@@ -25,9 +25,9 @@ class WeightRatePresenter {
         
         var title: String {
             switch self {
-            case .conservative: return "Conservative"
-            case .standard: return "Standard (Recommended)"
-            case .aggressive: return "Aggressive"
+            case .conservative: return String(localized: "Conservative")
+            case .standard: return String(localized: "Standard (Recommended)")
+            case .aggressive: return String(localized: "Aggressive")
             }
         }
     }
@@ -91,7 +91,7 @@ class WeightRatePresenter {
         let sign = delegate.overarchingObjective == .loseWeight ? "-" : "+"
         let percentBW = (weeklyChangeInKg / currentWeight) * 100
         
-        return "\(sign)\(String(format: "%.2f", weeklyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Week"
+        return String(localized: "\(sign)\(String(format: "%.2f", weeklyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Week")
     }
     
     func monthlyWeightChangeText(delegate: WeightRateDelegate) -> String {
@@ -101,7 +101,7 @@ class WeightRatePresenter {
         let sign = delegate.overarchingObjective == .loseWeight ? "-" : "+"
         let percentBW = (monthlyChangeInKg / currentWeight) * 100
         
-        return "\(sign)\(String(format: "%.2f", monthlyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Month"
+        return String(localized: "\(sign)\(String(format: "%.2f", monthlyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Month")
     }
     
     func estimatedCalorieTargetText(delegate: WeightRateDelegate) -> String {
@@ -120,7 +120,7 @@ class WeightRatePresenter {
             baseCalories - dailyCalorieChange :
             baseCalories + dailyCalorieChange
         
-        return "~ \(Int(targetCalories)) kcal estimated daily calorie target"
+        return String(localized: "~ \(String(describing: Int(targetCalories))) kcal estimated daily calorie target")
     }
     
     func estimatedEndDateText(delegate: WeightRateDelegate) -> String {
@@ -140,7 +140,7 @@ class WeightRatePresenter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         
-        return "Approximate end date: \(formatter.string(from: endDate))"
+        return String(localized: "Approximate end date: \(String(describing: formatter.string(from: endDate)))")
     }
 
 #if DEV || MOCK

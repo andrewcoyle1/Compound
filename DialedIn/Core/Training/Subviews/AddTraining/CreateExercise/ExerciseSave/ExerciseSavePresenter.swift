@@ -27,7 +27,7 @@ class ExerciseSavePresenter {
         // task, so this is reachable rather than theoretical.
         guard let userId = currentUser?.userId else {
             interactor.trackEvent(event: Event.createExerciseFail(error: ExerciseSaveError.noCurrentUser))
-            router.showSimpleAlert(title: "Unable to Create Exercise", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Create Exercise"), subtitle: String(localized: "Please try again."))
             return
         }
 
@@ -41,7 +41,7 @@ class ExerciseSavePresenter {
                 router.dismissEnvironment()
             } catch {
                 interactor.trackEvent(event: Event.createExerciseFail(error: error))
-                router.showSimpleAlert(title: "Unable to Create Exercise", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to Create Exercise"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -103,7 +103,7 @@ enum ExerciseSaveError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noCurrentUser:
-            return "No signed-in user to own the exercise"
+            return String(localized: "No signed-in user to own the exercise")
         }
     }
 }

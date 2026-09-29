@@ -13,7 +13,7 @@ struct SiriView: View {
         // The seven rows that were here ("Speak Remaining Goals", "Log Beer") were plain Text styled as
     // settings, doing nothing. They described intent, not behaviour.
         FeatureUnavailableView(
-            title: "Siri",
+            title: String(localized: "Siri"),
             systemImage: "siri",
             summary: "Asking Siri to log a meal, start a workout or read back your remaining macros is not available yet. It needs an App Intents extension, which the app does not ship."
         )

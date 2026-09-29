@@ -23,7 +23,7 @@ class ExpenditureSettingsPresenter {
     // MARK: - Today's estimate
 
     var expenditureValueText: String {
-        "\(Int(estimate.kcal.rounded())) kcal"
+        String(localized: "\(String(describing: Int(estimate.kcal.rounded()))) kcal")
     }
 
     /// One line saying where the figure above came from, because "2,480 kcal" on its own cannot
@@ -31,11 +31,11 @@ class ExpenditureSettingsPresenter {
     var expenditureStatusText: String {
         switch estimate.source {
         case .fixed:
-            return "Fixed"
+            return String(localized: "Fixed")
         case .prior:
-            return "Estimated from your profile until \(ExpenditureEngine.Constants.minWindowDays) days are logged"
+            return String(localized: "Estimated from your profile until \(ExpenditureEngine.Constants.minWindowDays) days are logged")
         case .adaptive:
-            return "Adaptive \u{00B7} \(estimate.loggedDays) of \(estimate.windowDays) days logged"
+            return String(localized: "Adaptive \u{00B7} \(String(describing: estimate.loggedDays)) of \(String(describing: estimate.windowDays)) days logged")
         }
     }
 
@@ -45,7 +45,7 @@ class ExpenditureSettingsPresenter {
         let adjustment = estimate.stepAdjustmentKcal.rounded()
         guard adjustment != 0 else { return nil }
         let sign = adjustment > 0 ? "+" : "\u{2212}"
-        return "Includes \(sign)\(Int(abs(adjustment))) kcal from your recent step count"
+        return String(localized: "Includes \(sign)\(String(describing: Int(abs(adjustment)))) kcal from your recent step count")
     }
 
     let estimationMethods = ExpenditureEstimationMethod.allCases
@@ -108,7 +108,12 @@ class ExpenditureSettingsPresenter {
     /// figure on screen is re-read rather than left showing what the old settings produced.
     private func save() {
         Task {
-            try? await interactor.saveNutritionStrategySettings(settings)
+            do {
+                try await interactor.saveNutritionStrategySettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
             estimate = interactor.currentExpenditure
         }
     }
@@ -132,9 +137,11 @@ extension ExpenditureSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case saveFail(error: Error)
         
         var eventName: String {
             switch self {
+            case .saveFail: return "ExpenditureSettingsView_Save_Fail"
             case .onAppear: return "ExpenditureSettingsView_Appear"
             case .onDisappear: return "ExpenditureSettingsView_Disappear"
             }
@@ -142,6 +149,7 @@ extension ExpenditureSettingsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             default:
                 return nil
             }
@@ -149,6 +157,7 @@ extension ExpenditureSettingsPresenter {
         
         var type: LogType {
             switch self {
+            case .saveFail: return .severe
             default:
                 return .analytic
             }

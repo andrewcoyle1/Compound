@@ -29,22 +29,24 @@ extension FoodModel {
         return declared
     }
 
-    /// This food as a meal item at `amount` of `loggedUnitLabel`.
+    /// This food as a meal item at `amount` of `unit`, or of `loggedUnitLabel` when no serving
+    /// unit is given — "2 slice" is stored as two of a slice, resolved to its grams.
     ///
     /// Nutrients are stored per 100 g/ml, which is what the scale divides by. Pulled out of
     /// `IngredientAmountPresenter.add(ingredient:onConfirm:)` so the amount screen and the
     /// quick-add path that skips it build the same item from the same food.
-    func mealItem(amount: Double) -> MealItemModel {
-        MealItemModel(
+    func mealItem(amount: Double, unit: ServingUnit? = nil) -> MealItemModel {
+        let base = NutritionScaling.baseAmount(amount, in: unit)
+        return MealItemModel(
             itemId: UUID().uuidString,
             sourceType: .ingredient,
             sourceId: ingredientId,
             displayName: name,
             amount: amount,
-            unit: loggedUnitLabel,
-            resolvedGrams: measurementMethod == .weight ? amount : nil,
-            resolvedMilliliters: measurementMethod == .volume ? amount : nil,
-            nutrients: nutrients.scaled(by: amount / 100.0)
+            unit: unit?.name ?? loggedUnitLabel,
+            resolvedGrams: measurementMethod == .weight ? base : nil,
+            resolvedMilliliters: measurementMethod == .volume ? base : nil,
+            nutrients: nutrients.scaled(by: base / 100.0)
         )
     }
 }

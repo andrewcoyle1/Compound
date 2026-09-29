@@ -91,18 +91,18 @@ enum CalorieFloor: String, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .standard:
-            return "Standard Floor (Recommended)"
+            return String(localized: "Standard Floor (Recommended)")
         case .low:
-            return "Low Floor"
+            return String(localized: "Low Floor")
         }
     }
     
     var detailedDescription: String {
         switch self {
         case .standard:
-            return "Your recommendations will never go below 1200 calories per day, even if your TDEE is lower."
+            return String(localized: "Your recommendations will never go below 1200 calories per day, even if your TDEE is lower.")
         case .low:
-            return "Your recommendations will never go below 800 calories per day. Proceed with caution."
+            return String(localized: "Your recommendations will never go below 800 calories per day. Proceed with caution.")
         }
     }
 }

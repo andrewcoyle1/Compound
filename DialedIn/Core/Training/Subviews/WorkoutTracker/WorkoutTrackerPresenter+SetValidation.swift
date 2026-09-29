@@ -56,13 +56,13 @@ extension WorkoutTrackerPresenter {
     func validateWeightReps(set: WorkoutSetModel) -> Bool {
         // Weight must be non-negative (including 0 for bodyweight exercises)
         if let weight = set.weightKg, weight < 0 {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Weight must be a non-negative number")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Weight must be a non-negative number"))
             return false
         }
 
         // Reps must be positive
         guard let reps = set.reps, reps > 0 else {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Reps must be a positive number")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
             return false
         }
 
@@ -72,7 +72,7 @@ extension WorkoutTrackerPresenter {
     func validateRepsOnly(set: WorkoutSetModel) -> Bool {
         // Reps must be positive
         guard let reps = set.reps, reps > 0 else {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Reps must be a positive number")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
             return false
         }
 
@@ -82,7 +82,7 @@ extension WorkoutTrackerPresenter {
     func validateTimeOnly(set: WorkoutSetModel) -> Bool {
         // Time must be positive
         guard let duration = set.durationSec, duration > 0 else {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Duration must be a positive time")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
             return false
         }
 
@@ -92,13 +92,13 @@ extension WorkoutTrackerPresenter {
     func validateDistanceTime(set: WorkoutSetModel) -> Bool {
         // Distance must be positive
         guard let distance = set.distanceMeters, distance > 0 else {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Distance must be a positive number")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Distance must be a positive number"))
             return false
         }
 
         // Time must be positive
         guard let duration = set.durationSec, duration > 0 else {
-            router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Duration must be a positive time")
+            router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
             return false
         }
 

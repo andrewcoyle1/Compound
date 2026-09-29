@@ -15,10 +15,10 @@ enum Macro: CaseIterable {
 
     var title: String {
         switch self {
-        case .cals: return "Cals"
-        case .carbs: return "Carbs"
-        case .fat: return "Fat"
-        case .protein: return "Protein"
+        case .cals: return String(localized: "Cals")
+        case .carbs: return String(localized: "Carbs")
+        case .fat: return String(localized: "Fat")
+        case .protein: return String(localized: "Protein")
         }
     }
 
@@ -69,12 +69,12 @@ enum Macros: String, CaseIterable {
 
     var name: String {
         switch self {
-        case .carbs: return "Carbohydrates"
-        case .fat: return "Fat"
-        case .protein: return "Protein"
-        case .vitamins: return "Vitamins"
-        case .minerals: return "Minerals"
-        case .other: return "Other"
+        case .carbs: return String(localized: "Carbohydrates")
+        case .fat: return String(localized: "Fat")
+        case .protein: return String(localized: "Protein")
+        case .vitamins: return String(localized: "Vitamins")
+        case .minerals: return String(localized: "Minerals")
+        case .other: return String(localized: "Other")
         }
     }
 
@@ -153,65 +153,65 @@ enum NutrientKey: String, CaseIterable, Codable, Hashable, MacroNutrient {
 
     var name: String {
         switch self {
-        case .calories:           return "Calories"
-        case .protein:            return "Protein"
-        case .carbs:              return "Carbohydrates"
-        case .fatTotal:           return "Total Fat"
-        case .fatSaturated:       return "Saturated Fat"
-        case .fatMonounsaturated: return "Monounsaturated Fat"
-        case .fatPolyunsaturated: return "Polyunsaturated Fat"
-        case .fatTrans:           return "Trans Fat"
-        case .omega3:             return "Omega-3"
-        case .omega3Ala:          return "Omega-3 ALA"
-        case .omega3Dha:          return "Omega-3 DHA"
-        case .omega3Epa:          return "Omega-3 EPA"
-        case .omega6:             return "Omega-6"
-        case .fiber:              return "Fiber"
-        case .sugar:              return "Sugar"
-        case .addedSugars:        return "Added Sugars"
-        case .starch:             return "Starch"
-        case .cysteine:           return "Cysteine"
-        case .histidine:          return "Histidine"
-        case .isoleucine:         return "Isoleucine"
-        case .leucine:            return "Leucine"
-        case .lysine:             return "Lysine"
-        case .methionine:         return "Methionine"
-        case .phenylalanine:      return "Phenylalanine"
-        case .threonine:          return "Threonine"
-        case .tryptophan:         return "Tryptophan"
-        case .tyrosine:           return "Tyrosine"
-        case .valine:             return "Valine"
-        case .sodiumMg:           return "Sodium"
-        case .potassiumMg:        return "Potassium"
-        case .calciumMg:          return "Calcium"
-        case .ironMg:             return "Iron"
-        case .magnesiumMg:        return "Magnesium"
-        case .zincMg:             return "Zinc"
-        case .copperMg:           return "Copper"
-        case .manganeseMg:        return "Manganese"
-        case .phosphorusMg:       return "Phosphorus"
-        case .seleniumMcg:        return "Selenium"
-        case .chlorideMg:         return "Chloride"
-        case .chromiumMcg:        return "Chromium"
-        case .molybdenumMcg:      return "Molybdenum"
-        case .vitaminAMcg:        return "Vitamin A"
-        case .vitaminB6Mg:        return "Vitamin B6"
-        case .vitaminB12Mcg:      return "Vitamin B12"
-        case .vitaminCMg:         return "Vitamin C"
-        case .vitaminDMcg:        return "Vitamin D"
-        case .vitaminEMg:         return "Vitamin E"
-        case .vitaminKMcg:        return "Vitamin K"
-        case .biotinMcg:          return "Biotin"
-        case .folateMcg:          return "Folate"
-        case .iodineMcg:          return "Iodine"
-        case .niacinMg:           return "Niacin"
-        case .thiaminMg:          return "Thiamin"
-        case .riboflavinMg:       return "Riboflavin"
-        case .pantothenicAcidMg:  return "Pantothenic Acid"
-        case .caffeineMg:         return "Caffeine"
-        case .cholesterolMg:      return "Cholesterol"
-        case .alcohol:            return "Alcohol"
-        case .water:              return "Water"
+        case .calories:           return String(localized: "Calories")
+        case .protein:            return String(localized: "Protein")
+        case .carbs:              return String(localized: "Carbohydrates")
+        case .fatTotal:           return String(localized: "Total Fat")
+        case .fatSaturated:       return String(localized: "Saturated Fat")
+        case .fatMonounsaturated: return String(localized: "Monounsaturated Fat")
+        case .fatPolyunsaturated: return String(localized: "Polyunsaturated Fat")
+        case .fatTrans:           return String(localized: "Trans Fat")
+        case .omega3:             return String(localized: "Omega-3")
+        case .omega3Ala:          return String(localized: "Omega-3 ALA")
+        case .omega3Dha:          return String(localized: "Omega-3 DHA")
+        case .omega3Epa:          return String(localized: "Omega-3 EPA")
+        case .omega6:             return String(localized: "Omega-6")
+        case .fiber:              return String(localized: "Fiber")
+        case .sugar:              return String(localized: "Sugar")
+        case .addedSugars:        return String(localized: "Added Sugars")
+        case .starch:             return String(localized: "Starch")
+        case .cysteine:           return String(localized: "Cysteine")
+        case .histidine:          return String(localized: "Histidine")
+        case .isoleucine:         return String(localized: "Isoleucine")
+        case .leucine:            return String(localized: "Leucine")
+        case .lysine:             return String(localized: "Lysine")
+        case .methionine:         return String(localized: "Methionine")
+        case .phenylalanine:      return String(localized: "Phenylalanine")
+        case .threonine:          return String(localized: "Threonine")
+        case .tryptophan:         return String(localized: "Tryptophan")
+        case .tyrosine:           return String(localized: "Tyrosine")
+        case .valine:             return String(localized: "Valine")
+        case .sodiumMg:           return String(localized: "Sodium")
+        case .potassiumMg:        return String(localized: "Potassium")
+        case .calciumMg:          return String(localized: "Calcium")
+        case .ironMg:             return String(localized: "Iron")
+        case .magnesiumMg:        return String(localized: "Magnesium")
+        case .zincMg:             return String(localized: "Zinc")
+        case .copperMg:           return String(localized: "Copper")
+        case .manganeseMg:        return String(localized: "Manganese")
+        case .phosphorusMg:       return String(localized: "Phosphorus")
+        case .seleniumMcg:        return String(localized: "Selenium")
+        case .chlorideMg:         return String(localized: "Chloride")
+        case .chromiumMcg:        return String(localized: "Chromium")
+        case .molybdenumMcg:      return String(localized: "Molybdenum")
+        case .vitaminAMcg:        return String(localized: "Vitamin A")
+        case .vitaminB6Mg:        return String(localized: "Vitamin B6")
+        case .vitaminB12Mcg:      return String(localized: "Vitamin B12")
+        case .vitaminCMg:         return String(localized: "Vitamin C")
+        case .vitaminDMcg:        return String(localized: "Vitamin D")
+        case .vitaminEMg:         return String(localized: "Vitamin E")
+        case .vitaminKMcg:        return String(localized: "Vitamin K")
+        case .biotinMcg:          return String(localized: "Biotin")
+        case .folateMcg:          return String(localized: "Folate")
+        case .iodineMcg:          return String(localized: "Iodine")
+        case .niacinMg:           return String(localized: "Niacin")
+        case .thiaminMg:          return String(localized: "Thiamin")
+        case .riboflavinMg:       return String(localized: "Riboflavin")
+        case .pantothenicAcidMg:  return String(localized: "Pantothenic Acid")
+        case .caffeineMg:         return String(localized: "Caffeine")
+        case .cholesterolMg:      return String(localized: "Cholesterol")
+        case .alcohol:            return String(localized: "Alcohol")
+        case .water:              return String(localized: "Water")
         }
     }
 

@@ -68,12 +68,6 @@ class MealLogManager {
         try await mealLogSyncEngine.deleteDocument(id: id)
     }
 
-    func deleteAllMeals() async throws {
-        for meal in userMeals {
-            try await deleteMeal(id: meal.id)
-        }
-    }
-
     func getMeals(for dayKey: String) -> [MealLogModel] {
         userMeals.filter { $0.dayKey == dayKey }
     }
@@ -96,10 +90,6 @@ class MealLogManager {
             carbGrams: totals.carbs,
             fatGrams: totals.fats
         )
-    }
-
-    func deleteAllMealLogsForAuthor(authorId: String) async throws {
-        try await deleteAllMeals()
     }
 }
 

@@ -48,8 +48,8 @@ class MealHourHeaderPresenter {
         let mealDate = mealTime(for: selectedTime)
         if let meal = interactor.draftMeal {
             router.showAlert(
-                title: "Unable to add new meal",
-                subtitle: "You already have an draft meal.",
+                title: String(localized: "Unable to add new meal"),
+                subtitle: String(localized: "You already have an draft meal."),
                 buttons: {
                     AnyView(
                         VStack {

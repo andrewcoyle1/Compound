@@ -8,6 +8,7 @@ protocol BodyMetricsRouter: GlobalRouter {
     func showBodyMeasurementDetailView(kind: BodyMeasurementKind, themeColor: Color?)
     
     func showLogMeasurementView(kind: BodyMeasurementKind)
+    func showProgressPhotosView()
 }
 
 extension CoreRouter: BodyMetricsRouter { }

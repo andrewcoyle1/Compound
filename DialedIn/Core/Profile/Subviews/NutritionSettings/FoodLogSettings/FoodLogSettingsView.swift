@@ -13,7 +13,7 @@ struct FoodLogSettingsView: View {
         List {
             Section {
                 CustomToggleView(
-                    title: "Show Overages",
+                    title: String(localized: "Show Overages"),
                     subtitle: presenter.showOveragesSubtitle,
                     bool: $presenter.showOverages
                 )
@@ -24,7 +24,7 @@ struct FoodLogSettingsView: View {
             Section {
                 CustomLabelButtonView(
                     symbolName: "clock",
-                    title: "Hour Range",
+                    title: String(localized: "Hour Range"),
                     subtitle: presenter.hourRangeSubtitle) {
                         Text("Edit")
                             .padding(.horizontal, 8)
@@ -36,7 +36,7 @@ struct FoodLogSettingsView: View {
                     }
                 CustomLabelButtonView(
                     symbolName: "chart.bar.yaxis",
-                    title: "Alignment",
+                    title: String(localized: "Alignment"),
                     subtitle: presenter.alignmentSubtitle) {
                         Text("Edit")
                             .padding(.horizontal, 8)
@@ -48,32 +48,32 @@ struct FoodLogSettingsView: View {
                     }
                 CustomToggleView(
                     symbolName: "plus.circle",
-                    title: "Add Foods to Hour",
-                    subtitle: "Show + button on each hour",
+                    title: String(localized: "Add Foods to Hour"),
+                    subtitle: String(localized: "Show + button on each hour"),
                     bool: $presenter.showAddFoodsButton
                 )
                 CustomToggleView(
                     symbolName: "clock",
-                    title: "Food Timestamps",
-                    subtitle: "Show timestamps",
+                    title: String(localized: "Food Timestamps"),
+                    subtitle: String(localized: "Show timestamps"),
                     bool: $presenter.showsFoodTimestamps
                 )
                 CustomToggleView(
                     symbolName: "clock",
-                    title: "Hourly Macro Totals",
-                    subtitle: "Show",
+                    title: String(localized: "Hourly Macro Totals"),
+                    subtitle: String(localized: "Show"),
                     bool: $presenter.showHourlyMacroTotals
                 )
                 CustomToggleView(
                     symbolName: "clock",
-                    title: "Calendar Week Banner",
-                    subtitle: "Show",
+                    title: String(localized: "Calendar Week Banner"),
+                    subtitle: String(localized: "Show"),
                     bool: $presenter.showCalendarWeekBanner
                 )
                 CustomToggleView(
                     symbolName: "clock",
-                    title: "Premove",
-                    subtitle: "Pre-log meals before eating",
+                    title: String(localized: "Premove"),
+                    subtitle: String(localized: "Pre-log meals before eating"),
                     bool: $presenter.premove
                 )
             } header: {
@@ -82,13 +82,13 @@ struct FoodLogSettingsView: View {
 
             Section {
                 CustomToggleView(
-                    title: "Branded Results",
-                    subtitle: presenter.showBrandedFoods ? "On" : "Off",
+                    title: String(localized: "Branded Results"),
+                    subtitle: presenter.showBrandedFoods ? String(localized: "On") : String(localized: "Off"),
                     bool: $presenter.showBrandedFoods
                 )
                 CustomToggleView(
-                    title: "Open Food Facts Results",
-                    subtitle: presenter.showOpenFoodFactsFoods ? "On" : "Off",
+                    title: String(localized: "Open Food Facts Results"),
+                    subtitle: presenter.showOpenFoodFactsFoods ? String(localized: "On") : String(localized: "Off"),
                     bool: $presenter.showOpenFoodFactsFoods
                 )
             } header: {
@@ -97,8 +97,8 @@ struct FoodLogSettingsView: View {
 
             Section {
                 CustomLabelButtonView(
-                    title: "Timeline Food Tiles",
-                    subtitle: "Customise how foods appear in your timeline") {
+                    title: String(localized: "Timeline Food Tiles"),
+                    subtitle: String(localized: "Customise how foods appear in your timeline")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -109,8 +109,8 @@ struct FoodLogSettingsView: View {
 
                     }
                 CustomLabelButtonView(
-                    title: "Logger Food Tiles",
-                    subtitle: "Customise how foods appear in search") {
+                    title: String(localized: "Logger Food Tiles"),
+                    subtitle: String(localized: "Customise how foods appear in search")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -126,8 +126,8 @@ struct FoodLogSettingsView: View {
 
             Section {
                 CustomLabelButtonView(
-                    title: "Logger Banner",
-                    subtitle: "Customise the top of your plate") {
+                    title: String(localized: "Logger Banner"),
+                    subtitle: String(localized: "Customise the top of your plate")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -138,8 +138,8 @@ struct FoodLogSettingsView: View {
 
                     }
                 CustomLabelButtonView(
-                    title: "Time Selection",
-                    subtitle: "Customise how you change time while logging") {
+                    title: String(localized: "Time Selection"),
+                    subtitle: String(localized: "Customise how you change time while logging")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -150,8 +150,8 @@ struct FoodLogSettingsView: View {
 
                     }
                 CustomLabelButtonView(
-                    title: "Favourite Measurements",
-                    subtitle: "Select the measurements to pin to serving size selections.") {
+                    title: String(localized: "Favourite Measurements"),
+                    subtitle: String(localized: "Select the measurements to pin to serving size selections.")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -162,8 +162,8 @@ struct FoodLogSettingsView: View {
 
                     }
                 CustomLabelButtonView(
-                    title: "Optimisation",
-                    subtitle: "Optimise for speed") {
+                    title: String(localized: "Optimisation"),
+                    subtitle: String(localized: "Optimise for speed")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(.secondary)
                             .padding()
@@ -220,10 +220,10 @@ struct FoodLogSettingsView: View {
 
     private func hourLabel(_ hour: Int) -> String {
         switch hour {
-        case 0: return "12 AM"
-        case 12: return "12 PM"
-        case 1..<12: return "\(hour) AM"
-        default: return "\(hour - 12) PM"
+        case 0: return String(localized: "12 AM")
+        case 12: return String(localized: "12 PM")
+        case 1..<12: return String(localized: "\(String(describing: hour)) AM")
+        default: return String(localized: "\(String(describing: hour - 12)) PM")
         }
     }
 }

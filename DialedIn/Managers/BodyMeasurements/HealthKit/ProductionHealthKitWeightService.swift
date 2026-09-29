@@ -19,6 +19,7 @@ struct ProductionHealthKitWeightService: HealthKitWeightService {
             throw HealthKitWeightServiceError.healthDataUnavailable
         }
 
+        // Safe: a built-in HealthKit quantity identifier always has a type.
         let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let predicate: NSPredicate?
         if let since {
@@ -60,6 +61,7 @@ struct ProductionHealthKitWeightService: HealthKitWeightService {
             throw HealthKitWeightServiceError.healthDataUnavailable
         }
 
+        // Safe: a built-in HealthKit quantity identifier always has a type.
         let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
         let predicate: NSPredicate?
         if let since {
@@ -101,6 +103,7 @@ struct ProductionHealthKitWeightService: HealthKitWeightService {
             throw HealthKitWeightServiceError.healthDataUnavailable
         }
 
+        // Safe: a built-in HealthKit quantity identifier always has a type.
         let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
         let unit = HKUnit.gramUnit(with: .kilo)
         let quantity = HKQuantity(unit: unit, doubleValue: weightKg)

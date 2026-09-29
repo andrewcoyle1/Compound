@@ -40,9 +40,9 @@ struct HabitsView: View {
     }
     
     private var generalSection: some View {
-        habitsSection(header: "General") {
+        habitsSection(header: String(localized: "General")) {
             ConsistencyAnalyticsCard(
-                title: "Weigh In",
+                title: String(localized: "Weigh In"),
                 value: "\(presenter.weighInCountThisWeek)",
                 themeColor: .green,
                 data: presenter.weighInContributionData,
@@ -52,9 +52,9 @@ struct HabitsView: View {
     }
 
     private var trainingSection: some View {
-        habitsSection(header: "Training") {
+        habitsSection(header: String(localized: "Training")) {
             ConsistencyAnalyticsCard(
-                title: "Workouts",
+                title: String(localized: "Workouts"),
                 value: "\(presenter.workoutCountThisWeek)",
                 themeColor: .orange,
                 data: presenter.workoutContributionData,
@@ -64,9 +64,9 @@ struct HabitsView: View {
     }
 
     private var nutritionSection: some View {
-        habitsSection(header: "Nutrition") {
+        habitsSection(header: String(localized: "Nutrition")) {
             ConsistencyAnalyticsCard(
-                title: "Food Logging",
+                title: String(localized: "Food Logging"),
                 value: "\(presenter.foodLoggingCountThisWeek)/7",
                 themeColor: .teal,
                 data: presenter.foodLoggingContributionData,

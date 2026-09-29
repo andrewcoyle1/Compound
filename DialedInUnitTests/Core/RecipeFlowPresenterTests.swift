@@ -380,6 +380,8 @@ struct RecipeDetailPresenterTests {
             setCalls.append((id, isFavourite))
             if let setFavouriteError { throw setFavouriteError }
         }
+
+        func deleteRecipeTemplate(id: String) async throws { }
     }
 
     private final class DetailRouter: RecipeDetailRouter {
@@ -560,6 +562,8 @@ struct FoodDetailPresenterTests {
             setCalls.append((id, isFavourite))
             if let setFavouriteError { throw setFavouriteError }
         }
+
+        func deleteFood(ingredientId: String) async throws { }
     }
 
     private final class Router: FoodDetailRouter {

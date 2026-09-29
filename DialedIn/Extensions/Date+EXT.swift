@@ -34,10 +34,12 @@ extension Date {
     }
     
     var startOfMonth: Date {
+        // Safe: Gregorian month intervals and day arithmetic on a valid date never return nil.
         Calendar.current.dateInterval(of: .month, for: self)!.start
     }
     
     var endOfMonth: Date {
+        // Safe: Gregorian month intervals and day arithmetic on a valid date never return nil.
         let lastDay = Calendar.current.dateInterval(of: .month, for: self)!.end
         return Calendar.current.date(byAdding: .day, value: -1, to: lastDay)!
     }
@@ -53,6 +55,7 @@ extension Date {
         if numberFromPreviousMonth < 0 {
             numberFromPreviousMonth += 7 // Adjust to a 0-6 range if negative
         }
+        // Safe: Gregorian month intervals and day arithmetic on a valid date never return nil.
         return Calendar.current.date(byAdding: .day, value: -numberFromPreviousMonth, to: startOfMonth)!
     }
     
@@ -101,6 +104,7 @@ extension Date {
         var day = firstDisplayDay
         while day < startOfMonth {
             days.append(day)
+            // Safe: Gregorian month intervals and day arithmetic on a valid date never return nil.
             day = Calendar.current.date(byAdding: .day, value: 1, to: day)!
         }
         // Add days of the current month

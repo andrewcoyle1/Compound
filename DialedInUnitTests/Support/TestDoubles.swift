@@ -61,6 +61,9 @@ class SpyGlobalInteractor: GlobalInteractor {
     func showAppToast(_ toast: AppToast) {
         shownToasts.append(toast)
     }
+
+    /// Set to take the screen offline: `ensureOnline(or:)` then shows the offline alert.
+    var isOffline = false
 }
 
 /// The onboarding destinations, recorded rather than shown.

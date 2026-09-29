@@ -50,7 +50,7 @@ struct CreateRecipeView: View {
     private var servingQuantitySection: some View {
         Section {
             AutoSelectNumberField(
-                prompt: "Enter serving quantity",
+                prompt: String(localized: "Enter serving quantity"),
                 value: $presenter.servingQuantity,
                 alignment: .leading,
                 keyboardType: .decimalPad
@@ -67,7 +67,7 @@ struct CreateRecipeView: View {
     
     private var totalWeightSection: some View {
         Section {
-            TextFieldwUnit<NutritionWeightUnit>(prompt: "Enter weight after preparation", value: $presenter.recipeTotalWeight, unit: .grams)
+            TextFieldwUnit<NutritionWeightUnit>(prompt: String(localized: "Enter weight after preparation"), value: $presenter.recipeTotalWeight, unit: .grams)
 
         } header: {
             Text("Total Weight")

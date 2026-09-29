@@ -15,6 +15,7 @@ struct KeychainHelper {
             let query: [CFString: Any] = [
                 kSecClass: kSecClassGenericPassword,
                 kSecAttrAccount: key,
+                // Safe: kCFBooleanTrue/kCFBooleanFalse are CoreFoundation constants, never nil.
                 kSecAttrSynchronizable: sync ? kCFBooleanTrue! : kCFBooleanFalse!
             ]
             SecItemDelete(query as CFDictionary)
@@ -23,6 +24,7 @@ struct KeychainHelper {
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
             kSecValueData: data,
+            // Safe: kCFBooleanTrue/kCFBooleanFalse are CoreFoundation constants, never nil.
             kSecAttrSynchronizable: synchronizable ? kCFBooleanTrue! : kCFBooleanFalse!
         ]
         SecItemAdd(attributes as CFDictionary, nil)
@@ -34,6 +36,7 @@ struct KeychainHelper {
             kSecAttrAccount: key,
             kSecReturnData: true,
             kSecMatchLimit: kSecMatchLimitOne,
+            // Safe: kCFBooleanTrue/kCFBooleanFalse are CoreFoundation constants, never nil.
             kSecAttrSynchronizable: synchronizable ? kCFBooleanTrue! : kCFBooleanFalse!
         ]
         var result: AnyObject?
@@ -47,6 +50,7 @@ struct KeychainHelper {
             let query: [CFString: Any] = [
                 kSecClass: kSecClassGenericPassword,
                 kSecAttrAccount: key,
+                // Safe: kCFBooleanTrue/kCFBooleanFalse are CoreFoundation constants, never nil.
                 kSecAttrSynchronizable: sync ? kCFBooleanTrue! : kCFBooleanFalse!
             ]
             SecItemDelete(query as CFDictionary)

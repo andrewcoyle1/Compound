@@ -114,8 +114,8 @@ extension WorkoutTrackerPresenter {
                 do {
                     let delegate = PushNotificationDelegate(
                         identifier: restTimerNotificationId,
-                        title: "Rest Complete",
-                        subtitle: "Time to get back to your workout!",
+                        title: String(localized: "Rest Complete"),
+                        subtitle: String(localized: "Time to get back to your workout!"),
                         triggerDate: endTime,
                         // The same setting, so a user who turned the sound off is not dinged by the
                         // notification that lands at the very moment the in-app sound was suppressed.

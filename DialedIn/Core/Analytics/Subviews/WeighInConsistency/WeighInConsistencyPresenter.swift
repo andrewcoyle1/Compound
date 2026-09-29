@@ -72,7 +72,7 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Weigh In",
+            title: String(localized: "Weigh In"),
             analyticsName: "WeighInConsistencyView",
             yAxisSuffix: " \(weightUnit.abbreviation)",
             seriesNames: ["Weight"],
@@ -101,7 +101,7 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
         } catch {
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
-            router.showSimpleAlert(title: "Unable to Delete Entry", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
         rebuildCaches()

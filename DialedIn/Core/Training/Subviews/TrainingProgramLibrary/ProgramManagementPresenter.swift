@@ -24,6 +24,10 @@ class TrainingProgramLibraryPresenter {
     var savedPrograms: [TrainingProgram] {
         interactor.trainingPrograms
     }
+
+    var prebuiltPrograms: [TrainingProgram] {
+        interactor.prebuiltPrograms
+    }
     
     init(
         interactor: TrainingProgramLibraryInteractor,
@@ -45,8 +49,10 @@ class TrainingProgramLibraryPresenter {
 
     func showDeleteAlert(program: TrainingProgram) {
         router.showAlert(
-            title: "Delete Program",
-            subtitle: "Are you sure you want to delete your active program '\(program.name)'? This will remove all scheduled workouts and you'll need to create or select a new program.",
+            title: String(localized: "Delete Program"),
+            subtitle: program.id == activeTrainingProgram?.id
+                ? "Are you sure you want to delete your active program '\(program.name)'? This will remove all scheduled workouts and you'll need to create or select a new program."
+                : "Delete '\(program.name)'? This can't be undone.",
             buttons: {
                 AnyView(
                     Group {
@@ -75,10 +81,14 @@ class TrainingProgramLibraryPresenter {
             interactor.trackEvent(event: Event.deleteProgramFail(error: error))
             // The program is still listed after a failed delete, so say so rather than leave the
             // confirmation looking like it did nothing.
-            router.showSimpleAlert(title: "Unable to delete program", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to delete program"), subtitle: String(localized: "Please try again."))
         }
     }
         
+    func onPrebuiltProgramPressed(_ program: TrainingProgram) {
+        router.showPrebuiltProgramDetailView(program: program)
+    }
+
     func onCreateProgramPressed() {
         router.showCreateProgramView(delegate: CreateProgramDelegate())
     }

@@ -20,7 +20,7 @@ class RecipeIngredientAmountPresenter {
     }
 
     func unitLabel(food: FoodModel) -> String {
-        food.measurementMethod == .volume ? "ml" : "g"
+        food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")
     }
 
     func calories(food: FoodModel) -> Double? { food.calories.map { $0 * scale } }

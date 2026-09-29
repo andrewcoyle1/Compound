@@ -116,7 +116,7 @@ class InsightsAndAnalyticsPresenter {
 
     var goalProgressSubtitle: String {
         guard hasActiveGoal else { return "No Goal Set" }
-        return goalWeightEntries.isEmpty ? "No Entries" : "Toward Target"
+        return goalWeightEntries.isEmpty ? String(localized: "No Entries") : String(localized: "Toward Target")
     }
 
     var goalProgressLatestValueText: String {
@@ -145,7 +145,7 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var weightTrendSubtitle: String {
-        weightTrendLastEntries.isEmpty ? "No Entries" : "Last 7 Days"
+        weightTrendLastEntries.isEmpty ? String(localized: "No Entries") : String(localized: "Last 7 Days")
     }
 
     var weightTrendLatestValueText: String {
@@ -188,7 +188,7 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var energyBalanceSubtitle: String {
-        "Last 7 Days"
+        String(localized: "Last 7 Days")
     }
 
     var energyBalanceLatestValueText: String {
@@ -198,11 +198,11 @@ class InsightsAndAnalyticsPresenter {
         let deficit = tdee - avgIntake
         let value = Int(deficit.rounded())
         if value > 0 {
-            return "\(value) deficit"
+            return String(localized: "\(String(describing: value)) deficit")
         } else if value < 0 {
-            return "\(-value) surplus"
+            return String(localized: "\(String(describing: -value)) surplus")
         }
-        return "Balanced"
+        return String(localized: "Balanced")
     }
 
     var energyBalanceUnitText: String {
@@ -218,7 +218,7 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var workoutSubtitle: String {
-        workoutLast7Sessions.isEmpty ? "No Workouts" : "Last 7 Workouts"
+        workoutLast7Sessions.isEmpty ? String(localized: "No Workouts") : String(localized: "Last 7 Workouts")
     }
 
     var workoutLatestValueText: String {
@@ -246,7 +246,7 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var expenditureSubtitle: String {
-        "Last 7 Days"
+        String(localized: "Last 7 Days")
     }
 
     var expenditureLatestValueText: String {

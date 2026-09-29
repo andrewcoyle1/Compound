@@ -100,7 +100,7 @@ class FoodDefinitionPresenter {
                 // Creating is what closes this form. Silence leaves a filled-in form and a button
                 // that appears to do nothing.
                 router.showSimpleAlert(
-                    title: "Unable to Create Food",
+                    title: String(localized: "Unable to Create Food"),
                     subtitle: "Please check your internet connection and try again."
                 )
             }
@@ -129,7 +129,7 @@ class FoodDefinitionPresenter {
                 // Creating is what closes this form. Silence leaves a filled-in form and a button
                 // that appears to do nothing.
                 router.showSimpleAlert(
-                    title: "Unable to Create Food",
+                    title: String(localized: "Unable to Create Food"),
                     subtitle: "Please check your internet connection and try again."
                 )
             }

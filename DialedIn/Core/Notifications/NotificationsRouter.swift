@@ -6,6 +6,14 @@
 //
 
 @MainActor
-protocol NotificationsRouter: GlobalRouter { }
+protocol NotificationsRouter: GlobalRouter {
+    func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate)
+    func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate)
+    func showSocialProfileView(delegate: SocialProfileDelegate)
+    // MARK: - Sharing
+    func showSharedItemView(delegate: SharedItemDelegate)
+    // MARK: - Challenges
+    func showChallengeDetailView(delegate: ChallengeDetailDelegate)
+}
 
 extension CoreRouter: NotificationsRouter { }

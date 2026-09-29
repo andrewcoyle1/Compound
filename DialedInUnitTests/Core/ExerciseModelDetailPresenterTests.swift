@@ -32,6 +32,8 @@ struct ExerciseModelDetailPresenterTests {
             preferenceReads.append(templateId)
             return preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
         }
+
+        func deleteExerciseModel(exerciseId: String) async throws { }
     }
 
     /// Declared unguarded: the test target builds without `-DDEV`, so guarding it the way the
@@ -225,6 +227,22 @@ struct ExerciseModelDetailPresenterTests {
         #expect(screen.presenter.stats.heaviestSetKg == 120)
         #expect(screen.presenter.stats.repsAtHeaviestSet == 3)
         #expect(screen.presenter.stats.heaviestSetDate == day(0))
+    }
+
+    /// At the same top weight, more reps is the better set — whichever session or position it came
+    /// in. The first set at that weight used to win, so a later 100 × 5 read as 100 × 3.
+    @Test("Test At Equal Weight The Set With More Reps Is The Heaviest")
+    func testAtEqualWeightTheSetWithMoreRepsIsTheHeaviest() {
+        let screen = makeScreen(sessions: [
+            session(id: "s1", on: day(0), sets: [set(1, reps: 3, weightKg: 100)]),
+            session(id: "s2", on: day(7), sets: [set(1, reps: 4, weightKg: 100), set(2, reps: 5, weightKg: 100)])
+        ])
+
+        screen.presenter.onViewAppear(delegate: ExerciseModelDetailDelegate(exerciseModel: exerciseModel()))
+
+        #expect(screen.presenter.stats.heaviestSetKg == 100)
+        #expect(screen.presenter.stats.repsAtHeaviestSet == 5)
+        #expect(screen.presenter.stats.heaviestSetDate == day(7))
     }
 
     // MARK: - The subtitle

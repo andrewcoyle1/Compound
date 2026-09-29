@@ -23,7 +23,7 @@ extension CoreRouter: SetTrackerRowRouter {
             backgroundColor: .black.opacity(0.3),
             destination: {
                 CustomModalView(
-                    title: "Set Rest",
+                    title: String(localized: "Set Rest"),
                     subtitle: nil,
                     primaryButtonTitle: "Save",
                     primaryButtonAction: {

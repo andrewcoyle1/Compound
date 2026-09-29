@@ -210,11 +210,11 @@ enum NutritionDefinitionOption: CaseIterable, Hashable {
     var name: String {
         switch self {
         case .serving:
-            return "Serving"
+            return String(localized: "Serving")
         case .standardMass:
-            return "100 g"
+            return String(localized: "100 g")
         case .standardVolume:
-            return "100 ml"
+            return String(localized: "100 ml")
         }
     }
 }

@@ -13,6 +13,17 @@ struct GymProfilesView: View {
                 otherGymProfilesSection
             }
         }
+        .overlay {
+            if presenter.gymProfiles.isEmpty {
+                ContentUnavailableView {
+                    Label("No Gym Profiles", systemImage: "dumbbell")
+                } description: {
+                    Text("Add the gyms you train at and the equipment each one has.")
+                } actions: {
+                    Button("Add a Gym Profile") { presenter.onAddGymProfilePressed() }
+                }
+            }
+        }
         .navigationTitle("Gym Profiles")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -99,8 +110,8 @@ struct GymProfilesView: View {
 
     private func equipmentSubtitle(for profile: GymProfileModel) -> String {
         let count = profile.activeEquipmentCount
-        let pieceLabel = count == 1 ? "piece" : "pieces"
-        return "\(count) active \(pieceLabel) of equipment"
+        let pieceLabel = count == 1 ? String(localized: "piece") : String(localized: "pieces")
+        return String(localized: "\(String(describing: count)) active \(pieceLabel) of equipment")
     }
 }
 

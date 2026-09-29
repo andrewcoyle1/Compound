@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol ShortcutsRouter {
+protocol ShortcutsRouter: GlobalRouter {
     
 }
 

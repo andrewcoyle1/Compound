@@ -2,9 +2,11 @@ import SwiftUI
 
 struct FollowersListDelegate {
     let followers: [UserModel]
-    /// The screen is reached as "Followers" and as "People you both follow", so the title travels
-    /// with the list rather than being hardcoded to one of them.
+    /// The screen is reached as "Followers", "Following" and "People you both follow", so the title
+    /// travels with the list rather than being hardcoded to one of them.
     var title: String = "Followers"
+    /// Set only for the reader's own followers, whose rows can then be removed.
+    var canRemoveFollowers: Bool = false
 }
 
 struct FollowersListView: View {
@@ -19,12 +21,32 @@ struct FollowersListView: View {
                 ContentUnavailableView(
                     "No One Yet",
                     systemImage: "person.2",
-                    description: Text("When people follow this profile they will show up here.")
+                    description: Text("People will show up here once there are some.")
                 )
                 .removeListRowFormatting()
             } else {
-                ForEach(delegate.followers) { user in
-                    UserRowView(user: user)
+                ForEach(presenter.visibleFollowers(delegate.followers)) { user in
+                    UserRowView(user: user) {
+                        if presenter.showsFollowButton(for: user) {
+                            FollowButton(state: presenter.followState(for: user)) {
+                                presenter.onFollowButtonPressed(user: user)
+                            }
+                        }
+                    }
+                    .tappableBackground()
+                    .anyButton(.highlight) {
+                        presenter.onUserPressed(user: user)
+                    }
+                    .swipeActions {
+                        if delegate.canRemoveFollowers {
+                            // Not `.destructive`: that role animates the row away before the
+                            // confirmation has been answered.
+                            Button("Remove") {
+                                presenter.onRemoveFollowerPressed(user: user)
+                            }
+                            .tint(.red)
+                        }
+                    }
                 }
             }
         }

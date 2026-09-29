@@ -449,6 +449,7 @@ struct TrainingProgramManagementPresenterTests {
     private final class Interactor: SpyGlobalInteractor, TrainingProgramLibraryInteractor {
         var activeTrainingProgram: TrainingProgram?
         var trainingPrograms: [TrainingProgram] = []
+        var prebuiltPrograms: [TrainingProgram] = []
         var deleteError: Error?
         private(set) var activatedProgramIds: [String] = []
         private(set) var deletedProgramIds: [String] = []
@@ -471,12 +472,18 @@ struct TrainingProgramManagementPresenterTests {
         private(set) var alertTitles: [String] = []
 
         func showAlert(error: Error) { alertTitles.append("Error") }
-        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
+        private(set) var alertSubtitles: [String?] = []
+
+        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            alertTitles.append(title)
+            alertSubtitles.append(subtitle)
+        }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
         func showDevSettingsView() { shown.append("devSettings") }
         func showProgramSettingsView(program: Binding<TrainingProgram>) { shown.append("programSettings") }
         func showCreateProgramView(delegate: CreateProgramDelegate) { shown.append("createProgram") }
+        func showPrebuiltProgramDetailView(program: TrainingProgram) { shown.append("prebuilt:\(program.id)") }
 
         func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate) {
             shown.append("editProgram")
@@ -567,6 +574,23 @@ struct TrainingProgramManagementPresenterTests {
         #expect(screen.router.alertTitles == ["Unable to delete program"])
     }
 
+    /// Swiping a saved program asks first, and the question does not talk about scheduled workouts
+    /// that only the active program has.
+    @Test("Test Deleting A Saved Program Asks With Saved Program Copy")
+    func testDeletingASavedProgramAsksWithSavedProgramCopy() {
+        let push = TrainingTabFixture.program("Push Pull Legs", id: "ppl")
+        let upper = TrainingTabFixture.program("Upper Lower", id: "ul")
+        let screen = makeScreen(programs: [push, upper], active: push)
+
+        screen.presenter.showDeleteAlert(program: upper)
+        screen.presenter.showDeleteAlert(program: push)
+
+        #expect(screen.router.alertTitles == ["Delete Program", "Delete Program"])
+        #expect(screen.router.alertSubtitles.first == "Delete 'Upper Lower'? This can't be undone.")
+        #expect(screen.router.alertSubtitles.last??.contains("active program") == true)
+        #expect(screen.interactor.deletedProgramIds.isEmpty)
+    }
+
     @Test("Test Pressing A Saved Program Opens That Program For Editing")
     func testPressingASavedProgramOpensThatProgramForEditing() {
         let screen = makeScreen()
@@ -642,6 +666,7 @@ struct TrainingProgramGroupPresenterTests {
     private final class Interactor: SpyGlobalInteractor, TrainingProgramDisclosureGroupInteractor { }
 
     private final class Router: TrainingProgramDisclosureGroupRouter {
+        func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var editDelegates: [EditTrainingProgramDelegate] = []
 

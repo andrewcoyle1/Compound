@@ -107,13 +107,13 @@ struct RecipePreparationView: View {
         Group {
             LabeledTextFieldWithUnit<TimeUnit>(
                 label: "Preparation Time",
-                prompt: "Enter preparation time",
+                prompt: String(localized: "Enter preparation time"),
                 value: $presenter.prepTime,
                 unit: TimeUnit.minute
             )
             LabeledTextFieldWithUnit<TimeUnit>(
                 label: "Cooking Time",
-                prompt: "Enter cooking time",
+                prompt: String(localized: "Enter cooking time"),
                 value: $presenter.cookTime,
                 unit: TimeUnit.minute
             )
@@ -123,7 +123,7 @@ struct RecipePreparationView: View {
     private var linkSection: some View {
         LabeledTextField(
             label: "Link",
-            prompt: "Enter link to the recipe",
+            prompt: String(localized: "Enter link to the recipe"),
             text: $presenter.sourceURL
         )
     }

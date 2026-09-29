@@ -345,6 +345,7 @@ struct BodyMeasurementDetailPresenterTests {
         func showBodyRatioView(delegate: BodyRatioDelegate, themeColor: Color?) { }
         func showBodyMeasurementDetailView(kind: BodyMeasurementKind, themeColor: Color?) { }
         func showLogMeasurementView(kind: BodyMeasurementKind) { loggedKinds.append(kind) }
+        func showProgressPhotosView() { }
     }
 
     private struct Screen {

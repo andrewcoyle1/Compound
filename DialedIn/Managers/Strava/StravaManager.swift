@@ -147,9 +147,9 @@ enum StravaError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL: return "Invalid Strava authorization URL."
-        case .missingAuthCode: return "No authorization code was returned from Strava."
-        case .notConnected: return "Not connected to Strava."
+        case .invalidURL: return String(localized: "Invalid Strava authorization URL.")
+        case .missingAuthCode: return String(localized: "No authorization code was returned from Strava.")
+        case .notConnected: return String(localized: "Not connected to Strava.")
         }
     }
 }

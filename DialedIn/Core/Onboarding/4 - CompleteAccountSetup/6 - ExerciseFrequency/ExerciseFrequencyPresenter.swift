@@ -75,15 +75,15 @@ enum ExerciseFrequency: String, CaseIterable, Codable {
     var description: String {
         switch self {
         case .never:
-            return "Never"
+            return String(localized: "Never")
         case .oneToTwo:
-            return "1-2 times per week"
+            return String(localized: "1-2 times per week")
         case .threeToFour:
-            return "3-4 times per week"
+            return String(localized: "3-4 times per week")
         case .fiveToSix:
-            return "5-6 times per week"
+            return String(localized: "5-6 times per week")
         case .daily:
-            return "Daily"
+            return String(localized: "Daily")
         }
     }
 }

@@ -88,26 +88,6 @@ struct FoodManagerTests {
         #expect(manager.foods.map(\.id) == ["f2"])
     }
 
-    @Test("Test Deleting Every Food Empties The Library")
-    func testDeletingEveryFoodEmptiesTheLibrary() async throws {
-        let manager = await TestManagers.signedInFoodManager(foods: twoFoods)
-
-        await manager.deleteAllFoods()
-
-        #expect(await TestManagers.eventually { manager.foods.isEmpty })
-    }
-
-    /// `deleteAllFoods` swallows every per-food error, so a food that cannot be deleted leaves no
-    /// trace at all. Deleting nothing must at least not be an error in itself.
-    @Test("Test Deleting Every Food From An Empty Library Does Nothing")
-    func testDeletingEveryFoodFromAnEmptyLibraryDoesNothing() async {
-        let manager = await TestManagers.signedInFoodManager(foods: [])
-
-        await manager.deleteAllFoods()
-
-        #expect(manager.foods.isEmpty)
-    }
-
     // MARK: - Nutrients
 
     /// A saved food's nutrients are what every calorie figure in the app is computed from, so the

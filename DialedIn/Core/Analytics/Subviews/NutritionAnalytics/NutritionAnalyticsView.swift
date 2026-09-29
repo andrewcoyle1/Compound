@@ -51,10 +51,10 @@ struct NutritionAnalyticsView: View {
         let caloriesColor = Color.blue
         let fatColor = MacroProgressChart.fatColor
         let carbsColor = MacroProgressChart.carbsColor
-        return breakdownSection(header: "Calories & Macros") {
+        return breakdownSection(header: String(localized: "Calories & Macros")) {
             AnalyticsCard(
-                title: "Macros",
-                subtitle: presenter.macrosLast7Days.isEmpty ? "No Data" : "Last 7 Days",
+                title: String(localized: "Macros"),
+                subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Last 7 Days"),
                 subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : Int(presenter.macrosAverageCalories).formatted(),
                 subsubsubtitle: "kcal",
                 themeColor: proteinColor,
@@ -70,25 +70,25 @@ struct NutritionAnalyticsView: View {
                 presenter.onMacrosPressed(themeColor: proteinColor)
             }
             macroCard(
-                title: "Calories",
+                title: String(localized: "Calories"),
                 card: MacroCard(value: presenter.caloriesCurrent, target: presenter.caloriesTarget, maxValue: presenter.caloriesMax, unit: "kcal"),
                 color: caloriesColor,
                 action: { presenter.onCaloriesPressed(themeColor: caloriesColor) }
             )
             macroCard(
-                title: "Protein",
+                title: String(localized: "Protein"),
                 card: MacroCard(value: presenter.proteinCurrent, target: presenter.proteinTarget, maxValue: presenter.proteinMax, unit: "g"),
                 color: proteinColor,
                 action: { presenter.onProteinPressed(themeColor: proteinColor) }
             )
             macroCard(
-                title: "Fat",
+                title: String(localized: "Fat"),
                 card: MacroCard(value: presenter.fatCurrent, target: presenter.fatTarget, maxValue: presenter.fatMax, unit: "g"),
                 color: fatColor,
                 action: { presenter.onFatPressed(themeColor: fatColor) }
             )
             macroCard(
-                title: "Carbs",
+                title: String(localized: "Carbs"),
                 card: MacroCard(value: presenter.carbsCurrent, target: presenter.carbsTarget, maxValue: presenter.carbsMax, unit: "g"),
                 color: carbsColor,
                 action: { presenter.onCarbsPressed(themeColor: carbsColor) }
@@ -116,7 +116,7 @@ struct NutritionAnalyticsView: View {
     ) -> some View {
         AnalyticsCard(
             title: title,
-            subtitle: presenter.dailyTotals != nil ? "Today" : "No Data",
+            subtitle: presenter.dailyTotals != nil ? String(localized: "Today") : String(localized: "No Data"),
             subsubtitle: presenter.dailyTotals != nil
                 ? card.value.formatted(.number.precision(.fractionLength(card.decimals)))
                 : "--",
@@ -161,7 +161,7 @@ struct NutritionAnalyticsView: View {
     ) -> some View {
         let card = AnalyticsCard(
             title: title,
-            subtitle: isTracked ? "Today" : "Not Tracked",
+            subtitle: isTracked ? String(localized: "Today") : String(localized: "Not Tracked"),
             subsubtitle: isTracked ? presenter.formatBreakdown(value, unit: unit) : "--",
             subsubsubtitle: unit,
             themeColor: color,
@@ -188,84 +188,84 @@ struct NutritionAnalyticsView: View {
     }
 
     private var carbBreakdownSection: some View {
-        breakdownSection(header: "Carb Breakdown") {
-            breakdownCard(title: "Fiber", metric: .fiber, value: presenter.dailyBreakdown?.fiberGrams, unit: "g", color: MacroProgressChart.carbsColor)
-            breakdownCard(title: "Net (Non-fiber)", metric: .netCarbs, value: presenter.dailyBreakdown?.netCarbsGrams, unit: "g", color: MacroProgressChart.carbsColor)
-            breakdownCard(title: "Starch", metric: .starch, isTracked: false, unit: "g", color: MacroProgressChart.carbsColor)
-            breakdownCard(title: "Sugars", metric: .sugars, value: presenter.dailyBreakdown?.sugarGrams, unit: "g", color: MacroProgressChart.carbsColor)
-            breakdownCard(title: "Sugars Added", metric: .sugarsAdded, isTracked: false, unit: "g", color: MacroProgressChart.carbsColor)
+        breakdownSection(header: String(localized: "Carb Breakdown")) {
+            breakdownCard(title: String(localized: "Fiber"), metric: .fiber, value: presenter.dailyBreakdown?.fiberGrams, unit: "g", color: MacroProgressChart.carbsColor)
+            breakdownCard(title: String(localized: "Net (Non-fiber)"), metric: .netCarbs, value: presenter.dailyBreakdown?.netCarbsGrams, unit: "g", color: MacroProgressChart.carbsColor)
+            breakdownCard(title: String(localized: "Starch"), metric: .starch, isTracked: false, unit: "g", color: MacroProgressChart.carbsColor)
+            breakdownCard(title: String(localized: "Sugars"), metric: .sugars, value: presenter.dailyBreakdown?.sugarGrams, unit: "g", color: MacroProgressChart.carbsColor)
+            breakdownCard(title: String(localized: "Sugars Added"), metric: .sugarsAdded, isTracked: false, unit: "g", color: MacroProgressChart.carbsColor)
         }
     }
     
     private var fatBreakdownSection: some View {
-        breakdownSection(header: "Fat Breakdown") {
-            breakdownCard(title: "Monounsaturated", metric: .fatMono, value: presenter.dailyBreakdown?.fatMonounsaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Polyunsaturated", metric: .fatPoly, value: presenter.dailyBreakdown?.fatPolyunsaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Omega-3", metric: .omega3, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Omega-3 ALA", metric: .omega3ALA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Omega-3 DHA", metric: .omega3DHA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Omega-3 EPA", metric: .omega3EPA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Omega-6", metric: .omega6, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Saturated", metric: .fatSaturated, value: presenter.dailyBreakdown?.fatSaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
-            breakdownCard(title: "Trans Fat", metric: .transFat, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+        breakdownSection(header: String(localized: "Fat Breakdown")) {
+            breakdownCard(title: String(localized: "Monounsaturated"), metric: .fatMono, value: presenter.dailyBreakdown?.fatMonounsaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Polyunsaturated"), metric: .fatPoly, value: presenter.dailyBreakdown?.fatPolyunsaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Omega-3"), metric: .omega3, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Omega-3 ALA"), metric: .omega3ALA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Omega-3 DHA"), metric: .omega3DHA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Omega-3 EPA"), metric: .omega3EPA, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Omega-6"), metric: .omega6, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Saturated"), metric: .fatSaturated, value: presenter.dailyBreakdown?.fatSaturatedGrams, unit: "g", color: MacroProgressChart.fatColor)
+            breakdownCard(title: String(localized: "Trans Fat"), metric: .transFat, isTracked: false, unit: "g", color: MacroProgressChart.fatColor)
         }
     }
     
     private var proteinBreakdownSection: some View {
-        breakdownSection(header: "Protein Breakdown") {
-            breakdownCard(title: "Cysteine", metric: .cysteine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Histidine", metric: .histidine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Isoleucine", metric: .isoleucine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Leucine", metric: .leucine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Lysine", metric: .lysine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Methionine", metric: .methionine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Phenylalanine", metric: .phenylalanine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Threonine", metric: .threonine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Tryptophan", metric: .tryptophan, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Tyrosine", metric: .tyrosine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
-            breakdownCard(title: "Valine", metric: .valine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+        breakdownSection(header: String(localized: "Protein Breakdown")) {
+            breakdownCard(title: String(localized: "Cysteine"), metric: .cysteine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Histidine"), metric: .histidine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Isoleucine"), metric: .isoleucine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Leucine"), metric: .leucine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Lysine"), metric: .lysine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Methionine"), metric: .methionine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Phenylalanine"), metric: .phenylalanine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Threonine"), metric: .threonine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Tryptophan"), metric: .tryptophan, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Tyrosine"), metric: .tyrosine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
+            breakdownCard(title: String(localized: "Valine"), metric: .valine, isTracked: false, unit: "g", color: MacroProgressChart.proteinColor)
         }
     }
     
     private var vitaminBreakdownSection: some View {
-        breakdownSection(header: "Vitamin Breakdown") {
-            breakdownCard(title: "B1, Thiamine", metric: .thiamin, value: presenter.dailyBreakdown?.thiaminMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "B2, Riboflavin", metric: .riboflavin, value: presenter.dailyBreakdown?.riboflavinMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "B3, Niacin", metric: .niacin, value: presenter.dailyBreakdown?.niacinMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "B5, Pantothenic Acid", metric: .pantothenicAcid, value: presenter.dailyBreakdown?.pantothenicAcidMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "B6, Pyridoxine", metric: .vitaminB6, value: presenter.dailyBreakdown?.vitaminB6Mg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "B12, Cobalamin", metric: .vitaminB12, value: presenter.dailyBreakdown?.vitaminB12Mcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Folate", metric: .folate, value: presenter.dailyBreakdown?.folateMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Vitamin A", metric: .vitaminA, value: presenter.dailyBreakdown?.vitaminAMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Vitamin C", metric: .vitaminC, value: presenter.dailyBreakdown?.vitaminCMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Vitamin D", metric: .vitaminD, value: presenter.dailyBreakdown?.vitaminDMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Vitamin E", metric: .vitaminE, value: presenter.dailyBreakdown?.vitaminEMg, unit: "mg", color: MacroProgressChart.vitaminColor)
-            breakdownCard(title: "Vitamin K", metric: .vitaminK, value: presenter.dailyBreakdown?.vitaminKMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
+        breakdownSection(header: String(localized: "Vitamin Breakdown")) {
+            breakdownCard(title: String(localized: "B1, Thiamine"), metric: .thiamin, value: presenter.dailyBreakdown?.thiaminMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "B2, Riboflavin"), metric: .riboflavin, value: presenter.dailyBreakdown?.riboflavinMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "B3, Niacin"), metric: .niacin, value: presenter.dailyBreakdown?.niacinMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "B5, Pantothenic Acid"), metric: .pantothenicAcid, value: presenter.dailyBreakdown?.pantothenicAcidMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "B6, Pyridoxine"), metric: .vitaminB6, value: presenter.dailyBreakdown?.vitaminB6Mg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "B12, Cobalamin"), metric: .vitaminB12, value: presenter.dailyBreakdown?.vitaminB12Mcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Folate"), metric: .folate, value: presenter.dailyBreakdown?.folateMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Vitamin A"), metric: .vitaminA, value: presenter.dailyBreakdown?.vitaminAMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Vitamin C"), metric: .vitaminC, value: presenter.dailyBreakdown?.vitaminCMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Vitamin D"), metric: .vitaminD, value: presenter.dailyBreakdown?.vitaminDMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Vitamin E"), metric: .vitaminE, value: presenter.dailyBreakdown?.vitaminEMg, unit: "mg", color: MacroProgressChart.vitaminColor)
+            breakdownCard(title: String(localized: "Vitamin K"), metric: .vitaminK, value: presenter.dailyBreakdown?.vitaminKMcg, unit: "mcg", color: MacroProgressChart.vitaminColor)
         }
     }
     
     private var mineralBreakdownSection: some View {
-        breakdownSection(header: "Mineral Breakdown") {
-            breakdownCard(title: "Calcium", metric: .calcium, value: presenter.dailyBreakdown?.calciumMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Copper", metric: .copper, value: presenter.dailyBreakdown?.copperMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Iron", metric: .iron, value: presenter.dailyBreakdown?.ironMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Magnesium", metric: .magnesium, value: presenter.dailyBreakdown?.magnesiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Manganese", metric: .manganese, value: presenter.dailyBreakdown?.manganeseMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Phosphorus", metric: .phosphorus, value: presenter.dailyBreakdown?.phosphorusMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Potassium", metric: .potassium, value: presenter.dailyBreakdown?.potassiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Selenium", metric: .selenium, value: presenter.dailyBreakdown?.seleniumMcg, unit: "mcg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Sodium", metric: .sodium, value: presenter.dailyBreakdown?.sodiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
-            breakdownCard(title: "Zinc", metric: .zinc, value: presenter.dailyBreakdown?.zincMg, unit: "mg", color: MacroProgressChart.mineralColor)
+        breakdownSection(header: String(localized: "Mineral Breakdown")) {
+            breakdownCard(title: String(localized: "Calcium"), metric: .calcium, value: presenter.dailyBreakdown?.calciumMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Copper"), metric: .copper, value: presenter.dailyBreakdown?.copperMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Iron"), metric: .iron, value: presenter.dailyBreakdown?.ironMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Magnesium"), metric: .magnesium, value: presenter.dailyBreakdown?.magnesiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Manganese"), metric: .manganese, value: presenter.dailyBreakdown?.manganeseMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Phosphorus"), metric: .phosphorus, value: presenter.dailyBreakdown?.phosphorusMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Potassium"), metric: .potassium, value: presenter.dailyBreakdown?.potassiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Selenium"), metric: .selenium, value: presenter.dailyBreakdown?.seleniumMcg, unit: "mcg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Sodium"), metric: .sodium, value: presenter.dailyBreakdown?.sodiumMg, unit: "mg", color: MacroProgressChart.mineralColor)
+            breakdownCard(title: String(localized: "Zinc"), metric: .zinc, value: presenter.dailyBreakdown?.zincMg, unit: "mg", color: MacroProgressChart.mineralColor)
         }
     }
     
     private var otherBreakdownSection: some View {
-        breakdownSection(header: "Other Breakdown") {
-            breakdownCard(title: "Alcohol", metric: .alcohol, isTracked: false, unit: "g", color: MacroProgressChart.otherColor)
-            breakdownCard(title: "Caffeine", metric: .caffeine, value: presenter.dailyBreakdown?.caffeineMg, unit: "mg", color: MacroProgressChart.otherColor)
-            breakdownCard(title: "Cholesterol", metric: .cholesterol, value: presenter.dailyBreakdown?.cholesterolMg, unit: "mg", color: MacroProgressChart.otherColor)
-            breakdownCard(title: "Choline", metric: .choline, isTracked: false, unit: "mg", color: MacroProgressChart.otherColor)
-            breakdownCard(title: "Water", metric: .water, isTracked: false, unit: "g", color: MacroProgressChart.otherColor)
+        breakdownSection(header: String(localized: "Other Breakdown")) {
+            breakdownCard(title: String(localized: "Alcohol"), metric: .alcohol, isTracked: false, unit: "g", color: MacroProgressChart.otherColor)
+            breakdownCard(title: String(localized: "Caffeine"), metric: .caffeine, value: presenter.dailyBreakdown?.caffeineMg, unit: "mg", color: MacroProgressChart.otherColor)
+            breakdownCard(title: String(localized: "Cholesterol"), metric: .cholesterol, value: presenter.dailyBreakdown?.cholesterolMg, unit: "mg", color: MacroProgressChart.otherColor)
+            breakdownCard(title: String(localized: "Choline"), metric: .choline, isTracked: false, unit: "mg", color: MacroProgressChart.otherColor)
+            breakdownCard(title: String(localized: "Water"), metric: .water, isTracked: false, unit: "g", color: MacroProgressChart.otherColor)
         }
     }
 }

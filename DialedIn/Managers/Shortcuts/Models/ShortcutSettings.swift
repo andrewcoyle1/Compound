@@ -73,16 +73,16 @@ enum QuickAction: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .startWorkout:    return "Start Workout"
-        case .logMeal:         return "Log Meal"
-        case .logWeight:       return "Log Weight"
-        case .logMeasurement:  return "Log Measurement"
-        case .addExercise:     return "New Exercise"
-        case .newWorkout:      return "New Workout"
-        case .newFood:         return "New Food"
-        case .newRecipe:       return "New Recipe"
-        case .browseExercises: return "Exercises"
-        case .browseRecipes:   return "Recipes"
+        case .startWorkout:    return String(localized: "Start Workout")
+        case .logMeal:         return String(localized: "Log Meal")
+        case .logWeight:       return String(localized: "Log Weight")
+        case .logMeasurement:  return String(localized: "Log Measurement")
+        case .addExercise:     return String(localized: "New Exercise")
+        case .newWorkout:      return String(localized: "New Workout")
+        case .newFood:         return String(localized: "New Food")
+        case .newRecipe:       return String(localized: "New Recipe")
+        case .browseExercises: return String(localized: "Exercises")
+        case .browseRecipes:   return String(localized: "Recipes")
         }
     }
 

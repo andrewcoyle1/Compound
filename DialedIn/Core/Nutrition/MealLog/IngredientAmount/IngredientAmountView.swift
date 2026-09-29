@@ -24,8 +24,16 @@ struct IngredientAmountView: View {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)
                         .keyboardType(.decimalPad)
-                    Text(presenter.unitLabel(ingredient: delegate.ingredient))
-                        .foregroundStyle(.secondary)
+                    if delegate.ingredient.servingUnits.isEmpty {
+                        Text(presenter.unitLabel(ingredient: delegate.ingredient))
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ServingUnitPicker(
+                            baseLabel: delegate.ingredient.loggedUnitLabel,
+                            units: delegate.ingredient.servingUnits,
+                            selection: $presenter.selectedUnit
+                        )
+                    }
                 }
             }
             

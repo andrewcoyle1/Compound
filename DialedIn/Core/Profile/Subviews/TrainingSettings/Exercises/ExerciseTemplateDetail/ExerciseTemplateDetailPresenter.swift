@@ -46,9 +46,9 @@ class ExerciseModelDetailPresenter {
     var performedSubtitle: String {
         guard let latest = stats.mostRecentFirst.first else { return "No history yet" }
         let times = stats.performances.count
-        let noun = times == 1 ? "time" : "times"
+        let noun = times == 1 ? String(localized: "time") : String(localized: "times")
         let date = latest.date.formatted(date: .abbreviated, time: .omitted)
-        return "Performed \(times) \(noun) · last \(date)"
+        return String(localized: "Performed \(String(describing: times)) \(noun) · last \(date)")
     }
 
     /// The unit the charts and figures are in.
@@ -124,6 +124,40 @@ class ExerciseModelDetailPresenter {
         
     func onDismissPressed() {
         router.dismissScreen()
+    }
+
+    private(set) var isDeleting: Bool = false
+
+    /// Only the author's own exercises can go; the seeded library is shared by everyone.
+    func canDelete(exercise: ExerciseModel) -> Bool {
+        !exercise.isSystemExercise && exercise.authorId == currentUser?.userId
+    }
+
+    func showDeleteConfirmation(exercise: ExerciseModel) {
+        router.showAlert(title: String(localized: "Delete Exercise"), subtitle: String(localized: "Are you sure you want to delete '\(exercise.name)'? This action cannot be undone."), buttons: {
+            AnyView(
+                HStack {
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            await self.deleteExercise(exercise, onDismiss: { self.router.dismissScreen() })
+                        }
+                    }
+                    Button("Cancel", role: .cancel) {}
+                }
+            )
+        })
+    }
+
+    /// `onDismiss` is the router's dismiss in the app; a parameter so a test can see it happen.
+    func deleteExercise(_ exercise: ExerciseModel, onDismiss: @escaping () -> Void) async {
+        isDeleting = true
+        do {
+            try await interactor.deleteExerciseModel(exerciseId: exercise.id)
+            onDismiss()
+        } catch {
+            isDeleting = false
+            router.showSimpleAlert(title: String(localized: "Failed to delete exercise"), subtitle: String(localized: "Please try again later"))
+        }
     }
     
 #if DEV || MOCK

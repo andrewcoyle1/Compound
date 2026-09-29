@@ -47,7 +47,7 @@ class SetTrackerPresenter {
 
     func deleteExercise(_ exercise: Binding<WorkoutExerciseModel>, onDelete: @escaping @MainActor () -> Void) {
         let name = exercise.wrappedValue.name
-        router.showAlert(title: "Delete Exercise?", subtitle: "Remove '\(name)' from this workout?") {
+        router.showAlert(title: String(localized: "Delete Exercise?"), subtitle: String(localized: "Remove '\(name)' from this workout?")) {
             AnyView(VStack(spacing: 8) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) { onDelete() }
@@ -103,10 +103,10 @@ class SetTrackerPresenter {
         // No group — show all other exercises to pair with
         let available = allWorkoutExercises.filter { $0.id != current.id }
         guard !available.isEmpty else {
-            router.showSimpleAlert(title: "No Exercises Available", subtitle: "Add more exercises to create a superset or circuit.")
+            router.showSimpleAlert(title: String(localized: "No Exercises Available"), subtitle: String(localized: "Add more exercises to create a superset or circuit."))
             return
         }
-        router.showAlert(title: "Add to Group", subtitle: "Pair '\(current.name)' with:") {
+        router.showAlert(title: String(localized: "Add to Group"), subtitle: String(localized: "Pair '\(current.name)' with:")) {
             AnyView(VStack(spacing: 8) {
                 ForEach(available, id: \.id) { partner in
                     let partnerGroupId = partner.supersetGroupId
@@ -220,33 +220,33 @@ class SetTrackerPresenter {
         switch trackingMode {
         case .weightReps:
             if let weight = set.weightKg, weight < 0 {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Weight must be a non-negative number")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Weight must be a non-negative number"))
                 return false
             }
             guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Reps must be a positive number")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
                 return false
             }
             return true
         case .repsOnly:
             guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Reps must be a positive number")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
                 return false
             }
             return true
         case .timeOnly:
             guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Duration must be a positive time")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
                 return false
             }
             return true
         case .distanceTime:
             guard let distance = set.distanceMeters, distance > 0 else {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Distance must be a positive number")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Distance must be a positive number"))
                 return false
             }
             guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: "Invalid Set Data", subtitle: "Duration must be a positive time")
+                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
                 return false
             }
             return true
@@ -305,8 +305,8 @@ class SetTrackerPresenter {
         guard newUnit != currentUnit else { return }
 
         router.showAlert(
-            title: "Change Weight Unit",
-            subtitle: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?",
+            title: String(localized: "Change Weight Unit"),
+            subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
                     VStack(spacing: 8) {
@@ -329,8 +329,8 @@ class SetTrackerPresenter {
         guard newUnit != currentUnit else { return }
 
         router.showAlert(
-            title: "Change Distance Unit",
-            subtitle: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?",
+            title: String(localized: "Change Distance Unit"),
+            subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
                     VStack(spacing: 8) {

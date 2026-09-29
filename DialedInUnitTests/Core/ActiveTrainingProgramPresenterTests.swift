@@ -34,7 +34,10 @@ struct ActiveTrainingProgramPresenterTests {
             activeSession = nil
         }
 
+        var deleteError: Error?
+
         func deleteTrainingProgram(programId: String) async throws {
+            if let deleteError { throw deleteError }
             deletedProgramIds.append(programId)
         }
     }
@@ -47,6 +50,9 @@ struct ActiveTrainingProgramPresenterTests {
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("sessionDetail") }
         func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { shown.append("templateDetail") }
         func showWorkoutTrackerView() { shown.append("tracker") }
+
+        private(set) var alertTitles: [String] = []
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -428,5 +434,20 @@ struct ActiveTrainingProgramPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["ActiveTrainingProgramView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["ActiveTrainingProgramView_Disappear"])
+    }
+
+    /// Deleting was `try?`-ed inside the confirmation button, so a refused delete left the program
+    /// in place with no word why.
+    @Test("Test A Failed Program Delete Alerts Once")
+    func testAFailedProgramDeleteAlertsOnce() async {
+        let interactor = Interactor()
+        interactor.deleteError = URLError(.notConnectedToInternet)
+        let router = Router()
+        let presenter = ActiveTrainingProgramPresenter(interactor: interactor, router: router)
+
+        await presenter.deleteTrainingProgram(programId: "program-1")
+
+        #expect(router.alertTitles == ["Unable to Delete Program"])
+        #expect(interactor.trackedEventNames == ["ActiveTrainingProgramView_DeleteProgram_Fail"])
     }
 }

@@ -41,8 +41,8 @@ class EnergyBalancePresenter {
         guard let userId = currentUser?.userId else { return }
         if let meal = interactor.draftMeal {
             router.showAlert(
-                title: "Unable to add new meal",
-                subtitle: "You already have an draft meal.",
+                title: String(localized: "Unable to add new meal"),
+                subtitle: String(localized: "You already have an draft meal."),
                 buttons: {
                     AnyView(
                         VStack {
@@ -96,6 +96,7 @@ class EnergyBalancePresenter {
         let startDayKey = startDate.dayKey
         let endDayKey = startOfToday.dayKey
 
+        // Silent: local read for a chart; no data draws an empty chart.
         let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
 
         var entries: [EnergyBalanceEntry] = []
@@ -144,7 +145,7 @@ extension EnergyBalancePresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Energy Balance",
+            title: String(localized: "Energy Balance"),
             analyticsName: "EnergyBalanceView",
             yAxisSuffix: " kcal",
             seriesNames: ["Intake", "Expenditure"],

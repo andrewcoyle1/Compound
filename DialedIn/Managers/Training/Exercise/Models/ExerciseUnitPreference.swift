@@ -23,8 +23,8 @@ enum ExerciseWeightUnit: String, Codable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .kilograms: return "Kilograms"
-        case .pounds: return "Pounds"
+        case .kilograms: return String(localized: "Kilograms")
+        case .pounds: return String(localized: "Pounds")
         }
     }
 }
@@ -42,8 +42,8 @@ enum ExerciseDistanceUnit: String, Codable, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .meters: return "Meters"
-        case .miles: return "Miles"
+        case .meters: return String(localized: "Meters")
+        case .miles: return String(localized: "Miles")
         }
     }
 }

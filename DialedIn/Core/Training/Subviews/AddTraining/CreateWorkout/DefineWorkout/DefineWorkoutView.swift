@@ -82,7 +82,7 @@ struct DefineWorkoutView: View {
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
                                 
-                                Text("\(summary.exerciseCount) \(summary.exerciseCount == 1 ? "exercise" : "exercises")")
+                                Text("\(summary.exerciseCount) \(summary.exerciseCount == 1 ? String(localized: "exercise") : String(localized: "exercises"))")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)

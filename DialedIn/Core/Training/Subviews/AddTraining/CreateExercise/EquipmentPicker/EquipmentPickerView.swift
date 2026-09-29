@@ -42,7 +42,7 @@ struct EquipmentPickerView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .searchable(text: $searchQuery, prompt: "Filter equipment by name")
+        .searchable(text: $searchQuery, prompt: String(localized: "Filter equipment by name"))
         .toolbar {
             toolbarContent
         }

@@ -80,7 +80,7 @@ class AddMealPresenter {
         do {
             try interactor.updateDraftMeal(mealLog)
         } catch {
-            router.showSimpleAlert(title: "Unable to Save Progress", subtitle: "We were unable to save your meal. Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your meal. Please try again."))
         }
     }
 
@@ -97,7 +97,7 @@ class AddMealPresenter {
                 // Saving is what dismisses this screen. Without this the meal is simply still
                 // sitting there, unlogged, with nothing to say the save was even attempted.
                 router.showSimpleAlert(
-                    title: "Unable to Save Meal",
+                    title: String(localized: "Unable to Save Meal"),
                     subtitle: "Please check your internet connection and try again."
                 )
             }
@@ -119,6 +119,7 @@ class AddMealPresenter {
     var plateFat: Double { mealLog.totalFatGrams }
 
     private var committedDailyTotals: DailyMacroTarget? {
+        // Silent: computed local read for the preview totals.
         try? interactor.getDailyTotals(dayKey: mealLog.dayKey)
     }
 
@@ -165,7 +166,7 @@ class AddMealPresenter {
             notes: mealLog.notes
         )
     }
-    var scopeLabel: String { nutritionScope == .plate ? "in plate" : "today" }
+    var scopeLabel: String { nutritionScope == .plate ? String(localized: "in plate") : String(localized: "today") }
 
     // MARK: - Nutrient Breakdown
 
@@ -185,6 +186,7 @@ class AddMealPresenter {
         let plate = mealLog.totalNutrients
         guard nutritionScope == .day else { return plate }
 
+        // Silent: local read for a derived hint; empty is the fallback.
         let logged = (try? interactor.getMeals(for: mealLog.dayKey)) ?? []
         return logged
             .filter { $0.mealId != mealLog.mealId }

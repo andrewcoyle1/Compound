@@ -15,8 +15,8 @@ enum BodyRegion: String, CaseIterable, DataSyncModelProtocol {
     
     var name: String {
         switch self {
-        case .upperBody: return "Upper Body"
-        case .lowerBody: return "Lower Body"
+        case .upperBody: return String(localized: "Upper Body")
+        case .lowerBody: return String(localized: "Lower Body")
         }
     }
 }

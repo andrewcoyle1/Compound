@@ -60,12 +60,6 @@ class BodyMeasurementsManager {
         try await bodyMeasurementsSyncEngine.deleteDocument(id: entryId)
     }
 
-    func deleteAllWeightEntriesForUser() async throws {
-        for entry in self.bodyMeasurements {
-            try await bodyMeasurementsSyncEngine.deleteDocument(id: entry.id)
-        }
-    }
-
 #if canImport(HealthKit)
     // MARK: HealthKit Sync
     func syncWithHealthKit(userId: String) async {
@@ -152,6 +146,7 @@ class BodyMeasurementsManager {
     ) async -> Date? {
         var newestDate = lastSync
         for sample in consolidatedSamples {
+            // Safe: `newestDate == nil ||` short-circuits before the unwrap.
             if newestDate == nil || sample.date > newestDate! {
                 newestDate = sample.date
             }
@@ -213,6 +208,7 @@ class BodyMeasurementsManager {
     ) async -> Date? {
         var newestDate = since
         for sample in consolidatedSamples {
+            // Safe: `newestDate == nil ||` short-circuits before the unwrap.
             if newestDate == nil || sample.date > newestDate! {
                 newestDate = sample.date
             }

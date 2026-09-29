@@ -14,7 +14,7 @@ struct EditDayOrderView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(plan.name)
                             .font(.subheadline)
-                        Text(plan.exercises.isEmpty ? "Rest" : "Workout")
+                        Text(plan.exercises.isEmpty ? String(localized: "Rest") : String(localized: "Workout"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }

@@ -27,6 +27,11 @@ struct TrainingProgramDisclosureGroupView: View {
                 .anyButton {
                     presenter.onSavedProgramPressed(delegate.trainingProgram)
                 }
+                .contextMenu {
+                    Button("Share with Friends", systemImage: "paperplane") {
+                        presenter.onSharePressed(delegate.trainingProgram)
+                    }
+                }
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)

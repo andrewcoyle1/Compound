@@ -84,6 +84,9 @@ struct GymProfileView: View {
             if !presenter.filteredCableMachines.isEmpty || !presenter.filteredPlateLoadedMachines.isEmpty || !presenter.filteredPinLoadedMachines.isEmpty {
                 GymProfileMachineSectionsView(presenter: $presenter)
             }
+            if presenter.hasNoMatchingEquipment {
+                ContentUnavailableView.search(text: presenter.searchQuery)
+            }
         }
         .scrollIndicators(.hidden)
         .ignoresSafeArea(edges: .top)
@@ -95,7 +98,7 @@ struct GymProfileView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .searchable(text: $presenter.searchQuery, prompt: "Filter equipment by name")
+        .searchable(text: $presenter.searchQuery, prompt: String(localized: "Filter equipment by name"))
         .toolbar {
             toolbarContent
         }
@@ -485,7 +488,7 @@ struct GymProfileView: View {
             } label: {
                 Image(systemName: presenter.gymProfile.imageUrl == nil ? "photo.badge.plus" : "photo.badge.checkmark")
             }
-            .accessibilityLabel(presenter.gymProfile.imageUrl == nil ? "Add gym photo" : "Change gym photo")
+            .accessibilityLabel(presenter.gymProfile.imageUrl == nil ? String(localized: "Add gym photo") : String(localized: "Change gym photo"))
         }
     }
 
@@ -531,7 +534,7 @@ private struct GymProfileMachineSectionsView: View {
                             value: { $0.minWeight },
                             unit: { $0.unit },
                             formatter: {
-                                "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \($0.unit.abbreviation), \(String(format: "%g", $0.increment)) \($0.unit.abbreviation) increments"
+                                String(localized: "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \(String(describing: $0.unit.abbreviation)), \(String(format: "%g", $0.increment)) \(String(describing: $0.unit.abbreviation)) increments")
                             },
                             separator: "\n"
                         )))
@@ -611,7 +614,7 @@ private struct GymProfileMachineSectionsView: View {
                             value: { $0.minWeight },
                             unit: { $0.unit },
                             formatter: {
-                                "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \($0.unit.abbreviation), \(String(format: "%g", $0.increment)) \($0.unit.abbreviation) increments"
+                                String(localized: "\(String(format: "%g", $0.minWeight)) - \(String(format: "%g", $0.maxWeight)) \(String(describing: $0.unit.abbreviation)), \(String(format: "%g", $0.increment)) \(String(describing: $0.unit.abbreviation)) increments")
                             },
                             separator: "\n"
                         )))

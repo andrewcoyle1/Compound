@@ -74,6 +74,40 @@ struct WorkoutSessionManagerTests {
         #expect(manager.workoutSessions.count == 3)
     }
 
+    /// Another person's sessions live under their own user document, not the reader's, so the
+    /// lookup must not go through the reader's collection — it used to, and always came back empty.
+    @Test("Test Sessions For Another Author Come From Their Collection")
+    func testSessionsForAnotherAuthorComeFromTheirCollection() async throws {
+        let manager = TestManagers.workoutSessionManager(
+            sessions: history,
+            following: [
+                DashboardFixture.session(id: "f1", author: "friend", on: start),
+                DashboardFixture.session(id: "o1", author: "other", on: start)
+            ]
+        )
+
+        let sessions = try await manager.getWorkoutSessionsForAuthor(authorId: "friend")
+
+        #expect(sessions.map(\.id) == ["f1"])
+    }
+
+    /// A notification names one session by id and author; anyone's can be fetched, and an id that
+    /// is not there throws rather than returning some other session.
+    @Test("Test Fetching One Session By Id And Author")
+    func testFetchingOneSessionByIdAndAuthor() async throws {
+        let manager = TestManagers.workoutSessionManager(
+            following: [
+                DashboardFixture.session(id: "f1", author: "friend", on: start),
+                DashboardFixture.session(id: "f2", author: "friend", on: start)
+            ]
+        )
+
+        #expect(try await manager.fetchWorkoutSession(id: "f2", authorId: "friend").id == "f2")
+        await #expect(throws: (any Error).self) {
+            try await manager.fetchWorkoutSession(id: "missing", authorId: "friend")
+        }
+    }
+
     @Test("Test Reading Sessions By Id")
     func testReadingSessionsById() async {
         let manager = await TestManagers.signedInWorkoutSessionManager(sessions: history)
@@ -242,16 +276,6 @@ struct WorkoutSessionManagerTests {
         let removed = await TestManagers.eventually { manager.workoutSessions.count == 2 }
         #expect(removed)
         #expect(!manager.workoutSessions.map(\.id).contains("s2"))
-    }
-
-    @Test("Test Deleting An Author's Sessions Empties Their History")
-    func testDeletingAnAuthorsSessionsEmptiesTheirHistory() async throws {
-        let manager = await TestManagers.signedInWorkoutSessionManager(sessions: history)
-
-        try await manager.deleteAllWorkoutSessionsForAuthor(authorId: "author-1")
-
-        let emptied = await TestManagers.eventually { manager.workoutSessions.isEmpty }
-        #expect(emptied)
     }
 
     // MARK: - The session in progress

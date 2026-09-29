@@ -71,6 +71,14 @@ struct Dependencies {
             logManager = LogManager(services: [
                 ConsoleService(printParameters: true)
             ])
+            // Not in Keys.swift: that file is gitignored, so a new constant there breaks every
+            // existing checkout until it is copied in by hand.
+            let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
+                remote: MockRemoteDocumentService(),
+                managerKey: "private_user_settings",
+                enableLocalPersistence: true,
+                logger: logManager
+            )
             switch scenario {
             case .newAnonymous:
                 authManager = AuthManager(service: MockAuthService(scenario: .newAnonymous))
@@ -86,7 +94,7 @@ struct Dependencies {
                     enableLocalPersistence: true,
                     logger: logManager
                 )
-                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine, privateSettingsSyncEngine: privateSettingsSyncEngine)
                 appState = AppState(startingModuleId: Constants.onboardingModuleId)
             case .existingSignedOut:
                 authManager = AuthManager(service: MockAuthService(scenario: .existingSignedOut))
@@ -102,7 +110,7 @@ struct Dependencies {
                     enableLocalPersistence: true,
                     logger: logManager
                 )
-                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine, privateSettingsSyncEngine: privateSettingsSyncEngine)
                 appState = AppState(startingModuleId: Constants.onboardingModuleId)
             case .existingSignedIn:
                 authManager = AuthManager(service: MockAuthService(scenario: .existingSignedIn))
@@ -118,7 +126,7 @@ struct Dependencies {
                     enableLocalPersistence: true,
                     logger: logManager
                 )
-                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+                userManager = UserManager(queryService: MockUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine, privateSettingsSyncEngine: privateSettingsSyncEngine)
                 appState = AppState(startingModuleId: Constants.tabBarModuleId)
             }
             purchaseManager = PurchaseManager(service: MockPurchaseService(availableProducts: AnyProduct.mocks))
@@ -230,7 +238,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, logManager: logManager)
+            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.programs), logManager: logManager)
                 
             let gymProfileSyncEngine = CollectionSyncEngine<GymProfileModel>(
                 remote: MockRemoteCollectionService(collection: GymProfileModel.mocks),
@@ -309,7 +317,8 @@ struct Dependencies {
             #endif
             imageUploadManager = ImageUploadManager(service: MockImageUploadService())
             pushManager = PushManager(logManager: logManager)
-            healthKitManager = HealthKitManager(service: HealthKitService())
+            // The real service put the Health permission sheet over the tracker in every mock launch.
+            healthKitManager = HealthKitManager(service: MockHealthService(canRequestAuthorisation: false))
             commentsManager = CommentsManager(service: MockCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
             stravaManager = StravaManager(service: MockStravaService(), clientId: "", clientSecret: "")
@@ -321,7 +330,7 @@ struct Dependencies {
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
                 FirebaseCrashlyticsService()
-            ])
+            ] + DataAccessLogging.devServices)
             
             authManager = AuthManager(service: FirebaseAuthService(), logger: logManager)
             let userSyncEngine = DocumentSyncEngine<UserModel>(
@@ -336,7 +345,23 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            userManager = UserManager(queryService: FirebaseUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+            let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
+                remote: FirebaseRemoteDocumentService(
+                    collectionPath: {[weak authManager] in
+                        guard let uid = authManager?.auth?.uid else { return nil }
+                        return "users/\(uid)/private"
+                    }
+                ),
+                managerKey: "private_user_settings",
+                enableLocalPersistence: true,
+                logger: logManager
+            )
+            userManager = UserManager(
+                queryService: FirebaseUserQueryService(),
+                userSyncEngine: userSyncEngine,
+                followingUsersSyncEngine: followingUsersSyncEngine,
+                privateSettingsSyncEngine: privateSettingsSyncEngine
+            )
             abTestManager = ABTestManager(service: LocalABTestService(), logger: logManager)
             purchaseManager = PurchaseManager(service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey), logger: logManager)
             let userExerciseSyncEngine = CollectionSyncEngine<ExerciseModel>(
@@ -511,7 +536,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, logManager: logManager)
+            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: SwiftDataCollectionPersistence<TrainingProgram>(managerKey: TrainingProgramManager.systemManagerKey), logManager: logManager)
             let gymProfileSyncEngine = CollectionSyncEngine<GymProfileModel>(
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [ weak authManager] in
@@ -652,7 +677,23 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            userManager = UserManager(queryService: FirebaseUserQueryService(), userSyncEngine: userSyncEngine, followingUsersSyncEngine: followingUsersSyncEngine)
+            let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
+                remote: FirebaseRemoteDocumentService(
+                    collectionPath: {[weak authManager] in
+                        guard let uid = authManager?.auth?.uid else { return nil }
+                        return "users/\(uid)/private"
+                    }
+                ),
+                managerKey: "private_user_settings",
+                enableLocalPersistence: true,
+                logger: logManager
+            )
+            userManager = UserManager(
+                queryService: FirebaseUserQueryService(),
+                userSyncEngine: userSyncEngine,
+                followingUsersSyncEngine: followingUsersSyncEngine,
+                privateSettingsSyncEngine: privateSettingsSyncEngine
+            )
             abTestManager = ABTestManager(service: FirebaseABTestService(), logger: logManager)
             purchaseManager = PurchaseManager(service: StoreKitPurchaseService())
             let userExerciseSyncEngine = CollectionSyncEngine<ExerciseModel>(
@@ -822,7 +863,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, logManager: logManager)
+            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: SwiftDataCollectionPersistence<TrainingProgram>(managerKey: TrainingProgramManager.systemManagerKey), logManager: logManager)
             let gymProfileSyncEngine = CollectionSyncEngine<GymProfileModel>(
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [ weak authManager] in
@@ -994,6 +1035,61 @@ struct Dependencies {
         container.register(ActivityNotificationManager.self, service: activityNotificationManager)
         container.register(StravaManager.self, service: stravaManager)
         container.register(OpenFoodFactsServiceContainer.self, service: OpenFoodFactsServiceContainer(openFoodFactsService))
+
+        // MARK: - Sharing
+        let shareService: ShareService
+        if case .mock = config {
+            shareService = MockShareService()
+        } else {
+            shareService = FirebaseShareService()
+        }
+        container.register(ShareManager.self, service: ShareManager(service: shareService))
+
+        // MARK: - Challenges
+        let challengeService: ChallengeService
+        if case .mock = config {
+            challengeService = MockChallengeService()
+        } else {
+            challengeService = FirebaseChallengeService()
+        }
+        container.register(ChallengeManager.self, service: ChallengeManager(service: challengeService))
+
+        // MARK: - Invites
+        let inviteService: InviteService
+        if case .mock = config {
+            inviteService = MockInviteService()
+        } else {
+            inviteService = FirebaseInviteService()
+        }
+        container.register(InviteManager.self, service: InviteManager(service: inviteService))
+
+        // MARK: - ProgressPhotos
+        // Persistence off: the photos are remote images, and a literal key keeps Keys.swift unchanged.
+        let progressPhotoSyncEngine: CollectionSyncEngine<ProgressPhotoModel>
+        if case .mock = config {
+            progressPhotoSyncEngine = CollectionSyncEngine<ProgressPhotoModel>(
+                remote: MockRemoteCollectionService(collection: ProgressPhotoModel.mocks),
+                managerKey: "progress_photos",
+                enableLocalPersistence: false,
+                logger: logManager
+            )
+        } else {
+            progressPhotoSyncEngine = CollectionSyncEngine<ProgressPhotoModel>(
+                remote: FirebaseRemoteCollectionService(
+                    collectionPath: { [weak authManager] in
+                        guard let uid = authManager?.auth?.uid else { return nil }
+                        return "users/\(uid)/progress_photos"
+                    }
+                ),
+                managerKey: "progress_photos",
+                enableLocalPersistence: false,
+                logger: logManager
+            )
+        }
+        container.register(
+            ProgressPhotoManager.self,
+            service: ProgressPhotoManager(syncEngine: progressPhotoSyncEngine, imageUploadManager: imageUploadManager)
+        )
 
         self.logManager = logManager
         self.container = container

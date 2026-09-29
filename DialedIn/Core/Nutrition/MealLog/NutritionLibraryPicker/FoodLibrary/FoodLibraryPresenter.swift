@@ -20,9 +20,9 @@ class FoodLibraryPresenter {
 
     var searchPrompt: String {
         switch foodLibraryOption {
-        case .recipes:      return "Filter Recipes"
-        case .foods:        return "Filter Foods"
-        case .favourites:   return "Filter Favourites"
+        case .recipes:      return String(localized: "Filter Recipes")
+        case .foods:        return String(localized: "Filter Foods")
+        case .favourites:   return String(localized: "Filter Favourites")
         }
     }
 

@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol FollowersListRouter: GlobalRouter { }
+protocol FollowersListRouter: GlobalRouter {
+    func showSocialProfileView(delegate: SocialProfileDelegate)
+}
 
 extension CoreRouter: FollowersListRouter { }

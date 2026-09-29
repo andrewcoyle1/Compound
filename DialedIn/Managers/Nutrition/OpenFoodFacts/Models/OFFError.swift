@@ -13,8 +13,8 @@ enum OFFError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .productNotFound: return "Product not found. Try a different barcode."
-        case .invalidResponse: return "Invalid response from Open Food Facts."
+        case .productNotFound: return String(localized: "Product not found. Try a different barcode.")
+        case .invalidResponse: return String(localized: "Invalid response from Open Food Facts.")
         }
     }
 }

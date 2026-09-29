@@ -26,7 +26,7 @@ struct ExerciseSaveDelegate {
 
     var trackableMetricString: String {
         if let metricB = self.trackableMetricB {
-            return "\(trackableMetricA.name) x \(metricB.name)"
+            return String(localized: "\(trackableMetricA.name) x \(metricB.name)")
         } else {
             return trackableMetricA.name
         }
@@ -127,7 +127,7 @@ struct ExerciseSaveView: View {
             ScrollView(.horizontal) {
                 HStack {
                     ForEach(muscles, id: \.key) { muscle, targetType in
-                        Text("\(muscle.name): \(targetType == .primary ? "Primary" : "Secondary")")
+                        Text("\(muscle.name): \(targetType == .primary ? String(localized: "Primary") : String(localized: "Secondary"))")
                     }
                 }
             }

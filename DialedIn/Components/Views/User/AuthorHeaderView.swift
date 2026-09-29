@@ -25,10 +25,10 @@ struct AuthorHeaderView: View {
             )
             .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 2) {
-                if let name = delegate.author.fullNameCalculated {
-                    Text(name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                // The handle drops under the name once both no longer fit on one line.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 4) { nameAndHandle }
+                    VStack(alignment: .leading, spacing: 2) { nameAndHandle }
                 }
                 Text(delegate.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption)
@@ -38,7 +38,17 @@ struct AuthorHeaderView: View {
         .anyButton {
             presenter.onUserPressed(author: delegate.author)
         }
+        .accessibilityHint("Opens their profile")
+    }
 
+    @ViewBuilder
+    private var nameAndHandle: some View {
+        if let name = delegate.author.fullNameCalculated {
+            Text(name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+        }
+        UsernameLabel(username: delegate.author.username)
     }
 }
 

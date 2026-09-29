@@ -126,19 +126,4 @@ struct ExerciseModelManagerTests {
         let removed = await TestManagers.eventually { manager.userExercises.isEmpty }
         #expect(removed)
     }
-
-    @Test("Test Deleting All Exercises Leaves The Seeded Library Alone")
-    func testDeletingAllExercisesLeavesTheSeededLibraryAlone() async throws {
-        let manager = TestManagers.exerciseModelManager(
-            user: [exercise(id: "user-1", name: "Mine"), exercise(id: "user-2", name: "Also Mine")],
-            system: [exercise(id: "system-1", name: "Seeded", isSystem: true)]
-        )
-        await manager.signIn(userId: "author-1")
-
-        try await manager.deleteAllExercises()
-
-        let removed = await TestManagers.eventually { manager.userExercises.isEmpty }
-        #expect(removed)
-        #expect(manager.systemExercises.count == 1)
-    }
 }

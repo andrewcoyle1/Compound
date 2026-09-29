@@ -12,16 +12,49 @@ service cloud.firestore {
       return !('userId' in request.resource.data) || request.resource.data.userId == user_id;
     }
 
+    // True when the user doc users/{ownerId} lists the caller in blocked_user_ids. A profile with
+    // no such field (or no profile at all) blocks nobody, so it behaves as before blocking existed.
+    // Used only on writes and single-document paths, never on a read rule a query depends on:
+    // rules are not filters, and a list query that could touch a denied document fails outright.
+    function isBlockedBy(ownerId) {
+      let owner = /databases/$(database)/documents/users/$(ownerId);
+      return exists(owner) && request.auth.uid in get(owner).data.get('blocked_user_ids', []);
+    }
+
     // Allow only a +1 change to clickCount and no other field changes
     function isClickCountIncrement() {
       return request.resource.data.diff(resource.data).changedKeys().hasOnly(['click_count']) &&
-             request.resource.data.clickCount == resource.data.clickCount + 1;
+             request.resource.data.click_count == resource.data.click_count + 1;
+    }
+
+    // A username handle: 3-20 of [a-z0-9_.], not starting or ending with a dot. Mirrors
+    // Username.validate in the app.
+    function isValidUsername(handle) {
+      return handle is string && handle.matches('^[a-z0-9_][a-z0-9_.]{1,18}[a-z0-9_]$');
+    }
+
+    // A user doc may carry only a username whose usernames/{handle} reservation the writer holds.
+    // An unchanged or absent username costs no read; clearing it (null) is always allowed.
+    function usernameIsHeldBy(uid) {
+      let handle = request.resource.data.get('username', null);
+      return handle == null
+        || (resource != null && resource.data.get('username', null) == handle)
+        || (isValidUsername(handle)
+            && get(/databases/$(database)/documents/usernames/$(handle)).data.user_id == uid);
     }
 
     // ---------------- USERS ----------------
     match /users/{user_id} {
       allow read: if isAuthed();
-      allow write: if isAuthed() && request.auth.uid == user_id;
+      allow write: if isAuthed() && request.auth.uid == user_id
+                   && (request.method == 'delete' || usernameIsHeldBy(user_id));
+
+      // Private settings: users/{user_id}/private/settings holds the FCM token and the
+      // social_push_* opt-outs, which the public profile above exposes to every signed-in user.
+      // Owner only; the push Cloud Function reads it with the Admin SDK.
+      match /private/{private_id} {
+        allow read, write: if isAuthed() && request.auth.uid == user_id;
+      }
 
       // Body Measurements subcollection
       match /body_measurements/{entry_id} {
@@ -78,10 +111,14 @@ service cloud.firestore {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;
         allow update: if isAuthed() && (
-          // Owner can update any field
-          (request.auth.uid == user_id && resource.data.author_id == user_id) ||
-          // Any authenticated user can toggle their like (only liked_by_user_ids may change)
-          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liked_by_user_ids'])
+          // Owner can update any field but `hidden`, which only report moderation sets
+          (request.auth.uid == user_id && resource.data.author_id == user_id
+            && request.resource.data.get('hidden', false) == resource.data.get('hidden', false)) ||
+          // Any authenticated user can toggle their own like (only their id in liked_by_user_ids
+          // may change), unless the session's author has blocked them.
+          (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liked_by_user_ids'])
+            && isOwnLikeToggle(resource.data.get('liked_by_user_ids', []), request.resource.data.liked_by_user_ids)
+            && !isBlockedBy(user_id))
         );
         allow delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
       }
@@ -175,21 +212,45 @@ service cloud.firestore {
         allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
       }
 
+      // Follow requests to a private profile: users/{target}/follow_requests/{requester}.
+      // The requester creates (or re-asks after a decline) their own pending request, keyed by
+      // their uid, and may delete it to cancel. The target reads their requests and may change only
+      // `status`, to accepted or declined. Acting on an acceptance is the onFollowRequestUpdated
+      // Cloud Function's job, since only the server can write the requester's document.
+      // Someone the target has blocked cannot ask.
+      match /follow_requests/{requester_id} {
+        allow read: if isAuthed() && request.auth.uid == user_id;
+        allow create, update: if isAuthed() && request.auth.uid == requester_id
+                              && requester_id != user_id
+                              && request.resource.data.requester_id == requester_id
+                              && request.resource.data.status == 'pending'
+                              && !isBlockedBy(user_id);
+        allow update: if isAuthed() && request.auth.uid == user_id
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                      && request.resource.data.status in ['accepted', 'declined'];
+        allow delete: if isAuthed() && request.auth.uid == requester_id;
+      }
+
       // Activity Notifications subcollection
       // Owner can read and delete their own notifications.
       // Any authenticated user can create/overwrite a notification on another user's behalf
       // (e.g. writing a like or comment notification to the recipient), but cannot modify
       // existing docs or read other users' notifications.
+      // Someone the recipient has blocked cannot write to them at all: create, and the actor's
+      // overwrite of an earlier notification (the app writes with setData, so a repeat is an
+      // update), both refuse a blocked actor. Their delete stays allowed, so taking back an old
+      // follow notification still works.
       match /notifications/{notification_id} {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow delete: if isAuthed() && (
           request.auth.uid == user_id ||
           resource.data.actor_id == request.auth.uid
         );
-        allow create: if isAuthed() && request.resource.data.actor_id == request.auth.uid;
+        allow create: if isAuthed() && request.resource.data.actor_id == request.auth.uid
+                      && !isBlockedBy(user_id);
         allow update: if isAuthed() && (
           request.auth.uid == user_id ||
-          request.resource.data.actor_id == request.auth.uid
+          (request.resource.data.actor_id == request.auth.uid && !isBlockedBy(user_id))
         );
       }
     }
@@ -222,6 +283,14 @@ service cloud.firestore {
     // Writes are still enforced by the subcollection rule above (owner-only).
     match /{path=**}/workout_sessions/{workout_session_id} {
       allow read: if isAuthed();
+    }
+
+    // ---------------- FOLLOW REQUESTS (collection group) ----------------
+    // Lets a requester find their own outgoing requests (collectionGroup("follow_requests")
+    // where requester_id == uid), which is how the app knows which buttons read "Requested".
+    // Only documents naming the reader as requester are readable this way.
+    match /{path=**}/follow_requests/{requester_id} {
+      allow read: if isAuthed() && resource.data.requester_id == request.auth.uid;
     }
 
     // ---------------- INGREDIENTS ----------------
@@ -313,11 +382,31 @@ service cloud.firestore {
     }
 
     // ---------------- REPORTS ----------------
-    // Written by FirebaseReportService when a user reports content. Write-once by the
-    // reporter; nobody reads them from the client.
+    // Written by FirebaseReportService when a user reports content. Write-once by the reporter,
+    // always open; nobody reads or changes them from the client. The onReportCreated function
+    // counts the open ones per target and hides the target at three distinct reporters.
     match /reports/{report_id} {
       allow read, update, delete: if false;
-      allow create: if isAuthed() && request.resource.data.author_id == request.auth.uid;
+      allow create: if isAuthed()
+                    && request.resource.data.keys().hasOnly([
+                        'id', 'reporter_id', 'target_type', 'target_id', 'target_author_id',
+                        'reason', 'note', 'status', 'date_created'
+                    ])
+                    && request.resource.data.id == report_id
+                    && request.resource.data.reporter_id == request.auth.uid
+                    && request.resource.data.target_type in ['user', 'session', 'comment']
+                    && request.resource.data.target_id is string
+                    && request.resource.data.reason in ['spam', 'harassment', 'inappropriate', 'other']
+                    && request.resource.data.status == 'open'
+                    && (request.resource.data.get('note', null) == null
+                        || (request.resource.data.note is string && request.resource.data.note.size() <= 500));
+    }
+
+    // ---------------- MODERATION QUEUE ----------------
+    // moderation_queue/{target_id}: written by onReportCreated when a target reaches three distinct
+    // reporters. Admin SDK only.
+    match /moderation_queue/{target_id} {
+      allow read, write: if false;
     }
 
     // ---------------- WORKOUT SESSION COMMENTS ----------------
@@ -325,14 +414,152 @@ service cloud.firestore {
     match /workout_session_comments/{comment_id} {
       // Any authenticated user can read comments
       allow read: if isAuthed();
-      // Author can create their own comment
-      allow create: if isAuthed() && request.auth.uid == request.resource.data.author_id;
+      // Author can create their own comment, unless the session's author has blocked them.
+      // session_author_id is required: WorkoutSessionComment always writes it, and leaving it
+      // optional would let a client skip the block check by omitting it.
+      allow create: if isAuthed() && request.auth.uid == request.resource.data.author_id
+                    && request.resource.data.session_author_id is string
+                    && !isBlockedBy(request.resource.data.session_author_id);
       // Only the comment author can soft-delete (set deleted_at); no other fields may change
       allow update: if isAuthed()
         && request.auth.uid == resource.data.author_id
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deleted_at']);
       // No hard deletes
       allow delete: if false;
+
+      // MARK: - CommentLikes
+      // Any signed-in reader the comment's author has not blocked may add or remove their own id
+      // in liked_by_user_ids, one id per write, and change nothing else.
+      allow update: if isAuthed()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['liked_by_user_ids'])
+        && isOwnLikeToggle(resource.data.get('liked_by_user_ids', []), request.resource.data.liked_by_user_ids)
+        && !isBlockedBy(resource.data.author_id);
+    }
+
+    // True when `after` is `before` with exactly the caller's id added, or exactly it removed.
+    function isOwnLikeToggle(before, after) {
+      let me = [request.auth.uid].toSet();
+      return after is list
+        && ((after.size() == before.size() + 1 && after.toSet().difference(before.toSet()) == me
+             && before.toSet().difference(after.toSet()).size() == 0)
+          || (after.size() == before.size() - 1 && before.toSet().difference(after.toSet()) == me
+             && after.toSet().difference(before.toSet()).size() == 0));
+    }
+
+    // ---------------- USERNAMES ----------------
+    // usernames/{handle} = { user_id, date_created }: one document per claimed handle, so a handle
+    // has at most one owner. Create only, never update, so a taken handle cannot be overwritten;
+    // the owner may delete theirs. The onUsernameChanged Cloud Function releases a handle when its
+    // owner's username moves on.
+    match /usernames/{handle} {
+      allow read: if isAuthed();
+      allow create: if isAuthed() && isValidUsername(handle)
+                    && request.resource.data.user_id == request.auth.uid;
+      allow delete: if isAuthed() && resource.data.user_id == request.auth.uid;
+    }
+
+    // ---------------- SHARES ----------------
+    // A workout template or program one user sent another, payload and all. Only the two parties
+    // read it. The sender creates it pending, under its own id, for someone other than themselves
+    // who has not blocked them. Only the recipient answers, by changing `status` alone. Either
+    // party may delete it.
+    match /shares/{share_id} {
+      allow read: if isAuthed() && (
+        resource.data.from_user_id == request.auth.uid ||
+        resource.data.to_user_id == request.auth.uid
+      );
+      allow create: if isAuthed()
+                    && request.resource.data.from_user_id == request.auth.uid
+                    && request.resource.data.id == share_id
+                    && request.resource.data.to_user_id is string
+                    && request.resource.data.to_user_id != request.auth.uid
+                    && request.resource.data.kind in ['template', 'program']
+                    && request.resource.data.status == 'pending'
+                    && !isBlockedBy(request.resource.data.to_user_id);
+      allow update: if isAuthed() && resource.data.to_user_id == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                    && request.resource.data.status in ['accepted', 'dismissed'];
+      allow delete: if isAuthed() && (
+        resource.data.from_user_id == request.auth.uid ||
+        resource.data.to_user_id == request.auth.uid
+      );
+    }
+
+    // MARK: - Challenges
+    // challenges/{id}: members read; the owner creates it (as a member) and may edit the title and
+    // members; any member may take only themselves out. progress/{uid} is written only by the
+    // onWorkoutSessionEndedForChallenges Cloud Function (the Admin SDK bypasses these rules).
+    match /challenges/{challenge_id} {
+      function isValidChallenge(data) {
+        return data.title is string && data.title.size() > 0 && data.title.size() <= 60
+            && data.member_ids is list && data.member_ids.size() <= 50
+            && data.owner_id in data.member_ids;
+      }
+
+      allow read: if isAuthed() && request.auth.uid in resource.data.member_ids;
+      allow create: if isAuthed()
+                    && request.resource.data.id == challenge_id
+                    && request.resource.data.owner_id == request.auth.uid
+                    && isValidChallenge(request.resource.data)
+                    && request.resource.data.target_sessions is int
+                    && request.resource.data.target_sessions >= 1
+                    && request.resource.data.target_sessions <= 100
+                    && request.resource.data.starts_at is timestamp
+                    && request.resource.data.ends_at is timestamp
+                    && request.resource.data.ends_at > request.resource.data.starts_at
+                    && request.resource.data.date_created is timestamp;
+      allow update: if isAuthed() && (
+        (resource.data.owner_id == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'member_ids'])
+          && isValidChallenge(request.resource.data))
+        ||
+        (request.auth.uid in resource.data.member_ids
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['member_ids'])
+          && request.resource.data.member_ids.toSet()
+               == resource.data.member_ids.toSet().difference([request.auth.uid].toSet()))
+      );
+      allow delete: if isAuthed() && resource.data.owner_id == request.auth.uid;
+
+      match /progress/{member_id} {
+        allow read: if isAuthed()
+                    && request.auth.uid in get(/databases/$(database)/documents/challenges/$(challenge_id)).data.member_ids;
+        allow write: if false;
+      }
+    }
+
+    // ---------------- INVITES ----------------
+    // invites/{code} = { code, inviter_id, date_created, uses, max_uses }: one per inviter, keyed by
+    // an 8-character code (no 0/O, 1/I/L). Created by the inviter with no uses; never updated or
+    // deleted by a client. The acceptInvite Cloud Function counts uses with the Admin SDK.
+    match /invites/{code} {
+      allow read: if isAuthed();
+      allow create: if isAuthed()
+                    && code.matches('^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$')
+                    && request.resource.data.keys().hasOnly(['code', 'inviter_id', 'date_created', 'uses', 'max_uses'])
+                    && request.resource.data.code == code
+                    && request.resource.data.inviter_id == request.auth.uid
+                    && request.resource.data.uses == 0
+                    && request.resource.data.max_uses == 50
+                    && request.resource.data.date_created is timestamp;
+      allow update, delete: if false;
+    }
+
+    // ---------------- PROGRESS PHOTOS ----------------
+    // users/{user_id}/progress_photos/{photo_id} = { id, author_id, date, pose, storage_path,
+    // image_url?, weight_kg?, note? }. Owner only. The JPEG lives in Storage at storage_path, which
+    // must be the owner's own users/{user_id}/progress_photos/{photo_id}.jpg.
+    match /users/{user_id}/progress_photos/{photo_id} {
+      function isValidProgressPhoto(data) {
+        return data.keys().hasOnly(['id', 'author_id', 'date', 'pose', 'storage_path', 'image_url', 'weight_kg', 'note'])
+          && data.id == photo_id
+          && data.author_id == user_id
+          && data.date is timestamp
+          && data.pose in ['front', 'side', 'back']
+          && data.storage_path == 'users/' + user_id + '/progress_photos/' + photo_id + '.jpg';
+      }
+      allow read, delete: if isAuthed() && request.auth.uid == user_id;
+      allow create, update: if isAuthed() && request.auth.uid == user_id
+                            && isValidProgressPhoto(request.resource.data);
     }
   }
 }

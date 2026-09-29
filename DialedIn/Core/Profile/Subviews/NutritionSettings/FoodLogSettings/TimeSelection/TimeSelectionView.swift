@@ -11,8 +11,8 @@ struct TimeSelectionView: View {
         List {
             Section {
                 CustomToggleView(
-                    title: "Auto-set Current Time",
-                    subtitle: "Automatically set the time to now when logging a meal",
+                    title: String(localized: "Auto-set Current Time"),
+                    subtitle: String(localized: "Automatically set the time to now when logging a meal"),
                     bool: $presenter.autoSetCurrentTime
                 )
             }

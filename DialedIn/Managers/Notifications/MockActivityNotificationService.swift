@@ -36,4 +36,20 @@ class MockActivityNotificationService: ActivityNotificationService {
     func startListening(userId: String, onNew: @escaping (ActivityNotificationModel) -> Void) { }
 
     func stopListening() { }
+
+    // MARK: - GroupedNotifications
+
+    func fetchNotifications(userId: String, before: Date) async throws -> [ActivityNotificationModel] {
+        Array(notifications.filter { $0.dateCreated < before }
+            .sorted { $0.dateCreated > $1.dateCreated }
+            .prefix(ActivityNotificationManager.pageSize))
+    }
+
+    func markRead(ids: [String], userId: String) async throws {
+        notifications = notifications.map {
+            var notification = $0
+            if ids.contains(notification.id) { notification.isRead = true }
+            return notification
+        }
+    }
 }

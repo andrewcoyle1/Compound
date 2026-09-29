@@ -8,19 +8,22 @@
 import Foundation
 import FirebaseFirestore
 
+/// Writes `reports/{id}`. Every report starts `open`; only the backend moves it on, and the
+/// `onReportCreated` function counts the open ones per target.
 struct FirebaseReportService: RemoteReportService {
     var collection: CollectionReference { Firestore.firestore().collection("reports") }
     
     func submit(report: ReportSubmission) async throws {
         try await collection.document(report.reportId).setData([
-            "report_id": report.reportId,
-            "author_id": report.reporterUserId,
-            "reported_user_id": report.reportedUserId as Any,
-            "content_type": report.contentType.rawValue,
-            "content_id": report.contentId,
+            "id": report.reportId,
+            "reporter_id": report.reporterUserId,
+            "target_type": report.contentType.rawValue,
+            "target_id": report.contentId,
+            "target_author_id": report.reportedUserId as Any,
             "reason": report.reason.rawValue,
-            "notes": report.notes as Any,
-            "created_at": Timestamp(date: report.createdAt)
+            "note": report.notes as Any,
+            "status": "open",
+            "date_created": Timestamp(date: report.createdAt)
         ])
     }
 }

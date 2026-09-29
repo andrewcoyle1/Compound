@@ -97,7 +97,8 @@ class BarcodeScannerPresenter {
     // MARK: Label mode actions
 
     func onParseLabelPressed() async {
-        guard let text = scannedCode, !text.isEmpty, !isParsingLabel else { return }
+        guard let text = scannedCode, !text.isEmpty, !isParsingLabel,
+              interactor.ensureOnline(or: router) else { return }
         isParsingLabel = true
         labelError = nil
         parsedIngredient = nil
@@ -164,7 +165,10 @@ class BarcodeScannerPresenter {
                     parsedIngredient = local
                     return
                 }
+                // `resolvedBarcode` stays set, so the camera seeing the code again does not repeat it.
+                guard interactor.ensureOnline(or: router) else { return }
                 let food = try await interactor.lookupBarcode(code)
+                // Silent: caching the looked-up food is a side effect; the scan itself still succeeds.
                 try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
                 parsedIngredient = food
             } catch {

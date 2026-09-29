@@ -23,8 +23,8 @@ extension CoreRouter: NotificationsPermissionsRouter {
             dismissOnBackgroundTap: true,
             destination: {
                 CustomModalView(
-                    title: "Enable Push Notifications?",
-                    subtitle: "We will send you reminders and updates",
+                    title: String(localized: "Enable Push Notifications?"),
+                    subtitle: String(localized: "We will send you reminders and updates"),
                     primaryButtonTitle: "Enable",
                     primaryButtonAction: {
                         onConfirmPressed()

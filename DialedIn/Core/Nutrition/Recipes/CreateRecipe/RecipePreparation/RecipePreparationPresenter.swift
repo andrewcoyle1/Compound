@@ -64,7 +64,7 @@ class RecipePreparationPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
-                router.showSimpleAlert(title: "Failed to save recipe", subtitle: error.localizedDescription)
+                router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
             }
         }
     }
@@ -104,7 +104,7 @@ class RecipePreparationPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
-                router.showSimpleAlert(title: "Failed to save recipe", subtitle: error.localizedDescription)
+                router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
             }
         }
     }

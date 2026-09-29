@@ -18,7 +18,7 @@ struct IntegrationsView: View {
                     VStack(alignment: .leading) {
                         Text("Strava")
                             .fontWeight(.medium)
-                        Text(presenter.stravaIsConnected ? "Connected" : "Not connected")
+                        Text(presenter.stravaIsConnected ? String(localized: "Connected") : String(localized: "Not connected"))
                             .font(.caption)
                             .foregroundStyle(presenter.stravaIsConnected ? .green : .secondary)
                     }

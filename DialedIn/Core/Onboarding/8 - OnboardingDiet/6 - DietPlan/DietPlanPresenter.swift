@@ -52,7 +52,7 @@ class DietPlanPresenter {
                     router.showStravaConnectView()
                 }
             } catch {
-                router.showSimpleAlert(title: "Unable to update your profile", subtitle: "Please check your internet connection and try again")
+                router.showSimpleAlert(title: String(localized: "Unable to update your profile"), subtitle: String(localized: "Please check your internet connection and try again"))
                 interactor.trackEvent(event: Event.saveDietPlanFail(error: error))
             }
             router.dismissModal()

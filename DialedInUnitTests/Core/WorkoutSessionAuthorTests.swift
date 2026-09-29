@@ -35,6 +35,7 @@ struct WorkoutSessionAuthorTests {
         }
         func setPreference(weightUnit: ExerciseWeightUnit?, distanceUnit: ExerciseDistanceUnit?, for templateId: String) { }
         func deleteWorkoutSession(id: String) async throws { }
+        func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { [] }
     }
 
     private final class Router: WorkoutSessionDetailRouter {

@@ -90,9 +90,9 @@ struct SignInWithGoogleButtonView: View {
 
         var description: String {
             switch self {
-            case .signInWithGoogle: return "Sign In with Google"
-            case .signUpWithGoogle: return "Sign Up with Google"
-            case .continueWithGoogle: return "Continue with Google"
+            case .signInWithGoogle: return String(localized: "Sign In with Google")
+            case .signUpWithGoogle: return String(localized: "Sign Up with Google")
+            case .continueWithGoogle: return String(localized: "Continue with Google")
             }
         }
     }

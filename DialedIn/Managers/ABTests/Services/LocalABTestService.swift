@@ -10,6 +10,7 @@ class LocalABTestService: ABTestService {
     @UserDefault(key: ActiveABTests.CodingKeys.notificationsTest.rawValue, startingValue: .random())
     private var notificationsTest: Bool
     
+    // Safe: PaywallTestOption.allCases is non-empty.
     @UserDefaultEnum(key: ActiveABTests.CodingKeys.paywallTest.rawValue, startingValue: PaywallTestOption.allCases.randomElement()!)
     private var paywallTest: PaywallTestOption
 

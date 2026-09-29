@@ -1,4 +1,5 @@
 import SwiftUI
+import AppIntents
 
 struct ShortcutsDelegate {
     
@@ -41,6 +42,13 @@ struct ShortcutsView: View {
                 } header: {
                     Text("Available")
                 }
+            }
+
+            // Siri and the Shortcuts app are the system's own list, from `DialedInAppShortcuts`.
+            Section {
+                ShortcutsLink()
+            } header: {
+                Text("Siri & Shortcuts")
             }
 
             if !presenter.isShowingDefaults {

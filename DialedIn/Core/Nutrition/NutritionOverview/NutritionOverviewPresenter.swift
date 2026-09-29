@@ -56,11 +56,13 @@ class NutritionOverviewPresenter {
         self.dayKey = dayKey
         proposal = interactor.targetProposal
         checkInState = interactor.checkInState
+        // Silent: local reads on appear; the previous or empty value is the right fallback.
         totals = (try? interactor.getDailyTotals(dayKey: dayKey)) ?? totals
         breakdown = (try? interactor.getDailyNutritionBreakdown(dayKey: dayKey)) ?? .empty
         guard let userId = interactor.userId else { return }
         let date = Date(dayKey: dayKey) ?? Date()
         Task {
+            // Silent: background read; the rings show no target until one loads.
             target = try? await interactor.getDailyTarget(for: date, userId: userId)
         }
     }
@@ -105,8 +107,8 @@ class NutritionOverviewPresenter {
     /// "2,180 kcal a day, up from 2,050" — the whole of what the card has to say.
     var proposalSummary: String? {
         guard let proposal else { return nil }
-        let direction = proposal.proposedTargetKcal > proposal.currentTargetKcal ? "up from" : "down from"
-        return "\(Int(proposal.proposedTargetKcal)) kcal a day, \(direction) \(Int(proposal.currentTargetKcal))."
+        let direction = proposal.proposedTargetKcal > proposal.currentTargetKcal ? String(localized: "up from") : String(localized: "down from")
+        return String(localized: "\(String(describing: Int(proposal.proposedTargetKcal))) kcal a day, \(direction) \(String(describing: Int(proposal.currentTargetKcal))).")
     }
 
     /// Takes the card away optimistically, and puts it back if the save does not land.
@@ -162,6 +164,7 @@ class NutritionOverviewPresenter {
 
     var topContributors: [MealItemContributor] {
         guard showsContributors else { return [] }
+        // Silent: local read for a derived list; empty hides the section.
         let meals = (try? interactor.getMeals(for: dayKey)) ?? []
         // swiftlint:disable:next large_tuple
         var totals: [String: (cal: Double, pro: Double, carb: Double, fat: Double)] = [:]

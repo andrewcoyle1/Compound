@@ -130,14 +130,14 @@ struct GoalSummaryView: View {
             VStack(spacing: 16) {
                 if let current = presenter.currentWeight {
                     weightRow(
-                        title: "Current Weight",
+                        title: String(localized: "Current Weight"),
                         weight: current,
                         unit: presenter.weightUnit
                     )
                 }
                 
                 weightRow(
-                    title: "Target Weight",
+                    title: String(localized: "Target Weight"),
                     weight: delegate.targetWeight,
                     unit: presenter.weightUnit
                 )

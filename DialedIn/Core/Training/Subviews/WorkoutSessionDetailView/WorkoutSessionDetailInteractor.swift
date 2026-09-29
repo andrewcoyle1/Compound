@@ -13,6 +13,7 @@ protocol WorkoutSessionDetailInteractor: GlobalInteractor {
     func getPreference(templateId: String) -> ExerciseUnitPreference
     func setPreference(weightUnit: ExerciseWeightUnit?, distanceUnit: ExerciseDistanceUnit?, for templateId: String)
     func deleteWorkoutSession(id: String) async throws
+    func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel]
 }
 
 extension CoreInteractor: WorkoutSessionDetailInteractor { }

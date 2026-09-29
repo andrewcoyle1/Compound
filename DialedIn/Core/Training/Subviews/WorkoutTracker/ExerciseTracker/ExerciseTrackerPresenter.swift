@@ -12,6 +12,9 @@ import SwiftUI
 class ExerciseTrackerPresenter {
     private let interactor: ExerciseTrackerInteractor
     private let router: ExerciseTrackerRouter
+
+    /// What the note sheet is editing; committed only when the user saves.
+    var draftNote = ""
     
     init(
         interactor: ExerciseTrackerInteractor,
@@ -35,5 +38,27 @@ class ExerciseTrackerPresenter {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmed, !trimmed.isEmpty else { return nil }
         return trimmed
+    }
+
+    /// Opens the note sheet for this session's note on the exercise, with last session's as a
+    /// hint. The draft starts from the note already written, so reopening edits rather than
+    /// replaces it.
+    func onNotePressed(
+        for exercise: WorkoutExerciseModel,
+        previousNote: String?,
+        onSave: @escaping @MainActor (String) -> Void
+    ) {
+        draftNote = exercise.notes ?? ""
+        router.showWorkoutNotesView(
+            delegate: WorkoutNotesDelegate(
+                notes: Binding(
+                    get: { self.draftNote },
+                    set: { self.draftNote = $0 }
+                ),
+                onSave: { onSave(self.draftNote) },
+                title: exercise.name,
+                hint: previousNote
+            )
+        )
     }
 }

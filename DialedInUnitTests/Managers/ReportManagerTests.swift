@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import DialedIn
 
-/// Reporting a comment, which is the only content in the app anything can be reported on.
+/// Reporting a comment, a session or a profile.
 ///
 /// The submission is the whole record moderation sees — if the reporter, the reported user or the
 /// content id is wrong there is nothing left to trace it back with, so the mapping is asserted
@@ -108,7 +108,7 @@ struct ReportManagerTests {
             contentType: .comment,
             contentId: "comment-1",
             authorUserId: "author-1",
-            reason: .hatefulOrHarassment,
+            reason: .harassment,
             notes: "Targeted abuse"
         )
 
@@ -117,7 +117,7 @@ struct ReportManagerTests {
         #expect(submission.reportedUserId == "author-1")
         #expect(submission.contentType == .comment)
         #expect(submission.contentId == "comment-1")
-        #expect(submission.reason == .hatefulOrHarassment)
+        #expect(submission.reason == .harassment)
         #expect(submission.notes == "Targeted abuse")
     }
 
@@ -187,7 +187,7 @@ struct ReportManagerTests {
             contentType: .comment,
             contentId: "comment-1",
             authorUserId: "author-1",
-            reason: .violenceOrThreats,
+            reason: .inappropriate,
             notes: "Threatening language"
         )
         let submission = try #require(await service.submissions.first)
@@ -199,7 +199,7 @@ struct ReportManagerTests {
         #expect(decoded.reporterUserId == submission.reporterUserId)
         #expect(decoded.reportedUserId == submission.reportedUserId)
         #expect(decoded.contentType == .comment)
-        #expect(decoded.reason == .violenceOrThreats)
+        #expect(decoded.reason == .inappropriate)
         #expect(decoded.notes == "Threatening language")
     }
 
@@ -246,16 +246,7 @@ struct ReportManagerTests {
     /// place their wording lives.
     @Test("Test Every Reason Has A Readable Name")
     func testEveryReasonHasAReadableName() {
-        #expect(ReportReason.allCases.map(\.displayName) == [
-            "Spam",
-            "Hateful or harassment",
-            "Sexual or pornographic",
-            "Violence or threats",
-            "Self-harm",
-            "Illegal content",
-            "Misleading",
-            "Other"
-        ])
+        #expect(ReportReason.allCases.map(\.displayName) == ["Spam", "Harassment", "Inappropriate", "Other"])
     }
 
     /// The identifier is the raw value, which is also what is stored — so renaming a case's
@@ -263,16 +254,14 @@ struct ReportManagerTests {
     @Test("Test A Reason Identifies Itself By Its Stored Value")
     func testAReasonIdentifiesItselfByItsStoredValue() {
         #expect(ReportReason.allCases.map(\.id) == ReportReason.allCases.map(\.rawValue))
-        #expect(ReportReason.hatefulOrHarassment.rawValue == "hatefulOrHarassment")
-        #expect(ReportReason.selfHarm.rawValue == "selfHarm")
+        #expect(ReportReason.allCases.map(\.rawValue) == ["spam", "harassment", "inappropriate", "other"])
     }
 
     @Test("Test Content Types Keep Their Stored Values")
     func testContentTypesKeepTheirStoredValues() {
         #expect(ReportContentType.comment.rawValue == "comment")
-        #expect(ReportContentType.deck.rawValue == "deck")
-        #expect(ReportContentType.collection.rawValue == "collection")
-        #expect(ReportContentType.card.rawValue == "card")
+        #expect(ReportContentType.session.rawValue == "session")
+        #expect(ReportContentType.user.rawValue == "user")
     }
 }
 

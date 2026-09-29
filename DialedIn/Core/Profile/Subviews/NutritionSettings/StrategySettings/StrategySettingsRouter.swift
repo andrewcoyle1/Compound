@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol StrategySettingsRouter {
+protocol StrategySettingsRouter: GlobalRouter {
     
 }
 

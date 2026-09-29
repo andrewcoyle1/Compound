@@ -33,7 +33,11 @@ extension GlobalRouter {
     }
     
     func showAlert(error: Error) {
-        router.showAlert(.alert, title: "Error", subtitle: error.localizedDescription, buttons: { })
+        if error.isOfflineError {
+            showOfflineAlert()
+            return
+        }
+        router.showAlert(.alert, title: String(localized: "Error"), subtitle: error.localizedDescription, buttons: { })
     }
 
     func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
@@ -55,8 +59,8 @@ extension GlobalRouter {
     /// prompt lives here rather than in each presenter.
     func showActiveWorkoutAlert(onResume: @escaping @Sendable () -> Void, onReplace: @escaping @Sendable () -> Void) {
         showAlert(
-            title: "Active Workout",
-            subtitle: "You already have an active workout.",
+            title: String(localized: "Active Workout"),
+            subtitle: String(localized: "You already have an active workout."),
             buttons: {
                 AnyView(VStack {
                     Button("Resume", action: onResume)

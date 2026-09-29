@@ -14,21 +14,21 @@ struct AddTrainingView: View {
     var body: some View {
         List {
             Section {
-                CustomListCellView(sfSymbolName: "clipboard", title: "New Program")
+                CustomListCellView(sfSymbolName: "clipboard", title: String(localized: "New Program"))
                 .tappableBackground()
                 .anyButton {
                     presenter.onNewProgramPressed()
                 }
                 .removeListRowFormatting()
                 
-                CustomListCellView(sfSymbolName: "dumbbell", title: "New Workout")
+                CustomListCellView(sfSymbolName: "dumbbell", title: String(localized: "New Workout"))
                 .tappableBackground()
                 .anyButton {
                     presenter.onNewEmptyWorkoutPressed()
                 }
                 .removeListRowFormatting()
 
-                CustomListCellView(sfSymbolName: "list.bullet", title: "New Exercise")
+                CustomListCellView(sfSymbolName: "list.bullet", title: String(localized: "New Exercise"))
                 .tappableBackground()
                 .anyButton {
                     presenter.onNewExercisePressed()

@@ -36,9 +36,11 @@ extension UserModel {
             submittedCurrentGoalId: "goal1",
             submittedActiveTrainingProgramId: TrainingProgram.mock.id,
             submittedFavouriteGymProfileId: GymProfileModel.mock.id,
+            // The same circle as `mocks[0]`, so the signed-in mock scenario has a feed and a strip.
+            followingIds: ["user1", "user3", "user4", "user5"],
             didCompleteOnboarding: true,
             acceptedHealthDisclaimerVersion: "2025.10.05"
-        )
+        ).withUsername("alice.cooper")
     }
 
     static func mockWithStep(_ step: OnboardingStep) -> Self {
@@ -114,7 +116,8 @@ extension UserModel {
                 submittedActiveTrainingProgramId: TrainingProgram.mock.id,
                 submittedFavouriteGymProfileId: GymProfileModel.mock.id,
                 blockedUserIds: ["user6"],
-                followingIds: ["user1", "user2", "user3", "user4", "user5"],
+                // Bob is private and not followed, so his profile shows the request flow.
+                followingIds: ["user1", "user3", "user4", "user5"],
                 fcmToken: "mock_fcm_token_andrew",
                 didCompleteOnboarding: true,
                 acceptedHealthDisclaimerVersion: "2025.10.05",
@@ -174,6 +177,7 @@ extension UserModel {
                 submittedLengthUnitPreference: .inches,
                 submittedWeightUnitPreference: .pounds,
                 followingIds: ["mock_user_123"],
+                isPrivate: true,
                 didCompleteOnboarding: true,
                 acceptedHealthDisclaimerVersion: "2025.10.05",
                 acceptedHealthDisclaimerDate: now.addingTimeInterval(-96 * day)
@@ -302,7 +306,30 @@ extension UserModel {
                 submittedWeightKilograms: 67.0,
                 didCompleteOnboarding: false
             )
-        ]
+        ].map { $0.withUsername(mockUsernames[$0.userId]) }
     }
 
+}
+
+// MARK: - Usernames
+
+extension UserModel {
+
+    /// Handles for the mock roster, by user id. `user7` is left without one, so the unset state is
+    /// exercised too. `MockUserQueryService` seeds its reservations from this and `mockExisting`.
+    static let mockUsernames: [String: String] = [
+        "mock_user_123": "andrew",
+        "user1": "alice",
+        "user2": "bob_lifts",
+        "user3": "charlie.c",
+        "user4": "priya_runs",
+        "user5": "dev.patel",
+        "user6": "david_s"
+    ]
+
+    func withUsername(_ username: String?) -> Self {
+        var copy = self
+        copy.username = username
+        return copy
+    }
 }

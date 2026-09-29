@@ -6,6 +6,9 @@
 //
 
 @MainActor
-protocol TabBarRouter: GlobalRouter { }
+protocol TabBarRouter: GlobalRouter {
+    /// The Today's Workout widget's link, when a session is already under way.
+    func showWorkoutTrackerView()
+}
 
 extension CoreRouter: TabBarRouter { }

@@ -11,23 +11,23 @@ struct LoggerBannerView: View {
         List {
             Section {
                 CustomToggleView(
-                    title: "Calories Ring",
-                    subtitle: "Show calorie ring in the logger banner",
+                    title: String(localized: "Calories Ring"),
+                    subtitle: String(localized: "Show calorie ring in the logger banner"),
                     bool: $presenter.showCaloriesRing
                 )
                 CustomToggleView(
-                    title: "Protein Ring",
-                    subtitle: "Show protein ring in the logger banner",
+                    title: String(localized: "Protein Ring"),
+                    subtitle: String(localized: "Show protein ring in the logger banner"),
                     bool: $presenter.showProteinRing
                 )
                 CustomToggleView(
-                    title: "Fat Ring",
-                    subtitle: "Show fat ring in the logger banner",
+                    title: String(localized: "Fat Ring"),
+                    subtitle: String(localized: "Show fat ring in the logger banner"),
                     bool: $presenter.showFatRing
                 )
                 CustomToggleView(
-                    title: "Carbs Ring",
-                    subtitle: "Show carbs ring in the logger banner",
+                    title: String(localized: "Carbs Ring"),
+                    subtitle: String(localized: "Show carbs ring in the logger banner"),
                     bool: $presenter.showCarbsRing
                 )
             }

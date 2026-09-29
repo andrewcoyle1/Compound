@@ -53,7 +53,7 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Visual Body Fat",
+            title: String(localized: "Visual Body Fat"),
             analyticsName: "VisualBodyFatView",
             yAxisSuffix: " %",
             seriesNames: ["Body Fat"],
@@ -105,7 +105,7 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
         } catch {
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
-            router.showSimpleAlert(title: "Unable to Delete Entry", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
         entries = Self.bodyFatEntries(from: interactor.bodyMeasurements)

@@ -16,12 +16,12 @@ struct ExerciseAnalyticsView: View {
                 AnalyticsCardGrid {
                     if presenter.exerciseCards.isEmpty {
                         // The header used to stand over an empty grid on a fresh account.
-                        AnalyticsEmptyCard(message: "Log a workout to track your estimated one-rep max.")
+                        AnalyticsEmptyCard(message: String(localized: "Log a workout to track your estimated one-rep max."))
                     } else {
                         ForEach(presenter.exerciseCards) { item in
                             SparklineAnalyticsCard(
                                 title: item.name,
-                                subtitle: "Last 7 Workouts",
+                                subtitle: String(localized: "Last 7 Workouts"),
                                 value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : "--",
                                 unit: item.unitText,
                                 themeColor: exerciseColor,
@@ -38,7 +38,7 @@ struct ExerciseAnalyticsView: View {
                     }
                 }
             } header: {
-                SectionHeaderView(title: "Exercises")
+                SectionHeaderView(title: String(localized: "Exercises"))
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)

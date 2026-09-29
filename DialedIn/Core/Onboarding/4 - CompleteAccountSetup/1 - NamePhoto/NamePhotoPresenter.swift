@@ -84,7 +84,7 @@ func onDevSettingsPressed() {
             } catch {
                 interactor.trackEvent(event: Event.namePhotoSaveFail(error: error))
                 router.showSimpleAlert(
-                    title: "Unable to save",
+                    title: String(localized: "Unable to save"),
                     subtitle: "Please check your internet connection and try again."
                 )
             }

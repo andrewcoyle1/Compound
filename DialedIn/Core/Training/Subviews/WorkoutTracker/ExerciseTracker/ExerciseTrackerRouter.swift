@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol ExerciseTrackerRouter: GlobalRouter { }
+protocol ExerciseTrackerRouter: GlobalRouter {
+    func showWorkoutNotesView(delegate: WorkoutNotesDelegate)
+}
 
 extension CoreRouter: ExerciseTrackerRouter { }

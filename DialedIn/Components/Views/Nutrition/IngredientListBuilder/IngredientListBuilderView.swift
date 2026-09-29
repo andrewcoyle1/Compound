@@ -45,6 +45,19 @@ struct IngredientListBuilderView: View {
                 filteredFoodsSection
             }
         }
+        .overlay {
+            if !presenter.searchText.isEmpty && presenter.filteredFoods.isEmpty {
+                ContentUnavailableView.search(text: presenter.searchText)
+            } else if presenter.searchText.isEmpty && presenter.userFoods.isEmpty && presenter.systemFoods.isEmpty {
+                ContentUnavailableView {
+                    Label("No Foods", systemImage: "carrot")
+                } description: {
+                    Text("Foods you create appear here.")
+                } actions: {
+                    Button("Create a Food") { presenter.onAddIngredientPressed(delegate: delegate) }
+                }
+            }
+        }
         .onAppear {
             presenter.onViewAppear()
         }

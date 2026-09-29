@@ -93,7 +93,7 @@ extension ExpenditureDetailPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Expenditure",
+            title: String(localized: "Expenditure"),
             analyticsName: "ExpenditureDetailView",
             yAxisSuffix: "",
             seriesNames: ["Expenditure"],

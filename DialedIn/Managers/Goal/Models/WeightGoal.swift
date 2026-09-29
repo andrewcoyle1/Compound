@@ -48,10 +48,10 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
         
         var displayName: String {
             switch self {
-            case .active: return "Active"
-            case .completed: return "Completed"
-            case .abandoned: return "Abandoned"
-            case .paused: return "Paused"
+            case .active: return String(localized: "Active")
+            case .completed: return String(localized: "Completed")
+            case .abandoned: return String(localized: "Abandoned")
+            case .paused: return String(localized: "Paused")
             }
         }
     }

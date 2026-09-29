@@ -42,7 +42,7 @@ struct NutritionMetricEntry: MetricEntry {
     var displayValue: String {
         if let protein = proteinGrams, let carbs = carbGrams, let fats = fatGrams {
             let fmt: (Double) -> String = { $0 >= 100 || $0 == floor($0) ? Int($0).formatted() : $0.formatted(.number.precision(.fractionLength(1))) }
-            return "\(fmt(protein))g P · \(fmt(carbs))g C · \(fmt(fats))g F"
+            return String(localized: "\(String(describing: fmt(protein)))g P · \(String(describing: fmt(carbs)))g C · \(String(describing: fmt(fats)))g F")
         }
         if value >= 100 || value == floor(value) {
             return Int(value).formatted()

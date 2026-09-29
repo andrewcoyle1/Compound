@@ -38,6 +38,7 @@ struct SplitViewContainer<TabAccessory: View>: View {
                 }
                 .frame(minWidth: 150)
             } content: {
+                // Safe: the only builder, splitViewContainer(router:), passes three tabs.
                 tabs.first!.screen()
                     .background(
                         Color(uiColor: .systemGroupedBackground)
@@ -57,7 +58,7 @@ extension CoreBuilder {
     func splitViewContainer(router: AnyRouter) -> some View {
         let tabs: [TabBarScreen] = [
             TabBarScreen(
-                title: "Analytics",
+                title: String(localized: "Analytics"),
                 systemImage: "house",
                 screen: {
                     self.analyticsView(delegate: AnalyticsDelegate(), router: router)
@@ -65,7 +66,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
-                title: "Training",
+                title: String(localized: "Training"),
                 systemImage: "dumbbell",
                 screen: {
                     self.trainingView(delegate: TrainingDelegate(), router: router)
@@ -73,7 +74,7 @@ extension CoreBuilder {
                 }
             ),
             TabBarScreen(
-                title: "Nutrition",
+                title: String(localized: "Nutrition"),
                 systemImage: "carrot",
                 screen: {
                     self.nutritionView(delegate: NutritionDelegate(), router: router)

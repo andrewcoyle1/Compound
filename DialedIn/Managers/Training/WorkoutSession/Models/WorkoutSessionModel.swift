@@ -21,6 +21,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     var deletedAt: Date?
     var isRestDay: Bool
     var likedByUserIds: [String]
+    /// The author's training streak as of finishing this session, stamped by the finish path so
+    /// followers — who cannot read the author's streak — can see it. Absent on older sessions.
+    var streakCount: Int?
 
     init(
         id: String = UUID().uuidString,
@@ -35,7 +38,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         exercises: [WorkoutExerciseModel],
         deletedAt: Date? = nil,
         isRestDay: Bool = false,
-        likedByUserIds: [String] = []
+        likedByUserIds: [String] = [],
+        streakCount: Int? = nil
     ) {
         self.id = id
         self.authorId = authorId
@@ -50,6 +54,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.deletedAt = deletedAt
         self.isRestDay = isRestDay
         self.likedByUserIds = likedByUserIds
+        self.streakCount = streakCount
     }
     
     enum CodingKeys: String, CodingKey {
@@ -66,6 +71,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case deletedAt = "deleted_at"
         case isRestDay = "is_rest_day"
         case likedByUserIds = "liked_by_user_ids"
+        case streakCount = "streak_count"
+        case hidden
     }
 
     @MainActor
@@ -524,6 +531,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 session.fillMockSets(progression: progression, completedAt: startedAt)
                 session.endSession(at: startedAt.addingTimeInterval(TimeInterval(durationMinutes * 60)))
                 session.likedByUserIds = Array(["user1", "user3", "user5"].prefix(counter % 4))
+                // The streak the finish path would have stamped: one longer per session, reset by the gap above.
+                session.streakCount = counter % 6 + 2
                 sessions.append(session)
                 counter += 1
             }
@@ -552,5 +561,17 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 exercises[exerciseIndex].sets[setIndex] = set
             }
         }
+    }
+
+    // MARK: - Report moderation
+
+    /// Set by the `onReportCreated` function once three people have reported this session; the
+    /// rules stop the author changing it. Absent on almost every session.
+    var hidden: Bool?
+
+    /// Whether the feed leaves this session out for `readerId`. A hidden session is still shown
+    /// to its author, who would otherwise see their own workout vanish without explanation.
+    func isHidden(from readerId: String?) -> Bool {
+        hidden == true && readerId != authorId
     }
 }

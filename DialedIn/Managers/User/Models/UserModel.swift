@@ -45,14 +45,31 @@ struct UserModel: DataSyncModelProtocol, Equatable {
     let submittedCurrentGoalId: String?
     let submittedFavouriteGymProfileId: String?
     let submittedActiveTrainingProgramId: String?
+    /// Legacy: the token now lives in `PrivateUserSettings`. Still written for one release so the
+    /// deployed Cloud Function keeps finding it; kept decodable so old documents parse.
     let fcmToken: String?
     let blockedUserIds: [String]?
     let followingIds: [String]?
+    /// A private profile must accept a follow request before anyone follows it, is left out of
+    /// suggestions, and shows non-followers only its header and counts.
+    let isPrivate: Bool?
+    /// Legacy per-type opt-outs for social pushes. They now live in `PrivateUserSettings`, and the
+    /// app no longer writes them here; kept decodable so old documents parse, and the Cloud Function
+    /// falls back to them for users who have not written the private document yet.
+    let socialPushLikes: Bool?
+    let socialPushComments: Bool?
+    let socialPushFollows: Bool?
+    let socialPushNudges: Bool?
+    let socialPushMentions: Bool?
     var didCompleteOnboarding: Bool
     let acceptedHealthDisclaimerVersion: String?
     let acceptedHealthDisclaimerDate: Date?
     let acceptedHealthPrivacyPolicyVersion: String?
     let acceptedHealthPrivacyPolicyDate: Date?
+    // MARK: - CircleGoals
+    /// Finished sessions a week the user is aiming for, 1–7. Nil until they pick one; read through
+    /// `CircleWeek.goal(for:)`, which shows it as 3.
+    let weeklySessionGoal: Int?
 
     /// The health notices the app currently presents, and the versions an acceptance is recorded
     /// against. `HealthDisclaimerPresenter` stamps these onto the profile when the user confirms.
@@ -95,12 +112,19 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         submittedFavouriteGymProfileId: String? = nil,
         blockedUserIds: [String]? = nil,
         followingIds: [String]? = nil,
+        isPrivate: Bool? = nil,
+        socialPushLikes: Bool? = nil,
+        socialPushComments: Bool? = nil,
+        socialPushFollows: Bool? = nil,
+        socialPushNudges: Bool? = nil,
+        socialPushMentions: Bool? = nil,
         fcmToken: String? = nil,
         didCompleteOnboarding: Bool = false,
         acceptedHealthDisclaimerVersion: String? = nil,
         acceptedHealthDisclaimerDate: Date? = nil,
         acceptedHealthPrivacyPolicyVersion: String? = nil,
-        acceptedHealthPrivacyPolicyDate: Date? = nil
+        acceptedHealthPrivacyPolicyDate: Date? = nil,
+        weeklySessionGoal: Int? = nil
     ) {
         self.userId = userId
         self.email = email
@@ -133,12 +157,19 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         self.submittedFavouriteGymProfileId = submittedFavouriteGymProfileId
         self.blockedUserIds = blockedUserIds
         self.followingIds = followingIds
+        self.isPrivate = isPrivate
+        self.socialPushLikes = socialPushLikes
+        self.socialPushComments = socialPushComments
+        self.socialPushFollows = socialPushFollows
+        self.socialPushNudges = socialPushNudges
+        self.socialPushMentions = socialPushMentions
         self.fcmToken = fcmToken
         self.didCompleteOnboarding = didCompleteOnboarding
         self.acceptedHealthDisclaimerVersion = acceptedHealthDisclaimerVersion
         self.acceptedHealthDisclaimerDate = acceptedHealthDisclaimerDate
         self.acceptedHealthPrivacyPolicyVersion = acceptedHealthPrivacyPolicyVersion
         self.acceptedHealthPrivacyPolicyDate = acceptedHealthPrivacyPolicyDate
+        self.weeklySessionGoal = weeklySessionGoal
     }
     
     init(auth: UserAuthInfo, creationVersion: String?) {
@@ -191,11 +222,20 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         case didCompleteOnboarding = "did_complete_onboarding"
         case blockedUserIds = "blocked_user_ids"
         case followingIds = "following_ids"
+        case isPrivate = "is_private"
+        case socialPushLikes = "social_push_likes"
+        case socialPushComments = "social_push_comments"
+        case socialPushFollows = "social_push_follows"
+        case socialPushNudges = "social_push_nudges"
+        case socialPushMentions = "social_push_mentions"
         case fcmToken = "fcm_token"
         case acceptedHealthDisclaimerVersion = "accepted_health_disclaimer_version"
         case acceptedHealthDisclaimerDate = "accepted_health_disclaimer_date"
         case acceptedHealthPrivacyPolicyVersion = "accepted_health_privacy_policy_version"
         case acceptedHealthPrivacyPolicyDate = "accepted_health_privacy_policy_date"
+        // MARK: - Usernames
+        case username
+        case weeklySessionGoal = "weekly_session_goal"
     }
     
     var eventParameters: [String: Any] {
@@ -274,6 +314,12 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         return displayName
     }
     
+    /// Whether this user has blocked `userId`. Every surface that shows another person's content
+    /// asks this, so a block hides them everywhere at once.
+    func hasBlocked(_ userId: String) -> Bool {
+        blockedUserIds?.contains(userId) ?? false
+    }
+
     /// Full name, per user's Auth info
     var fullNameCalculated: String? {
         if let firstNameCalculated, let lastNameCalculated {
@@ -346,6 +392,13 @@ struct UserModel: DataSyncModelProtocol, Equatable {
     mutating func markDidCompleteOnboarding() {
         didCompleteOnboarding = true
     }
+
+    // MARK: - Usernames
+
+    /// The user's unique handle, lowercase and shown exactly as stored — see `Username`. Set only
+    /// through `UserManager.claimUsername`, which reserves `usernames/{handle}` first. A `var` with
+    /// a default so the memberwise init and every existing call site are untouched.
+    var username: String?
 }
 
 enum Gender: String, Codable, Sendable {
@@ -353,8 +406,8 @@ enum Gender: String, Codable, Sendable {
     case female
     var description: String {
         switch self {
-        case .male: return "Male"
-        case .female: return "Female"
+        case .male: return String(localized: "Male")
+        case .female: return String(localized: "Female")
         }
     }
 }
@@ -383,8 +436,8 @@ enum LengthUnitPreference: String, Codable, Sendable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .centimeters: return "Centimeters"
-        case .inches: return "Feet & Inches"
+        case .centimeters: return String(localized: "Centimeters")
+        case .inches: return String(localized: "Feet & Inches")
         }
     }
 
@@ -403,8 +456,8 @@ enum DistanceUnitPreference: String, Codable, Sendable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .kilometers: return "Kilometers & Metres"
-        case .miles: return "Miles & Yards"
+        case .kilometers: return String(localized: "Kilometers & Metres")
+        case .miles: return String(localized: "Miles & Yards")
         }
     }
 
@@ -423,8 +476,8 @@ enum WeightUnitPreference: String, Codable, Sendable {
     
     var displayName: String {
         switch self {
-        case .kilograms: return "Kilograms"
-        case .pounds: return "Pounds"
+        case .kilograms: return String(localized: "Kilograms")
+        case .pounds: return String(localized: "Pounds")
         }
     }
 
@@ -447,8 +500,8 @@ enum ClockUnitPreference: String, Codable, Sendable {
     
     var displayName: String {
         switch self {
-        case .twelveHour: return "12 Hour"
-        case .twentyFourHour: return "24 Hour"
+        case .twelveHour: return String(localized: "12 Hour")
+        case .twentyFourHour: return String(localized: "24 Hour")
         }
     }
 

@@ -75,30 +75,30 @@ enum CardioFitnessLevel: String, CaseIterable, Codable {
     var description: String {
         switch self {
         case .beginner:
-            return "Beginner"
+            return String(localized: "Beginner")
         case .novice:
-            return "Novice"
+            return String(localized: "Novice")
         case .intermediate:
-            return "Intermediate"
+            return String(localized: "Intermediate")
         case .advanced:
-            return "Advanced"
+            return String(localized: "Advanced")
         case .elite:
-            return "Elite"
+            return String(localized: "Elite")
         }
     }
     
     var detailDescription: String {
         switch self {
         case .beginner:
-            return "Just starting cardio, gets winded easily, low endurance"
+            return String(localized: "Just starting cardio, gets winded easily, low endurance")
         case .novice:
-            return "Some cardio experience, can handle light jogging, moderate endurance"
+            return String(localized: "Some cardio experience, can handle light jogging, moderate endurance")
         case .intermediate:
-            return "Regular cardio, comfortable running, good endurance"
+            return String(localized: "Regular cardio, comfortable running, good endurance")
         case .advanced:
-            return "Experienced runner, high endurance, can maintain pace"
+            return String(localized: "Experienced runner, high endurance, can maintain pace")
         case .elite:
-            return "Athlete level, exceptional endurance, competitive fitness"
+            return String(localized: "Athlete level, exceptional endurance, competitive fitness")
         }
     }
 }

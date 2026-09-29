@@ -72,7 +72,10 @@ struct CheckInPresenterTests {
             acceptCount += 1
         }
 
+        var completeError: Error?
+
         func markCheckInCompleted(weekStart: Date) async throws {
+            if let completeError { throw completeError }
             completedWeekStarts.append(weekStart)
         }
     }
@@ -84,6 +87,9 @@ struct CheckInPresenterTests {
         func showAlert(error: Error) {
             shownErrors.append(error)
         }
+
+        private(set) var alertTitles: [String] = []
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     // MARK: - Fixtures
@@ -491,4 +497,30 @@ struct CheckInPresenterTests {
         #expect(shown.count == presenter.steps.count)
         #expect(interactor.trackedScreenEventNames == ["CheckInView_Appear"])
     }
+
+    // MARK: - Completing
+
+    /// Finishing used to `try?` the completion record and dismiss anyway, so a failed write closed
+    /// the sheet as if the week were done. It now stays open with one alert and one fail event.
+    @Test("Test A Failed Completion Alerts Once And Stays Open")
+    func testAFailedCompletionAlertsOnceAndStaysOpen() async {
+        let interactor = makeInteractor()
+        interactor.nutritionStrategySettings.fastCheckIn = true
+        interactor.nutritionStrategySettings.partialLoggingEnabled = false
+        interactor.nutritionStrategySettings.weighInEnabled = false
+        interactor.nutritionStrategySettings.fastingEnabled = false
+        interactor.nutritionStrategySettings.loggingBreakEnabled = false
+        interactor.completeError = URLError(.notConnectedToInternet)
+        let (presenter, router) = makePresenter(interactor)
+        presenter.onViewAppear(delegate: CheckInDelegate(weekStart: weekStart))
+        #expect(presenter.steps == [.programUpdate])
+
+        presenter.onContinuePressed()
+
+        #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
+        #expect(router.alertTitles == ["Unable to Complete Check-In"])
+        #expect(interactor.trackedEventNames.filter { $0.hasSuffix("_Fail") } == ["CheckInView_Complete_Fail"])
+        #expect(!presenter.isCompleted)
+    }
+
 }

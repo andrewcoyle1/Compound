@@ -32,6 +32,11 @@ struct SearchPresenterTests {
         var remoteDelay: Duration = .zero
         private(set) var startedTemplateNames: [String] = []
         private(set) var didDeleteActiveSession = false
+        private(set) var acceptedInviteCodes: [String] = []
+        func acceptInvite(code: String) async throws -> (inviter: UserModel, acceptance: InviteAcceptance) {
+            acceptedInviteCodes.append(code)
+            return (UserModel(userId: "inviter"), InviteAcceptance(inviterId: "inviter", youFollow: .following, theyFollow: .following))
+        }
 
         func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws {
             startedTemplateNames.append(template.name)
@@ -46,6 +51,9 @@ struct SearchPresenterTests {
         func clearRecentSearches() { recentSearchQueries = [] }
         func followUser(userId: String) async throws { followingIds.append(userId) }
         func unfollowUser(userId: String) async throws { followingIds.removeAll { $0 == userId } }
+        var sentFollowRequestIds: Set<String> = []
+        func sendFollowRequest(to user: UserModel) async throws { sentFollowRequestIds.insert(user.userId) }
+        func cancelFollowRequest(userId: String) async throws { sentFollowRequestIds.remove(userId) }
     }
 
     private final class Router: SearchRouter {
@@ -217,5 +225,25 @@ struct SearchPresenterTests {
         #expect(screen.router.alertTitles == ["Active Workout"])
         #expect(screen.interactor.startedTemplateNames.isEmpty)
         #expect(screen.router.shown.isEmpty)
+    }
+
+    // MARK: - Invite code
+
+    /// A code typed in Search is accepted the same way as a link, and lands on the inviter.
+    @Test("Test An Entered Invite Code Is Accepted And Opens The Inviter")
+    func testAnEnteredInviteCodeIsAcceptedAndOpensTheInviter() async {
+        let screen = makeScreen()
+        screen.presenter.inviteCodeInput = "stale"
+
+        screen.presenter.onEnterInviteCodePressed()
+        #expect(screen.presenter.isEnteringInviteCode)
+        #expect(screen.presenter.inviteCodeInput.isEmpty)
+
+        screen.presenter.inviteCodeInput = "push-2345"
+        await screen.presenter.onInviteCodeSubmitted()
+
+        #expect(screen.interactor.acceptedInviteCodes == ["push-2345"])
+        #expect(screen.router.socialProfileUserIds == ["inviter"])
+        #expect(screen.interactor.shownToasts.map(\.message) == ["You're now following each other"])
     }
 }

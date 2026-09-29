@@ -86,9 +86,9 @@ class RestTimerSettingsPresenter {
 
         var label: String {
             switch self {
-            case .warmUp:             return "Rest After Last Warm-Up Set"
-            case .betweenExercises:   return "Rest Between Exercises"
-            case .sideSets:           return "Rest Between Left/Right Sets"
+            case .warmUp:             return String(localized: "Rest After Last Warm-Up Set")
+            case .betweenExercises:   return String(localized: "Rest Between Exercises")
+            case .sideSets:           return String(localized: "Rest Between Left/Right Sets")
             }
         }
     }
@@ -137,7 +137,12 @@ class RestTimerSettingsPresenter {
 
     private func save() {
         Task {
-            try? await interactor.saveWorkoutSettings(settings)
+            do {
+                try await interactor.saveWorkoutSettings(settings)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
         }
     }
 }
@@ -147,9 +152,11 @@ extension RestTimerSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: RestTimerSettingsDelegate)
         case onDisappear(delegate: RestTimerSettingsDelegate)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "RestTimerSettingsView_Save_Fail"
             case .onAppear:    return "RestTimerSettingsView_Appear"
             case .onDisappear: return "RestTimerSettingsView_Disappear"
             }
@@ -157,13 +164,17 @@ extension RestTimerSettingsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             }
         }
 
         var type: LogType {
-            .analytic
+            switch self {
+            case .saveFail: return .severe
+            default: return .analytic
+            }
         }
     }
 }

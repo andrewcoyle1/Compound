@@ -59,6 +59,7 @@ class WorkoutStreakPresenter {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         guard !completedTrainingDays.contains(today) else { return false }
+        // Safe: adding days to a valid date never returns nil.
         let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
         return completedTrainingDays.contains(yesterday)
     }

@@ -28,6 +28,7 @@ struct DevSettingsView: View {
             exerciseModelSection
             workoutTemplateSection
             seedingSection
+            shareCardSection
         }
         .navigationTitle("Developer Settings")
         .onAppear {
@@ -367,6 +368,15 @@ struct DevSettingsView: View {
                 Label("Reset Workout Seeding", systemImage: "arrow.clockwise")
             }
             .disabled(presenter.isReseeding)
+
+            Button {
+                Task {
+                    await presenter.resetProgramSeeding()
+                }
+            } label: {
+                Label("Reset Program Seeding", systemImage: "arrow.clockwise")
+            }
+            .disabled(presenter.isReseeding)
             
             Button {
                 Task {
@@ -388,10 +398,22 @@ struct DevSettingsView: View {
         } header: {
             Text("Data Seeding")
         } footer: {
-            Text("Use these options to reset and re-seed system exercises and workouts. Useful for testing or if seeding failed.")
+            Text("Use these options to reset and re-seed system exercises, workouts and programs. Useful for testing or if seeding failed.")
         }
     }
     
+    private var shareCardSection: some View {
+        Section {
+            Button("Save Share Cards to Photos") {
+                presenter.onSaveShareCardsPressed()
+            }
+        } header: {
+            Text("Share Card")
+        } footer: {
+            Text("Renders the Story and Square cards for the first mock session and saves both to the photo library.")
+        }
+    }
+
     @ViewBuilder
     private var debugActionsSection: some View {
         Section {

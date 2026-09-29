@@ -86,7 +86,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
 
     var configuration: MetricConfiguration {
         MetricConfiguration(
-            title: "Steps",
+            title: String(localized: "Steps"),
             analyticsName: "StepsView",
             yAxisSuffix: "",
             seriesNames: ["Steps"],
@@ -113,7 +113,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
                     try await interactor.requestHealthKitAuthorisation()
                 } catch {
                     router.showSimpleAlert(
-                        title: "Unable to Access Health",
+                        title: String(localized: "Unable to Access Health"),
                         subtitle: "Allow step access in the Health app to sync your steps."
                     )
                     return

@@ -145,12 +145,12 @@ struct ProgressionEngine {
         return (top, missed)
     }
 
-    /// False when any set was logged harder than it was prescribed. RPE and RIR are the same scale
-    /// read from opposite ends, so a target of 2 reps in reserve is an RPE of 8.
+    /// False when any set was logged harder than it was prescribed. The RPE/RIR mapping is
+    /// `EffortScale`'s, so a target of 2 reps in reserve is an RPE of 8.
     private func rpeWithinTarget(_ input: ProgressionInput, session: ProgressionHistorySession) -> Bool {
         for (index, set) in session.workingSets.enumerated() {
             guard let rpe = set.rpe, let rir = target(input, at: index)?.rirTarget else { continue }
-            if rpe > 10 - Double(rir) + 0.5 { return false }
+            if rpe > EffortScale.rpe(fromRIR: rir) + 0.5 { return false }
         }
         return true
     }

@@ -42,7 +42,7 @@ class DefineWorkoutWrapperPresenter {
         // Reachable: the user document arrives on the sync engine's own task. A silent return threw
         // the whole wizard away.
         guard let uid = currentUser?.userId else {
-            router.showSimpleAlert(title: "Unable to Save Workout", subtitle: "Please try again.")
+            router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
             return
         }
         let existing = delegate.workoutTemplate
@@ -67,7 +67,7 @@ class DefineWorkoutWrapperPresenter {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: workout, image: nil)
                 router.dismissEnvironment()
             } catch {
-                router.showSimpleAlert(title: "Unable to Save Workout", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
             }
         }
     }

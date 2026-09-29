@@ -20,10 +20,12 @@ class NutritionPresenter {
     }
 
     var mealsForSelectedDate: [MealLogModel] {
+        // Silent: computed local read; an empty timeline is the fallback.
         (try? interactor.getMeals(for: selectedDate.dayKey)) ?? []
     }
 
     var dailyTotals: DailyMacroTarget? {
+        // Silent: computed local read; no totals shows as no data.
         try? interactor.getDailyTotals(dayKey: dayKey)
     }
 

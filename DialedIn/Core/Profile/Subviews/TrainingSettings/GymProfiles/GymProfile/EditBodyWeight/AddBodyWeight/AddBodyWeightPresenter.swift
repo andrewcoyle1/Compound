@@ -41,7 +41,7 @@ class AddBodyWeightPresenter {
         guard bodyWeight.wrappedValue.range.contains(where: {
             $0.availableWeights == bodyWeightAvailable.availableWeights && $0.unit == bodyWeightAvailable.unit
         }) == false else {
-            router.showSimpleAlert(title: "Unable to add", subtitle: "This weight is already added.")
+            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
             return 
         }
         self.bodyWeight.wrappedValue.range.append(self.bodyWeightAvailable)

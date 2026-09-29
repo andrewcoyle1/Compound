@@ -113,18 +113,18 @@ enum CalorieDistribution: String, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .even:
-            return "Distribute Evenly"
+            return String(localized: "Distribute Evenly")
         case .varied:
-            return "Vary By Day"
+            return String(localized: "Vary By Day")
         }
     }
     
     var detailedDescription: String {
         switch self {
         case .even:
-            return "Distribute calories evenly across all days of the week."
+            return String(localized: "Distribute calories evenly across all days of the week.")
         case .varied:
-            return "Distribute calories to increase energy on training days."
+            return String(localized: "Distribute calories to increase energy on training days.")
         }
     }
 }

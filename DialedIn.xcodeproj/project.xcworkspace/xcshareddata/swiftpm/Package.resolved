@@ -1,5 +1,5 @@
 {
-  "originHash" : "3926acb64aa9bcd919d6275d18e6603fce2f1bf6ddefbb5c5a20ca5f73325204",
+  "originHash" : "44fa7397a94d17e5b24b74cf76140a75bff8d42e9b6142726a04d399c376e07c",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -141,8 +141,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mixpanel/mixpanel-swift.git",
       "state" : {
-        "branch" : "master",
-        "revision" : "4088e46b2d76a70e227f790f5b683f8ff52951d0"
+        "revision" : "c550cbef7654e59d06bf9c224ea25f681dea8975",
+        "version" : "4.4.0"
       }
     },
     {
@@ -249,8 +249,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/andrewcoyle1/SwiftfulDataManagers.git",
       "state" : {
-        "revision" : "10a9cbbc2ccf9da660e33bf798c57b83d24b3585",
-        "version" : "1.1.4"
+        "revision" : "8313fc3b5c4f4a1f8db033833eb34529ee79f810",
+        "version" : "1.1.6"
       }
     },
     {

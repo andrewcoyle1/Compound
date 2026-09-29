@@ -48,9 +48,9 @@ struct CheckInView: View {
 
     private var introductionStep: some View {
         Section {
-            summaryRow(title: "Days logged", value: "\(presenter.loggedDayCount) of 7")
-            summaryRow(title: "Weigh-ins", value: "\(presenter.weighInCount)")
-            summaryRow(title: "Weight trend", value: presenter.trendChangeDescription ?? "Not enough data yet")
+            summaryRow(title: String(localized: "Days logged"), value: "\(presenter.loggedDayCount) of 7")
+            summaryRow(title: String(localized: "Weigh-ins"), value: "\(presenter.weighInCount)")
+            summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
             continueButton("Continue")
         } header: {
             Text("The last seven days")
@@ -165,8 +165,8 @@ struct CheckInView: View {
             }
         } else {
             Section {
-                summaryRow(title: "Expenditure", value: presenter.expenditureDescription)
-                summaryRow(title: "Weight trend", value: presenter.trendChangeDescription ?? "Not enough data yet")
+                summaryRow(title: String(localized: "Expenditure"), value: presenter.expenditureDescription)
+                summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
                 Button("Done") {
                     presenter.onDonePressed()
                 }

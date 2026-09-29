@@ -108,6 +108,7 @@ class ProgramDesignPresenter {
         guard canRemoveWorkoutTemplateModel else { return }
         if let index = dayPlans.firstIndex(where: { $0.id == selectedWorkoutTemplateModel.id }) {
             dayPlans.remove(at: index)
+            // Safe: canRemoveWorkoutTemplateModel guarantees a plan remains after the removal.
             selectedWorkoutTemplateModel = dayPlans.first!
             recalculateAutoWorkoutTemplateModelNames()
         }
@@ -134,7 +135,7 @@ class ProgramDesignPresenter {
     
     func onActivatePressed(delegate: ProgramDesignDelegate) {
         guard canSave else { return }
-        router.showAlert(title: "Save Workout Templates", subtitle: "Would you like to save the workout templates in the training program for use independently?") {
+        router.showAlert(title: String(localized: "Save Workout Templates"), subtitle: String(localized: "Would you like to save the workout templates in the training program for use independently?")) {
             AnyView(
                 VStack {
                     Button {
@@ -201,8 +202,8 @@ class ProgramDesignPresenter {
     /// as a cover or the edit sheet the whole environment goes.
     func onDismissPressed(delegate: ProgramDesignDelegate) {
         router.showAlert(
-            title: "Discard Program",
-            subtitle: "Are you sure you want to discard your changes?",
+            title: String(localized: "Discard Program"),
+            subtitle: String(localized: "Are you sure you want to discard your changes?"),
             buttons: {
                 AnyView(
                     HStack {

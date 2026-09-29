@@ -98,17 +98,17 @@ enum ExpenditureEstimationMethod: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .standard:     return "Standard"
-        case .bodyFatAware: return "Body-fat aware"
+        case .standard:     return String(localized: "Standard")
+        case .bodyFatAware: return String(localized: "Body-fat aware")
         }
     }
 
     var subtitle: String {
         switch self {
         case .standard:
-            return "Estimate from height, weight, age and activity."
+            return String(localized: "Estimate from height, weight, age and activity.")
         case .bodyFatAware:
-            return "Use your logged body fat percentage where one is available, which suits leaner or heavier builds better."
+            return String(localized: "Use your logged body fat percentage where one is available, which suits leaner or heavier builds better.")
         }
     }
 }
@@ -122,20 +122,20 @@ enum BMREquation: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .mifflinStJeor:  return "Mifflin-St Jeor"
-        case .harrisBenedict: return "Harris-Benedict"
-        case .katchMcArdle:   return "Katch-McArdle"
+        case .mifflinStJeor:  return String(localized: "Mifflin-St Jeor")
+        case .harrisBenedict: return String(localized: "Harris-Benedict")
+        case .katchMcArdle:   return String(localized: "Katch-McArdle")
         }
     }
 
     var subtitle: String {
         switch self {
         case .mifflinStJeor:
-            return "The usual default, and the most accurate for most people."
+            return String(localized: "The usual default, and the most accurate for most people.")
         case .harrisBenedict:
-            return "Older, and tends to read slightly high."
+            return String(localized: "Older, and tends to read slightly high.")
         case .katchMcArdle:
-            return "Based on lean mass, so it needs a body fat percentage to mean anything."
+            return String(localized: "Based on lean mass, so it needs a body fat percentage to mean anything.")
         }
     }
 }
@@ -148,17 +148,17 @@ enum ExpenditureCalculationMode: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .dynamic: return "Dynamic"
-        case .fixed:   return "Fixed"
+        case .dynamic: return String(localized: "Dynamic")
+        case .fixed:   return String(localized: "Fixed")
         }
     }
 
     var subtitle: String {
         switch self {
         case .dynamic:
-            return "Adapt the estimate as your logged intake and weight change over time."
+            return String(localized: "Adapt the estimate as your logged intake and weight change over time.")
         case .fixed:
-            return "Keep the estimate where it is until you change it yourself."
+            return String(localized: "Keep the estimate where it is until you change it yourself.")
         }
     }
 }
@@ -170,13 +170,13 @@ enum ExpenditureAlgorithmVersion: String, DataSyncModelProtocol, CaseIterable {
 
     var title: String {
         switch self {
-        case .version1: return "Expenditure V1"
+        case .version1: return String(localized: "Expenditure V1")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .version1: return "The only version so far."
+        case .version1: return String(localized: "The only version so far.")
         }
     }
 }

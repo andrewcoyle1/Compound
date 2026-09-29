@@ -58,7 +58,7 @@ class GoalSummaryPresenter {
         guard let user = interactor.currentUser,
               let startingWeight = user.submittedWeightKilograms else {
             router.showSimpleAlert(
-                title: "Unable to save your Goal",
+                title: String(localized: "Unable to save your Goal"),
                 subtitle: "Current weight not available."
             )
             return
@@ -85,7 +85,7 @@ class GoalSummaryPresenter {
         } catch {
             interactor.trackEvent(event: Event.goalSaveFail(error: error))
             router.showSimpleAlert(
-                title: "Unable to save your Goal",
+                title: String(localized: "Unable to save your Goal"),
                 subtitle: "Please check your internet connection and try again."
             )
         }
@@ -156,11 +156,11 @@ class GoalSummaryPresenter {
     func motivationalMessage(objective: OverarchingObjective) -> String {
         let objective = objective.description.lowercased()
         if objective.contains("lose") {
-            return "Every step you take towards your goal is progress. Stay consistent with your nutrition and exercise, and you'll reach your target weight. Remember, sustainable changes lead to lasting results."
+            return String(localized: "Every step you take towards your goal is progress. Stay consistent with your nutrition and exercise, and you'll reach your target weight. Remember, sustainable changes lead to lasting results.")
         } else if objective.contains("maintain") {
-            return "Maintaining your current weight is a fantastic goal! Focus on balanced nutrition and regular activity to keep your body healthy and strong. Consistency is key to long-term success."
+            return String(localized: "Maintaining your current weight is a fantastic goal! Focus on balanced nutrition and regular activity to keep your body healthy and strong. Consistency is key to long-term success.")
         } else {
-            return "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort."
+            return String(localized: "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort.")
         }
     }
 

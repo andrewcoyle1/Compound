@@ -9,6 +9,7 @@ import Foundation
 
 struct ProductionStravaService: StravaService {
 
+    // Safe: both are valid URL literals.
     private let tokenURL = URL(string: "https://www.strava.com/api/v3/oauth/token")!
     private let activitiesURL = URL(string: "https://www.strava.com/api/v3/activities")!
 

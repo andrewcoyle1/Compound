@@ -37,8 +37,8 @@ extension BodyMetricType {
 
     var displayTitle: String {
         switch self {
-        case .scaleWeight: return "Scale Weight"
-        case .visualBodyFat: return "Visual Body Fat"
+        case .scaleWeight: return String(localized: "Scale Weight")
+        case .visualBodyFat: return String(localized: "Visual Body Fat")
         default: return measurementKind?.displayName ?? ""
         }
     }

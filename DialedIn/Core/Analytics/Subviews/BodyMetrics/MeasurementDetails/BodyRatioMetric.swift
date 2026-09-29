@@ -16,16 +16,16 @@ enum BodyRatioKind: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .waistToHeight: return "Waist to Height"
-        case .waistToHip:    return "Waist to Hip"
+        case .waistToHeight: return String(localized: "Waist to Height")
+        case .waistToHip:    return String(localized: "Waist to Hip")
         }
     }
 
     /// What has to be recorded before the ratio can be worked out, for the empty state.
     var requirement: String {
         switch self {
-        case .waistToHeight: return "Log a waist measurement and set your height to see this ratio."
-        case .waistToHip:    return "Log a waist and a hip measurement on the same date to see this ratio."
+        case .waistToHeight: return String(localized: "Log a waist measurement and set your height to see this ratio.")
+        case .waistToHip:    return String(localized: "Log a waist and a hip measurement on the same date to see this ratio.")
         }
     }
 }

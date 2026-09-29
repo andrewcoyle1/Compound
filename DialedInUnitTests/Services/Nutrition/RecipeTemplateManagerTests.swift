@@ -124,15 +124,6 @@ struct RecipeTemplateManagerTests {
         #expect(manager.userRecipeTemplates.map(\.id) == ["r2"])
     }
 
-    @Test("Test Deleting Every Recipe Empties The Library")
-    func testDeletingEveryRecipeEmptiesTheLibrary() async throws {
-        let manager = await TestManagers.signedInRecipeTemplateManager(recipes: twoRecipes)
-
-        try await manager.deleteAllRecipeTemplates()
-
-        #expect(await TestManagers.eventually { manager.userRecipeTemplates.isEmpty })
-    }
-
     // MARK: - A recipe whose food is deleted
 
     /// The consequence of embedding the food rather than referring to it: deleting the food from

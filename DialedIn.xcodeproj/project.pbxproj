@@ -10,7 +10,6 @@
 		D00087042F51D3FA00E51645 /* SwiftfulDataManagersFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D00087032F51D3FA00E51645 /* SwiftfulDataManagersFirebase */; };
 		D0136D522F48EE9100729550 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D0136D512F48EE9100729550 /* FirebaseMessaging */; };
 		D04CF16D2F492A0F002876A8 /* SwiftfulUI in Frameworks */ = {isa = PBXBuildFile; productRef = D04CF16C2F492A0F002876A8 /* SwiftfulUI */; };
-		D05D0B9E2E8EA0F00027C662 /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0B9D2E8EA0F00027C662 /* Mixpanel */; };
 		D05D0BAA2E8EA15E0027C662 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */; };
 		D05D0BAC2E8EA15E0027C662 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BAB2E8EA15E0027C662 /* FirebaseAppCheck */; };
 		D05D0BAE2E8EA15E0027C662 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BAD2E8EA15E0027C662 /* FirebaseAuth */; };
@@ -35,7 +34,6 @@
 		D0C4A7032F6D0001009C0A01 /* QuickCharts in Frameworks */ = {isa = PBXBuildFile; productRef = D0C4A7022F6D0001009C0A01 /* QuickCharts */; };
 		D0D44BAB2F54D5BE00D5BD92 /* SwiftfulGamification in Frameworks */ = {isa = PBXBuildFile; productRef = D0D44BAA2F54D5BE00D5BD92 /* SwiftfulGamification */; };
 		D0D44BAE2F54D63200D5BD92 /* SwiftfulGamificationFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D0D44BAD2F54D63200D5BD92 /* SwiftfulGamificationFirebase */; };
-		D0E5DE342F4E5BE10030B12E /* Mixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = D02A76D62EB2464700D080ED /* Mixpanel */; };
 		D0E5DE362F4E5BE10030B12E /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D02A76F02EB2469300D080ED /* SwiftfulUtilities */; };
 		D0E7A8A42EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7A8A32EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase */; };
 		D0E7AA692EE2DB6100BEE79F /* SwiftfulLogging in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7AA682EE2DB6100BEE79F /* SwiftfulLogging */; };
@@ -51,6 +49,8 @@
 		D0E7D5EF2EE372A600BEE79F /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5EE2EE372A600BEE79F /* SwiftfulFirestore */; };
 		D0EC89962F2BACF000845CB6 /* SwiftfulHaptics in Frameworks */ = {isa = PBXBuildFile; productRef = D0EC89952F2BACF000845CB6 /* SwiftfulHaptics */; };
 		D0EC899E2F2BAD7000845CB6 /* SwiftfulSoundEffects in Frameworks */ = {isa = PBXBuildFile; productRef = D0EC899D2F2BAD7000845CB6 /* SwiftfulSoundEffects */; };
+		D0F1D6E12F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */; };
+		D0F1D6E22F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */; };
 		D0FA1E112EB0A11100682653 /* LiveActivityPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */; };
 		D0FA1E122EB0A11200682653 /* LiveActivityPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */; };
 		D0FA1E212EB0A12100682653 /* LiveActivityIntentHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */; };
@@ -116,6 +116,7 @@
 		D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWorkoutStorage.swift; sourceTree = "<group>"; };
 		D0BC0E4D2EA29936008A1E22 /* WorkoutSessionActivityExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorkoutSessionActivityExtension.entitlements; sourceTree = "<group>"; };
 		D0E7D5A62EE31E7F00BEE79F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
 		D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPhase.swift; sourceTree = "<group>"; };
 		D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityIntentHandling.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -193,7 +194,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0E5DE362F4E5BE10030B12E /* SwiftfulUtilities in Frameworks */,
-				D0E5DE342F4E5BE10030B12E /* Mixpanel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,7 +229,6 @@
 				D05D0BBE2E8EA22E0027C662 /* SwiftfulUtilities in Frameworks */,
 				D0BF744D2F4CADF300DE875A /* SwiftfulAuthUI in Frameworks */,
 				D0E7D5E92EE34B6B00BEE79F /* RevenueCat in Frameworks */,
-				D05D0B9E2E8EA0F00027C662 /* Mixpanel in Frameworks */,
 				D05D0BAA2E8EA15E0027C662 /* FirebaseAnalytics in Frameworks */,
 				D0D44BAB2F54D5BE00D5BD92 /* SwiftfulGamification in Frameworks */,
 				D0EC89962F2BACF000845CB6 /* SwiftfulHaptics in Frameworks */,
@@ -264,6 +263,7 @@
 				D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */,
 				D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */,
 				D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */,
+				D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */,
 				D08F58612E8BF65F001D3980 /* WorkoutActivityAttributes.swift */,
 			);
 			path = Shared;
@@ -325,7 +325,6 @@
 			);
 			name = DialedInUnitTests;
 			packageProductDependencies = (
-				D02A76D62EB2464700D080ED /* Mixpanel */,
 				D02A76F02EB2469300D080ED /* SwiftfulUtilities */,
 			);
 			productName = DialedInTests;
@@ -399,7 +398,6 @@
 			);
 			name = DialedIn;
 			packageProductDependencies = (
-				D05D0B9D2E8EA0F00027C662 /* Mixpanel */,
 				D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */,
 				D05D0BAB2E8EA15E0027C662 /* FirebaseAppCheck */,
 				D05D0BAD2E8EA15E0027C662 /* FirebaseAuth */,
@@ -446,7 +444,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2620;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					D012F0192EACD46C0014C602 = {
 						CreatedOnToolsVersion = 26.0;
@@ -470,11 +468,11 @@
 			knownRegions = (
 				en,
 				Base,
+				es,
 			);
 			mainGroup = D0A299342E54AEA700DA64F7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				D05D0B9C2E8EA0F00027C662 /* XCRemoteSwiftPackageReference "mixpanel-swift" */,
 				D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				D05D0BB72E8EA1710027C662 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 				D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */,
@@ -603,6 +601,7 @@
 			files = (
 				D08F58632E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */,
 				D0AB1C992EA1907100682653 /* SharedWorkoutStorage.swift in Sources */,
+				D0F1D6E12F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */,
 				D0FA1E112EB0A11100682653 /* LiveActivityPhase.swift in Sources */,
 				D0FA1E212EB0A12100682653 /* LiveActivityIntentHandling.swift in Sources */,
 			);
@@ -614,6 +613,7 @@
 			files = (
 				D08F58622E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */,
 				D0AB1C9A2EA1907200682653 /* SharedWorkoutStorage.swift in Sources */,
+				D0F1D6E22F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */,
 				D0FA1E122EB0A11200682653 /* LiveActivityPhase.swift in Sources */,
 				D0FA1E222EB0A12200682653 /* LiveActivityIntentHandling.swift in Sources */,
 			);
@@ -916,6 +916,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1007,6 +1008,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Mock";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -1014,6 +1016,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
@@ -1190,6 +1193,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1268,6 +1272,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1352,6 +1357,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -1359,6 +1365,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
@@ -1432,6 +1439,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-bj1v2mbkjr92u8emp7li2i2157osija7.apps.googleusercontent.com";
 				INFOPLIST_FILE = DialedIn/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Compound;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -1439,6 +1447,7 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Your camera may be used to add media to the app for barcode scanning, food recognition etc.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads your nutrition and body measurement data to help you with your fitness goals";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes workouts and active energy to your Health data.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
@@ -1562,14 +1571,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.2.4;
-			};
-		};
-		D05D0B9C2E8EA0F00027C662 /* XCRemoteSwiftPackageReference "mixpanel-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mixpanel/mixpanel-swift.git";
-			requirement = {
-				branch = master;
-				kind = branch;
 			};
 		};
 		D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
@@ -1745,11 +1746,6 @@
 			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
 		};
-		D02A76D62EB2464700D080ED /* Mixpanel */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D05D0B9C2E8EA0F00027C662 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
-			productName = Mixpanel;
-		};
 		D02A76F02EB2469300D080ED /* SwiftfulUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
@@ -1759,11 +1755,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D04CF16B2F492A0F002876A8 /* XCRemoteSwiftPackageReference "SwiftfulUI" */;
 			productName = SwiftfulUI;
-		};
-		D05D0B9D2E8EA0F00027C662 /* Mixpanel */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D05D0B9C2E8EA0F00027C662 /* XCRemoteSwiftPackageReference "mixpanel-swift" */;
-			productName = Mixpanel;
 		};
 		D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

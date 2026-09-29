@@ -20,7 +20,7 @@ extension StepsEntry: @MainActor MetricEntry {
     }
 
     var displayValue: String {
-        "\(steps.formatted()) steps"
+        String(localized: "\(steps.formatted()) steps")
     }
 
     var systemImageName: String {

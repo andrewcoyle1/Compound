@@ -61,7 +61,12 @@ class TimerDurationPresenter {
         let total = editMinutes * 60 + editSeconds
         settings.restDurationsByExerciseType[type.rawValue] = total
         Task {
-            try? await save()
+            do {
+                try await save()
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
         }
         editingType = nil
     }
@@ -69,7 +74,12 @@ class TimerDurationPresenter {
     func resetDefaults() {
         settings.restDurationsByExerciseType = [:]
         Task {
-            try? await save()
+            do {
+                try await save()
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
         }
     }
 
@@ -139,11 +149,25 @@ class TimerDurationPresenter {
         let total = editMinutes * 60 + editSeconds
         let seconds = total > 0 ? total : nil
         editingExerciseId = nil
-        Task { try? await interactor.setExerciseRestOverride(seconds, for: exerciseId) }
+        Task {
+            do {
+                try await interactor.setExerciseRestOverride(seconds, for: exerciseId)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     func removeExerciseOverride(_ override: ExerciseOverride) {
-        Task { try? await interactor.setExerciseRestOverride(nil, for: override.id) }
+        Task {
+            do {
+                try await interactor.setExerciseRestOverride(nil, for: override.id)
+            } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
+            }
+        }
     }
 
     func formattedDuration(seconds: Int) -> String {
@@ -173,9 +197,11 @@ extension TimerDurationPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: TimerDurationDelegate)
         case onDisappear(delegate: TimerDurationDelegate)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveFail: return "TimerDurationView_Save_Fail"
             case .onAppear:    return "TimerDurationView_Appear"
             case .onDisappear: return "TimerDurationView_Disappear"
             }
@@ -183,13 +209,17 @@ extension TimerDurationPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             }
         }
 
         var type: LogType {
-            .analytic
+            switch self {
+            case .saveFail: return .severe
+            default: return .analytic
+            }
         }
     }
 }

@@ -28,6 +28,11 @@ struct WorkoutListViewBuilder: View {
                 filteredWorkoutTemplatesSection
             }
         }
+        .overlay {
+            if !presenter.searchText.isEmpty && presenter.filteredWorkoutTemplates.isEmpty {
+                ContentUnavailableView.search(text: presenter.searchText)
+            }
+        }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search workouts"))
         .onAppear {
             presenter.onViewAppear()

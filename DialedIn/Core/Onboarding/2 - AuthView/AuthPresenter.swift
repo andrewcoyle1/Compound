@@ -58,8 +58,8 @@ class AuthPresenter {
             } catch {
                 interactor.trackEvent(event: Event.appleAuthFail(error: error))
                 router.showAlert(
-                    title: "Error Signing in with Apple",
-                    subtitle: "Please check your internet connection and try again",
+                    title: String(localized: "Error Signing in with Apple"),
+                    subtitle: String(localized: "Please check your internet connection and try again"),
                     buttons: {
                         AnyView(
                             HStack {
@@ -99,8 +99,8 @@ class AuthPresenter {
             } catch {
                 interactor.trackEvent(event: Event.googleAuthFail(error: error))
                 router.showAlert(
-                    title: "Error Signing in with Google",
-                    subtitle: "Please check your internet connection and try again",
+                    title: String(localized: "Error Signing in with Google"),
+                    subtitle: String(localized: "Please check your internet connection and try again"),
                     buttons: {
                         AnyView(
                             HStack {
@@ -167,8 +167,8 @@ class AuthPresenter {
             } catch {
                 interactor.trackEvent(event: Event.userLoginFail(error: error))
                 router.showAlert(
-                    title: "Error Logging In",
-                    subtitle: "Please check your internet connection and try again.",
+                    title: String(localized: "Error Logging In"),
+                    subtitle: String(localized: "Please check your internet connection and try again."),
                     buttons: {
                         AnyView(
                             HStack {

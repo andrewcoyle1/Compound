@@ -129,7 +129,7 @@ struct MacroHeader: View {
         return VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 3) {
                 icon()
-                Text(page == .consumed ? "\(Int(total)) / \(Int(target))" : "\(Int(remaining)) left")
+                Text(page == .consumed ? String(localized: "\(String(describing: Int(total))) / \(String(describing: Int(target)))") : String(localized: "\(String(describing: Int(remaining))) left"))
             }
             .font(.caption2)
             .lineLimit(1)

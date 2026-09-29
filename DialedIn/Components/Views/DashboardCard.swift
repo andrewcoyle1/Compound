@@ -29,9 +29,13 @@ struct DashboardCard<Content: View>: View {
 
     var body: some View {
         VStack(alignment: .leading) {
+            // One line, shrinking before it truncates: "Today's Workout" is wider than a card at
+            // accessibility sizes. The carousel grows its height with the same text style.
             Text(title)
                 .font(.headline)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
 
             surface
                 .frame(height: Self.contentHeight)

@@ -32,7 +32,8 @@ class MealDescribePresenter {
     }
 
     func onLogFoodsPressed() async {
-        guard !descriptionText.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        guard !descriptionText.trimmingCharacters(in: .whitespaces).isEmpty,
+              interactor.ensureOnline(or: router) else { return }
         isAnalysing = true
         errorMessage = nil
         analysisResults = []

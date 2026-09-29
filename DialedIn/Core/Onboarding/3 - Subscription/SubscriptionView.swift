@@ -51,28 +51,28 @@ struct SubscriptionView: View {
         Section {
             VStack(alignment: .leading, spacing: 14) {
                 benefitRow(
-                    title: "Personalized plans",
-                    subtitle: "Training and nutrition tailored to your goals and schedule.",
+                    title: String(localized: "Personalized plans"),
+                    subtitle: String(localized: "Training and nutrition tailored to your goals and schedule."),
                     systemImage: "figure.run"
                 )
                 benefitRow(
-                    title: "Smart coaching",
-                    subtitle: "Daily guidance powered by your data and AI insights.",
+                    title: String(localized: "Smart coaching"),
+                    subtitle: String(localized: "Daily guidance powered by your data and AI insights."),
                     systemImage: "brain.head.profile"
                 )
                 benefitRow(
-                    title: "Progress tracking",
-                    subtitle: "See trends, weekly summaries, and PRs at a glance.",
+                    title: String(localized: "Progress tracking"),
+                    subtitle: String(localized: "See trends, weekly summaries, and PRs at a glance."),
                     systemImage: "chart.line.uptrend.xyaxis"
                 )
                 benefitRow(
-                    title: "HealthKit sync",
-                    subtitle: "Automatically log workouts and recovery from Apple Health.",
+                    title: String(localized: "HealthKit sync"),
+                    subtitle: String(localized: "Automatically log workouts and recovery from Apple Health."),
                     systemImage: "heart.circle"
                 )
                 benefitRow(
-                    title: "Accountability",
-                    subtitle: "Reminders and nudges to help you stay consistent.",
+                    title: String(localized: "Accountability"),
+                    subtitle: String(localized: "Reminders and nudges to help you stay consistent."),
                     systemImage: "bell.badge"
                 )
             }

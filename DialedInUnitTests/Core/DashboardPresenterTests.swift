@@ -66,24 +66,39 @@ enum DashboardFixture {
 @MainActor
 struct DashboardFeedPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, DashboardInteractor {
+    /// Internal rather than private so `DashboardCirclePresenterTests` can share the doubles.
+    final class Interactor: SpyGlobalInteractor, DashboardInteractor {
         var userId: String? = "me"
+        func acceptInvite(code: String) async throws -> (inviter: UserModel, acceptance: InviteAcceptance) {
+            throw InviteError.notFound
+        }
+        var inviteFails = false
+        func myInvite() async throws -> InviteModel {
+            if inviteFails { throw InviteError.unavailable }
+            return InviteModel(code: "PUSH2345", inviterId: "me")
+        }
         var userImageUrl: String?
         var currentUser: UserModel? = DashboardFixture.user("me")
         var draftMeal: MealLogModel?
         var workoutSessions: [WorkoutSessionModel] = []
         var activityNotifications: [ActivityNotificationModel] = []
+        var incomingFollowRequests: [FollowRequestModel] = []
         var followingWorkoutSessions: [WorkoutSessionModel] = []
         var followingUsers: [UserModel] = []
         var activeTrainingProgram: TrainingProgram?
         var totals: DailyMacroTarget?
         var target: DailyMacroTarget?
         var notificationsError: Error?
+        var suggestedUsers: [UserModel] = []
+        private(set) var suggestedFetchCount = 0
         private(set) var deletedDraftCount = 0
         private(set) var fetchedNotificationsCount = 0
         private(set) var followedUserIds: [String] = []
         private(set) var unfollowedUserIds: [String] = []
         private(set) var totalsDayKeys: [String] = []
+        var nudgedUserIdsToday: Set<String> = []
+        var nudgeError: Error?
+        private(set) var nudgeWrites: [String] = []
 
         func deleteDraftMeal() throws {
             deletedDraftCount += 1
@@ -94,9 +109,23 @@ struct DashboardFeedPresenterTests {
 
         func unfollowUser(userId: String) async throws { unfollowedUserIds.append(userId) }
 
+        func nudgeUser(userId: String) async throws {
+            if let nudgeError { throw nudgeError }
+            nudgeWrites.append(userId)
+            nudgedUserIdsToday.insert(userId)
+        }
+        var sentFollowRequestIds: Set<String> = []
+        func sendFollowRequest(to user: UserModel) async throws { sentFollowRequestIds.insert(user.userId) }
+        func cancelFollowRequest(userId: String) async throws { sentFollowRequestIds.remove(userId) }
+
         func fetchActivityNotifications() async throws {
             fetchedNotificationsCount += 1
             if let notificationsError { throw notificationsError }
+        }
+
+        func fetchSuggestedUsers() async throws -> [UserModel] {
+            suggestedFetchCount += 1
+            return suggestedUsers
         }
 
         func getDailyTotals(dayKey: String) throws -> DailyMacroTarget {
@@ -108,11 +137,29 @@ struct DashboardFeedPresenterTests {
         func getDailyTarget(for date: Date, userId: String) async throws -> DailyMacroTarget? {
             target
         }
+
+        var fetchableSessions: [WorkoutSessionModel] = []
+
+        func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel {
+            guard let session = fetchableSessions.first(where: { $0.id == id && $0.authorId == authorId }) else {
+                throw DashboardTestError.failed
+            }
+            return session
+        }
+
+        // MARK: - Challenges
+        var challenges: [ChallengeModel] = []
+        var challengeProgressById: [String: [String: Int]] = [:]
+        private(set) var challengeRefreshCount = 0
+        func challengeProgress(challengeId: String) -> [String: Int] { challengeProgressById[challengeId] ?? [:] }
+        func refreshChallenges() async throws { challengeRefreshCount += 1 }
+        // MARK: - FeedLoading
+        var hasLoadedFollowingSessions = true
     }
 
     /// `showDevSettingsView()` is declared unguarded: the protocol wraps it in `#if DEV || MOCK` but
     /// the test target builds without those flags.
-    private final class Router: DashboardRouter {
+    final class Router: DashboardRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []
@@ -122,6 +169,17 @@ struct DashboardFeedPresenterTests {
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
         func showNotificationsView() { shown.append("notifications") }
         func showNutritionView() { shown.append("nutrition") }
+        func showSocialProfileView(delegate: SocialProfileDelegate) { shown.append("socialProfile:\(delegate.user.userId)") }
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("session:\(delegate.initialSession.id)") }
+        func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) { shown.append("thread:\(delegate.initialSession.id)") }
+        func showEditUsernameView() { shown.append("editUsername") }
+        func showWeeklyGoalView() { shown.append("weeklyGoal") }
+        // MARK: - Challenges
+        func showChallengeDetailView(delegate: ChallengeDetailDelegate) { shown.append("challenge:\(delegate.challenge.id)") }
+        func showCreateChallengeView() { shown.append("createChallenge") }
+        // MARK: - WeeklyReview
+        func showWeeklyReviewView() { shown.append("weeklyReview") }
+        func showShareSheet(items: [Any]) { shown.append("share: \(items.first as? String ?? "")") }
 
         func showAddMealView(delegate: AddMealDelegate) {
             shown.append("addMeal")
@@ -129,6 +187,10 @@ struct DashboardFeedPresenterTests {
         }
 
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            alertTitles.append(title)
+        }
+
+        func showSimpleAlert(title: String, subtitle: String?) {
             alertTitles.append(title)
         }
     }
@@ -150,6 +212,44 @@ struct DashboardFeedPresenterTests {
         )
     }
 
+    // MARK: Opening a session from a push
+
+    /// A push tap relayed by the tab bar opens the session it names, and a comment or mention
+    /// opens its thread on top.
+    @Test("Test A Session Push Opens The Session And A Comment Push Its Thread")
+    func testASessionPushOpensTheSessionAndACommentPushItsThread() async {
+        let screen = makeScreen()
+        screen.interactor.fetchableSessions = [DashboardFixture.session(id: "s1", author: "friend", on: DashboardFixture.date(day: 2))]
+
+        screen.presenter.onOpenWorkoutSessionNotificationReceived(Notification(
+            name: Constants.openWorkoutSession, object: nil,
+            userInfo: ["session_id": "s1", "session_author_id": "friend", "type": "like"]
+        ))
+        await TestManagers.eventually { screen.router.shown == ["session:s1"] }
+        screen.presenter.onOpenWorkoutSessionNotificationReceived(Notification(
+            name: Constants.openWorkoutSession, object: nil,
+            userInfo: ["session_id": "s1", "session_author_id": "friend", "type": "mention"]
+        ))
+        await TestManagers.eventually { screen.router.shown.count == 2 }
+
+        #expect(screen.router.shown == ["session:s1", "thread:s1"])
+    }
+
+    /// Best effort: a session that cannot be fetched leaves the user on the Dashboard, with no alert.
+    @Test("Test A Session Push That Cannot Be Fetched Does Nothing")
+    func testASessionPushThatCannotBeFetchedDoesNothing() async {
+        let screen = makeScreen()
+
+        screen.presenter.onOpenWorkoutSessionNotificationReceived(Notification(
+            name: Constants.openWorkoutSession, object: nil,
+            userInfo: ["session_id": "gone", "session_author_id": "friend", "type": "comment"]
+        ))
+        await TestManagers.eventually(timeout: .milliseconds(200)) { !screen.router.shown.isEmpty }
+
+        #expect(screen.router.shown.isEmpty)
+        #expect(screen.router.alertTitles.isEmpty)
+    }
+
     // MARK: Feed contents
 
     /// The newest workout is the one people came to see, so the feed reads downwards in time
@@ -167,6 +267,21 @@ struct DashboardFeedPresenterTests {
         ]
 
         #expect(screen.presenter.feedSessions.map(\.id) == ["mine-new", "theirs", "mine-old"])
+    }
+
+    /// Blocking unfollows, but the following sync can still hold a blocked author's sessions until
+    /// it next emits, and an account blocked before blocking unfollowed may still be followed.
+    @Test("Test A Blocked Authors Session Is Not In The Feed")
+    func testABlockedAuthorsSessionIsNotInTheFeed() {
+        let screen = makeScreen()
+        screen.interactor.currentUser = UserModel(userId: "me", submittedFirstName: "me", blockedUserIds: ["blocked"])
+        screen.interactor.followingUsers = [DashboardFixture.user("friend"), DashboardFixture.user("blocked")]
+        screen.interactor.followingWorkoutSessions = [
+            DashboardFixture.session(id: "theirs", author: "friend", on: DashboardFixture.date(day: 3)),
+            DashboardFixture.session(id: "hidden", author: "blocked", on: DashboardFixture.date(day: 4))
+        ]
+
+        #expect(screen.presenter.feedSessions.map(\.id) == ["theirs"])
     }
 
     /// A workout still being logged is not an achievement to show anyone — including its own author,
@@ -250,6 +365,43 @@ struct DashboardFeedPresenterTests {
         let screen = makeScreen()
 
         #expect(screen.presenter.feedSessions.isEmpty)
+    }
+
+    // MARK: Suggested people
+
+    /// Suggestions belong to the empty state only: a reader with a feed never pays for the fetch.
+    @Test("Test Suggested People Load Only For An Empty Feed")
+    func testSuggestedPeopleLoadOnlyForAnEmptyFeed() async {
+        let screen = makeScreen()
+        screen.interactor.suggestedUsers = [DashboardFixture.user("a")]
+        screen.interactor.workoutSessions = [DashboardFixture.session(id: "mine", on: DashboardFixture.date(day: 1))]
+
+        await screen.presenter.loadSuggestedUsers()
+        #expect(screen.interactor.suggestedFetchCount == 0)
+        #expect(screen.presenter.visibleSuggestedUsers.isEmpty)
+
+        screen.interactor.workoutSessions = []
+        await screen.presenter.loadSuggestedUsers()
+        #expect(screen.interactor.suggestedFetchCount == 1)
+        #expect(screen.presenter.visibleSuggestedUsers.map(\.userId) == ["a"])
+    }
+
+    /// Following someone from the list drops them out of it, and the row opens their profile.
+    @Test("Test Following A Suggested Person Removes Them And A Row Opens Their Profile")
+    func testFollowingASuggestedPersonRemovesThemAndARowOpensTheirProfile() async {
+        let screen = makeScreen()
+        screen.interactor.suggestedUsers = [DashboardFixture.user("a"), DashboardFixture.user("b")]
+        await screen.presenter.loadSuggestedUsers()
+
+        screen.presenter.onFollowButtonPressed(user: DashboardFixture.user("a"))
+        await TestManagers.eventually { !screen.interactor.followedUserIds.isEmpty }
+        screen.interactor.currentUser = UserModel(userId: "me", followingIds: ["a"])
+        screen.presenter.onSuggestedUserPressed(user: DashboardFixture.user("b"))
+
+        #expect(screen.interactor.followedUserIds == ["a"])
+        #expect(screen.presenter.visibleSuggestedUsers.map(\.userId) == ["b"])
+        #expect(screen.presenter.followState(for: DashboardFixture.user("a")) == .following)
+        #expect(screen.router.shown == ["socialProfile:b"])
     }
 
     // MARK: Authorship
@@ -425,6 +577,26 @@ struct DashboardFeedPresenterTests {
         await screen.presenter.loadNotifications()
 
         #expect(screen.interactor.fetchedNotificationsCount == 1)
+    }
+
+    /// The bell counts unread activity and pending follow requests together, and a request that
+    /// arrives on the live listener raises it without any fetch.
+    @Test("Test The Bell Badge Adds Pending Follow Requests")
+    func testTheBellBadgeAddsPendingFollowRequests() {
+        let screen = makeScreen()
+        screen.interactor.activityNotifications = [false, true].enumerated().map { index, isRead in
+            ActivityNotificationModel(
+                id: "n\(index)", type: .like, actorId: "a", actorName: "A", actorImageUrl: nil,
+                sessionId: "s", sessionAuthorId: "me", commentText: nil, dateCreated: DashboardFixture.date(day: 1), isRead: isRead
+            )
+        }
+        #expect(screen.presenter.bellBadgeCount == 1)
+
+        screen.interactor.incomingFollowRequests = ["fan", "friend"].map {
+            FollowRequestModel(requesterId: $0, requesterName: $0, requesterImageUrl: nil, dateCreated: DashboardFixture.date(day: 1), status: .pending)
+        }
+
+        #expect(screen.presenter.bellBadgeCount == 3)
     }
 
     @Test("Test The Bell Opens The Notifications Screen")

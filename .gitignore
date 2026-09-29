@@ -64,3 +64,9 @@ DialedIn/Utilities/Keys.swift
 # `-resultBundlePath` never gets committed.
 SourcePackages/
 TestResults.xcresult/
+
+# Output of scripts/screenshots-diff.py
+Screenshots/diff/
+
+# Firebase CLI deploy cache
+.firebase/

@@ -36,6 +36,15 @@ struct CommentsView: View {
                 Section {
                     ForEach(presenter.comments) { comment in
                         commentRow(comment)
+                            .padding(.leading, presenter.isReply(comment) ? 40 : 0)
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    presenter.onReplyPressed(comment)
+                                } label: {
+                                    Label("Reply", systemImage: "arrowshape.turn.up.left")
+                                }
+                                .tint(.accentColor)
+                            }
                             .swipeActions(edge: .trailing) {
                                 if presenter.isOwnComment(comment) {
                                     Button {
@@ -85,35 +94,98 @@ struct CommentsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Text(comment.text)
+                Text(presenter.attributedText(for: comment))
                     .font(.subheadline)
             }
+            likeButton(comment)
         }
         .padding(.vertical, 4)
     }
 
-    private var inputBar: some View {
-        HStack(spacing: 8) {
-            TextField("Add a comment…", text: $presenter.commentDraft, axis: .vertical)
-                .lineLimit(1...4)
-            Button {
-                presenter.onSendPressed()
-            } label: {
-                if presenter.isSending {
-                    ProgressView()
-                } else {
-                    Image(systemName: "paperplane.fill")
+    private func likeButton(_ comment: WorkoutSessionComment) -> some View {
+        let isLiked = presenter.isLikedByReader(comment)
+        let count = comment.likedByUserIds.count
+        return Button {
+            presenter.onLikePressed(comment)
+        } label: {
+            VStack(spacing: 2) {
+                Image(systemName: isLiked ? "heart.fill" : "heart")
+                    .foregroundStyle(isLiked ? Color.red : Color.secondary)
+                    .contentTransition(.symbolEffect(.replace))
+                if count > 0 {
+                    Text("\(count)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
             }
-            .accessibilityLabel("Send comment")
-            .disabled(
-                presenter.commentDraft.trimmingCharacters(in: .whitespaces).isEmpty ||
-                presenter.isSending
-            )
+            .frame(minWidth: 32)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isLiked ? String(localized: "Unlike comment") : String(localized: "Like comment"))
+        .accessibilityValue(count == 1 ? String(localized: "1 like") : String(localized: "\(count) likes"))
+    }
+
+    private var inputBar: some View {
+        VStack(spacing: 8) {
+            if let parent = presenter.replyingTo {
+                HStack {
+                    Text("Replying to \(parent.authorName ?? "comment")")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        presenter.onCancelReplyPressed()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Cancel reply")
+                }
+            }
+            if !presenter.mentionSuggestions.isEmpty {
+                mentionSuggestionRow
+            }
+            inputRow
         }
         .padding()
         .glassEffect(in: .containerRelative)
         .padding()
+    }
+
+    private var mentionSuggestionRow: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(presenter.mentionSuggestions) { candidate in
+                    Button {
+                        presenter.onMentionSuggestionPressed(candidate)
+                    } label: {
+                        Text(candidate.label)
+                            .font(.subheadline)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityLabel("Mention \(candidate.fullName)")
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private var inputRow: some View {
+        HStack(spacing: 8) {
+            TextField(presenter.replyingTo == nil ? String(localized: "Add a comment…") : String(localized: "Add a reply…"), text: $presenter.commentDraft, axis: .vertical)
+                .lineLimit(1...4)
+            Button {
+                presenter.onSendPressed()
+            } label: {
+                Image(systemName: "paperplane.fill")
+            }
+            .accessibilityLabel("Send comment")
+            .disabled(presenter.commentDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+        }
     }
 }
 
@@ -199,25 +271,6 @@ private func commentsPreviewContainer(
                 delegate: CommentsDelegate(session: session)
             )
             .withPreviewState(comments: comments, draft: "Nice work — what did that top single feel like?")
-        )
-    }
-}
-
-#Preview("Sending") {
-    let session = WorkoutSessionModel.mock
-    let comments = WorkoutSessionComment.mocks(sessionId: session.id)
-    let container = commentsPreviewContainer(comments: comments)
-    let interactor = CoreInteractor(container: container)
-    let builder = CoreBuilder(interactor: interactor)
-
-    RouterView { router in
-        CommentsView(
-            presenter: CommentsPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: builder),
-                delegate: CommentsDelegate(session: session)
-            )
-            .withPreviewState(comments: comments, isSending: true)
         )
     }
 }

@@ -24,6 +24,10 @@ class TrainingProgramDisclosureGroupPresenter {
         router.showEditTrainingProgramView(delegate: EditTrainingProgramDelegate(program: program))
     }
 
+    func onSharePressed(_ program: TrainingProgram) {
+        router.showShareToFollowerView(delegate: ShareToFollowerDelegate(payload: .program(program)))
+    }
+
 }
 
 extension TrainingProgramDisclosureGroupPresenter {

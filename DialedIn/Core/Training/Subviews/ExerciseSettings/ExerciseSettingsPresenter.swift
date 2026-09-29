@@ -34,10 +34,10 @@ class ExerciseSettingsPresenter {
         if let override = restOverride {
             let mins = override / 60
             let secs = override % 60
-            return "Custom (\(mins)m \(String(format: "%02d", secs))s)"
+            return String(localized: "Custom (\(String(describing: mins))m \(String(format: "%02d", secs))s)")
         }
         let defaultSecs = interactor.workoutSettings.defaultRestDurationSeconds
-        return "Default (\(defaultSecs)s)"
+        return String(localized: "Default (\(String(describing: defaultSecs))s)")
     }
 
     /// Whether this exercise is worked one limb at a time, which is what decides if the
@@ -54,7 +54,7 @@ class ExerciseSettingsPresenter {
         let settings = interactor.workoutSettings
         guard settings.restBetweenSideSets else { return "Off" }
         let percent = Int((settings.sideSetRestScaling * 100).rounded())
-        return "\(percent)% of the rest timer"
+        return String(localized: "\(String(describing: percent))% of the rest timer")
     }
 
     var noteSubtitle: String {
@@ -81,8 +81,8 @@ class ExerciseSettingsPresenter {
 
     func onWeightsPressed() {
         router.showAlert(
-            title: "Weight Unit",
-            subtitle: "Select unit for '\(exercise.name)'",
+            title: String(localized: "Weight Unit"),
+            subtitle: String(localized: "Select unit for '\(exercise.name)'"),
             buttons: {
                 AnyView(
                     VStack(spacing: 8) {

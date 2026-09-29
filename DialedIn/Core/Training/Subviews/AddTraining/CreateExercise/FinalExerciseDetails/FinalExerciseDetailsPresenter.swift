@@ -28,12 +28,12 @@ class FinalExerciseDetailsPresenter {
     /// The footer read "XX kg at your current weight." verbatim.
     func contributionFooter(delegate: FinalExerciseDetailsDelegate) -> String {
         guard let kilograms = interactor.currentUser?.submittedWeightKilograms else {
-            return "The share of your body weight this exercise moves."
+            return String(localized: "The share of your body weight this exercise moves.")
         }
         let unit = interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
         let moved = kilograms * Double(bodyweightContribution) / 100
         let shown = unit == .pounds ? moved * 2.2046226218 : moved
-        return "About \(Int(shown.rounded())) \(unit.abbreviation) at your current weight."
+        return String(localized: "About \(String(describing: Int(shown.rounded()))) \(unit.abbreviation) at your current weight.")
     }
 
     func onNextPressed(delegate: FinalExerciseDetailsDelegate) {

@@ -8,8 +8,13 @@
 import SwiftUI
 import Firebase
 import FirebaseMessaging
+import FirebaseFirestore
+import FirebaseFunctions
+import FirebaseStorage
+import GoogleSignIn
 
 class AppDelegate: NSObject, UIApplicationDelegate {
+    // Safe: both are set in application(_:didFinishLaunchingWithOptions:) before any use.
     var dependencies: Dependencies!
     var builder: CoreBuilder!
 
@@ -48,7 +53,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         self.dependencies = dependencies
         self.builder = CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
         registerLiveActivityIntentHandler(container: dependencies.container)
+        seedPushPayloadFromLaunchArguments()
+        registerAppIntents()
         return true
+    }
+
+    /// Siri and Shortcuts reach the app through this interactor (see `AppIntentsBridge`). The
+    /// "Start <workout>" phrases list template names, so they are refreshed once the signed-in
+    /// user's data has synced.
+    private func registerAppIntents() {
+        AppIntentsBridge.interactor = builder.interactor
+        NotificationCenter.default.addObserver(forName: Constants.remoteDataSyncDidComplete, object: nil, queue: .main) { _ in
+            DialedInAppShortcuts.updateAppShortcutParameters()
+        }
     }
     
     /// Registered for every configuration, mock included, so the Mock scheme exercises the same
@@ -56,6 +73,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     private func registerLiveActivityIntentHandler(container: DependencyContainer) {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         let handler = AppLiveActivityIntentHandler(
+            // Safe: Dependencies registers every one of these for every BuildConfiguration.
             workoutSessionManager: container.resolve(WorkoutSessionManager.self)!,
             hkWorkoutManager: container.resolve(HKWorkoutManager.self)!,
             liveActivityUpdater: container.resolve(LiveActivityManager.self)!,
@@ -71,6 +89,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         )
         liveActivityIntentHandler = handler
         LiveActivityIntentHandler.current = handler
+        #endif
+    }
+
+    /// `PUSH_PAYLOAD_JSON '{"type":"follow_request"}'` as launch arguments stands in for a push
+    /// tapped to launch the app, which the simulator cannot deliver on its own.
+    private func seedPushPayloadFromLaunchArguments() {
+        #if MOCK || DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        guard
+            let index = arguments.firstIndex(of: "PUSH_PAYLOAD_JSON"),
+            arguments.indices.contains(index + 1),
+            let data = arguments[index + 1].data(using: .utf8),
+            let payload = try? JSONSerialization.jsonObject(with: data) as? [AnyHashable: Any]
+        else { return }
+        storePendingDeepLink(DeepLink(pushUserInfo: payload))
         #endif
     }
 
@@ -106,11 +139,20 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .badge])
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        // Firebase push notifications put the payload within "aps" sub-dictionary.
-        // This may not be the case for other push notification services
-        let userInfo = response.notification.request.content.userInfo["aps"] as? [String: Any]
-        NotificationCenter.default.post(name: .pushNotification, object: nil, userInfo: userInfo)
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        // FCM puts the message's `data` keys at the top level of userInfo, beside `aps` — reading
+        // only `aps` meant no tap ever carried a destination. Parsed here because userInfo is not
+        // Sendable; `DeepLink` is.
+        let deepLink = DeepLink(pushUserInfo: response.notification.request.content.userInfo)
+        await storePendingDeepLink(deepLink)
+    }
+
+    /// Parks the destination on `PushManager` and tells a tab bar already on screen to take it. On a
+    /// cold start nothing is listening yet; `logIn` and the tab bar's appear pick it up instead.
+    private func storePendingDeepLink(_ deepLink: DeepLink?) {
+        guard let deepLink else { return }
+        dependencies?.container.resolve(PushManager.self)?.storePendingDeepLink(deepLink)
+        NotificationCenter.default.post(name: .pushNotification, object: nil)
     }
 }
 
@@ -135,6 +177,7 @@ enum BuildConfiguration {
         case .mock:
             break
         case .dev:
+            // Deliberate launch crash: the app cannot run without its Firebase plist (see CLAUDE.md First-Time Setup).
             let plist = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             #if targetEnvironment(simulator)
@@ -144,15 +187,57 @@ enum BuildConfiguration {
             AppCheck.setAppCheckProviderFactory(providerFactory)
             #endif
             FirebaseApp.configure(options: options)
+            Self.configureGoogleSignInAppCheck(apiKey: options.apiKey)
             Analytics.setAnalyticsCollectionEnabled(true)
+            #if DEBUG
+            if NetworkMonitor.isOfflineTesting {
+                Self.pointFirebaseAtUnreachableHost()
+            }
+            #endif
             
         case .prod:
+            // Deliberate launch crash: the app cannot run without its Firebase plist (see CLAUDE.md First-Time Setup).
             let plist = Bundle.main.path(forResource: "GoogleService-Info-Prod", ofType: "plist")!
             let options = FirebaseOptions(contentsOfFile: plist)!
             let providerFactory = MyAppCheckProviderFactory()
             AppCheck.setAppCheckProviderFactory(providerFactory)
             FirebaseApp.configure(options: options)
+            Self.configureGoogleSignInAppCheck(apiKey: options.apiKey)
             Analytics.setAnalyticsCollectionEnabled(true)
         }
+        // Started now so it has a path by the time anything asks.
+        _ = NetworkMonitor.shared
     }
+
+    /// Google Sign-In 8 attaches its own App Check token to the OAuth request, separate from
+    /// Firebase's. The OAuth client enforces it, so without this call Google answers
+    /// "We cannot verify the authenticity of this app … Token failed" (Error 400: invalid_request).
+    /// The simulator uses the same debug token as Firebase App Check, registered in the console.
+    /// The token exchange is addressed to `oauthClients/{GIDClientID}`, read from Info.plist; the
+    /// per-configuration `INFOPLIST_KEY_GIDClientID` build setting supplies it.
+    private static func configureGoogleSignInAppCheck(apiKey: String?) {
+        #if targetEnvironment(simulator)
+        guard let apiKey else { return }
+        GIDSignIn.sharedInstance.configureDebugProvider(withAPIKey: apiKey) { error in
+            if let error { print("GIDSignIn App Check debug configure failed: \(error)") }
+        }
+        #else
+        GIDSignIn.sharedInstance.configure { error in
+            if let error { print("GIDSignIn App Check configure failed: \(error)") }
+        }
+        #endif
+    }
+
+    #if DEBUG
+    /// `OFFLINE_TESTING` on the Development scheme: Firestore, Functions and Storage talk to an
+    /// address that never answers, which is how a device with no signal behaves — writes queue,
+    /// reads fall back to the cache, and anything awaiting the server waits. Must run before the
+    /// first use of each, which is why it is here and not in `Dependencies`.
+    private static func pointFirebaseAtUnreachableHost() {
+        let host = "10.255.255.1"
+        Firestore.firestore().useEmulator(withHost: host, port: 8080)
+        Functions.functions(region: "us-central1").useEmulator(withHost: host, port: 5001)
+        Storage.storage().useEmulator(withHost: host, port: 9199)
+    }
+    #endif
 }

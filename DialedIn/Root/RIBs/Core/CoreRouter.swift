@@ -19,8 +19,8 @@ struct CoreRouter: GlobalRouter {
             backgroundColor: .black.opacity(0.3),
             destination: {
                 CustomModalView(
-                    title: "Warmup Sets",
-                    subtitle: "Warmup sets are lighter weight sets performed before your working sets to prepare your muscles and joints. They don't count toward your total volume or personal records.",
+                    title: String(localized: "Warmup Sets"),
+                    subtitle: String(localized: "Warmup sets are lighter weight sets performed before your working sets to prepare your muscles and joints. They don't count toward your total volume or personal records."),
                     primaryButtonTitle: "Got it",
                     primaryButtonAction: {
                         primaryButtonAction()

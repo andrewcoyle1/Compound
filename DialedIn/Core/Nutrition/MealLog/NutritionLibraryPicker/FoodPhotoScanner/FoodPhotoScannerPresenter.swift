@@ -36,13 +36,14 @@ class FoodPhotoScannerPresenter {
     }
 
     func onCapture(_ image: UIImage) async {
+        guard interactor.ensureOnline(or: router) else { return }
         isAnalysing = true
         errorMessage = nil
         analysisResults = []
         interactor.trackEvent(event: Event.onCapture)
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
-            errorMessage = "Failed to process image."
+            errorMessage = String(localized: "Failed to process image.")
             isAnalysing = false
             return
         }

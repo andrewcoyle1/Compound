@@ -22,6 +22,12 @@ class TabBarPresenter {
         interactor.draftMeal
     }
     
+    /// Unread notification rows (a grouped row counts once), plus follow requests waiting on an
+    /// answer, shown on the Dashboard tab since that is where the bell lives. Zero hides the badge.
+    var unreadActivityCount: Int {
+        NotificationGrouping.unreadGroupCount(interactor.activityNotifications) + interactor.incomingFollowRequests.count
+    }
+
     var showTabAccessory: Bool {
         activeSession != nil || draftMeal != nil
     }
@@ -43,6 +49,44 @@ class TabBarPresenter {
                 type: .analytic
             )
             selectedTabTitle = tab.title
+        case .session:
+            interactor.trackEvent(
+                eventName: "TabBarView_DeepLink_Session",
+                parameters: nil,
+                type: .analytic
+            )
+            // The Dashboard is where a session opens from; it hears the request and fetches it.
+            selectedTabTitle = DeepLink.Tab.dashboard.title
+            deepLink.post()
+        case .notifications:
+            interactor.trackEvent(
+                eventName: "TabBarView_DeepLink_Notifications",
+                parameters: nil,
+                type: .analytic
+            )
+            // The bell lives on the Dashboard, so it opens the screen.
+            selectedTabTitle = DeepLink.Tab.dashboard.title
+            deepLink.post()
+        case .join:
+            interactor.trackEvent(
+                eventName: "TabBarView_DeepLink_Join",
+                parameters: nil,
+                type: .analytic
+            )
+            // The Dashboard accepts the invite and opens the inviter's profile.
+            selectedTabTitle = DeepLink.Tab.dashboard.title
+            deepLink.post()
+        case .workout:
+            interactor.trackEvent(
+                eventName: "TabBarView_DeepLink_Workout",
+                parameters: ["has_active_session": activeSession != nil],
+                type: .analytic
+            )
+            if activeSession != nil {
+                router.showWorkoutTrackerView()
+            } else {
+                selectedTabTitle = DeepLink.Tab.dashboard.title
+            }
         }
     }
 
@@ -71,13 +115,19 @@ class TabBarPresenter {
         handle(deepLink)
     }
 
-    func onPushNotificationReceived(_ notification: Notification) {
-        guard
-            let userInfo = notification.userInfo,
-            let deepLink = DeepLink(pushUserInfo: userInfo)
-        else {
-            return
-        }
+    /// A push tap never carries its payload here: `AppDelegate` parks it on `PushManager`, and this
+    /// takes it. The same pull runs on appear, so a tap that launched the app is routed once the tab
+    /// bar exists and the user is signed in, whichever comes last.
+    func onPushNotificationReceived() {
+        routePendingDeepLink()
+    }
+
+    func onViewAppear() {
+        routePendingDeepLink()
+    }
+
+    private func routePendingDeepLink() {
+        guard let deepLink = interactor.consumePendingDeepLink() else { return }
         handle(deepLink)
     }
 

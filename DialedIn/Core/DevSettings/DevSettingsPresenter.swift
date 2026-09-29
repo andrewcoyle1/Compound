@@ -159,6 +159,20 @@ class DevSettingsPresenter {
         reseedingMessage = ""
     }
     
+    func resetProgramSeeding() async {
+        isReseeding = true
+        reseedingMessage = "Resetting programs..."
+
+        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.hasSeededKey)
+        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.seedingVersionKey)
+
+        reseedingMessage = "Complete! Restart app to reseed."
+
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        isReseeding = false
+        reseedingMessage = ""
+    }
+
     func resetAllSeeding() async {
         isReseeding = true
         reseedingMessage = "Resetting all seeding..."
@@ -167,6 +181,8 @@ class DevSettingsPresenter {
         UserDefaults.standard.removeObject(forKey: "prebuiltExercisesSeedingVersionV2")
         UserDefaults.standard.removeObject(forKey: "hasSeededPrebuiltWorkouts")
         UserDefaults.standard.removeObject(forKey: "prebuiltWorkoutsSeedingVersion")
+        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.hasSeededKey)
+        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.seedingVersionKey)
         
         reseedingMessage = "Complete! Restart app to reseed."
         
@@ -251,6 +267,20 @@ class DevSettingsPresenter {
                 return .analytic
                 
             }
+        }
+    }
+
+    // MARK: - Share Card
+
+    func onSaveShareCardsPressed() {
+        let content = ShareCardContent.mock()
+        Task {
+            for format in WorkoutShareCardView.Format.allCases {
+                if let image = await ShareCardRenderer.renderCard(content, format: format) {
+                    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                }
+            }
+            router.showSimpleAlert(title: "Share cards saved to Photos", subtitle: nil)
         }
     }
 }

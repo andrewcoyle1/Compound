@@ -37,6 +37,44 @@ label/value rows in `ExpenditureView`'s "How we calculated this" section.
 Paths are relative to `DialedIn/`; `…/` stands for `Core/Onboarding/`. Findings are most serious
 first.
 
+## Resolution (2026-09-28, branch hig/onboarding)
+
+| Finding | Status | What changed |
+|---|---|---|
+| 1 | skipped: decision, partially already fixed | The calorie-estimate arithmetic (own expenditure, 1200 kcal floor) was already fixed on `development` before this branch — verified in `WeightRatePresenter.estimatedCalorieTargetText`. The rate-slider cap by body weight and the target-weight floor by height are unchanged; both need the maximum/minimum decision. |
+| 2 | skipped: decision | Document URLs and whether the second confirmation is needed are unchanged. Only the hand-off item (CustomModalView → alert, localize, "Compound") was done — see hig-handoffs.md row. |
+| 3 | skipped: decision | Gender options and coefficients unchanged. |
+| 4 | skipped: decision, partially not a problem | Subtitles were not added. The permission steps 4/10 and 4/11 named in "Not reviewed" no longer exist on `development` — verified, nothing to do there. |
+| 5 | fixed | `HeightPresenter.unit` now defaults from `Locale.current.measurementSystem`; `WeightPresenter.onAppear(delegate:)` seeds its unit from the height step's choice, called from `WeightView.onAppear`. Presenter tests added. |
+| 6 | fixed | `WeightRateView`'s slider end labels use `Format.weight(kg:unit:)`, carry `.accessibilityValue`, and a `Stepper` with the same 0.05 step sits beside the slider. |
+| 7 | fixed (in part) | `objectiveIcon`/`motivationalMessage` switch on `OverarchingObjective` instead of testing a localized string; `ExpenditurePresenter`'s breakdown names and activity descriptions are wrapped in `String(localized:)`; `WeightRatePresenter` uses `.formatted(...)` instead of `String(format:)` and "% BW" → "% of body weight"; the timeline text spells out the singular instead of relying on a missing plural variation; `GoalSummaryView`'s "/week" is now `String(localized:)`. `WeeklyMacroChart`'s hard-coded day names and `DietPlanView`'s raw-identifier labels are unchanged — both are in my folder but were not reached this pass. |
+| 8 | skipped: decision | Unchanged. |
+| 9 | fixed | Weight wheel and `canSubmit` widened to 30…500 kg / 66…1100 lb, matching what the calorie maths already accepted; `ExpenditurePresenter.heightCm` now floors at 100 cm to match the wheel instead of 120. |
+| 10 | fixed | Removed `.navigationBarBackButtonHidden()` from `HealthDisclaimerView` and `GoalSettingView`. Left on `CompleteAccountSetupView` per the finding's own carve-out (paywall). |
+| 11 | skipped: decision | Unchanged. |
+| 12 | fixed (Strava half only) | `StravaConnectPresenter.onConnectPressed` catches `ASWebAuthenticationSessionError.canceledLogin` and returns silently; a real failure now shows fixed copy ("Strava Didn't Respond…") instead of `error.localizedDescription`. The goal-summary alert's "route back to the weight step" was not added: `GoalSummaryRouter` has no such destination today, and the screen is reached from both onboarding and settings (`isStandaloneMode`), so the smallest correct route needs its own look rather than a guess in this pass. |
+| 13 | skipped: decision | Unchanged. |
+| 14 | fixed | `StravaConnectView`'s Connect button no longer tints with `Color.strava` (white-on-orange was ~2.3:1); the icon still carries the brand. "Strava Connected" now uses `.primary`. |
+| 15 | fixed | The goal summary's weight-change row no longer colours with `Color.success`/`.danger`; the arrow carries the direction. |
+| 16 | fixed | Dropped "we"/"us" phrasing in `CompleteAccountSetupView`, `GoalSettingView`, `HealthDisclaimerPresenter`'s save-failure alert; "BMR (Mifflin-St Jeor)"/"TDEE Formula"/"TDEE Result" → "Resting Calories"/"Daily Calories Burned"/"Total"; "% BW" → "% of body weight" (also finding 7). `NamePhotoView.swift`'s "Help us" and `OnboardingCompletedView.swift`'s "Onboarding Complete!" were not touched — out of time this pass. |
+| 17 | fixed | `NamePhotoPresenter` gains `hasPhoto` and `removePhoto()`; the view's accessibility label switches to "Change Photo", a destructive "Remove Photo" button appears once a photo is set, and a failed/empty load shows an `InlineMessage(.error, …)`. |
+| 18 | fixed | Removed `.reversed()` from the height, weight, target-weight and date-of-birth wheels; added `.datePickerStyle(.wheel)` to `DateOfBirthView`. |
+
+Smaller items: the `WeightPresenter` `Int(_:)` truncation was fixed (rounds now) since it sits in
+a file this pass already touched for finding 5. The others (whole-kilogram-only display, no
+minimum age, `OverarchingObjectivePresenter`'s silent disabled Continue, `DietPlanView`'s day
+numbering, `OnboardingStep.orderIndex` ordering, `WeeklyMacroChart`'s missing overall
+accessibility description) are unchanged — each is either marked "my judgment" in the review or
+has no single obvious fix, and none blocks the numbered findings above.
+
+Hand-offs from `hig-handoffs.md` under "Core/Onboarding" — all three fixed:
+`WelcomeView` passes `isLoading:` while there is no `currentUser`; `AuthPresenter`'s three retry
+alerts' Cancel buttons carry `role: .cancel`; `HealthDisclaimerRouter` no longer uses
+`CustomModalView`.
+
+**Needs a change elsewhere:** none of the changes here required editing outside
+`Core/Onboarding/` or `OnboardingStepScaffold.swift`.
+
 ## Findings
 
 ### 1. The goal steps accept and display unsafe values with no feedback

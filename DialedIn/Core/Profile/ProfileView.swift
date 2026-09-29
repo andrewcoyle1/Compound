@@ -86,6 +86,9 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Subscription"), systemImage: "tag", accessory: .value(presenter.subscriptionStatus)) {
                 presenter.onSubscriptionPressed()
             }
+            ListRowButton(title: String(localized: "Notification Settings"), systemImage: Symbol.notifications) {
+                presenter.onNotificationSettingsPressed()
+            }
             ListRowButton(title: String(localized: "Integrations"), systemImage: "app.connected.to.app.below.fill") {
                 presenter.onIntegrationsPressed()
             }

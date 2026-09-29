@@ -69,6 +69,12 @@ class ProfilePresenter {
     func onNotificationsPressed() {
         router.showNotificationsView()
     }
+
+    /// The same screen as the gear on Notifications, so settings can be found from settings.
+    func onNotificationSettingsPressed() {
+        interactor.trackEvent(eventName: "ProfileView_NotificationSettings_Press", parameters: nil, type: .analytic)
+        router.showNotificationSettingsView(delegate: NotificationSettingsDelegate())
+    }
     
     /// What the user is paying for, shown on the Subscription row.
     ///

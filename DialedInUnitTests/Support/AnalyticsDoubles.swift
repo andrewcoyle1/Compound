@@ -30,6 +30,7 @@ final class AnalyticsInteractorDouble: SpyGlobalInteractor, AnalyticsInteractor 
     var systemExercises: [ExerciseModel] = []
     var userExercises: [ExerciseModel] = []
     var stepsHistory: [StepsModel] = []
+    var expenditureHistory: [ExpenditureEstimate] = []
 
     /// Calories and macros logged, by day key. A day absent is answered as zero, as the real
     /// `MealLogManager` does.

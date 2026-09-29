@@ -27,6 +27,7 @@ struct AnalyticsInsightsPresenterTests {
         var workoutSessions: [WorkoutSessionModel] = []
         var totalsByDay: [String: DailyMacroTarget] = [:]
         var tdee: Double = 3000
+        var expenditureHistory: [ExpenditureEstimate] = []
 
         func getDailyTotals(dayKey: String) throws -> DailyMacroTarget {
             totalsByDay[dayKey] ?? DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0)
@@ -356,8 +357,7 @@ struct AnalyticsInsightsPresenterTests {
         await screen.presenter.onFirstTask()
 
         // 7,000 kcal over seven days averages 1,000 against a 3,000 expenditure.
-        #expect(screen.presenter.energyBalanceLatestValueText == "\(2000.formatted()) deficit")
-        #expect(screen.presenter.energyBalanceUnitText == "kcal")
+        #expect(screen.presenter.energyBalanceLatestValueText == "\(2000.formatted()) kcal deficit")
     }
 
     @Test("Test Eating Over Expenditure Reads As A Surplus")
@@ -366,7 +366,7 @@ struct AnalyticsInsightsPresenterTests {
 
         await screen.presenter.onFirstTask()
 
-        #expect(screen.presenter.energyBalanceLatestValueText == "\(1000.formatted()) surplus")
+        #expect(screen.presenter.energyBalanceLatestValueText == "\(1000.formatted()) kcal surplus")
     }
 
     /// Before the week has been read there is no average to state.

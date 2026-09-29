@@ -40,32 +40,25 @@ class EnergyBalancePresenter {
     func onAddMealPressed() {
         guard let userId = currentUser?.userId else { return }
         if let meal = interactor.draftMeal {
-            router.showAlert(
-                title: String(localized: "Unable to add new meal"),
-                subtitle: String(localized: "You already have an draft meal."),
-                buttons: {
-                    AnyView(
-                        VStack {
-                            Button("Continue editing") {
-                                self.router.showAddMealView(
-                                    delegate: AddMealDelegate(mealLog: meal)
+            router.showDraftMealDialog(
+                onContinue: {
+                    Task { @MainActor in
+                        self.router.showAddMealView(delegate: AddMealDelegate(mealLog: meal))
+                    }
+                },
+                onStartNew: {
+                    Task { @MainActor in
+                        self.router.showAddMealView(
+                            delegate: AddMealDelegate(
+                                mealLog: MealLogModel(
+                                    authorId: userId,
+                                    dayKey: Date().dayKey,
+                                    date: Date(),
+                                    items: []
                                 )
-                            }
-                            Button("Delete drafted meal", role: .destructive) {
-                                self.router.showAddMealView(
-                                    delegate: AddMealDelegate(
-                                        mealLog: MealLogModel(
-                                            authorId: userId,
-                                            dayKey: Date().dayKey,
-                                            date: Date(),
-                                            items: []
-                                        )
-                                    )
-                                )
-                            }
-                            Button("Cancel", role: .cancel) { }
-                        }
-                    )
+                            )
+                        )
+                    }
                 }
             )
         } else {

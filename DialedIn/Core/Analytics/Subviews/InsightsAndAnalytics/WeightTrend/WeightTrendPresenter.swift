@@ -92,6 +92,9 @@ extension WeightTrendPresenter: @MainActor MetricDetailPresenter {
     }
 
     var configuration: MetricConfiguration {
+        // Scale Weight and Trend Weight used to share one colour and one line style, so the two
+        // series were indistinguishable. Drawing Scale Weight as bars and Trend Weight as the line
+        // (the same combo pattern Energy Balance uses) separates them by shape, not colour alone.
         MetricConfiguration(
             title: String(localized: "Weight Trend"),
             analyticsName: "WeightTrendView",
@@ -100,7 +103,10 @@ extension WeightTrendPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Trend History",
             emptyStateMessage: "No weight entries",
-            chartColor: Color.Metric.scaleWeight
+            chartColor: Color.Metric.scaleWeight,
+            chartType: .combo,
+            lineSeriesNames: ["Trend Weight"],
+            lineSeriesColor: Color.Metric.scaleWeight
         )
     }
 

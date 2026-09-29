@@ -115,7 +115,7 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var goalProgressSubtitle: String {
-        guard hasActiveGoal else { return "No Goal Set" }
+        guard hasActiveGoal else { return String(localized: "No Goal Set") }
         return goalWeightEntries.isEmpty ? String(localized: "No Entries") : String(localized: "Toward Target")
     }
 
@@ -198,15 +198,11 @@ class InsightsAndAnalyticsPresenter {
         let deficit = tdee - avgIntake
         let value = Int(deficit.rounded())
         if value > 0 {
-            return String(localized: "\(value.formatted()) deficit")
+            return String(localized: "\(value.formatted()) kcal deficit")
         } else if value < 0 {
-            return String(localized: "\((-value).formatted()) surplus")
+            return String(localized: "\((-value).formatted()) kcal surplus")
         }
         return String(localized: "Balanced")
-    }
-
-    var energyBalanceUnitText: String {
-        "kcal"
     }
 
     var workoutSparklineData: [(date: Date, value: Double)] {
@@ -229,19 +225,25 @@ class InsightsAndAnalyticsPresenter {
     }
 
     var workoutUnitText: String {
-        "sets"
+        String(localized: "sets")
     }
 
+    /// Was a flat line off `estimateTDEE` repeated seven times. See `AnalyticsPresenter`'s copy of
+    /// this property for why.
     var expenditureSparklineData: [(date: Date, value: Double)] {
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: startOfToday) else {
             return []
         }
+        let recentHistory = Dictionary(
+            interactor.expenditureHistory.map { (calendar.startOfDay(for: $0.day), $0.kcal) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
         return (0..<7).compactMap { offset -> (date: Date, value: Double)? in
             guard let date = calendar.date(byAdding: .day, value: offset, to: startDate) else { return nil }
-            return (date: date, value: tdee)
+            return (date: date, value: recentHistory[date] ?? tdee)
         }
     }
 

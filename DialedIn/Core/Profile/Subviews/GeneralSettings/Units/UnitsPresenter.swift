@@ -30,18 +30,20 @@ class UnitsPresenter {
         set { storedDistance = newValue; save() }
     }
 
-    init(interactor: UnitsInteractor, router: UnitsRouter) {
+    init(interactor: UnitsInteractor, router: UnitsRouter, locale: Locale = .current) {
         self.interactor = interactor
         self.router = router
 
+        // Nothing chosen yet: start from the region's measurement system rather than always metric.
+        let isMetric = locale.measurementSystem == .metric
         let user = interactor.currentUser
-        let length = user?.submittedLengthUnitPreference ?? .centimeters
+        let length = user?.submittedLengthUnitPreference ?? (isMetric ? .centimeters : .inches)
         // Distance gained its own preference after length, so fall back to what length implies
         // rather than showing metric to someone who onboarded in imperial.
         let distance = user?.submittedDistanceUnitPreference
             ?? (length == .centimeters ? .kilometers : .miles)
 
-        self.storedWeight = user?.submittedWeightUnitPreference ?? .kilograms
+        self.storedWeight = user?.submittedWeightUnitPreference ?? (isMetric ? .kilograms : .pounds)
         self.storedLength = length
         self.storedDistance = distance
     }

@@ -347,11 +347,11 @@ struct GeneralSettingsUnitsTests {
         let interactor: Interactor
     }
 
-    private func makeScreen(user: UserModel?) -> Screen {
+    private func makeScreen(user: UserModel?, locale: Locale = Locale(identifier: "de_DE")) -> Screen {
         let interactor = Interactor()
         interactor.currentUser = user
         return Screen(
-            presenter: UnitsPresenter(interactor: interactor, router: Router()),
+            presenter: UnitsPresenter(interactor: interactor, router: Router(), locale: locale),
             interactor: interactor
         )
     }
@@ -384,13 +384,20 @@ struct GeneralSettingsUnitsTests {
         #expect(metric.presenter.distanceUnit == .kilometers)
     }
 
-    @Test("Test No Stored Preferences Fall Back To Metric")
-    func testNoStoredPreferencesFallBackToMetric() {
-        let screen = makeScreen(user: nil)
+    /// Nothing stored: the region's measurement system decides, as the rest of the system does.
+    @Test("Test No Stored Preferences Follow The Region")
+    func testNoStoredPreferencesFollowTheRegion() {
+        let screen = makeScreen(user: nil, locale: Locale(identifier: "fr_FR"))
 
         #expect(screen.presenter.weightUnit == .kilograms)
         #expect(screen.presenter.heightUnit == .centimeters)
         #expect(screen.presenter.distanceUnit == .kilometers)
+
+        let american = makeScreen(user: nil, locale: Locale(identifier: "en_US"))
+
+        #expect(american.presenter.weightUnit == .pounds)
+        #expect(american.presenter.heightUnit == .inches)
+        #expect(american.presenter.distanceUnit == .miles)
     }
 
     /// All three are written together on every change, so changing one has to carry the other two

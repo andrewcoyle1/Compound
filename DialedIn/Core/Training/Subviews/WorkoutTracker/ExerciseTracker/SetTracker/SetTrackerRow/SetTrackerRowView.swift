@@ -101,12 +101,10 @@ struct SetTrackerRowView: View {
         } label: {
             Text(setLabel(for: set.wrappedValue))
                 .font(.caption)
+                .tapTarget()
         }
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
-        // The large glass size is the 44 pt minimum; a hit area padded inside the label would make
-        // the circle bigger still.
-        .controlSize(.large)
         .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
         .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))
         .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)

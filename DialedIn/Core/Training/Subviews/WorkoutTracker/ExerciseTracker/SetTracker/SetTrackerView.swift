@@ -69,6 +69,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                             presenter.onExerciseEquipmentPressed(delegate.exercise)
                         } label: {
                             Label("Equipment", systemImage: Symbol.equipment)
+                                .tapTarget()
                         }
                     }
 
@@ -76,18 +77,21 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                         presenter.onWarmupSetsPressed(delegate.exercise)
                     } label: {
                         Label("Warmup", systemImage: Symbol.warmup)
+                            .tapTarget()
                     }
 
                     Button {
                         presenter.onTargetsPressed(delegate.exercise)
                     } label: {
                         Label("Targets", systemImage: Symbol.goal)
+                            .tapTarget()
                     }
 
                     Button {
                         presenter.onSwapPressed(delegate.exercise)
                     } label: {
                         Label("Swap", systemImage: "arrow.left.arrow.right")
+                            .tapTarget()
                     }
 
                     Button {
@@ -103,6 +107,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                             return count > 2 ? String(localized: "Remove Circuit") : String(localized: "Remove Superset")
                         }()
                         Label(groupLabel, systemImage: Symbol.superset)
+                            .tapTarget()
                     }
                     Menu {
                         Button {
@@ -119,15 +124,16 @@ struct SetTrackerView<SetTrackerRow: View>: View {
 
                     } label: {
                         Label("More", systemImage: Symbol.more)
+                            .tapTarget()
                     }
                 }
                 .font(.caption)
                 .buttonStyle(.glass)
                 .tint(.secondary)
                 .buttonBorderShape(.capsule)
-                // The 44 pt minimum hit area: these are tapped between sets, often one handed.
-                .controlSize(.large)
             }
+            // Room for each chip's 44 pt hit area, which the scroll view would otherwise clip.
+            .frame(minHeight: ControlSize.row)
         }
     }
 
@@ -184,12 +190,15 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         } label: {
             if presenter.showAutoRanges {
                 Label("Auto", systemImage: "wand.and.stars")
+                    .tapTarget()
             } else {
                 Label("Prev", systemImage: Symbol.history)
+                    .tapTarget()
             }
         }
         .buttonStyle(.glass)
-        .controlSize(.large)
+        // Small, so "Auto" and its icon fit the Prev column; the hit area is the label's.
+        .controlSize(.small)
         .font(.caption2)
         .foregroundStyle(.secondary)
         .frame(width: SetTrackerRowView.previousColumnWidth, alignment: .center)
@@ -202,12 +211,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             } label: {
                 Image(systemName: Symbol.add)
                     .font(.caption)
+                    .tapTarget()
             }
             .accessibilityLabel("Add set")
             .tint(.secondary)
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
-            .controlSize(.large)
             .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
             Spacer()
         }
@@ -234,9 +243,9 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, Spacing.s)
+                .tapTarget()
         }
         .buttonStyle(.glass)
-        .controlSize(.large)
         .accessibilityLabel("Weight unit, \(unitPreference.weightUnit.displayName)")
     }
 
@@ -258,9 +267,9 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, Spacing.s)
+                .tapTarget()
         }
         .buttonStyle(.glass)
-        .controlSize(.large)
         .accessibilityLabel("Distance unit, \(unitPreference.distanceUnit.displayName)")
     }
 }

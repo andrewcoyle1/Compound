@@ -184,9 +184,8 @@ class SetTrackerPresenter {
     }
 
     func onWarmupSetHelpPressed() {
-        router.showWarmupSetInfoModal {
-            self.router.dismissModal()
-        }
+        // A system alert now, which dismisses itself.
+        router.showWarmupSetInfoModal { }
     }
 
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
@@ -240,7 +239,7 @@ class SetTrackerPresenter {
         let currentUnit = getUnitPreference(for: exercise.wrappedValue).weightUnit
         guard newUnit != currentUnit else { return }
 
-        router.showAlert(
+        router.showConfirmationDialog(
             title: String(localized: "Change Weight Unit"),
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
@@ -264,7 +263,7 @@ class SetTrackerPresenter {
         let currentUnit = getUnitPreference(for: exercise.wrappedValue).distanceUnit
         guard newUnit != currentUnit else { return }
 
-        router.showAlert(
+        router.showConfirmationDialog(
             title: String(localized: "Change Distance Unit"),
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {

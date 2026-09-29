@@ -12,46 +12,63 @@ protocol SetTrackerRowRouter: GlobalRouter {
 }
 
 extension CoreRouter: SetTrackerRowRouter {
+    /// A compact sheet with the contract's close and confirm, rather than the custom overlay it
+    /// was. The sheet dismisses itself after either action, so callers only apply or discard.
     func showRestModal(
         primaryButtonAction: @escaping () -> Void,
         secondaryButtonAction: @escaping () -> Void,
         minutesSelection: Binding<Int>,
         secondsSelection: Binding<Int>
     ) {
-        router.showModal(
-            transition: .opacity,
-            backgroundColor: .black.opacity(0.3),
-            destination: {
-                CustomModalView(
-                    title: String(localized: "Set Rest"),
-                    subtitle: nil,
-                    primaryButtonTitle: "Save",
-                    primaryButtonAction: {
-                        primaryButtonAction()
-                    },
-                    secondaryButtonTitle: "Cancel",
-                    secondaryButtonAction: { secondaryButtonAction() },
-                    middleContent: AnyView(
-                        HStack(spacing: Spacing.l) {
-                            Picker("Minutes", selection: minutesSelection) {
-                                ForEach(0..<60, id: \.self) { minute in
-                                    Text("\(minute) m").tag(minute)
-                                }
-                            }
-                            .pickerStyle(.wheel)
-                            .frame(maxWidth: .infinity)
-                            
-                            Picker("Seconds", selection: secondsSelection) {
-                                ForEach(0..<60, id: \.self) { second in
-                                    Text("\(second) s").tag(second)
-                                }
-                            }
-                            .pickerStyle(.wheel)
-                            .frame(maxWidth: .infinity)
-                        }
-                    )
-                )
+        router.showScreen(.sheetConfig(config: .compact)) { router in
+            SetRestSheet(
+                minutes: minutesSelection,
+                seconds: secondsSelection,
+                onClose: {
+                    secondaryButtonAction()
+                    router.dismissScreen()
+                },
+                onSave: {
+                    primaryButtonAction()
+                    router.dismissScreen()
+                }
+            )
+        }
+    }
+}
+
+/// The rest picker behind a set's Rest Timer swipe action and Exercise Settings' rest override.
+struct SetRestSheet: View {
+    @Binding var minutes: Int
+    @Binding var seconds: Int
+    let onClose: () -> Void
+    let onSave: () -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Picker("Minutes", selection: $minutes) {
+                ForEach(0..<60, id: \.self) { minute in
+                    Text("\(minute) min").tag(minute)
+                }
             }
-        )
+            Picker("Seconds", selection: $seconds) {
+                ForEach(0..<60, id: \.self) { second in
+                    Text("\(second) s").tag(second)
+                }
+            }
+        }
+        .pickerStyle(.wheel)
+        .padding(.horizontal)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .navigationTitle("Set Rest")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close, action: onClose)
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm, action: onSave)
+            }
+        }
     }
 }

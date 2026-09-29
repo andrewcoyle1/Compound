@@ -118,9 +118,10 @@ class SetTrackerRowPresenter {
                 let total = (self.restPickerMinutesSelection * 60) + self.restPickerSecondsSelection
                 let seconds = total > 0 ? total : nil
                 self.updateRestBefore(setId: setId, seconds: seconds)
-                self.router.dismissModal()
             },
-            secondaryButtonAction: { [weak self] in self?.router.dismissModal() },
+            // The sheet closes itself; there is nothing to undo, as the pickers write to this
+            // presenter's selection and only Save applies it.
+            secondaryButtonAction: { },
             minutesSelection: Binding(
                 get: { self.restPickerMinutesSelection },
                 set: { self.restPickerMinutesSelection = $0 }
@@ -141,9 +142,8 @@ class SetTrackerRowPresenter {
     }
 
     func onWarmupSetHelpPressed() {
-        router.showWarmupSetInfoModal {
-            self.router.dismissModal()
-        }
+        // A system alert now, which dismisses itself.
+        router.showWarmupSetInfoModal { }
     }
 
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
@@ -161,33 +161,33 @@ class SetTrackerRowPresenter {
         switch trackingMode {
         case .weightReps:
             if let weight = set.weightKg, weight < 0 {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Weight must be a non-negative number"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a weight of zero or more."))
                 return false
             }
             guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
                 return false
             }
             return true
         case .repsOnly:
             guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
                 return false
             }
             return true
         case .timeOnly:
             guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
                 return false
             }
             return true
         case .distanceTime:
             guard let distance = set.distanceMeters, distance > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Distance must be a positive number"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a distance for this set."))
                 return false
             }
             guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
+                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
                 return false
             }
             return true

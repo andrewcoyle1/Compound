@@ -35,7 +35,7 @@ struct RecipeAmountView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Log", role: .confirm) {
+                Button("Add", role: .confirm) {
                     presenter.add(
                         recipe: delegate.recipe,
                         onConfirm: delegate.onPick

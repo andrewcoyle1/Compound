@@ -117,7 +117,8 @@ struct IngredientListBuilderView: View {
                         showImage: presenter.showFoodImageInLogger,
                         showCalories: presenter.showCaloriesInLogger,
                         showMacros: presenter.showMacrosInLogger,
-                        showPortion: presenter.showPortionInLogger
+                        showPortion: presenter.showPortionInLogger,
+                        addedCount: delegate.mealItems?.wrappedValue.addedCount(forIngredientId: ingredient.ingredientId) ?? 0
                     )
                 )
             }
@@ -141,7 +142,8 @@ struct IngredientListBuilderView: View {
                         showImage: presenter.showFoodImageInLogger,
                         showCalories: presenter.showCaloriesInLogger,
                         showMacros: presenter.showMacrosInLogger,
-                        showPortion: presenter.showPortionInLogger
+                        showPortion: presenter.showPortionInLogger,
+                        addedCount: delegate.mealItems?.wrappedValue.addedCount(forIngredientId: ingredient.ingredientId) ?? 0
                     )
                 )
             }
@@ -165,7 +167,8 @@ struct IngredientListBuilderView: View {
                         showImage: presenter.showFoodImageInLogger,
                         showCalories: presenter.showCaloriesInLogger,
                         showMacros: presenter.showMacrosInLogger,
-                        showPortion: presenter.showPortionInLogger
+                        showPortion: presenter.showPortionInLogger,
+                        addedCount: delegate.mealItems?.wrappedValue.addedCount(forIngredientId: ingredient.ingredientId) ?? 0
                     )
                 )
             }

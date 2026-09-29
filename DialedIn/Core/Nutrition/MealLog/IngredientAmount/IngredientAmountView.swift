@@ -10,6 +10,9 @@ import SwiftUI
 struct IngredientAmountDelegate {
     var ingredient: FoodModel
     let onPick: (MealItemModel) -> Void
+    /// Prefills the amount, e.g. with an AI estimate's amount, so it can be corrected rather than
+    /// starting the field over at 100.
+    var initialAmountText: String = "100"
 }
 
 struct IngredientAmountView: View {
@@ -49,7 +52,7 @@ struct IngredientAmountView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Log", role: .confirm) {
+                Button("Add", role: .confirm) {
                     presenter.add(ingredient: delegate.ingredient, onConfirm: delegate.onPick)
                 }
                 .disabled(presenter.amountValue <= 0)
@@ -60,11 +63,13 @@ struct IngredientAmountView: View {
 
 extension CoreBuilder {
     func ingredientAmountView(router: AnyRouter, delegate: IngredientAmountDelegate) -> some View {
-        IngredientAmountView(
-            presenter: IngredientAmountPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
+        let presenter = IngredientAmountPresenter(
+            interactor: interactor,
+            router: CoreRouter(router: router, builder: self)
+        )
+        presenter.amountText = delegate.initialAmountText
+        return IngredientAmountView(
+            presenter: presenter,
             delegate: delegate
         )
     }

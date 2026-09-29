@@ -100,6 +100,7 @@ class IngredientListBuilderPresenter {
                 resolvedMilliliters: food.measurementMethod == .volume ? baseAmount : nil,
                 nutrients: nutrients
             )
+            interactor.playHaptic(option: .success)
             delegate.onMealItemConfirmed?(item)
         } else {
             delegate.onIngredientSelectionChanged?(food)

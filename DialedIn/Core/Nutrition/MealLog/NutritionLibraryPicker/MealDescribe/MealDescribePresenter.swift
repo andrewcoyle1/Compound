@@ -17,6 +17,9 @@ class MealDescribePresenter {
     private(set) var isAnalysing = false
     private(set) var analysisResults: [FoodAnalysisItem] = []
     private(set) var errorMessage: String?
+    /// Set once a description has been analysed successfully, so an empty result reads as "no
+    /// foods recognized" rather than the screen showing nothing at all.
+    private(set) var didAnalyse = false
 
     init(interactor: MealDescribeInteractor, router: MealDescribeRouter) {
         self.interactor = interactor
@@ -53,6 +56,7 @@ class MealDescribePresenter {
             let json = try await interactor.describeMeal(text: descriptionText)
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
+            didAnalyse = true
         } catch {
             errorMessage = String(localized: "Couldn't work out the foods in that description. Try naming each food and its amount, then try again.")
             interactor.playHaptic(option: .error)
@@ -61,25 +65,15 @@ class MealDescribePresenter {
         isAnalysing = false
     }
 
-    func onAddItem(_ item: FoodAnalysisItem, delegate: MealDescribeDelegate) {
+    /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
+    /// adding it as is — the amount and, through it, the macros can be corrected first.
+    func onResultTapped(_ item: FoodAnalysisItem, delegate: MealDescribeDelegate) {
         interactor.trackEvent(event: Event.onAddItem(name: item.name))
-        var nutrients = NutrientMap()
-        if let val = item.calories { nutrients[.calories] = val }
-        if let val = item.proteinGrams { nutrients[.protein] = val }
-        if let val = item.carbGrams { nutrients[.carbs] = val }
-        if let val = item.fatGrams { nutrients[.fatTotal] = val }
-        let mealItem = MealItemModel(
-            itemId: UUID().uuidString,
-            sourceType: .ingredient,
-            sourceId: item.ingredientId ?? UUID().uuidString,
-            displayName: item.name,
-            amount: item.amountGrams,
-            unit: "g",
-            resolvedGrams: item.amountGrams,
-            resolvedMilliliters: nil,
-            nutrients: nutrients
-        )
-        delegate.onPick(mealItem)
+        router.showIngredientAmountView(delegate: IngredientAmountDelegate(
+            ingredient: item.estimatedFood,
+            onPick: delegate.onPick,
+            initialAmountText: item.amountGrams.formatted(.number.grouping(.never))
+        ))
     }
 }
 

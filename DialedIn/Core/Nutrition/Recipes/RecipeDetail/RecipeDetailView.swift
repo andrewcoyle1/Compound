@@ -33,6 +33,13 @@ struct RecipeDetailView: View {
         .toolbar {
             toolbarContent
         }
+        .bottomCTA {
+            CallToActionButton {
+                presenter.onStartRecipePressed(recipe: delegate.recipeTemplate)
+            } label: {
+                Label("Start", systemImage: "play.fill")
+            }
+        }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -108,16 +115,6 @@ struct RecipeDetailView: View {
                 Image(systemName: presenter.isFavourited ? "heart.fill" : "heart")
             }
             .accessibilityLabel(presenter.isFavourited ? String(localized: "Remove from favorites") : String(localized: "Add to favorites"))
-        }
-
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onStartRecipePressed(recipe: delegate.recipeTemplate)
-            } label: {
-                Label("Start", systemImage: "play.fill")
-                    .foregroundStyle(.onAccent)
-            }
-            .buttonStyle(.glassProminent)
         }
 
         if presenter.canDelete(recipe: delegate.recipeTemplate) {

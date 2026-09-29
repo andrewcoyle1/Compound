@@ -21,6 +21,9 @@ struct FoodLibraryPickerRowDelegate<T: FoodItem> {
     var showCalories: Bool
     var showMacros: Bool
     var showPortion: Bool
+    /// How many times this item is already on the plate. Above zero, the quick-add "+" becomes a
+    /// checkmark with this count, so a second tap doesn't look like it did nothing.
+    var addedCount: Int
 
     init(
         item: T,
@@ -29,7 +32,8 @@ struct FoodLibraryPickerRowDelegate<T: FoodItem> {
         showImage: Bool = true,
         showCalories: Bool = true,
         showMacros: Bool = true,
-        showPortion: Bool = true
+        showPortion: Bool = true,
+        addedCount: Int = 0
     ) {
         self.item = item
         self.onAdd = onAdd
@@ -38,6 +42,7 @@ struct FoodLibraryPickerRowDelegate<T: FoodItem> {
         self.showCalories = showCalories
         self.showMacros = showMacros
         self.showPortion = showPortion
+        self.addedCount = addedCount
     }
 
     var eventParameters: [String: Any]? {
@@ -79,11 +84,19 @@ struct FoodLibraryPickerRowView<T: FoodItem>: View {
             Button {
                 delegate.onQuickAdd?()
             } label: {
-                Image(systemName: Symbol.add)
+                if delegate.addedCount > 0 {
+                    Label("\(delegate.addedCount)", systemImage: "checkmark")
+                } else {
+                    Image(systemName: Symbol.add)
+                }
             }
-            .accessibilityLabel("Quick add \(delegate.item.name)")
+            .accessibilityLabel(
+                delegate.addedCount > 0
+                    ? "\(delegate.addedCount) \(delegate.item.name) on plate"
+                    : "Quick add \(delegate.item.name)"
+            )
             .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
+            .buttonBorderShape(delegate.addedCount > 0 ? .capsule : .circle)
         }
     }
 

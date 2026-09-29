@@ -223,6 +223,14 @@ class BarcodeScannerPresenter {
     func onDismissPressed() {
         router.dismissScreen()
     }
+
+    /// Hands the found product back to the caller. Inside the food picker this is one mode among
+    /// several switched in place — not a pushed screen of its own — so dismissing here would close
+    /// the whole picker before `onFoodFound`'s amount screen could be shown. Only the delegate
+    /// decides what happens next.
+    func onUseThisFoodPressed(_ food: FoodModel, delegate: BarcodeScannerDelegate) {
+        delegate.onFoodFound?(food)
+    }
 }
 
 extension BarcodeScannerPresenter {

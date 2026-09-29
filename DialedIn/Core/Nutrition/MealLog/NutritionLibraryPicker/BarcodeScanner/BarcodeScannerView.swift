@@ -357,8 +357,7 @@ struct BarcodeScannerView: View {
 
                 if let ingredient = presenter.parsedIngredient {
                     Button {
-                        delegate.onFoodFound?(ingredient)
-                        presenter.onDismissPressed()
+                        presenter.onUseThisFoodPressed(ingredient, delegate: delegate)
                     } label: {
                         Text("Use This Food")
                             .foregroundStyle(.onAccent)

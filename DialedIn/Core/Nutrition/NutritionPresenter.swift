@@ -169,26 +169,13 @@ class NutritionPresenter {
 
     func onViewAppear(delegate: NutritionDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-        scheduleMealRemindersIfNeeded()
+        ReminderOfferFlow(interactor: interactor, router: router).offerMealRemindersIfNeeded()
     }
 
     func onViewDisappear(delegate: NutritionDelegate) {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
 
-    private func scheduleMealRemindersIfNeeded() {
-        let key = "hasMealRemindersScheduled"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-        Task {
-            do {
-                try await interactor.scheduleMealReminderNotifications()
-                UserDefaults.standard.set(true, forKey: key)
-            } catch {
-                // Silent — non-critical
-            }
-        }
-    }
-    
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {
         router.showProfileViewZoom(transitionId: transitionId, namespace: namespace)
     }

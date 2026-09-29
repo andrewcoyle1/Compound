@@ -48,8 +48,11 @@ struct FoodPhotoScannerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea(.all, edges: .bottom)
 
-                captureButton
-                    .padding(.bottom, Spacing.xxl)
+                VStack(spacing: Spacing.m) {
+                    aiDisclosure
+                    captureButton
+                }
+                .padding(.bottom, Spacing.xxl)
             case .notDetermined:
                 // The system alert is on screen, or about to be.
                 Color.clear
@@ -97,13 +100,25 @@ struct FoodPhotoScannerView: View {
                 Section {
                     InlineMessage(.error, error)
                 }
+            } else if presenter.analysisResults.isEmpty {
+                Section {
+                    ContentUnavailableView {
+                        Label("No Foods Recognized", systemImage: Symbol.food)
+                    } description: {
+                        Text("Retake the photo in good light, or use Search or Describe.")
+                    }
+                }
             } else {
-                Section("Results") {
+                Section {
                     ForEach(presenter.analysisResults) { item in
                         FoodAnalysisResultRow(item: item) {
-                            delegate.onPick(presenter.makeMealItem(from: item))
+                            presenter.onResultTapped(item, onPick: delegate.onPick)
                         }
                     }
+                } header: {
+                    Text("AI Estimate")
+                } footer: {
+                    Text("Estimates can be wrong. Check amounts before logging.")
                 }
             }
         }
@@ -131,6 +146,18 @@ struct FoodPhotoScannerView: View {
                 .shadow(radius: Spacing.xs)
         }
         .accessibilityLabel("Take photo")
+    }
+
+    /// What "AI" means here: the photo leaves the device, and what happens to it once it does.
+    private var aiDisclosure: some View {
+        Text("Estimated by AI from your photo. The photo is sent to Google's AI service for analysis and isn't stored by Compound.")
+            .font(.caption)
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, Spacing.s)
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.l, style: .continuous))
+            .padding(.horizontal, Spacing.xl)
     }
 
     private func thumbnailView(image: UIImage) -> some View {

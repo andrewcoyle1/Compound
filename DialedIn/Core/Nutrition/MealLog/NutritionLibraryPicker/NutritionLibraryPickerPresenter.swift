@@ -36,6 +36,7 @@ class NutritionLibraryPickerPresenter {
         // Quick Add promises exactly this: the food's default portion, without the amount screen.
         // The picker stays open, so the next food is one tap away too.
         if interactor.foodLogSettings.quickAddEnabled {
+            interactor.playHaptic(option: .success)
             onPick(ingredient.mealItem(amount: ingredient.defaultPortionAmount))
             return
         }

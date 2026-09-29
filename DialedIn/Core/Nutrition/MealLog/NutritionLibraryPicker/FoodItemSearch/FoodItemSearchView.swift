@@ -2,6 +2,8 @@ import SwiftUI
 
 struct FoodItemSearchDelegate {
     var onFoodSelected: ((FoodModel) -> Void)?
+    /// The plate's current items, so a row can show how many of this food are already on it.
+    var mealItems: Binding<[MealItemModel]>?
     var eventParameters: [String: Any]? { nil }
 }
 
@@ -74,7 +76,8 @@ struct FoodItemSearchView: View {
         FoodLibraryPickerRowView(delegate: FoodLibraryPickerRowDelegate(
             item: food,
             onAdd: { delegate.onFoodSelected?(food) },
-            onQuickAdd: { delegate.onFoodSelected?(food) }
+            onQuickAdd: { delegate.onFoodSelected?(food) },
+            addedCount: delegate.mealItems?.wrappedValue.addedCount(forIngredientId: food.ingredientId) ?? 0
         ))
     }
 }

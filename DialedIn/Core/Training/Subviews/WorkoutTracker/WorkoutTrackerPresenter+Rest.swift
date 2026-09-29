@@ -67,6 +67,23 @@ extension WorkoutTrackerPresenter {
         }
     }
 
+    /// What the rest pill's "+15s" adds, the same step the Live Activity offers.
+    static let restAdjustmentSeconds = 15
+
+    /// Lengthens the running rest. Through `startRest`, like the Live Activity's +15s, so the
+    /// timer, the shared end time and the activity all move together.
+    func onAddRestTimePressed() {
+        guard let end = restEndTime else { return }
+        let remaining = Int(end.timeIntervalSinceNow.rounded(.up)) + Self.restAdjustmentSeconds
+        interactor.startRest(durationSeconds: max(1, remaining), session: workoutSession, currentExerciseIndex: currentExerciseIndex)
+        interactor.trackEvent(event: Event.restExtended(seconds: Self.restAdjustmentSeconds))
+    }
+
+    func onSkipRestPressed() {
+        interactor.trackEvent(event: Event.restSkipped)
+        cancelRestTimer()
+    }
+
     func cancelRestTimer() {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         // Cancel in manager (will also update Live Activity)
@@ -91,8 +108,10 @@ extension WorkoutTrackerPresenter {
         if settings.restTimerPlaySound {
             interactor.playSoundEffect(sound: .restComplete)
         }
+        // `.warning`, not the `.success` a logged set plays: the two land moments apart, and one
+        // pattern per event is how a user tells them apart without looking.
         if settings.restTimerVibrate {
-            interactor.playHaptic(option: .success)
+            interactor.playHaptic(option: .warning)
         }
     }
 

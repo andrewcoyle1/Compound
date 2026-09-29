@@ -275,8 +275,8 @@ class WorkoutTrackerPresenter {
 
     func onDiscardWorkoutPressed() {
         router.showAlert(
-            title: String(localized: "End Workout?"),
-            subtitle: "Are you sure you want to discard this workout?"
+            title: String(localized: "Discard Workout?"),
+            subtitle: String(localized: "The sets you logged will not be saved.")
         ) {
             AnyView(
                 VStack {

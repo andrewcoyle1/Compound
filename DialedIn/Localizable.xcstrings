@@ -22581,6 +22581,426 @@
           }
         }
       }
+    },
+    "Profile photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto de perfil"
+          }
+        }
+      }
+    },
+    "Gym photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto del gimnasio"
+          }
+        }
+      }
+    },
+    "Unable to Change Privacy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cambiar la privacidad"
+          }
+        }
+      }
+    },
+    "Unable to Sign Out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cerrar sesión"
+          }
+        }
+      }
+    },
+    "Unable to Delete Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar la cuenta"
+          }
+        }
+      }
+    },
+    "Sign-In Method" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Método de inicio de sesión"
+          }
+        }
+      }
+    },
+    "Not saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin guardar"
+          }
+        }
+      }
+    },
+    "Apple" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple"
+          }
+        }
+      }
+    },
+    "Google" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google"
+          }
+        }
+      }
+    },
+    "Save Account" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar cuenta"
+          }
+        }
+      }
+    },
+    "Sign Out" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar sesión"
+          }
+        }
+      }
+    },
+    "Premium" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premium"
+          }
+        }
+      }
+    },
+    "Free" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratis"
+          }
+        }
+      }
+    },
+    "Add your name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade tu nombre"
+          }
+        }
+      }
+    },
+    "Rate Compound" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorar Compound"
+          }
+        }
+      }
+    },
+    "Email %@ and we will get back to you." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe a %@ y te responderemos."
+          }
+        }
+      }
+    },
+    "There is no help site yet. In the meantime, Support emails us directly and we will answer you there." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay un sitio de ayuda. Mientras tanto, Soporte nos envía un correo directamente y te responderemos por ahí."
+          }
+        }
+      }
+    },
+    "The public roadmap is not published yet. Send feature requests through Support and they will go on the list." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La hoja de ruta pública aún no está publicada. Envía tus sugerencias a través de Soporte y las añadiremos a la lista."
+          }
+        }
+      }
+    },
+    "Unable to Restore Purchases" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron restaurar las compras"
+          }
+        }
+      }
+    },
+    "Unable to Complete Purchase" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo completar la compra"
+          }
+        }
+      }
+    },
+    "Waiting for approval. Your subscription starts once the purchase is approved." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esperando aprobación. Tu suscripción empezará cuando se apruebe la compra."
+          }
+        }
+      }
+    },
+    "Disconnect Strava?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Desconectar Strava?"
+          }
+        }
+      }
+    },
+    "Workouts will stop uploading to Strava." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los entrenamientos dejarán de subirse a Strava."
+          }
+        }
+      }
+    },
+    "Disconnect Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desconectar Strava"
+          }
+        }
+      }
+    },
+    "Test upload sent to Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subida de prueba enviada a Strava"
+          }
+        }
+      }
+    },
+    "Negative numbers will be used in nutrient remaining views if you exceed your target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se usarán números negativos en las vistas de nutrientes restantes si superas tu objetivo."
+          }
+        }
+      }
+    },
+    "No negative numbers will be used if you exceed a nutrient target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se usarán números negativos si superas un objetivo de nutrientes."
+          }
+        }
+      }
+    },
+    "Use your steps to update expenditure sooner" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa tus pasos para actualizar el gasto antes"
+          }
+        }
+      }
+    },
+    "Adjust expenditure ahead of a change in goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajusta el gasto antes de un cambio de objetivo"
+          }
+        }
+      }
+    },
+    "Keep Screen On" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantener pantalla encendida"
+          }
+        }
+      }
+    },
+    "Stop the screen locking during a workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evita que la pantalla se bloquee durante un entrenamiento"
+          }
+        }
+      }
+    },
+    "Add warm-up sets based on the weight and how fresh you are" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade series de calentamiento según el peso y lo descansado que estés"
+          }
+        }
+      }
+    },
+    "Unlock advanced exercises" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquea ejercicios avanzados"
+          }
+        }
+      }
+    },
+    "Update targets during a workout as you log sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiza los objetivos durante el entrenamiento al registrar series"
+          }
+        }
+      }
+    },
+    "After Warm-Ups" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras el calentamiento"
+          }
+        }
+      }
+    },
+    "Between Exercises" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre ejercicios"
+          }
+        }
+      }
+    },
+    "Between Left and Right Sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre el lado izquierdo y el derecho"
+          }
+        }
+      }
+    },
+    "Reset Default Timers" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer temporizadores predeterminados"
+          }
+        }
+      }
+    },
+    "Reset Default Timers?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Restablecer temporizadores predeterminados?"
+          }
+        }
+      }
+    },
+    "Every exercise type goes back to its default rest time. Exercise timers are kept." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada tipo de ejercicio vuelve a su descanso predeterminado. Los temporizadores de ejercicios se conservan."
+          }
+        }
+      }
+    },
+    "Reset Timers" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer temporizadores"
+          }
+        }
+      }
+    },
+    "Unable to save gym profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el perfil del gimnasio"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

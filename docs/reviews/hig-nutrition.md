@@ -27,6 +27,16 @@ behaviour it says so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Decisions built (2026-09-29, branch hig/nutrition)
+
+| Decision | Status | What changed |
+|---|---|---|
+| 9a | built | Every add path now plays a success haptic and returns to the list instead of staying put or silently duplicating: the amount screens (`IngredientAmountView`, `RecipeAmountView`, `MealItemAmountViewView`) rename "Log" to "Add" and pop back to the caller on confirm; `FoodLibraryPickerRowView` gained an `addedCount` badge that turns the "+" into a checkmark-and-count once a food is on the plate, wired through search and the library's Foods tab; the picker's toolbar shows "N on plate" beside Close. Also fixed, as its own `[Fix]` commit: the barcode scanner's "Use This Food" called `dismissScreen()` on the picker's shared router after handing the food back, closing the whole picker before the amount screen could show. |
+| 9b | built | The photo scanner and Describe both disclose that the input is sent to Google's AI service for analysis and isn't stored by Compound, with the exact wording from the decision. Both results sections are retitled "AI Estimate" with the "Estimates can be wrong" footer, and a result now opens the amount screen prefilled (via a new `FoodAnalysisItem.estimatedFood`) instead of adding directly. The Describe footer became the "2 eggs and a slice of toast" example; both screens show a "No Foods Recognized" empty state instead of nothing. |
+| 9c | built | The Food Packaging step and "Share New Foods Publicly" toggle are hidden from `CreateFoodView`; `CreateFoodPresenter.onNextPressed` always takes the portion-definition route since the toggle can no longer be turned on. Both sites carry a `// TODO:` for when the public database contribution ships. The setting doesn't exist anywhere under `Core/Profile/Subviews/NutritionSettings/`, so no change was needed there. |
+| 13g | built | `RecipeDetailView`'s "Start" toolbar button — a wide `.glassProminent` button with a text label — was what crowded the title bar; Food detail and Workout template detail don't carry an equivalent action in their toolbars. Moved Start into a `.bottomCTA`, the way Workout template detail presents its own primary action, leaving the toolbar with only Close, the dev-info button, the heart and the delete menu. The full title now fits. |
+| 7b | built | `NutritionPresenter.onViewAppear` calls `ReminderOfferFlow.offerMealRemindersIfNeeded()` in place of the deleted `scheduleMealRemindersIfNeeded()` private method and its `hasMealRemindersScheduled` flag. `NutritionInteractor` now inherits `ReminderOfferInteractor`. `ReminderOfferFlow.swift` itself was not touched. |
+
 ## Resolution (2026-09-28, branch hig/nutrition)
 
 | # | Status | What changed |

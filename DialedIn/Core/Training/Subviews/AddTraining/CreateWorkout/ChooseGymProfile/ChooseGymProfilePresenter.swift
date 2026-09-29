@@ -41,7 +41,8 @@ class ChooseGymProfilePresenter {
             delegate: DefineWorkoutWrapperDelegate(
                 name: name,
                 gymProfile: profile,
-                workoutTemplate: delegate.workoutTemplate
+                workoutTemplate: delegate.workoutTemplate,
+                draftExercises: delegate.draftExercises
             )
         )
     }

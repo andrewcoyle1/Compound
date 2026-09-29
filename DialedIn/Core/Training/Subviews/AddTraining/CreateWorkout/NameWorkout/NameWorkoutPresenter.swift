@@ -15,6 +15,14 @@ class NameWorkoutPresenter {
     private let router: NameWorkoutRouter
     
     var workoutName: String
+
+    /// The exercises chosen further on. Kept here, on the screen the user backs out to, so changing
+    /// the name or gym does not throw them away.
+    var draftExercises: [WorkoutTemplateExercise]
+
+    private var draftBinding: Binding<[WorkoutTemplateExercise]> {
+        Binding(get: { self.draftExercises }, set: { self.draftExercises = $0 })
+    }
     var canSave: Bool {
         !workoutName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
@@ -22,11 +30,13 @@ class NameWorkoutPresenter {
     init(
         interactor: NameWorkoutInteractor,
         router: NameWorkoutRouter,
-        workoutName: String = ""
+        workoutName: String = "",
+        draftExercises: [WorkoutTemplateExercise] = []
     ) {
         self.interactor = interactor
         self.router = router
         self.workoutName = workoutName
+        self.draftExercises = draftExercises
     }
         
     /// A template being edited already has a gym, so that step is skipped when the gym still exists.
@@ -38,12 +48,13 @@ class NameWorkoutPresenter {
                 delegate: DefineWorkoutWrapperDelegate(
                     name: name,
                     gymProfile: gym,
-                    workoutTemplate: template
+                    workoutTemplate: template,
+                    draftExercises: draftBinding
                 )
             )
         } else {
             router.showChooseGymProfileView(
-                delegate: ChooseGymProfileDelegate(name: name, workoutTemplate: delegate.workoutTemplate)
+                delegate: ChooseGymProfileDelegate(name: name, workoutTemplate: delegate.workoutTemplate, draftExercises: draftBinding)
             )
         }
     }

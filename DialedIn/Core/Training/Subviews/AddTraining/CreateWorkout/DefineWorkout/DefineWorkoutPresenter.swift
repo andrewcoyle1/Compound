@@ -57,6 +57,16 @@ class DefineWorkoutPresenter {
         exercises.remove(at: index)
     }
     
+    /// The order was the order exercises were picked in; moving one meant removing and re-adding
+    /// everything after it.
+    func moveExercises(from source: IndexSet, to destination: Int) {
+        exercises.move(fromOffsets: source, toOffset: destination)
+    }
+
+    func deleteExercises(at offsets: IndexSet) {
+        exercises.remove(atOffsets: offsets)
+    }
+
     func onAddExercisePressed() {
         router.showExercisesPickerView(
             delegate: ExercisesPickerDelegate(

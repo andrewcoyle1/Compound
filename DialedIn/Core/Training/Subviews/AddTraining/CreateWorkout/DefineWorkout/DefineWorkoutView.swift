@@ -47,6 +47,12 @@ struct DefineWorkoutView: View {
                 .accessibilityLabel("Add exercise")
                 .accessibilityIdentifier("DefineWorkout.addExercise")
             }
+            // Reordering, and a visible way to delete, for a list that is otherwise swipe-only.
+            if !presenter.exercises.isEmpty {
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+            }
         }
     }
     
@@ -80,12 +86,16 @@ struct DefineWorkoutView: View {
                     .anyButton(.highlight) {
                         presenter.onExercisePressed(exercise: $exercise)
                     }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        presenter.removeExercise(exercise: exercise)
+                    .rowActions(allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            presenter.removeExercise(exercise: exercise)
+                        } label: {
+                            Label("Delete", systemImage: Symbol.delete)
+                        }
                     }
-                }
             }
+            .onMove { presenter.moveExercises(from: $0, to: $1) }
+            .onDelete { presenter.deleteExercises(at: $0) }
         } header: {
             Text("^[\(presenter.exercises.count) Exercise](inflect: true)")
         }

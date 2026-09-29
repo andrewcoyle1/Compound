@@ -24,7 +24,7 @@ struct NameWorkoutView: View {
                 TextField("Enter workout name", text: $presenter.workoutName)
                     .accessibilityIdentifier("NameWorkout.name")
             } header: {
-                Text("Workout name")
+                Text("Workout Name")
             }
         }
         .navigationTitle(delegate.workoutTemplate == nil ? String(localized: "Name Workout") : String(localized: "Edit Workout"))
@@ -57,7 +57,8 @@ extension CoreBuilder {
             presenter: NameWorkoutPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                workoutName: delegate.workoutTemplate?.name ?? ""
+                workoutName: delegate.workoutTemplate?.name ?? "",
+                draftExercises: delegate.workoutTemplate?.exercises ?? []
             ),
             delegate: delegate
         )

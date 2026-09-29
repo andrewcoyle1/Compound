@@ -631,9 +631,8 @@ struct WorkoutBuildPickerPresenterTests {
 
 // MARK: - The set-target sheet
 
-/// The sheet that sets rep ranges per set for one exercise. Its presenter carries only analytics
-/// and the close action — the editing lives in the view against a working copy — so that is all
-/// there is to pin here.
+/// The sheet that sets rep ranges per set for one exercise. Its editing is pinned in
+/// `WorkoutBuildUnsavedChangesTests`; this pins the analytics.
 @MainActor
 struct WorkoutBuildSetTargetPresenterTests {
 
@@ -648,7 +647,12 @@ struct WorkoutBuildSetTargetPresenterTests {
 
     private func makeScreen() -> (SetTargetPresenter, Interactor) {
         let interactor = Interactor()
-        return (SetTargetPresenter(interactor: interactor, router: Router()), interactor)
+        let box = CreateWorkoutFlowExerciseBox([flowTemplateExercise(exercise: flowExercise())])
+        let exercise = Binding(
+            get: { MainActor.assumeIsolated { box.value[0] } },
+            set: { newValue in MainActor.assumeIsolated { box.value[0] = newValue } }
+        )
+        return (SetTargetPresenter(interactor: interactor, router: Router(), delegate: SetTargetDelegate(exercise: exercise)), interactor)
     }
 
     @Test("Test Appearing And Leaving Are Tracked Separately")

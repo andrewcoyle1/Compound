@@ -219,16 +219,23 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 
 ### Still to connect or finish
 
-- **Meal reminder offer**: `ReminderOfferFlow.offerMealRemindersIfNeeded()` is built but has no
-  caller. `NutritionPresenter.onViewAppear` should call it in place of
-  `scheduleMealRemindersIfNeeded()`; `NutritionInteractor` inherits `ReminderOfferInteractor`.
-- **Streak reminder offer**: `offerStreakReminderIfNeeded()` likewise, from
-  `DashboardPresenter.onViewAppear`; `DashboardInteractor` inherits `ReminderOfferInteractor`.
-- **Pushes inside the Notifications sheet**: `WorkoutSessionDetailView` has an `isPushed` flag
-  now; `SharedItemView` needs the same before the Notifications router can push them.
-- **Strava after the first finished workout.**
-- **Workout follow-ups**: keep the app running during workouts so the Live Activity can alert on
-  a locked phone; the saved duration excludes paused time; rest-over distance in the person's unit.
+Connected since this list was first written: the meal and streak reminder offers, the pushes
+inside the Notifications sheet, Strava after the first finished workout, paused time (app and
+the shared page), the rest-over distance unit, the tenths wheel in the weekly check-in, and the
+Close button on pushed metric detail screens. The functions were deployed on 29 Sep 2026.
+
+Still open:
+
+- **Decision 6 on the Nutrition and Dashboard tabs.** Analytics, Training, Profile and
+  Notifications push. Food detail, Recipe detail and Meal detail are still sheets, as are the
+  Dashboard's Weekly Review and Weekly Goal.
+- **Decision 11a, second step**: editing a finished workout's sets and exercises. Only
+  "Edit Notes" is built; the editing code is kept behind a TODO.
+- **Decision 12e, Time Sensitive**: the entitlement is left out until the capability is enabled
+  for the App ID (see the release checklist). Until then "Rest Complete" is delivered as active.
+- **W1 is unverified.** `UIBackgroundModes` = `processing` follows Apple's iOS 26 workout sample
+  project; Apple's documentation does not name a background mode for iPhone workouts. Test a
+  rest with the phone locked.
 - `Components/Views/EnumPicker/` and `CoreRouter.showEnumPickerView` have no caller now.
 - `DialedInUITests/CreateExerciseUITests.swift` taps `EnumPicker.Reps`, which is now a menu item.
 - Health consent: the second toggle and both document links sit below the fold, under the

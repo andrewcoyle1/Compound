@@ -14,6 +14,42 @@ on how they look, not on whether they are actually 44 pt. Two after images carry
 the Dynamic Island shows in TRAINING-light and CREATE_PROGRAM/CREATE_WORKOUT-light, and an "Apple
 Intelligence" system banner covers the navigation bar in SOCIAL_PROFILE-light.
 
+## Resolution (2026-09-29)
+
+Re-captured on a new iPhone 17 simulator on **iOS 27.0** (`shots-fixed/`). The `shots-after/` deck
+this review was written from was captured on **iOS 26.5**, and `shots-before/` looks like iOS 27:
+several findings below are that runtime difference, not a code change, and reproduce only on 26.5.
+
+| # | Status | What changed | Screenshot |
+|---|---|---|---|
+| 1 | fixed | `headerCard` fills the padded row instead of `containerRelativeFrame` over the whole row | yes, both |
+| 2 | fixed | `CallToActionButton` draws its label `secondary` while disabled (was `onAccent` on a grey capsule) | yes, both |
+| 3 | fixed | set badge back to regular glass; the label's `tapTarget()` carries the hit area | yes, W legible |
+| 4 | fixed | no `.controlSize(.large)` on the chips, unit menus or add-set; Prev/Auto header is `.small`; the chip row reserves 44 pt so its scroll view does not clip hit areas | yes, "Auto" and "Targets" fit |
+| 5 | fixed | Nudge / Set goal back to `.mini` glass; the band was their shadow clipped by the scroll view and is gone | yes, both |
+| 6 | not a regression | no code change since the before deck; on iOS 27 the status bar is dark over the hero in both appearances. Reproduces on iOS 26.5 only | yes (iOS 27) |
+| 7 | not a regression | toolbar unchanged; "Nutrition" fits on iOS 27. The 26.5 bar draws wider buttons | yes (iOS 27) |
+| 8 | needs a decision | still "Classic Margherit…": the close button is correct and the DEBUG/MOCK info button takes a slot. Moving Start or the title is a product call | yes, unchanged |
+| 9 | fixed | row top-aligned; Reply's 44 pt target laid out as 28 pt so there is no blank band | yes, both |
+| 10 | fixed | follow-request buttons `.small` again, labels carry the hit area; side by side at the default size | yes, both |
+| 11 | fixed | shared `tapTarget()` no longer adds layout (see below); lines evenly spaced | yes, both |
+| 12 | not a regression | `SearchView` chips unchanged since the before deck; on iOS 27 they sit under the title | yes (iOS 27) |
+| 13 | not a regression | date-triggered, drawn by QuickCharts' grid; not clipped in today's iOS 27 capture | yes (iOS 27) |
+| 14 | not a regression | `MetricChart` and QuickCharts unchanged; on iOS 27 today the axis runs Mon–Sun, matching the header | yes (iOS 27) |
+
+Shared helper: `tapTarget()` (`Components/DesignSystem/Chip.swift`) is now an invisible background
+that overhangs the label, not a 44 pt frame on it, so it never changes a control's size or its
+neighbours' spacing. `chipTapTarget()` again reserves 44 pt of height itself. The section-header
+action and the onboarding secondary button keep an explicit 44 pt frame, since a clipping cell or
+the button above would cut an overhang.
+
+**Open: the overhang does not reach every control.** A temporary UI test on iOS 27 found that a tap
+3 pt outside a glass **Menu** (the set number) opens it, but a tap 3 pt below or beside a glass
+**Button** (Add set) does nothing, while a tap on it does. So on glass `Button`s (Add set, the set
+tracker chips, the Prev/Auto header, Nudge, Set goal, Accept, Decline) the hit area is the visible
+glass, now under 44 pt. Plain and borderless buttons were not probed. These need another way to
+widen the hit region (or a decision to accept the system glass size) before this is closed.
+
 ## Findings
 
 ### 1. Analytics: the weekly target grid runs off both edges of the screen

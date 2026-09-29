@@ -80,6 +80,19 @@ struct DashboardFeedPresenterTests {
         var userImageUrl: String?
         var currentUser: UserModel? = DashboardFixture.user("me")
         var draftMeal: MealLogModel?
+
+        // MARK: - ReminderOfferInteractor
+        var privateUserSettings = PrivateUserSettings()
+        var currentStreakData = CurrentStreakData(streakKey: "workout")
+        var canRequestAuthorisation = false
+        private(set) var streakReminderWrites: [Bool] = []
+        func canRequestNotificationAuthorisation() async -> Bool { canRequestAuthorisation }
+        func requestPushAuthorisation() async throws -> Bool { true }
+        func setMealReminders(isEnabled: Bool) async throws { privateUserSettings.pushMealReminders = isEnabled }
+        func setStreakReminder(isEnabled: Bool) async throws {
+            privateUserSettings.socialPushStreakReminder = isEnabled
+            streakReminderWrites.append(isEnabled)
+        }
         var workoutSessions: [WorkoutSessionModel] = []
         var activityNotifications: [ActivityNotificationModel] = []
         var incomingFollowRequests: [FollowRequestModel] = []
@@ -644,5 +657,42 @@ struct DashboardFeedPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["DashboardView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["DashboardView_Disappear"])
+    }
+
+    // MARK: Streak reminder offer
+
+    /// `ReminderOfferFlow.offerStreakReminderIfNeeded()` had no caller before this — decision 7c
+    /// wires it to Dashboard's appear, which is where the streak is seen to have grown.
+    @Test("Test Reaching A Three Day Streak Offers The Reminder On Appear")
+    func testReachingAThreeDayStreakOffersTheReminderOnAppear() {
+        let key = ReminderOfferFlow.Offer.streakReminder.shownKey
+        UserDefaults.standard.removeObject(forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+
+        let screen = makeScreen()
+        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 3)
+
+        screen.presenter.onViewAppear(delegate: screen.delegate)
+
+        #expect(screen.router.alertTitles == [String(localized: "Streak Reminder")])
+    }
+
+    /// Below the 3-day threshold, or already answered, nothing is offered.
+    @Test("Test Below Threshold Or Already Answered Offers Nothing")
+    func testBelowThresholdOrAlreadyAnsweredOffersNothing() {
+        let key = ReminderOfferFlow.Offer.streakReminder.shownKey
+        UserDefaults.standard.removeObject(forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+
+        let screen = makeScreen()
+        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 2)
+        screen.presenter.onViewAppear(delegate: screen.delegate)
+        #expect(screen.router.alertTitles.isEmpty)
+
+        let answeredScreen = makeScreen()
+        answeredScreen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 5)
+        answeredScreen.interactor.privateUserSettings.socialPushStreakReminder = false
+        answeredScreen.presenter.onViewAppear(delegate: answeredScreen.delegate)
+        #expect(answeredScreen.router.alertTitles.isEmpty)
     }
 }

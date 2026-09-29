@@ -7,6 +7,7 @@ class DashboardPresenter {
     private let interactor: DashboardInteractor
     private let router: DashboardRouter
     private let followFlow: FollowFlow
+    private let reminderOfferFlow: ReminderOfferFlow
     
     private(set) var nutritionTotals: DailyMacroTarget?
     private(set) var nutritionTarget: DailyMacroTarget?
@@ -248,12 +249,14 @@ class DashboardPresenter {
         self.interactor = interactor
         self.router = router
         self.followFlow = FollowFlow(interactor: interactor, router: router)
+        self.reminderOfferFlow = ReminderOfferFlow(interactor: interactor, router: router)
     }
-    
+
     func onViewAppear(delegate: DashboardDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         nudgedUserIds = interactor.nudgedUserIdsToday
         loadNutrition()
+        reminderOfferFlow.offerStreakReminderIfNeeded()
     }
     
     func onViewDisappear(delegate: DashboardDelegate) {

@@ -386,6 +386,8 @@ struct TrainingWorkoutHistoryPresenterTests {
         screen.presenter.onWorkoutSessionPressed(session: session, layoutMode: .tabBar)
 
         #expect(screen.router.sessionDetailDelegates.first?.initialSession.id == "s1")
+        // History is pushed now, so the session pushes onto the same stack instead of a sheet.
+        #expect(screen.router.sessionDetailDelegates.first?.isPushed == true)
         #expect(screen.presenter.selectedSession?.id == "s1")
     }
 

@@ -144,6 +144,22 @@ class WorkoutSessionDetailPresenter {
         self.dismissScreen()
     }
 
+    /// Leaves editing without saving. A pushed screen hides Back while editing, so this is the way
+    /// out there; unsaved notes are asked about and then put back as they were.
+    func onEndEditingPressed(initialSession: WorkoutSessionModel, session: Binding<WorkoutSessionModel>) {
+        guard hasUnsavedChanges(session: initialSession, editedSession: session.wrappedValue) else {
+            isEditMode = false
+            return
+        }
+        let restored = lastSavedSession ?? initialSession
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in
+                session.wrappedValue = restored
+                self?.isEditMode = false
+            }
+        }
+    }
+
     private func dismissScreen() {
         router.dismissScreen()
     }
@@ -243,6 +259,10 @@ class WorkoutSessionDetailPresenter {
     }
     
     // MARK: - Exercise Updates
+
+    // Nothing on screen calls the set and exercise editing below yet: "Edit Notes" edits notes only.
+    // swiftlint:disable:next todo
+    // TODO: Real editing of a finished workout's sets and exercises is planned (decision 11a, second step). Wire these into the session detail's edit mode, and rename "Edit Notes" back to an editor row, once it is built.
     
     func updateExercise(session: Binding<WorkoutSessionModel>, at index: Int, with updated: WorkoutExerciseModel) {
         guard session.wrappedValue.exercises.indices.contains(index) else { return }

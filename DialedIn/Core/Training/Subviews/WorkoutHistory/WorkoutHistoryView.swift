@@ -39,13 +39,6 @@ struct WorkoutHistoryView<WorkoutSessionRow: View>: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
     }
     
     private var loadingState: some View {
@@ -107,8 +100,9 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
+    /// Browsing, so a push on the Training tab's stack; the system Back button closes it.
     func showWorkoutHistoryView() {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.workoutHistoryView(router: router)
         }
     }

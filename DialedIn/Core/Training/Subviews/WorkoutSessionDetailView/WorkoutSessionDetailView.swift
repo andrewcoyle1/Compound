@@ -9,9 +9,13 @@ import SwiftUI
 
 struct WorkoutSessionDetailDelegate {
     let initialSession: WorkoutSessionModel
+    /// Pushed when browsing from the Training tab, where the system Back button closes it. The
+    /// Dashboard feed, Notifications and a just-finished workout present it as a sheet with Close.
+    let isPushed: Bool
 
-    init(workoutSession: WorkoutSessionModel) {
+    init(workoutSession: WorkoutSessionModel, isPushed: Bool = false) {
         self.initialSession = workoutSession
+        self.isPushed = isPushed
     }
 }
 
@@ -48,7 +52,10 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         .toolbar {
             toolbarContent
         }
-        .interactiveDismissDisabled(presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
+        // Back cannot be intercepted, so while editing it is hidden and the close button ends the
+        // edit, asking first when the notes changed.
+        .navigationBarBackButtonHidden(presenter.isEditMode)
+        .interactiveDismissDisabled(!delegate.isPushed && presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
         .onAppear {
             presenter.loadUnitPreferences(for: session)
         }
@@ -91,12 +98,11 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         presenter.onEditDurationPressed(session: $session)
                     }
                 }
-                ListRowButton(
-                    title: String(localized: "Edit Workout"),
-                    subtitle: String(localized: "Go to the workout editor"),
-                    systemImage: Symbol.edit
-                ) {
-                    presenter.enterEditMode(session: session)
+                // Notes are all it edits, so it says so and opens nothing: no chevron.
+                if !presenter.isEditMode {
+                    ListRowButton(title: String(localized: "Edit Notes"), systemImage: Symbol.edit, accessory: .none) {
+                        presenter.enterEditMode(session: session)
+                    }
                 }
             } else {
                 ListRow(
@@ -148,9 +154,17 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
+        if presenter.isEditMode {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onEndEditingPressed(initialSession: delegate.initialSession, session: $session)
+                }
+            }
+        } else if !delegate.isPushed {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
+                }
             }
         }
         
@@ -172,21 +186,20 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             }
         }
 
-        if presenter.isAuthor(sessionAuthorId: session.authorId) {
+        if presenter.isEditMode {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm) {
+                    Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
+                }
+                .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
+            }
+        } else if presenter.isAuthor(sessionAuthorId: session.authorId) {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    if presenter.isEditMode {
-                        Button(role: .confirm) {
-                            Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
-                        }
-                        .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
-                        .fontWeight(.semibold)
-                    } else {
-                        Button {
-                            presenter.enterEditMode(session: session)
-                        } label: {
-                            Label("Edit", systemImage: Symbol.edit)
-                        }
+                    Button {
+                        presenter.enterEditMode(session: session)
+                    } label: {
+                        Label("Edit Notes", systemImage: Symbol.edit)
                     }
 
                     Button(role: .destructive) {
@@ -236,7 +249,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
             builder.workoutSessionDetailView(router: router, delegate: delegate)
         }
     }

@@ -56,11 +56,7 @@ class WorkoutHistoryPresenter {
 
     func onWorkoutSessionPressed(session: WorkoutSessionModel, layoutMode: LayoutMode) {
         selectedSession = session
-        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session))
-    }
-    
-    func onDismissPressed() {
-        router.dismissScreen()
+        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true))
     }
 
     /// Manual retry from the empty state. Sessions arrive through a live sync engine, so this

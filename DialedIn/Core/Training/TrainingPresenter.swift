@@ -73,19 +73,18 @@ class TrainingPresenter {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
     
-    func onAddPressed() {
-        let delegate = AddTrainingDelegate(
-            onSelectProgram: { [weak self] in
-                self?.router.showCreateProgramView(delegate: CreateProgramDelegate())
-            },
-            onSelectWorkout: { [weak self] in
-                self?.router.showCreateWorkoutView(delegate: CreateWorkoutDelegate())
-            },
-            onSelectExercise: { [weak self] in
-                self?.router.showCreateExerciseView()
-            }
-        )
-        router.showAddTrainingView(delegate: delegate, onDismiss: nil)
+    // MARK: - Add Menu
+
+    func onNewProgramPressed() {
+        router.showCreateProgramView(delegate: CreateProgramDelegate())
+    }
+
+    func onNewWorkoutPressed() {
+        router.showCreateWorkoutView(delegate: CreateWorkoutDelegate())
+    }
+
+    func onNewExercisePressed() {
+        router.showCreateExerciseView()
     }
     
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {
@@ -167,7 +166,7 @@ class TrainingPresenter {
             interactor.trackEvent(event: Event.openCompletedSessionFail(error: TrainingError.sessionNotFound))
             return
         }
-        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session))
+        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true))
         interactor.trackEvent(event: Event.openCompletedSessionSuccess)
     }
 
@@ -204,7 +203,7 @@ class TrainingPresenter {
     }
     
     func onWorkoutLibraryPressed() {
-        router.showWorkoutsView(delegate: WorkoutsDelegate())
+        router.showWorkoutsView(delegate: WorkoutsDelegate(isPushed: true))
     }
     
     func onWorkoutHistoryPressed() {

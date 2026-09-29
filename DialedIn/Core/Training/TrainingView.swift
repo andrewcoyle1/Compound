@@ -120,8 +120,22 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onAddPressed()
+            Menu {
+                Button {
+                    presenter.onNewProgramPressed()
+                } label: {
+                    Label("New Program", systemImage: Symbol.program)
+                }
+                Button {
+                    presenter.onNewWorkoutPressed()
+                } label: {
+                    Label("New Workout", systemImage: Symbol.workout)
+                }
+                Button {
+                    presenter.onNewExercisePressed()
+                } label: {
+                    Label("New Exercise", systemImage: Symbol.exercise)
+                }
             } label: {
                 Image(systemName: Symbol.add)
             }

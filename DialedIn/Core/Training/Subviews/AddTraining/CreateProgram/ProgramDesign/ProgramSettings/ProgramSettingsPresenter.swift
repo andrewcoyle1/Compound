@@ -23,10 +23,6 @@ class ProgramSettingsPresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
 
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     func onEditNamePressed(program: Binding<TrainingProgram>) {
         router.showRenameProgramView(delegate: RenameWorkoutTemplateModelDelegate(
             initialName: program.wrappedValue.name,

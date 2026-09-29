@@ -105,12 +105,6 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.dismissScreen()
-            }
-        }
-
         ToolbarItem(placement: .primaryAction) {
             Button {
                 presenter.onCreateProgramPressed()
@@ -143,8 +137,9 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
+    /// Browsing, so a push on the Training tab's stack; the system Back button closes it.
     func showTrainingProgramLibraryView() {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.trainingProgramLibraryView(router: router)
         }
     }

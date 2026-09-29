@@ -10,93 +10,6 @@ import Foundation
 import SwiftUI
 @testable import DialedIn
 
-// MARK: - Shared scaffolding
-
-/// A mutable value reachable through a `Binding`. `Binding`'s accessors are `@Sendable`, so the
-/// box has to be main-actor isolated and reached through `assumeIsolated`.
-@MainActor
-private final class MetricBox {
-    var value: TrackableExerciseMetric?
-    var binding: Binding<TrackableExerciseMetric?> {
-        Binding(
-            get: { MainActor.assumeIsolated { self.value } },
-            set: { newValue in MainActor.assumeIsolated { self.value = newValue } }
-        )
-    }
-}
-
-/// What an enum picker was opened with, recorded rather than shown.
-private struct RecordedEnumPicker {
-    let title: String
-    let canDelete: Bool
-    let detents: PresentationDetentTransformable?
-}
-
-// MARK: - Add Training
-
-/// The sheet behind the "+" button in Training, offering a program, a workout or an exercise.
-///
-/// It owns no state: each row dismisses the sheet and calls back to whoever presented it, so the
-/// only thing it can get wrong is wiring a row to the wrong callback and dropping the user into
-/// the wrong builder. `dismissScreen()` is a `GlobalRouter` extension method this screen's router
-/// does not restate, so it is statically dispatched and invisible to a double — the callbacks are
-/// what these tests watch.
-@MainActor
-struct AddTrainingPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, AddTrainingInteractor { }
-
-    private final class Router: AddTrainingRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        func showCreateProgramView(delegate: CreateProgramDelegate) { }
-        func showCreateWorkoutView(delegate: CreateWorkoutDelegate) { }
-    }
-
-    /// Records which of the three callbacks fired, in order.
-    private final class Choices {
-        var made: [String] = []
-    }
-
-    private func makeScreen(delegate: AddTrainingDelegate) -> (AddTrainingPresenter, Interactor) {
-        let interactor = Interactor()
-        return (AddTrainingPresenter(interactor: interactor, router: Router(), delegate: delegate), interactor)
-    }
-
-    @Test("Test Each Row Starts The Builder It Names")
-    func testEachRowStartsTheBuilderItNames() {
-        let choices = Choices()
-        let (presenter, _) = makeScreen(delegate: AddTrainingDelegate(
-            onSelectProgram: { choices.made.append("program") },
-            onSelectWorkout: { choices.made.append("workout") },
-            onSelectExercise: { choices.made.append("exercise") }
-        ))
-        presenter.onNewProgramPressed()
-        presenter.onNewEmptyWorkoutPressed()
-        presenter.onNewExercisePressed()
-        #expect(choices.made == ["program", "workout", "exercise"])
-    }
-
-    /// All three callbacks are optional, and a caller offering only one of them must not bring the
-    /// app down when the user taps another row.
-    @Test("Test A Row Without A Callback Does Nothing")
-    func testARowWithoutACallbackDoesNothing() {
-        let (presenter, _) = makeScreen(delegate: AddTrainingDelegate())
-        presenter.onNewProgramPressed()
-        presenter.onNewEmptyWorkoutPressed()
-        presenter.onNewExercisePressed()
-        presenter.dismissScreen()
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let (presenter, interactor) = makeScreen(delegate: AddTrainingDelegate())
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-        #expect(interactor.trackedScreenEventNames == ["AddTrainingView_Appear"])
-        #expect(interactor.trackedEventNames == ["AddTrainingView_Disappear"])
-    }
-}
-
 // MARK: - Create Exercise
 
 /// Step one of building a custom exercise: its name, the one or two metrics it is logged against,
@@ -113,21 +26,9 @@ struct CreateExercisePresenterTests {
     /// double that guards it the way the router does would not satisfy the protocol.
     private final class Router: CreateExerciseRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var pickers: [RecordedEnumPicker] = []
-        private(set) var metricBindings: [Binding<TrackableExerciseMetric?>] = []
         private(set) var muscleGroupDelegates: [MuscleGroupPickerDelegate] = []
 
         func showDevSettingsView() { }
-
-        func showEnumPickerView<Item: PickableItem>(
-            delegate: EnumPickerDelegate<Item>,
-            detentsInput: PresentationDetentTransformable?
-        ) {
-            pickers.append(RecordedEnumPicker(title: delegate.navigationTitle, canDelete: delegate.canDelete, detents: detentsInput))
-            if let metricDelegate = delegate as? EnumPickerDelegate<TrackableExerciseMetric> {
-                metricBindings.append(metricDelegate.chosenItem)
-            }
-        }
 
         func showMuscleGroupPickerView(delegate: MuscleGroupPickerDelegate) {
             muscleGroupDelegates.append(delegate)
@@ -250,29 +151,8 @@ struct CreateExercisePresenterTests {
         #expect(screen.router.muscleGroupDelegates.first?.laterality == nil)
     }
 
-    /// A metric can be cleared again, but a chosen exercise type or laterality cannot be
-    /// un-chosen, so only the metric pickers offer delete.
-    @Test("Test Only The Metric Pickers Can Be Cleared")
-    func testOnlyTheMetricPickersCanBeCleared() {
-        let screen = makeScreen()
-        screen.presenter.trackableMetricPressed(navigationTitle: "Trackable Metric 1", metric: MetricBox().binding)
-        screen.presenter.exerciseTypePressed(navigationTitle: "Exercise Type", type: .constant(nil))
-        screen.presenter.lateralityPressed(navigationTitle: "Laterality", item: .constant(nil))
-        #expect(screen.router.pickers.map(\.title) == ["Trackable Metric 1", "Exercise Type", "Laterality"])
-        #expect(screen.router.pickers.map(\.canDelete) == [true, false, false])
-        #expect(screen.router.pickers.map(\.detents) == [nil, .medium, .medium])
-    }
-
-    /// The picker writes back through the binding it was handed. Hand over the wrong one and the
-    /// user's choice lands nowhere.
-    @Test("Test A Picked Metric Lands In The Field It Came From")
-    func testAPickedMetricLandsInTheFieldItCameFrom() {
-        let screen = makeScreen()
-        let box = MetricBox()
-        screen.presenter.trackableMetricPressed(navigationTitle: "Trackable Metric 1", metric: box.binding)
-        screen.router.metricBindings.first?.wrappedValue = .repsPerSide
-        #expect(box.value == .repsPerSide)
-    }
+    // The metric, type and laterality sheets became in-row menu pickers bound straight to these
+    // fields, so the tests of what each sheet was opened with went with them.
 
     @Test("Test Appearing Is Tracked As A Screen View")
     func testAppearingIsTrackedAsAScreenView() {

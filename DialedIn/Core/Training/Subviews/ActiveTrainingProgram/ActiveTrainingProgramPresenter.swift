@@ -134,7 +134,7 @@ class ActiveTrainingProgramPresenter {
             interactor.trackEvent(event: Event.openCompletedSessionFail(error: TrainingError.sessionNotFound))
             return
         }
-        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session))
+        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true))
         interactor.trackEvent(event: Event.openCompletedSessionSuccess)
     }
 

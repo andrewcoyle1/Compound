@@ -138,7 +138,6 @@ struct TrainingHomePresenterTests {
             alertTitles.append(title)
         }
         private(set) var sessionDetailDelegates: [WorkoutSessionDetailDelegate] = []
-        private(set) var addTrainingDelegates: [AddTrainingDelegate] = []
         private(set) var createWorkoutDelegates: [CreateWorkoutDelegate] = []
 
         func showDevSettingsView() { shown.append("devSettings") }
@@ -154,11 +153,6 @@ struct TrainingHomePresenterTests {
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
             shown.append("sessionDetail")
             sessionDetailDelegates.append(delegate)
-        }
-
-        func showAddTrainingView(delegate: AddTrainingDelegate, onDismiss: (() -> Void)?) {
-            shown.append("addTraining")
-            addTrainingDelegates.append(delegate)
         }
 
         func showCreateProgramView(delegate: CreateProgramDelegate) { shown.append("createProgram") }
@@ -265,6 +259,8 @@ struct TrainingHomePresenterTests {
 
         #expect(screen.router.shown == ["sessionDetail"])
         #expect(screen.router.sessionDetailDelegates.first?.initialSession.id == "s1")
+        // Browsing from the tab pushes the session; it used to open as a sheet.
+        #expect(screen.router.sessionDetailDelegates.first?.isPushed == true)
         #expect(screen.interactor.trackedEventNames == [
             "TrainingView_OpenCompletedSession_Start",
             "TrainingView_OpenCompletedSession_Success"
@@ -356,17 +352,17 @@ struct TrainingHomePresenterTests {
 
     // MARK: - The add menu and the libraries
 
+    /// The + button is a menu now, not a sheet: each item opens its builder straight away. It used
+    /// to open an Add Training sheet first, which this test asserted as a leading "addTraining".
     @Test("Test The Add Menu Offers A Program A Workout And An Exercise")
     func testTheAddMenuOffersAProgramAWorkoutAndAnExercise() {
         let screen = makeScreen()
 
-        screen.presenter.onAddPressed()
-        let delegate = screen.router.addTrainingDelegates.first
-        delegate?.onSelectProgram?()
-        delegate?.onSelectWorkout?()
-        delegate?.onSelectExercise?()
+        screen.presenter.onNewProgramPressed()
+        screen.presenter.onNewWorkoutPressed()
+        screen.presenter.onNewExercisePressed()
 
-        #expect(screen.router.shown == ["addTraining", "createProgram", "createWorkout", "createExercise"])
+        #expect(screen.router.shown == ["createProgram", "createWorkout", "createExercise"])
     }
 
     @Test("Test Each Library Door Opens Its Own Screen")

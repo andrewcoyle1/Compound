@@ -27,9 +27,6 @@ struct ProgramSettingsView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .toolbar {
-            toolbarContent
-        }
         .bottomCTA {
             CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onActivatePressed(program: program)
@@ -93,15 +90,6 @@ struct ProgramSettingsView: View {
             isOn: $program.periodisation
         )
     }
-
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
-    }
 }
 
 extension CoreBuilder {
@@ -120,8 +108,10 @@ extension CoreBuilder {
 
 extension CoreRouter {
     
+    /// A page of the program editor, so it pushes inside the editor's own stack rather than
+    /// stacking a second sheet on it.
     func showProgramSettingsView(program: Binding<TrainingProgram>) {
-        router.showScreen(.sheetConfig(config: .full)) { router in
+        router.showScreen(.push) { router in
             builder.programSettingsView(router: router, program: program)
         }
     }

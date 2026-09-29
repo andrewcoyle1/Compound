@@ -6,6 +6,8 @@
 //
 
 import SwiftfulSoundEffects
+import AVFoundation
+import AudioToolbox
 
 typealias SoundEffectManager = SwiftfulSoundEffects.SoundEffectManager
 
@@ -51,7 +53,14 @@ extension CoreInteractor {
     }
 
     func playSoundEffect(sound: SoundEffectFile) {
-        guard let url = sound.url else { return }
+        guard let url = sound.url else {
+            if let standIn = sound.systemSoundStandIn { AudioServicesPlaySystemSound(standIn) }
+            return
+        }
+        // Ambient: mixes with the person's music instead of stopping it, and stays quiet with the
+        // silent switch on. The player would otherwise run under the default session, which
+        // silences other audio.
+        try? AVAudioSession.sharedInstance().setCategory(.ambient)
         Task {
             await soundEffectManager.play(url: url)
         }

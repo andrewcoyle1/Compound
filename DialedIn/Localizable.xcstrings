@@ -1913,6 +1913,16 @@
         }
       }
     },
+    ".%lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ",%lld"
+          }
+        }
+      }
+    },
     "/ %@" : {
       "localizations" : {
         "es" : {
@@ -5976,6 +5986,16 @@
         }
       }
     },
+    "Connect Strava and each workout you finish is added to it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecta Strava y cada entrenamiento que termines se añadirá allí."
+          }
+        }
+      }
+    },
     "Connect with Strava" : {
       "localizations" : {
         "es" : {
@@ -6074,6 +6094,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continuar comida"
+          }
+        }
+      }
+    },
+    "Continue draft meal, %lld items" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Continue draft meal, %lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Continue draft meal, %lld items"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Continuar comida en borrador, %lld alimento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Continuar comida en borrador, %lld alimentos"
+                }
+              }
+            }
           }
         }
       }
@@ -13911,6 +13971,7 @@
       }
     },
     "Not Tracked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17088,6 +17149,46 @@
         }
       }
     },
+    "Resume workout, %@, %lld minutes" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Resume workout, %1$@, %2$lld minute"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Resume workout, %1$@, %2$lld minutes"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Reanudar entrenamiento, %1$@, %2$lld minuto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Reanudar entrenamiento, %1$@, %2$lld minutos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Retake" : {
       "localizations" : {
         "es" : {
@@ -19604,6 +19705,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plantillas"
+          }
+        }
+      }
+    },
+    "Tenths" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Décimas"
           }
         }
       }
@@ -22293,6 +22404,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Subida completada"
+          }
+        }
+      }
+    },
+    "Upload Workouts to Strava?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Subir entrenamientos a Strava?"
           }
         }
       }

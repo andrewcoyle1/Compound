@@ -37,17 +37,22 @@ class CreateChallengePresenter {
         title.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// Anything entered that closing would throw away.
+    var hasUnsavedChanges: Bool {
+        !trimmedTitle.isEmpty || !selectedIds.isEmpty
+    }
+
     /// Why Create is disabled, shown under the form; nil when it is ready.
     var validationMessage: String? {
-        if trimmedTitle.isEmpty { return "Give the challenge a name." }
+        if trimmedTitle.isEmpty { return String(localized: "Give the challenge a name.") }
         if trimmedTitle.count > ChallengeModel.titleMaxLength {
             return String(localized: "Keep the name under \(ChallengeModel.titleMaxLength) characters.")
         }
         if !ChallengeModel.targetRange.contains(targetSessions) {
             return String(localized: "Pick a target between \(String(describing: ChallengeModel.targetRange.lowerBound)) and \(String(describing: ChallengeModel.targetRange.upperBound)) sessions.")
         }
-        if !ChallengeModel.durations.contains(durationDays) { return "Pick a duration." }
-        if selectedMemberIds.isEmpty { return "Invite at least one person." }
+        if !ChallengeModel.durations.contains(durationDays) { return String(localized: "Pick a duration.") }
+        if selectedMemberIds.isEmpty { return String(localized: "Invite at least one person.") }
         return nil
     }
 
@@ -94,13 +99,19 @@ class CreateChallengePresenter {
                 isSaving = false
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.createFail(error: error))
-                router.showSimpleAlert(title: String(localized: "Unable to create challenge"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Create Challenge"), subtitle: String(localized: "Please try again."))
             }
         }
     }
 
     func onCancelPressed() {
-        router.dismissScreen()
+        guard hasUnsavedChanges else {
+            router.dismissScreen()
+            return
+        }
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in self?.router.dismissScreen() }
+        }
     }
 }
 

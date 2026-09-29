@@ -112,7 +112,7 @@ class ChallengeDetailPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.leaveFail(error: error))
-                router.showSimpleAlert(title: String(localized: "Unable to leave"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Leave"), subtitle: String(localized: "Please try again."))
             }
         }
     }

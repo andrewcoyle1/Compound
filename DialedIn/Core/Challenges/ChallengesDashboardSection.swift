@@ -21,8 +21,11 @@ struct ChallengesDashboardSection: View {
                 Text("Challenges")
                     .font(.sectionTitle)
                 Spacer()
-                Button("New", systemImage: Symbol.add) {
+                Button {
                     onCreatePressed()
+                } label: {
+                    Label("New", systemImage: Symbol.add)
+                        .tapTarget()
                 }
                 .font(.rowDetail)
                 .accessibilityLabel("New challenge")
@@ -57,7 +60,7 @@ struct ChallengesDashboardSection: View {
                     topThree(card)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
+                Image(systemName: "chevron.forward")
                     .font(.label)
                     .foregroundStyle(.tertiary)
             }
@@ -75,7 +78,7 @@ struct ChallengesDashboardSection: View {
             ForEach(Array(card.topThree.enumerated()), id: \.element.id) { index, entry in
                 HStack(spacing: Spacing.xs) {
                     UserAvatarView(imageUrl: entry.imageUrl, size: 20)
-                    Text("\(index + 1). \(entry.userId == currentUserId ? "You" : entry.name) \(entry.sessions)")
+                    Text("\(index + 1). \(entry.userId == currentUserId ? String(localized: "You") : entry.name) \(entry.sessions)")
                         .font(.label.monospacedDigit())
                         .lineLimit(1)
                 }

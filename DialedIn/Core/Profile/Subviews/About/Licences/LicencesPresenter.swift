@@ -21,10 +21,6 @@ class LicencesPresenter {
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
     }
-
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
 }
 
 extension LicencesPresenter {

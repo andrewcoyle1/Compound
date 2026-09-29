@@ -7,7 +7,6 @@
 
 import Testing
 import SwiftUI
-import UserNotifications
 @testable import DialedIn
 
 /// Tapping a row in the notifications list goes to what it is about: a like to the session, a
@@ -17,23 +16,16 @@ import UserNotifications
 struct NotificationTapThroughTests {
 
     private final class Interactor: SpyGlobalInteractor, NotificationsInteractor {
-        var isAuthorised: UNAuthorizationStatus = .authorized
         var activityNotifications: [ActivityNotificationModel] = []
         var currentUser: UserModel? = UserModel(userId: "me")
         var sessions: [WorkoutSessionModel] = []
         var users: [UserModel] = []
         private(set) var sessionRequests: [String] = []
 
-        func requestPushAuthorisation() async throws -> Bool { true }
-        func canRequestNotificationAuthorisation() async -> Bool { true }
-        func removeDeliveredNotifications(ids: [String]) { }
-        func checkPushNotificationAuthorisation() async throws -> UNAuthorizationStatus { isAuthorised }
         func fetchActivityNotifications() async throws { }
         func markActivityNotificationsRead() async throws { }
         func deleteActivityNotification(id: String) async throws { }
         func clearAllDeliveredNotifications() { }
-        func updateSocialNotificationPreferences(type: ActivityNotificationModel.ActivityType, isEnabled: Bool) async throws { }
-        var privateUserSettings = PrivateUserSettings()
         var incomingFollowRequests: [FollowRequestModel] = []
         var sentFollowRequestIds: Set<String> = []
         func fetchIncomingFollowRequests() async throws { }
@@ -55,7 +47,6 @@ struct NotificationTapThroughTests {
             guard let share = shares.first(where: { $0.id == id }) else { throw URLError(.fileDoesNotExist) }
             return share
         }
-        func updatePrivateUserSettings(_ change: (inout PrivateUserSettings) -> Void) async throws { change(&privateUserSettings) }
 
         var challenges: [ChallengeModel] = []
 

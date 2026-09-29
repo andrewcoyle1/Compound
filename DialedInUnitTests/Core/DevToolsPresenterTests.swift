@@ -391,49 +391,25 @@ struct DevToolsSettingsPresenterTests {
 
 // MARK: - Notifications
 
-/// The notifications screen: the list of likes and comments, and the permission prompt that
-/// decides whether any of them ever arrive as a push.
+/// The notifications screen: the list of likes and comments. The permission prompt and the push
+/// switches moved to Notification Settings and are covered in `NotificationSettingsPresenterTests`.
 ///
 /// Opening the list is what marks activity as read, so the badge and the delivered notifications
 /// have to be cleared together — a list that shows everything as read while the badge still says
 /// three is the visible symptom of missing one of them.
-///
-/// The permission request used to swallow its error entirely. A user who taps "Turn on
-/// notifications" and sees nothing happen has no way to tell a refusal from a bug, so the failure
-/// is asserted here.
 @MainActor
 struct DevToolsNotificationsPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, NotificationsInteractor {
-        var isAuthorised: UNAuthorizationStatus = .notDetermined
         var activityNotifications: [ActivityNotificationModel] = []
 
-        var requestError: Error?
-        var requestResult = true
-        var checkError: Error?
         var fetchError: Error?
         var markReadError: Error?
 
         private(set) var fetchCount = 0
         private(set) var markReadCount = 0
         private(set) var clearDeliveredCount = 0
-        private(set) var requestCount = 0
         private(set) var deletedIds: [String] = []
-
-        func requestPushAuthorisation() async throws -> Bool {
-            requestCount += 1
-            if let requestError { throw requestError }
-            return requestResult
-        }
-
-        func canRequestNotificationAuthorisation() async -> Bool { true }
-
-        func removeDeliveredNotifications(ids: [String]) { }
-
-        func checkPushNotificationAuthorisation() async throws -> UNAuthorizationStatus {
-            if let checkError { throw checkError }
-            return isAuthorised
-        }
 
         func fetchActivityNotifications() async throws {
             fetchCount += 1
@@ -449,7 +425,6 @@ struct DevToolsNotificationsPresenterTests {
 
         func clearAllDeliveredNotifications() { clearDeliveredCount += 1 }
 
-        var privateUserSettings = PrivateUserSettings()
         // Follow requests and follow back are covered in `NotificationsFollowRequestTests`.
         var incomingFollowRequests: [FollowRequestModel] = []
         var sentFollowRequestIds: Set<String> = []
@@ -462,20 +437,9 @@ struct DevToolsNotificationsPresenterTests {
         func cancelFollowRequest(userId: String) async throws { }
 
         var currentUser: UserModel? = UserModel(userId: "user-1")
-        var preferenceError: Error?
-        private(set) var preferenceWrites: [String: Bool] = [:]
-
-        /// Records the private-settings key the real `UserManager` would write, so a test can check
-        /// the value lands under the field the Cloud Function reads.
-        func updateSocialNotificationPreferences(type: ActivityNotificationModel.ActivityType, isEnabled: Bool) async throws {
-            if let preferenceError { throw preferenceError }
-            preferenceWrites[PrivateUserSettings.socialPushKey(for: type).rawValue] = isEnabled
-        }
-
         func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel { throw DevToolsTestError.failed }
         func fetchShare(id: String) async throws -> ShareModel { throw DevToolsTestError.failed }
         func fetchChallenge(id: String) async throws -> ChallengeModel { throw DevToolsTestError.failed }
-        func updatePrivateUserSettings(_ change: (inout PrivateUserSettings) -> Void) async throws { change(&privateUserSettings) }
 
         // MARK: - GroupedNotifications
         var canLoadMoreActivityNotifications = false
@@ -572,59 +536,6 @@ struct DevToolsNotificationsPresenterTests {
         #expect(screen.presenter.isLoading)
     }
 
-    // MARK: - Permission
-
-    /// Granting permission loads the list straight away, so the screen behind the prompt is not
-    /// left empty until the user backs out and returns.
-    @Test("Test Granting Permission Loads The List Immediately")
-    func testGrantingPermissionLoadsTheListImmediately() async {
-        let screen = makeScreen()
-
-        screen.presenter.onRequestNotificationsPressed()
-
-        #expect(await TestManagers.eventually { screen.interactor.fetchCount == 1 })
-        #expect(screen.interactor.requestCount == 1)
-        #expect(screen.router.alertedErrors.isEmpty)
-    }
-
-    /// A permission request that throws tells the user. This catch used to be empty: the button
-    /// did nothing visible and there was no way to tell a refusal from a failure.
-    @Test("Test A Failed Permission Request Is Not Swallowed")
-    func testAFailedPermissionRequestIsNotSwallowed() async {
-        let screen = makeScreen()
-        screen.interactor.requestError = DevToolsTestError.failed
-
-        screen.presenter.onRequestNotificationsPressed()
-
-        #expect(await TestManagers.eventually { screen.router.alertedErrors.count == 1 })
-        #expect(screen.interactor.fetchCount == 0)
-    }
-
-    /// Checking the current status is how the screen decides between showing the list and showing
-    /// the "turn these on" prompt, so a check that fails has to surface rather than leave the
-    /// screen guessing.
-    @Test("Test A Failed Permission Check Is Reported")
-    func testAFailedPermissionCheckIsReported() async {
-        let screen = makeScreen()
-        screen.interactor.checkError = DevToolsTestError.failed
-
-        await screen.presenter.checkPermissions()
-
-        #expect(screen.router.alertedErrors.count == 1)
-    }
-
-    /// And a check that works reports nothing, so the screen only nags when something is wrong.
-    @Test("Test A Successful Permission Check Says Nothing")
-    func testASuccessfulPermissionCheckSaysNothing() async {
-        let screen = makeScreen()
-        screen.interactor.isAuthorised = .authorized
-
-        await screen.presenter.checkPermissions()
-
-        #expect(screen.router.alertedErrors.isEmpty)
-        #expect(screen.presenter.authorizationStatus == .authorized)
-    }
-
     // MARK: - Deleting
 
     /// Swiping a notification away deletes that one and no other.
@@ -648,55 +559,5 @@ struct DevToolsNotificationsPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["NotificationsView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["NotificationsView_Disappear"])
-    }
-
-    // MARK: - Social push switches
-
-    /// A user who has never written the private settings document has no preference fields, and
-    /// must keep getting pushes: every switch reads on.
-    @Test("Test Social Push Switches Default To On When The Private Settings Have No Preferences")
-    func testSocialPushSwitchesDefaultToOnWhenThePrivateSettingsHaveNoPreferences() {
-        let screen = makeScreen()
-        #expect(screen.presenter.isLikesPushEnabled)
-        #expect(screen.presenter.isCommentsPushEnabled)
-        #expect(screen.presenter.isFollowsPushEnabled)
-        #expect(screen.presenter.isNudgesPushEnabled)
-
-        screen.interactor.privateUserSettings = PrivateUserSettings(socialPushLikes: false, socialPushFollows: true)
-        #expect(!screen.presenter.isLikesPushEnabled)
-        #expect(screen.presenter.isCommentsPushEnabled)
-        #expect(screen.presenter.isFollowsPushEnabled)
-    }
-
-    /// Each switch writes its own key, and only that key, the moment it flips. The key names are
-    /// the contract with `SOCIAL_PUSH_PREFERENCE_KEYS` in functions/lib.js.
-    @Test("Test Flipping A Social Push Switch Writes Its Own Key")
-    func testFlippingASocialPushSwitchWritesItsOwnKey() async {
-        let screen = makeScreen()
-
-        screen.presenter.isCommentsPushEnabled = false
-        #expect(await TestManagers.eventually { screen.interactor.preferenceWrites == ["social_push_comments": false] })
-
-        screen.presenter.isLikesPushEnabled = false
-        screen.presenter.isFollowsPushEnabled = false
-        screen.presenter.isNudgesPushEnabled = false
-        let expected = ["social_push_comments": false, "social_push_likes": false, "social_push_follows": false, "social_push_nudges": false]
-        #expect(await TestManagers.eventually { screen.interactor.preferenceWrites == expected })
-        #expect(screen.interactor.trackedEventNames.contains("NotificationsView_SocialPush_Toggle"))
-        #expect(screen.router.alertedErrors.isEmpty)
-    }
-
-    /// A write that fails says so, and the switch still reads the stored value rather than the
-    /// one the user tried to set.
-    @Test("Test A Failed Social Push Write Shows An Alert")
-    func testAFailedSocialPushWriteShowsAnAlert() async {
-        let screen = makeScreen()
-        screen.interactor.preferenceError = DevToolsTestError.failed
-
-        screen.presenter.isLikesPushEnabled = false
-
-        #expect(await TestManagers.eventually { screen.router.alertedErrors.count == 1 })
-        #expect(screen.interactor.preferenceWrites.isEmpty)
-        #expect(screen.presenter.isLikesPushEnabled)
     }
 }

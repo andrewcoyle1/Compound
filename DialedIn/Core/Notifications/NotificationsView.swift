@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UserNotifications
 
 struct NotificationsView: View {
 
@@ -28,9 +27,6 @@ struct NotificationsView: View {
         }
         .onDisappear {
             presenter.onViewDisappear()
-        }
-        .onFirstTask {
-            await presenter.checkPermissions()
         }
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -58,18 +54,6 @@ struct NotificationsView: View {
             if !presenter.incomingFollowRequests.isEmpty {
                 followRequestsSection
             }
-            // Push permission governs only the push switches. The activity list is in-app and was
-            // hidden behind the prompt, so a simulator (or a user) that never granted push saw none.
-            switch presenter.authorizationStatus {
-//            case .authorized:
-//                socialPushSection
-            case .notDetermined:
-                notDeterminedContent
-            case .denied, .provisional, .ephemeral:
-                deniedContent
-            default:
-                EmptyView()
-            }
             if presenter.loadFailed {
                 loadFailedContent
             } else if presenter.activityNotifications.isEmpty {
@@ -77,23 +61,6 @@ struct NotificationsView: View {
             } else {
                 groupedNotificationsList
             }
-        }
-    }
-
-    private var socialPushSection: some View {
-        Section {
-            Toggle("Likes", isOn: $presenter.isLikesPushEnabled)
-            Toggle("Comments", isOn: $presenter.isCommentsPushEnabled)
-            Toggle("Mentions", isOn: $presenter.isMentionsPushEnabled)
-            Toggle("New followers", isOn: $presenter.isFollowsPushEnabled)
-            Toggle("Nudges", isOn: $presenter.isNudgesPushEnabled)
-            Toggle("Shares", isOn: $presenter.isSharesPushEnabled)
-            Toggle("Challenges", isOn: $presenter.isChallengesPushEnabled)
-            scheduledPushRows
-        } header: {
-            Text("Social")
-        } footer: {
-            Text("Get a push when someone in your circle interacts with you, even when Compound is closed.")
         }
     }
 
@@ -223,56 +190,6 @@ struct NotificationsView: View {
         )
         .padding(.vertical, Spacing.xxl)
     }
-    
-    private var notDeterminedContent: some View {
-        ContentUnavailableView {
-            VStack {
-                Image(systemName: "bell.badge")
-                    .iconSize(.large)
-                
-                Text("Enable Notifications")
-            }
-        } description: {
-            Text("Stay informed about workouts, nutrition tracking, and important updates. Enable notifications to never miss a beat.")
-        } actions: {
-            Button {
-                presenter.onRequestNotificationsPressed()
-            } label: {
-                Text("Enable Notifications")
-                    .padding(Spacing.s)
-            }
-            .buttonStyle(.glassProminent)
-            // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
-            .foregroundStyle(.onAccent)
-        }
-        .padding(.vertical)
-        .background(in: .containerRelative)
-        .removeListRowFormatting()
-    }
-    
-    private var deniedContent: some View {
-        ContentUnavailableView {
-            VStack {
-                Image(systemName: "bell.slash.fill")
-                    .iconSize(.large)
-                
-                Text("Notifications Disabled")
-            }
-        } description: {
-            Text("Notifications are currently disabled. To receive updates, please enable notifications in Settings.")
-        } actions: {
-            Button {
-                presenter.openSettings()
-            } label: {
-                Text("Open Settings")
-                    .padding(Spacing.s)
-            }
-            .buttonStyle(.glass)
-        }
-        .padding(.vertical)
-        .background(in: .containerRelative)
-        .removeListRowFormatting()
-    }
 }
 
 extension CoreBuilder {
@@ -302,24 +219,6 @@ extension CoreRouter {
         builder.notificationsView(router: router)
     }
     
-}
-
-// MARK: - ScheduledPush
-
-extension NotificationsView {
-    @ViewBuilder
-    var scheduledPushRows: some View {
-        Toggle("Streak reminder", isOn: $presenter.isStreakReminderEnabled)
-        if presenter.isStreakReminderEnabled {
-            Picker("Remind me at", selection: $presenter.streakReminderHour) {
-                ForEach(0..<24, id: \.self) { hour in
-                    Text(Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: .now) ?? .now, format: .dateTime.hour())
-                        .tag(hour)
-                }
-            }
-        }
-        Toggle("Weekly digest", isOn: $presenter.isWeeklyDigestEnabled)
-    }
 }
 
 // MARK: - GroupedNotifications

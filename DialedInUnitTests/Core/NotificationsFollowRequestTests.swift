@@ -9,14 +9,12 @@
 import Testing
 import Foundation
 import SwiftUI
-import UserNotifications
 @testable import DialedIn
 
 @MainActor
 struct NotificationsFollowRequestTests {
 
     private final class Interactor: SpyGlobalInteractor, NotificationsInteractor {
-        var isAuthorised: UNAuthorizationStatus = .authorized
         var activityNotifications: [ActivityNotificationModel] = []
         var currentUser: UserModel? = UserModel(userId: "me")
         var incomingFollowRequests: [FollowRequestModel] = []
@@ -55,10 +53,6 @@ struct NotificationsFollowRequestTests {
         }
         func cancelFollowRequest(userId: String) async throws { sentFollowRequestIds.remove(userId) }
 
-        func requestPushAuthorisation() async throws -> Bool { true }
-        func canRequestNotificationAuthorisation() async -> Bool { true }
-        func removeDeliveredNotifications(ids: [String]) { }
-        func checkPushNotificationAuthorisation() async throws -> UNAuthorizationStatus { isAuthorised }
         func fetchActivityNotifications() async throws { }
         func markActivityNotificationsRead() async throws { }
         var deleteError: Error?
@@ -66,12 +60,9 @@ struct NotificationsFollowRequestTests {
             if let deleteError { throw deleteError }
         }
         func clearAllDeliveredNotifications() { }
-        func updateSocialNotificationPreferences(type: ActivityNotificationModel.ActivityType, isEnabled: Bool) async throws { }
-        var privateUserSettings = PrivateUserSettings()
         func fetchWorkoutSession(id: String, authorId: String) async throws -> WorkoutSessionModel { throw DevToolsTestError.failed }
         func fetchShare(id: String) async throws -> ShareModel { throw DevToolsTestError.failed }
         func fetchChallenge(id: String) async throws -> ChallengeModel { throw DevToolsTestError.failed }
-        func updatePrivateUserSettings(_ change: (inout PrivateUserSettings) -> Void) async throws { change(&privateUserSettings) }
         // MARK: - GroupedNotifications
         var canLoadMoreActivityNotifications = false
         func fetchMoreActivityNotifications() async throws { }

@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UserNotifications
 
 @Observable
 @MainActor
@@ -24,70 +23,12 @@ class NotificationsPresenter {
         interactor.activityNotifications
     }
 
-    var authorizationStatus: UNAuthorizationStatus {
-        interactor.isAuthorised
-    }
-    
     /// True only until the first load lands, so pull-to-refresh does not tear the list down and
     /// lose the scroll position: the refresh control is its own indicator for that case.
     private(set) var isLoading: Bool = true
     private var hasLoadedOnce = false
     private(set) var loadFailed = false
 
-    /// The Social switches. Each writes the moment it flips, like the Account privacy switch, and
-    /// reads back from the private settings document, so a failed write snaps the switch back once the alert shows.
-    var isLikesPushEnabled: Bool {
-        get { isSocialPushEnabled(.like) }
-        set { onSocialPushToggled(.like, isEnabled: newValue) }
-    }
-
-    var isCommentsPushEnabled: Bool {
-        get { isSocialPushEnabled(.comment) }
-        set { onSocialPushToggled(.comment, isEnabled: newValue) }
-    }
-
-    var isMentionsPushEnabled: Bool {
-        get { isSocialPushEnabled(.mention) }
-        set { onSocialPushToggled(.mention, isEnabled: newValue) }
-    }
-
-    var isFollowsPushEnabled: Bool {
-        get { isSocialPushEnabled(.follow) }
-        set { onSocialPushToggled(.follow, isEnabled: newValue) }
-    }
-
-    var isNudgesPushEnabled: Bool {
-        get { isSocialPushEnabled(.nudge) }
-        set { onSocialPushToggled(.nudge, isEnabled: newValue) }
-    }
-
-    // MARK: - Sharing
-    var isSharesPushEnabled: Bool {
-        get { isSocialPushEnabled(.share) }
-        set { onSocialPushToggled(.share, isEnabled: newValue) }
-    }
-
-    // MARK: - Challenges
-    var isChallengesPushEnabled: Bool {
-        get { isSocialPushEnabled(.challengeComplete) }
-        set { onSocialPushToggled(.challengeComplete, isEnabled: newValue) }
-    }
-
-    private func isSocialPushEnabled(_ type: ActivityNotificationModel.ActivityType) -> Bool {
-        interactor.privateUserSettings.isSocialPushEnabled(for: type)
-    }
-
-    private func onSocialPushToggled(_ type: ActivityNotificationModel.ActivityType, isEnabled: Bool) {
-        interactor.trackEvent(event: Event.socialPushToggled(type: type, isEnabled: isEnabled))
-        Task {
-            do {
-                try await interactor.updateSocialNotificationPreferences(type: type, isEnabled: isEnabled)
-            } catch {
-                router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
-            }
-        }
-    }
-    
     init(
         interactor: NotificationsInteractor,
         router: NotificationsRouter
@@ -134,34 +75,6 @@ class NotificationsPresenter {
         await loadNotifications()
     }
 
-    func checkPermissions() async {
-        do {
-            _ = try await interactor.checkPushNotificationAuthorisation()
-        } catch {
-            router.showAlert(title: String(localized: "Unable to Check Notification Permission"), error: error)
-        }
-    }
-    
-    func onRequestNotificationsPressed() {
-        Task {
-            do {
-                _ = try await interactor.requestPushAuthorisation()
-                await loadNotifications()
-            } catch {
-                // Was an empty catch under a comment reading "Handle error silently or show alert".
-                // A permission request the user asked for either works or says why — `checkPermissions`
-                // above already surfaces its failures the same way.
-                router.showAlert(title: String(localized: "Unable to Enable Notifications"), error: error)
-            }
-        }
-    }
-    
-    func openSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
-        }
-    }
-    
     func onNotificationDeleted(_ notification: ActivityNotificationModel) {
         Task {
             do {
@@ -271,7 +184,6 @@ extension NotificationsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
-        case socialPushToggled(type: ActivityNotificationModel.ActivityType, isEnabled: Bool)
         case notificationPressed(type: ActivityNotificationModel.ActivityType)
         case followBackPressed
         case followRequestAnswered(accept: Bool)
@@ -282,7 +194,6 @@ extension NotificationsPresenter {
             case .deleteNotificationFail: return "NotificationsView_DeleteNotification_Fail"
             case .onAppear:     return "NotificationsView_Appear"
             case .onDisappear:  return "NotificationsView_Disappear"
-            case .socialPushToggled: return "NotificationsView_SocialPush_Toggle"
             case .notificationPressed: return "NotificationsView_Notification_Pressed"
             case .followBackPressed: return "NotificationsView_FollowBack_Pressed"
             case .followRequestAnswered: return "NotificationsView_FollowRequest_Answered"
@@ -292,8 +203,6 @@ extension NotificationsPresenter {
         var parameters: [String: Any]? {
             switch self {
             case .deleteNotificationFail(error: let error): return error.eventParameters
-            case .socialPushToggled(let type, let isEnabled):
-                return ["type": type.rawValue, "is_enabled": isEnabled]
             case .notificationPressed(let type):
                 return ["type": type.rawValue]
             case .followRequestAnswered(let accept):
@@ -311,63 +220,6 @@ extension NotificationsPresenter {
                 
             }
         }
-    }
-}
-
-// MARK: - ScheduledPush
-
-extension NotificationsPresenter {
-    /// The streak reminder, its hour, and the Sunday digest. Like the Social switches, each writes
-    /// the moment it changes and reads back from the private settings document.
-    var isStreakReminderEnabled: Bool {
-        get { interactor.privateUserSettings.socialPushStreakReminder ?? true }
-        set { updateScheduledPush(.streakReminder(isEnabled: newValue)) { $0.socialPushStreakReminder = newValue } }
-    }
-
-    var streakReminderHour: Int {
-        get { interactor.privateUserSettings.reminderHour ?? PrivateUserSettings.defaultReminderHour }
-        set { updateScheduledPush(.reminderHour(hour: newValue)) { $0.reminderHour = newValue } }
-    }
-
-    var isWeeklyDigestEnabled: Bool {
-        get { interactor.privateUserSettings.socialPushWeeklyDigest ?? true }
-        set { updateScheduledPush(.weeklyDigest(isEnabled: newValue)) { $0.socialPushWeeklyDigest = newValue } }
-    }
-
-    private func updateScheduledPush(_ event: ScheduledPushEvent, _ change: @escaping (inout PrivateUserSettings) -> Void) {
-        interactor.trackEvent(event: event)
-        Task {
-            do {
-                try await interactor.updatePrivateUserSettings(change)
-            } catch {
-                router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
-            }
-        }
-    }
-
-    enum ScheduledPushEvent: LoggableEvent {
-        case streakReminder(isEnabled: Bool)
-        case reminderHour(hour: Int)
-        case weeklyDigest(isEnabled: Bool)
-
-        var eventName: String {
-            switch self {
-            case .streakReminder: return "NotificationsView_StreakReminder_Toggle"
-            case .reminderHour: return "NotificationsView_ReminderHour_Changed"
-            case .weeklyDigest: return "NotificationsView_WeeklyDigest_Toggle"
-            }
-        }
-
-        var parameters: [String: Any]? {
-            switch self {
-            case .streakReminder(let isEnabled), .weeklyDigest(let isEnabled):
-                return ["is_enabled": isEnabled]
-            case .reminderHour(let hour):
-                return ["hour": hour]
-            }
-        }
-
-        var type: LogType { .analytic }
     }
 }
 

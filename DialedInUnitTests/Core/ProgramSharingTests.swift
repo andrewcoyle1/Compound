@@ -179,7 +179,7 @@ struct ProgramSharingTests {
         presenter.onSendPressed()
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
-        #expect(router.alertTitles == ["Unable to share"])
+        #expect(router.alertTitles == ["Unable to Share"])
         #expect(presenter.canSend)
         #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
@@ -245,7 +245,7 @@ struct ProgramSharingTests {
         presenter.onAddToLibraryPressed()
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
-        #expect(router.alertTitles == ["Unable to add"])
+        #expect(router.alertTitles == ["Unable to Add to Library"])
         #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(interactor.statusUpdates.isEmpty)
         #expect(presenter.status == .pending)

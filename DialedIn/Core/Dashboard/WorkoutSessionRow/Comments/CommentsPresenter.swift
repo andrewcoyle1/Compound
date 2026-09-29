@@ -18,6 +18,7 @@ class CommentsPresenter {
 
     private(set) var comments: [WorkoutSessionComment] = []
     private(set) var isLoading = false
+    private(set) var loadFailed = false
     var commentDraft: String = ""
     /// The comment the draft replies to, if any. Set by the row's Reply action, cleared by the
     /// bar's cancel or by sending.
@@ -46,16 +47,26 @@ class CommentsPresenter {
 
     private func loadComments() async {
         isLoading = true
-        // Sorted here because the query that fetches them has no order clause, so they arrive in
-        // document-id order — effectively at random. A reply read before the thing it replies to is
-        // nonsense, and new comments are appended to the end, so the thread is oldest first.
-        let fetched = (try? await interactor.fetchComments(sessionId: session.id)) ?? []
-        comments = Self.threaded(hidingBlocked(fetched))
+        loadFailed = false
+        do {
+            // Sorted here because the query that fetches them has no order clause, so they arrive
+            // in document-id order — effectively at random. A reply read before the thing it
+            // replies to is nonsense, and new comments are appended to the end, so the thread is
+            // oldest first.
+            let fetched = try await interactor.fetchComments(sessionId: session.id)
+            comments = Self.threaded(hidingBlocked(fetched))
+        } catch {
+            loadFailed = true
+        }
         isLoading = false
         if !knownPeople.contains(where: { $0.id == session.authorId }) {
             // Silent: the author is only needed for mention suggestions.
             sessionAuthor = try? await interactor.getUser(userId: session.authorId)
         }
+    }
+
+    func onRetryLoadPressed() {
+        Task { await loadComments() }
     }
 
     /// Drops comments by anyone the reader has blocked, and comments hidden by moderation that are
@@ -240,6 +251,7 @@ class CommentsPresenter {
                 try await interactor.toggleCommentLike(id: comment.id, userId: readerId, isLiked: isLiked)
             } catch {
                 setLike(!isLiked, commentId: comment.id, userId: readerId)
+                interactor.playHaptic(option: .error)
             }
         }
     }
@@ -254,11 +266,12 @@ class CommentsPresenter {
 
     func onDeletePressed(_ comment: WorkoutSessionComment) {
         router.showAlert(title: String(localized: "Delete Comment?"), subtitle: String(localized: "Are you sure you want to delete your comment? This cannot be undone."), buttons: {
-            AnyView(
-                Button(role: .destructive) {
+            AnyView(VStack {
+                Button("Delete", role: .destructive) {
                     self.onDeleteConfirmed(comment)
                 }
-            )
+                Button("Cancel", role: .cancel) { }
+            })
         })
     }
     
@@ -311,12 +324,14 @@ extension CommentsPresenter {
     func withPreviewState(
         comments: [WorkoutSessionComment]? = nil,
         isLoading: Bool = false,
+        loadFailed: Bool = false,
         draft: String = ""
     ) -> CommentsPresenter {
         if let comments {
             self.comments = comments
         }
         self.isLoading = isLoading
+        self.loadFailed = loadFailed
         self.commentDraft = draft
         return self
     }

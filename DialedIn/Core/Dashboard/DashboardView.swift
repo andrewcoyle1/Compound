@@ -23,6 +23,9 @@ struct DashboardView<
     @Environment(\.layoutMode) private var layoutMode
     /// The card titles grow with Dynamic Type; a fixed 30pt clipped them at accessibility sizes.
     @ScaledMetric(relativeTo: .headline) private var carouselTitleHeight = DashboardCard<EmptyView>.titleHeight
+    /// The card bodies grow with Dynamic Type too; a fixed 200pt left the last element in each card
+    /// squeezed or clipped once text grew past what the body had room for.
+    @ScaledMetric(relativeTo: .body) private var carouselContentHeight = DashboardCard<EmptyView>.contentHeight
     @State var presenter: DashboardPresenter
     let delegate: DashboardDelegate
 
@@ -86,7 +89,7 @@ struct DashboardView<
     }
 
     private var carouselHeight: CGFloat {
-        DashboardCard<EmptyView>.contentHeight + carouselTitleHeight
+        carouselContentHeight + carouselTitleHeight
     }
 
     /// A single card deliberately stops short of the full width. The paged `TabView` this replaced
@@ -125,16 +128,19 @@ struct DashboardView<
         .scrollIndicators(.hidden)
     }
 
+    /// No invented defaults: a target of 0 reads as "no target" throughout `NutritionCard` — the
+    /// calorie line hides itself and the macro bars sit empty — rather than showing progress
+    /// against numbers (2,000 kcal, 150 g protein, …) nobody set.
     private var nutritionCard: some View {
         NutritionCard(
             calories: presenter.nutritionTotals?.calories ?? 0,
-            calorieTarget: presenter.nutritionTarget?.calories ?? 2000,
+            calorieTarget: presenter.nutritionTarget?.calories ?? 0,
             proteinGrams: presenter.nutritionTotals?.proteinGrams ?? 0,
-            proteinTarget: presenter.nutritionTarget?.proteinGrams ?? 150,
+            proteinTarget: presenter.nutritionTarget?.proteinGrams ?? 0,
             carbGrams: presenter.nutritionTotals?.carbGrams ?? 0,
-            carbTarget: presenter.nutritionTarget?.carbGrams ?? 250,
+            carbTarget: presenter.nutritionTarget?.carbGrams ?? 0,
             fatGrams: presenter.nutritionTotals?.fatGrams ?? 0,
-            fatTarget: presenter.nutritionTarget?.fatGrams ?? 70,
+            fatTarget: presenter.nutritionTarget?.fatGrams ?? 0,
             onLogMealTapped: { presenter.onLogMealPressed() }
         )
     }

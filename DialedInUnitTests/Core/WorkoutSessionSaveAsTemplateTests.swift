@@ -37,7 +37,6 @@ struct WorkoutSessionSaveAsTemplateTests {
         func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
-        private(set) var alertsWithButtons: [String] = []
         private(set) var openedTemplateIds: [String] = []
 
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { }
@@ -47,7 +46,6 @@ struct WorkoutSessionSaveAsTemplateTests {
 
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
             alertTitles.append(title)
-            if buttons != nil { alertsWithButtons.append(title) }
         }
 
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
@@ -76,24 +74,20 @@ struct WorkoutSessionSaveAsTemplateTests {
         return Row(presenter: presenter, interactor: interactor, router: router)
     }
 
-    @Test("Test A Successful Save Calls The Manager And Offers Open")
-    func testASuccessfulSaveCallsTheManagerAndOffersOpen() async {
+    @Test("Test A Successful Save Calls The Manager And Toasts")
+    func testASuccessfulSaveCallsTheManagerAndToasts() async {
         let row = makeRow(library: [Fixture.libraryExercise(id: "bench", name: "Bench Press")])
-        let presenter = row.presenter, interactor = row.interactor, router = row.router
+        let presenter = row.presenter, interactor = row.interactor
 
         presenter.onSaveAsTemplatePressed()
-        await TestManagers.eventually { !router.alertTitles.isEmpty }
+        await TestManagers.eventually { !interactor.shownToasts.isEmpty }
 
         let saved = interactor.saved.first
         #expect(interactor.saved.count == 1)
         #expect(saved?.authorId == "me")
         #expect(saved?.exercises.map { $0.exercise.id } == ["bench"])
-        #expect(router.alertsWithButtons == ["Saved to your workouts"])
+        #expect(interactor.shownToasts.map(\.style) == [.success])
         #expect(interactor.trackedEventNames.contains("WorkoutSessionRow_SaveAsTemplate_Success"))
-
-        guard let saved else { return }
-        presenter.onOpenSavedTemplatePressed(saved)
-        #expect(router.openedTemplateIds == [saved.id])
     }
 
     @Test("Test Saving A Name The Reader Already Has Adds Copy")
@@ -130,6 +124,5 @@ struct WorkoutSessionSaveAsTemplateTests {
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
         #expect(router.alertTitles == ["Unable to Save Workout"])
-        #expect(router.alertsWithButtons.isEmpty)
     }
 }

@@ -88,23 +88,30 @@ struct CircleActivityStripView: View {
             .buttonStyle(.plain)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(
-                "\(member.name), \(member.trainedToday ? String(localized: "trained today") : String(localized: "not trained yet today")), "
-                + "\(member.sessionsThisWeek) of \(member.weeklyGoal) sessions this week"
+                member.trainedToday
+                    ? String(localized: "\(member.name), trained today, \(member.sessionsThisWeek) of \(member.weeklyGoal) sessions this week")
+                    : String(localized: "\(member.name), not trained yet today, \(member.sessionsThisWeek) of \(member.weeklyGoal) sessions this week")
             )
             .accessibilityHint("Opens their profile")
 
             if member.canNudge {
-                Button("Nudge") {
+                Button {
                     onNudgePressed(member)
+                } label: {
+                    Text("Nudge").tapTarget()
                 }
                 .circlePillStyle()
                 .accessibilityLabel("Nudge \(member.name) to train")
             }
 
             if member.isCurrentUser, let onSetGoalPressed {
-                Button("Set goal", action: onSetGoalPressed)
-                    .circlePillStyle()
-                    .accessibilityLabel("Set your weekly session goal")
+                Button {
+                    onSetGoalPressed()
+                } label: {
+                    Text("Set goal").tapTarget()
+                }
+                .circlePillStyle()
+                .accessibilityLabel("Set your weekly session goal")
             }
         }
         .frame(width: max(avatarSize + Spacing.l, cellWidth))
@@ -156,6 +163,5 @@ private extension View {
             .fontWeight(.semibold)
             .lineLimit(1)
             .buttonStyle(.glass)
-            .controlSize(.mini)
     }
 }

@@ -169,7 +169,7 @@ struct ChallengesPresenterTests {
         presenter.onCreatePressed()
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
-        #expect(router.alertTitles == ["Unable to create challenge"])
+        #expect(router.alertTitles == ["Unable to Create Challenge"])
         #expect(presenter.canCreate)
         #expect(interactor.trackedEventNames.contains("CreateChallengeView_Create_Fail"))
         #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])

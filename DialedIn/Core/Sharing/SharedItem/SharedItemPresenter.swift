@@ -64,7 +64,7 @@ class SharedItemPresenter {
             } catch {
                 interactor.trackEvent(event: Event.answerFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Add to Library"), subtitle: String(localized: "Please try again."))
             }
             isWorking = false
         }
@@ -82,7 +82,7 @@ class SharedItemPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.answerFail(error: error))
-                router.showSimpleAlert(title: "Unable to dismiss", subtitle: "Please try again.")
+                router.showSimpleAlert(title: String(localized: "Unable to Decline"), subtitle: String(localized: "Please try again."))
             }
             isWorking = false
         }

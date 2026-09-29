@@ -37,6 +37,8 @@ struct InviteFriendCard: View {
                 .buttonStyle(.plain)
                 .labelStyle(.iconOnly)
                 .foregroundStyle(.secondary)
+                .contentShape(.rect)
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                 .accessibilityLabel("Dismiss")
         }
         .padding()

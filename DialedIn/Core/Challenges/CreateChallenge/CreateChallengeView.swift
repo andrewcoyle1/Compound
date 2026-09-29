@@ -68,6 +68,7 @@ struct CreateChallengeView: View {
             }
         }
         .onAppear { presenter.onViewAppear() }
+        .interactiveDismissDisabled(presenter.hasUnsavedChanges)
     }
 
     private func candidateRow(_ user: UserModel) -> some View {

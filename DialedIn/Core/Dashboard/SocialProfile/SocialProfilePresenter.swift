@@ -129,14 +129,19 @@ class SocialProfilePresenter {
 
     private func loadSessions(userId: String) {
         isLoadingSessions = true
+        loadSessionsFailed = false
         Task {
             defer { isLoadingSessions = false }
             do {
                 fetchedSessions = try await interactor.fetchWorkoutSessions(authorId: userId, limit: 30)
             } catch {
-                // Silent — the empty state stands in for sessions that could not be read.
+                loadSessionsFailed = true
             }
         }
+    }
+
+    func onRetryLoadSessionsPressed(delegate: SocialProfileDelegate) {
+        loadSessions(userId: delegate.user.userId)
     }
 
     private func loadFollowers(userId: String) {
@@ -173,7 +178,7 @@ class SocialProfilePresenter {
                 let users = try await interactor.fetchUsers(userIds: profileUser.followingIds ?? [])
                 router.showFollowersList(delegate: FollowersListDelegate(followers: users, title: String(localized: "Following")))
             } catch {
-                router.showSimpleAlert(title: String(localized: "Unable to load following"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Load Following"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -223,7 +228,7 @@ class SocialProfilePresenter {
             do {
                 try await interactor.blockUser(userId: profileUser.userId)
             } catch {
-                router.showSimpleAlert(title: String(localized: "Unable to block user"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Block User"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -235,7 +240,7 @@ class SocialProfilePresenter {
             do {
                 try await interactor.unblockUser(userId: profileUser.userId)
             } catch {
-                router.showSimpleAlert(title: String(localized: "Unable to unblock user"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Unblock User"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -254,6 +259,7 @@ class SocialProfilePresenter {
     /// Another user's sessions are fetched on appear; until they land the section shows a spinner
     /// rather than "No workouts yet".
     private(set) var isLoadingSessions = false
+    private(set) var loadSessionsFailed = false
 }
 
 extension SocialProfilePresenter {
@@ -308,8 +314,8 @@ extension SocialProfilePresenter {
         guard isOwnProfile, let user = interactor.currentUser else { return nil }
         let goal = CircleWeek.goal(for: user)
         return user.weeklySessionGoal == nil
-            ? "Set a weekly goal"
-            : "Goal: \(goal) \(goal == 1 ? String(localized: "session") : String(localized: "sessions")) a week"
+            ? String(localized: "Set a weekly goal")
+            : String(AttributedString(localized: "Goal: ^[\(goal) session](inflect: true) a week").characters)
     }
 
     func onWeeklyGoalPressed() {

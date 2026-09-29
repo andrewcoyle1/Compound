@@ -63,7 +63,9 @@ struct NotificationsView: View {
             default:
                 EmptyView()
             }
-            if presenter.activityNotifications.isEmpty {
+            if presenter.loadFailed {
+                loadFailedContent
+            } else if presenter.activityNotifications.isEmpty {
                 emptyStateContent
             } else {
                 groupedNotificationsList
@@ -84,7 +86,7 @@ struct NotificationsView: View {
         } header: {
             Text("Social")
         } footer: {
-            Text("Get a push when someone in your circle interacts with you, even when DialedIn is closed.")
+            Text("Get a push when someone in your circle interacts with you, even when Compound is closed.")
         }
     }
 
@@ -119,7 +121,6 @@ struct NotificationsView: View {
                     }
                     .lineLimit(1)
                 }
-                .controlSize(.small)
             }
         } header: {
             Text("Follow Requests")
@@ -144,24 +145,60 @@ struct NotificationsView: View {
     private func activityNotificationTitle(_ notification: ActivityNotificationModel) -> String {
         switch notification.type {
         case .like:
-            return "\(notification.actorName) liked your workout"
+            return String(localized: "\(notification.actorName) liked your workout")
         case .comment:
-            let preview = notification.commentText.map { ": \"\($0.prefix(60))\"" } ?? ""
-            return "\(notification.actorName) commented\(preview)"
+            return commentOrMentionTitle(notification, mentioned: false)
         case .follow:
-            return "\(notification.actorName) started following you"
+            return String(localized: "\(notification.actorName) started following you")
         case .nudge:
-            return "\(notification.actorName) nudged you to train"
+            return String(localized: "\(notification.actorName) nudged you to train")
         case .mention:
-            let preview = notification.commentText.map { ": \"\($0.prefix(60))\"" } ?? ""
-            return "\(notification.actorName) mentioned you\(preview)"
+            return commentOrMentionTitle(notification, mentioned: true)
         case .followAccepted:
-            return "\(notification.actorName) accepted your follow request"
+            return String(localized: "\(notification.actorName) accepted your follow request")
         case .share:
-            return "\(notification.actorName) shared \(notification.commentText ?? "a workout")"
+            return shareTitle(notification)
         case .challengeComplete:
-            return "You finished \(notification.commentText ?? "a challenge")"
+            return challengeCompleteTitle(notification)
         }
+    }
+
+    private func commentOrMentionTitle(_ notification: ActivityNotificationModel, mentioned: Bool) -> String {
+        guard let preview = notification.commentText?.prefix(60) else {
+            return mentioned
+                ? String(localized: "\(notification.actorName) mentioned you")
+                : String(localized: "\(notification.actorName) commented")
+        }
+        return mentioned
+            ? String(localized: "\(notification.actorName) mentioned you: \"\(preview)\"")
+            : String(localized: "\(notification.actorName) commented: \"\(preview)\"")
+    }
+
+    private func shareTitle(_ notification: ActivityNotificationModel) -> String {
+        guard let commentText = notification.commentText else {
+            return String(localized: "\(notification.actorName) shared a workout")
+        }
+        return String(localized: "\(notification.actorName) shared \(commentText)")
+    }
+
+    private func challengeCompleteTitle(_ notification: ActivityNotificationModel) -> String {
+        guard let commentText = notification.commentText else {
+            return String(localized: "You finished a challenge")
+        }
+        return String(localized: "You finished \(commentText)")
+    }
+
+    private var loadFailedContent: some View {
+        ContentUnavailableView {
+            Label("Unable to Load Notifications", systemImage: Symbol.warning)
+        } description: {
+            Text("Check your connection and try again.")
+        } actions: {
+            Button("Try Again") {
+                presenter.onRetryLoadPressed()
+            }
+        }
+        .padding(.vertical, Spacing.xxl)
     }
 
     private var emptyStateContent: some View {
@@ -278,9 +315,11 @@ extension NotificationsView {
     var groupedNotificationsList: some View {
         ForEach(presenter.notificationGroups) { group in
             groupedNotificationRow(group)
-                .swipeActions {
+                .rowActions {
                     Button(role: .destructive) {
                         presenter.onGroupDeleted(group)
+                    } label: {
+                        Label("Delete", systemImage: Symbol.delete)
                     }
                 }
         }
@@ -301,7 +340,12 @@ extension NotificationsView {
                 presenter.onGroupPressed(group)
             } label: {
                 HStack(spacing: Spacing.m) {
-                    stackedAvatars(group.avatarUrls)
+                    if presenter.loadingNotificationId == group.newest.id {
+                        ProgressView()
+                            .frame(width: Spacing.xxl, height: Spacing.xxl)
+                    } else {
+                        stackedAvatars(group.avatarUrls)
+                    }
 
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(group.groupedTitle ?? activityNotificationTitle(group.newest))
@@ -318,6 +362,7 @@ extension NotificationsView {
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
+            .disabled(presenter.loadingNotificationId != nil)
             .accessibilityElement(children: .combine)
             // Read and unread differ only by text colour on screen.
             .accessibilityValue(group.isRead ? "" : "Unread")

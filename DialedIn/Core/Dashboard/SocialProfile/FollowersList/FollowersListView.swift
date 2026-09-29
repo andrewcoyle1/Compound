@@ -19,7 +19,7 @@ struct FollowersListView: View {
             if delegate.followers.isEmpty {
                 // The list was drawn straight from the array, so an empty one was a blank screen.
                 ContentUnavailableView(
-                    "No One Yet",
+                    "No Followers Yet",
                     systemImage: Symbol.friends,
                     description: Text("People will show up here once there are some.")
                 )
@@ -37,12 +37,14 @@ struct FollowersListView: View {
                     .anyButton(.highlight) {
                         presenter.onUserPressed(user: user)
                     }
-                    .swipeActions {
+                    .rowActions {
                         if delegate.canRemoveFollowers {
                             // Not `.destructive`: that role animates the row away before the
                             // confirmation has been answered.
-                            Button("Remove") {
+                            Button {
                                 presenter.onRemoveFollowerPressed(user: user)
+                            } label: {
+                                Label("Remove", systemImage: Symbol.delete)
                             }
                             .tint(.danger)
                         }

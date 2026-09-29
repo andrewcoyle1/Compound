@@ -30,7 +30,6 @@ struct ChallengeRing: View {
                 .rotationEffect(.degrees(-90))
             Text("\(sessions)/\(target)")
                 .font(size >= 80 ? .metric : .metricSmall)
-                .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .padding(side / 8)
         }

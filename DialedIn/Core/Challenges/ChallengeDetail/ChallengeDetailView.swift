@@ -75,7 +75,7 @@ struct ChallengeDetailView: View {
                     .foregroundStyle(.secondary)
                     .frame(minWidth: rankWidth)
                 UserAvatarView(imageUrl: entry.imageUrl, size: ControlSize.thumbnail)
-                Text(isOwn ? "You" : entry.name)
+                Text(isOwn ? String(localized: "You") : entry.name)
                     .font(.rowTitle)
                     .fontWeight(isOwn ? .semibold : .regular)
                     .lineLimit(1)
@@ -93,7 +93,7 @@ struct ChallengeDetailView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(rank). \(isOwn ? "You" : entry.name), \(entry.sessions) of \(presenter.challenge.targetSessions) sessions")
+        .accessibilityLabel("\(rank). \(isOwn ? String(localized: "You") : entry.name), \(entry.sessions) of \(presenter.challenge.targetSessions) sessions")
     }
 }
 

@@ -22,7 +22,7 @@ struct WeeklyReviewCard: View {
                     .font(.rowTitle)
                     .fontWeight(.medium)
                 Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
+                Image(systemName: "chevron.forward")
                     .font(.label)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)

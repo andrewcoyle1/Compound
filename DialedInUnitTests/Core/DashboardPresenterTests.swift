@@ -193,6 +193,10 @@ struct DashboardFeedPresenterTests {
         func showSimpleAlert(title: String, subtitle: String?) {
             alertTitles.append(title)
         }
+
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            alertTitles.append(title)
+        }
     }
 
     private struct Screen {
@@ -538,7 +542,7 @@ struct DashboardFeedPresenterTests {
 
         screen.presenter.onLogMealPressed()
 
-        #expect(screen.router.alertTitles == ["Unable to add new meal"])
+        #expect(screen.router.alertTitles == ["Draft Meal"])
         #expect(screen.router.shown.isEmpty)
         #expect(screen.interactor.deletedDraftCount == 0)
     }

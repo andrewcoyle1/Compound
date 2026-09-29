@@ -127,6 +127,9 @@ struct NotificationsView: View {
                         VStack(alignment: .leading, spacing: Spacing.s) { followRequestButtons(request) }
                     }
                     .lineLimit(1)
+                    // Small, so both fit beside the name at the default size; each label's
+                    // `tapTarget()` keeps the hit area at 44 pt.
+                    .controlSize(.small)
                 }
             }
         } header: {
@@ -136,15 +139,19 @@ struct NotificationsView: View {
 
     @ViewBuilder
     private func followRequestButtons(_ request: FollowRequestModel) -> some View {
-        Button("Accept") {
+        Button {
             presenter.onAcceptRequestPressed(request)
+        } label: {
+            Text("Accept").tapTarget()
         }
         .buttonStyle(.glassProminent)
         // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
         .foregroundStyle(.onAccent)
 
-        Button("Decline") {
+        Button {
             presenter.onDeclineRequestPressed(request)
+        } label: {
+            Text("Decline").tapTarget()
         }
         .buttonStyle(.glass)
     }

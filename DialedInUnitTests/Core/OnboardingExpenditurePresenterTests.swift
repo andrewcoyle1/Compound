@@ -155,6 +155,18 @@ struct ExpenditurePresenterArithmeticTests {
         #expect(bmr == 1614)
     }
 
+    /// Decision 8a: "Prefer not to say" takes the midpoint of +5 and -161.
+    @Test("BMR uses the midpoint coefficient for prefer not to say")
+    func testBMRUsesTheMidpointForPreferNotToSay() {
+        let screen = makeExpenditureScreen()
+        let sut = screen.sut
+
+        // 800 + 1125 - 150 - 78
+        let bmr = sut.bmrInt(weight: 80, height: 180, dateOfBirth: expenditureBirthDate(yearsAgo: 30), gender: .preferNotToSay)
+
+        #expect(bmr == 1697)
+    }
+
     @Test("Age lowers BMR by five calories a year")
     func testAgeLowersBMRByFiveCaloriesAYear() {
         let screen = makeExpenditureScreen()

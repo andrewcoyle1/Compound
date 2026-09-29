@@ -83,7 +83,7 @@ class ExpenditurePresenter {
     // 100, not 120: the height wheel goes down to 100 cm (`HeightView.swift`), so clamping here
     // any tighter silently substituted someone else's height into their own calorie estimate.
     private func heightCm(height: Double) -> Double { height.clamped(to: 100...260, whenNotFinite: 100) }
-    private func mifflinGenderCoefficient(gender: Gender) -> Double { (gender == .male) ? 5 : -161 }
+    private func mifflinGenderCoefficient(gender: Gender) -> Double { gender.mifflinStJeorCoefficient }
     
     private func bmr(weight: Double, height: Double, dateOfBirth: Date, gender: Gender) -> Double { (10 * weightKg(weight: weight)) + (6.25 * heightCm(height: height)) - (5 * Double(ageYears(dateOfBirth: dateOfBirth))) + mifflinGenderCoefficient(gender: gender) }
     func bmrInt(

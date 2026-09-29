@@ -263,7 +263,7 @@ private func previewDelegate() -> CalendarHeaderDelegate {
                 .accessibilityLabel("Show calendar")
             }
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             CalendarHeaderView(
                 presenter: CalendarHeaderPresenter(
                     interactor: PreviewCalendarHeaderInteractor(),
@@ -286,7 +286,7 @@ private func previewDelegate() -> CalendarHeaderDelegate {
         List {
             Text("Hello")
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             builder.calendarHeaderView(
                 router: router,
                 delegate: previewDelegate(),

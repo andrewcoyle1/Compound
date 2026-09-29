@@ -36,14 +36,13 @@ struct AuthView: View {
         .onDisappear {
             presenter.cleanUp()
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             Text("COMPOUND")
                 .font(.display)
                 .fontWeight(.heavy)
                 .fontDesign(.default)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(.regularMaterial)
                 .accessibilityAddTraits(.isHeader)
         }
     }

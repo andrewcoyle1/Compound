@@ -43,7 +43,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             calendarHeader(
                 CalendarHeaderDelegate(
                     onDatePressed: { date in

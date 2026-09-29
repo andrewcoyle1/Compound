@@ -1124,6 +1124,22 @@
         }
       }
     },
+    "%lld %@ on plate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@ on plate"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld %2$@ en el plato"
+          }
+        }
+      }
+    },
     "%lld / %lld kcal" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1558,6 +1574,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld de 5"
+          }
+        }
+      }
+    },
+    "%lld on plate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld en el plato"
           }
         }
       }
@@ -2359,6 +2385,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "IA"
+          }
+        }
+      }
+    },
+    "AI Estimate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimación de la IA"
           }
         }
       }
@@ -5722,6 +5758,7 @@
       }
     },
     "Common foods only" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8819,6 +8856,26 @@
         }
       }
     },
+    "Estimated by AI from your description, which is sent to Google's AI service for analysis and isn't stored by Compound. Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estimado por IA a partir de tu descripción, que se envía al servicio de IA de Google para su análisis y Compound no la almacena. Prueba a nombrar cada alimento y su cantidad, por ejemplo «2 huevos y una rebanada de pan tostado»."
+          }
+        }
+      }
+    },
+    "Estimated by AI from your photo. The photo is sent to Google's AI service for analysis and isn't stored by Compound." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Estimado por IA a partir de tu foto. La foto se envía al servicio de IA de Google para su análisis y Compound no la almacena."
+          }
+        }
+      }
+    },
     "Estimated from your profile until %lld days are logged" : {
       "localizations" : {
         "es" : {
@@ -8837,6 +8894,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Estimates can be wrong. Check amounts before logging." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las estimaciones pueden ser incorrectas. Revisa las cantidades antes de registrar."
           }
         }
       }
@@ -13442,6 +13509,16 @@
         }
       }
     },
+    "No Foods Recognized" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se reconoció ningún alimento"
+          }
+        }
+      }
+    },
     "No Goal Set" : {
       "localizations" : {
         "es" : {
@@ -17109,6 +17186,7 @@
       }
     },
     "Results" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17195,6 +17273,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Repetir"
+          }
+        }
+      }
+    },
+    "Retake the photo in good light, or use Search or Describe." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a tomar la foto con buena luz, o usa Buscar o Describir."
           }
         }
       }
@@ -21026,6 +21114,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inténtalo de nuevo, o sáltate este paso y conéctate más tarde en Ajustes."
+          }
+        }
+      }
+    },
+    "Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prueba a nombrar cada alimento y su cantidad, por ejemplo «2 huevos y una rebanada de pan tostado»."
           }
         }
       }

@@ -43,6 +43,8 @@ struct AppViewForUITesting: View {
             startScreen { builder.socialProfileView(router: $0, delegate: SocialProfileDelegate(user: UserModel.mocks[0])) }
         } else if processInfoContains("STARTSCREEN_NOTIFICATIONS") {
             startScreen { builder.notificationsView(router: $0) }
+        } else if processInfoContains("STARTSCREEN_NOTIFICATION_SETTINGS") {
+            startScreen { builder.notificationSettingsView(delegate: NotificationSettingsDelegate(), router: $0) }
         } else if processInfoContains("STARTSCREEN_USERNAME") {
             startScreen { builder.editUsernameView(router: $0) }
         } else if processInfoContains("STARTSCREEN_SHARED_ITEM") {

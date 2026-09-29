@@ -303,6 +303,8 @@ class DevPreview {
         let unitPreferences = exerciseUnitPreferenceManager
         liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
             unitPreferences.getPreference(for: $0).weightUnit.liveActivityUnit
+        }, distanceUnit: {
+            unitPreferences.getPreference(for: $0).distanceUnit.liveActivityUnit
         })
         hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
         #endif

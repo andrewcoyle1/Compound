@@ -33,6 +33,8 @@ enum ExerciseDistanceUnit: String, Codable, CaseIterable {
     case meters
     case miles
     
+    var liveActivityUnit: LiveActivityDistanceUnit { self == .miles ? .miles : .meters }
+
     var abbreviation: String {
         switch self {
         case .meters: return "m"

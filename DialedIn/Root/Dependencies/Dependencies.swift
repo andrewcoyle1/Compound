@@ -312,6 +312,8 @@ struct Dependencies {
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
+            }, distanceUnit: {
+                exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif
@@ -645,6 +647,8 @@ struct Dependencies {
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
+            }, distanceUnit: {
+                exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif
@@ -972,6 +976,8 @@ struct Dependencies {
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
+            }, distanceUnit: {
+                exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif

@@ -40,26 +40,37 @@ class NutritionTargetChartPresenter {
         return days
     }
 
-    var mondayStartOfCurrentWeek: Date {
+    /// The grid used to assume Monday, whatever the user's own calendar starts on.
+    var startOfCurrentWeek: Date {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let weekday = calendar.component(.weekday, from: today) // Sunday=1
-        let daysFromMonday = (weekday + 5) % 7 // Monday=0 .. Sunday=6
-        return calendar.date(byAdding: .day, value: -daysFromMonday, to: today) ?? today
+        let daysFromStart = (weekday - calendar.firstWeekday + 7) % 7
+        return calendar.date(byAdding: .day, value: -daysFromStart, to: today) ?? today
     }
 
     var dayAbbrevs: [String] {
-        let calendar = Calendar.current
-        let symbols = calendar.veryShortWeekdaySymbols // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
-        // Reorder to start with Monday: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-        // Safe: a calendar always has seven weekday symbols.
-        return Array(symbols[1...] + [symbols[0]])
+        reorderedFromFirstWeekday(Calendar.current.veryShortWeekdaySymbols)
     }
 
-    // Monday-start day index for today (Mon=0 .. Sun=6)
-    var todayIndexMondayStart: Int {
-        let weekday = Calendar.current.component(.weekday, from: Date()) // Sunday=1
-        return (weekday + 5) % 7
+    /// Full weekday names in the grid's day order, for VoiceOver.
+    var dayNames: [String] {
+        reorderedFromFirstWeekday(Calendar.current.weekdaySymbols)
+    }
+
+    /// `symbols` is Sunday-first, as every `Calendar` weekday-symbols array is. Rotates it to start
+    /// at `firstWeekday` instead, so a calendar that starts on Sunday or Saturday isn't shown as if
+    /// it started on Monday.
+    private func reorderedFromFirstWeekday(_ symbols: [String]) -> [String] {
+        let startIndex = Calendar.current.firstWeekday - 1 // 0-based
+        return Array(symbols[startIndex...] + symbols[..<startIndex])
+    }
+
+    /// Today's index in the grid's day order (0 = the first column).
+    var todayIndexInWeek: Int {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: Date()) // Sunday=1
+        return (weekday - calendar.firstWeekday + 7) % 7
     }
 
     init(
@@ -84,12 +95,6 @@ class NutritionTargetChartPresenter {
         metric == .calories ? Format.kcal(value) : Format.grams(value)
     }
 
-    /// Full weekday names in the grid's Monday-first order, for VoiceOver.
-    var dayNames: [String] {
-        let symbols = Calendar.current.weekdaySymbols
-        return Array(symbols[1...] + [symbols[0]])
-    }
-
     /// What VoiceOver reads for one day's cell: "48 g of 150 g, over target".
     func cellAccessibilityValue(logged: Double, target: Double, metric: Metric) -> String {
         let amounts = String(localized: "\(amountText(logged, for: metric)) of \(amountText(target, for: metric))")
@@ -98,7 +103,7 @@ class NutritionTargetChartPresenter {
     }
 
     func loadCurrentWeekLoggedTotals() async {
-        let start = mondayStartOfCurrentWeek
+        let start = startOfCurrentWeek
         var totals: [DailyMacroTarget] = []
         totals.reserveCapacity(Self.daysInWeek)
         for offset in 0..<Self.daysInWeek {

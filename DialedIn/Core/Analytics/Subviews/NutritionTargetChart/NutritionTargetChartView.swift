@@ -11,23 +11,38 @@ struct NutritionTargetChartView: View {
     @State var presenter: NutritionTargetChartPresenter
 
     var body: some View {
-        Group {
-            if let planDays = presenter.planDays {
-                if let loggedDays = presenter.loggedDays {
-                    grid(planDays: planDays, loggedDays: loggedDays)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            // Nothing on screen named this chart or its custom marks before: a bar's fill is what
+            // was eaten, the tick is the target, and the caret is for going well over it.
+            SectionHeaderView(title: String(localized: "This Week Against Your Targets"))
+            Group {
+                if let planDays = presenter.planDays {
+                    if let loggedDays = presenter.loggedDays {
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            grid(planDays: planDays, loggedDays: loggedDays)
+                            key
+                        }
+                    } else {
+                        // The week's totals are read in `.task` below. Until they arrive there is
+                        // nothing truthful to put in the logged half of each cell.
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 } else {
-                    // The week's totals are read in `.task` below. Until they arrive there is
-                    // nothing truthful to put in the logged half of each cell.
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    noPlanState
                 }
-            } else {
-                noPlanState
             }
         }
         .task {
             await presenter.loadCurrentWeekLoggedTotals()
         }
+    }
+
+    private var key: some View {
+        Text("Bar shows what you ate, the tick is your target, and a caret means you went over.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .accessibilityHidden(true)
     }
 
     /// Shown when the user has no diet plan. The grid used to draw a week of `DailyMacroTarget.mock`
@@ -58,7 +73,7 @@ struct NutritionTargetChartView: View {
 
                     // Day cells
                     ForEach(Array(zip(loggedValues, targetValues).enumerated()), id: \.offset) { idx, values in
-                        let isToday = idx == presenter.todayIndexMondayStart
+                        let isToday = idx == presenter.todayIndexInWeek
                         TargetCellView(value: values.0, targetValue: values.1, maxValue: maxValue, tint: metric.colour)
                             // Today's focus ring, in the accent.
                             .overlay {
@@ -92,8 +107,8 @@ struct NutritionTargetChartView: View {
                 ForEach(Array(presenter.dayAbbrevs.enumerated()), id: \.offset) { idx, day in
                     Text(day)
                         .font(.label)
-                        .fontWeight(idx == presenter.todayIndexMondayStart ? .bold : .regular)
-                        .foregroundStyle(idx == presenter.todayIndexMondayStart ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        .fontWeight(idx == presenter.todayIndexInWeek ? .bold : .regular)
+                        .foregroundStyle(idx == presenter.todayIndexInWeek ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                         .padding(.horizontal, Spacing.xxs)
                         .accessibilityHidden(true)
                 }

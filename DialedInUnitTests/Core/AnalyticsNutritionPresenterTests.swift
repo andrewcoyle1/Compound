@@ -553,52 +553,51 @@ struct AnalyticsNutritionTargetChartTests {
 
     // MARK: - The week
 
-    /// The grid is a Monday-start week, so the column marked today has to be the same day the week
-    /// was counted from — an off-by-one here highlights the wrong column and reads yesterday's
-    /// target as today's.
+    /// The column marked today has to be the same day the week was counted from — an off-by-one
+    /// here highlights the wrong column and reads yesterday's target as today's.
     @Test("Test Todays Column Is Todays Day Of The Week")
     func testTodaysColumnIsTodaysDayOfTheWeek() {
         let screen = makeScreen()
 
         let columnDate = Calendar.current.date(
             byAdding: .day,
-            value: screen.presenter.todayIndexMondayStart,
-            to: screen.presenter.mondayStartOfCurrentWeek
+            value: screen.presenter.todayIndexInWeek,
+            to: screen.presenter.startOfCurrentWeek
         )
 
         #expect(columnDate.map { Calendar.current.isDateInToday($0) } == true)
     }
 
-    /// The week starts on Monday whatever the device's first weekday is, because the labels under
-    /// it are written Monday first.
-    @Test("Test The Week Starts On A Monday")
-    func testTheWeekStartsOnAMonday() {
+    /// The grid used to hardcode Monday as the first column whatever the device's own calendar
+    /// started on; it now starts on `Calendar.current.firstWeekday`.
+    @Test("Test The Week Starts On The Calendars First Weekday")
+    func testTheWeekStartsOnTheCalendarsFirstWeekday() {
         let screen = makeScreen()
 
-        // Gregorian weekday numbering: Sunday is 1, Monday is 2.
-        #expect(Calendar.current.component(.weekday, from: screen.presenter.mondayStartOfCurrentWeek) == 2)
-        #expect(screen.presenter.mondayStartOfCurrentWeek <= Calendar.current.startOfDay(for: Date()))
+        #expect(Calendar.current.component(.weekday, from: screen.presenter.startOfCurrentWeek) == Calendar.current.firstWeekday)
+        #expect(screen.presenter.startOfCurrentWeek <= Calendar.current.startOfDay(for: Date()))
     }
 
-    /// Seven labels, Monday first, matching the seven columns they sit under.
-    @Test("Test The Labels Run Monday To Sunday")
-    func testTheLabelsRunMondayToSunday() {
+    /// Seven labels, in the calendar's own day order, matching the seven columns they sit under.
+    @Test("Test The Labels Start On The Calendars First Weekday")
+    func testTheLabelsStartOnTheCalendarsFirstWeekday() {
         let screen = makeScreen()
 
         let symbols = Calendar.current.veryShortWeekdaySymbols
+        let startIndex = Calendar.current.firstWeekday - 1
         #expect(screen.presenter.dayAbbrevs.count == 7)
-        #expect(screen.presenter.dayAbbrevs.first == symbols[1])
-        #expect(screen.presenter.dayAbbrevs.last == symbols[0])
+        #expect(screen.presenter.dayAbbrevs.first == symbols[startIndex])
+        #expect(screen.presenter.dayAbbrevs.last == symbols[(startIndex + 6) % 7])
     }
 
     // MARK: - Logged totals
 
-    /// Each column is read for its own day of the current week, so a meal logged on Tuesday lands
-    /// in Tuesday's cell.
+    /// Each column is read for its own day of the current week, so a meal logged on the third day
+    /// of the grid lands in that day's cell.
     @Test("Test Each Column Reads Its Own Day")
     func testEachColumnReadsItsOwnDay() async throws {
         let screen = makeScreen()
-        let wednesday = Calendar.current.date(byAdding: .day, value: 2, to: screen.presenter.mondayStartOfCurrentWeek) ?? Date()
+        let wednesday = Calendar.current.date(byAdding: .day, value: 2, to: screen.presenter.startOfCurrentWeek) ?? Date()
         screen.interactor.totalsByDay = [wednesday.dayKey: DailyMacroTarget(calories: 2100, proteinGrams: 150, carbGrams: 200, fatGrams: 70)]
 
         await screen.presenter.loadCurrentWeekLoggedTotals()

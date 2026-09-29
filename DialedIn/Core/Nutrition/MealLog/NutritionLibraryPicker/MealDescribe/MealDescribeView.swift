@@ -31,22 +31,32 @@ struct MealDescribeView: View {
                         .monospacedDigit()
                 }
             } footer: {
-                Text("Common foods only")
+                Text("Estimated by AI from your description, which is sent to Google's AI service for analysis and isn't stored by Compound. Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"")
             }
 
             if let error = presenter.errorMessage {
                 Section {
                     InlineMessage(.error, error)
                 }
-            }
-
-            if !presenter.analysisResults.isEmpty {
-                Section("Results") {
+            } else if presenter.didAnalyse && presenter.analysisResults.isEmpty {
+                Section {
+                    ContentUnavailableView {
+                        Label("No Foods Recognized", systemImage: Symbol.food)
+                    } description: {
+                        Text("Try naming each food and its amount, such as \"2 eggs and a slice of toast.\"")
+                    }
+                }
+            } else if !presenter.analysisResults.isEmpty {
+                Section {
                     ForEach(presenter.analysisResults) { item in
                         FoodAnalysisResultRow(item: item) {
-                            presenter.onAddItem(item, delegate: delegate)
+                            presenter.onResultTapped(item, delegate: delegate)
                         }
                     }
+                } header: {
+                    Text("AI Estimate")
+                } footer: {
+                    Text("Estimates can be wrong. Check amounts before logging.")
                 }
             }
         }

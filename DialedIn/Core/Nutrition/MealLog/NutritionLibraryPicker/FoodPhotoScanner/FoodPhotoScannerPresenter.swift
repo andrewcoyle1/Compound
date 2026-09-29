@@ -13,6 +13,18 @@ struct FoodAnalysisItem: Identifiable, Decodable {
     let carbGrams: Double?
     let fatGrams: Double?
     let ingredientId: String?
+
+    /// A transient food built from the estimate, scaled to per 100 g — what `IngredientAmountView`
+    /// reads — so opening it at `amountGrams` shows the same figures the result row did.
+    var estimatedFood: FoodModel {
+        let density = amountGrams > 0 ? 100.0 / amountGrams : 1.0
+        var nutrients = NutrientMap()
+        if let calories { nutrients[.calories] = calories * density }
+        if let proteinGrams { nutrients[.protein] = proteinGrams * density }
+        if let carbGrams { nutrients[.carbs] = carbGrams * density }
+        if let fatGrams { nutrients[.fatTotal] = fatGrams * density }
+        return FoodModel(ingredientId: ingredientId ?? UUID().uuidString, name: name, nutrients: nutrients)
+    }
 }
 
 @Observable
@@ -107,6 +119,17 @@ class FoodPhotoScannerPresenter {
             resolvedMilliliters: nil,
             nutrients: nutrients
         )
+    }
+
+    /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
+    /// adding it as is — the amount and, through it, the macros can be corrected first.
+    func onResultTapped(_ item: FoodAnalysisItem, onPick: @escaping (MealItemModel) -> Void) {
+        interactor.trackEvent(event: Event.onAddItem(name: item.name))
+        router.showIngredientAmountView(delegate: IngredientAmountDelegate(
+            ingredient: item.estimatedFood,
+            onPick: onPick,
+            initialAmountText: item.amountGrams.formatted(.number.grouping(.never))
+        ))
     }
 }
 

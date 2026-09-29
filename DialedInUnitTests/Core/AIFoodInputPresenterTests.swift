@@ -40,19 +40,24 @@ struct FoodPhotoScannerPresenterTests {
     private final class Router: FoodPhotoScannerRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
+        private(set) var amountDelegates: [IngredientAmountDelegate] = []
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
+        func showIngredientAmountView(delegate: IngredientAmountDelegate) { amountDelegates.append(delegate) }
     }
 
     private struct Screen {
         let presenter: FoodPhotoScannerPresenter
         let interactor: Interactor
+        let router: Router
     }
 
     private func makeScreen() -> Screen {
         let interactor = Interactor()
+        let router = Router()
         return Screen(
-            presenter: FoodPhotoScannerPresenter(interactor: interactor, router: Router()),
-            interactor: interactor
+            presenter: FoodPhotoScannerPresenter(interactor: interactor, router: router),
+            interactor: interactor,
+            router: router
         )
     }
 
@@ -239,6 +244,30 @@ struct FoodPhotoScannerPresenterTests {
         #expect(screen.interactor.trackedScreenEventNames == ["FoodPhotoScannerView_Appear"])
     }
 
+    /// Estimates can be wrong, so a tapped result opens the amount screen prefilled at the
+    /// model's amount, rather than adding the estimate as is.
+    @Test("Test Tapping A Result Opens The Amount Screen Prefilled")
+    func testTappingAResultOpensTheAmountScreenPrefilled() async {
+        let screen = makeScreen()
+        screen.interactor.json = json()
+        await screen.presenter.onCapture(image)
+        let result = screen.presenter.analysisResults.first
+
+        var picked: MealItemModel?
+        if let result {
+            screen.presenter.onResultTapped(result) { picked = $0 }
+        }
+
+        let delegate = screen.router.amountDelegates.first
+        #expect(delegate?.ingredient.name == "Scrambled Eggs")
+        #expect(delegate?.initialAmountText == "150")
+        // Per 100g at 150g estimated 220 kcal, the amount screen has to read back 220 at 150.
+        #expect(delegate?.ingredient.calories == 220 / 150.0 * 100.0)
+
+        delegate?.onPick(MealItemModel(itemId: "x", sourceType: .ingredient, sourceId: "food-1", displayName: "Scrambled Eggs", amount: 150, unit: "g", nutrients: NutrientMap()))
+        #expect(picked?.displayName == "Scrambled Eggs")
+    }
+
     /// A refused camera used to show a capture button over a black preview. It is now its own
     /// state, with Settings as the way back, and kept apart from a device with no camera.
     @Test("Test A Refused Camera Is Told Apart From A Missing One")
@@ -276,7 +305,9 @@ struct MealDescribePresenterTests {
     private final class Router: MealDescribeRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
+        private(set) var amountDelegates: [IngredientAmountDelegate] = []
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
+        func showIngredientAmountView(delegate: IngredientAmountDelegate) { amountDelegates.append(delegate) }
     }
 
     /// Main-actor isolated so it is `Sendable` for the pick closure.
@@ -288,19 +319,30 @@ struct MealDescribePresenterTests {
     private struct Screen {
         let presenter: MealDescribePresenter
         let interactor: Interactor
+        let router: Router
         let box: PickBox
         let delegate: MealDescribeDelegate
     }
 
     private func makeScreen() -> Screen {
         let interactor = Interactor()
+        let router = Router()
         let box = PickBox()
         return Screen(
-            presenter: MealDescribePresenter(interactor: interactor, router: Router()),
+            presenter: MealDescribePresenter(interactor: interactor, router: router),
             interactor: interactor,
+            router: router,
             box: box,
             delegate: MealDescribeDelegate(onPick: { box.picked.append($0) })
         )
+    }
+
+    /// Simulates the amount screen's own "Add": taps the result to open it, then confirms with the
+    /// prefilled amount, the way `IngredientAmountPresenter.add` hands the item back.
+    private func tapAndConfirm(_ item: FoodAnalysisItem, on screen: Screen) {
+        screen.presenter.onResultTapped(item, delegate: screen.delegate)
+        guard let delegate = screen.router.amountDelegates.last else { return }
+        delegate.onPick(delegate.ingredient.mealItem(amount: Double(delegate.initialAmountText) ?? 0))
     }
 
     private var json: String {
@@ -418,9 +460,10 @@ struct MealDescribePresenterTests {
         #expect(screen.presenter.analysisResults.map(\.name) == ["Toast"])
     }
 
-    /// Tapping a result hands exactly that item to the plate, with the model's figures intact.
-    @Test("Test Adding A Result Hands It To The Plate")
-    func testAddingAResultHandsItToThePlate() async {
+    /// Estimates can be wrong, so tapping a result opens the amount screen prefilled rather than
+    /// adding it directly; confirming there hands exactly that item to the plate.
+    @Test("Test Tapping A Result Opens The Amount Screen, And Confirming Hands It To The Plate")
+    func testTappingAResultOpensTheAmountScreenAndConfirmingHandsItToThePlate() async {
         let screen = makeScreen()
         screen.interactor.json = json
         screen.presenter.descriptionText = "Porridge and a banana"
@@ -428,9 +471,10 @@ struct MealDescribePresenterTests {
         let result = screen.presenter.analysisResults.first
 
         if let result {
-            screen.presenter.onAddItem(result, delegate: screen.delegate)
+            tapAndConfirm(result, on: screen)
         }
 
+        #expect(screen.router.amountDelegates.first?.initialAmountText == "200")
         #expect(screen.box.picked.map(\.displayName) == ["Porridge"])
         #expect(screen.box.picked.first?.amount == 200)
         #expect(screen.box.picked.first?.nutrients[.calories] == 180)
@@ -447,7 +491,7 @@ struct MealDescribePresenterTests {
         await screen.presenter.onAnalysePressed()
 
         if let second = screen.presenter.analysisResults.last {
-            screen.presenter.onAddItem(second, delegate: screen.delegate)
+            tapAndConfirm(second, on: screen)
         }
 
         #expect(screen.box.picked.map(\.displayName) == ["Banana"])
@@ -462,7 +506,7 @@ struct MealDescribePresenterTests {
         await screen.presenter.onAnalysePressed()
 
         if let banana = screen.presenter.analysisResults.last {
-            screen.presenter.onAddItem(banana, delegate: screen.delegate)
+            tapAndConfirm(banana, on: screen)
         }
 
         #expect(screen.box.picked.first?.nutrients[.calories] == 105)

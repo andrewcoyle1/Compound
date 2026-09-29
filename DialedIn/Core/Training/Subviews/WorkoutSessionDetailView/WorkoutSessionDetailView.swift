@@ -9,13 +9,13 @@ import SwiftUI
 
 struct WorkoutSessionDetailDelegate {
     let initialSession: WorkoutSessionModel
-    /// Pushed when browsing from the Training tab, where the system Back button closes it. The
-    /// Dashboard feed, Notifications and a just-finished workout present it as a sheet with Close.
-    let isPushed: Bool
+    /// Pushed inside the tracker's cover once the workout is finished. There is nothing to go
+    /// Back to, so Back is hidden and Done closes the cover.
+    let isWorkoutSummary: Bool
 
-    init(workoutSession: WorkoutSessionModel, isPushed: Bool = false) {
+    init(workoutSession: WorkoutSessionModel, isWorkoutSummary: Bool = false) {
         self.initialSession = workoutSession
-        self.isPushed = isPushed
+        self.isWorkoutSummary = isWorkoutSummary
     }
 }
 
@@ -54,8 +54,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         }
         // Back cannot be intercepted, so while editing it is hidden and the close button ends the
         // edit, asking first when the notes changed.
-        .navigationBarBackButtonHidden(presenter.isEditMode)
-        .interactiveDismissDisabled(!delegate.isPushed && presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
+        .navigationBarBackButtonHidden(delegate.isWorkoutSummary || presenter.isEditMode)
         .onAppear {
             presenter.loadUnitPreferences(for: session)
         }
@@ -160,14 +159,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     presenter.onEndEditingPressed(initialSession: delegate.initialSession, session: $session)
                 }
             }
-        } else if !delegate.isPushed {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
-                }
-            }
         }
-        
+
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 ForEach(WorkoutShareCardView.Format.allCases, id: \.self) { format in
@@ -193,7 +186,15 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                 }
                 .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
             }
-        } else if presenter.isAuthor(sessionAuthorId: session.authorId) {
+        } else if delegate.isWorkoutSummary {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm) {
+                    presenter.onDonePressed()
+                }
+            }
+        }
+
+        if !presenter.isEditMode, presenter.isAuthor(sessionAuthorId: session.authorId) {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
@@ -238,7 +239,11 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
 extension CoreBuilder {
     func workoutSessionDetailView(router: AnyRouter, delegate: WorkoutSessionDetailDelegate) -> some View {
         WorkoutSessionDetailView(
-            presenter: WorkoutSessionDetailPresenter(interactor: interactor, router: CoreRouter(router: router, builder: self)),
+            presenter: WorkoutSessionDetailPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isWorkoutSummary: delegate.isWorkoutSummary
+            ),
             delegate: delegate,
             authorHeader: { delegate in
                 self.authorHeaderView(router: router, delegate: delegate)
@@ -249,17 +254,17 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
-        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
+        router.showScreen(.push) { router in
             builder.workoutSessionDetailView(router: router, delegate: delegate)
         }
     }
 
     /// The session with its comments already open on top, for a comment or mention notification.
-    /// One `showScreens` call so the comments sheet is presented from the detail sheet's router,
+    /// One `showScreens` call so the comments sheet is presented from the pushed detail's router,
     /// not from the screen that asked.
     func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) {
         router.showScreens(destinations: [
-            AnyDestination(segue: .sheet) { router in
+            AnyDestination(segue: .push) { router in
                 builder.workoutSessionDetailView(router: router, delegate: delegate)
             },
             AnyDestination(segue: .sheet) { router in

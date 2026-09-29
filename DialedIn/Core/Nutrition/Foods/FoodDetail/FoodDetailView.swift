@@ -167,12 +167,6 @@ struct FoodDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
-
         #if DEBUG || MOCK
         ToolbarItem(placement: .topBarLeading) {
             Button {
@@ -222,7 +216,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showFoodDetailView(delegate: FoodDetailDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.foodDetailView(router: router, delegate: delegate)
         }
     }

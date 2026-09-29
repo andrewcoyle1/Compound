@@ -9,7 +9,7 @@ import SwiftUI
 
 @Observable
 @MainActor
-class NutritionPresenter {
+final class NutritionPresenter {
     private let interactor: NutritionInteractor
     private let router: NutritionRouter
    

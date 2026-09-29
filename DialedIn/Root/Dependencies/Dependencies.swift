@@ -663,7 +663,7 @@ struct Dependencies {
 
         case .prod:
             logManager = LogManager(services: [
-                ConsoleService(),
+//                ConsoleService(),
                 FirebaseAnalyticsService(),
                 MixpanelService(token: Keys.mixpanelToken),
                 FirebaseCrashlyticsService()

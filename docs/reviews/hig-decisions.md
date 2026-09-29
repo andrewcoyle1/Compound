@@ -26,7 +26,7 @@ qualified to confirm.
 | 5b | Pause | **Add Pause and Resume** to the tracker menu; clock, Apple Health and Live Activity follow. | Yes |
 | 5c | Finishing | **Show the session detail screen**, play the success haptic, and ask before saving a workout with no sets. | Yes |
 | 5d | Done on the set keyboard | **Logs the set**, no alert. | Yes |
-| 6 | Sheets or pushes | **Browsing pushes.** Profile and Notifications stay sheets with everything inside pushing; creating and editing stay sheets. One tab at a time, Analytics first. Remove each screen's own Close button where it becomes a push. | Yes |
+| 6 | Sheets or pushes | **Browsing pushes.** Profile is a full-screen cover (it has no clear beginning and end, and keeps its zoom transition, which a push would lose); Notifications stays a sheet; everything inside both pushes; creating and editing stay sheets. One tab at a time, Analytics first. Remove each screen's own Close button where it becomes a push. | Yes |
 | 7a | Come-back reminders | TO CONFIRM: owner wrote "1A" (remove) and "on by default, can opt out in settings". | Pending |
 | 7b | Meal reminders | **Off by default.** An in-app prompt offers them the first time Nutrition is opened; a switch in Notification Settings. Existing scheduled reminders are cancelled unless turned on. | Yes |
 | 7c | Streak reminder | **Offered once the person reaches a 3-day streak**; a switch in Notification Settings. | Yes |

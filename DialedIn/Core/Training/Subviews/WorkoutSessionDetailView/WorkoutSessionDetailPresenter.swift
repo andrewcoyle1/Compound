@@ -46,12 +46,18 @@ class WorkoutSessionDetailPresenter {
         editedSession != (lastSavedSession ?? session)
     }
     
+    /// The last page of the workout tracker rather than a screen browsed to: leaving it closes the
+    /// tracker's cover, not just this page.
+    private let isWorkoutSummary: Bool
+
     init(
         interactor: WorkoutSessionDetailInteractor,
-        router: WorkoutSessionDetailRouter
+        router: WorkoutSessionDetailRouter,
+        isWorkoutSummary: Bool = false
     ) {
         self.interactor = interactor
         self.router = router
+        self.isWorkoutSummary = isWorkoutSummary
     }
     
     func loadAuthor(for session: WorkoutSessionModel) async {
@@ -128,20 +134,9 @@ class WorkoutSessionDetailPresenter {
         loadUnitPreferences(for: session)
     }
         
-    /// The close button and the swipe both stop here when something is unsaved; the view blocks the
-    /// swipe from the same check.
-    func onClosePressed(initialSession: WorkoutSessionModel, session: WorkoutSessionModel) {
-        guard hasUnsavedChanges(session: initialSession, editedSession: session) else {
-            onDismissPressed()
-            return
-        }
-        router.showDiscardChangesDialog { [weak self] in
-            Task { @MainActor in self?.onDismissPressed() }
-        }
-    }
-
-    func onDismissPressed() {
-        self.dismissScreen()
+    /// Done on the workout summary: the workout is over, so the tracker goes with it.
+    func onDonePressed() {
+        router.dismissEnvironment()
     }
 
     /// Leaves editing without saving. A pushed screen hides Back while editing, so this is the way
@@ -158,10 +153,6 @@ class WorkoutSessionDetailPresenter {
                 self?.isEditMode = false
             }
         }
-    }
-
-    private func dismissScreen() {
-        router.dismissScreen()
     }
 
     // MARK: - Timing
@@ -237,7 +228,6 @@ class WorkoutSessionDetailPresenter {
             // Update dateModified using the model's method
             guard initialSession != session.wrappedValue else {
                 isEditMode = false
-                dismissScreen()
                 return
             }
             session.wrappedValue.updateExercises(session.wrappedValue.exercises)
@@ -245,10 +235,10 @@ class WorkoutSessionDetailPresenter {
             try await interactor.saveWorkoutSession(session.wrappedValue)
             interactor.playHaptic(option: .success)
 
+            // Stays on the screen, which already shows the saved notes. Leaving would return a
+            // pushed session to its list, and the summary to the finished tracker behind it.
+            lastSavedSession = session.wrappedValue
             isEditMode = false
-            
-            // Dismiss to refresh parent view
-            dismissScreen()
         } catch {
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(
@@ -456,7 +446,11 @@ class WorkoutSessionDetailPresenter {
         Task {
             do {
                 try await interactor.deleteWorkoutSession(id: session.id)
-                router.dismissScreen()
+                if isWorkoutSummary {
+                    router.dismissEnvironment()
+                } else {
+                    router.dismissScreen()
+                }
             } catch {
                 interactor.trackEvent(event: Event.deleteSessionFail(error: error))
                 interactor.playHaptic(option: .error)

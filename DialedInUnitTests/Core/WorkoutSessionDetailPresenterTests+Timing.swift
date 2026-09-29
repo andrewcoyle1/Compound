@@ -146,22 +146,6 @@ extension WorkoutSessionDetailPresenterTests {
 
 // MARK: - Unsaved changes
 extension WorkoutSessionDetailPresenterTests {
-    /// Swiping the sheet down or tapping close with typed notes used to drop them; close asked, the
-    /// swipe did not. Both now go through the same check, and nothing unsaved closes at once.
-    @Test("Test Closing With Unsaved Notes Asks First")
-    func testClosingWithUnsavedNotesAsksFirst() {
-        let screen = makeScreen()
-        let original = session()
-        var edited = original
-        edited.notes = "Felt strong"
-
-        screen.presenter.onClosePressed(initialSession: original, session: original)
-        #expect(screen.router.dialogTitles.isEmpty)
-
-        screen.presenter.onClosePressed(initialSession: original, session: edited)
-        #expect(screen.router.dialogTitles == ["Discard Changes?"])
-    }
-
     /// A pushed session hides Back while editing, so the close button ends the edit instead. With
     /// nothing typed it just stops editing; with typed notes it asks before throwing them away.
     @Test("Test Ending An Edit Asks Only When Notes Changed")

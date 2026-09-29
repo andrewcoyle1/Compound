@@ -20,10 +20,6 @@ class FoodDetailPresenter {
         interactor.currentUser
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     init(
         interactor: FoodDetailInteractor,
         router: FoodDetailRouter

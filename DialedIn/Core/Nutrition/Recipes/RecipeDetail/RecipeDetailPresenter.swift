@@ -25,9 +25,6 @@ class RecipeDetailPresenter {
     var currentUser: UserModel? {
         interactor.currentUser
     }
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
 
     init(
         interactor: RecipeDetailInteractor,

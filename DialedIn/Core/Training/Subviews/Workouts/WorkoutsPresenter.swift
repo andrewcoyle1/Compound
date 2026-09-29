@@ -22,10 +22,6 @@ class WorkoutsPresenter {
         self.router = router
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onWorkoutPressed(workout: WorkoutTemplateModel) {
         router.showWorkoutTemplateDetailView(
             delegate: WorkoutTemplateDetailDelegate(

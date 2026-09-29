@@ -158,7 +158,7 @@ class NotificationsPresenter {
                     // Browsing pushes: everything opened from inside the Notifications sheet
                     // pushes within it rather than sheeting on top.
                     let session = try await interactor.fetchWorkoutSession(id: notification.sessionId, authorId: notification.sessionAuthorId)
-                    let delegate = WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true)
+                    let delegate = WorkoutSessionDetailDelegate(workoutSession: session)
                     if notification.type == .like {
                         router.showWorkoutSessionDetailView(delegate: delegate)
                     } else {

@@ -266,14 +266,12 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
 }
 
 extension CoreBuilder {
-    func workoutTrackerView(router: AnyRouter, onWorkoutFinished: ((WorkoutSessionModel) -> Void)? = nil) throws -> some View {
-        let trackerPresenter = try WorkoutTrackerPresenter(
-            interactor: interactor,
-            router: CoreRouter(router: router, builder: self)
-        )
-        trackerPresenter.onWorkoutFinished = onWorkoutFinished
-        return WorkoutTrackerView(
-            presenter: trackerPresenter,
+    func workoutTrackerView(router: AnyRouter) throws -> some View {
+        WorkoutTrackerView(
+            presenter: try WorkoutTrackerPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
             exerciseTrackerView: { delegate, onStartRest in
                 self.exerciseTrackerView(
                     router: router,
@@ -289,6 +287,21 @@ extension CoreRouter {
     /// The screen id the tracker is presented under, so a second request can see it is up.
     static let workoutTrackerScreenId = "workout-tracker"
 
+    /// Pushed on the tracker's own stack when the workout is finished, so the cover ends on what
+    /// was done rather than closing and opening a second modal. The one-time Strava offer goes
+    /// from the summary's router so the dialog lands over it.
+    func showWorkoutSummary(session: WorkoutSessionModel) {
+        router.showScreen(.push) { router in
+            builder.workoutSessionDetailView(
+                router: router,
+                delegate: WorkoutSessionDetailDelegate(workoutSession: session, isWorkoutSummary: true)
+            )
+            .task {
+                await CoreRouter(router: router, builder: builder).offerStravaIfFirstWorkout(session)
+            }
+        }
+    }
+
     /// Every way into the tracker comes through here: the Live Activity, the widget, Training,
     /// Search. A tap on the Live Activity while the tracker is already open must not stack a
     /// second tracker on it, and with no workout under way the builder throws, which used to
@@ -302,28 +315,9 @@ extension CoreRouter {
             )
             return
         }
-        // Set by the tracker when the workout is finished. The detail is presented from here, once
-        // the cover is down: the tracker's own router goes with it.
-        var finishedSession: WorkoutSessionModel?
-        router.showScreen(
-            .fullScreenCover,
-            id: Self.workoutTrackerScreenId,
-            onDidDismiss: {
-                guard let finishedSession else { return }
-                // As `showWorkoutSessionDetailView` presents it, with the one-time Strava offer
-                // routed from the detail's own router so the dialog lands over the sheet.
-                router.showScreen(.sheet) { detailRouter in
-                    builder.workoutSessionDetailView(
-                        router: detailRouter,
-                        delegate: WorkoutSessionDetailDelegate(workoutSession: finishedSession)
-                    )
-                    .task { await CoreRouter(router: detailRouter, builder: builder).offerStravaIfFirstWorkout(finishedSession) }
-                }
-            },
-            destination: { router in
-                try? builder.workoutTrackerView(router: router, onWorkoutFinished: { finishedSession = $0 })
-            }
-        )
+        router.showScreen(.fullScreenCover, id: Self.workoutTrackerScreenId) { router in
+            try? builder.workoutTrackerView(router: router)
+        }
     }
 }
 

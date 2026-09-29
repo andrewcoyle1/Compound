@@ -78,12 +78,6 @@ struct MealDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
-
         ToolbarItem(placement: .topBarTrailing) {
             Button(role: .destructive) {
                 presenter.onDeletePressed(meal: delegate.meal)
@@ -106,7 +100,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showMealDetailView(delegate: MealDetailDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.mealDetailView(router: router, delegate: delegate)
         }
     }

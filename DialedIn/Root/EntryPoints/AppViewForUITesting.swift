@@ -115,7 +115,7 @@ extension AppViewForUITesting {
                 ).any()
             }),
             ("STARTSCREEN_PROGRAM_LIBRARY", { builder.trainingProgramLibraryView(router: $0).any() }),
-            ("STARTSCREEN_WORKOUTS", { builder.workoutsView(router: $0, delegate: WorkoutsDelegate(isPushed: true)).any() }),
+            ("STARTSCREEN_WORKOUTS", { builder.workoutsView(router: $0, delegate: WorkoutsDelegate()).any() }),
             // Two muscles already chosen, so both badges are in the shot.
             ("STARTSCREEN_MUSCLE_PICKER", { router in
                 let presenter = MuscleGroupPickerPresenter(interactor: interactor, router: CoreRouter(router: router, builder: builder))

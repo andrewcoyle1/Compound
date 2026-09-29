@@ -24,10 +24,6 @@ class WorkoutTrackerPresenter {
     /// something has to be able to stop it.
     var pendingFinishTask: Task<Void, Never>?
 
-    /// Handed the finished session as the tracker goes, so whoever presented it can show the
-    /// session detail once the cover is down.
-    var onWorkoutFinished: ((WorkoutSessionModel) -> Void)?
-
     // MARK: - State Properties
     var workoutSession: WorkoutSessionModel {
         didSet {

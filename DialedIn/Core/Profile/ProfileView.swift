@@ -209,7 +209,7 @@ extension CoreRouter {
     
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) {
         router.showScreenWithZoomTransition(
-            .sheet,
+            .fullScreenCover,
             transitionID: transitionId,
             namespace: namespace) { router in
                 builder.profileView(router: router)

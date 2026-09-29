@@ -72,11 +72,6 @@ struct WeeklyReviewView: View {
         .navigationTitle("Weekly Review")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onClosePressed()
-                }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Share", systemImage: Symbol.share) {
                     presenter.onSharePressed()
@@ -140,7 +135,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWeeklyReviewView() {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.weeklyReviewView(router: router)
         }
     }

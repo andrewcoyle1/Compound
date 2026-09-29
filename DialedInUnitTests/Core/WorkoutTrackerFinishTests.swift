@@ -197,19 +197,19 @@ struct WorkoutTrackerFinishTests {
 
     // MARK: - Summary, haptic, and the empty workout
 
-    /// The session detail is the summary, so whoever presented the tracker is handed the finished
-    /// session as it goes, and the save plays the success haptic when it lands.
-    @Test("Test Finishing Hands Over The Session And Plays The Success Haptic")
-    func testFinishingHandsOverTheSessionAndPlaysTheSuccessHaptic() async throws {
+    /// The session detail is the summary, pushed as the tracker's last page rather than the
+    /// tracker closing first, and the save plays the success haptic when it lands.
+    @Test("Test Finishing Shows The Summary And Plays The Success Haptic")
+    func testFinishingShowsTheSummaryAndPlaysTheSuccessHaptic() async throws {
         let screen = try makeScreen()
-        var finished: [WorkoutSessionModel] = []
-        screen.presenter.onWorkoutFinished = { finished.append($0) }
 
         screen.presenter.onFinishConfirmed()
         await screen.presenter.pendingFinishTask?.value
 
+        let finished = screen.router.summarySessions
         #expect(finished.map(\.id) == ["session-1"])
         #expect(finished.first?.endedAt != nil)
+        #expect(!screen.router.shown.contains("dismiss"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" }.last == "success")
         #expect(screen.router.confirmations.isEmpty)
     }

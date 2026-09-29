@@ -7,11 +7,7 @@
 
 import SwiftUI
 
-struct ExerciseDetailDelegate {
-    /// Pushed from Analytics, where the system Back button closes it. Search still presents it as
-    /// a sheet, which needs its own Close (drawn by the shared `MetricDetailView`).
-    var isPushed = false
-}
+struct ExerciseDetailDelegate { }
 
 struct ExerciseDetailView: View {
 
@@ -19,7 +15,7 @@ struct ExerciseDetailView: View {
     let delegate: ExerciseDetailDelegate
 
     var body: some View {
-        MetricDetailView(presenter: presenter, showsCloseButton: !delegate.isPushed)
+        MetricDetailView(presenter: presenter, showsCloseButton: false)
     }
 }
 
@@ -53,7 +49,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color? = nil) {
-        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
+        router.showScreen(.push) { router in
             builder.exerciseDetailView(router: router, delegate: delegate, templateId: templateId, name: name, themeColor: themeColor)
         }
     }

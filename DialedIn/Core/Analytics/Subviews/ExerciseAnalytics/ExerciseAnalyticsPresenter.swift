@@ -66,7 +66,7 @@ class ExerciseAnalyticsPresenter {
     }
 
     func onExercisePressed(templateId: String, name: String, themeColor: Color?) {
-        router.showExerciseDetailView(templateId: templateId, name: name, delegate: ExerciseDetailDelegate(isPushed: true), themeColor: themeColor)
+        router.showExerciseDetailView(templateId: templateId, name: name, delegate: ExerciseDetailDelegate(), themeColor: themeColor)
     }
 
     func onDismissPressed() {

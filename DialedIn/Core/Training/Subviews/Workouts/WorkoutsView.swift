@@ -9,9 +9,6 @@ import SwiftUI
 
 struct WorkoutsDelegate {
     var onWorkoutSelectionChanged: ((WorkoutTemplateModel) -> Void)?
-    /// Pushed from the Training tab, where the system Back button closes it. Analytics still
-    /// presents it as a sheet, which needs its own Close.
-    var isPushed = false
 }
 
 struct WorkoutsView<WorkoutList: View>: View {
@@ -25,15 +22,6 @@ struct WorkoutsView<WorkoutList: View>: View {
             onWorkoutSelectionChanged: presenter.onWorkoutPressed,
         )
         workoutListViewBuilder(delegate)
-            .toolbar {
-                if !self.delegate.isPushed {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(role: .close) {
-                            presenter.onDismissPressed()
-                        }
-                    }
-                }
-            }
     }
 }
 
@@ -54,7 +42,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutsView(delegate: WorkoutsDelegate) {
-        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
+        router.showScreen(.push) { router in
             builder.workoutsView(router: router, delegate: delegate)
         }
     }

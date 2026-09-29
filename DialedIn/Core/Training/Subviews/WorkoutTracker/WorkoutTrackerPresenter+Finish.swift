@@ -80,14 +80,14 @@ extension WorkoutTrackerPresenter {
         workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         isDone = true
         UIApplication.shared.isIdleTimerDisabled = false
-        router.dismissScreen()
 
         let sessionSnapshot = workoutSession
-        // The session detail is the summary: what was done, shown the moment the tracker is down.
-        onWorkoutFinished?(sessionSnapshot)
-        // `self` is captured strongly on purpose. The screen is already dismissed, so the view no
-        // longer holds the presenter, and a weak capture would drop the save on the floor exactly
-        // when it matters. The cycle breaks when the task returns.
+        // The session detail is the summary, pushed as the tracker's last page; its Done closes
+        // the cover.
+        router.showWorkoutSummary(session: sessionSnapshot)
+        // `self` is captured strongly on purpose. Done can close the cover before the save lands,
+        // and then the view no longer holds the presenter; a weak capture would drop the save on
+        // the floor exactly when it matters. The cycle breaks when the task returns.
         pendingFinishTask = Task {
             await self.completeFinish(sessionSnapshot)
         }

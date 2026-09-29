@@ -47,10 +47,6 @@ class MealDetailPresenter {
         let value: String
     }
 
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     func onDeletePressed(meal: MealLogModel) {
         // Deleting a logged meal cannot be undone, so it is confirmed first.
         router.showAlert(

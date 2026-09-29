@@ -64,10 +64,6 @@ class WeeklyReviewPresenter {
         week = calendar.date(byAdding: .weekOfYear, value: 1, to: week) ?? week
     }
 
-    func onClosePressed() {
-        router.dismissScreen()
-    }
-
     func onSharePressed() {
         guard !isSharing else { return }
         interactor.trackEvent(event: Event.sharePressed)

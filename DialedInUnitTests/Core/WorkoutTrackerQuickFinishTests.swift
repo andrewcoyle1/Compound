@@ -102,7 +102,7 @@ struct WorkoutTrackerQuickFinishTests {
         delegate.onDidDismiss?()
 
         #expect(presenter.isDone)
-        #expect(router.shown == ["workoutNotes", "dismiss"])
+        #expect(router.shown == ["workoutNotes", "summary"])
         presenter.cancelPendingSave()
     }
 }

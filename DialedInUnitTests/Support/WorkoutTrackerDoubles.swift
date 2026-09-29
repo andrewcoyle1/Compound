@@ -233,6 +233,11 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
     func showGymProfileView(delegate: GymProfileDelegate) { shown.append("gymProfile") }
     func dismissScreen() { shown.append("dismiss") }
+    private(set) var summarySessions: [WorkoutSessionModel] = []
+    func showWorkoutSummary(session: WorkoutSessionModel) {
+        shown.append("summary")
+        summarySessions.append(session)
+    }
     /// Titles of the confirmation dialogs raised. The buttons are views, so tests call the
     /// presenter methods they would.
     private(set) var confirmations: [String] = []

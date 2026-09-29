@@ -79,13 +79,13 @@ struct NotificationTapThroughTests {
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
             shown.append("session:\(delegate.initialSession.id)")
-            pushedDelegates.append(delegate.isPushed)
+            pushedDelegates.append(!delegate.isWorkoutSummary)
         }
         // Decision 6: everything opened from Notifications pushes rather than sheets, so the
         // workout-plus-thread router method changed name (and always pushes both screens).
         func showWorkoutSessionThreadPushed(delegate: WorkoutSessionDetailDelegate) {
             shown.append("thread:\(delegate.initialSession.id)")
-            pushedDelegates.append(delegate.isPushed)
+            pushedDelegates.append(!delegate.isWorkoutSummary)
         }
         func showSocialProfileView(delegate: SocialProfileDelegate) { shown.append("profile:\(delegate.user.userId)") }
         func showSharedItemView(delegate: SharedItemDelegate) {

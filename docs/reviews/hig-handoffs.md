@@ -94,7 +94,6 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 - `Subviews/TrainingSettings/GymProfiles/GymProfilesView.swift:43`, `:59`, `:66` and `…/RestTimerSettings/TimerDuration/TimerDurationView.swift:44`: `.rowActions`. (F5)
 - `…/GymProfiles/GymProfile/GymProfileView.swift:94`, `:323-330`: keep the system back button, save on edit or in `onDisappear` (S12); `:126` `imageDescription:` (F7).
 - `Subviews/GeneralSettings/Integrations/IntegrationsPresenter.swift:49`: success → `interactor.showAppToast(AppToast(style: .success, …))`. (S16)
-- `Subviews/About/Licences/LicencesView.swift:81`: push instead of a full-screen cover.
 - `Core/Paywalls/Paywall/PaywallPresenter.swift:70`, `:126`, `:155`: `showAlert(title:error:)`. (S9)
 
 ## Core/Onboarding
@@ -222,13 +221,14 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 Connected since this list was first written: the meal and streak reminder offers, the pushes
 inside the Notifications sheet, Strava after the first finished workout, paused time (app and
 the shared page), the rest-over distance unit, the tenths wheel in the weekly check-in, and the
-Close button on pushed metric detail screens. The functions were deployed on 29 Sep 2026.
+Close button on pushed metric detail screens, and Decision 6 on every tab: Food, Recipe,
+Meal, Exercise and Workout Session detail, Weekly Review and the Workouts list push. The summary
+after finishing a workout is pushed inside the tracker's cover as its last page, with Back hidden
+and Done closing the cover. Saving a session's notes now stays on the screen. Weekly Goal is an
+edit form, so it stays a sheet. The functions were deployed on 29 Sep 2026.
 
 Still open:
 
-- **Decision 6 on the Nutrition and Dashboard tabs.** Analytics, Training, Profile and
-  Notifications push. Food detail, Recipe detail and Meal detail are still sheets, as are the
-  Dashboard's Weekly Review and Weekly Goal.
 - **Decision 11a, second step**: editing a finished workout's sets and exercises. Only
   "Edit Notes" is built; the editing code is kept behind a TODO.
 - **Decision 12e, Time Sensitive**: the entitlement is left out until the capability is enabled
@@ -249,5 +249,4 @@ Still open:
 - Profile's "Rate Compound" row triggers the system prompt from a button, which Apple advises
   against. Hide it until there is an App Store ID to link to.
 - Subscription status reads "Active" / "Inactive"; "Active" is also an activity level.
-- After saving a finished workout's notes the screen closes, which on a push returns to the list.
 - The streak reminder stops for existing users who never turned it on.

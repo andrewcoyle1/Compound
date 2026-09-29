@@ -13,6 +13,7 @@ protocol WorkoutTrackerRouter: GlobalRouter {
     func showWorkoutNotesView(delegate: WorkoutNotesDelegate)
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate)
     func showGymProfileView(delegate: GymProfileDelegate)
+    func showWorkoutSummary(session: WorkoutSessionModel)
     /// A requirement rather than the `GlobalRouter` helper alone, so a test can see the tracker
     /// leave when the workout is finished from the Live Activity.
     func dismissScreen()

@@ -115,6 +115,13 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
             streak: managers.streak?.currentStreakData.currentStreak
         )
         recordFinishedSessionForReviewPrompt(session)
+        if let user = managers.users.currentUser {
+            let sessions = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
+            requestReviewIfEarned(.workoutFinished(
+                sessionsThisWeek: CircleWeek.sessionCount(of: user.userId, inWeekOf: .now, sessions: sessions),
+                weeklyGoal: CircleWeek.goal(for: user)
+            ))
+        }
     }
     return outcome
 }

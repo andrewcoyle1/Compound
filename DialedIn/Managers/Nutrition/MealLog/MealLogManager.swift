@@ -118,6 +118,9 @@ extension CoreInteractor {
 
     func addMeal(_ meal: MealLogModel) async throws {
         try await mealLogManager.saveMeal(meal)
+        requestReviewIfEarned(.foodLogged(
+            daysInARow: ReviewMoment.daysInARow(endingOn: .now, loggedDays: userMeals.map(\.date) + [meal.date])
+        ))
     }
 
     func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws {

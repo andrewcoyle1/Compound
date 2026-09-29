@@ -62,13 +62,14 @@ struct ReviewPromptStore {
     }
 }
 
-/// Called once a finished workout has saved.
+/// Called once a finished workout has saved. It only keeps the count, which the invite card
+/// reads. Asking for a rating moved to `ReviewMoment`: after the workout that completes the
+/// week's goal, or the seventh day in a row of food logging, not after the third workout.
 @MainActor
 func recordFinishedSessionForReviewPrompt(_ session: WorkoutSessionModel) {
-    let shouldRequest = ReviewPromptStore().recordFinishedSession(
+    _ = ReviewPromptStore().recordFinishedSession(
         session,
         lastRequestedAt: AppStoreRatingsHelper.lastRatingsRequestReviewDate,
         isUITesting: Utilities.isUITesting
     )
-    if shouldRequest { AppStoreRatingsHelper.requestRatingsReview() }
 }

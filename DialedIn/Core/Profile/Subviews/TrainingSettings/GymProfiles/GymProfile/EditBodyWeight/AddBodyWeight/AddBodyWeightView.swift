@@ -15,6 +15,11 @@ struct AddBodyWeightView: View {
                 weightSection
             }
             .listSectionMargins(.vertical, 0)
+            if let message = presenter.validationMessage {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .navigationTitle("Add")
         .navigationSubtitle(presenter.bodyWeight.wrappedValue.name)
@@ -35,7 +40,7 @@ struct AddBodyWeightView: View {
             Text("Weight")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.bodyWeightAvailable.availableWeights, format: .number, prompt: Text(""))
+                TextField("Weight", value: $presenter.bodyWeightAvailable.availableWeights, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -56,6 +61,7 @@ struct AddBodyWeightView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .disabled(presenter.validationMessage != nil)
         }
     }
 }

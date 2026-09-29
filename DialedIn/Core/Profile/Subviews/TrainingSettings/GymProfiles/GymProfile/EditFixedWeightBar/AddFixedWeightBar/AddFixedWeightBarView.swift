@@ -15,6 +15,11 @@ struct AddFixedWeightBarView: View {
                 weightSection
             }
             .listSectionMargins(.vertical, 0)
+            if let message = presenter.validationMessage {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .navigationTitle("Add")
         .navigationSubtitle(presenter.fixedWeightBar.wrappedValue.name)
@@ -35,7 +40,7 @@ struct AddFixedWeightBarView: View {
             Text("Weight")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.fixedWeightBarBaseWeight.baseWeight, format: .number, prompt: Text(""))
+                TextField("Weight", value: $presenter.fixedWeightBarBaseWeight.baseWeight, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -56,6 +61,7 @@ struct AddFixedWeightBarView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .disabled(presenter.validationMessage != nil)
         }
     }
 }

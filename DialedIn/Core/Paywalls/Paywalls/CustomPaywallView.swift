@@ -18,10 +18,13 @@ struct CustomPaywallView: View {
     var onSubscribePressed: () -> Void = { }
     
     var body: some View {
-        VStack(spacing: 0) {
+        // The header scrolls with the plans, so at large text sizes on a small phone it cannot
+        // squeeze them out of view.
+        List {
             headerSection
-            
-            List(products) { product in
+                .removeListRowFormatting()
+                .listRowSeparator(.hidden)
+            ForEach(products) { product in
                 productRow(product: product)
             }
         }

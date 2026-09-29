@@ -46,7 +46,7 @@ struct WorkoutSettingsView: View {
             }
             ListRowButton(
                 title: String(localized: "Previous Reference"),
-                subtitle: String(localized: "Any Workout"),
+                subtitle: presenter.previousWorkoutReferenceTitle,
                 systemImage: "arrow.trianglehead.counterclockwise"
             ) {
                 presenter.onPreviousReferenceSettingsPressed()
@@ -85,8 +85,8 @@ struct WorkoutSettingsView: View {
     private var displaySection: some View {
         Section {
             ListRowToggle(
-                title: String(localized: "Keep Alive"),
-                subtitle: String(localized: "Keep your phone alive during active workout sessions"),
+                title: String(localized: "Keep Screen On"),
+                subtitle: String(localized: "Stop the screen locking during a workout"),
                 systemImage: "sun.max",
                 isOn: $presenter.keepAlive
             )
@@ -111,7 +111,7 @@ struct WorkoutSettingsView: View {
         Section {
             ListRowToggle(
                 title: String(localized: "Add Smart Warm-Ups"),
-                subtitle: String(localized: "Warm-Ups will be automatically added to exercises in your workout depending on how fresh your muscles are and how heavy the weight is"),
+                subtitle: String(localized: "Add warm-up sets based on the weight and how fresh you are"),
                 systemImage: "figure.yoga",
                 isOn: $presenter.addSmartWarmUps
             )
@@ -127,7 +127,7 @@ struct WorkoutSettingsView: View {
         Section {
             ListRowButton(
                 title: String(localized: "Exercise Assessment"),
-                subtitle: String(localized: "A questionnaire about your experience with foundational movements that determines access to advanced exercises"),
+                subtitle: String(localized: "Unlock advanced exercises"),
                 systemImage: "list.star"
             ) {
                 presenter.onExerciseAssessmentPressed()

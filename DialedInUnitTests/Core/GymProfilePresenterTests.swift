@@ -18,7 +18,7 @@ import SwiftUI
 /// instead would let a user edit one dumbbell and change another, which is why the write-back is
 /// pinned here rather than left to the view.
 ///
-/// A profile with no name cannot be saved, so leaving the screen asks before discarding it.
+/// Leaving the screen saves what was changed; an unnamed profile is kept as "Untitled Gym Profile".
 @MainActor
 struct GymProfilePresenterTests {
 
@@ -259,77 +259,73 @@ struct GymProfilePresenterTests {
 
     // MARK: - Leaving the screen
 
-    @Test("Test Leaving A Named Profile Saves It")
-    func testLeavingANamedProfileSavesIt() async {
+    /// The screen is pushed inside the Profile sheet, so the sheet can be swiped away from it.
+    /// Leaving by any route saves what was changed; it used to save only from its own Back button.
+    @Test("Test Leaving An Edited Profile Saves It")
+    func testLeavingAnEditedProfileSavesIt() async {
         let screen = makeScreen(name: "Home Gym")
+        screen.presenter.gymProfile.name = "Garage Gym"
 
-        screen.presenter.onBackButtonPressed()
+        screen.presenter.onViewDisappear()
         await settle()
 
-        #expect(screen.interactor.savedProfiles.map(\.name) == ["Home Gym"])
+        let names = screen.interactor.savedProfiles.map { $0.name }
+        #expect(names == ["Garage Gym"])
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(!screen.presenter.hasUnsavedChanges)
     }
 
-    /// An unnamed profile cannot be saved, so leaving asks rather than silently dropping the work.
-    @Test("Test Leaving An Unnamed Profile Saves Nothing")
-    func testLeavingAnUnnamedProfileSavesNothing() async {
-        let screen = makeScreen(name: "")
+    @Test("Test Leaving An Untouched Profile Saves Nothing")
+    func testLeavingAnUntouchedProfileSavesNothing() async {
+        let screen = makeScreen(name: "Home Gym")
 
-        screen.presenter.onBackButtonPressed()
+        screen.presenter.onViewDisappear()
         await settle()
 
         #expect(screen.interactor.savedProfiles.isEmpty)
     }
 
-    /// The discard alert offered only its destructive button, so the one way out of it threw the
-    /// profile away, even when the user only wanted to go back and name it.
-    @Test("Test The Discard Alert For An Unnamed Profile Can Be Cancelled")
-    func testTheDiscardAlertForAnUnnamedProfileCanBeCancelled() {
-        let screen = makeScreen(name: "")
+    /// With no Back button to hang an alert on, an unnamed profile is kept under the name its
+    /// title field shows rather than thrown away.
+    @Test("Test An Unnamed Profile Is Saved As Untitled")
+    func testAnUnnamedProfileIsSavedAsUntitled() async {
+        let screen = makeScreen(name: "Home Gym")
+        screen.presenter.gymProfile.name = "  "
 
-        screen.presenter.onBackButtonPressed()
+        screen.presenter.onViewDisappear()
+        await settle()
 
-        #expect(screen.router.alertTitles == ["Discard Gym Profile"])
-        var described = ""
-        dump(screen.router.alertButtons.first, to: &described)
-        #expect(described.contains("\"Cancel\""))
-        #expect(described.contains("cancel"))
-        #expect(described.contains("\"Discard\""))
+        let names = screen.interactor.savedProfiles.map { $0.name }
+        #expect(names == ["Untitled Gym Profile"])
     }
 
     @Test("Test Saving Is Tracked From Start To Success")
     func testSavingIsTrackedFromStartToSuccess() async {
         let screen = makeScreen()
+        screen.presenter.gymProfile.name = "Garage Gym"
 
-        screen.presenter.onBackButtonPressed()
+        screen.presenter.onViewDisappear()
         await settle()
 
-        #expect(screen.interactor.trackedEventNames == ["GymProfileView_Save_Start", "GymProfileView_Save_Success"])
+        #expect(screen.interactor.trackedEventNames == ["GymProfileView_OnDisappear", "GymProfileView_Save_Start", "GymProfileView_Save_Success"])
     }
 
-    @Test("Test A Failed Save Is Tracked As A Failure")
-    func testAFailedSaveIsTrackedAsAFailure() async {
+    /// The screen has gone by the time a save on leaving fails, so it is reported with a toast
+    /// and the edit stays marked unsaved.
+    @Test("Test A Failed Save On Leaving Is Reported With A Toast")
+    func testAFailedSaveOnLeavingIsReportedWithAToast() async {
         let screen = makeScreen()
         screen.interactor.saveError = URLError(.notConnectedToInternet)
+        screen.presenter.gymProfile.name = "Garage Gym"
 
-        screen.presenter.onBackButtonPressed()
+        screen.presenter.onViewDisappear()
         await settle()
 
         #expect(screen.interactor.trackedEventNames.last == "GymProfileView_Save_Fail")
-    }
-
-    /// Saving is what dismisses this screen, so a failed save leaves the user on it. Without an
-    /// alert the Back button simply looks broken.
-    @Test("Test A Failed Save Tells The User Why The Screen Did Not Close")
-    func testAFailedSaveTellsTheUserWhyTheScreenDidNotClose() async {
-        let screen = makeScreen()
-        screen.interactor.saveError = URLError(.notConnectedToInternet)
-
-        screen.presenter.onBackButtonPressed()
-        await settle()
-
-        #expect(screen.router.alertTitles == ["Unable to Save Gym Profile"])
+        #expect(screen.interactor.shownToasts.count == 1)
+        #expect(screen.router.alertTitles.isEmpty)
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+        #expect(screen.presenter.hasUnsavedChanges)
     }
 
     /// Continuing through onboarding has the same failure: nothing is saved, nothing is routed to,

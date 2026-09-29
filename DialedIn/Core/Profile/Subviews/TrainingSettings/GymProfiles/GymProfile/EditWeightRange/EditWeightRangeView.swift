@@ -18,7 +18,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                             .font(.sectionTitle)
                             .padding(.top, Spacing.xs)
                         ZStack(alignment: .trailing) {
-                            TextField("", value: delegate.range.minWeight, format: .number, prompt: Text(""))
+                            TextField("Range Start", value: delegate.range.minWeight, format: .number, prompt: Text("0"))
                                 .textFieldStyle(.roundedBorder)
                                 .keyboardType(.decimalPad)
                             Text(delegate.range.wrappedValue.unit.abbreviation)
@@ -30,7 +30,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                         Text("Range End")
                             .font(.sectionTitle)
                         ZStack(alignment: .trailing) {
-                            TextField("", value: delegate.range.maxWeight, format: .number, prompt: Text(""))
+                            TextField("Range End", value: delegate.range.maxWeight, format: .number, prompt: Text("0"))
                                 .textFieldStyle(.roundedBorder)
                                 .keyboardType(.decimalPad)
                             Text(delegate.range.wrappedValue.unit.abbreviation)
@@ -43,7 +43,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                         Text("Increment")
                             .font(.sectionTitle)
                         ZStack(alignment: .trailing) {
-                            TextField("", value: delegate.range.increment, format: .number, prompt: Text(""))
+                            TextField("Increment", value: delegate.range.increment, format: .number, prompt: Text("0"))
                                 .textFieldStyle(.roundedBorder)
                                 .keyboardType(.decimalPad)
                             Text(delegate.range.wrappedValue.unit.abbreviation)

@@ -9,7 +9,11 @@ class GymProfilePresenter {
     private let router: GymProfileRouter
     
     var filter: ListFilter = .all
-    var gymProfile: GymProfileModel
+    var gymProfile: GymProfileModel {
+        didSet { hasUnsavedChanges = true }
+    }
+    /// Set by any edit, including the equipment editors' bindings, and cleared by a save.
+    private(set) var hasUnsavedChanges = false
     var searchQuery: String = ""
 
     var selectedPhotoItem: PhotosPickerItem?
@@ -34,8 +38,16 @@ class GymProfilePresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
     
+    /// Leaving saves. The screen uses the system back button, and it is pushed inside the Profile
+    /// sheet, so Back, the edge swipe and swiping the sheet away all end here. Saving only from a
+    /// custom Back button lost every edit made before the sheet was swiped down.
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
+        guard hasUnsavedChanges else { return }
+        saveGymProfile(reportFailure: { [interactor] in
+            // The screen is gone, so an alert would have nowhere to show.
+            interactor.showAppToast(AppToast(style: .failure, message: String(localized: "Unable to save gym profile")))
+        }, onComplete: { })
     }
 
     var filteredFreeWeights: [Binding<FreeWeights>] {
@@ -91,52 +103,43 @@ class GymProfilePresenter {
             && filteredCableMachines.isEmpty && filteredPlateLoadedMachines.isEmpty && filteredPinLoadedMachines.isEmpty
     }
     
-    func onBackButtonPressed() {
-        guard !gymProfile.name.isEmpty else {
-            router.showAlert(
-                title: String(localized: "Discard Gym Profile"),
-                subtitle: String(localized: "To save the gym profile, you must give it a name."),
-                buttons: {
-                    AnyView(
-                        Group {
-                            Button("Discard", role: .destructive) {
-                                self.router.dismissScreen()
-                            }
-                            // Without it the only way out was to throw the profile away, when the
-                            // user may just want to go back and name it.
-                            Button("Cancel", role: .cancel) { }
-                        }
-                    )
-                }
-            )
-            return
+    /// A profile left without a name is saved under the name its title field shows as a
+    /// placeholder, rather than thrown away.
+    private var profileToSave: GymProfileModel {
+        var profile = gymProfile
+        if profile.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            profile.name = String(localized: "Untitled Gym Profile")
         }
-        saveGymProfile {
-            self.router.dismissScreen()
-        }
+        profile.dateModified = .now
+        return profile
     }
-    
-    private func saveGymProfile(onComplete: @escaping () -> Void) {
+
+    private func saveGymProfile(reportFailure: (() -> Void)? = nil, onComplete: @escaping () -> Void) {
+        let profile = profileToSave
+        hasUnsavedChanges = false
         Task {
             do {
                 interactor.trackEvent(event: Event.saveGymProfileStart)
-                gymProfile.dateModified = .now
-                try await interactor.saveGymProfile(profile: gymProfile, image: nil)
+                try await interactor.saveGymProfile(profile: profile, image: nil)
                 interactor.trackEvent(event: Event.saveGymProfileSuccess)
                 interactor.playHaptic(option: .success)
                 onComplete()
             } catch {
+                hasUnsavedChanges = true
                 interactor.trackEvent(event: Event.saveGymProfileFail(error: error))
                 interactor.playHaptic(option: .error)
-                // `onComplete` is what leaves this screen, so a silent failure leaves Back and
-                // Continue looking broken. Say why nothing moved.
-                router.showSimpleAlert(
-                    title: String(localized: "Unable to Save Gym Profile"),
-                    subtitle: "Please check your internet connection and try again."
-                )
+                if let reportFailure {
+                    reportFailure()
+                } else {
+                    // `onComplete` is what moves on from this screen, so a silent failure leaves
+                    // Continue looking broken. Say why nothing moved.
+                    router.showSimpleAlert(
+                        title: String(localized: "Unable to Save Gym Profile"),
+                        subtitle: String(localized: "Please check your internet connection and try again.")
+                    )
+                }
             }
         }
-
     }
 
     private func sortedIndicesByName<T: GymEquipmentItem>(
@@ -235,8 +238,9 @@ class GymProfilePresenter {
             if let data = try await newItem.loadTransferable(type: Data.self) {
                 selectedImageData = data
                 let uiImage = selectedImageData.flatMap { UIImage(data: $0) }
-                gymProfile.dateModified = .now
-                try await interactor.saveGymProfile(profile: gymProfile, image: uiImage)
+                let profile = profileToSave
+                hasUnsavedChanges = false
+                try await interactor.saveGymProfile(profile: profile, image: uiImage)
                 interactor.trackEvent(event: Event.imageSelectorSuccess)
             } else {
                 interactor.trackEvent(event: Event.imageSelectorCancel)

@@ -22,19 +22,12 @@ struct FoodLogSettingsView: View {
             }
 
             Section {
-                ListRowButton(
-                    title: String(localized: "Hour Range"),
-                    subtitle: presenter.hourRangeSubtitle,
-                    systemImage: Symbol.duration
-                ) {
-                    presenter.onEditHourRangePressed()
-                }
-                ListRowButton(
-                    title: String(localized: "Alignment"),
-                    subtitle: presenter.alignmentSubtitle,
-                    systemImage: "chart.bar.yaxis"
-                ) {
-                    presenter.onEditAlignmentPressed()
+                // Inline pickers, not a sheet and an alert: each is a short choice.
+                hourPicker("Start Hour", selection: $presenter.startHour)
+                hourPicker("End Hour", selection: $presenter.endHour)
+                Picker("Timestamp Side", selection: $presenter.timestampSide) {
+                    Text("Left").tag(TimestampSide.left)
+                    Text("Right").tag(TimestampSide.right)
                 }
                 ListRowToggle(
                     title: String(localized: "Add Foods to Hour"),
@@ -50,20 +43,17 @@ struct FoodLogSettingsView: View {
                 )
                 ListRowToggle(
                     title: String(localized: "Hourly Macro Totals"),
-                    subtitle: String(localized: "Show"),
-                    systemImage: Symbol.duration,
+                    subtitle: nil,
                     isOn: $presenter.showHourlyMacroTotals
                 )
                 ListRowToggle(
                     title: String(localized: "Calendar Week Banner"),
-                    subtitle: String(localized: "Show"),
-                    systemImage: Symbol.duration,
+                    subtitle: nil,
                     isOn: $presenter.showCalendarWeekBanner
                 )
                 ListRowToggle(
                     title: String(localized: "Premove"),
                     subtitle: String(localized: "Pre-log meals before eating"),
-                    systemImage: Symbol.duration,
                     isOn: $presenter.premove
                 )
             } header: {
@@ -73,12 +63,12 @@ struct FoodLogSettingsView: View {
             Section {
                 ListRowToggle(
                     title: String(localized: "Branded Results"),
-                    subtitle: presenter.showBrandedFoods ? String(localized: "On") : String(localized: "Off"),
+                    subtitle: nil,
                     isOn: $presenter.showBrandedFoods
                 )
                 ListRowToggle(
                     title: String(localized: "Open Food Facts Results"),
-                    subtitle: presenter.showOpenFoodFactsFoods ? String(localized: "On") : String(localized: "Off"),
+                    subtitle: nil,
                     isOn: $presenter.showOpenFoodFactsFoods
                 )
             } header: {
@@ -140,45 +130,13 @@ struct FoodLogSettingsView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .sheet(isPresented: $presenter.isShowingHourRangePicker) {
-            hourRangePickerSheet
-        }
     }
 
-    private var hourRangePickerSheet: some View {
-        NavigationStack {
-            Form {
-                Picker("Start Hour", selection: $presenter.startHour) {
-                    ForEach(0..<24) { hour in
-                        Text(hourLabel(hour)).tag(hour)
-                    }
-                }
-                .pickerStyle(.wheel)
-                Picker("End Hour", selection: $presenter.endHour) {
-                    ForEach(0..<24) { hour in
-                        Text(hourLabel(hour)).tag(hour)
-                    }
-                }
-                .pickerStyle(.wheel)
+    private func hourPicker(_ title: LocalizedStringKey, selection: Binding<Int>) -> some View {
+        Picker(title, selection: selection) {
+            ForEach(0..<24, id: \.self) { hour in
+                Text(FoodLogSettingsPresenter.hourLabel(hour)).tag(hour)
             }
-            .navigationTitle("Hour Range")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm) {
-                        presenter.isShowingHourRangePicker = false
-                    }
-                }
-            }
-        }
-    }
-
-    private func hourLabel(_ hour: Int) -> String {
-        switch hour {
-        case 0: return String(localized: "12 AM")
-        case 12: return String(localized: "12 PM")
-        case 1..<12: return String(localized: "\(String(describing: hour)) AM")
-        default: return String(localized: "\(String(describing: hour - 12)) PM")
         }
     }
 }

@@ -22,12 +22,20 @@ class AccountPresenter {
     var selectedCardioFitnessLevel: CardioFitnessLevel?
     var selectedExerciseFrequency: ExerciseFrequency?
 
+    /// The height field is typed in the unit chosen on the Units screen; `UserModel` stores cm.
+    var heightUnit: LengthUnitPreference {
+        currentUser?.submittedLengthUnitPreference ?? .centimeters
+    }
+
+    /// What the height field held when it was filled from the profile. Converting to inches and
+    /// back rounds, so an untouched field is not written back.
+    private var prefilledHeightText: String = ""
+
     /// Centimetres, as `UserModel` stores height. Nil for an empty or unparseable field, which
     /// leaves the stored value alone rather than clearing it.
     var heightCentimeters: Double? {
-        let trimmed = heightText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty, let value = Double(trimmed), value > 0 else { return nil }
-        return value
+        guard let value = Double.typed(heightText), value > 0 else { return nil }
+        return UnitConversion.convertLengthToCm(value, from: heightUnit)
     }
     var selectedPhotoItem: PhotosPickerItem?
     var selectedImageData: Data?
@@ -50,7 +58,7 @@ class AccountPresenter {
             do {
                 try await interactor.updatePrivacy(isPrivate: isPrivate)
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Change Privacy"), error: error)
             }
         }
     }
@@ -93,7 +101,9 @@ class AccountPresenter {
         }
         selectedGender = user.submittedGender
         if let height = user.submittedHeightCentimeters {
-            heightText = height.formatted(.number.precision(.fractionLength(0...1)))
+            heightText = UnitConversion.convertLength(height, to: heightUnit)
+                .formatted(.number.precision(.fractionLength(0...1)))
+            prefilledHeightText = heightText
         }
         selectedCardioFitnessLevel = user.submittedCardioFitnessLevel
         selectedExerciseFrequency = user.submittedExerciseFrequency
@@ -122,7 +132,7 @@ class AccountPresenter {
             if let gender = selectedGender {
                 data[UserModel.CodingKeys.submittedGender.rawValue] = gender.rawValue
             }
-            if let heightCentimeters {
+            if let heightCentimeters, heightText != prefilledHeightText {
                 data[UserModel.CodingKeys.submittedHeightCentimeters.rawValue] = heightCentimeters
             }
             if let cardioFitnessLevel = selectedCardioFitnessLevel {
@@ -144,12 +154,14 @@ class AccountPresenter {
             #endif
 
             interactor.trackEvent(eventName: "profile_edit_save_success", parameters: [:], type: .analytic)
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
             interactor.trackEvent(eventName: "profile_edit_save_failed", parameters: ["error": String(describing: error)], type: .analytic)
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(
-                title: String(localized: "Unable to save"),
-                subtitle: "Please check your internet connection and try again."
+                title: String(localized: "Unable to Save Profile"),
+                subtitle: String(localized: "Please check your internet connection and try again.")
             )
         }
         isSaving = false
@@ -179,6 +191,14 @@ class AccountPresenter {
         interactor.auth?.isAnonymous == true
     }
 
+    /// How this account signs in, so the person can confirm it from Account.
+    var signInMethod: String {
+        guard let auth = interactor.auth, !auth.isAnonymous else { return String(localized: "Not saved") }
+        if auth.authProviders.contains(.apple) { return String(localized: "Apple") }
+        if auth.authProviders.contains(.google) { return String(localized: "Google") }
+        return Format.placeholder
+    }
+
     /// An anonymous account's only route to keeping its data.
     ///
     /// Routes to the existing `AuthView` rather than reimplementing sign-in: `FirebaseAuthService`
@@ -206,7 +226,7 @@ class AccountPresenter {
                 try await Task.sleep(for: .seconds(1))
                 router.switchToOnboardingModule()
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Sign Out"), error: error)
                 interactor.trackEvent(event: Event.signOutFail(error: error))
             }
         }
@@ -252,7 +272,7 @@ class AccountPresenter {
                 router.switchToOnboardingModule()
 
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Delete Account"), error: error)
                 interactor.trackEvent(event: Event.deleteAccountFail(error: error))
             }
         }

@@ -73,6 +73,19 @@ class TimerDurationPresenter {
         editingType = nil
     }
 
+    func onResetDefaultsPressed() {
+        router.showConfirmationDialog(
+            title: String(localized: "Reset Default Timers?"),
+            subtitle: String(localized: "Every exercise type goes back to its default rest time. Exercise timers are kept."),
+            buttons: {
+                AnyView(VStack {
+                    Button("Reset Timers", role: .destructive) { self.resetDefaults() }
+                    Button("Cancel", role: .cancel) { }
+                })
+            }
+        )
+    }
+
     func resetDefaults() {
         settings.restDurationsByExerciseType = [:]
         Task {

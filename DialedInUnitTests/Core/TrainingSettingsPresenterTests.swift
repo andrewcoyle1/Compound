@@ -244,13 +244,11 @@ struct RestTimerSettingsPresenterTests {
         #expect(screen.presenter.formattedScaling(0.336) == "34%")
     }
 
-    /// Three scalings share one sheet, so the sheet has to write back to the one it was opened for.
+    /// Three scaling pickers share one write path, so each has to write back to its own setting.
     @Test("Test Each Scaling Is Edited On Its Own")
     func testEachScalingIsEditedOnItsOwn() async {
         let screen = makeScreen()
 
-        screen.presenter.onEditBetweenExercisesScalingPressed()
-        #expect(screen.presenter.editingScaling == .betweenExercises)
         #expect(screen.presenter.currentScaling(for: .betweenExercises) == 1)
 
         screen.presenter.updateScaling(for: .betweenExercises, value: 1.25)
@@ -260,8 +258,6 @@ struct RestTimerSettingsPresenterTests {
         #expect(saved?.betweenExercisesRestScaling == 1.25)
         #expect(saved?.warmUpRestScaling == 0.75)
         #expect(saved?.sideSetRestScaling == 0.5)
-        // The sheet closes itself once the value is taken.
-        #expect(screen.presenter.editingScaling == nil)
     }
 
     @Test("Test Each Scaling Is Read From Its Own Setting")
@@ -275,20 +271,6 @@ struct RestTimerSettingsPresenterTests {
         #expect(screen.presenter.currentScaling(for: .warmUp) == 0.4)
         #expect(screen.presenter.currentScaling(for: .betweenExercises) == 1.5)
         #expect(screen.presenter.currentScaling(for: .sideSets) == 0.25)
-    }
-
-    /// The sheet is bound through a flag the view can only switch off, so dismissing it by any
-    /// means clears the row being edited.
-    @Test("Test Dismissing The Scaling Sheet Clears What It Was Editing")
-    func testDismissingTheScalingSheetClearsWhatItWasEditing() {
-        let screen = makeScreen()
-        screen.presenter.onEditWarmUpScalingPressed()
-
-        #expect(screen.presenter.isEditingScaling)
-
-        screen.presenter.isEditingScaling = false
-
-        #expect(screen.presenter.editingScaling == nil)
     }
 
     /// The durations screen is pushed on top of this one and saves the same document, so this one

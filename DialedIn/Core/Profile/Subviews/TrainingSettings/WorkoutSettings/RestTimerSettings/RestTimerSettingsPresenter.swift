@@ -76,7 +76,9 @@ class RestTimerSettingsPresenter {
         Format.percent(value)
     }
 
-    // MARK: - Scaling Sheet
+    // MARK: - Scaling Pickers
+
+    static let scalingOptions: [Double] = [0.25, 0.50, 0.75, 1.0, 1.25, 1.50, 2.0]
 
     enum ScalingType: String, Identifiable, CaseIterable {
         var id: String { rawValue }
@@ -84,25 +86,15 @@ class RestTimerSettingsPresenter {
         case betweenExercises
         case sideSets
 
+        /// Under the "Rest Scaling" header, so these do not repeat the toggles' titles above.
         var label: String {
             switch self {
-            case .warmUp:             return String(localized: "Rest After Last Warm-Up Set")
-            case .betweenExercises:   return String(localized: "Rest Between Exercises")
-            case .sideSets:           return String(localized: "Rest Between Left/Right Sets")
+            case .warmUp:             return String(localized: "After Warm-Ups")
+            case .betweenExercises:   return String(localized: "Between Exercises")
+            case .sideSets:           return String(localized: "Between Left and Right Sides")
             }
         }
     }
-
-    var editingScaling: ScalingType?
-
-    var isEditingScaling: Bool {
-        get { editingScaling != nil }
-        set { if !newValue { editingScaling = nil } }
-    }
-
-    func onEditWarmUpScalingPressed() { editingScaling = .warmUp }
-    func onEditBetweenExercisesScalingPressed() { editingScaling = .betweenExercises }
-    func onEditSideSetsScalingPressed() { editingScaling = .sideSets }
 
     func currentScaling(for type: ScalingType) -> Double {
         switch type {
@@ -119,7 +111,6 @@ class RestTimerSettingsPresenter {
         case .sideSets:         settings.sideSetRestScaling = value
         }
         save()
-        editingScaling = nil
     }
 
     // MARK: - Lifecycle

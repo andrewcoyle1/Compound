@@ -29,13 +29,6 @@ struct LicencesView: View {
         }
         .navigationTitle("Licenses")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
         .onAppear {
             presenter.onViewAppear()
         }
@@ -78,7 +71,8 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showLicencesView(delegate: LicencesDelegate) {
-        router.showScreen(.fullScreenCover) { router in
+        // Pushed inside About, not a cover over two sheets.
+        router.showScreen(.push) { router in
             builder.licencesView(router: router, delegate: delegate)
         }
     }

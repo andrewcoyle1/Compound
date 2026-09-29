@@ -16,7 +16,7 @@ struct FavouriteMeasurementsView: View {
                     }
                 }
             } header: {
-                Text("Tap to toggle a measurement as a favorite")
+                Text("Favorites")
             }
         }
         .navigationTitle("Favorite Measurements")

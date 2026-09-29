@@ -58,14 +58,6 @@ struct ProfilePresenterTests {
         func showPreferredDietView(isFromSettings: Bool) { shown.append("preferredDiet-\(isFromSettings)") }
         func showShareSheet(items: [Any]) { shown.append("share: \(items.first as? String ?? "")") }
         func showSimpleAlert(title: String, subtitle: String?) { shown.append("alert: \(title)") }
-        private(set) var ratingsYesPressed: (() -> Void)?
-        private(set) var ratingsNoPressed: (() -> Void)?
-
-        func showRatingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void) {
-            shown.append("ratings")
-            ratingsYesPressed = onYesPressed
-            ratingsNoPressed = onNoPressed
-        }
     }
 
     private struct Screen {
@@ -96,7 +88,21 @@ struct ProfilePresenterTests {
         screen.presenter.onSubscriptionPressed()
 
         #expect(screen.router.shown == ["paywall"])
+        #expect(!screen.presenter.isManageSubscriptionsPresented)
         #expect(screen.interactor.trackedEventNames == ["ProfileView_Subscription_Press"])
+    }
+
+    /// A subscriber was shown the paywall, which made an active subscription look lapsed and
+    /// offered no way to cancel. They get Apple's Manage Subscriptions sheet instead.
+    @Test("Test A Subscriber Manages Their Subscription Instead Of Seeing The Paywall")
+    func testASubscriberManagesTheirSubscriptionInsteadOfSeeingThePaywall() {
+        let screen = makeScreen()
+        screen.interactor.isPremium = true
+
+        screen.presenter.onSubscriptionPressed()
+
+        #expect(screen.router.shown.isEmpty)
+        #expect(screen.presenter.isManageSubscriptionsPresented)
     }
 
     /// The status told every user they were FREE, because the only screen that showed it read a
@@ -106,10 +112,10 @@ struct ProfilePresenterTests {
         let screen = makeScreen()
 
         screen.interactor.isPremium = false
-        #expect(screen.presenter.subscriptionStatus == "FREE")
+        #expect(screen.presenter.subscriptionStatus == "Free")
 
         screen.interactor.isPremium = true
-        #expect(screen.presenter.subscriptionStatus == "PREMIUM")
+        #expect(screen.presenter.subscriptionStatus == "Premium")
     }
 
     // MARK: - Nutrition Plan
@@ -159,28 +165,11 @@ struct ProfilePresenterTests {
 
     // MARK: - Ratings
 
-    /// These were logged as `SettingsView_*` from a screen called Profile, and the SettingsView they
-    /// were named after has since been deleted — so the prompt's funnel was filed under a screen
-    /// that no longer exists.
-    @Test("Test The Ratings Prompt Is Tracked Under The Screen It Is Shown From")
-    func testTheRatingsPromptIsTrackedUnderTheScreenItIsShownFrom() {
-        let screen = makeScreen()
-
-        screen.presenter.onRatingsButtonPressed()
-        screen.router.ratingsNoPressed?()
-
-        #expect(screen.router.shown == ["ratings"])
-        #expect(screen.interactor.trackedEventNames == [
-            "ProfileView_Ratings_Pressed",
-            "ProfileView_RatingsNo_Pressed"
-        ])
-    }
-
-    /// The "yes" branch hands off to StoreKit, which has no window to present from in a test, so its
-    /// name is asserted on the event rather than by driving the button.
-    @Test("Test The Ratings Yes Event Is Named For The Profile Screen")
-    func testTheRatingsYesEventIsNamedForTheProfileScreen() {
-        #expect(ProfilePresenter.Event.ratingsYesPressed.eventName == "ProfileView_RatingsYes_Pressed")
+    /// The row goes straight to the system prompt. It used to open a sentiment modal naming
+    /// another app ("Are you enjoying AIChat?") first.
+    @Test("Test The Ratings Row Opens No Modal Of Its Own")
+    func testTheRatingsRowOpensNoModalOfItsOwn() {
+        #expect(ProfilePresenter.Event.ratingsPressed.eventName == "ProfileView_Ratings_Pressed")
     }
 
     // MARK: - Invites

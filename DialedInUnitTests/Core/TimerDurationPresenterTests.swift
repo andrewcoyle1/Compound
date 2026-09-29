@@ -49,6 +49,11 @@ struct TimerDurationExerciseOverrideTests {
         func showAlert(error: Error) { }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
+
+        private(set) var dialogTitles: [String] = []
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            dialogTitles.append(title)
+        }
     }
 
     private struct Screen {
@@ -146,6 +151,21 @@ struct TimerDurationExerciseOverrideTests {
         for _ in 0..<10 { await Task.yield() }
         #expect(router.alertTitles == ["Unable to Save Settings"])
         #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Fail"])
+    }
+
+    /// Reset used to act on the tap. It asks now, and nothing changes until it is confirmed.
+    @Test("Test Resetting Default Timers Asks First")
+    func testResettingDefaultTimersAsksFirst() async {
+        let interactor = Interactor()
+        interactor.workoutSettings.restDurationsByExerciseType = ["weights": 90]
+        let router = Router()
+        let presenter = TimerDurationPresenter(interactor: interactor, router: router)
+
+        presenter.onResetDefaultsPressed()
+        for _ in 0..<10 { await Task.yield() }
+
+        #expect(router.dialogTitles == ["Reset Default Timers?"])
+        #expect(interactor.workoutSettings.restDurationsByExerciseType == ["weights": 90])
     }
 
     @Test("Test A Failed Type Duration Save Alerts Once")

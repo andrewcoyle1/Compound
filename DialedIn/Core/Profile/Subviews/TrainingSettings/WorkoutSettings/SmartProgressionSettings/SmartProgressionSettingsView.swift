@@ -17,7 +17,7 @@ struct SmartProgressionSettingsView: View {
                 optionPicker("Initial log fill", systemImage: "book.pages", options: presenter.initialLogFillOptions, selection: $presenter.initialLogFill, optionTitle: \.title)
                 ListRowToggle(
                     title: String(localized: "Apply in session"),
-                    subtitle: String(localized: "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout"),
+                    subtitle: String(localized: "Update targets during a workout as you log sets"),
                     systemImage: "arrow.trianglehead.branch",
                     isOn: $presenter.applyInSession
                 )

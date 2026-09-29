@@ -40,7 +40,7 @@ struct GymProfilesView: View {
     private func favouriteGymProfileSection(gymProfile: GymProfileModel) -> some View {
         Section {
             gymProfileRow(gymProfile)
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            .rowActions(allowsFullSwipe: false) {
                 Button(role: .destructive) {
                     presenter.onDeleteGymProfilePressed(profile: gymProfile)
                 } label: {
@@ -56,14 +56,13 @@ struct GymProfilesView: View {
         Section {
             ForEach(presenter.nonFavouriteGymProfiles) { profile in
                 gymProfileRow(profile)
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                // One set of actions, so the swipe and the context menu offer the same two.
+                .rowActions(allowsFullSwipe: false) {
                     Button(role: .destructive) {
                         presenter.onDeleteGymProfilePressed(profile: profile)
                     } label: {
                         Label("Delete", systemImage: Symbol.delete)
                     }
-                }
-                .swipeActions(edge: .leading, allowsFullSwipe: true) {
                     Button {
                         presenter.favouriteGymProfile(profile: profile)
                     } label: {

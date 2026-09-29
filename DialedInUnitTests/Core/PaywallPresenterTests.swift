@@ -74,6 +74,10 @@ struct PaywallPurchasePresenterTests {
         private(set) var alertTitles: [String] = []
 
         func showAlert(error: Error) { alertedErrors.append(error) }
+        func showAlert(title: String, error: Error) {
+            alertTitles.append(title)
+            alertedErrors.append(error)
+        }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
@@ -159,8 +163,9 @@ struct PaywallPurchasePresenterTests {
         #expect(screen.router.alertedErrors.isEmpty)
     }
 
-    /// A store that fails outright says so both on the screen and in an alert, and stops spinning.
-    /// A paywall stuck loading forever cannot be bought from or backed out of intelligibly.
+    /// A store that fails outright says so on the screen and stops spinning. A paywall stuck
+    /// loading forever cannot be bought from or backed out of intelligibly. The screen's error
+    /// state is the whole report: an alert on top of it said the same thing twice.
     @Test("Test A Failed Load Stops Spinning And Says Why")
     func testAFailedLoadStopsSpinningAndSaysWhy() async {
         let screen = makeScreen()
@@ -170,7 +175,7 @@ struct PaywallPurchasePresenterTests {
 
         #expect(!screen.presenter.isLoadingProducts)
         #expect(screen.presenter.loadErrorMessage != nil)
-        #expect(screen.router.alertedErrors.count == 1)
+        #expect(screen.router.alertedErrors.isEmpty)
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Load_Fail"))
     }
 
@@ -278,6 +283,56 @@ struct PaywallPurchasePresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Fail"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(screen.router.shown.isEmpty)
+    }
+
+    /// Closing Apple's purchase sheet is a choice, not a failure: no alert titled "Error", no
+    /// error haptic.
+    @Test("Test Cancelling A Purchase Says Nothing")
+    func testCancellingAPurchaseSaysNothing() async {
+        let screen = makeScreen(isOnboarding: true)
+        screen.interactor.purchaseError = NSError(domain: "RevenueCat.ErrorCode", code: 1)
+
+        screen.presenter.onPurchaseProductPressed(product: product())
+
+        #expect(await TestManagers.eventually { screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Cancelled") })
+        #expect(screen.router.alertedErrors.isEmpty)
+        #expect(screen.interactor.playedHaptics.isEmpty)
+        #expect(!screen.presenter.isPurchasePending)
+    }
+
+    /// Ask to Buy leaves the purchase waiting for a parent. That is said on the screen, not
+    /// reported as a failure.
+    @Test("Test A Purchase Waiting For Approval Says So Inline")
+    func testAPurchaseWaitingForApprovalSaysSoInline() async {
+        let screen = makeScreen(isOnboarding: true)
+        screen.interactor.purchaseError = NSError(domain: "RevenueCat.ErrorCode", code: 20)
+
+        screen.presenter.onPurchaseProductPressed(product: product())
+
+        #expect(await TestManagers.eventually { screen.presenter.isPurchasePending })
+        #expect(screen.router.alertedErrors.isEmpty)
+        #expect(screen.router.shown.isEmpty)
+    }
+
+    @Test("Test Purchase Errors Are Sorted Into Cancel, Pending And Failure")
+    func testPurchaseErrorsAreSortedIntoCancelPendingAndFailure() {
+        let cancelled = PaywallPresenter.outcome(of: NSError(domain: "RevenueCat.ErrorCode", code: 1))
+        let pending = PaywallPresenter.outcome(of: NSError(domain: "RevenueCat.ErrorCode", code: 20))
+        let failed = PaywallPresenter.outcome(of: PaywallTestError.failed)
+        #expect(cancelled == .cancelled)
+        #expect(pending == .pending)
+        #expect(failed == .failed)
+    }
+
+    /// The StoreKit and RevenueCat paywalls load their own products.
+    @Test("Test Only The Custom Paywall Loads Products")
+    func testOnlyTheCustomPaywallLoadsProducts() async {
+        let screen = makeScreen()
+        screen.interactor.paywallTest = .storeKit
+
+        await screen.presenter.onViewTask()
+
+        #expect(screen.interactor.requestedProductIds.isEmpty)
     }
 
     // MARK: - Restoring

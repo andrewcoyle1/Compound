@@ -22,15 +22,16 @@ struct TimerDurationView: View {
                         presenter.onEditPressed(type: type)
                     }
                 }
-                ListRowButton(
-                    title: String(localized: "Reset Defaults"),
-                    subtitle: String(localized: "Reset timers to default settings"),
-                    accessory: .none
-                ) {
-                    presenter.resetDefaults()
-                }
             } header: {
                 Text("Default Timers")
+            }
+
+            // Its own section, styled as an action, and it asks first: it sat among the rows it
+            // resets, looked like them, and reset at once.
+            Section {
+                Button("Reset Default Timers", role: .destructive) {
+                    presenter.onResetDefaultsPressed()
+                }
             }
 
             Section {
@@ -41,7 +42,7 @@ struct TimerDurationView: View {
                     ) {
                         presenter.onEditExerciseOverridePressed(override)
                     }
-                    .swipeActions(edge: .trailing) {
+                    .rowActions {
                         Button("Remove", role: .destructive) {
                             presenter.removeExerciseOverride(override)
                         }

@@ -90,12 +90,24 @@ class ExpenditureSettingsPresenter {
     }
 
     var calculationStartDateLabel: String {
-        guard let date = settings.calculationStartDate else { return "Default" }
+        guard let date = settings.calculationStartDate else { return String(localized: "Default") }
         return date.formatted(date: .abbreviated, time: .omitted)
     }
 
+    /// The date as it was when the picker opened, so Cancel can put it back: the picker saves as
+    /// it changes.
+    private var startDateBeforeEditing: Date?
+
     func onEditStartDatePressed() {
+        startDateBeforeEditing = settings.calculationStartDate
         isChoosingStartDate = true
+    }
+
+    func onCancelStartDatePressed() {
+        isChoosingStartDate = false
+        guard settings.calculationStartDate != startDateBeforeEditing else { return }
+        settings.calculationStartDate = startDateBeforeEditing
+        save()
     }
 
     func onClearStartDatePressed() {

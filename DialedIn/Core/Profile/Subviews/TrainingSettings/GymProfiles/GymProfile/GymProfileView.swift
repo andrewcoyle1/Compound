@@ -91,7 +91,6 @@ struct GymProfileView: View {
         .scrollIndicators(.hidden)
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             presenter.onViewAppear()
         }
@@ -123,7 +122,11 @@ struct GymProfileView: View {
     
     private var imageHeader: some View {
         Section {
-            ImageLoaderView(urlString: presenter.gymProfile.imageUrl ?? Constants.randomImage, resizingMode: .fill)
+            ImageLoaderView(
+                urlString: presenter.gymProfile.imageUrl ?? Constants.randomImage,
+                resizingMode: .fill,
+                imageDescription: presenter.gymProfile.imageUrl == nil ? nil : String(localized: "Gym photo")
+            )
                 .frame(height: 300)
                 .removeListRowFormatting()
         }
@@ -320,15 +323,6 @@ struct GymProfileView: View {
             }
         }
         
-        ToolbarItem(placement: .cancellationAction) {
-            Button {
-                presenter.onBackButtonPressed()
-            } label: {
-                Image(systemName: "chevron.backward")
-            }
-            .accessibilityLabel("Back")
-        }
-        
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddImagePressed()
@@ -465,10 +459,15 @@ private struct GymEquipmentRow: View {
                         .lineLimit(2)
                 }
                 if let editTitle, let onEdit {
-                    Button(editTitle, action: onEdit)
-                        .font(.rowDetail.weight(.semibold))
-                        .foregroundStyle(.tint)
-                        .buttonStyle(.borderless)
+                    Button(action: onEdit) {
+                        // Padded to the 44 pt minimum; the text alone was about 20 pt tall.
+                        Text(editTitle)
+                            .frame(minHeight: ControlSize.row, alignment: .leading)
+                            .contentShape(.rect)
+                    }
+                    .font(.rowDetail.weight(.semibold))
+                    .foregroundStyle(.tint)
+                    .buttonStyle(.borderless)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

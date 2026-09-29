@@ -18,6 +18,11 @@ struct AddPinLoadedMachineRangeView: View {
                 incrementSection
             }
             .listSectionMargins(.vertical, 0)
+            if let message = presenter.validationMessage {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .navigationTitle("Add Range")
         .navigationSubtitle(presenter.pinLoadedMachine.wrappedValue.name)
@@ -39,7 +44,7 @@ struct AddPinLoadedMachineRangeView: View {
             Text("Label")
                 .font(.sectionTitle)
                 .padding(.top, Spacing.xs)
-            TextField(text: $presenter.range.name, prompt: Text(""), label: { Text("")})
+            TextField(text: $presenter.range.name, label: { Text("Label") })
                 .textFieldStyle(.roundedBorder)
         }
     }
@@ -50,7 +55,7 @@ struct AddPinLoadedMachineRangeView: View {
                 .font(.sectionTitle)
                 .padding(.top, Spacing.xs)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.range.minWeight, format: .number, prompt: Text(""))
+                TextField("Range Start", value: $presenter.range.minWeight, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -64,7 +69,7 @@ struct AddPinLoadedMachineRangeView: View {
             Text("Range End")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.range.maxWeight, format: .number, prompt: Text(""))
+                TextField("Range End", value: $presenter.range.maxWeight, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -78,7 +83,7 @@ struct AddPinLoadedMachineRangeView: View {
             Text("Increment")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.range.increment, format: .number, prompt: Text(""))
+                TextField("Increment", value: $presenter.range.increment, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -100,6 +105,7 @@ struct AddPinLoadedMachineRangeView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .disabled(presenter.validationMessage != nil)
         }
     }
 }

@@ -21,7 +21,7 @@ struct StrategySettingsView: View {
                 }
                 ListRowToggle(
                     title: String(localized: "Fast Check-in"),
-                    subtitle: presenter.fastCheckInEnabled ? String(localized: "On") : String(localized: "Off"),
+                    subtitle: nil,
                     systemImage: "hare",
                     isOn: Binding(
                         get: { presenter.fastCheckInEnabled },
@@ -33,7 +33,6 @@ struct StrategySettingsView: View {
             }
 
             Section {
-                Label("Introduction", systemImage: Symbol.info)
                 ListRowToggle(
                     title: String(localized: "Partial Logging"),
                     subtitle: nil,
@@ -66,7 +65,6 @@ struct StrategySettingsView: View {
                         set: { presenter.loggingBreakEnabled = $0 }
                     )
                 )
-                Label("Program Update", systemImage: "star.fill")
             } header: {
                 Text("Coaching Modules")
             } footer: {

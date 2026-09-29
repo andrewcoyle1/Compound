@@ -231,16 +231,51 @@ struct ProfileAccountPresenterTests {
     }
 
     /// A height that came back from the profile has to survive being shown and saved again
-    /// unchanged. Formatting it for display and re-parsing it is the round trip that could lose it.
+    /// unchanged. Formatting it for display and re-parsing it is the round trip that could lose
+    /// it, so an untouched field is not written back at all.
     @Test("Test A Stored Height Survives A Round Trip Through The Field")
     func testAStoredHeightSurvivesARoundTripThroughTheField() async {
         let screen = makeScreen(user: UserModel(userId: "user-1", firstName: "Andrew", submittedHeightCentimeters: 182.5))
         screen.presenter.prefillFromCurrentUser()
+        #expect(screen.presenter.heightText == "182.5")
 
         await screen.presenter.saveProfile()
 
         let saved = screen.interactor.savedData.first
-        #expect(saved?[UserModel.CodingKeys.submittedHeightCentimeters.rawValue] as? Double == 182.5)
+        #expect(saved?[UserModel.CodingKeys.submittedHeightCentimeters.rawValue] == nil)
+    }
+
+    /// Someone who chose inches on the Units screen types inches here; the profile stores cm.
+    @Test("Test Height Is Typed In The Chosen Length Unit")
+    func testHeightIsTypedInTheChosenLengthUnit() async {
+        let screen = makeScreen(user: UserModel(
+            userId: "user-1",
+            firstName: "Andrew",
+            submittedHeightCentimeters: 180,
+            submittedLengthUnitPreference: .inches
+        ))
+        screen.presenter.prefillFromCurrentUser()
+        #expect(screen.presenter.heightUnit == .inches)
+        #expect(screen.presenter.heightText == "70.9")
+
+        screen.presenter.heightText = "70"
+        await screen.presenter.saveProfile()
+
+        let saved = screen.interactor.savedData.first?[UserModel.CodingKeys.submittedHeightCentimeters.rawValue] as? Double
+        #expect(abs((saved ?? 0) - 177.8) < 0.001)
+    }
+
+    @Test("Test Account Says How The Person Signs In")
+    func testAccountSaysHowThePersonSignsIn() {
+        let apple = makeScreen()
+        apple.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.apple])
+        #expect(apple.presenter.signInMethod == "Apple")
+
+        let google = makeScreen()
+        google.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.google])
+        #expect(google.presenter.signInMethod == "Google")
+
+        #expect(makeScreen(isAnonymous: true).presenter.signInMethod == "Not saved")
     }
 
     /// Clearing the field does not clear the stored height — there is no "no height" state in the
@@ -335,6 +370,25 @@ struct ProfileAccountPresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("profile_edit_save_failed"))
         #expect(!screen.interactor.trackedEventNames.contains("profile_edit_save_success"))
         #expect(!screen.presenter.isSaving)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    /// The screen had no Save button, so `saveProfile()` had no caller outside these tests and
+    /// every edit was lost on Back. The button now calls it; a save confirms itself with a success
+    /// haptic, and nothing is written or played until the person asks to save.
+    @Test("Test A Save Confirms With A Success Haptic Only When Asked")
+    func testASaveConfirmsWithASuccessHapticOnlyWhenAsked() async {
+        let screen = makeScreen(user: UserModel(userId: "user-1", firstName: "Andrew"))
+        screen.presenter.prefillFromCurrentUser()
+        screen.presenter.lastName = "Coyle"
+
+        #expect(screen.interactor.savedData.isEmpty)
+        #expect(screen.interactor.playedHaptics.isEmpty)
+
+        await screen.presenter.saveProfile()
+
+        #expect(string(screen.interactor.savedData.first ?? [:], .submittedLastName) == "Coyle")
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     // MARK: - Profile photo

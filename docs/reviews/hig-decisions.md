@@ -64,6 +64,17 @@ qualified to confirm.
 | 13f | Disabled rows in Notification Settings | **Left as they are.** | No change |
 | 13g | Recipe title | **Match the other detail screens**: present the title the way Food detail, Workout template detail and the other detail views do. | Yes |
 
+### Raised while building, and decided
+
+| # | Decision | Outcome | Build now? |
+|---|---|---|---|
+| W1 | Rest-over alert on a locked phone | **Keep the app running during workouts** (workout background mode) so the Live Activity can alert on a locked phone. The 2-second notification fallback stays for people without Apple Health access. | Yes |
+| W2 | Rest over with "Play Sound" off | **A silent notification**: a banner with no sound. | Yes |
+| W3 | Paused time | **The saved duration excludes paused time.** Rest-over distance uses the person's unit. | Yes |
+| O1 | Daily activity | **Add daily activity to Profile**, so it can be changed after onboarding. | Yes |
+| O2 | Rate bands | Warning from 80% of the person's maximum, "Conservative" at 50% or less: accepted for now; on the release checklist. | Built |
+| O3 | Apple Health sex "other" | Treated as nothing found; the choice is left blank. | Built |
+
 ### Decided earlier the same day
 
 | Decision | Outcome |

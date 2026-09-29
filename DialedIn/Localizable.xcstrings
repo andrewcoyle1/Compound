@@ -343,6 +343,22 @@
         }
       }
     },
+    "%@ is measured differently, so the sets logged for %@ can't move to it." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is measured differently, so the sets logged for %2$@ can't move to it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ se mide de otra forma, así que las series registradas de %2$@ no se pueden trasladar."
+          }
+        }
+      }
+    },
     "%@ kcal" : {
       "localizations" : {
         "es" : {
@@ -3977,6 +3993,7 @@
       }
     },
     "Automatically upload every workout to your Strava account the moment you finish a session." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4650,6 +4667,7 @@
       }
     },
     "By continuing, you confirm that:\n• You have read and accept the Health Disclaimer.\n• You have read and accept the Consumer Health Privacy Notice.\n\nYou understand Compound does not provide medical advice and is for educational use only. You can review these terms at any time in Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5618,6 +5636,7 @@
       }
     },
     "Complete Set?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5779,6 +5798,7 @@
       }
     },
     "Confirm and Continue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5849,6 +5869,7 @@
       }
     },
     "Consider your ability to maintain sustained cardio activities like running, cycling, or swimming." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7360,6 +7381,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descartar perfil de gimnasio"
+          }
+        }
+      }
+    },
+    "Discard Logged Sets?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar las series registradas?"
           }
         }
       }
@@ -9232,6 +9263,26 @@
         }
       }
     },
+    "Fill from Apple Health" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellenar desde Salud de Apple"
+          }
+        }
+      }
+    },
+    "Filled from Apple Health. Check it before you continue." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rellenado desde Salud de Apple. Revísalo antes de continuar."
+          }
+        }
+      }
+    },
     "Fills this set" : {
       "localizations" : {
         "es" : {
@@ -9490,6 +9541,16 @@
         }
       }
     },
+    "Follow each workout on the Lock Screen and in the Dynamic Island" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue cada entrenamiento en la pantalla de bloqueo y en la Dynamic Island"
+          }
+        }
+      }
+    },
     "Follow requests sent both ways" : {
       "localizations" : {
         "es" : {
@@ -9711,6 +9772,16 @@
         }
       }
     },
+    "Gaining this fast means more of the weight you put on is likely to be fat rather than muscle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al ganar peso tan rápido, es probable que una mayor parte del peso ganado sea grasa y no músculo."
+          }
+        }
+      }
+    },
     "Game Controller" : {
       "localizations" : {
         "es" : {
@@ -9823,6 +9894,7 @@
       }
     },
     "Go Back" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10335,6 +10407,7 @@
       }
     },
     "How Fit Are You?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10405,6 +10478,16 @@
         }
       }
     },
+    "How often you exercise feeds the calorie estimate. You can change it later in Profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La frecuencia con la que entrenas se usa para calcular las calorías. Puedes cambiarla más tarde en Perfil."
+          }
+        }
+      }
+    },
     "How tall are you?" : {
       "localizations" : {
         "es" : {
@@ -10447,6 +10530,7 @@
       }
     },
     "How would you rate your cardiovascular fitness?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11878,6 +11962,16 @@
         }
       }
     },
+    "Losing this fast makes you more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al perder peso tan rápido es más probable que pierdas músculo y que sientas hambre y cansancio. Un ritmo más lento es más fácil de mantener."
+          }
+        }
+      }
+    },
     "Low" : {
       "localizations" : {
         "es" : {
@@ -12762,6 +12856,32 @@
         }
       }
     },
+    "Next: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente: %@"
+          }
+        }
+      }
+    },
+    "Next: %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Next: %1$@, %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente: %1$@, %2$@"
+          }
+        }
+      }
+    },
     "Niacin" : {
       "localizations" : {
         "es" : {
@@ -13053,6 +13173,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay recetas"
+          }
+        }
+      }
+    },
+    "No Sets Logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna serie registrada"
           }
         }
       }
@@ -13495,6 +13625,7 @@
       }
     },
     "Not Yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13630,6 +13761,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notas"
+          }
+        }
+      }
+    },
+    "Nothing found in Apple Health, or access is off. Enter it below." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró nada en Salud de Apple o el acceso está desactivado. Introdúcelo abajo."
           }
         }
       }
@@ -14166,6 +14307,16 @@
         }
       }
     },
+    "Opens in your browser" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se abre en el navegador"
+          }
+        }
+      }
+    },
     "Opens the standings" : {
       "localizations" : {
         "es" : {
@@ -14505,6 +14656,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registro parcial"
+          }
+        }
+      }
+    },
+    "Pause Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausar entrenamiento"
           }
         }
       }
@@ -15065,6 +15226,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajuste predictivo del objetivo"
+          }
+        }
+      }
+    },
+    "Prefer not to say" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prefiero no decirlo"
           }
         }
       }
@@ -16477,6 +16648,16 @@
         }
       }
     },
+    "Rest complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso terminado"
+          }
+        }
+      }
+    },
     "Rest timers will count down after each exercise set" : {
       "localizations" : {
         "es" : {
@@ -16574,6 +16755,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reanudar entrenamiento actual"
+          }
+        }
+      }
+    },
+    "Resume Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reanudar entrenamiento"
           }
         }
       }
@@ -16764,6 +16955,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar cuenta"
+          }
+        }
+      }
+    },
+    "Save Anyway" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar de todos modos"
           }
         }
       }
@@ -17574,6 +17775,16 @@
         }
       }
     },
+    "Sex for Calorie Estimate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexo para el cálculo de calorías"
+          }
+        }
+      }
+    },
     "Share" : {
       "localizations" : {
         "es" : {
@@ -17843,6 +18054,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar selector de alimentos"
+          }
+        }
+      }
+    },
+    "Show on Lock Screen" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en la pantalla de bloqueo"
           }
         }
       }
@@ -18559,6 +18780,7 @@
       }
     },
     "Strava Connected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18569,6 +18791,7 @@
       }
     },
     "Strava Didn't Respond" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18748,6 +18971,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar ejercicio"
+          }
+        }
+      }
+    },
+    "Swap and Discard Sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar y descartar series"
           }
         }
       }
@@ -19171,6 +19404,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los últimos siete días"
+          }
+        }
+      }
+    },
+    "The lowest target offered is %@, a BMI of 18.5 for your height. Below that is considered underweight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El objetivo más bajo que se ofrece es %@, un IMC de 18,5 para tu altura. Por debajo se considera bajo peso."
           }
         }
       }
@@ -19635,6 +19878,7 @@
       }
     },
     "Time to get back to your workout!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20271,6 +20515,7 @@
       }
     },
     "Try again, or skip and connect later in Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21808,6 +22053,16 @@
         }
       }
     },
+    "Used only to estimate the calories you burn. You can change it later in Profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo se usa para calcular las calorías que quemas. Puedes cambiarlo más tarde en Perfil."
+          }
+        }
+      }
+    },
     "User Info" : {
       "localizations" : {
         "es" : {
@@ -22808,6 +23063,7 @@
       }
     },
     "What's Your Gender?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22858,6 +23114,7 @@
       }
     },
     "What's your daily activity level outside of exercise?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23585,6 +23842,36 @@
         }
       }
     },
+    "Your activity outside exercise feeds the calorie estimate." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu actividad fuera del ejercicio se usa para calcular las calorías."
+          }
+        }
+      }
+    },
+    "Your age feeds the calorie estimate. You can change it later in Profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu edad se usa para calcular las calorías. Puedes cambiarla más tarde en Perfil."
+          }
+        }
+      }
+    },
+    "Your calorie estimate will be less accurate." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cálculo de calorías será menos preciso."
+          }
+        }
+      }
+    },
     "Your circle sees your progress towards this as a ring round your face." : {
       "localizations" : {
         "es" : {
@@ -23621,6 +23908,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu objetivo genera un plan personalizado para alcanzarlo. Puedes cambiarlo más adelante y tu plan se actualizará."
+          }
+        }
+      }
+    },
+    "Your height feeds the calorie estimate. You can change it later in Profile." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu altura se usa para calcular las calorías. Puedes cambiarla más tarde en Perfil."
           }
         }
       }
@@ -23691,6 +23988,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu resumen semanal está listo"
+          }
+        }
+      }
+    },
+    "Your weight feeds the calorie estimate and your goal. You can log a new weight at any time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu peso se usa para calcular las calorías y tu objetivo. Puedes registrar un peso nuevo en cualquier momento."
+          }
+        }
+      }
+    },
+    "Your weight is already at a BMI of 18.5 or below for your height, which is considered underweight, so a lower target isn't offered." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu peso ya corresponde a un IMC de 18,5 o menos para tu altura, lo que se considera bajo peso, así que no se ofrece un objetivo más bajo."
           }
         }
       }

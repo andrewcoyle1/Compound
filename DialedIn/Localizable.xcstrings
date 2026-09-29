@@ -22121,6 +22121,466 @@
           }
         }
       }
+    },
+    "Unable to save the change. Please try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el cambio. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Unable to save changes. Please try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron guardar los cambios. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Set %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld"
+          }
+        }
+      }
+    },
+    "Set %lld, minimum reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld, repeticiones mínimas"
+          }
+        }
+      }
+    },
+    "Set %lld, maximum reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld, repeticiones máximas"
+          }
+        }
+      }
+    },
+    "Reps in reserve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones en reserva"
+          }
+        }
+      }
+    },
+    "Save Workout Templates?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Guardar plantillas de entrenamiento?"
+          }
+        }
+      }
+    },
+    "Each workout day can also be saved to your library, to start on its own." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada día de entrenamiento también se puede guardar en tu biblioteca para iniciarlo por separado."
+          }
+        }
+      }
+    },
+    "Save Templates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar plantillas"
+          }
+        }
+      }
+    },
+    "Don't Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No guardar"
+          }
+        }
+      }
+    },
+    "Unable to Save Templates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron guardar las plantillas"
+          }
+        }
+      }
+    },
+    "Unable to Activate Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo activar el programa"
+          }
+        }
+      }
+    },
+    "Unable to Save Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el programa"
+          }
+        }
+      }
+    },
+    "Unable to Start Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el programa"
+          }
+        }
+      }
+    },
+    "Delete Program?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar programa?"
+          }
+        }
+      }
+    },
+    "“%@” will be deleted. This can't be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se eliminará «%@». Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "Edit Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar programa"
+          }
+        }
+      }
+    },
+    "Workout %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamiento %@"
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your active program '%@'? This will remove all scheduled workouts and you'll need to create or select a new program." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Seguro que quieres eliminar tu programa activo «%@»? Se quitarán todos los entrenamientos programados y tendrás que crear o elegir un programa nuevo."
+          }
+        }
+      }
+    },
+    "Delete '%@'? This can't be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar «%@»? Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "Unable to Start Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el entrenamiento"
+          }
+        }
+      }
+    },
+    "Distance Unit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unidad de distancia"
+          }
+        }
+      }
+    },
+    "Number of Cycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de ciclos"
+          }
+        }
+      }
+    },
+    "Periodization" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Periodización"
+          }
+        }
+      }
+    },
+    "Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programas"
+          }
+        }
+      }
+    },
+    "Create your first training program to get started." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea tu primer programa de entrenamiento para empezar."
+          }
+        }
+      }
+    },
+    "Create Exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear ejercicio"
+          }
+        }
+      }
+    },
+    "Complete your first workout to see it here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completa tu primer entrenamiento para verlo aquí."
+          }
+        }
+      }
+    },
+    "Start Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar programa"
+          }
+        }
+      }
+    },
+    "Choose an icon for this program." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un icono para este programa."
+          }
+        }
+      }
+    },
+    "Program Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del programa"
+          }
+        }
+      }
+    },
+    "Workout Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del entrenamiento"
+          }
+        }
+      }
+    },
+    "Checkered Flag" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bandera a cuadros"
+          }
+        }
+      }
+    },
+    "Joystick" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joystick"
+          }
+        }
+      }
+    },
+    "Game Controller" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mando de juego"
+          }
+        }
+      }
+    },
+    "Walking Figure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Figura caminando"
+          }
+        }
+      }
+    },
+    "Airplane" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avión"
+          }
+        }
+      }
+    },
+    "Sailboat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velero"
+          }
+        }
+      }
+    },
+    "Gauge" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indicador"
+          }
+        }
+      }
+    },
+    "Icon" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icono"
+          }
+        }
+      }
+    },
+    "Body weight contribution, percent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contribución del peso corporal, porcentaje"
+          }
+        }
+      }
+    },
+    "Enter a number from 0 to 100." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce un número del 0 al 100."
+          }
+        }
+      }
+    },
+    "Resistance Equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipo de resistencia"
+          }
+        }
+      }
+    },
+    "Trackable Metric 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métrica registrable 1"
+          }
+        }
+      }
+    },
+    "Trackable Metric 2" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métrica registrable 2"
+          }
+        }
+      }
+    },
+    "Exercise Type" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de ejercicio"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -19,14 +19,13 @@ struct GoalSettingView: View {
             onDevSettingsPressed: onDevSettingsPressed
         ) {
             Section {
-                Text("Depending on what your goal is, we will help you by generating a custom plan to help you get there. This can be changed in future, and your plan will be updated accordingly.")
+                Text("Your goal generates a custom plan to get you there. This can be changed later, and your plan will update accordingly.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             } header: {
                 Text("Goal")
             }
         }
-        .navigationBarBackButtonHidden()
     }
 
     private var onDevSettingsPressed: (() -> Void)? {

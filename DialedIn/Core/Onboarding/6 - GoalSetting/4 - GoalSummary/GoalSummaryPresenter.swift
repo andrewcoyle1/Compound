@@ -143,6 +143,20 @@ class GoalSummaryPresenter {
         Format.weight(kg: weight, unit: unit)
     }
 
+    func weeklyRateText(delegate: GoalSummaryDelegate) -> String {
+        String(localized: "\(formatWeight(delegate.weightChangeRate, unit: weightUnit)) / week")
+    }
+
+    /// `%lld weeks (%lld months)` has no plural variation to fall back on, so "1 weeks (1 months)"
+    /// read wrong — this spells out the singular case instead of relying on one.
+    func estimatedTimelineText(delegate: GoalSummaryDelegate) -> String {
+        let weeks = estimatedWeeks(delegate: delegate)
+        let months = estimatedMonths(delegate: delegate)
+        let weeksText = weeks == 1 ? String(localized: "1 week") : String(localized: "\(weeks) weeks")
+        let monthsText = months == 1 ? String(localized: "1 month") : String(localized: "\(months) months")
+        return String(localized: "\(weeksText) (\(monthsText))")
+    }
+
     /// The signed change from the current to the target weight, and its direction, so the summary
     /// can pair its colour with an arrow. Nil when there is no change to show.
     func weightChange(targetWeight: Double) -> (text: String, isGain: Bool)? {
@@ -152,20 +166,24 @@ class GoalSummaryPresenter {
         return (sign + formatWeight(abs(difference), unit: weightUnit), difference > 0)
     }
     
+    // Switches on the enum, not a localized description — `description` reads "Perder peso" in
+    // Spanish, so the old `.contains("lose")` check never matched and every goal got the "gain"
+    // icon and message.
     func objectiveIcon(objective: OverarchingObjective) -> String {
-        let objective = objective.description.lowercased()
-        if objective.contains("lose") { return "arrow.down.circle.fill" }
-        if objective.contains("maintain") { return "equal.circle.fill" }
-        return "arrow.up.circle.fill"
+        switch objective {
+        case .loseWeight: return "arrow.down.circle.fill"
+        case .maintain: return "equal.circle.fill"
+        case .gainWeight: return "arrow.up.circle.fill"
+        }
     }
-    
+
     func motivationalMessage(objective: OverarchingObjective) -> String {
-        let objective = objective.description.lowercased()
-        if objective.contains("lose") {
+        switch objective {
+        case .loseWeight:
             return String(localized: "Every step you take towards your goal is progress. Stay consistent with your nutrition and exercise, and you'll reach your target weight. Remember, sustainable changes lead to lasting results.")
-        } else if objective.contains("maintain") {
+        case .maintain:
             return String(localized: "Maintaining your current weight is a fantastic goal! Focus on balanced nutrition and regular activity to keep your body healthy and strong. Consistency is key to long-term success.")
-        } else {
+        case .gainWeight:
             return String(localized: "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort.")
         }
     }

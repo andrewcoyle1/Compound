@@ -124,7 +124,7 @@ struct ExpenditureView: View {
         Section {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
-                    Text("BMR (Mifflin-St Jeor)")
+                    Text("Resting Calories")
                     Spacer()
                     Text(Format.kcal(Double(calculatedBmrInt)))
                         .foregroundStyle(.secondary)
@@ -154,13 +154,13 @@ struct ExpenditureView: View {
                 }
                 Divider()
                 HStack {
-                    Text("TDEE Formula")
+                    Text("Daily Calories Burned")
                     Spacer()
-                    Text("BMR × (activity + exercise)")
+                    Text("Resting calories × (activity + exercise)")
                         .foregroundStyle(.secondary)
                 }
                 HStack {
-                    Text("TDEE Result")
+                    Text("Total")
                         .fontWeight(.semibold)
                     Spacer()
                     Text("\(Format.kcal(Double(calculatedTdeeInt)))/day")
@@ -168,9 +168,9 @@ struct ExpenditureView: View {
                 }
             }
         } header: {
-            Text("How we calculated this")
+            Text("How This Is Calculated")
         } footer: {
-            Text("BMR uses your age, height, weight and sex. We then scale by daily activity and how often you exercise. Minimum safeguards may apply elsewhere when setting calorie targets.")
+            Text("Resting calories are based on your age, height, weight and sex, then scaled by daily activity and how often you exercise. Minimum safeguards may apply elsewhere when setting calorie targets.")
         }
     }
     

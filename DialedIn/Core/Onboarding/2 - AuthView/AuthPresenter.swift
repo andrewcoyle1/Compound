@@ -63,7 +63,7 @@ class AuthPresenter {
                     buttons: {
                         AnyView(
                             HStack {
-                                Button("Cancel") { }
+                                Button("Cancel", role: .cancel) { }
                                 Button("Try Again") {
                                     self.onSignInApplePressed()
                                 }
@@ -104,7 +104,7 @@ class AuthPresenter {
                     buttons: {
                         AnyView(
                             HStack {
-                                Button("Cancel") { }
+                                Button("Cancel", role: .cancel) { }
                                 Button("Try Again") {
                                     self.onSignInGooglePressed()
                                 }
@@ -172,7 +172,7 @@ class AuthPresenter {
                     buttons: {
                         AnyView(
                             HStack {
-                                Button {
+                                Button(role: .cancel) {
                                     self.didTriggerLogin = false
                                 } label: {
                                     Text("Cancel")

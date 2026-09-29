@@ -5,6 +5,7 @@
 //  Created by Andrew Coyle on 09/03/2026.
 //
 
+import AuthenticationServices
 import SwiftUI
 
 @Observable
@@ -33,9 +34,15 @@ class StravaConnectPresenter {
             do {
                 try await interactor.stravaAuthenticate()
                 interactor.trackEvent(event: Event.connectSuccess)
+            } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+                // Closing the sheet is a choice, not a failure — nothing to alert about.
+                return
             } catch {
                 interactor.trackEvent(event: Event.connectFail(error: error))
-                router.showSimpleAlert(title: String(localized: "Connection Failed"), subtitle: error.localizedDescription)
+                router.showSimpleAlert(
+                    title: String(localized: "Strava Didn't Respond"),
+                    subtitle: String(localized: "Try again, or skip and connect later in Settings.")
+                )
             }
         }
     }

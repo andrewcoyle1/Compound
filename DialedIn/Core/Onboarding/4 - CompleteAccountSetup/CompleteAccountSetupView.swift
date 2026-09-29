@@ -19,7 +19,7 @@ struct CompleteAccountSetupView: View {
             onDevSettingsPressed: onDevSettingsPressed
         ) {
             Section {
-                Text("In order to for us to help you on your fitness journey, we need to know a few things about you. These will help us tailor our recommendations to your needs.")
+                Text("A few details tailor your recommendations to your fitness journey.")
             } header: {
                 Text("The Basics")
             }

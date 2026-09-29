@@ -175,3 +175,42 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 - The set tracker's new control sizes and column widths (Set and Done 44 pt, Prev 78 pt).
 - The set keyboard's background and sizing.
 - The Live Activity's tinted look, and that tapping it opens the tracker.
+
+## From the third batch (analytics, dashboard and social, onboarding)
+
+### Shared components (central)
+
+- `Components/Views/AnalyticsCard.swift`, `AnalyticsSection.swift`: card titles truncate to one
+  line; the card's VoiceOver label is built from its children.
+- `Components/Views/Charts/MacroStackedBarChart.swift`: add `Spacing.xxs` between stacked segments,
+  which differ by colour alone.
+- `Components/Views/MetricDetailView.swift`: `MetricDetailPresenter` needs `isLoading` so eight
+  analytics screens can show a loading state.
+- `Components/Models/MetricConfiguration.swift` and `TimeSeries(name:)` take plain `String`, so
+  about seventy chart labels never reach the string catalog. Change the type, not the call sites.
+- `Components/Views/User/UserRowView.swift`: Follow, Accept and Decline use `.controlSize(.small)`.
+- `Utilities/UnitConversion.swift:59`: `String(format:)` ignores the region's decimal separator.
+
+### Managers, root and backend
+
+- `Managers/Nutrition/NutritionManager/NutritionManager.swift:176` clamps height to 120...260 cm;
+  the onboarding expenditure screen now clamps to 100...260 to match the height wheel. Someone
+  between 100 and 119 cm sees one figure in onboarding and another afterwards. Align the manager.
+- `Root/AppDelegate.swift:134-140`: every push shows a banner and plays a sound in the foreground.
+- `Managers/Push/PushManager.swift` and `functions/lib.js`: notification copy (capitalization,
+  emoji, no Spanish, generic titles).
+- `Root/RIBs/FollowFlow.swift:83-85` and `Managers/Invites/CoreInteractor+Invites.swift:73-74`,
+  `:92`: alert titles and literals not localized.
+- Shared volume in the feed is always kilograms, whatever the reader's unit preference.
+
+### Not reached in Core/Onboarding
+
+- `Components/WeeklyMacroChart.swift`: hard-coded "Mon"…"Sun".
+- `8 - OnboardingDiet/6 - DietPlan/DietPlanView.swift`: `rawValue.capitalized` shown as labels.
+- The goal-summary alert has nowhere to route back to the weight step.
+
+### Needs review by a person
+
+- The Spanish for the two health consent texts is marked `needs_review` in the catalog.
+- 113 catalog entries are `stale`. Check each is unused before deleting, because
+  `CustomModalView` looks some titles up at runtime.

@@ -384,6 +384,26 @@
         }
       }
     },
+    "%@ kcal deficit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal de déficit"
+          }
+        }
+      }
+    },
+    "%@ kcal surplus" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal de superávit"
+          }
+        }
+      }
+    },
     "%@ kg" : {
       "localizations" : {
         "es" : {
@@ -3433,6 +3453,16 @@
         }
       }
     },
+    "Allow step access in the Apple Health app to sync your steps." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el acceso a los pasos en la app Salud de Apple para sincronizar tus pasos."
+          }
+        }
+      }
+    },
     "Also used for body measurements." : {
       "localizations" : {
         "es" : {
@@ -4187,6 +4217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Barra %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Bar shows what you ate, the tick is your target, and a caret means you went over." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La barra muestra lo que comiste, la marca es tu objetivo y la flecha indica que te pasaste."
           }
         }
       }
@@ -12922,6 +12962,16 @@
         }
       }
     },
+    "No Goal Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin objetivo"
+          }
+        }
+      }
+    },
     "No Gym Profiles" : {
       "localizations" : {
         "es" : {
@@ -13177,6 +13227,16 @@
         }
       }
     },
+    "No lower body muscles to show yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay músculos del tren inferior que mostrar."
+          }
+        }
+      }
+    },
     "No negative numbers will be used if you exceed a nutrient target." : {
       "localizations" : {
         "es" : {
@@ -13314,6 +13374,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin objetivo"
+          }
+        }
+      }
+    },
+    "No upper body muscles to show yet." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay músculos del tren superior que mostrar."
           }
         }
       }
@@ -17779,6 +17849,16 @@
         }
       }
     },
+    "Side by Side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado a lado"
+          }
+        }
+      }
+    },
     "Sign In with Google" : {
       "localizations" : {
         "es" : {
@@ -17946,6 +18026,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omitir esta semana"
+          }
+        }
+      }
+    },
+    "Slider" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deslizador"
           }
         }
       }
@@ -19251,6 +19341,16 @@
         }
       }
     },
+    "This Week Against Your Targets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta semana frente a tus objetivos"
+          }
+        }
+      }
+    },
     "This account is private. Follow it to see its workouts." : {
       "localizations" : {
         "es" : {
@@ -20258,6 +20358,16 @@
         }
       }
     },
+    "Unable to Access Apple Health" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo acceder a Salud de Apple"
+          }
+        }
+      }
+    },
     "Unable to Access Health" : {
       "localizations" : {
         "es" : {
@@ -20274,6 +20384,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo activar el programa"
+          }
+        }
+      }
+    },
+    "Unable to Add Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo añadir la foto"
           }
         }
       }
@@ -20478,6 +20598,16 @@
         }
       }
     },
+    "Unable to Delete Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar la foto"
+          }
+        }
+      }
+    },
     "Unable to Delete Program" : {
       "localizations" : {
         "es" : {
@@ -20564,6 +20694,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudieron cargar las notificaciones"
+          }
+        }
+      }
+    },
+    "Unable to Load Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cargar la foto"
           }
         }
       }
@@ -20698,6 +20838,16 @@
         }
       }
     },
+    "Unable to Save Measurement" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la medida"
+          }
+        }
+      }
+    },
     "Unable to Save Profile" : {
       "localizations" : {
         "es" : {
@@ -20764,6 +20914,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudieron guardar las plantillas"
+          }
+        }
+      }
+    },
+    "Unable to Save Weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el peso"
           }
         }
       }
@@ -23926,6 +24086,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "series"
+          }
+        }
+      }
+    },
+    "steps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pasos"
           }
         }
       }

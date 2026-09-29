@@ -23,7 +23,8 @@ final class OnboardingUITests: XCTestCase {
         setUpTraining(app)
         setUpDiet(app)
 
-        app.waitFor(app.buttons["Skip for now"].firstMatch).tap()
+        // The Strava step left onboarding (it is in Profile > Integrations), so the diet plan
+        // leads straight to the completion screen.
         app.continueFrom("Onboarding Complete!")
         app.waitFor(app.tabBars.firstMatch)
     }

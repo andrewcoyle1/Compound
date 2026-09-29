@@ -443,7 +443,7 @@ struct OnboardingDietPlanScreenTests {
         private(set) var alertTitles: [String] = []
 
         func showDevSettingsView() { shown.append("devSettings") }
-        func showStravaConnectView() { shown.append("stravaConnect") }
+        func showOnboardingCompletedView() { shown.append("onboardingCompleted") }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
@@ -495,7 +495,8 @@ struct OnboardingDietPlanScreenTests {
 
         #expect(await TestManagers.eventually { !screen.interactor.savedPlans.isEmpty })
         #expect(screen.interactor.savedPlans.first?.planId == "plan-1")
-        #expect(await TestManagers.eventually { screen.router.shown == ["stravaConnect"] })
+        // The completion screen, not Strava: the Strava step left onboarding (decision 11d).
+        #expect(await TestManagers.eventually { screen.router.shown == ["onboardingCompleted"] })
     }
 
     /// Rebuilding the plan from settings has to go back to settings. Carrying on into the Strava

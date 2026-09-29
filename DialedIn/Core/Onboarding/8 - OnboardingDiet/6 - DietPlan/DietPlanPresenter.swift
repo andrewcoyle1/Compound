@@ -49,7 +49,8 @@ class DietPlanPresenter {
                 if isFromSettings {
                     router.dismissScreen()
                 } else {
-                    router.showStravaConnectView()
+                    // Strava is no longer offered here (decision 11d): it is in Profile > Integrations.
+                    router.showOnboardingCompletedView()
                 }
             } catch {
                 router.showSimpleAlert(title: String(localized: "Unable to update your profile"), subtitle: String(localized: "Please check your internet connection and try again"))

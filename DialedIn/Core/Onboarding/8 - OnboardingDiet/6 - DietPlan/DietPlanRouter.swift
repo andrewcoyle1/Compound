@@ -10,7 +10,7 @@ protocol DietPlanRouter: GlobalRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif
-    func showStravaConnectView()
+    func showOnboardingCompletedView()
 }
 
 extension CoreRouter: DietPlanRouter { }

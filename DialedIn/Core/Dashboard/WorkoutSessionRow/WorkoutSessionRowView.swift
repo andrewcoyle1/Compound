@@ -157,6 +157,12 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
 
     // MARK: - Footer Bar
 
+    private var shareLabel: some View {
+        Image(systemName: Symbol.share)
+            .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+            .contentShape(.rect)
+    }
+
     private var footerBar: some View {
         HStack {
             Button {
@@ -177,10 +183,14 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                     .contentShape(.rect)
             }
             .accessibilityLabel("Comments")
-            ShareLink(item: presenter.shareSummary) {
-                Image(systemName: Symbol.share)
-                    .frame(maxWidth: .infinity, minHeight: ControlSize.row)
-                    .contentShape(.rect)
+            // The link, with the summary as its message; the summary alone where there is no page.
+            // Copy is in the share sheet, so the More menu no longer offers Copy Link.
+            Group {
+                if let link = presenter.webLink {
+                    ShareLink(item: link, message: Text(presenter.shareSummary)) { shareLabel }
+                } else {
+                    ShareLink(item: presenter.shareSummary) { shareLabel }
+                }
             }
             .accessibilityLabel("Share workout")
             Menu {
@@ -197,11 +207,6 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                         Button(format.title) {
                             presenter.onShareImagePressed(format: format)
                         }
-                    }
-                }
-                if let link = presenter.webLink {
-                    Button("Copy Link", systemImage: "link") {
-                        presenter.onCopyLinkPressed(link)
                     }
                 }
                 if presenter.canReport {

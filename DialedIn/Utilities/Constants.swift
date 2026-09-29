@@ -17,9 +17,17 @@ struct Constants {
     // ⚠️ PLACEHOLDERS. All four point at apple.com. They are surfaced through `LegalDocument`,
     // which is what the app links to — replace these with the real published documents before
     // release.
+    // swiftlint:disable:next todo
+    // TODO: Replace with the Terms of Service published on the owner's website before release (docs/release-checklist.md).
     static let termsofServiceURL = "https://www.apple.com"
+    // swiftlint:disable:next todo
+    // TODO: Replace with the Privacy Policy published on the owner's website before release (docs/release-checklist.md).
     static let privacyPolicyURL = "https://www.apple.com"
+    // swiftlint:disable:next todo
+    // TODO: Replace with the Health Disclaimer published on the owner's website before release (docs/release-checklist.md).
     static let healthDisclaimerURL = "https://www.apple.com"
+    // swiftlint:disable:next todo
+    // TODO: Replace with the Consumer Health Privacy Notice published on the owner's website before release (docs/release-checklist.md).
     static let consumerHealthPrivacyURL = "https://www.apple.com"
     
     static let onboardingModuleId = "onboarding"

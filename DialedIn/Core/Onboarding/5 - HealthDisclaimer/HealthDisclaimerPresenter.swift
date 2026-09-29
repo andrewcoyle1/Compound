@@ -34,17 +34,11 @@ class HealthDisclaimerPresenter {
         self.router = router
     }
     
+    /// Two toggles and Continue record the choice. A confirmation alert that repeated both
+    /// statements used to follow, making consent four presses; the owner dropped it (decision 2a).
+    /// The consent recorded is unchanged: both version stamps, as before.
     func onContinuePressed() {
         guard canContinue else { return }
-        router.showHealthDisclaimerConfirmationModal(
-            onConfirmPressed: { [weak self] in Task { @MainActor in self?.onConfirmPressed() } },
-            onCancelPressed: { [weak self] in Task { @MainActor in self?.onCancelPressed() } }
-        )
-    }
-    
-    private func onCancelPressed() { }
-
-    private func onConfirmPressed() {
         router.showLoadingModal()
 
         // Recorded against the versions `inferredOnboardingStep` checks, so the two cannot drift.

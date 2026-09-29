@@ -28,14 +28,34 @@ struct HealthDisclaimerView: View {
                     Text("I acknowledge and accept the Terms of the Health Disclaimer")
                 }
                 .accessibilityIdentifier("HealthDisclaimerToggle")
-
+                documentLink(.healthDisclaimer)
+            }
+            Section {
                 Toggle(isOn: $presenter.acceptedPrivacy) {
                     Text("I acknowledge and accept the Terms of the Consumer Health Privacy Notice")
                 }
                 .accessibilityIdentifier("HealthPrivacyPolicyToggle")
+                documentLink(.consumerHealthPrivacy)
             }
         }
         .scrollIndicators(.hidden)
+    }
+
+    /// The document a toggle accepts, one row under it, so nobody is asked to accept a text the
+    /// screen does not let them read. Same row shape as Profile's Legal list.
+    @ViewBuilder
+    private func documentLink(_ document: LegalDocument) -> some View {
+        if let url = document.url {
+            Link(destination: url) {
+                ListRow(title: document.title, accessory: .custom(AnyView(
+                    Image(systemName: "arrow.up.right")
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                )))
+            }
+            .accessibilityHint("Opens in your browser")
+        }
     }
 
     private var onDevSettingsPressed: (() -> Void)? {

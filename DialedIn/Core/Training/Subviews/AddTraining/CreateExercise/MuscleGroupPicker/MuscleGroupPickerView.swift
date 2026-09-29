@@ -10,11 +10,14 @@ struct MuscleGroupPickerDelegate {
 
 struct MuscleGroupPickerView: View {
     
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     @State var presenter: MuscleGroupPickerPresenter
     let delegate: MuscleGroupPickerDelegate
     
     var body: some View {
         List {
+            instructionSection
             upperSection
             lowerSection
         }
@@ -47,9 +50,24 @@ struct MuscleGroupPickerView: View {
         }
     }
 
+    private var instructionSection: some View {
+        Section {
+            Text("Tap a muscle once for Primary, again for Secondary, and a third time to clear it.")
+                .font(.rowDetail)
+                .foregroundStyle(.secondary)
+                .listRowBackground(Color.clear)
+        }
+    }
+
+    /// Fewer, wider tiles at accessibility text sizes, so muscle names wrap instead of truncating.
+    private var columns: [GridItem] {
+        let count = dynamicTypeSize >= .accessibility3 ? 1 : (dynamicTypeSize.isAccessibilitySize ? 2 : 3)
+        return Array(repeating: GridItem(), count: count)
+    }
+
     private var upperSection: some View {
         Section {
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
+            LazyVGrid(columns: columns) {
                 ForEach(presenter.upperMuscles, id: \.self) { muscle in
                     muscleView(muscle)
                 }
@@ -63,7 +81,7 @@ struct MuscleGroupPickerView: View {
     
     private var lowerSection: some View {
         Section {
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
+            LazyVGrid(columns: columns) {
                 ForEach(presenter.lowerMuscles, id: \.self) { muscle in
                     muscleView(muscle)
                 }
@@ -79,20 +97,26 @@ struct MuscleGroupPickerView: View {
     private func muscleView(_ muscle: Muscles) -> some View {
         let selected = presenter.selectedMuscleGroups[muscle]
         return VStack(alignment: .center) {
-            ZStack(alignment: .bottomTrailing) {
+            ZStack(alignment: .bottom) {
+                // swiftlint:disable:next todo
+                // TODO: Every tile shows the same placeholder image. Replace it with each muscle's own artwork once that exists (artwork is planned).
                 ImageLoaderView()
                     .aspectRatio(contentMode: .fill)
                 if let selected {
+                    // A thicker ring for Primary, and the badge names which, so the two never
+                    // differ by colour alone.
                     RoundedRectangle(cornerRadius: Radius.l, style: .continuous)
-                        .stroke(.tint, lineWidth: 12)
+                        .stroke(.tint, lineWidth: selected == .primary ? 12 : 6)
 
-                    // The letter says which, so primary and secondary never differ by colour alone.
-                    Text(selected == .primary ? String(localized: "P") : String(localized: "S"))
+                    Text(selectionDescription(selected))
                         .font(.label)
                         .fontWeight(.semibold)
                         .foregroundStyle(.onAccent)
-                        .padding(Spacing.xs)
-                        .background(.tint, in: .circle)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                        .padding(.horizontal, Spacing.s)
+                        .padding(.vertical, Spacing.xxs)
+                        .background(.tint, in: .capsule)
                         .padding(Spacing.s)
                 }
             }
@@ -100,7 +124,7 @@ struct MuscleGroupPickerView: View {
 
             Text(muscle.name)
                 .font(.rowDetail)
-                .lineLimit(1)
+                .multilineTextAlignment(.center)
         }
         .anyButton(.press) {
             presenter.onMuscleGroupPressed(muscle: muscle)

@@ -16,8 +16,7 @@ struct CreateExerciseView: View {
         List {
             nameSection
             trackableMetricSection
-            typeSection
-            lateralitySection
+            detailsSection
         }
         .navigationTitle("Create Custom Exercise")
         .navigationBarTitleDisplayMode(.inline)
@@ -62,33 +61,12 @@ struct CreateExerciseView: View {
         }
     }
     
+    /// Short option lists, so in-row menus rather than a sheet per choice.
     private var trackableMetricSection: some View {
         Section {
-            HStack(spacing: 0) {
-                CustomPickerView(
-                    text: presenter.trackableMetricA?.name ?? String(localized: "None"),
-                    isHighlighted: presenter.trackableMetricA == nil,
-                    action: {
-                        presenter.trackableMetricPressed(
-                            navigationTitle: String(localized: "Trackable Metric 1"),
-                            metric: $presenter.trackableMetricA
-                        )
-                    }
-                )
+            optionPicker("Metric 1", selection: $presenter.trackableMetricA)
                 .accessibilityIdentifier("CreateExercise.metricA")
-                Divider()
-                CustomPickerView(
-                    text: presenter.trackableMetricB?.name ?? String(localized: "None"),
-                    isHighlighted: presenter.trackableMetricB == nil,
-                    action: {
-                        presenter.trackableMetricPressed(
-                            navigationTitle: String(localized: "Trackable Metric 2"),
-                            metric: $presenter.trackableMetricB
-                        )
-                    }
-                )
-            }
-            .removeListRowFormatting()
+            optionPicker("Metric 2", selection: $presenter.trackableMetricB)
         } header: {
             HStack(alignment: .firstTextBaseline) {
                 Text("Trackable Metric")
@@ -98,41 +76,30 @@ struct CreateExerciseView: View {
             }
         }
     }
-    
-    private var typeSection: some View {
+
+    private var detailsSection: some View {
         Section {
-            CustomPickerView(
-                text: presenter.exerciseType?.name ?? String(localized: "None"),
-                isHighlighted: presenter.exerciseType == nil,
-                action: {
-                    presenter.exerciseTypePressed(
-                        navigationTitle: String(localized: "Exercise Type"),
-                        type: $presenter.exerciseType
-                    )
-                }
-            )
-            .removeListRowFormatting()
-        } header: {
-            Text("Type")
+            optionPicker("Type", selection: $presenter.exerciseType)
+            optionPicker("Laterality", selection: $presenter.laterality)
         }
     }
 
-    private var lateralitySection: some View {
-        Section {
-            CustomPickerView(
-                text: presenter.laterality?.name ?? String(localized: "None"),
-                isHighlighted: presenter.laterality == nil,
-                action: {
-                    presenter.lateralityPressed(
-                        navigationTitle: String(localized: "Laterality"),
-                        item: $presenter.laterality
-                    )
+    /// A menu of every option, each with its description, plus None for a field left empty.
+    private func optionPicker<Item: PickableItem>(_ title: LocalizedStringKey, selection: Binding<Item?>) -> some View {
+        Picker(title, selection: selection) {
+            Text("None").tag(Item?.none)
+            ForEach(Array(Item.allCases), id: \.self) { item in
+                VStack(alignment: .leading) {
+                    Text(item.name)
+                    if let description = item.description {
+                        Text(description)
+                    }
                 }
-            )
-            .removeListRowFormatting()
-        } header: {
-            Text("Laterality")
+                .tag(Optional(item))
+                .accessibilityIdentifier("EnumPicker.\(item.name)")
+            }
         }
+        .pickerStyle(.menu)
     }
     
     @ToolbarContentBuilder
@@ -204,27 +171,4 @@ extension CoreRouter {
         builder.createExerciseView(router: router)
     }
     
-}
-
-struct CustomPickerView: View {
-    
-    var text: String
-    var isHighlighted: Bool
-    var action: () -> Void
-    
-    var body: some View {
-        HStack {
-            Text(text)
-                .lineLimit(1)
-            Spacer()
-            Image(systemName: "chevron.down")
-        }
-        .foregroundStyle(isHighlighted ? .secondary : .primary)
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.surface)
-        .anyButton {
-            action()
-        }
-    }
 }

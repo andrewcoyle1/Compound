@@ -115,6 +115,16 @@ extension AppViewForUITesting {
                 ).any()
             }),
             ("STARTSCREEN_PROGRAM_LIBRARY", { builder.trainingProgramLibraryView(router: $0).any() }),
+            ("STARTSCREEN_WORKOUTS", { builder.workoutsView(router: $0, delegate: WorkoutsDelegate(isPushed: true)).any() }),
+            // Two muscles already chosen, so both badges are in the shot.
+            ("STARTSCREEN_MUSCLE_PICKER", { router in
+                let presenter = MuscleGroupPickerPresenter(interactor: interactor, router: CoreRouter(router: router, builder: builder))
+                presenter.selectedMuscleGroups = [.triceps: .primary, .upperTraps: .secondary]
+                return MuscleGroupPickerView(
+                    presenter: presenter,
+                    delegate: MuscleGroupPickerDelegate(name: "Dip", trackableMetricA: .reps, trackableMetricB: nil, exerciseType: nil, laterality: nil)
+                ).any()
+            }),
             ("STARTSCREEN_ACTIVE_PROGRAM", { router in
                 // A List section, so it needs the List the Training tab gives it.
                 List { builder.activeTrainingProgramView(router: router, delegate: ActiveTrainingProgramDelegate(program: .mock)) }.any()

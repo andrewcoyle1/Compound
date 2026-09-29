@@ -33,6 +33,21 @@ DerivedData checkout, not from this worktree.
 Paths are relative to `DialedIn/` unless they start with `functions/`. Findings are most serious
 first.
 
+## Decisions built (2026-09-29, branch hig/notifications)
+
+| Decision | Status | What changed |
+|---|---|---|
+| 7a | built | Come-back reminders have fixed ids and a "Workout reminders" switch (on by default) in Notification Settings; they are applied after sign-in from the private settings and withdrawn when off. Launch no longer clears every pending and delivered notification. |
+| 7b | built in part | Meal reminders are off by default with a "Meal reminders" switch; existing pending ones are withdrawn at sign-in unless the switch is on. `ReminderOfferFlow` offers them once ("Turn On Meal Reminders" / "Not Now") and asks for permission on yes. Nutrition's appear still has to call it (outside this area). |
+| 7c | built in part | The streak reminder is off until chosen (app and `isStreakReminderDue` read absent as off); `ReminderOfferFlow` offers it once at a 3-day streak. The call site (Dashboard appear) is outside this area. |
+| 7d | built | Weekly digest unchanged, on by default with its switch. |
+| 12e | built | Pushes carry `interruption-level` (likes and the digest passive, the other social types active) and the recipient's unread count as the badge; meal reminders are passive; "Rest Complete" is Time Sensitive with the entitlement in both entitlements files. Opening a notification clears the badge. Not deployed. |
+| 12f | built | The feed's Share button sends the session link with the summary as its message (the summary alone without a link); Copy Link left the More menu. |
+| W2 | built | With "Play Sound" off the rest-over notification is still delivered, as a banner with no sound (now pinned by a test). |
+| 6 | not built | Pushing the session and shared item inside the Notifications sheet needs their Close buttons removed when pushed; those screens are outside this area. |
+| Finding 10 | built | While the app is in front, social pushes go to Notification Center with the badge, no banner or sound. |
+| Finding 12 | built | Server pushes have no generic title and a body the device localizes from the catalog (`loc-key`), reusing the Notifications screen's keys; local reminder copy has no emoji or exclamation marks and goes through the catalog. |
+
 ## Resolution (2026-09-28, branch hig/dashboard)
 
 | Finding | Status | What changed |

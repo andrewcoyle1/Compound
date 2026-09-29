@@ -44,6 +44,35 @@ class HealthKitManager {
     func getHealthStore() -> HKHealthStore {
         service.getHealthStore()
     }
+
+    // Onboarding's "Fill from Apple Health": ask for the one type the step needs, at the moment
+    // the person taps, then read it. Any failure, including a refusal, comes back as nil so the
+    // step can say nothing was found and leave manual entry as it is.
+
+    func readDateOfBirth() async -> Date? {
+        guard await requestIfPossible(.dateOfBirth) else { return nil }
+        return service.readDateOfBirth()
+    }
+
+    func readSex() async -> Gender? {
+        guard await requestIfPossible(.sex) else { return nil }
+        return service.readSex()
+    }
+
+    func readLatestHeightCentimeters() async -> Double? {
+        guard await requestIfPossible(.height) else { return nil }
+        return await service.readLatestHeightCentimeters()
+    }
+
+    func readLatestWeightKilograms() async -> Double? {
+        guard await requestIfPossible(.weight) else { return nil }
+        return await service.readLatestWeightKilograms()
+    }
+
+    private func requestIfPossible(_ scope: HealthDataScope) async -> Bool {
+        guard service.canRequestAuthorisation() else { return false }
+        return (try? await service.requestAuthorisation(for: scope)) != nil
+    }
 }
 
 extension CoreInteractor {
@@ -66,6 +95,22 @@ extension CoreInteractor {
     
     func getHealthStore() -> HKHealthStore {
         healthKitManager.getHealthStore()
+    }
+
+    func readDateOfBirthFromAppleHealth() async -> Date? {
+        await healthKitManager.readDateOfBirth()
+    }
+
+    func readSexFromAppleHealth() async -> Gender? {
+        await healthKitManager.readSex()
+    }
+
+    func readHeightCentimetersFromAppleHealth() async -> Double? {
+        await healthKitManager.readLatestHeightCentimeters()
+    }
+
+    func readWeightKilogramsFromAppleHealth() async -> Double? {
+        await healthKitManager.readLatestWeightKilograms()
     }
 
 }

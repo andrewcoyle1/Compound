@@ -310,7 +310,15 @@ extension CoreRouter {
             id: Self.workoutTrackerScreenId,
             onDidDismiss: {
                 guard let finishedSession else { return }
-                showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: finishedSession))
+                // As `showWorkoutSessionDetailView` presents it, with the one-time Strava offer
+                // routed from the detail's own router so the dialog lands over the sheet.
+                router.showScreen(.sheet) { detailRouter in
+                    builder.workoutSessionDetailView(
+                        router: detailRouter,
+                        delegate: WorkoutSessionDetailDelegate(workoutSession: finishedSession)
+                    )
+                    .task { await CoreRouter(router: detailRouter, builder: builder).offerStravaIfFirstWorkout(finishedSession) }
+                }
             },
             destination: { router in
                 try? builder.workoutTrackerView(router: router, onWorkoutFinished: { finishedSession = $0 })

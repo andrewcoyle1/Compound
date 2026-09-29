@@ -56,7 +56,9 @@ struct CircleActivityStripView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, Spacing.s)
+            .padding(.top, Spacing.s)
+            // Room below the pills for their 44 pt hit area, which the scroll view clips.
+            .padding(.bottom, Spacing.m)
         }
         .scrollIndicators(.hidden)
     }
@@ -157,11 +159,13 @@ struct CircleActivityStripView: View {
 
 private extension View {
     /// The Nudge and Set goal buttons under a face: secondary, so glass, and small enough to sit
-    /// under a 52 pt avatar.
+    /// under a 52 pt avatar. The label's `tapTarget()` carries the 44 pt hit area; without the
+    /// mini size the glass grew into a 57 pt blob as wide as the face.
     func circlePillStyle() -> some View {
         font(.label)
             .fontWeight(.semibold)
             .lineLimit(1)
             .buttonStyle(.glass)
+            .controlSize(.mini)
     }
 }

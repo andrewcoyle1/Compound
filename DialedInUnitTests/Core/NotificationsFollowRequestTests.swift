@@ -146,7 +146,7 @@ struct NotificationsFollowRequestTests {
         presenter.onAcceptRequestPressed(request("r1"))
         await TestManagers.eventually { !router.alertTitles.isEmpty }
 
-        #expect(router.alertTitles == ["Unable to answer request"])
+        #expect(router.alertTitles == ["Unable to Answer Request"])
         #expect(presenter.incomingFollowRequests.map(\.requesterId) == ["r1"])
         #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }

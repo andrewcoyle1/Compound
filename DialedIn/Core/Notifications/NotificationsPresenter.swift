@@ -28,7 +28,11 @@ class NotificationsPresenter {
         interactor.isAuthorised
     }
     
+    /// True only until the first load lands, so pull-to-refresh does not tear the list down and
+    /// lose the scroll position: the refresh control is its own indicator for that case.
     private(set) var isLoading: Bool = true
+    private var hasLoadedOnce = false
+    private(set) var loadFailed = false
 
     /// The Social switches. Each writes the moment it flips, like the Account privacy switch, and
     /// reads back from the private settings document, so a failed write snaps the switch back once the alert shows.
@@ -79,7 +83,7 @@ class NotificationsPresenter {
             do {
                 try await interactor.updateSocialNotificationPreferences(type: type, isEnabled: isEnabled)
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
             }
         }
     }
@@ -102,16 +106,28 @@ class NotificationsPresenter {
     }
 
     func loadNotifications() async {
-        isLoading = true
-        // Follow requests are live from the user manager's listener, so only activity is fetched here.
-        // Background load: an empty list or a stale unread badge is the right fallback, not an alert.
-        try? await interactor.fetchActivityNotifications()
+        isLoading = !hasLoadedOnce
+        do {
+            try await interactor.fetchActivityNotifications()
+            loadFailed = false
+        } catch {
+            // Only surfaced as an empty-inbox misread before this: a real failure and "no
+            // notifications yet" read identically to the person looking at the screen.
+            loadFailed = true
+        }
+        // Silent: a stale unread badge is the right fallback for this one, not an alert.
         try? await interactor.markActivityNotificationsRead()
         interactor.clearAllDeliveredNotifications()
         isLoading = false
+        hasLoadedOnce = true
     }
-    
-    /// Pull-to-refresh re-reads the follow requests too, in case the listener has dropped.
+
+    func onRetryLoadPressed() {
+        Task { await loadNotifications() }
+    }
+
+    /// Pull-to-refresh re-reads the follow requests too, in case the listener has dropped. The
+    /// refresh control is the indicator here, so this never sets `isLoading` and tears the list down.
     func onPullToRefresh() async {
         // Silent: the live listener still owns this list; the refresh is only a backstop.
         try? await interactor.fetchIncomingFollowRequests()
@@ -122,7 +138,7 @@ class NotificationsPresenter {
         do {
             _ = try await interactor.checkPushNotificationAuthorisation()
         } catch {
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Check Notification Permission"), error: error)
         }
     }
     
@@ -135,7 +151,7 @@ class NotificationsPresenter {
                 // Was an empty catch under a comment reading "Handle error silently or show alert".
                 // A permission request the user asked for either works or says why — `checkPermissions`
                 // above already surfaces its failures the same way.
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Enable Notifications"), error: error)
             }
         }
     }
@@ -178,7 +194,7 @@ class NotificationsPresenter {
                 let actor = try await interactor.getUser(userId: notification.actorId)
                 followFlow.onButtonPressed(user: actor)
             } catch {
-                router.showSimpleAlert(title: String(localized: "Unable to follow user"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Follow User"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -199,7 +215,7 @@ class NotificationsPresenter {
                 if accept { interactor.playHaptic(option: .success) }
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to answer request"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Answer Request"), subtitle: String(localized: "Please try again."))
             }
         }
     }
@@ -208,22 +224,25 @@ class NotificationsPresenter {
         router.dismissScreen()
     }
 
+    /// The row being opened, so its own button can show a spinner instead of the whole screen going
+    /// behind a loading modal for what is just a read.
+    private(set) var loadingNotificationId: String?
+
     /// A like, comment or mention opens the session it is about — a comment or mention with its
     /// thread on top — a follow, an accepted request or a nudge opens the other person's profile, and
     /// a share opens the shared template or program, and a finished challenge opens its standings.
     func onNotificationPressed(_ notification: ActivityNotificationModel) {
         interactor.trackEvent(event: Event.notificationPressed(type: notification.type))
-        router.showLoadingModal()
+        loadingNotificationId = notification.id
         Task {
+            defer { loadingNotificationId = nil }
             do {
                 switch notification.type {
                 case .follow, .followAccepted, .nudge:
                     let user = try await interactor.getUser(userId: notification.actorId)
-                    router.dismissModal()
                     router.showSocialProfileView(delegate: SocialProfileDelegate(user: user))
                 case .like, .comment, .mention:
                     let session = try await interactor.fetchWorkoutSession(id: notification.sessionId, authorId: notification.sessionAuthorId)
-                    router.dismissModal()
                     let delegate = WorkoutSessionDetailDelegate(workoutSession: session)
                     if notification.type == .like {
                         router.showWorkoutSessionDetailView(delegate: delegate)
@@ -232,15 +251,12 @@ class NotificationsPresenter {
                     }
                 case .share:
                     let share = try await interactor.fetchShare(id: notification.shareId ?? "")
-                    router.dismissModal()
                     router.showSharedItemView(delegate: SharedItemDelegate(share: share, senderName: notification.actorName))
                 case .challengeComplete:
                     let challenge = try await interactor.fetchChallenge(id: notification.challengeId ?? "")
-                    router.dismissModal()
                     router.showChallengeDetailView(delegate: ChallengeDetailDelegate(challenge: challenge))
                 }
             } catch {
-                router.dismissModal()
                 router.showSimpleAlert(title: String(localized: "Unable to Open"), subtitle: String(localized: "It may have been deleted. Please try again."))
             }
         }
@@ -320,7 +336,7 @@ extension NotificationsPresenter {
             do {
                 try await interactor.updatePrivateUserSettings(change)
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
             }
         }
     }
@@ -384,7 +400,7 @@ extension NotificationsPresenter {
             do {
                 try await interactor.fetchMoreActivityNotifications()
             } catch {
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Load More"), error: error)
             }
         }
     }

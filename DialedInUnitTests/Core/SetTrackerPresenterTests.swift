@@ -93,6 +93,12 @@ struct SetTrackerPresenterTests {
                 onSelect(swapSelection)
             }
         }
+
+        /// A requirement of `GlobalRouter`, so unlike the alerts it does reach this double.
+        private(set) var confirmations: [String] = []
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            confirmations.append(title)
+        }
     }
 
     /// Holds the exercise being edited, so the presenter's `Binding`-taking methods can be driven
@@ -473,6 +479,58 @@ struct SetTrackerPresenterTests {
         #expect(box.value.name == replacement.name)
         #expect(box.value.sets.allSatisfy { $0.weightKg == nil })
         #expect(box.value.chosenVariationId == nil)
+    }
+
+    /// A swap mid-exercise keeps what was done: the logged sets move to the replacement, which is
+    /// measured the same way, and only the open ones start fresh, as many as there were.
+    @Test("Test Swapping To An Exercise Measured The Same Way Keeps The Logged Sets")
+    func testSwappingToAnExerciseMeasuredTheSameWayKeepsTheLoggedSets() throws {
+        let screen = makeScreen()
+        let replacement = try #require(ExerciseModel.mocks.first { !WorkoutSessionModel.isPerSide($0) })
+        screen.router.swapSelection = replacement
+        var logged = set(id: "s1", index: 1, reps: 8, weightKg: 100)
+        logged.completedAt = Date()
+        let box = MutableExercise(exercise(
+            mode: WorkoutSessionModel.trackingMode(for: replacement),
+            sets: [logged, set(id: "s2", index: 2), set(id: "s3", index: 3)]
+        ))
+
+        screen.presenter.onSwapPressed(box.binding)
+
+        #expect(screen.router.confirmations.isEmpty)
+        #expect(box.value.templateId == replacement.id)
+        #expect(box.value.sets.count == 3)
+        #expect(box.value.sets.first?.id == "s1")
+        #expect(box.value.sets.first?.completedAt != nil)
+        let fresh = box.value.sets.dropFirst()
+        #expect(fresh.allSatisfy { $0.completedAt == nil && $0.weightKg == nil })
+        let indices = box.value.sets.map { $0.index }
+        #expect(indices == [1, 2, 3])
+    }
+
+    /// Measured differently, the logged sets cannot move, so the person is asked before they go;
+    /// nothing changes until they answer, and "Swap and Discard Sets" starts the exercise fresh.
+    @Test("Test Swapping To An Exercise Measured Differently Asks Before Discarding")
+    func testSwappingToAnExerciseMeasuredDifferentlyAsksBeforeDiscarding() throws {
+        let screen = makeScreen()
+        let replacement = try #require(ExerciseModel.mocks.first { !WorkoutSessionModel.isPerSide($0) })
+        screen.router.swapSelection = replacement
+        let otherMode: TrackingMode = WorkoutSessionModel.trackingMode(for: replacement) == .timeOnly ? .weightReps : .timeOnly
+        var logged = set(id: "s1", index: 1)
+        logged.completedAt = Date()
+        let box = MutableExercise(exercise(mode: otherMode, sets: [logged, set(id: "s2", index: 2)]))
+
+        screen.presenter.onSwapPressed(box.binding)
+
+        #expect(screen.router.confirmations == ["Discard Logged Sets?"])
+        #expect(box.value.templateId == "template-1")
+        #expect(box.value.sets.first?.completedAt != nil)
+
+        screen.presenter.swap(box.binding, to: replacement, keepingLoggedSets: false)
+
+        #expect(box.value.templateId == replacement.id)
+        #expect(box.value.sets.count == 3)
+        #expect(box.value.sets.allSatisfy { $0.completedAt == nil })
     }
 
     /// The equipment choice belonged to the old exercise, so it goes with it.

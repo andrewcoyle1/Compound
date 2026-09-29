@@ -64,24 +64,59 @@ class SetTrackerPresenter {
         router.showSetTargetView(delegate: SetTargetDelegate(exercise: adapted))
     }
 
+    /// Logged sets move to the replacement when it is measured the same way, so a swap mid-exercise
+    /// keeps what was done. When it is not, they cannot, and the person is asked before they go.
     func onSwapPressed(_ exercise: Binding<WorkoutExerciseModel>) {
         router.showSwapExercisePickerView { [weak self] newExercise in
-            guard let self, let userId = self.interactor.userId else { return }
-            let newMode = WorkoutSessionModel.trackingMode(for: newExercise)
-            exercise.wrappedValue.templateId = newExercise.id
-            exercise.wrappedValue.name = newExercise.name
-            exercise.wrappedValue.trackingMode = newMode
-            exercise.wrappedValue.equipmentVariations = newExercise.equipmentVariations
-            exercise.wrappedValue.imageName = Constants.exerciseImageName(for: newExercise.name)
-            exercise.wrappedValue.sets = WorkoutSessionModel.defaultSets(
+            guard let self else { return }
+            let current = exercise.wrappedValue
+            let hasLoggedSets = current.sets.contains { $0.completedAt != nil }
+            let measuredAlike = current.trackingMode == WorkoutSessionModel.trackingMode(for: newExercise)
+                && current.isPerSide == WorkoutSessionModel.isPerSide(newExercise)
+            guard hasLoggedSets, !measuredAlike else {
+                return self.swap(exercise, to: newExercise, keepingLoggedSets: hasLoggedSets)
+            }
+            self.router.showConfirmationDialog(
+                title: String(localized: "Discard Logged Sets?"),
+                subtitle: String(localized: "\(newExercise.name) is measured differently, so the sets logged for \(current.name) can't move to it."),
+                buttons: {
+                    AnyView(VStack(spacing: Spacing.s) {
+                        Button("Swap and Discard Sets", role: .destructive) {
+                            self.swap(exercise, to: newExercise, keepingLoggedSets: false)
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    })
+                }
+            )
+        }
+    }
+
+    /// The sets not yet logged are replaced by fresh ones, as many as there were open (three when
+    /// nothing was logged), so a swap leaves the workout the same length.
+    func swap(_ exercise: Binding<WorkoutExerciseModel>, to newExercise: ExerciseModel, keepingLoggedSets: Bool) {
+        guard let userId = interactor.userId else { return }
+        let newMode = WorkoutSessionModel.trackingMode(for: newExercise)
+        let logged = keepingLoggedSets ? exercise.wrappedValue.sets.filter { $0.completedAt != nil } : []
+        let openCount = exercise.wrappedValue.sets.filter { $0.completedAt == nil }.pairedSetCount
+        let fresh = logged.isEmpty || openCount > 0
+            ? WorkoutSessionModel.defaultSets(
                 trackingMode: newMode,
                 authorId: userId,
-                targetCount: 3,
+                targetCount: logged.isEmpty ? 3 : openCount,
                 perSide: WorkoutSessionModel.isPerSide(newExercise)
             )
-            exercise.wrappedValue.setTargets = [SetTarget(setNumber: 1, setType: .standard)]
-            exercise.wrappedValue.chosenVariationId = nil
-        }
+            : []
+        var sets = logged + fresh
+        for index in sets.indices { sets[index].index = index + 1 }
+
+        exercise.wrappedValue.templateId = newExercise.id
+        exercise.wrappedValue.name = newExercise.name
+        exercise.wrappedValue.trackingMode = newMode
+        exercise.wrappedValue.equipmentVariations = newExercise.equipmentVariations
+        exercise.wrappedValue.imageName = Constants.exerciseImageName(for: newExercise.name)
+        exercise.wrappedValue.sets = sets
+        exercise.wrappedValue.setTargets = [SetTarget(setNumber: 1, setType: .standard)]
+        exercise.wrappedValue.chosenVariationId = nil
     }
 
     func onSupersetPressed(

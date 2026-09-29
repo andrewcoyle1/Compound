@@ -44,9 +44,18 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
+    /// The choice is handed over once the sheet is down, so a question it raises (swapping away
+    /// logged sets) is asked from the tracker rather than lost under a closing sheet.
     func showSwapExercisePickerView(onSelect: @escaping (ExerciseModel) -> Void) {
-        router.showScreen(.sheet) { router in
-            builder.swapExercisePickerView(router: router, onSelect: onSelect)
-        }
+        var selected: ExerciseModel?
+        router.showScreen(
+            .sheet,
+            onDidDismiss: {
+                if let selected { onSelect(selected) }
+            },
+            destination: { router in
+                builder.swapExercisePickerView(router: router, onSelect: { selected = $0 })
+            }
+        )
     }
 }

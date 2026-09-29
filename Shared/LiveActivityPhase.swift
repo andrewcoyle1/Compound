@@ -36,6 +36,13 @@ enum LiveActivityWeightUnit: String, Codable, Hashable, CaseIterable, Sendable {
     }
 }
 
+/// Distance unit for the rest-over text, local to `Shared/` for the same reason. Raw values match
+/// `ExerciseDistanceUnit`'s.
+enum LiveActivityDistanceUnit: String, Codable, Hashable, CaseIterable, Sendable {
+    case meters
+    case miles
+}
+
 // MARK: - Display values
 
 /// The set the user is about to perform (or has just performed), formatted for the activity.

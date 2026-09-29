@@ -26,17 +26,21 @@ class LiveActivityManager: LiveActivityUpdating {
     /// The unit an exercise's weights are shown in, by template id. The state is rebuilt from the
     /// session on every push, so the preference is read here rather than carried by every caller.
     private let weightUnit: (String) -> LiveActivityWeightUnit
+    /// The same for distances, which only the rest-over text shows.
+    private let distanceUnit: (String) -> LiveActivityDistanceUnit
 
     init(
         logger: LogManager,
         activityLookup: @escaping (String) -> Activity<WorkoutActivityAttributes>? = { sessionId in
             Activity<WorkoutActivityAttributes>.activities.first { $0.attributes.sessionId == sessionId }
         },
-        weightUnit: @escaping (String) -> LiveActivityWeightUnit = { _ in .kilograms }
+        weightUnit: @escaping (String) -> LiveActivityWeightUnit = { _ in .kilograms },
+        distanceUnit: @escaping (String) -> LiveActivityDistanceUnit = { _ in .meters }
     ) {
         self.logger = logger
         self.activityLookup = activityLookup
         self.weightUnit = weightUnit
+        self.distanceUnit = distanceUnit
     }
     
 	// The currently active Workout Live Activity
@@ -327,7 +331,8 @@ class LiveActivityManager: LiveActivityUpdating {
             lastLoggedSetId: lastLogged?.set.id,
             lastLoggedReps: lastLogged?.set.reps,
             lastLoggedWeightKg: lastLogged?.set.weightKg,
-            restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false
+            restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false,
+            distanceUnit: current.templateId.map(distanceUnit)
         )
     }
 

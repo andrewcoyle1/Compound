@@ -57,6 +57,20 @@ struct NotificationSettingsPresenterTests {
             change(&privateUserSettings)
             writeCount += 1
         }
+
+        /// What the device was last told to schedule, as `CoreInteractor` passes it to `PushManager`.
+        private(set) var scheduledComeBack: Bool?
+        private(set) var scheduledMeals: Bool?
+
+        func setComeBackReminders(isEnabled: Bool) async throws {
+            try await updatePrivateUserSettings { $0.pushComeBackReminders = isEnabled }
+            scheduledComeBack = isEnabled
+        }
+
+        func setMealReminders(isEnabled: Bool) async throws {
+            try await updatePrivateUserSettings { $0.pushMealReminders = isEnabled }
+            scheduledMeals = isEnabled
+        }
     }
 
     private final class Router: NotificationSettingsRouter {
@@ -267,13 +281,35 @@ struct NotificationSettingsPresenterTests {
 
     // MARK: - Reminders
 
-    @Test("Test Both Reminder Switches Default On And The Hour Defaults To Nineteen")
+    /// Changed: the streak reminder used to default on. It is now off until chosen (offered once at
+    /// a 3-day streak), and the two local reminders have joined: come-back on, meals off.
+    @Test("Test Reminder Defaults: Digest And Come-Back On, Streak And Meals Off, Hour Nineteen")
     func testReminderDefaults() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.isStreakReminderEnabled)
+        #expect(!screen.presenter.isStreakReminderEnabled)
         #expect(screen.presenter.isWeeklyDigestEnabled)
+        #expect(screen.presenter.isComeBackRemindersEnabled)
+        #expect(!screen.presenter.isMealRemindersEnabled)
         #expect(screen.presenter.streakReminderHour == 19)
+    }
+
+    @Test("Test The Local Reminder Switches Save Their Keys And Reschedule The Device")
+    func testLocalReminderSwitches() async throws {
+        let screen = makeScreen()
+
+        screen.presenter.isComeBackRemindersEnabled = false
+        #expect(await TestManagers.eventually { screen.interactor.scheduledComeBack == false })
+        screen.presenter.isMealRemindersEnabled = true
+        #expect(await TestManagers.eventually { screen.interactor.scheduledMeals == true })
+
+        let stored = try storedKeys(screen.interactor.privateUserSettings)
+        #expect(stored["push_come_back_reminders"] as? Bool == false)
+        #expect(stored["push_meal_reminders"] as? Bool == true)
+        #expect(!screen.presenter.isComeBackRemindersEnabled)
+        #expect(screen.presenter.isMealRemindersEnabled)
+        let expectedEvents = ["NotificationSettingsView_ComeBackReminders_Toggle", "NotificationSettingsView_MealReminders_Toggle"]
+        #expect(screen.interactor.trackedEventNames == expectedEvents)
     }
 
     @Test("Test Each Reminder Control Writes The Key The Cloud Function Reads And Keeps The Rest")
@@ -282,7 +318,7 @@ struct NotificationSettingsPresenterTests {
         interactor.privateUserSettings = PrivateUserSettings(fcmToken: "tok", socialPushLikes: false)
         let screen = makeScreen(interactor)
 
-        screen.presenter.isStreakReminderEnabled = false
+        screen.presenter.isStreakReminderEnabled = true
         await TestManagers.eventually { interactor.writeCount == 1 }
         screen.presenter.streakReminderHour = 7
         await TestManagers.eventually { interactor.writeCount == 2 }
@@ -290,12 +326,12 @@ struct NotificationSettingsPresenterTests {
         await TestManagers.eventually { interactor.writeCount == 3 }
 
         let stored = try storedKeys(interactor.privateUserSettings)
-        #expect(stored["social_push_streak_reminder"] as? Bool == false)
+        #expect(stored["social_push_streak_reminder"] as? Bool == true)
         #expect(stored["reminder_hour"] as? Int == 7)
         #expect(stored["social_push_weekly_digest"] as? Bool == false)
         #expect(stored["fcm_token"] as? String == "tok")
         #expect(stored["social_push_likes"] as? Bool == false)
-        #expect(!screen.presenter.isStreakReminderEnabled)
+        #expect(screen.presenter.isStreakReminderEnabled)
         #expect(screen.presenter.streakReminderHour == 7)
         #expect(!screen.presenter.isWeeklyDigestEnabled)
         let expectedEvents = ["NotificationsView_StreakReminder_Toggle", "NotificationsView_ReminderHour_Changed", "NotificationsView_WeeklyDigest_Toggle"]

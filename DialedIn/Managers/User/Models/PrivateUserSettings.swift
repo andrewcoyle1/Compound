@@ -30,6 +30,11 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
     var socialPushWeeklyDigest: Bool?
     // MARK: - Challenges
     var socialPushChallenges: Bool?
+    // MARK: - LocalReminders
+    /// Come-back reminders, scheduled on the device a day, three and five days out. Absent means on.
+    var pushComeBackReminders: Bool?
+    /// Breakfast, lunch and dinner reminders. Absent means never answered: off, and offered once.
+    var pushMealReminders: Bool?
 
     enum CodingKeys: String, CodingKey {
         case fcmToken = "fcm_token"
@@ -46,6 +51,9 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
         case socialPushWeeklyDigest = "social_push_weekly_digest"
         // MARK: - Challenges
         case socialPushChallenges = "social_push_challenges"
+        // MARK: - LocalReminders
+        case pushComeBackReminders = "push_come_back_reminders"
+        case pushMealReminders = "push_meal_reminders"
     }
 
     var eventParameters: [String: Any] {
@@ -95,4 +103,15 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
 extension PrivateUserSettings {
     /// Must match `DEFAULT_REMINDER_HOUR` in `functions/lib.js`.
     static let defaultReminderHour = 19
+
+    /// Off until chosen: offered once, at a 3-day streak. Absent means never answered. The server
+    /// reads it the same way (`isStreakReminderDue` in `functions/lib.js`).
+    var isStreakReminderEnabled: Bool { socialPushStreakReminder ?? false }
+}
+
+// MARK: - LocalReminders
+
+extension PrivateUserSettings {
+    var isComeBackRemindersEnabled: Bool { pushComeBackReminders ?? true }
+    var isMealRemindersEnabled: Bool { pushMealReminders ?? false }
 }

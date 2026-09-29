@@ -13,7 +13,7 @@ protocol AppInteractor: GlobalInteractor {
     func logIn(user: UserAuthInfo, isNewUser: Bool) async throws
     func signInAnonymously() async throws -> (user: UserAuthInfo, isNewUser: Bool)
     func saveUserFCMToken(token: String) async throws
-    func schedulePushNotificationsForNextWeek()
+    func applyLocalReminderSettings() async
     func syncAllRemoteDataIfLoggedIn() async
 }
 

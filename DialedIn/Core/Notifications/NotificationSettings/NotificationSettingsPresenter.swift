@@ -140,9 +140,10 @@ class NotificationSettingsPresenter {
     // MARK: - Reminders
 
     /// The streak reminder, its hour, and the Sunday digest. Like the Social switches, each writes
-    /// the moment it changes and reads back from the private settings document.
+    /// the moment it changes and reads back from the private settings document. The streak
+    /// reminder is off until chosen; `ReminderOfferFlow` offers it at a 3-day streak.
     var isStreakReminderEnabled: Bool {
-        get { interactor.privateUserSettings.socialPushStreakReminder ?? true }
+        get { interactor.privateUserSettings.isStreakReminderEnabled }
         set { updateScheduledPush(.streakReminder(isEnabled: newValue)) { $0.socialPushStreakReminder = newValue } }
     }
 
@@ -157,10 +158,26 @@ class NotificationSettingsPresenter {
     }
 
     private func updateScheduledPush(_ event: Event, _ change: @escaping (inout PrivateUserSettings) -> Void) {
+        save(event) { try await self.interactor.updatePrivateUserSettings(change) }
+    }
+
+    /// Come-back reminders are on unless turned off; meal reminders off unless turned on. Both are
+    /// scheduled on this device, so the switch also schedules or withdraws them.
+    var isComeBackRemindersEnabled: Bool {
+        get { interactor.privateUserSettings.isComeBackRemindersEnabled }
+        set { save(.comeBackReminders(isEnabled: newValue)) { try await self.interactor.setComeBackReminders(isEnabled: newValue) } }
+    }
+
+    var isMealRemindersEnabled: Bool {
+        get { interactor.privateUserSettings.isMealRemindersEnabled }
+        set { save(.mealReminders(isEnabled: newValue)) { try await self.interactor.setMealReminders(isEnabled: newValue) } }
+    }
+
+    private func save(_ event: Event, _ write: @escaping () async throws -> Void) {
         interactor.trackEvent(event: event)
         Task {
             do {
-                try await interactor.updatePrivateUserSettings(change)
+                try await write()
             } catch {
                 router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
             }
@@ -175,6 +192,8 @@ class NotificationSettingsPresenter {
         case streakReminder(isEnabled: Bool)
         case reminderHour(hour: Int)
         case weeklyDigest(isEnabled: Bool)
+        case comeBackReminders(isEnabled: Bool)
+        case mealReminders(isEnabled: Bool)
 
         var eventName: String {
             switch self {
@@ -183,6 +202,8 @@ class NotificationSettingsPresenter {
             case .streakReminder: return "NotificationsView_StreakReminder_Toggle"
             case .reminderHour: return "NotificationsView_ReminderHour_Changed"
             case .weeklyDigest: return "NotificationsView_WeeklyDigest_Toggle"
+            case .comeBackReminders: return "NotificationSettingsView_ComeBackReminders_Toggle"
+            case .mealReminders: return "NotificationSettingsView_MealReminders_Toggle"
             }
         }
 
@@ -190,7 +211,9 @@ class NotificationSettingsPresenter {
             switch self {
             case .onAppear: return nil
             case .socialPushToggled(let type, let isEnabled): return ["type": type.rawValue, "is_enabled": isEnabled]
-            case .streakReminder(let isEnabled), .weeklyDigest(let isEnabled): return ["is_enabled": isEnabled]
+            case .streakReminder(let isEnabled), .weeklyDigest(let isEnabled),
+                 .comeBackReminders(let isEnabled), .mealReminders(let isEnabled):
+                return ["is_enabled": isEnabled]
             case .reminderHour(let hour): return ["hour": hour]
             }
         }

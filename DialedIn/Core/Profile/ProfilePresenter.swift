@@ -120,9 +120,9 @@ class ProfilePresenter {
         UIApplication.shared.open(url)
     }
 
-    /// Knowledge Base and Roadmap have nowhere to go yet — neither site exists, and
-    /// `Constants` has no URL for either. They say so rather than doing nothing: a row that
-    /// swallows a tap reads as a bug, and the rows are worth keeping as the plan they represent.
+    /// Knowledge Base and Roadmap have nowhere to go yet — neither site exists, and `Constants` has
+    /// no URL for either — so their rows are hidden (see the markers in `ProfileView`). These stay
+    /// for when they come back.
     func onKnowledgeBasePressed() {
         interactor.trackEvent(eventName: "ProfileView_KnowledgeBase_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(

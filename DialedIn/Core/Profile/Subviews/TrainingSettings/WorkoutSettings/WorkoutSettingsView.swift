@@ -16,7 +16,8 @@ struct WorkoutSettingsView: View {
             generalSection
             displaySection
             warmUpSection
-            otherSection
+            // swiftlint:disable:next todo
+            // TODO: Exercise Assessment is hidden: its screen describes test lifts that nothing runs and nothing unlocks. Put `otherSection` back here once the assessment and the exercises it unlocks exist.
         }
         .navigationTitle("Workout Settings")
         .navigationBarTitleDisplayMode(.inline)

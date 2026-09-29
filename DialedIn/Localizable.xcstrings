@@ -583,6 +583,22 @@
         }
       }
     },
+    "%@ replied to your comment: \"%@\"" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ replied to your comment: \"%2$@\""
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ respondió a tu comentario: \"%2$@\""
+          }
+        }
+      }
+    },
     "%@ reps" : {
       "localizations" : {
         "es" : {
@@ -707,6 +723,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ esta semana"
+          }
+        }
+      }
+    },
+    "%@ wants to follow you" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ quiere seguirte"
           }
         }
       }
@@ -2223,6 +2249,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un pesaje reciente mantiene la tendencia fiable."
+          }
+        }
+      }
+    },
+    "A reminder to log your breakfast." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un recordatorio para registrar tu desayuno."
+          }
+        }
+      }
+    },
+    "A reminder to log your dinner." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un recordatorio para registrar tu cena."
+          }
+        }
+      }
+    },
+    "A reminder to log your lunch." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un recordatorio para registrar tu almuerzo."
           }
         }
       }
@@ -4643,6 +4699,16 @@
         }
       }
     },
+    "Breakfast" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desayuno"
+          }
+        }
+      }
+    },
     "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort." : {
       "localizations" : {
         "es" : {
@@ -5733,6 +5799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compound Pro"
+          }
+        }
+      }
+    },
+    "Compound can remind you to log breakfast, lunch and dinner each day. You can change this in Notification Settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compound puede recordarte registrar el desayuno, el almuerzo y la cena cada día. Puedes cambiarlo en Ajustes de notificaciones."
           }
         }
       }
@@ -7324,6 +7400,16 @@
         }
       }
     },
+    "Dinner" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cena"
+          }
+        }
+      }
+    },
     "Discard" : {
       "localizations" : {
         "es" : {
@@ -7999,6 +8085,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar máquina"
+          }
+        }
+      }
+    },
+    "Edit Notes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar notas"
           }
         }
       }
@@ -8774,6 +8870,7 @@
       }
     },
     "Exercise Type" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9905,6 +10002,7 @@
       }
     },
     "Go to the workout editor" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10898,6 +10996,16 @@
         }
       }
     },
+    "It's been a few days since you opened Compound. Your plan is ready when you are." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hace unos días que no abres Compound. Tu plan está listo cuando tú lo estés."
+          }
+        }
+      }
+    },
     "It's time to create a custom workout program." : {
       "localizations" : {
         "es" : {
@@ -10984,6 +11092,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantener pantalla encendida"
+          }
+        }
+      }
+    },
+    "Keep the Momentum" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén el ritmo"
           }
         }
       }
@@ -11588,6 +11706,7 @@
       }
     },
     "Link copied" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12072,6 +12191,16 @@
         }
       }
     },
+    "Lunch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almuerzo"
+          }
+        }
+      }
+    },
     "Lysine" : {
       "localizations" : {
         "es" : {
@@ -12225,6 +12354,16 @@
     "Meal Hour Header View" : {
       "shouldTranslate" : false
     },
+    "Meal Reminders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorios de comidas"
+          }
+        }
+      }
+    },
     "Meal Time" : {
       "localizations" : {
         "es" : {
@@ -12237,6 +12376,16 @@
     },
     "Meal logging nudges" : {
       "shouldTranslate" : false
+    },
+    "Meal reminders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorios de comidas"
+          }
+        }
+      }
     },
     "Members" : {
       "localizations" : {
@@ -12324,6 +12473,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Métrico (kg)"
+          }
+        }
+      }
+    },
+    "Metric 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métrica 1"
+          }
+        }
+      }
+    },
+    "Metric 2" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métrica 2"
           }
         }
       }
@@ -16868,6 +17037,7 @@
       }
     },
     "S" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18687,6 +18857,16 @@
     "Status and sets" : {
       "shouldTranslate" : false
     },
+    "Stay Consistent" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén la constancia"
+          }
+        }
+      }
+    },
     "Stay informed about workouts, nutrition tracking, and important updates. Enable notifications to never miss a beat." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18797,6 +18977,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strava no respondió"
+          }
+        }
+      }
+    },
+    "Streak Reminder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorio de racha"
+          }
+        }
+      }
+    },
+    "Streak at Risk" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Racha en riesgo"
           }
         }
       }
@@ -19090,6 +19290,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca Editar para reordenar o eliminar."
+          }
+        }
+      }
+    },
+    "Tap a muscle once for Primary, again for Secondary, and a third time to clear it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca un músculo una vez para marcarlo como principal, otra para secundario y una tercera para quitarlo."
           }
         }
       }
@@ -19469,11 +19679,22 @@
       }
     },
     "The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "El recordatorio de racha solo llega el día en que tu racha terminaría. El resumen semanal llega el domingo por la tarde."
+          }
+        }
+      }
+    },
+    "The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El recordatorio de racha llega solo el día en que tu racha terminaría. El resumen semanal llega el domingo por la tarde. Los recordatorios de entrenamiento llegan uno, tres y cinco días después de la última vez que abras Compound. Los recordatorios de comidas llegan en el desayuno, el almuerzo y la cena."
           }
         }
       }
@@ -20321,6 +20542,7 @@
       }
     },
     "Trackable Metric 1" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20331,6 +20553,7 @@
       }
     },
     "Trackable Metric 2" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20535,12 +20758,32 @@
         }
       }
     },
+    "Turn On Meal Reminders" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar recordatorios de comidas"
+          }
+        }
+      }
+    },
     "Turn On Notifications" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activar notificaciones"
+          }
+        }
+      }
+    },
+    "Turn On Streak Reminder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar recordatorio de racha"
           }
         }
       }
@@ -23486,6 +23729,22 @@
         }
       }
     },
+    "Workouts this week: you %@, your circle %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Workouts this week: you %1$@, your circle %2$@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos esta semana: tú %1$@, tu círculo %2$@."
+          }
+        }
+      }
+    },
     "Workouts will stop uploading to Strava." : {
       "localizations" : {
         "es" : {
@@ -23781,6 +24040,16 @@
         }
       }
     },
+    "You're on a %lld-day streak. Compound can remind you in the evening on a day your streak would end." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llevas una racha de %lld días. Compound puede avisarte por la tarde el día en que tu racha terminaría."
+          }
+        }
+      }
+    },
     "You're ready to start compounding." : {
       "localizations" : {
         "es" : {
@@ -23797,6 +24066,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¡Tú puedes!"
+          }
+        }
+      }
+    },
+    "Your %@-day streak ends at midnight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu racha de %@ días termina a medianoche."
           }
         }
       }
@@ -23838,6 +24117,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu plato"
+          }
+        }
+      }
+    },
+    "Your Progress Is Waiting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu progreso te espera"
+          }
+        }
+      }
+    },
+    "Your Week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu semana"
           }
         }
       }
@@ -23972,6 +24271,16 @@
         }
       }
     },
+    "Your training plan is ready for your next session." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu plan de entrenamiento está listo para tu próxima sesión."
+          }
+        }
+      }
+    },
     "Your week" : {
       "localizations" : {
         "es" : {
@@ -24008,6 +24317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu peso ya corresponde a un IMC de 18,5 o menos para tu altura, lo que se considera bajo peso, así que no se ofrece un objetivo más bajo."
+          }
+        }
+      }
+    },
+    "Your workouts and history are right where you left them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus entrenamientos y tu historial están donde los dejaste."
           }
         }
       }

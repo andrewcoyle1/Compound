@@ -62,6 +62,7 @@ struct AccountView: View {
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
+                            .accessibilityLabel(Text("Profile photo"))
                     }
 #elseif canImport(AppKit)
                     if let nsImage = NSImage(data: data) {
@@ -72,7 +73,7 @@ struct AccountView: View {
 #endif
                 } else if let profileImageUrl = presenter.currentUser?.submittedProfileImage {
                     // Use cached image
-                    ImageLoaderView(urlString: profileImageUrl)
+                    ImageLoaderView(urlString: profileImageUrl, imageDescription: String(localized: "Profile photo"))
                 } else {
                     ImageLoaderView()
                 }
@@ -92,7 +93,7 @@ struct AccountView: View {
             TextField("Last name", text: $presenter.lastName)
                 .textContentType(.familyName)
 
-            DatePicker("Date of birth", selection: $presenter.dateOfBirth, displayedComponents: .date)
+            DatePicker("Date of birth", selection: $presenter.dateOfBirth, in: ...Date(), displayedComponents: .date)
             Picker(selection: $presenter.selectedGender) {
                 Text("Not specified").tag(nil as Gender?)
                 Text("Male").tag(Gender.male as Gender?)
@@ -101,18 +102,15 @@ struct AccountView: View {
                 Text("Gender")
             }
 
-            // Centimetres, matching `UserModel.submittedHeightCentimeters`. The Units screen governs
-            // how height is *displayed* elsewhere; converting here as well would need that
-            // preference threading through, and would make the stored unit ambiguous on save.
-            HStack {
-                Text("Height")
-                Spacer()
-                TextField("0", text: $presenter.heightText)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .frame(maxWidth: 80)
-                Text("cm")
-                    .foregroundStyle(.secondary)
+            // Typed in the Units screen's length unit; the presenter converts to centimetres on save.
+            LabeledContent("Height") {
+                HStack(spacing: Spacing.s) {
+                    TextField("Height", text: $presenter.heightText, prompt: Text("0"))
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                    Text(presenter.heightUnit.measurementAbbreviation)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Picker(selection: $presenter.selectedCardioFitnessLevel) {
@@ -167,16 +165,17 @@ struct AccountView: View {
             // identity provider's and cannot be changed from here. A "Password ********" row used to
             // sit below this one — removed, because there is no password to change: `SignInOption`
             // has no email case anywhere in the app.
+            ListRow(title: String(localized: "Sign-In Method"), accessory: .value(presenter.signInMethod))
             ListRow(title: String(localized: "Email"), accessory: .value(presenter.currentUser?.email ?? String(localized: "Not provided")))
 
             // Signing an anonymous account out locks it away for good, so that account is offered
-            // the upgrade in place of Log Out rather than alongside it.
+            // the upgrade in place of Sign Out rather than alongside it.
             if presenter.isAnonymousUser {
-                ListRowButton(title: String(localized: "Save & back-up account"), accessory: .none) {
+                ListRowButton(title: String(localized: "Save Account"), accessory: .none) {
                     presenter.onSaveAccountPressed()
                 }
             } else {
-                ListRowButton(title: String(localized: "Log Out"), accessory: .none) {
+                ListRowButton(title: String(localized: "Sign Out"), accessory: .none) {
                     presenter.onSignOutPressed()
                 }
             }

@@ -18,7 +18,9 @@ struct LogWeightView: View {
             WeightPickerInput(
                 unit: $presenter.unit,
                 selectedKilograms: $presenter.selectedKilograms,
-                selectedPounds: $presenter.selectedPounds
+                selectedKilogramsTenths: $presenter.selectedKilogramsTenths,
+                selectedPounds: $presenter.selectedPounds,
+                selectedPoundsTenths: $presenter.selectedPoundsTenths
             )
         }
         .navigationTitle("Log Weight")

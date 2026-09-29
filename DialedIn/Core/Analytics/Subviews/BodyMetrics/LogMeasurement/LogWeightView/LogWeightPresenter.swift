@@ -15,7 +15,9 @@ class LogWeightPresenter {
 
     var selectedDate = Date()
     var selectedKilograms: Int = 70
+    var selectedKilogramsTenths: Int = 0
     var selectedPounds: Int = 154
+    var selectedPoundsTenths: Int = 0
     var notes: String = ""
     var unit: UnitOfWeight = .kilograms
     var isLoading: Bool = false
@@ -23,9 +25,10 @@ class LogWeightPresenter {
     private var weightKg: Double {
         switch unit {
         case .kilograms:
-            return Double(selectedKilograms)
+            return DecimalWheelValue.combine(whole: selectedKilograms, tenths: selectedKilogramsTenths)
         case .pounds:
-            return Double(selectedPounds) * 0.453592
+            let pounds = DecimalWheelValue.combine(whole: selectedPounds, tenths: selectedPoundsTenths)
+            return UnitConversion.lbsToKg(pounds)
         }
     }
 
@@ -49,10 +52,11 @@ class LogWeightPresenter {
             unit = preference == .kilograms ? .kilograms : .pounds
         }
 
-        // Set initial weight to current weight if available
+        // Set initial weight to current weight if available. A whole-number entry saved before the
+        // tenths wheel existed splits to a tenths digit of 0.
         if let currentWeight = user.submittedWeightKilograms {
-            selectedKilograms = Int(currentWeight)
-            selectedPounds = Int(UnitConversion.kgToLbs(currentWeight))
+            (selectedKilograms, selectedKilogramsTenths) = DecimalWheelValue.split(currentWeight)
+            (selectedPounds, selectedPoundsTenths) = DecimalWheelValue.split(UnitConversion.kgToLbs(currentWeight))
         }
 
     }

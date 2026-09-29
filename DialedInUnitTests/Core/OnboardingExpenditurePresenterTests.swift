@@ -255,10 +255,11 @@ struct ExpenditurePresenterDegenerateInputTests {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
 
-        // 800 + 6.25x120 - 150 + 5, rather than the 530 a literal zero would give.
+        // 800 + 6.25x100 - 150 + 5, floored at the height wheel's own 100 cm minimum (finding 9),
+        // rather than the 530 a literal zero would give.
         let zero = sut.bmrInt(weight: 80, height: 0, dateOfBirth: expenditureBirthDate(yearsAgo: 30), gender: .male)
 
-        #expect(zero == 1405)
+        #expect(zero == 1280)
     }
 
     @Test("An age below fourteen is treated as fourteen")
@@ -357,8 +358,9 @@ struct ExpenditurePresenterDegenerateInputTests {
     func testTDEENeverDropsBelowAThousandCalories() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
-        // 30 kg, 120 cm, 100 years old, female, sedentary, no exercise: BMR is 300 + 750 - 500 -
-        // 161 = 389, and 389 x 1.2 is 467 — a figure that would read as a starvation target.
+        // 30 kg, 100 cm (the height wheel's own floor — finding 9), 100 years old, female,
+        // sedentary, no exercise: BMR is 300 + 625 - 500 - 161 = 264, and 264 x 1.2 is 317 — a
+        // figure that would read as a starvation target.
         let delegate = expenditureDelegate(
             gender: .female,
             dateOfBirth: expenditureBirthDate(yearsAgo: 100),

@@ -59,7 +59,7 @@ struct HeightView: View {
     private var metricSection: some View {
         Section {
             Picker("Centimeters", selection: $presenter.selectedCentimeters) {
-                ForEach((100...250).reversed(), id: \.self) { value in
+                ForEach(100...250, id: \.self) { value in
                     Text("\(value) cm").tag(value)
                 }
             }
@@ -77,7 +77,7 @@ struct HeightView: View {
         Section {
             HStack(spacing: Spacing.m) {
                 Picker("Feet", selection: $presenter.selectedFeet) {
-                    ForEach((3...8).reversed(), id: \.self) { feet in
+                    ForEach(3...8, id: \.self) { feet in
                         Text("\(feet) ft").tag(feet)
                     }
                 }
@@ -87,7 +87,7 @@ struct HeightView: View {
                 }
 
                 Picker("Inches", selection: $presenter.selectedInches) {
-                    ForEach((0...11).reversed(), id: \.self) { inch in
+                    ForEach(0...11, id: \.self) { inch in
                         Text("\(inch) in").tag(inch)
                     }
                 }

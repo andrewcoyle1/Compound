@@ -152,7 +152,7 @@ struct OnboardingWeightRatePresenterTests {
         screen.presenter.onAppear(delegate: delegate())
         screen.presenter.weightChangeRate = 0.5
 
-        #expect(screen.presenter.weeklyWeightChangeText(delegate: delegate()).contains("(0.7% BW)"))
+        #expect(screen.presenter.weeklyWeightChangeText(delegate: delegate()).contains("(0.7% of body weight)"))
     }
 
     /// The monthly line is four weeks of the weekly one, not a separately guessed number.
@@ -163,7 +163,7 @@ struct OnboardingWeightRatePresenterTests {
         screen.presenter.weightChangeRate = 0.5
 
         #expect(screen.presenter.monthlyWeightChangeText(delegate: delegate()).hasPrefix("-2.00 kg"))
-        #expect(screen.presenter.monthlyWeightChangeText(delegate: delegate()).contains("(2.5% BW)"))
+        #expect(screen.presenter.monthlyWeightChangeText(delegate: delegate()).contains("(2.5% of body weight)"))
     }
 
     /// The 3500 kcal rule is per pound. Half a kilogram a week is 1.10 lb, which is 3858 kcal a

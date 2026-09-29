@@ -45,6 +45,7 @@ struct WeightView: View {
                 imperialSection
             }
         }
+        .onAppear { presenter.onAppear(delegate: delegate) }
     }
 
     private var pickerSection: some View {
@@ -61,7 +62,7 @@ struct WeightView: View {
     private var metricSection: some View {
         Section {
             Picker("Kilograms", selection: $presenter.selectedKilograms) {
-                ForEach((30...200).reversed(), id: \.self) { value in
+                ForEach(WeightPresenter.kilogramsRange, id: \.self) { value in
                     Text("\(value) kg").tag(value)
                 }
             }
@@ -78,7 +79,7 @@ struct WeightView: View {
     private var imperialSection: some View {
         Section {
             Picker("Pounds", selection: $presenter.selectedPounds) {
-                ForEach((66...440).reversed(), id: \.self) { value in
+                ForEach(WeightPresenter.poundsRange, id: \.self) { value in
                     Text("\(value) lb").tag(value)
                 }
             }

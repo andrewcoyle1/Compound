@@ -311,6 +311,22 @@ struct OnboardingNamePhotoPresenterTests {
         #expect(!screen.interactor.trackedEventNames.contains("NamePhoto_PhotoSelected"))
         #expect(screen.presenter.selectedImageData == nil)
     }
+
+    /// Finding 17: the control's label and the option to remove a photo both depend on whether one
+    /// is actually set, not a fixed "Add Photo" that never changed.
+    @Test("A photo is reported as set once picked, and cleared once removed")
+    func testHasPhotoFollowsWhatIsActuallySet() {
+        let screen = makeScreen()
+        #expect(!screen.presenter.hasPhoto)
+
+        screen.presenter.selectedImageData = onePixelPNGData()
+        #expect(screen.presenter.hasPhoto)
+
+        screen.presenter.removePhoto()
+        #expect(!screen.presenter.hasPhoto)
+        #expect(screen.presenter.selectedImageData == nil)
+        #expect(screen.presenter.selectedPhotoItem == nil)
+    }
 }
 
 // MARK: - Step 2: gender
@@ -554,14 +570,26 @@ struct OnboardingHeightPresenterTests {
     }
 
     /// Tapping straight through has to leave a plausible adult rather than a zero, since nothing
-    /// downstream asks again.
+    /// downstream asks again. The default unit follows the device locale (finding 5), so only the
+    /// centimetre value — which both pickers agree on — is asserted here.
     @Test("The picker starts at a plausible adult height in centimetres")
     func testTheHeightPickerStartsSomewherePlausible() {
         let sut = makeScreen().presenter
 
         #expect(sut.selectedCentimeters == 175)
-        #expect(sut.preference == .centimeters)
-        #expect(sut.height == 175)
+    }
+
+    /// A US locale expects Imperial by default; anywhere else expects Metric. Nothing under
+    /// `DialedIn/` reads `Locale.current` at test time except this presenter, so this is the one
+    /// place a locale-dependent default needs its own coverage.
+    @Test("The default unit follows the device's measurement system")
+    func testTheDefaultUnitFollowsTheLocale() {
+        let sut = makeScreen().presenter
+
+        let expected: UnitOfLength = Locale.current.measurementSystem == .metric ? .centimeters : .inches
+        let expectedPreference: LengthUnitPreference = expected == .centimeters ? .centimeters : .inches
+        #expect(sut.unit == expected)
+        #expect(sut.preference == expectedPreference)
     }
 
     /// Whichever picker was used, centimetres is what the rest of the app stores and computes with.
@@ -635,5 +663,76 @@ struct OnboardingHeightPresenterTests {
 
         #expect(screen.router.weightDelegates.first?.heightInCentimeters == 183)
         #expect(screen.router.weightDelegates.map(\.lengthUnitPreference) == [.inches])
+    }
+}
+
+// MARK: - Step 5: weight
+
+/// Finding 5: the weight screen used to always open on Metric regardless of what was chosen a
+/// screen earlier on height, so a person who switched to Imperial once had to switch again.
+@MainActor
+struct OnboardingWeightPresenterTests {
+
+    private final class Interactor: SpyGlobalInteractor, WeightInteractor { }
+
+    private final class Router: SpyOnboardingRouter, WeightRouter {
+        private(set) var exerciseFrequencyDelegates: [ExerciseFrequencyDelegate] = []
+
+        func showExerciseFrequencyView(delegate: ExerciseFrequencyDelegate) {
+            exerciseFrequencyDelegates.append(delegate)
+            record("exerciseFrequency")
+        }
+
+        func showDevSettingsView() { record("devSettings") }
+    }
+
+    private struct Screen {
+        let presenter: WeightPresenter
+        let interactor: Interactor
+        let router: Router
+    }
+
+    private func makeScreen() -> Screen {
+        let interactor = Interactor()
+        let router = Router()
+        return Screen(
+            presenter: WeightPresenter(interactor: interactor, router: router),
+            interactor: interactor,
+            router: router
+        )
+    }
+
+    /// The height step's preference for centimetres carries forward as kilograms.
+    @Test("Choosing centimetres on the height step opens the weight screen on kilograms")
+    func testCentimetrePreferenceOpensOnKilograms() {
+        let screen = makeScreen()
+
+        screen.presenter.onAppear(delegate: .mock)
+
+        #expect(screen.presenter.unit == .kilograms)
+    }
+
+    /// The height step's preference for inches carries forward as pounds — the screen must not
+    /// fall back to Metric just because that is the presenter's own default.
+    @Test("Choosing inches on the height step opens the weight screen on pounds")
+    func testInchesPreferenceOpensOnPounds() {
+        let screen = makeScreen()
+        let delegate = WeightDelegate(delegate: .mock, heightInCentimeters: 180, lengthUnitPreference: .inches)
+
+        screen.presenter.onAppear(delegate: delegate)
+
+        #expect(screen.presenter.unit == .pounds)
+    }
+
+    /// Converting kilograms to pounds and back must round, not truncate, or the displayed weight
+    /// drifts every time the unit toggle is flipped.
+    @Test("Converting between units rounds rather than truncates")
+    func testConversionRoundsInsteadOfTruncating() {
+        let screen = makeScreen()
+        screen.presenter.selectedPounds = 154
+
+        screen.presenter.updateKilogramsFromPounds()
+
+        #expect(screen.presenter.selectedKilograms == 70)
     }
 }

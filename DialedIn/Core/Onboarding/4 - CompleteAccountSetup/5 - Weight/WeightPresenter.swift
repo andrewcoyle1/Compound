@@ -16,6 +16,12 @@ class WeightPresenter {
     var unit: UnitOfWeight = .kilograms
     var selectedKilograms: Int = 70
     var selectedPounds: Int = 154
+
+    // Matches the wheel's own range, which in turn matches what `heightCm`/`weightKg` in
+    // `ExpenditurePresenter` already accept — widening one without the other left the maths able
+    // to take a weight the wheel could not enter.
+    static let kilogramsRange = 30...500
+    static let poundsRange = 66...1100
         
     var weight: Double {
         switch unit {
@@ -38,18 +44,25 @@ class WeightPresenter {
     var canSubmit: Bool {
         switch unit {
         case .kilograms:
-            return (30...200).contains(selectedKilograms)
+            return Self.kilogramsRange.contains(selectedKilograms)
         case .pounds:
-            return (66...440).contains(selectedPounds)
+            return Self.poundsRange.contains(selectedPounds)
         }
     }
     
+    /// Matches the unit chosen on the height step so the choice does not have to be made twice.
+    func onAppear(delegate: WeightDelegate) {
+        unit = delegate.lengthUnitPreference == .centimeters ? .kilograms : .pounds
+    }
+
+    // Rounds rather than truncates — truncating dropped almost a whole unit on the way back
+    // (154 lb became 69 kg instead of 70), so toggling units silently changed the displayed weight.
     func updatePoundsFromKilograms() {
-        selectedPounds = Int(UnitConversion.kgToLbs(Double(selectedKilograms)))
+        selectedPounds = Int(UnitConversion.kgToLbs(Double(selectedKilograms)).rounded())
     }
 
     func updateKilogramsFromPounds() {
-        selectedKilograms = Int(UnitConversion.lbsToKg(Double(selectedPounds)))
+        selectedKilograms = Int(UnitConversion.lbsToKg(Double(selectedPounds)).rounded())
     }
     
     init(

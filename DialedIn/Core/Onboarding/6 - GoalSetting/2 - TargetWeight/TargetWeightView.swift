@@ -44,7 +44,7 @@ struct TargetWeightView: View {
     private var kilogramsSection: some View {
         Section {
             Picker("Kilograms", selection: $presenter.selectedKilograms) {
-                ForEach(presenter.kilogramRange(delegate: delegate).reversed(), id: \.self) { value in
+                ForEach(presenter.kilogramRange(delegate: delegate), id: \.self) { value in
                     Text("\(value) kg").tag(value)
                 }
             }
@@ -61,7 +61,7 @@ struct TargetWeightView: View {
     private var poundsSection: some View {
         Section {
             Picker("Pounds", selection: $presenter.selectedPounds) {
-                ForEach(presenter.poundRange(delegate: delegate).reversed(), id: \.self) { value in
+                ForEach(presenter.poundRange(delegate: delegate), id: \.self) { value in
                     Text("\(value) lb").tag(value)
                 }
             }

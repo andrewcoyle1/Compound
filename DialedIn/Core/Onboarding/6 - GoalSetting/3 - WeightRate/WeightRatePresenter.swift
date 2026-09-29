@@ -92,18 +92,22 @@ class WeightRatePresenter {
         let unitText = weightUnit.abbreviation
         let sign = delegate.overarchingObjective == .loseWeight ? "-" : "+"
         let percentBW = (weeklyChangeInKg / currentWeight) * 100
-        
-        return String(localized: "\(sign)\(String(format: "%.2f", weeklyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Week")
+        let amount = weeklyChangeInPounds.formatted(.number.precision(.fractionLength(2)))
+        let percent = percentBW.formatted(.number.precision(.fractionLength(1)))
+
+        return String(localized: "\(sign)\(amount) \(unitText) (\(percent)% of body weight) / Week")
     }
-    
+
     func monthlyWeightChangeText(delegate: WeightRateDelegate) -> String {
         let monthlyChangeInKg = weightChangeRate * 4 // Approximate monthly rate
         let monthlyChangeInPounds = UnitConversion.convertWeight(monthlyChangeInKg, to: weightUnit)
         let unitText = weightUnit.abbreviation
         let sign = delegate.overarchingObjective == .loseWeight ? "-" : "+"
         let percentBW = (monthlyChangeInKg / currentWeight) * 100
-        
-        return String(localized: "\(sign)\(String(format: "%.2f", monthlyChangeInPounds)) \(unitText) (\(String(format: "%.1f", percentBW))% BW) / Month")
+        let amount = monthlyChangeInPounds.formatted(.number.precision(.fractionLength(2)))
+        let percent = percentBW.formatted(.number.precision(.fractionLength(1)))
+
+        return String(localized: "\(sign)\(amount) \(unitText) (\(percent)% of body weight) / Month")
     }
     
     func estimatedCalorieTargetText(delegate: WeightRateDelegate) -> String {

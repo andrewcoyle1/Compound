@@ -53,16 +53,27 @@ struct WeightRateView: View {
                 Text(presenter.currentRateCategory.title)
                     .font(.sectionTitle)
 
-                Slider(
-                    value: $presenter.weightChangeRate,
-                    in: presenter.minWeightChangeRate...presenter.maxWeightChangeRate,
-                    step: 0.05
-                ) {
-                    Text("Weekly rate")
-                } minimumValueLabel: {
-                    Text(presenter.minWeightChangeRate, format: .number.precision(.fractionLength(1)))
-                } maximumValueLabel: {
-                    Text(presenter.maxWeightChangeRate, format: .number.precision(.fractionLength(1)))
+                HStack(spacing: Spacing.s) {
+                    Slider(
+                        value: $presenter.weightChangeRate,
+                        in: presenter.minWeightChangeRate...presenter.maxWeightChangeRate,
+                        step: 0.05
+                    ) {
+                        Text("Weekly rate")
+                    } minimumValueLabel: {
+                        Text(Format.weight(kg: presenter.minWeightChangeRate, unit: presenter.weightUnit))
+                    } maximumValueLabel: {
+                        Text(Format.weight(kg: presenter.maxWeightChangeRate, unit: presenter.weightUnit))
+                    }
+                    .accessibilityValue(presenter.weeklyWeightChangeText(delegate: delegate))
+
+                    Stepper(
+                        "Weekly rate",
+                        value: $presenter.weightChangeRate,
+                        in: presenter.minWeightChangeRate...presenter.maxWeightChangeRate,
+                        step: 0.05
+                    )
+                    .labelsHidden()
                 }
                 .font(.label)
                 .foregroundStyle(.secondary)

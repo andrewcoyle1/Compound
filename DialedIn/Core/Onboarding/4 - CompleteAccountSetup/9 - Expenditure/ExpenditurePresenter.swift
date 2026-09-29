@@ -58,10 +58,10 @@ class ExpenditurePresenter {
         // Use remainder as TEF to ensure components sum to displayed TDEE (accounts for rounding)
         let tefCals = max(totalExpenditureKcal - bmrCals - activityCals - exerciseCals, 0)
         return [
-            Breakdown(name: "Basal Metabolic Rate", calories: bmrCals, color: .blue),
-            Breakdown(name: "Daily Activity", calories: activityCals, color: .green),
-            Breakdown(name: "Exercise", calories: exerciseCals, color: .orange),
-            Breakdown(name: "Thermic Effect of Food", calories: tefCals, color: .pink)
+            Breakdown(name: String(localized: "Resting Calories"), calories: bmrCals, color: .blue),
+            Breakdown(name: String(localized: "Daily Activity"), calories: activityCals, color: .green),
+            Breakdown(name: String(localized: "Exercise"), calories: exerciseCals, color: .orange),
+            Breakdown(name: String(localized: "Digesting Food"), calories: tefCals, color: .pink)
         ]
     }
 
@@ -80,7 +80,9 @@ class ExpenditurePresenter {
     // whenNotFinite:)` says why. Anything unusable falls back to the bottom of the range, which is
     // where a missing figure already sat.
     private func weightKg(weight: Double) -> Double { weight.clamped(to: 30...500, whenNotFinite: 30) }
-    private func heightCm(height: Double) -> Double { height.clamped(to: 120...260, whenNotFinite: 120) }
+    // 100, not 120: the height wheel goes down to 100 cm (`HeightView.swift`), so clamping here
+    // any tighter silently substituted someone else's height into their own calorie estimate.
+    private func heightCm(height: Double) -> Double { height.clamped(to: 100...260, whenNotFinite: 100) }
     private func mifflinGenderCoefficient(gender: Gender) -> Double { (gender == .male) ? 5 : -161 }
     
     private func bmr(weight: Double, height: Double, dateOfBirth: Date, gender: Gender) -> Double { (10 * weightKg(weight: weight)) + (6.25 * heightCm(height: height)) - (5 * Double(ageYears(dateOfBirth: dateOfBirth))) + mifflinGenderCoefficient(gender: gender) }
@@ -111,11 +113,11 @@ class ExpenditurePresenter {
     }
     func activityDescription(activityLevel: ActivityLevel) -> String {
         switch activityLevel {
-        case .sedentary: return "Mostly sitting; little movement"
-        case .light: return "Light movement most of the day"
-        case .moderate: return "On feet or moving regularly"
-        case .active: return "Physically active work or lifestyle"
-        case .veryActive: return "Highly active throughout the day"
+        case .sedentary: return String(localized: "Mostly sitting; little movement")
+        case .light: return String(localized: "Light movement most of the day")
+        case .moderate: return String(localized: "On feet or moving regularly")
+        case .active: return String(localized: "Physically active work or lifestyle")
+        case .veryActive: return String(localized: "Highly active throughout the day")
         }
     }
     
@@ -242,7 +244,7 @@ class ExpenditurePresenter {
                     buttons: {
                         AnyView(
                             HStack {
-                                Button("Cancel") { }
+                                Button("Cancel", role: .cancel) { }
                                 Button("Try Again") {
                                     self.onContinuePressed(delegate: delegate)
                                 }

@@ -8,6 +8,7 @@
 import Testing
 import Foundation
 import SwiftUI
+import AuthenticationServices
 @testable import DialedIn
 
 // The last two screens: connecting Strava, which is optional, and finishing, which is not.
@@ -140,10 +141,25 @@ struct OnboardingStravaConnectPresenterTests {
         screen.presenter.onConnectPressed()
 
         #expect(await TestManagers.eventually { !screen.router.alertTitles.isEmpty })
-        #expect(screen.router.alertTitles == ["Connection Failed"])
+        #expect(screen.router.alertTitles == ["Strava Didn't Respond"])
         #expect(!screen.presenter.isConnecting)
         #expect(!screen.presenter.isConnected)
         #expect(screen.interactor.trackedEventNames == ["StravaConnect_Connect_Fail"])
+    }
+
+    /// Closing the OAuth sheet is a choice, not a failure — finding 12. It must not show an alert
+    /// or log as a failure, and it still has to release the spinner.
+    @Test("Test Cancelling The OAuth Sheet Is Silent")
+    func testCancellingTheOAuthSheetIsSilent() async {
+        let screen = makeScreen()
+        screen.interactor.authenticateError = ASWebAuthenticationSessionError(.canceledLogin)
+
+        screen.presenter.onConnectPressed()
+
+        #expect(await TestManagers.eventually { !screen.presenter.isConnecting })
+        #expect(screen.router.alertTitles.isEmpty)
+        #expect(screen.interactor.trackedEventNames.isEmpty)
+        #expect(!screen.presenter.isConnected)
     }
 
     /// And a user who declined at Strava's own screen is not trapped on the last optional step of

@@ -13,7 +13,7 @@ class HeightPresenter {
     private let interactor: HeightInteractor
     private let router: HeightRouter
 
-    var unit: UnitOfLength = .centimeters
+    var unit: UnitOfLength = Locale.current.measurementSystem == .metric ? .centimeters : .inches
     var selectedCentimeters: Int = 175
     var selectedFeet: Int = 5
     var selectedInches: Int = 9

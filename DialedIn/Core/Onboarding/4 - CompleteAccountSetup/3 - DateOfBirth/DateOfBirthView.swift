@@ -30,6 +30,7 @@ struct DateOfBirthView: View {
         ) {
             Section {
                 DatePicker("Date of birth", selection: $presenter.dateOfBirth, in: presenter.dateRange, displayedComponents: .date)
+                    .datePickerStyle(.wheel)
             }
         }
     }

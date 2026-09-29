@@ -48,7 +48,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showStepsView(delegate: StepsDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.stepsView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

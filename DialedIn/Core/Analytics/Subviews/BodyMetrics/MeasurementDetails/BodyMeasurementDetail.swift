@@ -139,7 +139,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showBodyMeasurementDetailView(kind: BodyMeasurementKind, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.bodyMeasurementDetailView(router: router, kind: kind, themeColor: themeColor)
         }
     }

@@ -48,7 +48,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showEnergyBalanceView(delegate: EnergyBalanceDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.energyBalanceView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

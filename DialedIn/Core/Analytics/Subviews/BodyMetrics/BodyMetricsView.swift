@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct BodyMetricsDelegate {
-
+    /// Pushed from Analytics, where the system Back button closes it. Search still presents it as
+    /// a sheet, which needs its own Close.
+    var isPushed = false
 }
 
 struct BodyMetricsView: View {
@@ -37,9 +39,11 @@ struct BodyMetricsView: View {
         }
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
+            if delegate.isPushed == false {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(role: .close) {
+                        presenter.onDismissPressed()
+                    }
                 }
             }
         }
@@ -107,7 +111,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showBodyMetricsView(delegate: BodyMetricsDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
             builder.bodyMetricsView(router: router, delegate: delegate)
         }
     }

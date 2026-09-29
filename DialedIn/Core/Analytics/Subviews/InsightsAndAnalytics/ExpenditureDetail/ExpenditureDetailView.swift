@@ -47,7 +47,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showExpenditureDetailView(delegate: ExpenditureDetailDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.expenditureView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

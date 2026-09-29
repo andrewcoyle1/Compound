@@ -17,16 +17,19 @@ class LogMeasurementPresenter {
 
     var selectedDate = Date()
     var selectedCentimeters: Int
+    var selectedCentimetersTenths: Int = 0
     var selectedInches: Int
+    var selectedInchesTenths: Int = 0
     var unit: UnitOfLength = .centimeters
     var isLoading: Bool = false
 
     private var measurementCm: Double {
         switch unit {
         case .centimeters:
-            return Double(selectedCentimeters)
+            return DecimalWheelValue.combine(whole: selectedCentimeters, tenths: selectedCentimetersTenths)
         case .inches:
-            return Double(selectedInches) * 2.54
+            let inches = DecimalWheelValue.combine(whole: selectedInches, tenths: selectedInchesTenths)
+            return inches * 2.54
         }
     }
 
@@ -54,8 +57,9 @@ class LogMeasurementPresenter {
             .sorted(by: { $0.date > $1.date })
             .first,
            let circumference = latest[keyPath: kind.entryValue] {
-            selectedCentimeters = Int(circumference)
-            selectedInches = Int(circumference / 2.54)
+            // A whole-number entry saved before the tenths wheel existed splits to tenths of 0.
+            (selectedCentimeters, selectedCentimetersTenths) = DecimalWheelValue.split(circumference)
+            (selectedInches, selectedInchesTenths) = DecimalWheelValue.split(circumference / 2.54)
         }
     }
 

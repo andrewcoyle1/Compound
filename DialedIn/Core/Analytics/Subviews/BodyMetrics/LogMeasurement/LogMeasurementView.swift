@@ -57,35 +57,57 @@ struct LogMeasurementView: View {
 
     private var measurementPickerSection: some View {
         Section {
-            if presenter.unit == .centimeters {
-                Picker(presenter.kind.fieldLabel, selection: $presenter.selectedCentimeters) {
-                    ForEach(presenter.kind.centimetreRange.reversed(), id: \.self) { value in
-                        Text("\(value) cm").tag(value)
+            HStack(spacing: 0) {
+                if presenter.unit == .centimeters {
+                    Picker(presenter.kind.fieldLabel, selection: $presenter.selectedCentimeters) {
+                        ForEach(presenter.kind.centimetreRange, id: \.self) { value in
+                            Text("\(value) cm").tag(value)
+                        }
                     }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: wheelHeight)
-                .clipped()
-                .onChange(of: presenter.selectedCentimeters) { _, newValue in
-                    presenter.selectedInches = Int(Double(newValue) / 2.54)
-                }
-            } else {
-                Picker(presenter.kind.fieldLabel, selection: $presenter.selectedInches) {
-                    ForEach(presenter.kind.inchRange.reversed(), id: \.self) { value in
-                        Text("\(value) in").tag(value)
+                    .pickerStyle(.wheel)
+                    .onChange(of: presenter.selectedCentimeters) { _, _ in syncInchesFromCentimeters() }
+
+                    Picker("Tenths", selection: $presenter.selectedCentimetersTenths) {
+                        ForEach(DecimalWheelValue.tenths, id: \.self) { value in
+                            Text(".\(value)").tag(value)
+                        }
                     }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: wheelHeight)
-                .clipped()
-                .onChange(of: presenter.selectedInches) { _, newValue in
-                    presenter.selectedCentimeters = Int(Double(newValue) * 2.54)
+                    .pickerStyle(.wheel)
+                    .onChange(of: presenter.selectedCentimetersTenths) { _, _ in syncInchesFromCentimeters() }
+                } else {
+                    Picker(presenter.kind.fieldLabel, selection: $presenter.selectedInches) {
+                        ForEach(presenter.kind.inchRange, id: \.self) { value in
+                            Text("\(value) in").tag(value)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .onChange(of: presenter.selectedInches) { _, _ in syncCentimetersFromInches() }
+
+                    Picker("Tenths", selection: $presenter.selectedInchesTenths) {
+                        ForEach(DecimalWheelValue.tenths, id: \.self) { value in
+                            Text(".\(value)").tag(value)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .onChange(of: presenter.selectedInchesTenths) { _, _ in syncCentimetersFromInches() }
                 }
             }
+            .frame(height: wheelHeight)
+            .clipped()
         } header: {
             Text(presenter.kind.fieldLabel)
         }
         .removeListRowFormatting()
+    }
+
+    private func syncInchesFromCentimeters() {
+        let centimeters = DecimalWheelValue.combine(whole: presenter.selectedCentimeters, tenths: presenter.selectedCentimetersTenths)
+        (presenter.selectedInches, presenter.selectedInchesTenths) = DecimalWheelValue.split(centimeters / 2.54)
+    }
+
+    private func syncCentimetersFromInches() {
+        let inches = DecimalWheelValue.combine(whole: presenter.selectedInches, tenths: presenter.selectedInchesTenths)
+        (presenter.selectedCentimeters, presenter.selectedCentimetersTenths) = DecimalWheelValue.split(inches * 2.54)
     }
 
     @ToolbarContentBuilder

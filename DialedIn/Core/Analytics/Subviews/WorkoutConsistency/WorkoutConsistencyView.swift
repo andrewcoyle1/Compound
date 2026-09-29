@@ -46,7 +46,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWorkoutConsistencyView(delegate: WorkoutConsistencyDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.workoutConsistencyView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

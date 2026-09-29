@@ -16,7 +16,6 @@ struct NutritionAnalyticsView: View {
                 caloriesAndMacrosSection
                 carbBreakdownSection
                 fatBreakdownSection
-                proteinBreakdownSection
                 vitaminBreakdownSection
                 mineralBreakdownSection
                 otherBreakdownSection
@@ -45,13 +44,6 @@ struct NutritionAnalyticsView: View {
         }
         .onNotificationReceived(name: Constants.remoteDataSyncDidComplete) { _ in
             Task { await presenter.loadData() }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
         }
     }
     
@@ -158,9 +150,8 @@ struct NutritionAnalyticsView: View {
         }
     }
 
-    /// `isTracked: false` marks a nutrient the food model carries no field for. Those cards used to
-    /// look like every other one, show a placeholder, and open a detail screen that was always empty
-    /// whatever the user had logged. They now read as unavailable and do not take a tap.
+    /// `isTracked: false` marks a nutrient the food model carries no field for. Those never had a
+    /// value to show, so the card is dropped from the grid rather than shown disabled.
     @ViewBuilder
     private func breakdownCard(
         title: String,
@@ -170,33 +161,27 @@ struct NutritionAnalyticsView: View {
         unit: String,
         color: Color
     ) -> some View {
-        let card = AnalyticsCard(
-            title: title,
-            subtitle: isTracked ? String(localized: "Today") : String(localized: "Not Tracked"),
-            value: isTracked ? presenter.formatBreakdown(value, unit: unit) : Format.placeholder,
-            unit: unit,
-            themeColor: color,
-            showsChevron: isTracked,
-            chartConfiguration: .compact,
-            chart: {
-                MacroProgressChart(
-                    current: isTracked ? (value ?? 0) : 0,
-                    target: nil,
-                    maxValue: presenter.breakdownChartMax(current: value, defaultMax: 50),
-                    color: color,
-                    unit: unit
-                )
-            }
-        )
-
         if isTracked {
-            card.analyticsCardButton {
+            AnalyticsCard(
+                title: title,
+                subtitle: String(localized: "Today"),
+                value: presenter.formatBreakdown(value, unit: unit),
+                unit: unit,
+                themeColor: color,
+                chartConfiguration: .compact,
+                chart: {
+                    MacroProgressChart(
+                        current: value ?? 0,
+                        target: nil,
+                        maxValue: presenter.breakdownChartMax(current: value, defaultMax: 50),
+                        color: color,
+                        unit: unit
+                    )
+                }
+            )
+            .analyticsCardButton {
                 presenter.onBreakdownMetricPressed(metric, themeColor: color)
             }
-        } else {
-            card
-                .opacity(0.5)
-                .allowsHitTesting(false)
         }
     }
 
@@ -224,22 +209,10 @@ struct NutritionAnalyticsView: View {
         }
     }
     
-    private var proteinBreakdownSection: some View {
-        breakdownSection(header: String(localized: "Protein Breakdown")) {
-            breakdownCard(title: String(localized: "Cysteine"), metric: .cysteine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Histidine"), metric: .histidine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Isoleucine"), metric: .isoleucine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Leucine"), metric: .leucine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Lysine"), metric: .lysine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Methionine"), metric: .methionine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Phenylalanine"), metric: .phenylalanine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Threonine"), metric: .threonine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Tryptophan"), metric: .tryptophan, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Tyrosine"), metric: .tyrosine, isTracked: false, unit: "g", color: Color.protein)
-            breakdownCard(title: String(localized: "Valine"), metric: .valine, isTracked: false, unit: "g", color: Color.protein)
-        }
-    }
-    
+    // Protein Breakdown (amino acids) is not shown: every card in it is `isTracked: false`, so the
+    // whole section would render with no cards. The metrics stay defined on `NutritionMetric` for
+    // when the food model carries the fields; nothing here needs a section to come back.
+
     private var vitaminBreakdownSection: some View {
         breakdownSection(header: String(localized: "Vitamin Breakdown")) {
             breakdownCard(title: String(localized: "B1, Thiamine"), metric: .thiamin, value: presenter.dailyBreakdown?.thiaminMg, unit: "mg", color: Color.vitamins)
@@ -300,7 +273,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showNutritionAnalyticsView(delegate: NutritionAnalyticsDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.nutritionAnalyticsView(router: router, delegate: delegate)
         }
     }

@@ -42,7 +42,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color? = nil) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.scaleWeightView(router: router, delegate: delegate, themeColor: themeColor)
         }
     }

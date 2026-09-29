@@ -50,11 +50,6 @@ struct MuscleGroupsView: View {
         }
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Muscle Balance", systemImage: "square.grid.3x3.fill") {
                     presenter.onMuscleBalancePressed()
@@ -116,7 +111,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showMuscleGroupsView(delegate: MuscleGroupsDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.muscleGroupsView(router: router, delegate: delegate)
         }
     }

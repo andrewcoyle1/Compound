@@ -25,13 +25,6 @@ struct MuscleBalanceView: View {
         .onAppear {
             presenter.onViewAppear()
         }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-            }
-        }
     }
 
     private func section(_ region: BodyRegion) -> some View {
@@ -134,7 +127,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showMuscleBalanceView() {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.push) { router in
             builder.muscleBalanceView(router: router)
         }
     }

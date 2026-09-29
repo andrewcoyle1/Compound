@@ -59,6 +59,8 @@ struct WorkoutSessionActivity: Widget {
             showsEnded: false
         )
         .padding(.horizontal, 4)
+        // The banner's ceiling: the expanded island has the same 160 pt to fit into.
+        .dynamicTypeSize(...LiveActivityLayout.maxDynamicTypeSize)
     }
 
     // MARK: - Compact and minimal

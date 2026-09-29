@@ -25,6 +25,11 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     let delegate: SetTrackerDelegate
 
     @ViewBuilder var setTrackerRow: (SetTrackerRowDelegate) -> SetTrackerRow
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// The rows stack into two lines at accessibility sizes; the headers follow them.
+    private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
     
     var body: some View {
         Group {
@@ -139,22 +144,32 @@ struct SetTrackerView<SetTrackerRow: View>: View {
 
     private var columnHeaders: some View {
         let unitPreference = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
-        return HStack(alignment: .firstTextBaseline) {
-            Text("Set")
-                .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
-            Spacer()
-            prevAutoHeader(exercise: delegate.exercise)
-            Spacer()
-            inputHeaders(unitPreference: unitPreference)
-            Spacer()
-            Text("Done")
-                .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
+        return Group {
+            if isStacked {
+                // Over the stacked rows: the Prev/Auto switch for line one, the input headers over
+                // the inputs of line two. The set and Done controls need no heading.
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    prevAutoHeader(exercise: delegate.exercise)
+                    inputHeaders(unitPreference: unitPreference)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Set")
+                        .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
+                    Spacer()
+                    prevAutoHeader(exercise: delegate.exercise)
+                    Spacer()
+                    inputHeaders(unitPreference: unitPreference)
+                    Spacer()
+                    Text("Done")
+                        .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
+                }
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            }
         }
         .font(.caption2)
         .foregroundStyle(.secondary)
-        .lineLimit(1)
-        .minimumScaleFactor(0.6)
-        .dynamicTypeSize(...SetTrackerRowView.maxDynamicTypeSize)
         .padding(.top, Spacing.xs)
     }
 
@@ -166,20 +181,20 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             switch delegate.exercise.wrappedValue.trackingMode {
             case .weightReps:
                 unitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
-                    .frame(width: 70)
+                    .setColumn(width: 70, stretches: isStacked)
                 Text("Reps")
-                    .frame(width: 50)
+                    .setColumn(width: 50, stretches: isStacked)
             case .repsOnly:
                 Text("Reps")
-                    .frame(width: 50)
+                    .setColumn(width: 50, stretches: isStacked)
             case .timeOnly:
                 Text("Time")
-                    .frame(width: 90)
+                    .setColumn(width: 90, stretches: isStacked)
             case .distanceTime:
                 distanceUnitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
-                    .frame(width: 70)
+                    .setColumn(width: 70, stretches: isStacked)
                 Text("Time")
-                    .frame(width: 70)
+                    .setColumn(width: 70, stretches: isStacked)
             }
         }
     }
@@ -201,7 +216,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         .controlSize(.small)
         .font(.caption2)
         .foregroundStyle(.secondary)
-        .frame(width: SetTrackerRowView.previousColumnWidth, alignment: .center)
+        .frame(width: isStacked ? nil : SetTrackerRowView.previousColumnWidth, alignment: .center)
     }
     
     private var addSetButton: some View {

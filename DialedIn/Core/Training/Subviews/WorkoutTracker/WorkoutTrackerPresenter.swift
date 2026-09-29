@@ -24,6 +24,10 @@ class WorkoutTrackerPresenter {
     /// something has to be able to stop it.
     var pendingFinishTask: Task<Void, Never>?
 
+    /// Handed the finished session as the tracker goes, so whoever presented it can show the
+    /// session detail once the cover is down.
+    var onWorkoutFinished: ((WorkoutSessionModel) -> Void)?
+
     // MARK: - State Properties
     var workoutSession: WorkoutSessionModel {
         didSet {
@@ -44,7 +48,12 @@ class WorkoutTrackerPresenter {
     }
     
     var elapsedTime: TimeInterval = 0
-    var isActive = true
+
+    /// False while the workout is paused. The rest timer's owner keeps it, so a tracker reopened
+    /// after being minimized still knows.
+    var isActive: Bool {
+        interactor.isWorkoutActive
+    }
     
     var expandedExerciseId: String?
     var workoutNotes = ""
@@ -83,9 +92,6 @@ class WorkoutTrackerPresenter {
     /// Set once this screen has left — finished, discarded, or told the workout ended elsewhere.
     /// A write after that would put an ended session back as the active one.
     var isDone = false
-    
-    // Notification identifier for rest timer
-    let restTimerNotificationId = "workout-rest-timer"
     
     var exercisesCount: String {
         String(localized: "\(workoutSession.exercises.count) exercises")
@@ -166,9 +172,10 @@ class WorkoutTrackerPresenter {
     
     // MARK: - Computed Properties
     
-    /// The workout clock at `date`, for the overview's ticking Elapsed Time.
+    /// The workout clock at `date`, for the overview's ticking Elapsed Time. Paused time is left
+    /// out, so the clock stands still while the workout is paused.
     func elapsedTime(at date: Date) -> String {
-        Format.duration(max(0, date.timeIntervalSince(startTime)))
+        Format.duration(max(0, date.timeIntervalSince(startTime) - interactor.totalPausedDuration(at: date)))
     }
 
     /// Counted per exercise so a left/right pair is the one set it is — see `WorkoutSetPairing`.
@@ -256,7 +263,7 @@ class WorkoutTrackerPresenter {
             
     // MARK: - Workout Actions
     
-    private func discardWorkout() {
+    func discardWorkout() {
         isDone = true
         interactor.setActiveWorkoutGymProfile(nil)
         try? interactor.deleteActiveSession()
@@ -291,6 +298,14 @@ class WorkoutTrackerPresenter {
 
     func minimizeSession() {
         router.dismissScreen()
+    }
+
+    /// Pause and Resume in the menu. The clock, the Apple Health session and the Live Activity's
+    /// paused phase all follow the one toggle.
+    func onPauseResumePressed() {
+        interactor.togglePause()
+        interactor.playHaptic(option: .light)
+        interactor.trackEvent(event: isActive ? Event.workoutResumed : Event.workoutPaused)
     }
     
     // MARK: - Rest Timer

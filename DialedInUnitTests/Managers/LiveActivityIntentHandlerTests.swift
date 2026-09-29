@@ -107,7 +107,7 @@ struct LiveActivityIntentHandlerTests {
 
         let settingsManager = try await TestManagers.signedInWorkoutSettingsManager(workoutSettings)
         let activity = LiveActivityUpdaterSpy()
-        let hkWorkoutManager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: activity)
+        let hkWorkoutManager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: activity, restOverNotifier: RestOverNotifierSpy())
 
         let handler = AppLiveActivityIntentHandler(
             workoutSessionManager: sessions,

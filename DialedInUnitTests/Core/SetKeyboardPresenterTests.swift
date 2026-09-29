@@ -364,7 +364,8 @@ struct SetTrackerRowKeyboardTests {
         #expect(presenter.keyboardContext(delegate: delegate).step == WeightStepper.fallback(.kilograms))
     }
 
-    @Test func doneOnAReadySetOffersToCompleteIt() {
+    /// Done logs a ready set outright; it used to raise a "Complete Set?" alert first.
+    @Test func doneOnAReadySetLogsIt() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
@@ -375,7 +376,8 @@ struct SetTrackerRowKeyboardTests {
         #expect(exercise.value.sets[1].reps == 5)
 
         presenter.keyboard.done()
-        #expect(router.alerts == ["Complete Set?"])
+        #expect(router.alerts.isEmpty)
+        #expect(exercise.value.sets[1].completedAt != nil)
     }
 
     @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
@@ -387,9 +389,11 @@ struct SetTrackerRowKeyboardTests {
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
+        #expect((exercise.value.sets[1].completedAt != nil) == completed)
     }
 
-    @Test func aTimedSetIsOfferedOnceItHasATime() {
+    /// Logged by Done, rather than offered as it was before, once it has a time.
+    @Test func aTimedSetIsLoggedOnceItHasATime() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.trackingMode = .timeOnly
@@ -398,7 +402,8 @@ struct SetTrackerRowKeyboardTests {
         "45".forEach { presenter.keyboard.type($0) }
         presenter.keyboard.done()
         #expect(exercise.value.sets[1].durationSec == 45)
-        #expect(router.alerts == ["Complete Set?"])
+        #expect(router.alerts.isEmpty)
+        #expect(exercise.value.sets[1].completedAt != nil)
     }
 
     @Test func doneOnAnUnfinishedSetJustCloses() {

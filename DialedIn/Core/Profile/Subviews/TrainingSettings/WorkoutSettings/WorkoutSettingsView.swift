@@ -102,7 +102,13 @@ struct WorkoutSettingsView: View {
                 systemImage: Symbol.scaleWeight,
                 isOn: $presenter.showBodyweightContribution
             )
-            
+            ListRowToggle(
+                title: String(localized: "Show on Lock Screen"),
+                subtitle: String(localized: "Follow each workout on the Lock Screen and in the Dynamic Island"),
+                systemImage: "platter.filled.bottom.iphone",
+                isOn: $presenter.showOnLockScreen
+            )
+
         } header: {
             Text("Display")
         }

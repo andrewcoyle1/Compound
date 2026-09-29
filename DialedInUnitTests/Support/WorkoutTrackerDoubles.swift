@@ -92,6 +92,11 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     }
     func discardWorkout() { }
 
+    var isWorkoutActive = true
+    var pausedDuration: TimeInterval = 0
+    func togglePause() { isWorkoutActive.toggle() }
+    func totalPausedDuration(at date: Date) -> TimeInterval { pausedDuration }
+
     func ensureLiveActivity(
         session: WorkoutSessionModel,
         isActive: Bool,
@@ -196,7 +201,6 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         progressionSuggestionsByTemplateId
     }
 
-    func schedulePushNotification(delegate: PushNotificationDelegate) async throws { }
     func startRest(durationSeconds: Int, session: WorkoutSessionModel, currentExerciseIndex: Int) {
         startedRests.append(durationSeconds)
         restEndTime = Date().addingTimeInterval(TimeInterval(durationSeconds))
@@ -229,6 +233,12 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
     func showGymProfileView(delegate: GymProfileDelegate) { shown.append("gymProfile") }
     func dismissScreen() { shown.append("dismiss") }
+    /// Titles of the confirmation dialogs raised. The buttons are views, so tests call the
+    /// presenter methods they would.
+    private(set) var confirmations: [String] = []
+    func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        confirmations.append(title)
+    }
 }
 
 extension RetryBackoff {

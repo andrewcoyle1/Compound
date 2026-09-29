@@ -287,20 +287,14 @@ extension SetTrackerRowPresenter {
         )
     }
 
-    /// Done on a set that is ready to log offers the same action as the row's circle. A set that is
-    /// not ready, or is already logged, just closes.
+    /// Done on a set that is ready logs it, as the row's circle does, with no question in between:
+    /// tapping the circle again is the undo. A set that is not ready, or is already logged, just
+    /// closes. The event keeps its name so the funnel reading it stays whole.
     private func offerCompletion(delegate: SetTrackerRowDelegate) {
         let exercise = delegate.exercise.wrappedValue
-        let set = delegate.set
-        guard completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue) == .ready else { return }
-        let complete: @MainActor () -> Void = { [weak self] in self?.onSetComplete(exercise, set) }
+        guard completionState(trackingMode: exercise.trackingMode, set: delegate.set.wrappedValue) == .ready else { return }
         interactor.trackEvent(event: Event.keyboardOfferedCompletion)
-        router.showAlert(title: String(localized: "Complete Set?"), subtitle: nil) {
-            AnyView(VStack(spacing: Spacing.s) {
-                Button("Not Yet", role: .cancel) { }
-                Button("Complete Set") { complete() }
-            })
-        }
+        onSetComplete(exercise, delegate.set)
     }
 }
 

@@ -47,6 +47,41 @@ final class LiveActivityUpdaterSpy: LiveActivityUpdating {
     func endLiveActivity(session: WorkoutSessionModel, isCompleted: Bool) {
         ended.append(session.id)
     }
+
+    /// Whether an activity is on screen; off by default, as with Live Activities turned off.
+    var isShowingLiveActivity = false
+    var restOverText: String? = "Next: Bench Press, 60 kg × 8"
+    /// `isActive` of each `announceRestOver` call.
+    private(set) var restOverAnnouncements: [Bool] = []
+
+    func restOverMessage(session: WorkoutSessionModel, currentExerciseIndex: Int) -> String? {
+        restOverText
+    }
+
+    func announceRestOver(isActive: Bool) {
+        restOverAnnouncements.append(isActive)
+    }
+}
+
+/// Records the rest-over notification the manager schedules and withdraws, in order, instead of
+/// asking the test process for notification permission.
+@MainActor
+final class RestOverNotifierSpy: RestOverNotifying {
+
+    enum Call: Equatable {
+        case schedule(date: Date, body: String?, sound: Bool)
+        case cancel
+    }
+
+    private(set) var calls: [Call] = []
+
+    func scheduleRestOverNotification(at date: Date, body: String?, sound: Bool) async {
+        calls.append(.schedule(date: date, body: body, sound: sound))
+    }
+
+    func cancelRestOverNotification() {
+        calls.append(.cancel)
+    }
 }
 
 /// Counts `Constants.workoutRestDidComplete` posts from one manager.

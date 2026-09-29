@@ -17,6 +17,8 @@ extension WorkoutTrackerPresenter {
         case progressionAdjusted(exerciseId: String, setsChanged: Int)
         case restExtended(seconds: Int)
         case restSkipped
+        case workoutPaused
+        case workoutResumed
 
         var eventName: String {
             switch self {
@@ -25,6 +27,8 @@ extension WorkoutTrackerPresenter {
             case .progressionAdjusted:      return "WorkoutTracker_Progression_Adjusted"
             case .restExtended:             return "WorkoutTracker_Rest_Extended"
             case .restSkipped:              return "WorkoutTracker_Rest_Skipped"
+            case .workoutPaused:            return "WorkoutTracker_Workout_Paused"
+            case .workoutResumed:           return "WorkoutTracker_Workout_Resumed"
             }
         }
 
@@ -47,7 +51,7 @@ extension WorkoutTrackerPresenter {
                 ]
             case .restExtended(let seconds):
                 return ["seconds": seconds]
-            case .restSkipped:
+            case .restSkipped, .workoutPaused, .workoutResumed:
                 return nil
             }
         }

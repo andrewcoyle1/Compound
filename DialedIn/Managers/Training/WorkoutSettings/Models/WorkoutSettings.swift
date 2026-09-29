@@ -16,6 +16,10 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var keepAlive: Bool = true
     var showWorkoutTimer: Bool = true
     var showBodyweightContribution: Bool = false
+    /// The workout's Live Activity on the Lock Screen and in the Dynamic Island. Optional so a
+    /// document saved before the setting existed still decodes; nil reads as on.
+    var showOnLockScreen: Bool?
+    var showsOnLockScreen: Bool { showOnLockScreen ?? true }
     
     // MARK: - Warm-Up
     var addSmartWarmUps: Bool = true
@@ -52,6 +56,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case keepAlive = "keep_alive"
         case showWorkoutTimer = "show_workout_timer"
         case showBodyweightContribution = "show_bodyweight_contribution"
+        case showOnLockScreen = "show_on_lock_screen"
         case exerciseAutoNext = "exercise_auto_next"
         case propagateChanges = "propagate_changes"
         case rirTracking = "rir_tracking"

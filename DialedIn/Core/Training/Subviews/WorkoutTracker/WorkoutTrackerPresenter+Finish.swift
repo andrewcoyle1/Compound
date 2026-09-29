@@ -58,6 +58,23 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - Finishing
 
+    /// The notes step was confirmed. A workout with nothing logged would go into the history, the
+    /// streak and Strava as an empty session, so the person is asked first.
+    func onFinishConfirmed() {
+        guard !hasLoggedSet else { return finishWorkout() }
+        router.showConfirmationDialog(title: String(localized: "No Sets Logged"), subtitle: nil) {
+            AnyView(VStack(spacing: Spacing.s) {
+                Button("Discard Workout", role: .destructive) { self.discardWorkout() }
+                Button("Save Anyway") { self.finishWorkout() }
+                Button("Cancel", role: .cancel) { }
+            })
+        }
+    }
+
+    var hasLoggedSet: Bool {
+        workoutSession.exercises.contains { $0.sets.contains { $0.completedAt != nil } }
+    }
+
     func finishWorkout() {
         workoutSession.endSession(at: Date())
         isDone = true
@@ -65,6 +82,8 @@ extension WorkoutTrackerPresenter {
         router.dismissScreen()
 
         let sessionSnapshot = workoutSession
+        // The session detail is the summary: what was done, shown the moment the tracker is down.
+        onWorkoutFinished?(sessionSnapshot)
         // `self` is captured strongly on purpose. The screen is already dismissed, so the view no
         // longer holds the presenter, and a weak capture would drop the save on the floor exactly
         // when it matters. The cycle breaks when the task returns.
@@ -93,7 +112,7 @@ extension WorkoutTrackerPresenter {
         // what the user is told about it are this screen's.
         switch await interactor.finishWorkout(session) {
         case .saved:
-            break
+            interactor.playHaptic(option: .success)
         case .failedPermanently:
             interactor.showAppToast(SaveToast.failed)
         case .failedTransiently:
@@ -144,6 +163,7 @@ extension WorkoutTrackerPresenter {
 
             switch await attemptSave(session) {
             case .saved:
+                interactor.playHaptic(option: .success)
                 interactor.showAppToast(SaveToast.saved)
                 return
             case .failedPermanently:

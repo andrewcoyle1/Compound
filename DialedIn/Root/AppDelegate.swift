@@ -136,6 +136,12 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
+        // With the app in front the tracker plays its own rest-over sound and haptic; a banner and
+        // a second sound on top of them would announce the same moment twice.
+        guard notification.request.identifier != RestOverNotification.id else {
+            completionHandler([])
+            return
+        }
         completionHandler([.banner, .sound, .badge])
     }
 

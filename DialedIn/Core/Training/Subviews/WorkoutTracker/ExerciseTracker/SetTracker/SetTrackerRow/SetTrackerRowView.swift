@@ -22,23 +22,31 @@ struct SetTrackerRowView: View {
     /// The in-app keyboard all of this row's fields share.
     @State private var keyboardHost = SetKeyboardInputHost()
 
-    /// The row's cell height at the default text size. Scaled so a larger size never clips a value;
-    /// the row's Dynamic Type cap (`maxDynamicTypeSize`) bounds how far it grows.
+    /// The row's cell height at the default text size. Scaled so a larger size never clips a value.
     @ScaledMetric(relativeTo: .body) private var cellHeight: CGFloat = 35
-    
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
+    /// into two lines and the text keeps growing. Below them the table is as it always was.
+    private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
+
     var body: some View {
-        HStack {
-            setNumber(set: delegate.set)
-            Spacer()
-            previousValues(exercise: delegate.exercise, set: delegate.set)
-            Spacer()
-            inputFields(exercise: delegate.exercise.wrappedValue, set: delegate.set)
-            Spacer()
-            completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
+        Group {
+            if isStacked {
+                stackedRow
+            } else {
+                HStack {
+                    setNumber(set: delegate.set)
+                    Spacer()
+                    previousValues(exercise: delegate.exercise, set: delegate.set)
+                    Spacer()
+                    inputFields(exercise: delegate.exercise.wrappedValue, set: delegate.set)
+                    Spacer()
+                    completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
+                }
+            }
         }
-        // A five-column table of numbers: past this size the fixed columns truncated every
-        // value to "4…". Capped here and on the headers, which share the column widths.
-        .dynamicTypeSize(...SetTrackerRowView.maxDynamicTypeSize)
         .padding(.vertical, Spacing.xs)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             deleteSetButton
@@ -61,7 +69,18 @@ struct SetTrackerRowView: View {
         }
     }
     
-    static let maxDynamicTypeSize = DynamicTypeSize.xxxLarge
+    /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.
+    private var stackedRow: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                setNumber(set: delegate.set)
+                previousValues(exercise: delegate.exercise, set: delegate.set)
+                Spacer(minLength: 0)
+                completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
+            }
+            inputFields(exercise: delegate.exercise.wrappedValue, set: delegate.set)
+        }
+    }
 
     /// Column widths the headers share. The set number and Done are the 44 pt minimum hit area;
     /// Prev gave up the room they needed.
@@ -107,7 +126,8 @@ struct SetTrackerRowView: View {
         .buttonBorderShape(.circle)
         .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
         .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))
-        .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
+        .frame(width: isStacked ? nil : SetTrackerRowView.setColumnWidth, alignment: .center)
+        .frame(minWidth: SetTrackerRowView.setColumnWidth)
         .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
     }
 
@@ -130,20 +150,20 @@ struct SetTrackerRowView: View {
             switch exercise.trackingMode {
             case .weightReps:
                 keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
-                    .frame(width: 70, height: cellHeight)
+                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
                 keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                    .frame(width: 50, height: cellHeight)
+                    .setColumn(width: 50, height: cellHeight, stretches: isStacked)
             case .repsOnly:
                 keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                    .frame(width: 50, height: cellHeight)
+                    .setColumn(width: 50, height: cellHeight, stretches: isStacked)
             case .timeOnly:
                 keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                    .frame(width: 90, height: cellHeight)
+                    .setColumn(width: 90, height: cellHeight, stretches: isStacked)
             case .distanceTime:
                 keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
-                    .frame(width: 70, height: cellHeight)
+                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
                 keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                    .frame(width: 70, height: cellHeight)
+                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
             }
         }
     }
@@ -189,7 +209,7 @@ struct SetTrackerRowView: View {
                 emptyTargetLabel
             }
         }
-        .frame(width: SetTrackerRowView.previousColumnWidth, alignment: .center)
+        .setColumn(width: SetTrackerRowView.previousColumnWidth, stretches: isStacked, alignment: .leading)
     }
 
     @ViewBuilder
@@ -270,7 +290,8 @@ struct SetTrackerRowView: View {
         .accessibilityLabel(state.accessibilityLabel)
         .accessibilityValue(state.accessibilityValue)
         .buttonStyle(.plain)
-        .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
+        .frame(width: isStacked ? nil : SetTrackerRowView.doneColumnWidth, alignment: .center)
+        .frame(minWidth: SetTrackerRowView.doneColumnWidth)
         .disabled(state == .notReady)
     }
 
@@ -323,6 +344,19 @@ struct SetTrackerRowView: View {
     return RouterView { router in
         List {
             builder.setTrackerRowView(router: router, delegate: delegate)
+        }
+    }
+}
+
+extension View {
+    /// A column of the set table: its fixed width, or on the stacked row at accessibility sizes a
+    /// share of the line that grows with the text. The headers use the same widths.
+    @ViewBuilder
+    func setColumn(width: CGFloat, height: CGFloat? = nil, stretches: Bool, alignment: Alignment = .center) -> some View {
+        if stretches {
+            frame(maxWidth: .infinity, minHeight: height, alignment: alignment)
+        } else {
+            frame(width: width, height: height, alignment: .center)
         }
     }
 }

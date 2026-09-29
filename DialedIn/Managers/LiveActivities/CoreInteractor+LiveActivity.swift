@@ -24,6 +24,9 @@ extension CoreInteractor {
         currentExerciseIndex: Int = 0,
         restEndsAt: Date? = nil
     ) {
+        // "Show on Lock Screen" in Workout Settings. Off, no activity is started, and the rest-over
+        // alert falls back to the notification.
+        guard workoutSettingsManager.workoutSettings.showsOnLockScreen else { return }
         liveActivityManager.ensureLiveActivity(session: session, isActive: isActive, currentExerciseIndex: currentExerciseIndex, restEndsAt: restEndsAt)
     }
     

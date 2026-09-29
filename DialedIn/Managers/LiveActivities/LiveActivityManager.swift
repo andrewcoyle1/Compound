@@ -190,7 +190,11 @@ class LiveActivityManager: LiveActivityUpdating {
         }
     }
     
-    private func updateLiveActivity(sessionId: String, contentState: WorkoutActivityAttributes.ContentState) {
+    private func updateLiveActivity(
+        sessionId: String,
+        contentState: WorkoutActivityAttributes.ContentState,
+        alert: AlertConfiguration? = nil
+    ) {
         let activity = resolveActivity(sessionId: sessionId)
 
         // Only update if meaningful changes occurred. A skipped no-op is not an attempt, so the
@@ -212,7 +216,7 @@ class LiveActivityManager: LiveActivityUpdating {
         self.lastContentState = contentState
 
         Task {
-            await activity.update(ActivityContent(state: contentState, staleDate: contentState.restEndsAt))
+            await activity.update(ActivityContent(state: contentState, staleDate: contentState.restEndsAt), alertConfiguration: alert)
             logger.trackEvent(event: Event.updateLiveActivitySuccess)
         }
     }
@@ -353,6 +357,30 @@ class LiveActivityManager: LiveActivityUpdating {
         updateLiveActivity(sessionId: sessionId, contentState: state)
     }
 
+    // MARK: - Rest over
+
+    var isShowingLiveActivity: Bool {
+        currentActivity.map(Self.isUpdatable) ?? false
+    }
+
+    func restOverMessage(session: WorkoutSessionModel, currentExerciseIndex: Int) -> String? {
+        makeContentState(session: session, isActive: true, currentExerciseIndex: currentExerciseIndex, restEndsAt: nil).restOverMessage
+    }
+
+    /// The Live Activity is the rest-over channel (the notification stands in only when there is
+    /// none), so the end of a rest goes out as an update with an alert.
+    func announceRestOver(isActive: Bool) {
+        guard var state = lastContentState, let sessionId = currentActivity?.attributes.sessionId else { return }
+        state.isActive = isActive
+        state.restEndsAt = nil
+        let alert = AlertConfiguration(
+            title: "Rest Complete",
+            body: LocalizedStringResource(stringLiteral: state.restOverMessage ?? String(localized: "Rest complete")),
+            sound: .default
+        )
+        updateLiveActivity(sessionId: sessionId, contentState: state, alert: alert)
+    }
+
     // MARK: - Derived state helpers
     private struct Totals {
         let totalSetsCount: Int
@@ -468,6 +496,12 @@ class LiveActivityManager: LiveActivityUpdating {
     ) { }
 
     func updateRestAndActive(isActive: Bool, restEndsAt: Date?) { }
+
+    var isShowingLiveActivity: Bool { false }
+
+    func restOverMessage(session: WorkoutSessionModel, currentExerciseIndex: Int) -> String? { nil }
+
+    func announceRestOver(isActive: Bool) { }
 }
 
 #endif

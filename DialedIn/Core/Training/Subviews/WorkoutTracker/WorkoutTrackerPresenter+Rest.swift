@@ -125,28 +125,7 @@ extension WorkoutTrackerPresenter {
         interactor.trackEvent(event: Event.startRestTimerCalled(inputDuration: durationSeconds, resolvedDuration: duration))
         interactor.startRest(durationSeconds: duration, session: workoutSession, currentExerciseIndex: currentExerciseIndex)
         interactor.trackEvent(event: Event.startRestTimerAfterCall(restEndTime: interactor.restEndTime))
-
-        #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
-        // Schedule local notification for when rest is complete
-        if let endTime = interactor.restEndTime {
-            Task {
-                do {
-                    let delegate = PushNotificationDelegate(
-                        identifier: restTimerNotificationId,
-                        title: String(localized: "Rest Complete"),
-                        subtitle: String(localized: "Time to get back to your workout!"),
-                        triggerDate: endTime,
-                        // The same setting, so a user who turned the sound off is not dinged by the
-                        // notification that lands at the very moment the in-app sound was suppressed.
-                        sound: interactor.workoutSettings.restTimerPlaySound,
-                        badge: nil
-                    )
-                    try await interactor.schedulePushNotification(delegate: delegate)
-                } catch {
-                    // Silently fail - notification is nice to have but not critical
-                }
-            }
-        }
-        #endif
+        // The rest-over alert, the Live Activity's or the notification, is scheduled by the rest
+        // timer's owner, so the +15s, skip, finish and discard that follow can move or withdraw it.
     }
 }

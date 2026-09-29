@@ -22,6 +22,17 @@ struct CommentsView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .removeListRowFormatting()
+            } else if presenter.loadFailed {
+                ContentUnavailableView {
+                    Label("Unable to Load Comments", systemImage: Symbol.warning)
+                } description: {
+                    Text("Check your connection and try again.")
+                } actions: {
+                    Button("Try Again") {
+                        presenter.onRetryLoadPressed()
+                    }
+                }
+                .removeListRowFormatting()
             } else if presenter.comments.isEmpty {
                 ContentUnavailableView(
                     "No Comments Yet",
@@ -34,7 +45,7 @@ struct CommentsView: View {
                     ForEach(presenter.comments) { comment in
                         commentRow(comment)
                             .padding(.leading, presenter.isReply(comment) ? ControlSize.thumbnail : 0)
-                            .swipeActions(edge: .leading) {
+                            .rowActions(edge: .leading) {
                                 Button {
                                     presenter.onReplyPressed(comment)
                                 } label: {
@@ -42,9 +53,9 @@ struct CommentsView: View {
                                 }
                                 .tint(.accentColor)
                             }
-                            .swipeActions(edge: .trailing) {
+                            .rowActions(edge: .trailing) {
                                 if presenter.isOwnComment(comment) {
-                                    Button {
+                                    Button(role: .destructive) {
                                         presenter.onDeletePressed(comment)
                                     } label: {
                                         Label("Delete", systemImage: Symbol.delete)
@@ -61,7 +72,7 @@ struct CommentsView: View {
                             }
                     }
                     .listSectionMargins(.top, 0)
-                    
+
                 }
             }
         }
@@ -83,7 +94,7 @@ struct CommentsView: View {
             UserAvatarView(imageUrl: comment.authorImageUrl, size: ControlSize.thumbnail)
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
-                    Text(comment.authorName ?? "Unknown")
+                    Text(comment.authorName ?? String(localized: "Unknown"))
                         .font(.rowDetail)
                         .fontWeight(.semibold)
                     Spacer()
@@ -93,6 +104,16 @@ struct CommentsView: View {
                 }
                 Text(presenter.attributedText(for: comment))
                     .font(.rowDetail)
+                Button {
+                    presenter.onReplyPressed(comment)
+                } label: {
+                    Text("Reply")
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                        .frame(minHeight: ControlSize.row, alignment: .leading)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
             }
             likeButton(comment)
         }
@@ -116,7 +137,7 @@ struct CommentsView: View {
                         .monospacedDigit()
                 }
             }
-            .frame(minWidth: Spacing.xxl)
+            .tapTarget()
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? String(localized: "Unlike comment") : String(localized: "Like comment"))
@@ -127,7 +148,7 @@ struct CommentsView: View {
         VStack(spacing: Spacing.s) {
             if let parent = presenter.replyingTo {
                 HStack {
-                    Text("Replying to \(parent.authorName ?? "comment")")
+                    Text("Replying to \(parent.authorName ?? String(localized: "comment"))")
                         .font(.label)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -135,6 +156,7 @@ struct CommentsView: View {
                         presenter.onCancelReplyPressed()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
+                            .tapTarget()
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
@@ -179,6 +201,7 @@ struct CommentsView: View {
                 presenter.onSendPressed()
             } label: {
                 Image(systemName: "paperplane.fill")
+                    .tapTarget()
             }
             .accessibilityLabel("Send comment")
             .disabled(presenter.commentDraft.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -240,9 +263,6 @@ private func commentsPreviewContainer(
     }
 }
 
-/// A failed fetch currently falls back to an empty list, so this renders the same as `Empty` —
-/// worth keeping visible, because it means a network failure is indistinguishable from
-/// "no comments yet" for the user.
 #Preview("Load Failed") {
     let session = WorkoutSessionModel.mock
     let container = commentsPreviewContainer(comments: nil, showError: true)

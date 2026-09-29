@@ -31,73 +31,33 @@ struct ExerciseFrequencyDelegate {
 
 struct ExerciseFrequencyView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: ExerciseFrequencyPresenter
 
     var delegate: ExerciseFrequencyDelegate
 
     var body: some View {
-        List {
-            exerciseFrequencySection
+        OnboardingStepScaffold(
+            title: "Do You Work Out?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                ForEach(ExerciseFrequency.allCases, id: \.self) { frequency in
+                    SelectableRow(title: frequency.description, isSelected: presenter.selectedFrequency == frequency) {
+                        presenter.onFrequencySelected(frequency)
+                    }
+                }
+            }
         }
-        .navigationTitle("Exercise Frequency")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canSubmit)
-        }
-    }
-    
-    private var exerciseFrequencySection: some View {
-        Section {
-            ForEach(ExerciseFrequency.allCases, id: \.self) { frequency in
-                frequencyRow(frequency)
-            }
-            .removeListRowFormatting()
-        } header: {
-            Text("How often do you exercise?")
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
-    private func frequencyRow(_ frequency: ExerciseFrequency) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(frequency.description)
-                    .font(.headline)
-            }
-            Spacer(minLength: 8)
-            Image(systemName: presenter.selectedFrequency == frequency ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(presenter.selectedFrequency == frequency ? Color.accent : Color.secondary)
-        }
-        .padding()
-        .background(colorScheme.backgroundPrimary)
-        .anyButton(.press) {
-            presenter.selectedFrequency = frequency
-        }
     }
 }
 

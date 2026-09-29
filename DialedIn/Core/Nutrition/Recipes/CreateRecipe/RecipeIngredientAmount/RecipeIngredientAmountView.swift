@@ -10,7 +10,7 @@ struct RecipeIngredientAmountView: View {
     let delegate: RecipeIngredientAmountDelegate
 
     var body: some View {
-        Form {
+        List {
             Section("Amount") {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)
@@ -19,40 +19,23 @@ struct RecipeIngredientAmountView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            Section("Estimated Macros") {
-                HStack {
-                    Text("Calories")
-                    Spacer()
-                    Text(presenter.calories(food: delegate.food).map { String(Int(round($0))) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Protein")
-                    Spacer()
-                    Text(presenter.protein(food: delegate.food).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Carbs")
-                    Spacer()
-                    Text(presenter.carbs(food: delegate.food).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-                HStack {
-                    Text("Fat")
-                    Spacer()
-                    Text(presenter.fat(food: delegate.food).map { String(format: "%.1f g", $0) } ?? "-")
-                        .foregroundStyle(.secondary)
-                }
-            }
+            EstimatedMacrosSection(
+                title: "Estimated Macros",
+                calories: presenter.calories(food: delegate.food),
+                protein: presenter.protein(food: delegate.food),
+                carbs: presenter.carbs(food: delegate.food),
+                fat: presenter.fat(food: delegate.food)
+            )
         }
         .navigationTitle(delegate.food.name)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Adding to a recipe is not logging, so this keeps its own verb.
             ToolbarItem(placement: .confirmationAction) {
-                Button("Add") {
+                Button("Add", role: .confirm) {
                     presenter.confirm(delegate: delegate)
                 }
-                .disabled((Double(presenter.amountText) ?? 0) <= 0)
+                .disabled(presenter.amountValue <= 0)
             }
         }
     }

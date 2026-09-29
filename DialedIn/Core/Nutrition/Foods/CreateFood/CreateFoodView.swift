@@ -18,11 +18,12 @@ struct CreateFoodDelegate {
 
 struct CreateFoodView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: CreateFoodPresenter
     let delegate: CreateFoodDelegate
     
     var barcodeGenerator = BarcodeGenerator()
+
+    @ScaledMetric(relativeTo: .body) private var imageSide: CGFloat = 120
     
     var body: some View {
         List {
@@ -32,7 +33,7 @@ struct CreateFoodView: View {
             barcodeSection
             submitToPublicDatabaseSection
         }
-        .navigationBarTitle("Create Food")
+        .navigationTitle("Create Food")
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
         .onAppear {
@@ -44,14 +45,13 @@ struct CreateFoodView: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Next")
             }
             .disabled(!presenter.canSave)
-            .padding(.bottom)
         }
         .onChange(of: presenter.selectedPhotoItem) {
             guard let newItem = presenter.selectedPhotoItem else { return }
@@ -67,42 +67,37 @@ struct CreateFoodView: View {
             Button {
                 presenter.onImageSelectorPressed()
             } label: {
-                ZStack {
-                    Rectangle()
-                        .fill(Color.secondary.opacity(0.001))
-                    Group {
-                        if let data = presenter.selectedImageData {
+                Group {
+                    if let data = presenter.selectedImageData {
 #if canImport(UIKit)
-                            if let uiImage = UIImage(data: data) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .clipShape(Circle())
-                                    .frame(width: 120, height: 120)
-                            }
+                        if let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipShape(Circle())
+                                .frame(width: imageSide, height: imageSide)
+                        }
 #elseif canImport(AppKit)
-                            if let nsImage = NSImage(data: data) {
-                                Image(nsImage: nsImage)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .clipShape(Circle())
-                                    .frame(width: 120, height: 120)
-                            }
+                        if let nsImage = NSImage(data: data) {
+                            Image(nsImage: nsImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .clipShape(Circle())
+                                .frame(width: imageSide, height: imageSide)
+                        }
 #endif
-                        } else {
-                            ZStack(alignment: .bottomTrailing) {
-                                Image(systemName: "fork.knife.circle")
-                                    .font(.system(size: 100))
-                                    .foregroundStyle(.secondary.opacity(0.4))
-                                Image(systemName: "pencil.circle.fill")
-                                    .font(.system(size: 24))
-                                    .padding(12)
-                            }
+                    } else {
+                        ZStack(alignment: .bottomTrailing) {
+                            Image(systemName: Symbol.meal + ".circle")
+                                .iconSize(.hero)
+                                .foregroundStyle(.tertiary)
+                            Image(systemName: Symbol.edit + ".circle.fill")
+                                .iconSize(.medium)
                         }
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 120)
+                .frame(maxWidth: .infinity, minHeight: imageSide)
+                .contentShape(.rect)
             }
             .accessibilityLabel("Choose food image")
         }
@@ -119,7 +114,7 @@ struct CreateFoodView: View {
                 Text("Food Name")
                 Spacer()
                 Text("Required")
-                    .font(.caption)
+                    .font(.label)
                     .foregroundStyle(.secondary)
             }
         }
@@ -144,20 +139,21 @@ struct CreateFoodView: View {
     
     private var barcodeSection: some View {
         Section {
-            Group {
-                if let barcode = presenter.barcode {
-                    VStack {
-                        barcodeGenerator.generateBarcode(text: barcode)
-                        Text(barcode)
-                    }
-                } else {
-                    Label("Barcode", systemImage: "barcode")
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .anyButton(.press) {
+            Button {
                 presenter.onBarcodeScannerPressed()
+            } label: {
+                Group {
+                    if let barcode = presenter.barcode {
+                        VStack {
+                            barcodeGenerator.generateBarcode(text: barcode)
+                            Text(barcode)
+                                .monospacedDigit()
+                        }
+                    } else {
+                        Label("Scan Barcode", systemImage: Symbol.barcode)
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             }
         } header: {
             Text("Barcode")
@@ -166,46 +162,23 @@ struct CreateFoodView: View {
     
     private var submitToPublicDatabaseSection: some View {
         Section {
-            CustomToggleView(
+            ListRowToggle(
                 title: String(localized: "Submit Foods to the Public Database?"),
                 subtitle: String(localized: "Toggle this option to contribute new foods"),
-                bool: $presenter.contributeToPublicDatabase
+                isOn: $presenter.contributeToPublicDatabase
             )
-            .removeListRowFormatting()
-            HStack {
-                Text("Learn More")
-                    .padding(8)
-                    .background(.secondary.opacity(0.3), in: .capsule)
-                Spacer()
-            }
-            .anyButton(.press) {
+            Button("Learn More") {
                 presenter.onLearnMorePressed()
             }
         }
     }
     
-    private func inputRow(label: String, value: Binding<Double?>, unit: String? = nil) -> some View {
-        HStack(alignment: .bottom, spacing: 0) {
-            Text(label)
-            Spacer()
-            TextField("0", value: value, format: .number)
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 80)
-            Text(" " + (unit ?? ""))
-                .foregroundStyle(value.wrappedValue != nil ? .primary : .secondary)
-        }
-    }
-    
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onCancelPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Cancel")
         }
 #if DEBUG || MOCK
         ToolbarSpacer(.fixed, placement: .topBarLeading)

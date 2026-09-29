@@ -50,11 +50,11 @@ class CreateExercisePresenter {
     }
     
     func exerciseTypePressed(navigationTitle: String, type: Binding<ExerciseType?>) {
-        pickItem(navigationTitle: navigationTitle, item: type, canDelete: false, detents: .fraction(0.45))
+        pickItem(navigationTitle: navigationTitle, item: type, canDelete: false, detents: .medium)
     }
     
     func lateralityPressed(navigationTitle: String, item: Binding<Laterality?>) {
-        pickItem(navigationTitle: navigationTitle, item: item, canDelete: false, detents: .fraction(0.5))
+        pickItem(navigationTitle: navigationTitle, item: item, canDelete: false, detents: .medium)
     }
     
     private func pickItem<Item: PickableItem>(navigationTitle: String, item: Binding<Item?>, canDelete: Bool, detents: PresentationDetentTransformable?) {

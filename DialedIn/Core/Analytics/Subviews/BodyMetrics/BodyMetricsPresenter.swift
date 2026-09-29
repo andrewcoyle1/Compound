@@ -55,7 +55,7 @@ class BodyMetricsPresenter {
                 id: kind,
                 title: kind.title,
                 subtitle: recent.isEmpty ? String(localized: "No Entries") : String(localized: "Last \(recent.count) Entries"),
-                latestValueText: recent.last?.displayValue ?? "--",
+                latestValueText: recent.last?.displayValue ?? Format.placeholder,
                 sparklineData: recent.map { (date: $0.date, value: $0.ratio) }
             )
         }
@@ -158,7 +158,7 @@ class BodyMetricsPresenter {
         if let last = entries.last, let value = type.value(from: last) {
             latestValueText = display(value, as: measure).formatted(.number.precision(.fractionLength(1)))
         } else {
-            latestValueText = "--"
+            latestValueText = Format.placeholder
         }
         return BodyMetricCardModel(
             id: type,

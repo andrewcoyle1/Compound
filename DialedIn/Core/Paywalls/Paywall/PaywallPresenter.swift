@@ -13,6 +13,8 @@ class PaywallPresenter {
     private(set) var productIds: [String] = EntitlementOption.allProductIds
     private(set) var isLoadingProducts: Bool = false
     private(set) var loadErrorMessage: String?
+    /// The plan chosen on the custom paywall. Subscribe stays disabled until there is one.
+    private(set) var selectedProduct: AnyProduct?
     
     var paywallTest: PaywallTestOption {
         interactor.paywallTest
@@ -76,6 +78,7 @@ class PaywallPresenter {
     }
     
     private func onPurchaseSuccess() {
+        interactor.playHaptic(option: .success)
         if isOnboarding {
             handleNavigation()
         } else {
@@ -119,9 +122,20 @@ class PaywallPresenter {
                     )
                 }
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }
+    }
+
+    func onProductSelected(_ product: AnyProduct) {
+        interactor.playHaptic(option: .selection)
+        selectedProduct = product
+    }
+
+    func onSubscribePressed() {
+        guard let selectedProduct else { return }
+        onPurchaseProductPressed(product: selectedProduct)
     }
 
     func onPurchaseProductPressed(product: AnyProduct) {
@@ -137,6 +151,7 @@ class PaywallPresenter {
                 }
             } catch {
                 interactor.trackEvent(event: Event.purchaseFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }
@@ -165,6 +180,7 @@ class PaywallPresenter {
             }
         case .failure(let error):
             interactor.trackEvent(event: Event.purchaseFail(error: error))
+            interactor.playHaptic(option: .error)
         }
     }
     

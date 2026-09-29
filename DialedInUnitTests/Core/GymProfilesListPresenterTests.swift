@@ -181,6 +181,19 @@ struct GymProfilesListPresenterTests {
 
     // MARK: - Deleting and favouriting
 
+    /// Swiping to Delete used to delete the gym on the spot. It asks first, and nothing is deleted
+    /// until the user confirms.
+    @Test("Test Deleting A Gym Asks Before Deleting")
+    func testDeletingAGymAsksBeforeDeleting() async {
+        let screen = makeScreen(profiles: [gym("a", name: "Commercial")])
+
+        screen.presenter.onDeleteGymProfilePressed(profile: gym("a", name: "Commercial"))
+        await settle()
+
+        #expect(screen.router.alertTitles == ["Delete Gym Profile?"])
+        #expect(screen.interactor.deletedIds.isEmpty)
+    }
+
     @Test("Test Deleting A Gym Deletes That Gym")
     func testDeletingAGymDeletesThatGym() async {
         let screen = makeScreen(profiles: [gym("a", name: "Commercial")])

@@ -7,24 +7,30 @@
 
 import SwiftUI
 
+/// A full-width flow button: `.glassProminent` for the primary action, `.glass` for a secondary
+/// one. Pin it to the bottom of a screen with `.bottomCTA { … }`.
+///
+/// While `isLoading` is true the label is swapped for a spinner at the same height, the button
+/// is disabled, and VoiceOver reads "Loading".
 struct CallToActionButton<Content: View>: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
+
     var isPrimaryAction: Bool = true
+    var isLoading: Bool = false
     var action: () -> Void
     var label: () -> Content
-    
+
     init(
         isPrimaryAction: Bool = true,
+        isLoading: Bool = false,
         action: @escaping () -> Void,
         label: @escaping () -> Content
     ) {
         self.isPrimaryAction = isPrimaryAction
+        self.isLoading = isLoading
         self.action = action
         self.label = label
     }
-    
+
     var body: some View {
         ZStack {
             if isPrimaryAction {
@@ -36,38 +42,62 @@ struct CallToActionButton<Content: View>: View {
             }
         }
         .padding(.horizontal)
+        .disabled(isLoading)
+        .accessibilityValue(isLoading ? Text("Loading") : Text(verbatim: ""))
     }
-    
+
     private var makeButton: some View {
         Button {
             action()
         } label: {
+            // The label stays in the layout while loading so the button keeps its height.
             label()
-                .foregroundStyle(isPrimaryAction ? colorScheme.backgroundPrimary : Color.primary)
-                .padding(.vertical, 12)
+                .opacity(isLoading ? 0 : 1)
+                .overlay {
+                    if isLoading {
+                        ProgressView()
+                            .tint(isPrimaryAction ? Color.onAccent : Color.primary)
+                    }
+                }
+                .foregroundStyle(isPrimaryAction ? Color.onAccent : Color.primary)
+                .padding(.vertical, Spacing.m)
                 .frame(maxWidth: .infinity)
         }
     }
 }
 
-#Preview {
-    List {
-        ForEach(FoodModel.mocks) { mock in
-            Text(mock.name)
+private struct CallToActionButtonPreview: View {
+    @State private var isLoading = false
+
+    var body: some View {
+        List {
+            ForEach(FoodModel.mocks) { mock in
+                Text(mock.name)
+            }
         }
-    }
-    .safeAreaInset(edge: .bottom) {
-        VStack {
-            CallToActionButton(isPrimaryAction: true) {
-                
+        .bottomCTA {
+            CallToActionButton(isLoading: isLoading) {
+                isLoading.toggle()
             } label: {
                 Text("Create & Add")
             }
             CallToActionButton(isPrimaryAction: false) {
-                
+                isLoading.toggle()
             } label: {
                 Text("Create")
             }
         }
     }
+}
+
+#Preview("Light") {
+    CallToActionButtonPreview().preferredColorScheme(.light)
+}
+
+#Preview("Dark") {
+    CallToActionButtonPreview().preferredColorScheme(.dark)
+}
+
+#Preview("Accessibility size") {
+    CallToActionButtonPreview().dynamicTypeSize(.accessibility3)
 }

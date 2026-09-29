@@ -10,35 +10,40 @@ struct FoodItemQuickAddDelegate {
 }
 
 struct FoodItemQuickAddView: View {
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
+
     @State var presenter: FoodItemQuickAddPresenter
     let delegate: FoodItemQuickAddDelegate
-    
+
     var body: some View {
         List {
-            nameSection
-            energySection
-            macrosSection
-            alcoholSection
-        }
-        .safeAreaInset(edge: .bottom) {
-            VStack {
-                CallToActionButton {
-                    presenter.onQuickAddPressed(delegate: delegate)
-                } label: {
-                    Text("Quick Add")
-                }
-                .disabled(!presenter.canSubmit)
-                CallToActionButton(isPrimaryAction: false) {
-                    presenter.onLogFoodPressed()
-                } label: {
-                    Text("Log Food")
-                }
-                .disabled(!presenter.canSubmit)
+            Section("Name") {
+                TextField("Name", text: $presenter.quickAddName)
             }
-            .padding(.bottom)
+            Section {
+                NumberField("0", value: $presenter.energyValue, units: Array(EnergyUnit.allCases), selection: $presenter.unitOfEnergy, label: String(localized: "Energy"))
+            } footer: {
+                Text("Macro sum is \(presenter.computedTotalEnergy) \(presenter.unitOfEnergy.name)")
+            }
+            Section("Macros") {
+                macroField("Protein", value: $presenter.proteinValue)
+                macroField("Carbs", value: $presenter.carbsValue)
+                macroField("Fats", value: $presenter.fatsValue)
+                macroField("Alcohol", value: $presenter.alcoholValue)
+            }
+        }
+        .bottomCTA {
+            CallToActionButton {
+                presenter.onQuickAddPressed(delegate: delegate)
+            } label: {
+                Text("Add to Plate")
+            }
+            .disabled(!presenter.canSubmit)
+            CallToActionButton(isPrimaryAction: false) {
+                presenter.onLogFoodPressed()
+            } label: {
+                Text("Log")
+            }
+            .disabled(!presenter.canSubmit)
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -47,97 +52,9 @@ struct FoodItemQuickAddView: View {
             presenter.onViewDisappear(delegate: delegate)
         }
     }
-    
-    private var nameSection: some View {
-        Section {
-            TextField("", text: $presenter.quickAddName)
-                .removeListRowFormatting()
-                .padding()
-                .background(colorScheme.backgroundPrimary, in: .containerRelative)
-        } header: {
-            Text("Name")
-        }
 
-    }
-    
-    private var energySection: some View {
-        Section {
-            TextFieldwUnitPicker<EnergyUnit>(
-                value: $presenter.energyValue,
-                unit: $presenter.unitOfEnergy
-            )
-                .removeListRowFormatting()
-                .padding()
-                .background(colorScheme.backgroundPrimary, in: .containerRelative)
-        } header: {
-            Text("Energy")
-        } footer: {
-            Text("Macro sum is \(presenter.computedTotalEnergy) \(presenter.unitOfEnergy.name)")
-        }
-    }
-    
-    private var macrosSection: some View {
-        Section {
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
-                VStack(alignment: .leading) {
-                    Text("Protein")
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading)
-                    TextFieldwUnitPicker(
-                        value: $presenter.proteinValue,
-                        unit: $presenter.weightUnit
-                    )
-                    .padding(12)
-                    .background(colorScheme.backgroundPrimary, in: .containerRelative)
-                    
-                }
-                .frame(maxWidth: .infinity)
-                VStack(alignment: .leading) {
-                    Text("Carbs")
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading)
-                    TextFieldwUnitPicker(
-                        value: $presenter.carbsValue,
-                        unit: $presenter.weightUnit
-                    )
-                    .padding(12)
-                    .background(colorScheme.backgroundPrimary, in: .containerRelative)
-                    
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                VStack(alignment: .leading) {
-                    Text("Fats")
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading)
-                    TextFieldwUnitPicker(
-                        value: $presenter.fatsValue,
-                        unit: $presenter.weightUnit
-                    )
-                    .padding(12)
-                    .background(colorScheme.backgroundPrimary, in: .containerRelative)
-
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .removeListRowFormatting()
-        }
-    }
-    
-    private var alcoholSection: some View {
-        Section {
-            TextFieldwUnitPicker(
-                value: $presenter.alcoholValue,
-                unit: $presenter.weightUnit
-            )
-                .removeListRowFormatting()
-                .padding()
-                .background(colorScheme.backgroundPrimary, in: .containerRelative)
-        } header: {
-            Text("Alcohol")
-        }
+    private func macroField(_ label: String.LocalizationValue, value: Binding<Double?>) -> some View {
+        NumberField("0", value: value, units: Array(NutritionWeightUnit.allCases), selection: $presenter.weightUnit, label: String(localized: label))
     }
 }
 

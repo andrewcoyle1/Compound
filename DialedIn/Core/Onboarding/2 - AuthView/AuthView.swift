@@ -9,13 +9,12 @@ import SwiftUI
 
 struct AuthView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     @State var presenter: AuthPresenter
 
     var body: some View {
-        VStack {
-            imageSection
+        VStack(spacing: Spacing.s) {
+            ImageLoaderView()
+                .ignoresSafeArea()
             Group {
                 SignInWithAppleButtonView { presenter.onSignInApplePressed() }
                     .accessibilityIdentifier("Auth.apple")
@@ -25,7 +24,7 @@ struct AuthView: View {
             .padding(.horizontal)
         }
         .background {
-            Color(colorScheme.backgroundPrimary)
+            Color.surface
                 .ignoresSafeArea()
         }
         .navigationBarBackButtonHidden(true)
@@ -34,45 +33,24 @@ struct AuthView: View {
         }
         .safeAreaInset(edge: .top) {
             Text("COMPOUND")
-                .font(.system(size: 48))
-                .fontDesign(.default)
+                .font(.display)
                 .fontWeight(.heavy)
-                .foregroundStyle(Color.primary)
+                .fontDesign(.default)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(
-                    colorScheme.backgroundPrimary.opacity(0.75)
-                )
+                .background(.regularMaterial)
+                .accessibilityAddTraits(.isHeader)
         }
-    }
-
-    #if DEBUG || MOCK
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-
-    private var imageSection: some View {
-        ImageLoaderView()
-            .ignoresSafeArea()
     }
 
     private var tsAndCsSection: some View {
         // The destinations were the literal strings "Constants.termsofServiceURL" and
         // "Constants.privacyPolicyURL" — no interpolation, so neither link resolved.
         Text("By continuing, you agree to our [Terms of Service](\(Constants.termsofServiceURL)) and [Privacy Policy](\(Constants.privacyPolicyURL))")
-            .font(.caption)
-            .foregroundStyle(Color.secondary)
+            .font(.label)
+            .foregroundStyle(.secondary)
             .padding(.top)
             .frame(maxWidth: 408)
-
     }
 }
 

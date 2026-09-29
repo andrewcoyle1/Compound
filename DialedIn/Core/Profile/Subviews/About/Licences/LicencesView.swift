@@ -27,16 +27,13 @@ struct LicencesView: View {
                 }
             }
         }
-        .navigationTitle("Licences")
+        .navigationTitle("Licenses")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
                     presenter.onDismissPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
             }
         }
         .onAppear {
@@ -60,13 +57,7 @@ struct LicencesView: View {
     }
 
     private func rowLabel(for package: Licence) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(package.name)
-            Text(package.owner)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        ListRow(title: package.name, subtitle: package.owner)
     }
 }
 

@@ -15,8 +15,8 @@ struct EditWeightRangeView<Range: WeightRange>: View {
             Section {
                     VStack(alignment: .leading) {
                         Text("Range Start")
-                            .font(.headline)
-                            .padding(.top, 4)
+                            .font(.sectionTitle)
+                            .padding(.top, Spacing.xs)
                         ZStack(alignment: .trailing) {
                             TextField("", value: delegate.range.minWeight, format: .number, prompt: Text(""))
                                 .textFieldStyle(.roundedBorder)
@@ -28,7 +28,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                     
                     VStack(alignment: .leading) {
                         Text("Range End")
-                            .font(.headline)
+                            .font(.sectionTitle)
                         ZStack(alignment: .trailing) {
                             TextField("", value: delegate.range.maxWeight, format: .number, prompt: Text(""))
                                 .textFieldStyle(.roundedBorder)
@@ -41,7 +41,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                     
                     VStack(alignment: .leading) {
                         Text("Increment")
-                            .font(.headline)
+                            .font(.sectionTitle)
                         ZStack(alignment: .trailing) {
                             TextField("", value: delegate.range.increment, format: .number, prompt: Text(""))
                                 .textFieldStyle(.roundedBorder)
@@ -49,7 +49,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
                             Text(delegate.range.wrappedValue.unit.abbreviation)
                                 .padding(.trailing)
                         }
-                        .padding(.bottom, 4)
+                        .padding(.bottom, Spacing.xs)
 
                     }
             }
@@ -74,13 +74,10 @@ struct EditWeightRangeView<Range: WeightRange>: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed(delegate: delegate)
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
 }
@@ -102,7 +99,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showEditWeightRangeView<Range: WeightRange>(delegate: EditWeightRangeDelegate<Range>) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.4)]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.editWeightRangeView(router: router, delegate: delegate)
         }
     }

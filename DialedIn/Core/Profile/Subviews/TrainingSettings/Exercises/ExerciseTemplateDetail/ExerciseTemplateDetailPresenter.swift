@@ -76,7 +76,7 @@ class ExerciseModelDetailPresenter {
             valueFormat: .number.precision(.fractionLength(0)),
             availableScales: [.month, .sixMonths, .year],
             initialScale: .month,
-            seriesColors: [.orange],
+            seriesColors: [Color.Metric.exercises],
             height: 220,
             accessibilityTitle: "Top Set"
         )
@@ -90,7 +90,7 @@ class ExerciseModelDetailPresenter {
             valueFormat: .number.precision(.fractionLength(0)),
             availableScales: [.month, .sixMonths, .year],
             initialScale: .month,
-            seriesColors: [.orange],
+            seriesColors: [Color.Metric.exercises],
             height: 220,
             accessibilityTitle: "Reps Per Session"
         )
@@ -115,7 +115,7 @@ class ExerciseModelDetailPresenter {
     }
 
     func formattedWeight(_ kilos: Double) -> String {
-        String(format: "%.0f %@", weightInPreferredUnit(kilos), weightUnit.abbreviation)
+        Format.weight(kg: kilos, unit: weightUnit)
     }
 
     func formattedVolume(_ kilos: Double) -> String {

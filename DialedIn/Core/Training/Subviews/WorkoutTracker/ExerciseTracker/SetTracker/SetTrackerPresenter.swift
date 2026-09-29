@@ -48,7 +48,7 @@ class SetTrackerPresenter {
     func deleteExercise(_ exercise: Binding<WorkoutExerciseModel>, onDelete: @escaping @MainActor () -> Void) {
         let name = exercise.wrappedValue.name
         router.showAlert(title: String(localized: "Delete Exercise?"), subtitle: String(localized: "Remove '\(name)' from this workout?")) {
-            AnyView(VStack(spacing: 8) {
+            AnyView(VStack(spacing: Spacing.s) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) { onDelete() }
             })
@@ -107,7 +107,7 @@ class SetTrackerPresenter {
             return
         }
         router.showAlert(title: String(localized: "Add to Group"), subtitle: String(localized: "Pair '\(current.name)' with:")) {
-            AnyView(VStack(spacing: 8) {
+            AnyView(VStack(spacing: Spacing.s) {
                 ForEach(available, id: \.id) { partner in
                     let partnerGroupId = partner.supersetGroupId
                     let partnerId = partner.id
@@ -189,70 +189,6 @@ class SetTrackerPresenter {
         }
     }
 
-    func buttonColor(set: WorkoutSetModel, canComplete: Bool) -> Color {
-        if set.completedAt != nil {
-            return .green
-        } else if canComplete {
-            return .secondary
-        } else {
-            return .red.opacity(0.6)
-        }
-    }
-
-    func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        switch trackingMode {
-        case .weightReps:
-            let hasValidWeight = set.weightKg == nil || set.weightKg! >= 0
-            let hasValidReps = set.reps != nil && set.reps! > 0
-            return hasValidWeight && hasValidReps
-        case .repsOnly:
-            return set.reps != nil && set.reps! > 0
-        case .timeOnly:
-            return set.durationSec != nil && set.durationSec! > 0
-        case .distanceTime:
-            let hasValidDistance = set.distanceMeters != nil && set.distanceMeters! > 0
-            let hasValidTime = set.durationSec != nil && set.durationSec! > 0
-            return hasValidDistance && hasValidTime
-        }
-    }
-
-    func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        switch trackingMode {
-        case .weightReps:
-            if let weight = set.weightKg, weight < 0 {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Weight must be a non-negative number"))
-                return false
-            }
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
-                return false
-            }
-            return true
-        case .repsOnly:
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Reps must be a positive number"))
-                return false
-            }
-            return true
-        case .timeOnly:
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
-                return false
-            }
-            return true
-        case .distanceTime:
-            guard let distance = set.distanceMeters, distance > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Distance must be a positive number"))
-                return false
-            }
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Invalid Set Data"), subtitle: String(localized: "Duration must be a positive time"))
-                return false
-            }
-            return true
-        }
-    }
-
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
         var current = getUnitPreference(for: exercise.wrappedValue)
@@ -309,7 +245,7 @@ class SetTrackerPresenter {
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         Button("Display Only") {
                             self.updateWeightUnit(newUnit, for: exercise)
                         }
@@ -333,7 +269,7 @@ class SetTrackerPresenter {
             subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
             buttons: {
                 AnyView(
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         Button("Display Only") {
                             self.updateDistanceUnit(newUnit, for: exercise)
                         }

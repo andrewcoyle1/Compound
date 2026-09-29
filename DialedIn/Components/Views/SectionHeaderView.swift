@@ -21,32 +21,48 @@ struct SectionHeaderView: View {
     var onActionPressed: (() -> Void)?
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
             Text(title)
 
             if let onActionPressed {
-                Spacer()
-                Text(actionTitle)
-                    .font(.caption)
-                    .underline()
-                    .anyButton(.press, action: onActionPressed)
+                Spacer(minLength: Spacing.s)
+                // A link, so it takes the accent (CONTRACT.md § Accent).
+                Button(actionTitle, action: onActionPressed)
+                    .buttonStyle(.plain)
+                    .font(.label)
+                    .foregroundStyle(.tint)
+                    .accessibilityLabel("\(actionTitle), \(title)")
             }
         }
     }
 }
 
-#Preview {
-    List {
-        Section {
-            Text("Row")
-        } header: {
-            SectionHeaderView(title: "With Action", onActionPressed: { })
-        }
+private struct SectionHeaderPreview: View {
+    var body: some View {
+        List {
+            Section {
+                Text("Row")
+            } header: {
+                SectionHeaderView(title: "With Action", onActionPressed: { })
+            }
 
-        Section {
-            Text("Row")
-        } header: {
-            SectionHeaderView(title: "Title Only")
+            Section {
+                Text("Row")
+            } header: {
+                SectionHeaderView(title: "Title Only")
+            }
         }
     }
+}
+
+#Preview("Section header, light") {
+    SectionHeaderPreview().preferredColorScheme(.light)
+}
+
+#Preview("Section header, dark") {
+    SectionHeaderPreview().preferredColorScheme(.dark)
+}
+
+#Preview("Section header, accessibility3") {
+    SectionHeaderPreview().dynamicTypeSize(.accessibility3)
 }

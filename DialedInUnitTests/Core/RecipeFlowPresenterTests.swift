@@ -18,7 +18,7 @@ import SwiftUI
 @MainActor
 struct RecipeAmountPresenterTests {
 
-    private final class Interactor: RecipeAmountInteractor { }
+    private final class Interactor: SpyGlobalInteractor, RecipeAmountInteractor { }
 
     /// `showDevSettingsView()` unguarded — the test target builds without `-DDEV`.
     private final class Router: RecipeAmountRouter {
@@ -75,6 +75,16 @@ struct RecipeAmountPresenterTests {
         presenter.add(recipe: recipe(servings: 4)) { box.item = $0 }
 
         #expect(box.item?.nutrients[.calories] == 150)
+    }
+
+    @Test("Test Logging Plays A Success Haptic")
+    func testLoggingPlaysASuccessHaptic() {
+        let interactor = Interactor()
+        let presenter = RecipeAmountPresenter(interactor: interactor, router: Router())
+
+        presenter.add(recipe: recipe(servings: 4)) { _ in }
+
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test Logging Two Servings Logs Twice As Much")
@@ -349,6 +359,19 @@ struct CreateRecipePresenterTests {
         #expect(screen.presenter.ingredients.first?.amount == 400)
     }
 
+    /// The header used to say "0 g" whatever was listed.
+    @Test("Test The Ingredient Weight Adds Up The Weighed Ingredients")
+    func testTheIngredientWeightAddsUpTheWeighedIngredients() {
+        let screen = makeScreen()
+        #expect(screen.presenter.ingredientsWeightText == nil)
+
+        var milk = ingredient("Milk", amount: 250)
+        milk.unit = .milliliters
+        screen.presenter.ingredients = [ingredient("Mince", amount: 400), ingredient("Beans", amount: 120), milk]
+
+        #expect(screen.presenter.ingredientsWeightText == String(localized: "Weight of ingredients is \(Format.grams(520))"))
+    }
+
     /// The builder is told what is already chosen so it can show those as selected.
     @Test("Test The Builder Is Told What Is Already Chosen")
     func testTheBuilderIsToldWhatIsAlreadyChosen() {
@@ -366,7 +389,7 @@ struct CreateRecipePresenterTests {
 @MainActor
 struct RecipeDetailPresenterTests {
 
-    private final class DetailInteractor: RecipeDetailInteractor {
+    private final class DetailInteractor: SpyGlobalInteractor, RecipeDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var favouriteIds: Set<String> = []
         var setFavouriteError: Error?

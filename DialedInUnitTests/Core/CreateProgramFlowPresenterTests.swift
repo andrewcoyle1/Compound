@@ -276,6 +276,7 @@ struct ProgramFlowProgramIconPresenterTests {
         screen.presenter.onNextPressed(delegate: ProgramIconDelegate(name: "Hypertrophy Block"))
 
         let delegate = screen.router.designDelegates.first
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection", "selection"])
         #expect(delegate?.name == "Hypertrophy Block")
         #expect(delegate?.colour == .green)
         #expect(delegate?.icon == "sailboat.fill")
@@ -374,8 +375,7 @@ struct ProgramFlowProgramDesignPresenterTests {
         }
     }
 
-    /// The onboarding destinations come from `SpyOnboardingRouter`, since this screen can hand a
-    /// user straight back into onboarding once the program is saved.
+    /// The onboarding destinations come from `SpyOnboardingRouter`, since this screen can hand a user straight back into onboarding once the program is saved.
     private final class Router: SpyOnboardingRouter, ProgramDesignRouter {
         private(set) var renameDelegates: [RenameWorkoutTemplateModelDelegate] = []
         private(set) var settingsBindings: [Binding<TrainingProgram>] = []
@@ -432,8 +432,7 @@ struct ProgramFlowProgramDesignPresenterTests {
         )
     }
 
-    /// The `Binding` the view hands to the settings sheet, rebuilt here so a test can drive the
-    /// settings round trip the way the toolbar button does.
+    /// The `Binding` the view hands to the settings sheet, rebuilt here so a test can drive the settings round trip the way the toolbar button does.
     private func programBinding(_ presenter: ProgramDesignPresenter) -> Binding<TrainingProgram> {
         Binding(
             get: { MainActor.assumeIsolated { presenter.program } },
@@ -496,12 +495,12 @@ struct ProgramFlowProgramDesignPresenterTests {
         #expect(screen.presenter.dayPlans.count == 1)
     }
 
-    /// Removing the day being edited has to leave a different day selected, or the screen would be
-    /// pointing at something that no longer exists.
+    /// Removing the day being edited has to leave a different day selected, or the screen would be pointing at something that no longer exists.
     @Test("Test Removing The Selected Day Selects Another")
     func testRemovingTheSelectedDaySelectsAnother() {
         let screen = makeScreen(program: program(days: [day("Push"), day("Pull")]))
         screen.presenter.onWorkoutTemplateModelSelected(screen.presenter.dayPlans[1])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
 
         screen.presenter.onRemoveWorkoutTemplateModelPressed()
 
@@ -648,6 +647,7 @@ struct ProgramFlowProgramDesignPresenterTests {
 
         #expect(await TestManagers.eventually { screen.interactor.savedPrograms.count == 1 })
         #expect(screen.interactor.savedPrograms.first?.workoutTemplates.count == 2)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
     /// A save that fails must not look like it worked. The alert it raises goes through a
@@ -664,6 +664,7 @@ struct ProgramFlowProgramDesignPresenterTests {
 
         _ = await TestManagers.eventually(timeout: .milliseconds(200)) { !screen.interactor.savedPrograms.isEmpty }
         #expect(screen.interactor.savedPrograms.isEmpty)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["error"] })
     }
 
     /// The screen shows an "active" badge, and it is keyed on the program being edited rather than

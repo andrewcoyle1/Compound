@@ -62,6 +62,7 @@ class FoodItemQuickAddPresenter {
     func onQuickAddPressed(delegate: FoodItemQuickAddDelegate) {
         guard canSubmit else { return }
         interactor.trackEvent(event: Event.onQuickAdd(name: trimmedName))
+        interactor.playHaptic(option: .success)
         delegate.onPick(quickAddItem())
         router.dismissScreen()
     }
@@ -83,9 +84,11 @@ class FoodItemQuickAddPresenter {
             do {
                 try await interactor.saveMeal(meal)
                 interactor.trackEvent(event: Event.onLogFoodSuccess(name: name))
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onLogFoodFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to log food"), subtitle: String(localized: "Please try again."))
             }
         }

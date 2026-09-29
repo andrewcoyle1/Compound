@@ -6,8 +6,6 @@
 //
 
 @MainActor
-protocol ActivityInteractor {
-    func trackEvent(event: LoggableEvent)
-}
+protocol ActivityInteractor: GlobalInteractor { }
 
 extension CoreInteractor: ActivityInteractor { }

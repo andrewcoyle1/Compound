@@ -163,23 +163,24 @@ enum NutritionMetric {
     @MainActor
     var chartColor: Color {
         switch self {
-        case .macros, .calories: return .blue
+        case .macros: return Color.Metric.nutrition
+        case .calories: return Color.calories
         case .protein, .cysteine, .histidine, .isoleucine, .leucine, .lysine, .methionine,
              .phenylalanine, .threonine, .tryptophan, .tyrosine, .valine:
-            return MacroProgressChart.proteinColor
+            return Color.protein
         case .fat, .fatMono, .fatPoly, .omega3, .omega3ALA, .omega3DHA, .omega3EPA,
              .omega6, .fatSaturated, .transFat:
-            return MacroProgressChart.fatColor
+            return Color.fat
         case .carbs, .fiber, .netCarbs, .starch, .sugars, .sugarsAdded:
-            return MacroProgressChart.carbsColor
+            return Color.carbs
         case .thiamin, .riboflavin, .niacin, .pantothenicAcid, .vitaminB6, .vitaminB12,
              .folate, .vitaminA, .vitaminC, .vitaminD, .vitaminE, .vitaminK:
-            return MacroProgressChart.vitaminColor
+            return Color.vitamins
         case .calcium, .copper, .iron, .magnesium, .manganese, .phosphorus,
              .potassium, .selenium, .sodium, .zinc:
-            return MacroProgressChart.mineralColor
+            return Color.minerals
         case .alcohol, .caffeine, .cholesterol, .choline, .water:
-            return MacroProgressChart.otherColor
+            return Color.otherNutrients
         }
     }
 

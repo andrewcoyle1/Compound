@@ -67,30 +67,17 @@ struct RecipeDetailView: View {
         }
     }
 
-    private func nutrientRow(_ title: String, _ value: Double?, unit: String) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Text(value.map { "\(NutritionScaling.rounded($0).formatted()) \(unit)" } ?? "-")
-                .foregroundStyle(.secondary)
-        }
+    private func nutrientRow(_ title: LocalizedStringKey, _ value: Double?, unit: String) -> some View {
+        LabeledContent(title, value: value.map { NutrientAmount.format($0, unit: unit) } ?? Format.placeholder)
+            .monospacedDigit()
     }
 
     private func ingredientSection(wrapper: RecipeIngredientModel) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(wrapper.ingredient.name)
-                    .fontWeight(.semibold)
-                Spacer()
-                Text("\(presenter.scaledAmount(wrapper, recipe: delegate.recipeTemplate).formatted()) \(presenter.displayUnit(wrapper.unit))")
-                    .foregroundStyle(.secondary)
-            }
-            if let notes = wrapper.ingredient.description, !notes.isEmpty {
-                Text(notes)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.vertical, 4)
+        ListRow(
+            title: wrapper.ingredient.name,
+            subtitle: wrapper.ingredient.description.flatMap { $0.isEmpty ? nil : $0 },
+            accessory: .value("\(presenter.scaledAmount(wrapper, recipe: delegate.recipeTemplate).formatted()) \(presenter.displayUnit(wrapper.unit))")
+        )
     }
 
     @ToolbarContentBuilder
@@ -112,7 +99,7 @@ struct RecipeDetailView: View {
             } label: {
                 Image(systemName: presenter.isFavourited ? "heart.fill" : "heart")
             }
-            .accessibilityLabel(presenter.isFavourited ? String(localized: "Remove from favourites") : String(localized: "Add to favourites"))
+            .accessibilityLabel(presenter.isFavourited ? String(localized: "Remove from favorites") : String(localized: "Add to favorites"))
         }
 
         ToolbarItem(placement: .topBarTrailing) {
@@ -120,6 +107,7 @@ struct RecipeDetailView: View {
                 presenter.onStartRecipePressed(recipe: delegate.recipeTemplate)
             } label: {
                 Label("Start", systemImage: "play.fill")
+                    .foregroundStyle(.onAccent)
             }
             .buttonStyle(.glassProminent)
         }
@@ -130,10 +118,10 @@ struct RecipeDetailView: View {
                     Button(role: .destructive) {
                         presenter.showDeleteConfirmation(recipe: delegate.recipeTemplate)
                     } label: {
-                        Label("Delete Recipe", systemImage: "trash")
+                        Label("Delete Recipe", systemImage: Symbol.delete)
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: Symbol.more)
                 }
                 .disabled(presenter.isDeleting)
                 .accessibilityLabel("Recipe options")

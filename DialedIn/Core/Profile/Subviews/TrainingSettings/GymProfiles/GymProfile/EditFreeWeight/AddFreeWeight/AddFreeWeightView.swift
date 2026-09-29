@@ -34,33 +34,19 @@ struct AddFreeWeightView: View {
     }
     
     private var colourSection: some View {
-        VStack(alignment: .leading) {
-            Text("Plate Colour")
-                .font(.headline)
-            HStack {
-                ForEach(presenter.colours, id: \.self) { colour in
-                    ZStack {
-                        Circle()
-                            .opacity(0.3)
-                    }
-                    .foregroundStyle(colour)
-                    .overlay {
-                        Circle()
-                            .stroke(colour == presenter.selectedColour ? presenter.selectedColour ?? .primary : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onColourPressed(colour: colour)
-                    }
-                }
-            }
-            .padding(.horizontal)
+        EquipmentColourPicker(
+            title: "Plate Color",
+            colours: presenter.colours,
+            selectedColour: presenter.selectedColour
+        ) { colour in
+            presenter.onColourPressed(colour: colour)
         }
     }
-    
+
     private var weightSection: some View {
         VStack(alignment: .leading) {
             Text("Weight")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.freeWeightAvailable.availableWeights, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -74,22 +60,15 @@ struct AddFreeWeightView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button {
+            Button(role: .confirm) {
                 presenter.onSavePressed()
-            } label: {
-                Image(systemName: "checkmark")
             }
-            .accessibilityLabel("Save")
-            .buttonStyle(.glassProminent)
         }
     }
 }
@@ -111,7 +90,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAddFreeWeightView(delegate: AddFreeWeightDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.3)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.addFreeWeightView(router: router, delegate: delegate)
         }
     }

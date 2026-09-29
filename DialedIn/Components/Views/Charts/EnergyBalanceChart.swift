@@ -11,6 +11,9 @@ import Charts
 /// The thumbnail on the Energy Balance cards: the last week's intake as bars with expenditure drawn
 /// over them, with no axes, picker or selection. The full screen behind the card draws the same
 /// shape with QuickCharts' `ComboChart`, which brings the ranges, header and callout with it.
+///
+/// Kept rather than replaced by `ComboChart`: that always draws its range picker, header and
+/// scrolling axes, and has no chrome-free thumbnail mode to fit a 36 pt card.
 struct EnergyBalanceChart: View {
 
     let expenditure: TimeSeries
@@ -69,11 +72,23 @@ struct EnergyBalanceChart: View {
         .chartLegend(.hidden)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
+        .accessibilityElement()
+        .accessibilityLabel(Text("Energy balance, last \(Self.visibleDays) days"))
+        .accessibilityValue(accessibilitySummary)
+    }
+
+    /// "Average intake 2,100 kcal, expenditure 2,450 kcal".
+    private var accessibilitySummary: String {
+        func average(_ points: [TimeSeriesDatapoint]) -> String {
+            guard !points.isEmpty else { return Format.placeholder }
+            return Format.kcal(points.map(\.value).reduce(0, +) / Double(points.count))
+        }
+        return String(localized: "Average intake \(average(intakePoints)), expenditure \(average(expenditurePoints))")
     }
 
     /// The colours the full chart uses, so the card and the screen it opens match.
-    static let intakeColor: Color = .blue
-    static let expenditureColor: Color = .pink
+    static let intakeColor: Color = .calories
+    static let expenditureColor: Color = Color.Metric.expenditure
 }
 
 #Preview {

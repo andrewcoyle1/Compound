@@ -12,7 +12,7 @@ struct HighlightButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .overlay {
-                configuration.isPressed ? Color.accent.opacity(0.4) : Color.accent.opacity(0)
+                configuration.isPressed ? Color.accentColor.opacity(0.4) : Color.accentColor.opacity(0)
             }
             .animation(.smooth, value: configuration.isPressed)
     }
@@ -89,27 +89,12 @@ extension View {
         )
         .padding()
 
-        Text(
-            "Hello, world!"
-        )
-        .callToActionButton()
-        .anyButton(
-            .press,
-            action: {
+        Text("Hello, world!")
+            .anyButton(.press, action: { })
+            .padding()
 
-            }
-        )
-        .padding()
-
-        Text(
-            "Hello, world!"
-        )
-        .callToActionButton()
-        .anyButton(
-            action: {
-
-            }
-        )
-        .padding()
+        Text("Hello, world!")
+            .anyButton(action: { })
+            .padding()
     }
 }

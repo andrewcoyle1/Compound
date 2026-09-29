@@ -124,7 +124,7 @@ extension ExerciseDetailPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Daily 1-RM",
             emptyStateMessage: "No 1-RM data for \(name)",
-            chartColor: .blue,
+            chartColor: Color.Metric.exercises,
             chartType: .line,
             addActionTitle: "Start Workout",
             addActionSystemImage: "figure.run"

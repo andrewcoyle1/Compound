@@ -68,20 +68,20 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                         Button {
                             presenter.onExerciseEquipmentPressed(delegate.exercise)
                         } label: {
-                            Label("Equipment", systemImage: "scalemass")
+                            Label("Equipment", systemImage: Symbol.equipment)
                         }
                     }
 
                     Button {
                         presenter.onWarmupSetsPressed(delegate.exercise)
                     } label: {
-                        Label("Warmup", systemImage: "target")
+                        Label("Warmup", systemImage: Symbol.warmup)
                     }
 
                     Button {
                         presenter.onTargetsPressed(delegate.exercise)
                     } label: {
-                        Label("Targets", systemImage: "scope")
+                        Label("Targets", systemImage: Symbol.goal)
                     }
 
                     Button {
@@ -102,27 +102,27 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                             let count = delegate.allWorkoutExercises.filter { $0.supersetGroupId == groupId }.count
                             return count > 2 ? String(localized: "Remove Circuit") : String(localized: "Remove Superset")
                         }()
-                        Label(groupLabel, systemImage: "arrow.2.circlepath")
+                        Label(groupLabel, systemImage: Symbol.superset)
                     }
                     Menu {
                         Button {
                             presenter.onExerciseSettingsPressed(exercise: delegate.exercise.wrappedValue)
                         } label: {
-                            Label("Exercise Settings", systemImage: "slider.horizontal.3")
+                            Label("Exercise Settings", systemImage: Symbol.settings)
                         }
                         
                         Button(role: .destructive) {
                             presenter.deleteExercise(delegate.exercise, onDelete: delegate.onDeleteExercise)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label("Delete", systemImage: Symbol.delete)
                         }
 
                     } label: {
-                        Label("More", systemImage: "ellipsis")
+                        Label("More", systemImage: Symbol.more)
                     }
                 }
                 .font(.caption)
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .tint(.secondary)
                 .buttonBorderShape(.capsule)
             }
@@ -137,22 +137,43 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             Spacer()
             prevAutoHeader(exercise: delegate.exercise)
             Spacer()
-            HStack(spacing: 8) {
-                unitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
-                    .frame(width: 70)
-                Text("Reps")
-                    .frame(width: 50)
-            }
+            inputHeaders(unitPreference: unitPreference)
             Spacer()
             Text("Done")
                 .frame(width: 32, alignment: .center)
         }
         .font(.caption2)
-        .foregroundColor(.secondary)
+        .foregroundStyle(.secondary)
         .lineLimit(1)
         .minimumScaleFactor(0.6)
         .dynamicTypeSize(...SetTrackerRowView.maxDynamicTypeSize)
-        .padding(.top, 4)
+        .padding(.top, Spacing.xs)
+    }
+
+    /// One header per input the rows show, at the rows' widths. The weight header stood over every
+    /// exercise, so a run was headed with a kg menu and "Reps".
+    @ViewBuilder
+    private func inputHeaders(unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)) -> some View {
+        HStack(spacing: Spacing.s) {
+            switch delegate.exercise.wrappedValue.trackingMode {
+            case .weightReps:
+                unitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
+                    .frame(width: 70)
+                Text("Reps")
+                    .frame(width: 50)
+            case .repsOnly:
+                Text("Reps")
+                    .frame(width: 50)
+            case .timeOnly:
+                Text("Time")
+                    .frame(width: 90)
+            case .distanceTime:
+                distanceUnitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
+                    .frame(width: 70)
+                Text("Time")
+                    .frame(width: 70)
+            }
+        }
     }
     
     private func prevAutoHeader(exercise: Binding<WorkoutExerciseModel>) -> some View {
@@ -162,12 +183,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             if presenter.showAutoRanges {
                 Label("Auto", systemImage: "wand.and.stars")
             } else {
-                Label("Prev", systemImage: "arrow.left")
+                Label("Prev", systemImage: Symbol.history)
             }
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glass)
         .font(.caption2)
-        .foregroundColor(.secondary)
+        .foregroundStyle(.secondary)
         .frame(width: 90, alignment: .center)
     }
     
@@ -176,12 +197,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             Button {
                 presenter.addSet(exercise: delegate.exercise)
             } label: {
-                Image(systemName: "plus")
+                Image(systemName: Symbol.add)
                     .font(.caption)
             }
             .accessibilityLabel("Add set")
             .tint(.secondary)
-            .buttonStyle(.bordered)
+            .buttonStyle(.glass)
             .buttonBorderShape(.circle)
             .frame(width: 34, alignment: .center)
             Spacer()
@@ -208,9 +229,33 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             Text(unitPreference.weightUnit.abbreviation.capitalized)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, Spacing.s)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glass)
+        .accessibilityLabel("Weight unit, \(unitPreference.weightUnit.displayName)")
+    }
+
+    private func distanceUnitMenu(exercise: Binding<WorkoutExerciseModel>, unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)) -> some View {
+        Menu {
+            ForEach(ExerciseDistanceUnit.allCases, id: \.self) { unit in
+                Button {
+                    presenter.promptDistanceUnitChange(unit, for: exercise)
+                } label: {
+                    if unit == unitPreference.distanceUnit {
+                        Label(unit.displayName, systemImage: "checkmark")
+                    } else {
+                        Text(unit.displayName)
+                    }
+                }
+            }
+        } label: {
+            Text(unitPreference.distanceUnit.abbreviation.capitalized)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, Spacing.s)
+        }
+        .buttonStyle(.glass)
+        .accessibilityLabel("Distance unit, \(unitPreference.distanceUnit.displayName)")
     }
 }
 

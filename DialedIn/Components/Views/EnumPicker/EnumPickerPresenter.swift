@@ -22,6 +22,7 @@ class EnumPickerPresenter {
 
     func onSelect<Item: PickableItem>(item: Item, binding: Binding<Item?>) {
         binding.wrappedValue = item
+        interactor.playHaptic(option: .selection)
         router.dismissScreen()
     }
     

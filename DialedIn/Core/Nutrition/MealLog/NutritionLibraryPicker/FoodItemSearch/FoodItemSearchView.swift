@@ -17,7 +17,7 @@ struct FoodItemSearchView: View {
             }
             openFoodFactsSection
         }
-        .searchable(text: $presenter.searchText)
+        .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search foods"))
         .onChange(of: presenter.searchText) { _, newValue in
             presenter.onSearchTextChanged(newValue)
         }
@@ -46,18 +46,16 @@ struct FoodItemSearchView: View {
         if !trimmed.isEmpty || !presenter.openFoodFactsFoods.isEmpty {
             Section {
                 if presenter.isSearching {
-                    HStack {
+                    HStack(spacing: Spacing.s) {
                         ProgressView()
                         Text("Searching...")
-                            .font(.subheadline)
+                            .font(.rowDetail)
                             .foregroundStyle(.secondary)
                     }
                 } else if presenter.searchFailed {
-                    Text("Couldn't search right now")
-                        .foregroundStyle(.secondary)
+                    InlineMessage(.error, "Couldn't search right now")
                 } else if presenter.openFoodFactsFoods.isEmpty && !trimmed.isEmpty {
-                    Text("No results found")
-                        .foregroundStyle(.secondary)
+                    ContentUnavailableView.search(text: trimmed)
                 } else {
                     ForEach(presenter.openFoodFactsFoods) { food in
                         foodRow(food)

@@ -132,8 +132,11 @@ extension CoreBuilder {
             content: {
                 switch interactor.startingModuleId {
                 case Constants.tabBarModuleId:
-                    RouterView(id: Constants.tabBarModuleId, addNavigationStack: false, addModuleSupport: true) { _ in
-                        coreModuleEntryView()
+                    // The app's only module-switching RouterView. `switchToCoreModule()` and
+                    // `switchToOnboardingModule()` land here, and it records the module id that
+                    // `AppState.startingModuleId` reads on the next launch.
+                    RouterView(id: Constants.tabBarModuleId, addNavigationStack: false, addModuleSupport: true) { router in
+                        coreModuleEntryView(router: router)
                     }
                 default:
                     RouterView(id: Constants.onboardingModuleId, addNavigationStack: false, addModuleSupport: true) { _ in
@@ -148,16 +151,16 @@ extension CoreBuilder {
         onboardingFlow()
     }
     
-    func coreModuleEntryView() -> some View {
-        adaptiveMainView()
+    func coreModuleEntryView(router: AnyRouter) -> some View {
+        tabBarView(router: router)
     }
 }
 
 extension CoreRouter {
     
     func switchToCoreModule() {
-        router.showModule(.trailing, id: Constants.tabBarModuleId, onDismiss: nil) { _ in
-            self.builder.coreModuleEntryView()
+        router.showModule(.trailing, id: Constants.tabBarModuleId, onDismiss: nil) { router in
+            self.builder.coreModuleEntryView(router: router)
         }
     }
     

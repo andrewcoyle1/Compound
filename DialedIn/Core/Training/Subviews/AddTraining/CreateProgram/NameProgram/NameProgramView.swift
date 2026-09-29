@@ -10,28 +10,20 @@ struct NameProgramDelegate {
 
 struct NameProgramView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: NameProgramPresenter
     let delegate: NameProgramDelegate
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("What would you like to name this program?")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.bottom, 8)
-            Text("Name")
-            TextField(text: $presenter.programName) {
-                Text("")
+        List {
+            Section {
+                TextField("Enter program name", text: $presenter.programName)
+                    .accessibilityIdentifier("NameProgram.name")
+            } header: {
+                Text("Program name")
+            } footer: {
+                Text("What would you like to name this program?")
             }
-            .textFieldStyle(.roundedBorder)
-            .accessibilityIdentifier("NameProgram.name")
-            
-            Spacer()
         }
-        .padding(.horizontal)
-        .background(colorScheme.backgroundSecondary)
         .navigationTitle("Create Program")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -40,7 +32,7 @@ struct NameProgramView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
@@ -48,7 +40,6 @@ struct NameProgramView: View {
             }
             .accessibilityIdentifier("NameProgram.continue")
             .disabled(!presenter.canSave)
-            .padding(.bottom)
         }
     }
 }

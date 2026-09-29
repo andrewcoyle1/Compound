@@ -110,7 +110,7 @@ class NutritionAnalyticsPresenter {
         return max(carbsCurrent, target * 1.2)
     }
     
-    /// Average daily calories over last 7 days (for Macros card subsubtitle)
+    /// Average daily calories over last 7 days (the Macros card's value)
     var macrosAverageCalories: Double {
         guard !macrosLast7Days.isEmpty else { return 0 }
         return macrosLast7Days.map(\.calories).reduce(0, +) / Double(macrosLast7Days.count)
@@ -124,7 +124,7 @@ class NutritionAnalyticsPresenter {
         // only by accident — `.nan > 0` is false, as every comparison against NaN is. Nothing can
         // log a non-finite nutrient any more, but meals written before that was true can still be
         // read back, and the breakdown reads whatever the document holds.
-        guard let value, value.isFinite, value > 0 else { return "--" }
+        guard let value, value.isFinite, value > 0 else { return Format.placeholder }
         if value >= 100 || value == floor(value) {
             return Int(value).formatted()
         }

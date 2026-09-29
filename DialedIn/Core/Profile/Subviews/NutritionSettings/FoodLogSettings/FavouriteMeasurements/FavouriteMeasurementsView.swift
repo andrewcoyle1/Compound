@@ -11,25 +11,15 @@ struct FavouriteMeasurementsView: View {
         List {
             Section {
                 ForEach(presenter.allMeasurements, id: \.self) { measurement in
-                    HStack {
-                        Text(measurement)
-                        Spacer()
-                        if presenter.isSelected(measurement) {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.accent)
-                        }
-                    }
-                    .tappableBackground()
-                    .anyButton(.highlight) {
+                    SelectableRow(title: measurement, isSelected: presenter.isSelected(measurement)) {
                         presenter.toggleMeasurement(measurement)
                     }
-                    .removeListRowFormatting()
                 }
             } header: {
-                Text("Tap to toggle a measurement as a favourite")
+                Text("Tap to toggle a measurement as a favorite")
             }
         }
-        .navigationTitle("Favourite Measurements")
+        .navigationTitle("Favorite Measurements")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

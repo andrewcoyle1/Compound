@@ -41,9 +41,11 @@ class PrebuiltProgramDetailPresenter {
         do {
             _ = try await interactor.startPrebuiltProgram(program)
             interactor.trackEvent(event: Event.startSuccess(programId: program.id))
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
             interactor.trackEvent(event: Event.startFail(programId: program.id, error: error))
+            interactor.playHaptic(option: .error)
             router.showAlert(error: error)
         }
     }

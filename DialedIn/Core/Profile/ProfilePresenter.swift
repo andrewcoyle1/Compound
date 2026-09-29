@@ -198,15 +198,6 @@ class ProfilePresenter {
         router.dismissScreen()
     }
     
-    func formatWeight(_ weightKg: Double, unit: WeightUnitPreference) -> String {
-        switch unit {
-        case .kilograms:
-            return String(format: "%.1f kg", weightKg)
-        case .pounds:
-            return String(format: "%.1f lbs", UnitConversion.kgToLbs(weightKg))
-        }
-    }
-
     enum Event: LoggableEvent {
         case ratingsPressed
         case ratingsYesPressed

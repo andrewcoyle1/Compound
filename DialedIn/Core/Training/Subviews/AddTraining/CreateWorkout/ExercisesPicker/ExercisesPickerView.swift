@@ -24,17 +24,17 @@ struct ExercisesPickerView<ExerciseList: View>: View {
             selectedExercises: presenter.workingExercises.map(\.exercise)
         )
         exerciseListViewBuilder(listDelegate)
-            .navigationTitle(presenter.workingExercises.isEmpty ? String(localized: "Select at least one exercise") : String(localized: "\(presenter.workingExercises.count) exercises selected"))
+            .navigationTitle(presenter.workingExercises.isEmpty ? String(localized: "Select at least one exercise") : String(AttributedString(localized: "^[\(presenter.workingExercises.count) exercise](inflect: true) selected").characters))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarVisibility(.visible)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) {
                         presenter.onDismissPressed()
                     }
                 }
 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm) {
                         presenter.onSavePressed()
                     }

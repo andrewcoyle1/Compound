@@ -46,6 +46,7 @@ struct OnboardingCompletedRetryTests {
         #expect(sut.isCompletingProfileSetup == false)
         #expect(router.switchedToCore == 0)
         #expect(interactor.trackedEventNames.contains("OnboardingCompletedView_Finish_Fail"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     @Test("The retry after a failure gets through and finishes onboarding")
@@ -78,5 +79,6 @@ struct OnboardingCompletedRetryTests {
         #expect(sut.isCompletingProfileSetup == false)
         #expect(router.alertedErrors.isEmpty)
         #expect(interactor.trackedEventNames.contains("OnboardingCompletedView_Finish_Success"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 }

@@ -11,7 +11,7 @@ struct WeeklyGoalView: View {
             Section {
                 Stepper(value: $presenter.goal, in: CircleWeek.goalRange) {
                     Text("\(presenter.goal) \(presenter.goal == 1 ? String(localized: "session") : String(localized: "sessions")) a week")
-                        .font(.headline)
+                        .font(.sectionTitle)
                 }
             } footer: {
                 Text("Your circle sees your progress towards this as a ring round your face.")
@@ -20,16 +20,19 @@ struct WeeklyGoalView: View {
         .navigationTitle("Weekly Goal")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
                 Button(role: .close) {
                     presenter.onCancelPressed()
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(role: .confirm) {
-                    presenter.onSavePressed()
+            ToolbarItem(placement: .confirmationAction) {
+                if presenter.isSaving {
+                    ProgressView()
+                } else {
+                    Button(role: .confirm) {
+                        presenter.onSavePressed()
+                    }
                 }
-                .disabled(presenter.isSaving)
             }
         }
         .onAppear {
@@ -62,7 +65,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWeeklyGoalView() {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.medium]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.weeklyGoalView(router: router)
         }
     }

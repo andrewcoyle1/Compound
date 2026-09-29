@@ -13,41 +13,32 @@ struct AddFoodView: View {
 
     var delegate: AddFoodDelegate
 
-    private var filteredIngredients: [FoodModel] {
-        let query = presenter.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return presenter.foods }
-        return presenter.foods.filter { ingredient in
-            var fields: [String] = [
-                ingredient.name
-            ]
-            if let description = ingredient.description { fields.append(description) }
-            return fields.contains { $0.localizedCaseInsensitiveContains(query) }
-        }
-    }
-    
     var body: some View {
         List {
-            ForEach(filteredIngredients) { ingredient in
-                CustomListCellView(imageName: ingredient.imageURL, title: ingredient.name, subtitle: ingredient.description, isSelected: delegate.selectedIngredients.contains(where: { $0.id == ingredient.id }))
-                    .anyButton {
-                        presenter.onIngredientPressed(ingredient: ingredient, selectedIngredients: &delegate.selectedIngredients.wrappedValue)
-                    }
-                    .removeListRowFormatting()
+            ForEach(presenter.filteredFoods) { ingredient in
+                Button {
+                    presenter.onIngredientPressed(ingredient: ingredient, selectedIngredients: &delegate.selectedIngredients.wrappedValue)
+                } label: {
+                    ListRow(
+                        title: ingredient.name,
+                        subtitle: ingredient.description,
+                        imageName: ingredient.imageURL,
+                        accessory: .checkmark(delegate.selectedIngredients.contains(where: { $0.id == ingredient.id }))
+                    )
+                    .contentShape(.rect)
+                }
             }
         }
         .scrollIndicators(.hidden)
-        .searchable(text: $presenter.searchText)
+        .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search foods"))
         .navigationTitle("Add Ingredients")
         .navigationSubtitle("Select one or more ingredients to add")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
                     presenter.onDismissPressed()
-                } label: {
-                    Image(systemName: "xmark")
                 }
-                .accessibilityLabel("Close")
             }
         }
     }

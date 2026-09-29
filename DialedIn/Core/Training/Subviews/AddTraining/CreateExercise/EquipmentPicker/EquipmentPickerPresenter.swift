@@ -26,6 +26,7 @@ class EquipmentPickerPresenter {
         } else {
             binding.wrappedValue.append(item.ref)
         }
+        interactor.playHaptic(option: .selection)
     }
     
     func onDismissPressed() {

@@ -70,28 +70,14 @@ class LogWeightPresenter {
             // Update user's current weight
             try await interactor.updateWeight(userId: user.userId, weight: weightKg, weightUnitPreference: unit == .kilograms ? .kilograms : .pounds)
 
-            // Success haptic feedback
-            #if os(iOS)
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-            #endif
-
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
+            interactor.playHaptic(option: .error)
             router.showAlert(error: error)
         }
 
         isLoading = false
-    }
-
-    func formatWeight(_ weightKg: Double?) -> String {
-        guard let weightKg else { return "--" }
-        switch unit {
-        case .kilograms:
-            return String(format: "%.1f kg", weightKg)
-        case .pounds:
-            return String(format: "%.1f lbs", UnitConversion.kgToLbs(weightKg))
-        }
     }
 
 #if DEV || MOCK

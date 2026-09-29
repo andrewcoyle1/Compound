@@ -9,24 +9,23 @@ import SwiftUI
 
 struct InviteFriendCard: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     let onPressed: () -> Void
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.m) {
             Button(action: onPressed) {
-                HStack(spacing: 12) {
+                HStack(spacing: Spacing.m) {
                     Image(systemName: "person.badge.plus")
-                        .font(.title3)
-                        .foregroundStyle(.blue)
+                        .iconSize(.medium)
+                        .foregroundStyle(.tint)
                         .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
                         Text("Invite a friend")
-                            .font(.subheadline.weight(.medium))
+                            .font(.rowTitle)
+                            .fontWeight(.medium)
                         Text("Training's easier with someone keeping you honest.")
-                            .font(.caption)
+                            .font(.rowDetail)
                             .foregroundStyle(.secondary)
                     }
                     Spacer(minLength: 0)
@@ -34,18 +33,16 @@ struct InviteFriendCard: View {
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Dismiss")
+            Button(role: .close, action: onDismiss)
+                .buttonStyle(.plain)
+                .labelStyle(.iconOnly)
+                .foregroundStyle(.secondary)
+                .accessibilityLabel("Dismiss")
         }
         .padding()
-        .background(colorScheme.backgroundPrimary, in: .rect(cornerRadius: 24))
+        .cardSurface()
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, Spacing.s)
     }
 }
 

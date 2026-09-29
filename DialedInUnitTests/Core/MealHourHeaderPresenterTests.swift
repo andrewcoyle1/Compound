@@ -63,6 +63,31 @@ struct MealHourHeaderPresenterTests {
         return calendar.dateInterval(of: .hour, for: moved)?.start ?? moved
     }
 
+    // MARK: - Hourly totals
+
+    /// Each macro sums across every meal in the hour, whole numbers as the header prints them.
+    @Test("Test Hourly Totals Sum Each Macro Across The Hour's Meals")
+    func testHourlyTotalsSumEachMacroAcrossTheHoursMeals() {
+        let screen = makeScreen()
+        func meal(_ nutrients: NutrientMap) -> MealLogModel {
+            MealLogModel(
+                authorId: "user-1",
+                dayKey: Date().dayKey,
+                date: Date(),
+                items: [MealItemModel(itemId: UUID().uuidString, sourceType: .quickAdd, sourceId: "q", displayName: "Food", amount: 1, unit: "serving", nutrients: nutrients)]
+            )
+        }
+        let meals = [
+            meal(NutrientMap([.calories: 300.6, .protein: 20, .carbs: 30, .fatTotal: 10])),
+            meal(NutrientMap([.calories: 200, .protein: 5.5, .carbs: 12, .fatTotal: 4]))
+        ]
+
+        #expect(screen.presenter.total(of: .cals, in: meals) == 500)
+        #expect(screen.presenter.total(of: .protein, in: meals) == 25)
+        #expect(screen.presenter.total(of: .carbs, in: meals) == 42)
+        #expect(screen.presenter.total(of: .fat, in: meals) == 14)
+    }
+
     // MARK: - The default
 
     /// Off is what every existing user has, and it has to leave the meal exactly on the hour the

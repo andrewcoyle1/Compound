@@ -138,7 +138,7 @@ struct OnboardingWeightRatePresenterTests {
         screen.presenter.onAppear(delegate: delegate())
         screen.presenter.weightChangeRate = 0.5
 
-        #expect(screen.presenter.weeklyWeightChangeText(delegate: delegate()).contains("1.10 lbs"))
+        #expect(screen.presenter.weeklyWeightChangeText(delegate: delegate()).contains("1.10 lb"))
     }
 
     /// Percent of body weight is the honest way to read a rate, and it is relative to the user's

@@ -37,8 +37,8 @@ struct AddCableMachineRangeView: View {
     private var nameSection: some View {
         VStack(alignment: .leading) {
             Text("Label")
-                .font(.headline)
-                .padding(.top, 4)
+                .font(.sectionTitle)
+                .padding(.top, Spacing.xs)
             TextField(text: $presenter.range.name, prompt: Text(""), label: { Text("")})
                 .textFieldStyle(.roundedBorder)
         }
@@ -47,8 +47,8 @@ struct AddCableMachineRangeView: View {
     private var rangeStartSection: some View {
         VStack(alignment: .leading) {
             Text("Range Start")
-                .font(.headline)
-                .padding(.top, 4)
+                .font(.sectionTitle)
+                .padding(.top, Spacing.xs)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.range.minWeight, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -62,7 +62,7 @@ struct AddCableMachineRangeView: View {
     private var rangeEndSection: some View {
         VStack(alignment: .leading) {
             Text("Range End")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.range.maxWeight, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -76,7 +76,7 @@ struct AddCableMachineRangeView: View {
     private var incrementSection: some View {
         VStack(alignment: .leading) {
             Text("Increment")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.range.increment, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -84,29 +84,22 @@ struct AddCableMachineRangeView: View {
                 Text(presenter.unit.abbreviation)
                     .padding(.trailing)
             }
-            .padding(.bottom, 4)
+            .padding(.bottom, Spacing.xs)
         }
     }
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button {
+            Button(role: .confirm) {
                 presenter.onSavePressed()
-            } label: {
-                Image(systemName: "checkmark")
             }
-            .accessibilityLabel("Save")
-            .buttonStyle(.glassProminent)
         }
     }
 }
@@ -128,7 +121,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAddCableMachineRangeView(delegate: AddCableMachineRangeDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.53)]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.addCableMachineRangeView(router: router, delegate: delegate)
         }
     }

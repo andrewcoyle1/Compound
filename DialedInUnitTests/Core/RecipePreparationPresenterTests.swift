@@ -404,6 +404,18 @@ struct RecipePreparationPresenterTests {
         }
 
         #expect(box.item == nil)
+        await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty }
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    @Test("Test Creating A Recipe Plays A Success Haptic")
+    func testCreatingARecipePlaysASuccessHaptic() async {
+        let screen = makeScreen()
+
+        screen.presenter.onCreatePressed(delegate: delegate())
+        await TestManagers.eventually { !screen.interactor.playedHaptics.isEmpty }
+
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

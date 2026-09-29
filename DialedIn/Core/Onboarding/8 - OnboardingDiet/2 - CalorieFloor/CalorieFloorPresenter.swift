@@ -15,6 +15,12 @@ class CalorieFloorPresenter {
 
     var selectedFloor: CalorieFloor?
 
+    /// Picking an option row: record it and give the selection tick.
+    func onFloorSelected(_ value: CalorieFloor) {
+        selectedFloor = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: CalorieFloorInteractor,
         router: CalorieFloorRouter

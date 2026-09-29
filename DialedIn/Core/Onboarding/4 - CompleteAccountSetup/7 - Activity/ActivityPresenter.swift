@@ -18,7 +18,13 @@ class ActivityPresenter {
     var canSubmit: Bool {
         selectedActivityLevel != nil
     }
-    
+
+    /// Picking an option row: record it and give the selection tick.
+    func onActivityLevelSelected(_ value: ActivityLevel) {
+        selectedActivityLevel = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: ActivityInteractor,
         router: ActivityRouter

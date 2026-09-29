@@ -12,49 +12,29 @@ struct CustomisingDietProgramView: View {
     @State var presenter: CustomisingDietProgramPresenter
 
     var body: some View {
-        List {
-            dietSection
+        OnboardingStepScaffold(
+            title: "Ready to Plan Meals?",
+            progress: OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.navigateToPreferredDiet() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                Text("Let's get to work creating a custom diet program tuned to your needs. This will evolve over time as we learn how your body responds to the diet and make the necessary changes. This can always be manually altered later if you would like a specific change.")
+            } header: {
+                Text("Diet Program")
+            } footer: {
+                Text("We'll start with a few questions to get you started.")
+            }
         }
-        .navigationTitle("Customise Program")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.navigateToPreferredDiet()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .padding(.bottom)
-        }
     }
-        
-    private var dietSection: some View {
-        Section {
-            Text("Let's get to work creating a custom diet program tuned to your needs. This will evolve over time as we learn how your body responds to the diet and make the necessary changes. This can always be manually altered later if you would like a specific change.")
-        } header: {
-            Text("Diet Program")
-        } footer: {
-            Text("We'll start with a few questions to get you started.")
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

@@ -18,7 +18,13 @@ class GenderPresenter {
     var canSubmit: Bool {
         selectedGender != nil
     }
-    
+
+    /// Picking an option row: record it and give the selection tick.
+    func onGenderSelected(_ value: Gender) {
+        selectedGender = value
+        interactor.playHaptic(option: .selection)
+    }
+
     init(
         interactor: GenderInteractor,
         router: GenderRouter

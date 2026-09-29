@@ -44,7 +44,7 @@ class TimerDurationPresenter {
 
     func formattedDuration(for type: ExerciseType) -> String {
         let seconds = duration(for: type)
-        return String(format: "%d:%02d", seconds / 60, seconds % 60)
+        return formattedDuration(seconds: seconds)
     }
 
     // MARK: - Actions
@@ -63,7 +63,9 @@ class TimerDurationPresenter {
         Task {
             do {
                 try await save()
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
@@ -152,7 +154,9 @@ class TimerDurationPresenter {
         Task {
             do {
                 try await interactor.setExerciseRestOverride(seconds, for: exerciseId)
+                interactor.playHaptic(option: .success)
             } catch {
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
@@ -171,7 +175,7 @@ class TimerDurationPresenter {
     }
 
     func formattedDuration(seconds: Int) -> String {
-        String(format: "%d:%02d", seconds / 60, seconds % 60)
+        Format.duration(TimeInterval(seconds))
     }
 
     // MARK: - Lifecycle

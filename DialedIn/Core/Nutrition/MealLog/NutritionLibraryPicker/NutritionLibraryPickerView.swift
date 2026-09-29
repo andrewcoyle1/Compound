@@ -21,7 +21,6 @@ struct NutritionLibraryPickerView<
     MealDescribe: View
 >: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: NutritionLibraryPickerPresenter
 
     var delegate: NutritionLibraryPickerDelegate
@@ -63,34 +62,38 @@ struct NutritionLibraryPickerView<
         }
         .navigationTitle("Add Item")
         .navigationBarTitleDisplayMode(.inline)
-        .safeAreaInset(edge: .top) {
-            ScrollView(.horizontal) {
-                HStack {
-                    ForEach(NutritionPickerMode.allCases) { mode in
-                        if mode == presenter.mode {
-                            Button {
-                                presenter.onModePressed(mode)
-                            } label: {
-                                Label(mode.title, systemImage: mode.systemName)
-                                    .tag(mode)
-                                    .foregroundStyle(colorScheme.backgroundPrimary)
-                            }
-                            .buttonStyle(.glassProminent)
-                        } else {
-                            Button {
-                                presenter.onModePressed(mode)
-                            } label: {
-                                Label(mode.title, systemImage: mode.systemName)
-                                    .tag(mode)
-                            }
-                            .buttonStyle(.glass)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
-            .scrollIndicators(.hidden)
+        .safeAreaBar(edge: .top) {
+            modeChips
         }
+        .toolbar {
+            // Picks land on the plate as they are made, so there is nothing to cancel: the one
+            // action is finishing.
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm) {
+                    presenter.dismissScreen()
+                }
+            }
+        }
+    }
+
+    /// One chip per mode. Each is a plain button around a `Chip`, which carries the selected look
+    /// and the `.isSelected` trait.
+    private var modeChips: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.s) {
+                ForEach(NutritionPickerMode.allCases) { mode in
+                    Button {
+                        presenter.onModePressed(mode)
+                    } label: {
+                        Chip(mode.title, systemImage: mode.systemName, isSelected: mode == presenter.mode)
+                            .chipTapTarget()
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal)
+        }
+        .scrollIndicators(.hidden)
     }
 
 }

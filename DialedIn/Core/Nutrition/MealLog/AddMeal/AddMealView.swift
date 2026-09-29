@@ -26,7 +26,7 @@ struct AddMealView: View {
                     breakdownSection(for: category)
                 }
             }
-            CustomToggleView(symbolName: "carrot", title: String(localized: "Show all nutrients"), subtitle: nil, bool: $presenter.showAllNutrients)
+            ListRowToggle(title: String(localized: "Show all nutrients"), systemImage: Symbol.nutrition, isOn: $presenter.showAllNutrients)
         }
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $presenter.isEditingMealTime) {
@@ -38,26 +38,23 @@ struct AddMealView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
+        .onChange(of: presenter.nutritionScope) {
+            presenter.onNutritionScopeChanged()
+        }
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Spacer()
-                Button {
-                    presenter.saveMeal()
-                } label: {
-                    Text("Log Foods")
-                        .padding(8)
-                        .padding(.horizontal, 8)
-                }
-                .buttonStyle(.glassProminent)
-                .disabled(presenter.mealLog.items.isEmpty)
+        .bottomCTA {
+            CallToActionButton {
+                presenter.saveMeal()
+            } label: {
+                Text("Log")
             }
-            .padding(.horizontal)
+            .disabled(presenter.mealLog.items.isEmpty)
         }
     }
 
+    /// A native sheet, because the picker edits the presenter's meal through a binding.
     private var mealTimeSheet: some View {
         NavigationStack {
             VStack {
@@ -77,138 +74,145 @@ struct AddMealView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { presenter.isEditingMealTime = false }
+                    Button(role: .confirm) { presenter.isEditingMealTime = false }
                 }
             }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private var yourPlateSection: some View {
         Section {
             if presenter.mealLog.items.isEmpty {
-                CustomLabelButtonView(symbolName: "info", title: String(localized: "Your plate is empty"), subtitle: String(localized: "Add foods using Search, Scan or AI.")) {
-                    Button {
+                ContentUnavailableView {
+                    Label("Your plate is empty", systemImage: Symbol.meal)
+                } description: {
+                    Text("Add foods using Search, Scan or AI.")
+                } actions: {
+                    Button("Add") {
                         presenter.onShowPickerPressed()
-                    } label: {
-                        Text("Add")
-                            .padding(.horizontal, 8)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                 }
             } else {
                 ForEach(presenter.mealLog.items) { mealItem in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(mealItem.displayName)
-                                .font(.subheadline)
-                            HStack(spacing: 4) {
-                                Text("\(Int(mealItem.calories ?? 0)) kcal")
-                                Text("·")
-                                Text(String(format: "%.1f P", mealItem.proteinGrams ?? 0))
-                                Text("·")
-                                Text(String(format: "%.1f F", mealItem.fatGrams ?? 0))
-                                Text("·")
-                                Text(String(format: "%.1f C", mealItem.carbGrams ?? 0))
-                            }
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text(String(format: "%g %@", mealItem.amount, mealItem.unit))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Button {
-                                presenter.onEditMealItem(mealItem)
-                            } label: {
-                                Image(systemName: "pencil")
-                            }
-                            .accessibilityLabel("Edit meal item")
-                            .buttonStyle(.bordered)
-                            .buttonBorderShape(.circle)
-                        }
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            guard let index = presenter.mealLog.items.firstIndex(of: mealItem) else { return }
-                            presenter.mealLog.items.remove(at: index)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
+                    plateRow(mealItem)
                 }
             }
         } header: {
             Text("Your Plate")
         }
     }
-    
+
+    private func plateRow(_ mealItem: MealItemModel) -> some View {
+        ListRow(
+            title: mealItem.displayName,
+            subtitle: mealItem.macroSummary,
+            accessory: .custom(AnyView(
+                HStack(spacing: Spacing.s) {
+                    Text(mealItem.formattedAmount)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        presenter.onEditMealItem(mealItem)
+                    } label: {
+                        Image(systemName: Symbol.edit)
+                    }
+                    .accessibilityLabel("Edit meal item")
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                }
+            ))
+        )
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                presenter.onDeleteMealItem(mealItem)
+            } label: {
+                Label("Delete", systemImage: Symbol.delete)
+            }
+        }
+    }
+
+    /// Not tappable, so no chevrons.
     private var nutritionSection: some View {
         Section {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 100)), count: 2)) {
-                AnalyticsCard(
+                macroCard(
                     title: String(localized: "Calories"),
-                    subtitle: String(localized: "\(String(describing: Int(presenter.displayCalories))) kcal \(presenter.scopeLabel)"),
-                    subsubtitle: "",
-                    subsubsubtitle: "") {
-                        MacroProgressChart(
-                            current: presenter.displayCalories,
-                            target: presenter.targetCalories,
-                            maxValue: max(presenter.targetCalories * 1.2, presenter.displayCalories + 1),
-                            color: .blue)
-                    }
-                AnalyticsCard(
+                    value: presenter.displayCalories.formatted(.number.precision(.fractionLength(0))),
+                    unit: "kcal",
+                    symbol: Symbol.calories,
+                    color: .calories,
+                    current: presenter.displayCalories,
+                    target: presenter.targetCalories
+                )
+                macroCard(
                     title: String(localized: "Protein"),
-                    subtitle: String(localized: "\(presenter.displayProtein.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
-                    subsubtitle: "",
-                    subsubsubtitle: "") {
-                        MacroProgressChart(
-                            current: presenter.displayProtein,
-                            target: presenter.targetProtein,
-                            maxValue: max(presenter.targetProtein * 1.2, presenter.displayProtein + 1),
-                            color: .proteinColor)
-                    }
-                AnalyticsCard(
+                    value: presenter.displayProtein.formatted(.number.precision(.fractionLength(1))),
+                    unit: "g",
+                    symbol: Symbol.protein,
+                    color: .protein,
+                    current: presenter.displayProtein,
+                    target: presenter.targetProtein
+                )
+                macroCard(
                     title: String(localized: "Fat"),
-                    subtitle: String(localized: "\(presenter.displayFat.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
-                    subsubtitle: "",
-                    subsubsubtitle: "") {
-                        MacroProgressChart(
-                            current: presenter.displayFat,
-                            target: presenter.targetFat,
-                            maxValue: max(presenter.targetFat * 1.2, presenter.displayFat + 1),
-                            color: .fatColor)
-                    }
-                AnalyticsCard(
+                    value: presenter.displayFat.formatted(.number.precision(.fractionLength(1))),
+                    unit: "g",
+                    symbol: Symbol.fat,
+                    color: .fat,
+                    current: presenter.displayFat,
+                    target: presenter.targetFat
+                )
+                macroCard(
                     title: String(localized: "Carbs"),
-                    subtitle: String(localized: "\(presenter.displayCarbs.formatted(.number.precision(.fractionLength(1)))) g \(presenter.scopeLabel)"),
-                    subsubtitle: "",
-                    subsubsubtitle: "") {
-                        MacroProgressChart(
-                            current: presenter.displayCarbs,
-                            target: presenter.targetCarbs,
-                            maxValue: max(presenter.targetCarbs * 1.2, presenter.displayCarbs + 1),
-                            color: .carbsColor)
-                    }
+                    value: presenter.displayCarbs.formatted(.number.precision(.fractionLength(1))),
+                    unit: "g",
+                    symbol: Symbol.carbs,
+                    color: .carbs,
+                    current: presenter.displayCarbs,
+                    target: presenter.targetCarbs
+                )
             }
             .removeListRowFormatting()
         } header: {
             HStack {
                 Text("Nutrition")
                 Spacer()
-                Picker("", selection: $presenter.nutritionScope) {
+                Picker("Scope", selection: $presenter.nutritionScope) {
                     ForEach(NutritionScope.allCases) { scope in
-                        Text(scope.rawValue.capitalized)
+                        Text(scope.title)
                             .tag(scope)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 160)
+                .labelsHidden()
+                .fixedSize()
             }
         }
     }
-        
+
+    // swiftlint:disable:next function_parameter_count
+    private func macroCard(title: String, value: String, unit: String, symbol: String, color: Color, current: Double, target: Double) -> some View {
+        AnalyticsCard(
+            title: title,
+            subtitle: presenter.scopeLabel,
+            value: value,
+            unit: unit,
+            systemImage: symbol,
+            themeColor: color,
+            showsChevron: false
+        ) {
+            MacroProgressChart(
+                current: current,
+                target: target,
+                maxValue: max(target * 1.2, current + 1),
+                color: color
+            )
+        }
+    }
+
     /// One section per nutrient category, driven by `Macros.details`.
     ///
     /// This replaces six hand-written sections that were byte-for-byte identical: every one of them
@@ -224,11 +228,11 @@ struct AddMealView: View {
             let nutrients = presenter.breakdown(for: category)
             if nutrients.isEmpty {
                 Text("None of the foods on this plate record \(category.name.lowercased()) data.")
-                    .font(.footnote)
+                    .font(.rowDetail)
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(nutrients) { nutrient in
-                    MetricRow(label: nutrient.name, value: presenter.formatted(nutrient))
+                    LabeledContent(nutrient.name, value: presenter.formatted(nutrient))
                 }
             }
         } header: {
@@ -238,13 +242,10 @@ struct AddMealView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.dismissScreen()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
 
         ToolbarSpacer(.flexible, placement: .topBarLeading)
@@ -254,9 +255,9 @@ struct AddMealView: View {
             } label: {
                 VStack {
                     Text(presenter.mealLog.date.formatted(date: .omitted, time: .shortened))
-                        .font(.subheadline)
+                        .font(.rowDetail)
                     Text(presenter.mealLog.date.formatted(date: .numeric, time: .omitted))
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -267,7 +268,8 @@ struct AddMealView: View {
         // A readout, not an action — it was previously a Button that did nothing when tapped.
         ToolbarItem(placement: .topBarLeading) {
             Text(presenter.calorieLabel)
-                .font(.subheadline)
+                .font(.rowDetail)
+                .monospacedDigit()
                 .accessibilityLabel("\(presenter.calorieLabel) calories \(presenter.scopeLabel)")
         }
         ToolbarItem(placement: .topBarTrailing) {
@@ -288,11 +290,11 @@ struct AddMealView: View {
     
     private var cartView: some View {
         HStack {
-            Image(systemName: "fork.knife")
+            Image(systemName: Symbol.meal)
             mealItemImagesSection
             Spacer()
         }
-        .padding(.leading, 8)
+        .padding(.leading, Spacing.s)
     }
     
     private var mealItemImagesSection: some View {
@@ -307,7 +309,7 @@ struct AddMealView: View {
     private func mealItemCircle(mealItem: MealItemModel) -> some View {
         ZStack {
             Circle()
-                .fill(Color(uiColor: .secondarySystemBackground))
+                .fill(.surface)
 
             ImageLoaderView(
                 urlString: "SplashScreen",
@@ -315,8 +317,8 @@ struct AddMealView: View {
                 clipShape: AnyShape(Circle())
             )
         }
-        .frame(width: 38, height: 38)
-        .overlay(Circle().stroke(Color(uiColor: .systemBackground), lineWidth: 2))
+        .frame(width: ControlSize.thumbnail, height: ControlSize.thumbnail)
+        .overlay(Circle().stroke(.canvas, lineWidth: Spacing.xxs))
     }
 
 }

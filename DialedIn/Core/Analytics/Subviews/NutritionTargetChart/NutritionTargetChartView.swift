@@ -34,7 +34,7 @@ struct NutritionTargetChartView: View {
     /// here, which read as the user's own targets in a screen people take dietary decisions from.
     private var noPlanState: some View {
         ContentUnavailableView {
-            Label("No Diet Plan", systemImage: "fork.knife")
+            Label("No Diet Plan", systemImage: Symbol.meal)
         } description: {
             Text("Create a diet plan and your daily calorie and macro targets appear here.")
         } actions: {
@@ -46,7 +46,7 @@ struct NutritionTargetChartView: View {
     }
 
     private func grid(planDays: [DailyMacroTarget], loggedDays: [DailyMacroTarget]) -> some View {
-        Grid(alignment: .center, horizontalSpacing: 8, verticalSpacing: 12) {
+        Grid(alignment: .center, horizontalSpacing: Spacing.s, verticalSpacing: Spacing.m) {
             // Metric rows
             ForEach(NutritionTargetChartPresenter.Metric.allCases, id: \.self) { metric in
                 GridRow {
@@ -58,18 +58,32 @@ struct NutritionTargetChartView: View {
 
                     // Day cells
                     ForEach(Array(zip(loggedValues, targetValues).enumerated()), id: \.offset) { idx, values in
-                        TargetCellView(value: values.0, targetValue: values.1, maxValue: maxValue, unit: presenter.unit(for: metric), tint: metric.colour)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.accentColor.opacity(idx == presenter.todayIndexMondayStart ? 0.9 : 0), lineWidth: 2)
-                            )
-                            .shadow(color: Color.accentColor.opacity(idx == presenter.todayIndexMondayStart ? 0.15 : 0), radius: 3, x: 0, y: 1)
+                        let isToday = idx == presenter.todayIndexMondayStart
+                        TargetCellView(value: values.0, targetValue: values.1, maxValue: maxValue, tint: metric.colour)
+                            // Today's focus ring, in the accent.
+                            .overlay {
+                                if isToday {
+                                    RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
+                                        .stroke(.tint, lineWidth: 2)
+                                }
+                            }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("\(presenter.dayNames[idx]), \(metric.title)")
+                            .accessibilityValue(presenter.cellAccessibilityValue(logged: values.0, target: values.1, metric: metric))
                     }
 
                     // Weekly sum cell
-                    OverallTargetCellView(metricInitial: metric.initial, value: sumLogged, target: sumTarget, unit: presenter.unit(for: metric))
-                        .fixedSize(horizontal: true, vertical: false)
-                        .gridColumnAlignment(.leading)
+                    OverallTargetCellView(
+                        systemImage: metric.systemImage,
+                        tint: metric.colour,
+                        valueText: presenter.amountText(sumLogged, for: metric),
+                        targetText: presenter.amountText(sumTarget, for: metric)
+                    )
+                    .fixedSize(horizontal: true, vertical: false)
+                    .gridColumnAlignment(.leading)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(metric.title) this week")
+                    .accessibilityValue(presenter.cellAccessibilityValue(logged: sumLogged, target: sumTarget, metric: metric))
                 }
             }
 
@@ -77,13 +91,15 @@ struct NutritionTargetChartView: View {
             GridRow {
                 ForEach(Array(presenter.dayAbbrevs.enumerated()), id: \.offset) { idx, day in
                     Text(day)
-                        .font(.footnote)
+                        .font(.label)
                         .fontWeight(idx == presenter.todayIndexMondayStart ? .bold : .regular)
-                        .foregroundStyle(idx == presenter.todayIndexMondayStart ? .accent : .secondary)
-                        .padding(.horizontal, 2)
+                        .foregroundStyle(idx == presenter.todayIndexMondayStart ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        .padding(.horizontal, Spacing.xxs)
+                        .accessibilityHidden(true)
                 }
                 Text("Week")
-                    .font(.footnote)
+                    .font(.label)
+                    .accessibilityHidden(true)
                     .foregroundStyle(.secondary)
                     .gridColumnAlignment(.leading)
             }

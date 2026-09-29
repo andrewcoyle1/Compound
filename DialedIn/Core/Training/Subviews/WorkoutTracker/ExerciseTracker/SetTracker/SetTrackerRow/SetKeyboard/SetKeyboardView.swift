@@ -2,7 +2,7 @@
 //  SetKeyboardView.swift
 //  DialedIn
 //
-//  The weight and reps keyboards. Shown as the input view of the row's fields, so it docks at
+//  The weight, reps, distance and duration keyboards. Shown as the input view of the row's fields, so it docks at
 //  the bottom like the system keyboard, pushes the list up, and leaves hardware typing working.
 //
 
@@ -11,22 +11,28 @@ import SwiftUI
 struct SetKeyboardView: View {
 
     @Bindable var presenter: SetKeyboardPresenter
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Keys grow with Dynamic Type up to the keyboard's cap, so a larger label never clips.
+    @ScaledMetric(relativeTo: .title3) private var keyHeight: CGFloat = 46
+    @ScaledMetric(relativeTo: .subheadline) private var plateStripHeight: CGFloat = 36
 
     var body: some View {
-        VStack(spacing: 8) {
-            if presenter.activeField == .reps {
+        VStack(spacing: Spacing.s) {
+            switch presenter.activeField {
+            case .reps:
                 repsAccessories
-            } else {
+            case .weight, nil:
                 weightAccessories
+            case .distance, .duration:
+                // Only the keypad: there is no equipment step or last-set chip for these.
+                EmptyView()
             }
             keypad
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.m)
         .background(.regularMaterial, ignoresSafeAreaEdges: .bottom)
-        .animation(reduceMotion ? nil : .snappy, value: presenter.activeField)
-        .animation(reduceMotion ? nil : .snappy, value: presenter.showsPlates)
+        .reducedMotionAnimation(.quick, value: presenter.activeField)
+        .reducedMotionAnimation(.quick, value: presenter.showsPlates)
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -43,18 +49,14 @@ struct SetKeyboardView: View {
 
     private var stepperRow: some View {
         let unit = presenter.context.unit.abbreviation
-        return HStack(spacing: 8) {
+        return HStack(spacing: Spacing.s) {
             keyButton(systemImage: "minus", label: "Decrease weight") { presenter.stepDown() }
-            HStack(spacing: 6) {
+            HStack(spacing: Spacing.s) {
                 Text(stepSummary)
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
                 if let chip = presenter.context.step.chip {
-                    Text(chip)
-                        .font(.caption.bold())
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(.tint.opacity(0.15), in: Capsule())
+                    Chip(chip)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -66,13 +68,11 @@ struct SetKeyboardView: View {
                 } label: {
                     Text("Plates")
                         .font(.subheadline.bold())
-                        .frame(height: 40)
-                        .padding(.horizontal, 10)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.glass)
                 .accessibilityHint("Shows the plates for each side of the bar")
             }
-            keyButton(systemImage: "plus", label: "Increase weight") { presenter.stepUp() }
+            keyButton(systemImage: Symbol.add, label: "Increase weight") { presenter.stepUp() }
         }
     }
 
@@ -95,14 +95,14 @@ struct SetKeyboardView: View {
             case .loadable(let perSide)?:
                 Text(perSide.isEmpty ? String(localized: "Empty bar") : String(localized: "Per side: ") + perSide.map(WeightStepper.format).joined(separator: " + ") + " \(unit)")
             case let .notLoadable(below, above)?:
-                HStack(spacing: 8) {
-                    Text("Not loadable")
-                        .foregroundStyle(.red)
+                HStack(spacing: Spacing.s) {
+                    Label("Not loadable", systemImage: Symbol.warning)
+                        .foregroundStyle(.danger)
                     ForEach([below, above].compactMap { $0 }, id: \.self) { value in
                         Button("\(WeightStepper.format(value)) \(unit)") {
                             presenter.applyWeight(displayValue: value)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                         .accessibilityLabel("Use \(WeightStepper.format(value)) \(unit)")
                     }
                 }
@@ -112,7 +112,7 @@ struct SetKeyboardView: View {
             }
         }
         .font(.subheadline.monospacedDigit())
-        .frame(maxWidth: .infinity, minHeight: 36)
+        .frame(maxWidth: .infinity, minHeight: plateStripHeight)
     }
 
     // MARK: - Reps
@@ -127,18 +127,21 @@ struct SetKeyboardView: View {
 
     private var effortRow: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 6) {
+            HStack(spacing: Spacing.s) {
                 Text("RPE")
-                    .font(.caption.bold())
+                    .font(.label)
+                    .fontWeight(.bold)
                     .foregroundStyle(.secondary)
                 ForEach(EffortScale.rpeChoices, id: \.self) { rpe in
                     let isSelected = presenter.selectedRPE == rpe
-                    Button(WeightStepper.format(rpe)) {
+                    Button {
                         presenter.toggleRPE(rpe)
+                    } label: {
+                        Chip(WeightStepper.format(rpe), isSelected: isSelected)
+                            .monospacedDigit()
+                            .chipTapTarget()
                     }
-                    .font(.subheadline.monospacedDigit())
-                    .buttonStyle(.bordered)
-                    .tint(isSelected ? .accentColor : .secondary)
+                    .buttonStyle(.plain)
                     .accessibilityLabel("RPE \(WeightStepper.format(rpe)), \(WeightStepper.format(EffortScale.rir(fromRPE: rpe))) reps in reserve")
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
@@ -153,11 +156,15 @@ struct SetKeyboardView: View {
     private func chipRow(_ chips: [SetKeyboardChip], apply: @escaping (Double) -> Void) -> some View {
         if !chips.isEmpty {
             ScrollView(.horizontal) {
-                HStack(spacing: 6) {
+                HStack(spacing: Spacing.s) {
                     ForEach(chips) { chip in
-                        Button(chip.title) { apply(chip.value) }
-                            .font(.subheadline)
-                            .buttonStyle(.bordered)
+                        Button {
+                            apply(chip.value)
+                        } label: {
+                            Chip(chip.title)
+                                .chipTapTarget()
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -166,14 +173,18 @@ struct SetKeyboardView: View {
     }
 
     private var keypad: some View {
-        Grid(horizontalSpacing: 6, verticalSpacing: 6) {
+        Grid(horizontalSpacing: Spacing.s, verticalSpacing: Spacing.s) {
             GridRow {
                 digit("1"); digit("2"); digit("3")
-                if presenter.activeField == .reps {
-                    keyButton(title: String(localized: "Prev"), label: "Previous, weight") { presenter.previous() }
-                        .disabled(!presenter.context.tracksWeight)
+                if let next = presenter.nextField {
+                    keyButton(title: String(localized: "Next"), label: String(localized: "Next, \(Self.name(of: next))")) { presenter.next() }
                 } else {
-                    keyButton(title: String(localized: "Next"), label: "Next, reps") { presenter.next() }
+                    let previous = presenter.previousField
+                    keyButton(
+                        title: String(localized: "Prev"),
+                        label: previous.map { String(localized: "Previous, \(Self.name(of: $0))") } ?? String(localized: "Previous")
+                    ) { presenter.previous() }
+                    .disabled(previous == nil)
                 }
             }
             GridRow {
@@ -185,15 +196,24 @@ struct SetKeyboardView: View {
                 keyButton(title: String(localized: "Done"), label: "Done", prominent: true) { presenter.done() }
             }
             GridRow {
-                if presenter.activeField == .weight {
-                    keyButton(title: ".", label: "Decimal point") { presenter.type(".") }
+                if presenter.activeField?.takesDecimals == true {
+                    keyButton(title: ".", label: String(localized: "Decimal point")) { presenter.type(".") }
                 } else {
                     Color.clear.frame(height: 1).accessibilityHidden(true)
                 }
                 digit("0")
-                keyButton(systemImage: "delete.left", label: "Delete") { presenter.backspace() }
+                keyButton(systemImage: "delete.left", label: String(localized: "Delete")) { presenter.backspace() }
                 Color.clear.frame(height: 1).accessibilityHidden(true)
             }
+        }
+    }
+
+    private static func name(of field: SetKeyboardField) -> String {
+        switch field {
+        case .weight: return String(localized: "weight")
+        case .reps: return String(localized: "reps")
+        case .distance: return String(localized: "distance")
+        case .duration: return String(localized: "time")
         }
     }
 
@@ -205,9 +225,9 @@ struct SetKeyboardView: View {
         Button(action: action) {
             Text(title)
                 .font(.title3.weight(prominent ? .semibold : .regular))
-                .frame(maxWidth: .infinity, minHeight: 46)
-                .foregroundStyle(prominent ? Color.white : Color.primary)
-                .background(prominent ? AnyShapeStyle(.tint) : AnyShapeStyle(.fill.secondary), in: .rect(cornerRadius: 10))
+                .frame(maxWidth: .infinity, minHeight: keyHeight)
+                .foregroundStyle(prominent ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+                .background(prominent ? AnyShapeStyle(.tint) : AnyShapeStyle(.fill.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
@@ -218,9 +238,9 @@ struct SetKeyboardView: View {
         Button(action: action) {
             Image(systemName: systemImage)
                 .font(.title3)
-                .frame(maxWidth: .infinity, minHeight: 46)
+                .frame(maxWidth: .infinity, minHeight: keyHeight)
                 .foregroundStyle(Color.primary)
-                .background(.fill.secondary, in: .rect(cornerRadius: 10))
+                .background(.fill.secondary, in: .rect(cornerRadius: Radius.s, style: .continuous))
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)

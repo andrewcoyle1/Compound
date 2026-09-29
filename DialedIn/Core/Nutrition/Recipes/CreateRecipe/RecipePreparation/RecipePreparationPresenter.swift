@@ -61,9 +61,11 @@ class RecipePreparationPresenter {
                 interactor.trackEvent(event: Event.createRecipeStart)
                 try await interactor.saveRecipeTemplate(recipe, image: image)
                 interactor.trackEvent(event: Event.createRecipeSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
             }
         }
@@ -76,6 +78,7 @@ class RecipePreparationPresenter {
                 interactor.trackEvent(event: Event.createRecipeStart)
                 try await interactor.saveRecipeTemplate(recipe, image: image)
                 interactor.trackEvent(event: Event.createRecipeSuccess)
+                interactor.playHaptic(option: .success)
                 var nutrients = NutrientMap()
                 for recipeIngredient in recipe.ingredients {
                     let grams: Double
@@ -104,6 +107,7 @@ class RecipePreparationPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.createRecipeFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Failed to save recipe"), subtitle: error.localizedDescription)
             }
         }

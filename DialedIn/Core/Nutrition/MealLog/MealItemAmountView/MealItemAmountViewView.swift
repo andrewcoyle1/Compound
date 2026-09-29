@@ -37,6 +37,15 @@ struct MealItemAmountViewDelegate {
         }
     }
 
+    /// Logging a new food and correcting a logged one are different jobs, so they get different
+    /// verbs.
+    var confirmTitle: String {
+        switch mode {
+        case .addFood: return String(localized: "Log")
+        case .editItem: return String(localized: "Save")
+        }
+    }
+
     var unitNutrients: NutrientMap {
         switch mode {
         case .addFood(let food):
@@ -56,6 +65,7 @@ struct MealItemAmountViewView: View {
     var body: some View {
         List {
             headerSection
+            amountSection
             ForEach(Macros.allCases, id: \.self) { macro in
                 breakdownSection(macro: macro)
             }
@@ -69,45 +79,45 @@ struct MealItemAmountViewView: View {
             presenter.onViewDisappear(delegate: delegate)
         }
         .toolbar {
-            ToolbarItem(placement: .bottomBar) {
-                HStack {
-                    TextField("0", text: $presenter.amountText)
-                        .keyboardType(.decimalPad)
-                        .padding(.horizontal)
-                        .frame(maxWidth: .infinity)
-                    if case .addFood(let food) = delegate.mode, !food.servingUnits.isEmpty {
-                        ServingUnitPicker(baseLabel: delegate.unit, units: food.servingUnits, selection: $presenter.selectedUnit)
-                            .padding(.trailing, 8)
-                    } else {
-                        Text(presenter.unitLabel(delegate: delegate))
-                            .foregroundStyle(.secondary)
-                            .padding(.trailing, 8)
-                    }
-                }
-            }
-            ToolbarItem(placement: .bottomBar) {
-                Button {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(delegate.confirmTitle, role: .confirm) {
                     presenter.onConfirmPressed(delegate: delegate)
-                } label: {
-                    Text("Add")
                 }
-                .buttonStyle(.glassProminent)
+                .disabled(presenter.amountValue <= 0)
             }
         }
     }
 
     private var headerSection: some View {
         Section {
-            HStack(alignment: .bottom) {
-                MacroTotalHeader(value: presenter.calories, label: "Calories")
-                MacroTotalHeader(value: presenter.protein, label: "Protein", colour: .proteinColor)
-                MacroTotalHeader(value: presenter.fat, label: "Fat", colour: .fatColor)
-                MacroTotalHeader(value: presenter.carbs, label: "Carbs", colour: .carbsColor)
+            HStack(alignment: .top) {
+                Stat(value: Format.kcal(presenter.calories), label: String(localized: "Calories"), alignment: .center)
+                    .frame(maxWidth: .infinity)
+                Stat(value: Format.grams(presenter.protein), label: String(localized: "Protein"), alignment: .center)
+                    .frame(maxWidth: .infinity)
+                Stat(value: Format.grams(presenter.fat), label: String(localized: "Fat"), alignment: .center)
+                    .frame(maxWidth: .infinity)
+                Stat(value: Format.grams(presenter.carbs), label: String(localized: "Carbs"), alignment: .center)
+                    .frame(maxWidth: .infinity)
             }
-            .listRowInsets(.bottom, 0)
         }
         .listRowSeparator(.hidden)
         .listSectionMargins(.top, 0)
+    }
+
+    private var amountSection: some View {
+        Section("Amount") {
+            HStack {
+                TextField("0", text: $presenter.amountText)
+                    .keyboardType(.decimalPad)
+                if case .addFood(let food) = delegate.mode, !food.servingUnits.isEmpty {
+                    ServingUnitPicker(baseLabel: delegate.unit, units: food.servingUnits, selection: $presenter.selectedUnit)
+                } else {
+                    Text(presenter.unitLabel(delegate: delegate))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -116,35 +126,12 @@ struct MealItemAmountViewView: View {
         if !keys.isEmpty {
             Section {
                 ForEach(keys, id: \.rawValue) { key in
-                    HStack {
-                        Text(key.name)
-                        Spacer()
-                        Text(String(format: "%.1f %@", presenter.scaledValue(for: key), key.unit))
-                            .foregroundStyle(.secondary)
-                    }
+                    LabeledContent(key.name, value: NutrientAmount.format(presenter.scaledValue(for: key), unit: key.unit))
                 }
             } header: {
                 Text("\(macro.name) Breakdown")
             }
         }
-    }
-}
-
-private struct MacroTotalHeader: View {
-
-    var value: Double
-    let label: String
-    var colour: Color = .blue
-
-    var body: some View {
-        VStack {
-            Text(String(format: "%g", value))
-                .font(.title2)
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
     }
 }
 

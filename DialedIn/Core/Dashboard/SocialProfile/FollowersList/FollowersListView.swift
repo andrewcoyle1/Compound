@@ -20,7 +20,7 @@ struct FollowersListView: View {
                 // The list was drawn straight from the array, so an empty one was a blank screen.
                 ContentUnavailableView(
                     "No One Yet",
-                    systemImage: "person.2",
+                    systemImage: Symbol.friends,
                     description: Text("People will show up here once there are some.")
                 )
                 .removeListRowFormatting()
@@ -44,7 +44,7 @@ struct FollowersListView: View {
                             Button("Remove") {
                                 presenter.onRemoveFollowerPressed(user: user)
                             }
-                            .tint(.red)
+                            .tint(.danger)
                         }
                     }
                 }

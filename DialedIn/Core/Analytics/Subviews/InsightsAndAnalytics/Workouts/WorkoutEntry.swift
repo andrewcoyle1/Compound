@@ -23,7 +23,7 @@ extension WorkoutEntry: @MainActor MetricEntry {
 
     var displayValue: String {
         if volumeKg > 0 {
-            return String(localized: "\(String(describing: sets)) sets · \(volumeKg.formatted(.number.precision(.fractionLength(1)))) kg")
+            return "\(String(localized: "\(sets) sets")) · \(Format.weight(kg: volumeKg, unit: WeightUnitPreference.kilograms))"
         }
         return String(localized: "\(sets) sets")
     }

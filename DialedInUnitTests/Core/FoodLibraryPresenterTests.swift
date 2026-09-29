@@ -342,6 +342,20 @@ struct FoodLibraryPresenterTests {
         RecipeTemplateModel.newRecipeTemplate(name: name, authorId: "user-1")
     }
 
+    // MARK: - Tabs
+
+    @Test("Test Changing Tab Clears The Search And Plays A Selection Haptic")
+    func testChangingTabClearsTheSearchAndPlaysASelectionHaptic() {
+        let screen = makeScreen()
+        screen.presenter.searchText = "oat"
+
+        screen.presenter.foodLibraryOption = .foods
+        screen.presenter.onLibraryOptionChanged()
+
+        #expect(screen.presenter.searchText.isEmpty)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
+    }
+
     // MARK: - Favourites
 
     @Test("Test Favourite Foods Are Resolved From Their Ids")
@@ -470,7 +484,7 @@ struct FoodLibraryPresenterTests {
         #expect(screen.presenter.searchPrompt == "Filter Recipes")
 
         screen.presenter.foodLibraryOption = .favourites
-        #expect(screen.presenter.searchPrompt == "Filter Favourites")
+        #expect(screen.presenter.searchPrompt == "Filter Favorites")
     }
 }
 
@@ -538,6 +552,17 @@ struct NutritionPickerPresenterTests {
 
         screen.presenter.onModePressed(.quickAdd)
         #expect(screen.presenter.mode == .quickAdd)
+    }
+
+    /// Switching mode is a segment change, so it clicks; tapping the mode already shown does not.
+    @Test("Test Switching Mode Plays A Selection Haptic Once")
+    func testSwitchingModePlaysASelectionHapticOnce() {
+        let screen = makeScreen()
+
+        screen.presenter.onModePressed(.barcode)
+        screen.presenter.onModePressed(.barcode)
+
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
     }
 
     @Test("Test Every Mode Has A Title And An Icon")

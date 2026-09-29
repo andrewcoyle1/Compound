@@ -35,6 +35,7 @@ class TimelineActionsPresenter {
                 try await interactor.saveFoodLogSettings(settings)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -64,10 +65,12 @@ class TimelineActionsPresenter {
                 for meal in meals {
                     try await interactor.saveMeal(copy(of: meal, to: destination, authorId: authorId))
                 }
+                interactor.playHaptic(option: .success)
                 isChoosingCopyDestination = false
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to copy day"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -129,9 +132,11 @@ class TimelineActionsPresenter {
                         authorId: meal.authorId
                     )
                 }
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.onActionFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to clear day"), subtitle: String(localized: "Please try again."))
             }
         }

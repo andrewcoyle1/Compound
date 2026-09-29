@@ -34,7 +34,7 @@ struct SignInWithGoogleButtonView: View {
     }
     
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Spacing.xs) {
             Spacer()
             ZStack {
                 Image(resolvedStyle == .light ? "GoogleLogoLight" : "GoogleLogoDark")
@@ -44,23 +44,26 @@ struct SignInWithGoogleButtonView: View {
                     .clipShape(Rectangle().inset(by: 7.5))
             }
             .frame(width: 20, height: 20)
+            .accessibilityHidden(true)
             Text(scheme.description)
                 .foregroundStyle(resolvedStyle.accentColour)
                 .fontWeight(.medium)
                 .font(.title3)
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .frame(height: 50)
-        .background(resolvedStyle.backgroundColour)
-        .cornerRadius(25)
-        .frame(maxWidth: .infinity)
-        .shadow(color: resolvedStyle.accentColour, radius: 1)
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.m)
+        // The same size and shape as the Apple button beside it: `height` tall (a minimum, so large
+        // text grows it instead of clipping) and a capsule, which is what Apple's 28 pt radius on
+        // a 56 pt button draws.
+        .frame(maxWidth: .infinity, minHeight: height)
+        .background(resolvedStyle.backgroundColour, in: .capsule)
+        .overlay {
+            Capsule().strokeBorder(.separator)
+        }
         .anyButton(.press) {
             action()
         }
-        .frame(height: height)
         .frame(maxWidth: 408)
     }
 
@@ -71,6 +74,8 @@ struct SignInWithGoogleButtonView: View {
         var backgroundColour: Color {
             switch self {
             case .light: return Color.white
+            // Google's branding guidelines fix this fill (#131314); it is not a design token.
+            // swiftlint:disable:next no_rgb_color_literal
             case .dark: return Color(red: 19/255, green: 19/255, blue: 20/255)
             }
         }

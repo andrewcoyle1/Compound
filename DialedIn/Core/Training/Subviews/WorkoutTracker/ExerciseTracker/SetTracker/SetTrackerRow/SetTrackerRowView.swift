@@ -19,8 +19,12 @@ struct SetTrackerRowView: View {
     @State var presenter: SetTrackerRowPresenter
     let delegate: SetTrackerRowDelegate
     
-    /// The in-app keyboard both of this row's fields share.
+    /// The in-app keyboard all of this row's fields share.
     @State private var keyboardHost = SetKeyboardInputHost()
+
+    /// The row's cell height at the default text size. Scaled so a larger size never clips a value;
+    /// the row's Dynamic Type cap (`maxDynamicTypeSize`) bounds how far it grows.
+    @ScaledMetric(relativeTo: .body) private var cellHeight: CGFloat = 35
     
     var body: some View {
         HStack {
@@ -28,19 +32,19 @@ struct SetTrackerRowView: View {
             Spacer()
             previousValues(exercise: delegate.exercise, set: delegate.set)
             Spacer()
-            inputFields(exercise: delegate.exercise, set: delegate.set)
+            inputFields(exercise: delegate.exercise.wrappedValue, set: delegate.set)
             Spacer()
             completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
         }
         // A five-column table of numbers: past this size the fixed columns truncated every
         // value to "4…". Capped here and on the headers, which share the column widths.
         .dynamicTypeSize(...SetTrackerRowView.maxDynamicTypeSize)
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
                 presenter.deleteSet(setId: delegate.set.id, exercise: delegate.exercise)
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("Delete", systemImage: Symbol.delete)
             }
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
@@ -50,7 +54,7 @@ struct SetTrackerRowView: View {
                     setId: delegate.set.wrappedValue.id
                 )
             } label: {
-                Label("Rest Timer", systemImage: "timer")
+                Label("Rest Timer", systemImage: Symbol.rest)
             }
         }
         .moveDisabled(true)
@@ -66,26 +70,24 @@ struct SetTrackerRowView: View {
 
     func setNumber(set: Binding<WorkoutSetModel>) -> some View {
         Menu {
-            Button {
-                set.wrappedValue.isWarmup.toggle()
-            } label: {
-                Label("Warmup Set", systemImage: set.wrappedValue.isWarmup ? "checkmark" : "")
-            }
+            // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
+            Toggle("Warmup Set", isOn: set.isWarmup)
             
             Button {
                 presenter.onWarmupSetHelpPressed()
             } label: {
-                Label("What's a warmup set?", systemImage: "info.circle")
+                Label("What's a warmup set?", systemImage: Symbol.info)
             }
         } label: {
             Text(setLabel(for: set.wrappedValue))
                 .font(.caption)
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.glass)
         .buttonBorderShape(.circle)
-        .tint(set.wrappedValue.isWarmup ? Color.orange : .secondary)
-        .foregroundColor(.secondary)
+        .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
+        .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))
         .frame(width: 34, alignment: .center)
+        .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
     }
 
     /// What the circle beside a set shows. Both halves of a left/right pair carry the same number
@@ -97,44 +99,51 @@ struct SetTrackerRowView: View {
         return "\(number)\(set.side?.initial ?? "")"
     }
 
-    func weightRepsFields(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
-        let unitPreference = presenter.getUnitPreference(for: exercise.wrappedValue)
-        return HStack(spacing: 8) {
-            weightTextField(exercise: exercise, set: set, unitPreference: unitPreference)
-            repsField(exercise: exercise.wrappedValue, set: set)
+    // MARK: - Inputs
+
+    /// Every tracking mode enters its figures the same way: a field that opens the set keyboard.
+    @ViewBuilder
+    func inputFields(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
+        let units = presenter.getUnitPreference(for: exercise)
+        HStack(spacing: Spacing.s) {
+            switch exercise.trackingMode {
+            case .weightReps:
+                keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
+                    .frame(width: 70, height: cellHeight)
+                keyboardField(.reps, set: set, label: String(localized: "Reps"))
+                    .frame(width: 50, height: cellHeight)
+            case .repsOnly:
+                keyboardField(.reps, set: set, label: String(localized: "Reps"))
+                    .frame(width: 50, height: cellHeight)
+            case .timeOnly:
+                keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                    .frame(width: 90, height: cellHeight)
+            case .distanceTime:
+                keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
+                    .frame(width: 70, height: cellHeight)
+                keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                    .frame(width: 70, height: cellHeight)
+            }
         }
     }
 
-    private func weightTextField(
-        exercise: Binding<WorkoutExerciseModel>,
-        set: Binding<WorkoutSetModel>,
-        unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)
-    ) -> some View {
-        keyboardField(.weight, set: set, unit: unitPreference.weightUnit, label: "Weight, \(unitPreference.weightUnit.displayName)")
-            .frame(width: 70, height: 35)
-    }
-
-    private func repsField(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
-        keyboardField(.reps, set: set, unit: .kilograms, label: "Reps")
-            .frame(width: 50, height: 35)
-    }
-
-    /// A field that opens the in-app weight or reps keyboard, highlighted while it is being edited.
-    private func keyboardField(_ field: SetKeyboardField, set: Binding<WorkoutSetModel>, unit: ExerciseWeightUnit, label: String) -> some View {
+    /// A field that opens the in-app keyboard, highlighted while it is being edited.
+    private func keyboardField(_ field: SetKeyboardField, set: Binding<WorkoutSetModel>, label: String) -> some View {
         let keyboard = presenter.keyboard
         let isActive = keyboard.activeField == field
+        let units = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
         return SetKeyboardTextField(
             field: field,
-            text: keyboard.displayText(for: field, set: set.wrappedValue, unit: unit),
+            text: keyboard.displayText(for: field, set: set.wrappedValue, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             isActive: isActive,
             accessibilityLabel: label,
             presenter: keyboard,
             inputHost: keyboardHost,
             onBegin: { presenter.onKeyboardFieldBegan(field, delegate: delegate) }
         )
-        .background(isActive ? AnyShapeStyle(.tint.opacity(0.15)) : AnyShapeStyle(.clear), in: .rect(cornerRadius: 8))
+        .background(isActive ? AnyShapeStyle(Color.tintedSurface(.accentColor)) : AnyShapeStyle(.clear), in: .rect(cornerRadius: Radius.s, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
                 .strokeBorder(.tint, lineWidth: isActive ? 2 : 0)
         }
         .disabled(delegate.set.wrappedValue.completedAt != nil)
@@ -146,6 +155,8 @@ struct SetTrackerRowView: View {
         }
     }
 
+    // MARK: - Previous and Auto
+
     func previousValues(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
         let unitPreference = presenter.getUnitPreference(for: exercise.wrappedValue)
         return Group {
@@ -154,10 +165,7 @@ struct SetTrackerRowView: View {
             } else if let prev = delegate.lastSet {
                 previousValueContent(trackingMode: exercise.wrappedValue.trackingMode, prev: prev, unitPreference: unitPreference)
             } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                emptyTargetLabel
             }
         }
         .frame(width: 90, alignment: .center)
@@ -181,10 +189,7 @@ struct SetTrackerRowView: View {
             )
 
             if let suggestion, let label {
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                columnText(label)
                     .anyButton {
                         fill(delegate.set, from: suggestion)
                     }
@@ -198,10 +203,15 @@ struct SetTrackerRowView: View {
     }
 
     private var emptyTargetLabel: some View {
-        Text("\u{2014}")
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .frame(height: 35)
+        columnText(Format.placeholder)
+    }
+
+    /// One value in the Prev or Auto column.
+    private func columnText(_ text: String, font: Font = .caption) -> some View {
+        Text(text)
+            .font(font)
+            .foregroundStyle(.secondary)
+            .frame(minHeight: cellHeight)
     }
 
     /// Writes a suggestion into the row, leaving alone every metric it says nothing about.
@@ -212,105 +222,34 @@ struct SetTrackerRowView: View {
         if let distanceMeters = suggestion.distanceMeters { set.wrappedValue.distanceMeters = distanceMeters }
     }
 
-    @ViewBuilder
     private func autoRangeLabel(target: SetTarget) -> some View {
         let label: String = {
             switch (target.minReps, target.maxReps) {
-            case (let min?, let max?): return "\(min)–\(max)"
+            case (let min?, let max?): return Format.repRange(min, max)
             case (let min?, nil):      return "\(min)+"
-            default:                   return "—"
+            default:                   return Format.placeholder
             }
         }()
-        Text(label)
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .frame(height: 35)
+        return columnText(label)
     }
 
-    @ViewBuilder
-    func inputFields(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
-        switch exercise.wrappedValue.trackingMode {
-        case .weightReps:
-            weightRepsFields(exercise: exercise, set: set)
-        case .repsOnly:
-            repsField(exercise: exercise.wrappedValue, set: set)
-        case .timeOnly:
-            timeOnlyFields(exercise: exercise.wrappedValue, set: set)
-        case .distanceTime:
-            distanceTimeFields(exercise: exercise, set: set)
-        }
-    }
-
-    func timeOnlyFields(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 4) {
-                TextField("0", value: Binding(
-                    get: { set.wrappedValue.durationSec.map { $0 / 60 } },
-                    set: { newMinutes in
-                        if let minutes = newMinutes {
-                            let seconds = (set.wrappedValue.durationSec ?? 0) % 60
-                            let newDuration = minutes * 60 + seconds
-                            set.wrappedValue.durationSec = newDuration
-                        }
-                    }
-                ), format: .number)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .frame(width: 40)
-
-                Text(":")
-                    .font(.caption)
-
-                TextField("00", value: Binding(
-                    get: { set.wrappedValue.durationSec.map { $0 % 60 } },
-                    set: { newSeconds in
-                        if let seconds = newSeconds {
-                            let minutes = (set.wrappedValue.durationSec ?? 0) / 60
-                            let newDuration = minutes * 60 + seconds
-                            set.wrappedValue.durationSec = newDuration
-                        }
-                    }
-                ), format: .number)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .frame(width: 40)
-            }
-            .frame(width: 90)
-            .frame(height: 35)
-        }
-    }
-    
-    func buttonColor(set: WorkoutSetModel, canComplete: Bool) -> Color {
-        if set.completedAt != nil {
-            return .green
-        } else if canComplete {
-            return .secondary
-        } else {
-            return .red.opacity(0.6)
-        }
-    }
+    // MARK: - Done
 
     func completeButton(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
-        Button {
+        let state = presenter.completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue)
+        return Button {
             presenter.onSetComplete(exercise, set)
         } label: {
-            Image(systemName: set.wrappedValue.completedAt != nil ? "checkmark.circle.fill" : "circle")
+            Image(systemName: state.systemImage)
                 .font(.title3)
-                .foregroundColor(
-                    presenter.buttonColor(
-                        set: set.wrappedValue,
-                        canComplete: presenter.canComplete(
-                            trackingMode: exercise.trackingMode,
-                            set: set.wrappedValue
-                        )
-                    )
-                )
-                .frame(height: 35)
+                .foregroundStyle(state.tint)
+                .frame(minHeight: cellHeight)
         }
-        .accessibilityLabel(set.wrappedValue.completedAt != nil ? String(localized: "Set completed") : String(localized: "Complete set"))
-        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(state.accessibilityLabel)
+        .accessibilityValue(state.accessibilityValue)
+        .buttonStyle(.plain)
         .frame(width: 32, alignment: .center)
-        .disabled(!presenter.canComplete(trackingMode: exercise.trackingMode, set: set.wrappedValue))
+        .disabled(state == .notReady)
     }
 
     @ViewBuilder
@@ -321,162 +260,27 @@ struct SetTrackerRowView: View {
     ) -> some View {
         switch trackingMode {
         case .weightReps:
-            previousValueWeightReps(prev: prev, unitPreference: unitPreference)
-        case .repsOnly:
-            previousValueRepsOnly(prev: prev)
-        case .timeOnly:
-            previousValueTimeOnly(prev: prev)
-        case .distanceTime:
-            previousValueDistanceTime(prev: prev, unitPreference: unitPreference)
-        }
-    }
-
-    func previousValueWeightReps(
-        prev: WorkoutSetModel,
-        unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)
-    ) -> some View {
-        Group {
             if let weight = prev.weightKg, let reps = prev.reps {
-                let displayWeight = UnitConversion.formatWeight(weight, unit: unitPreference.weightUnit)
-                Text("\(displayWeight) × \(reps)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)")
                     .anyButton {
                         delegate.set.wrappedValue.weightKg = weight
                         delegate.set.wrappedValue.reps = reps
                     }
                     .disabled(delegate.set.wrappedValue.completedAt != nil)
             } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                emptyTargetLabel
             }
-        }
-    }
-
-    func previousValueRepsOnly(prev: WorkoutSetModel) -> some View {
-        Group {
-            if let reps = prev.reps {
-                Text("\(reps)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
-            } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
-            }
-        }
-    }
-
-    func previousValueTimeOnly(prev: WorkoutSetModel) -> some View {
-        Group {
-            if let duration = prev.durationSec {
-                let minutes = duration / 60
-                let seconds = duration % 60
-                Text("\(minutes):\(String(format: "%02d", seconds))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
-            } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
-            }
-        }
-    }
-
-    func distanceTimeFields(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
-        let unitPreference = presenter.getUnitPreference(for: exercise.wrappedValue)
-        return HStack(spacing: 8) {
-            distanceTimeDistanceField(exercise: exercise, set: set, unitPreference: unitPreference)
-            distanceTimeTimeField(exercise: exercise, set: set)
-        }
-    }
-
-    func distanceTimeDistanceField(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>, unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)) -> some View {
-        VStack(alignment: .center, spacing: 2) {
-            TextField("0", value: Binding(
-                get: {
-                    guard let meters = set.wrappedValue.distanceMeters else { return nil }
-                    return UnitConversion.convertDistance(meters, to: unitPreference.distanceUnit)
-                },
-                set: { newValue in
-                    guard let value = newValue else {
-                        set.wrappedValue.distanceMeters = nil
-                        return
-                    }
-                    let meters = UnitConversion.convertDistanceToMeters(value, from: unitPreference.distanceUnit)
-                    set.wrappedValue.distanceMeters = meters
-                }
-            ), format: .number)
-            .textFieldStyle(.roundedBorder)
-            .keyboardType(.decimalPad)
-            .frame(height: 35)
-        }
-        .frame(width: 70)
-    }
-
-    func distanceTimeTimeField(exercise: Binding<WorkoutExerciseModel>, set: Binding<WorkoutSetModel>) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 2) {
-                TextField("0", value: Binding(
-                    get: { set.wrappedValue.durationSec.map { $0 / 60 } },
-                    set: { newMinutes in
-                        if let minutes = newMinutes {
-                            let seconds = (set.wrappedValue.durationSec ?? 0) % 60
-                            let newDuration = minutes * 60 + seconds
-                            set.wrappedValue.durationSec = newDuration
-                        }
-                    }
-                ), format: .number)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .frame(width: 35)
-                Text(":")
-                    .font(.caption2)
-                TextField("00", value: Binding(
-                    get: { set.wrappedValue.durationSec.map { $0 % 60 } },
-                    set: { newSeconds in
-                        if let seconds = newSeconds {
-                            let minutes = (set.wrappedValue.durationSec ?? 0) / 60
-                            let newDuration = minutes * 60 + seconds
-                            set.wrappedValue.durationSec = newDuration
-                        }
-                    }
-                ), format: .number)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .frame(width: 35)
-            }
-            .frame(height: 35)
-        }
-        .frame(width: 80)
-    }
-
-    func previousValueDistanceTime(
-        prev: WorkoutSetModel,
-        unitPreference: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)
-    ) -> some View {
-        Group {
+        case .repsOnly:
+            columnText(prev.reps.map(String.init) ?? Format.placeholder)
+        case .timeOnly:
+            columnText(prev.durationSec.map { Format.duration(TimeInterval($0)) } ?? Format.placeholder)
+        case .distanceTime:
             if let distance = prev.distanceMeters, let duration = prev.durationSec {
-                let displayDistance = UnitConversion.formatDistance(distance, unit: unitPreference.distanceUnit)
-                let minutes = duration / 60
-                let seconds = duration % 60
-                Text("\(displayDistance) \(minutes):\(String(format: "%02d", seconds))")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                let displayDistance = Format.distance(meters: distance, exerciseUnit: unitPreference.distanceUnit)
+                columnText("\(displayDistance) \(Format.duration(TimeInterval(duration)))", font: .caption2)
                     .lineLimit(2)
             } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .frame(height: 35)
+                emptyTargetLabel
             }
         }
     }

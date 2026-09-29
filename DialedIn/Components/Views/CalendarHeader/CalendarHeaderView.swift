@@ -15,8 +15,6 @@ struct CalendarHeaderDelegate {
 
 struct CalendarHeaderView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-
     @State var presenter: CalendarHeaderPresenter
 
     /// Driven by a toolbar button in the parent screen. The header owns the transition
@@ -79,7 +77,7 @@ struct CalendarHeaderView: View {
             // showing, so follow the selection — but only then. Tapping a visible cell must not
             // shunt the strip sideways under the finger.
             guard !presenter.isVisible(newValue, fromLeadingDay: leadingDay) else { return }
-            withAnimation {
+            withReducedMotionAnimation(.standard) {
                 leadingDay = presenter.weekStart(for: newValue)
             }
         }
@@ -110,19 +108,16 @@ struct CalendarHeaderView: View {
         let isHidden = presenter.isTodayVisible(fromLeadingDay: leadingDay)
         let pointsForward = presenter.isTodayAhead(ofLeadingDay: leadingDay)
 
-        VStack(spacing: 2) {
-            Image(systemName: pointsForward ? "chevron.right" : "chevron.left")
-                .font(.caption)
-        }
-        .monospaced()
-        .fontWeight(.semibold)
-        .foregroundStyle(Color.accentColor)
-        .padding(.vertical, 8)
+        Image(systemName: pointsForward ? "chevron.right" : "chevron.left")
+            .font(.caption)
+            .fontWeight(.semibold)
+            .foregroundStyle(.tint)
+            .padding(.vertical, Spacing.s)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             ZStack {
                 Capsule()
-                    .fill(colorScheme.backgroundPrimary)
+                    .fill(.surface)
                 Capsule()
                     .inset(by: 1)
                     .stroke(.tint, lineWidth: 2)
@@ -139,14 +134,15 @@ struct CalendarHeaderView: View {
         // Hidden means gone: left in the hierarchy it would keep swallowing taps on the day
         // underneath it.
         .allowsHitTesting(!isHidden)
-        .animation(.easeInOut(duration: 0.2), value: isHidden)
+        .reducedMotionAnimation(.quick, value: isHidden)
         .anyButton(.press) {
             presenter.onReturnToTodayPressed()
-            withAnimation {
+            withReducedMotionAnimation(.standard) {
                 leadingDay = presenter.weekStart(for: presenter.today)
             }
         }
-        .padding(.vertical, 8)
+        .accessibilityLabel("Today")
+        .padding(.vertical, Spacing.s)
     }
 
     private static let rowHeight: CGFloat = 70
@@ -258,7 +254,7 @@ private func previewDelegate() -> CalendarHeaderDelegate {
                 Button {
                     isCalendarExpanded = true
                 } label: {
-                    Image(systemName: "calendar")
+                    Image(systemName: Symbol.calendar)
                 }
                 .accessibilityLabel("Show calendar")
             }

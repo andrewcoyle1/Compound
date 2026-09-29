@@ -32,7 +32,12 @@ struct WeightView: View {
     var delegate: WeightDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Weight?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             pickerSection
             if presenter.unit == .kilograms {
                 metricSection
@@ -40,22 +45,8 @@ struct WeightView: View {
                 imperialSection
             }
         }
-        .navigationTitle("What's your weight?")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-        }
     }
-    
+
     private var pickerSection: some View {
         Section {
             Picker("Units", selection: $presenter.unit) {
@@ -66,7 +57,7 @@ struct WeightView: View {
         }
         .removeListRowFormatting()
     }
-    
+
     private var metricSection: some View {
         Section {
             Picker("Kilograms", selection: $presenter.selectedKilograms) {
@@ -75,8 +66,6 @@ struct WeightView: View {
                 }
             }
             .pickerStyle(.wheel)
-            .frame(height: 150)
-            .clipped()
             .onChange(of: presenter.selectedKilograms) { _, _ in
                 presenter.updatePoundsFromKilograms()
             }
@@ -85,17 +74,15 @@ struct WeightView: View {
         }
         .removeListRowFormatting()
     }
-    
+
     private var imperialSection: some View {
         Section {
             Picker("Pounds", selection: $presenter.selectedPounds) {
                 ForEach((66...440).reversed(), id: \.self) { value in
-                    Text("\(value) lbs").tag(value)
+                    Text("\(value) lb").tag(value)
                 }
             }
             .pickerStyle(.wheel)
-            .frame(height: 150)
-            .clipped()
             .onChange(of: presenter.selectedPounds) { _, _ in
                 presenter.updateKilogramsFromPounds()
             }
@@ -104,20 +91,14 @@ struct WeightView: View {
         }
         .removeListRowFormatting()
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    #endif
 }
 
 extension CoreBuilder {

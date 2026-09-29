@@ -55,10 +55,12 @@ class ProgramIconPresenter {
 
     func onColourPressed(colour: Color) {
         selectedColour = colour
+        interactor.playHaptic(option: .selection)
     }
     
     func onIconPressed(icon: String) {
         selectedIcon = icon
+        interactor.playHaptic(option: .selection)
     }
     
     func onNextPressed(delegate: ProgramIconDelegate) {

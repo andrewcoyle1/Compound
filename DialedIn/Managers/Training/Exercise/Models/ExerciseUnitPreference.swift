@@ -17,7 +17,7 @@ enum ExerciseWeightUnit: String, Codable, CaseIterable {
     var abbreviation: String {
         switch self {
         case .kilograms: return "kg"
-        case .pounds: return "lbs"
+        case .pounds: return "lb"
         }
     }
     

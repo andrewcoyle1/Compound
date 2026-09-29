@@ -37,8 +37,8 @@ struct WorkoutTemplateDetailView: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton(isPrimaryAction: true) {
+        .bottomCTA {
+            CallToActionButton {
                 presenter.onStartWorkoutPressed(
                     onStartWorkout: delegate.onStartWorkoutPressed,
                     workoutTemplate: delegate.workoutTemplate,
@@ -48,7 +48,6 @@ struct WorkoutTemplateDetailView: View {
             } label: {
                 Text("Start Workout")
             }
-            .padding(.bottom)
         }
     }
 
@@ -60,20 +59,20 @@ struct WorkoutTemplateDetailView: View {
                     Button {
                         presenter.onEditWorkoutPressed(template: delegate.workoutTemplate)
                     } label: {
-                        Label("Edit Workout", systemImage: "pencil")
+                        Label("Edit Workout", systemImage: Symbol.edit)
                     }
                     Button {
                         presenter.onSharePressed(template: delegate.workoutTemplate)
                     } label: {
-                        Label("Share with Friends", systemImage: "paperplane")
+                        Label("Share with Friends", systemImage: Symbol.share)
                     }
                     Button(role: .destructive) {
                         presenter.showDeleteConfirmation(workoutTemplate: delegate.workoutTemplate)
                     } label: {
-                        Label("Delete Workout", systemImage: "trash")
+                        Label("Delete Workout", systemImage: Symbol.delete)
                     }
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: Symbol.more)
                 }
                 .disabled(presenter.isDeleting)
                 .accessibilityLabel("Workout options")
@@ -93,137 +92,22 @@ struct WorkoutTemplateDetailView: View {
     }
     
     private var targetMusclesSection: some View {
-        Section {
-            if presenter.targetMuscleSummaries(exercises: delegate.workoutTemplate.exercises).isEmpty {
-                HStack {
-                    Image(systemName: "figure.wave")
-                        .font(.system(size: 32))
-                        .frame(width: 40)
-                    Text("You haven't added any exercises yet. Once you add an exercise, target muscles will appear here.")
-                }
-            } else {
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(presenter.targetMuscleSummaries(exercises: delegate.workoutTemplate.exercises)) { summary in
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(summary.muscle.name)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .lineLimit(1)
-                                
-                                Text("\(presenter.formattedSetCount(summary.weightedTargetSets)) target sets")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                                
-                                Text("\(summary.exerciseCount) \(summary.exerciseCount == 1 ? String(localized: "exercise") : String(localized: "exercises"))")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-                            .padding(10)
-                            .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-                .removeListRowFormatting()
-                .scrollIndicators(.hidden)
-            }
-        } header: {
-            Text("Target Muscles")
-        }
+        TargetMusclesSection(summaries: presenter.targetMuscleSummaries(exercises: delegate.workoutTemplate.exercises))
     }
-    
+
     private var exercisesSection: some View {
         Section {
             ForEach(delegate.workoutTemplate.exercises) { exercise in
-                // The image goes above the details at accessibility sizes; beside them it left the
-                // name a few letters before the ellipsis.
-                AdaptiveStack {
-                    ImageLoaderView(urlString: exercise.exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
-                        .frame(width: 60, height: 60)
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.exercise.name)
-                            .fontWeight(.semibold)
-                            .fixedSize(horizontal: false, vertical: true)
-                        LazyHGrid(rows: [GridItem(), GridItem()]) {
-                            ForEach(exercise.setTargets) { target in
-                                setTarget(target)
-                            }
-                        }
-                        ScrollView(.horizontal) {
-                            HStack {
-                                ForEach(
-                                    exercise.exercise.muscleGroups.sorted { $0.key.name < $1.key.name },
-                                    id: \.key
-                                ) { key, value in
-                                    // Primary muscles were told from secondary by a darker fill
-                                    // alone; the weight and the label say it without colour.
-                                    Text(key.name)
-                                        .font(.caption2)
-                                        .fontWeight(value == .secondary ? .regular : .semibold)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .accessibilityLabel("\(key.name), \(value == .secondary ? String(localized: "secondary") : String(localized: "primary"))")
-                                        .padding(4)
-                                        .padding(.horizontal, 4)
-                                        .background(value == .secondary ? Color.secondary.opacity(0.2) : Color.secondary.opacity(0.4), in: Capsule())
-                                }
-                            }
-                        }
+                TemplateExerciseRow(exercise: exercise)
+                    .anyButton(.highlight) {
+                        presenter.onExercisePressed(exercise.exercise)
                     }
-                }
-                .anyButton(.highlight) {
-                    presenter.onExercisePressed(exercise.exercise)
-                }
             }
         } header: {
-            HStack {
-                VStack {
-                    Text("\(delegate.workoutTemplate.exercises.count) Exercises")
-                }
-                Spacer()
-                Button {
-//                    presenter.onAddExercisePressed()
-                } label: {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("Add exercise")
-                .buttonStyle(.bordered)
-            }
+            // The "+" here had its action commented out. Authors add exercises through Edit
+            // Workout in the toolbar menu; nobody else can change the template.
+            Text("\(delegate.workoutTemplate.exercises.count) Exercises")
         }
-    }
-    
-    private func setTarget(_ target: SetTarget) -> some View {
-        
-        var descriptionString: String = "No target set"
-        if let maxReps = target.maxReps {
-            if let minReps = target.minReps {
-                descriptionString = "\(minReps)-\(maxReps) reps"
-            } else {
-                descriptionString = "1-\(maxReps) reps"
-            }
-        } else if let minReps = target.minReps,
-                  target.maxReps == nil {
-            descriptionString = "\(minReps)+ reps"
-        }
-           
-        // The number sizes its own badge: a fixed 12pt circle drew over the text beside it once
-        // the number outgrew it.
-        return HStack {
-            Text("\(target.setNumber)")
-                .font(.caption2.weight(.semibold))
-                .monospacedDigit()
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.quaternary, in: .capsule)
-            Text(descriptionString)
-        }
-        .font(.caption)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Set \(target.setNumber), \(descriptionString)")
     }
 
 }

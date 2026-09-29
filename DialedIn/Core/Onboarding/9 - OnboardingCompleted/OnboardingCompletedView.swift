@@ -9,72 +9,50 @@ import SwiftUI
 
 struct OnboardingCompletedView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: OnboardingCompletedPresenter
 
     var body: some View {
-        VStack {
-            Spacer()
-            content
-            Spacer()
-            
+        VStack(spacing: Spacing.s) {
+            Image(systemName: "rectangle.stack.fill.badge.plus")
+                .iconSize(.hero)
+                .foregroundStyle(.tint)
+                .padding(.bottom, Spacing.s)
+                .accessibilityHidden(true)
+            Text("Onboarding Complete!")
+                .font(.display)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+            Text("You're ready to start compounding.")
+                .font(.title3)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
-        .safeAreaInset(edge: .bottom, content: {
-            buttonSection
-        })
-        .background(colorScheme.backgroundSecondary)
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.canvas.ignoresSafeArea())
+        .bottomCTA {
+            CallToActionButton(isLoading: presenter.isCompletingProfileSetup) {
+                presenter.onFinishButtonPressed()
+            } label: {
+                Text("Continue")
+            }
+            .accessibilityIdentifier("Continue")
+        }
         #if !DEBUG && !MOCK
         .navigationBarBackButtonHidden(true)
-        #else
+        #endif
+        #if DEV || MOCK
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     presenter.onDevSettingsPressed()
                 } label: {
-                    Image(systemName: "info")
+                    Image(systemName: Symbol.info)
                 }
                 .accessibilityLabel("Developer settings")
             }
         }
         #endif
-    }
-    
-    private var content: some View {
-        VStack {
-            Image(systemName: "rectangle.stack.fill.badge.plus")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.accent)
-                .padding(.bottom, 16)
-            Text("🎉 Onboarding Complete!")
-                .font(.title)
-                .bold()
-                .padding(.bottom, 8)
-            Text("You're ready to start compounding.")
-                .font(.title3)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 8)
-        }
-    }
-    
-    private var buttonSection: some View {
-        CallToActionButton {
-            presenter.onFinishButtonPressed()
-        } label: {
-            ZStack {
-                if !presenter.isCompletingProfileSetup {
-                    Text("Continue")
-                } else {
-                    ProgressView()
-                        .tint(.white)
-                }
-            }
-        }
-        .accessibilityIdentifier("Continue")
-        .disabled(presenter.isCompletingProfileSetup)
     }
 }
 

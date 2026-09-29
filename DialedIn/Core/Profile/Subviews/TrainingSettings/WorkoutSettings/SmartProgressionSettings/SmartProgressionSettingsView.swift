@@ -14,36 +14,16 @@ struct SmartProgressionSettingsView: View {
     var body: some View {
         List {
             Section {
-                CustomLabelButtonView(
-                    symbolName: "book.pages",
-                    title: String(localized: "Initial log fill"),
-                    subtitle: presenter.initialLogFill.title) {
-                        editMenu(
-                            options: presenter.initialLogFillOptions,
-                            selection: presenter.initialLogFill,
-                            title: \.title,
-                            onSelect: { presenter.initialLogFill = $0 }
-                        )
-                    }
-                CustomToggleView(
-                    symbolName: "arrow.trianglehead.branch",
+                optionPicker("Initial log fill", systemImage: "book.pages", options: presenter.initialLogFillOptions, selection: $presenter.initialLogFill, optionTitle: \.title)
+                ListRowToggle(
                     title: String(localized: "Apply in session"),
                     subtitle: String(localized: "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout"),
-                    bool: $presenter.applyInSession
+                    systemImage: "arrow.trianglehead.branch",
+                    isOn: $presenter.applyInSession
                 )
-                CustomLabelButtonView(
-                    symbolName: "dot.squareshape",
-                    title: String(localized: "Adjustment Mode"),
-                    subtitle: presenter.adjustmentMode.title) {
-                        editMenu(
-                            options: presenter.adjustmentModes,
-                            selection: presenter.adjustmentMode,
-                            title: \.title,
-                            onSelect: { presenter.adjustmentMode = $0 }
-                        )
-                    }
+                optionPicker("Adjustment Mode", systemImage: "dot.squareshape", options: presenter.adjustmentModes, selection: $presenter.adjustmentMode, optionTitle: \.title)
             } header: {
-                Text("Behaviour")
+                Text("Behavior")
             }
         }
         .navigationTitle("Smart Progression")
@@ -56,31 +36,20 @@ struct SmartProgressionSettingsView: View {
         }
     }
 
-    /// Keeps the row's "Edit" capsule but makes it a menu, so choosing a value needs no extra
-    /// screen for what is a two- or three-way choice.
-    private func editMenu<Option: Identifiable & Equatable>(
+    /// An inline menu picker: each is a two- or three-way choice, so it needs no extra screen.
+    private func optionPicker<Option: Identifiable & Hashable>(
+        _ title: LocalizedStringKey,
+        systemImage: String,
         options: [Option],
-        selection: Option,
-        title: KeyPath<Option, String>,
-        onSelect: @escaping (Option) -> Void
+        selection: Binding<Option>,
+        optionTitle: KeyPath<Option, String>
     ) -> some View {
-        Menu {
+        Picker(selection: selection) {
             ForEach(options) { option in
-                Button {
-                    onSelect(option)
-                } label: {
-                    if option == selection {
-                        Label(option[keyPath: title], systemImage: "checkmark")
-                    } else {
-                        Text(option[keyPath: title])
-                    }
-                }
+                Text(option[keyPath: optionTitle]).tag(option)
             }
         } label: {
-            Text("Edit")
-                .padding(.horizontal, 8)
-                .padding(8)
-                .background(Color.secondary.opacity(0.2), in: .capsule)
+            Label(title, systemImage: systemImage)
         }
     }
 }

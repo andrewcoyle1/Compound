@@ -23,14 +23,11 @@ struct WorkoutExerciseEquipmentSheetView: View {
                 ProgressView("Loading variations...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let error = presenter.loadError {
-                VStack(spacing: 12) {
+                ContentUnavailableView {
+                    Label("No Equipment", systemImage: Symbol.equipment)
+                } description: {
                     Text(error)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding()
             } else {
                 List {
                     Section {
@@ -69,34 +66,13 @@ struct WorkoutExerciseEquipmentSheetView: View {
     }
 
     private func variationRow(item: VariationDisplayItem) -> some View {
-        let isChosen = presenter.chosenVariationId == item.id
-        return Button {
+        SelectableRow(
+            title: item.name,
+            subtitle: presenter.detail(for: item),
+            isSelected: presenter.chosenVariationId == item.id
+        ) {
             presenter.onSelectVariation(id: item.id)
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.name)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    if item.resistanceSummary != "None" {
-                        Text("Resistance: \(item.resistanceSummary)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if item.supportSummary != "None" {
-                        Text("Support: \(item.supportSummary)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                if isChosen {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
         }
-        .buttonStyle(.plain)
     }
 }
 
@@ -125,7 +101,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutExerciseEquipmentSheetView(delegate: WorkoutExerciseEquipmentSheetDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.4), .medium, .large], dragIndicator: .visible))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.workoutExerciseEquipmentSheetView(router: router, delegate: delegate)
         }
     }

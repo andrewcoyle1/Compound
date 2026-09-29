@@ -20,6 +20,11 @@ class GoalProgressPresenter {
     private(set) var cachedTimeSeries: [TimeSeries] = []
     private(set) var currentWeightKg: Double?
 
+    /// The user's own unit. Goals and weigh-ins are stored in kilograms.
+    var weightUnit: WeightUnitPreference {
+        interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
+    }
+
     init(interactor: GoalProgressInteractor, router: GoalProgressRouter) {
         self.interactor = interactor
         self.router = router
@@ -52,7 +57,8 @@ class GoalProgressPresenter {
                 id: entry.id,
                 date: entry.date,
                 weightKg: weightKg,
-                progressPercent: progress * 100
+                progressPercent: progress * 100,
+                weightUnit: weightUnit
             )
         }
 
@@ -90,20 +96,11 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
     var customChartView: AnyView? {
         guard let goal = activeGoal else {
             return AnyView(
-                VStack(spacing: 16) {
-                    Image(systemName: "target")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.secondary)
-                    Text("No Active Weight Goal")
-                        .font(.headline)
-                    Text("Set a weight goal in Profile to track your progress toward your target.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 48)
+                ContentUnavailableView(
+                    "No Active Weight Goal",
+                    systemImage: Symbol.goal,
+                    description: Text("Set a weight goal in Profile to track your progress toward your target.")
+                )
             )
         }
 
@@ -111,26 +108,24 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
         let progressPercent = progress * 100
 
         return AnyView(
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(goal.objective.description)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Text("\(Int(progressPercent))%")
-                            .font(.title)
-                            .fontWeight(.semibold)
-                    }
-                    Spacer()
+            VStack(alignment: .leading, spacing: Spacing.xl) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(goal.objective.description)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                    Text(Format.percent(progress))
+                        .font(.metricLarge)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 MacroProgressChart(
                     current: progressPercent,
                     target: 100,
                     maxValue: 100,
-                    color: .green
+                    color: Color.Metric.goalProgress,
+                    unit: "%"
                 )
-                .frame(height: 24)
+                .frame(height: ControlSize.icon)
 
                 HStack {
                     weightLabel("Start", goal.startingWeightKg)
@@ -141,17 +136,22 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
                     }
                     weightLabel("Target", goal.targetWeightKg)
                 }
-                .font(.caption)
+                .font(.label)
                 .foregroundStyle(.secondary)
             }
             .padding()
         )
     }
 
-    private func weightLabel(_ title: String, _ kilos: Double) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+    /// A stored kilogram weight in the user's unit, as the entries show it.
+    func weightText(_ kilos: Double) -> String {
+        Format.weight(kg: kilos, unit: weightUnit)
+    }
+
+    private func weightLabel(_ title: LocalizedStringKey, _ kilos: Double) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(title)
-            Text("\(kilos.formatted(.number.precision(.fractionLength(1)))) kg")
+            Text(weightText(kilos))
                 .fontWeight(.medium)
         }
     }
@@ -167,7 +167,7 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
             emptyStateMessage: activeGoal == nil
                 ? "Set a weight goal in Profile to track your progress."
                 : "Log your weight to track progress toward your target.",
-            chartColor: .green
+            chartColor: Color.Metric.goalProgress
         )
     }
 

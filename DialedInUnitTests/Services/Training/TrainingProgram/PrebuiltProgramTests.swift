@@ -184,6 +184,7 @@ struct PrebuiltProgramDetailPresenterTests {
         #expect(interactor.started == [program.id])
         #expect(router.dismissed == 1)
         #expect(!presenter.isStarting)
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test A Failed Start Stays On The Screen And Says So")
@@ -198,5 +199,6 @@ struct PrebuiltProgramDetailPresenterTests {
         #expect(router.dismissed == 0)
         #expect(router.errors == 1)
         #expect(interactor.trackedEventNames.contains("PrebuiltProgramDetailView_Start_Fail"))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 }

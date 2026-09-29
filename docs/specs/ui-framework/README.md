@@ -99,3 +99,35 @@ Files no WP may commit changes to, and why:
    a Finish button animates into the bottom safe area. See WP-09.
 4. **List row text.** Titles use `.body` and subtitles use `.subheadline`. Both are Dynamic Type
    text styles. WP-06 carries the accessibility-size layout rules.
+
+## Follow-up decisions (confirmed 2026-09-28)
+
+| # | Decision | Owner |
+|---|---|---|
+| 1 | Grams keep one decimal on nutrition labels and food/recipe detail. Everywhere else rounds as `Format.grams` does. | WP-08 (asked mid-run) |
+| 2 | "lb" everywhere. Change `WeightUnitPreference.abbreviation` and `ExerciseWeightUnit.abbreviation` from "lbs", and fix any tests that assert "lbs". | WP-15 |
+| 3 | Goal Progress, its entries and its chart follow the user's weight unit, not kg. Add presenter tests. | WP-15 |
+| 4 | The session volume total converts each exercise to the user's body-weight unit before summing. | WP-09 (asked mid-run) |
+| 5 | Macro lines in item rows wrap to a second line instead of truncating. | WP-08 (asked mid-run) |
+| 6 | The weekly target grid shows the over-target caret only when a cell is well over target: define "well" as over 110% and put it in a named constant. VoiceOver still says "over target" for any cell over 100%. | WP-15 |
+| 7 | Mac Catalyst is out of scope for this swarm. It is a separate task, because the build was already broken in `CoreInteractor`, `BarcodeScanner`, `HKWorkoutManager` and the tracker interactor. | — |
+| 8 | US spelling in user-facing strings ("Favorites", "Analyzing", "Customize", "Colour" → "Color" and so on). Change the English source strings and keep their Spanish translations. Identifiers and comments stay as they are. | WP-15 |
+
+Also for WP-15:
+- **Set-count plurals.** "1 sets" appears in Muscle Balance and in Shared Item's rows. Pluralise every
+  set, rep and exercise count through the string catalog (grep `sets"`), and treat a fractional
+  count as plural.
+- **Option subtitles.** `SelectableRow` subtitles must never truncate: they explain the choice
+  (the onboarding calorie floor cut off "…even if your TDEE is lower"). Drop the 2-line subtitle
+  cap for `SelectableRow`, and for `.checkmark` rows generally. Other rows keep it.
+- **Hero intro screens.** WP-10 gave Create Program and Create Workout's first steps an inline
+  navigation title, which now sits unreadably over the hero image. Put back the large body heading
+  (`Font.display`) under the image, and hide the navigation title there. Keep `navigationTitle` for
+  VoiceOver and the back menu, but hide the principal bar item. Check Create Exercise and any other
+  hero-image first step for the same problem.
+- **Search shortcut tap targets.** WP-11 made the Search shortcuts `Chip`s, which are about 20 pt
+  tall, below the 44 pt minimum tap target. Make them controls at least 44 pt tall (`.glass`
+  buttons, or a `Chip` whose `contentShape` is padded out to 44 pt), and check any other tappable
+  `Chip` for the same problem.
+- Muscle Balance also hides its footer by comparing the header to the localised word
+"Lower", so the footer disappears in other languages. Fix it with a test seam.

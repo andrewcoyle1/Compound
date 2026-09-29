@@ -15,6 +15,8 @@ struct WeightPickerInput: View {
     @Binding var unit: UnitOfWeight
     @Binding var selectedKilograms: Int
     @Binding var selectedPounds: Int
+    /// The wheel shows about five rows; it grows with Dynamic Type so they are never clipped.
+    @ScaledMetric(relativeTo: .body) private var wheelHeight: CGFloat = 150
 
     /// The ranges the wheels offer. Kept here so both callers show the same span.
     static let kilogramRange = 30...200
@@ -29,7 +31,7 @@ struct WeightPickerInput: View {
         Section {
             Picker("Units", selection: $unit) {
                 Text("Metric (kg)").tag(UnitOfWeight.kilograms)
-                Text("Imperial (lbs)").tag(UnitOfWeight.pounds)
+                Text("Imperial (lb)").tag(UnitOfWeight.pounds)
             }
             .pickerStyle(.segmented)
         }
@@ -45,7 +47,7 @@ struct WeightPickerInput: View {
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
+                .frame(height: wheelHeight)
                 .clipped()
                 .onChange(of: selectedKilograms) { _, newValue in
                     selectedPounds = Int(UnitConversion.kgToLbs(Double(newValue)))
@@ -53,11 +55,11 @@ struct WeightPickerInput: View {
             } else {
                 Picker("Weight", selection: $selectedPounds) {
                     ForEach(Self.poundRange.reversed(), id: \.self) { value in
-                        Text("\(value) lbs").tag(value)
+                        Text("\(value) lb").tag(value)
                     }
                 }
                 .pickerStyle(.wheel)
-                .frame(height: 150)
+                .frame(height: wheelHeight)
                 .clipped()
                 .onChange(of: selectedPounds) { _, newValue in
                     selectedKilograms = Int(UnitConversion.lbsToKg(Double(newValue)))

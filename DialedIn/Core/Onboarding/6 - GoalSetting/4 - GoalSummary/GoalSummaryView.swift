@@ -31,7 +31,6 @@ struct GoalSummaryDelegate {
 
 struct GoalSummaryView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.goalFlowDismissAction) private var dismissFlow
 
     @State var presenter: GoalSummaryPresenter
@@ -39,219 +38,129 @@ struct GoalSummaryView: View {
     var delegate: GoalSummaryDelegate
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "Does This Look Right?",
+            progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
+            // Complete saves the goal from settings; Continue carries onboarding on. Either is gated
+            // on the save in flight only: it used to also require `goalCreated`, which nothing ever
+            // set, so Complete was disabled for good.
+            primary: presenter.isStandaloneMode
+                ? .init(title: "Complete", isEnabled: !presenter.isLoading, identifier: "Complete") { presenter.onCompletePressed(delegate: delegate) }
+                : .init(title: "Continue", isEnabled: !presenter.isLoading, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             goalOverviewSection
             weightDetailsSection
             timelineSection
             motivationSection
         }
-        .navigationTitle("Goal Summary")
         .scrollIndicators(.hidden)
         .onAppear {
             presenter.onDismiss = dismissFlow
         }
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            Group {
-                if presenter.isStandaloneMode {
-                    CallToActionButton {
-                        presenter.onCompletePressed(delegate: delegate)
-                    } label: {
-                        Text("Complete")
-                    }
-                    .accessibilityIdentifier("Complete")
-                    // Gated on the save being in flight only. It used to also require
-                    // `goalCreated`, which nothing ever set — and which only the press of this
-                    // button could have set, so Complete was disabled for good.
-                    .disabled(presenter.isLoading)
-                } else {
-                    CallToActionButton {
-                        presenter.onContinuePressed(delegate: delegate)
-                    } label: {
-                        Text("Continue")
-                    }
-                    .accessibilityIdentifier("Continue")
-                    .disabled(presenter.isLoading)
-                }
-            }
-            .padding(.bottom)
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
-    
+
     // MARK: - View Sections
-    
+
     private var goalOverviewSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: presenter.objectiveIcon(objective: delegate.overarchingObjective))
-                        .font(.title2)
-                        .foregroundColor(.accent)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Your Goal")
-                            .font(.headline)
-                        Text(objectiveTitle)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                    }
-                    Spacer()
-                }
-                
-                Text(objectiveDetail)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, 8)
+            summaryRow(
+                title: "Your Goal",
+                value: Text(delegate.overarchingObjective.description),
+                detail: Text(delegate.overarchingObjective.detailedDescription),
+                systemImage: presenter.objectiveIcon(objective: delegate.overarchingObjective)
+            )
         } header: {
             Text("Goal Overview")
         }
     }
-    
+
     private var weightDetailsSection: some View {
         Section {
-            VStack(spacing: 16) {
-                if let current = presenter.currentWeight {
-                    weightRow(
-                        title: String(localized: "Current Weight"),
-                        weight: current,
-                        unit: presenter.weightUnit
-                    )
-                }
-                
-                weightRow(
-                    title: String(localized: "Target Weight"),
-                    weight: delegate.targetWeight,
-                    unit: presenter.weightUnit
-                )
-                
-                if presenter.weightDifference(targetWeight: delegate.targetWeight) != 0 {
-                    Divider()
-                    
-                    HStack {
-                        Text("Weight Change")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(presenter.weightDifference(targetWeight: delegate.targetWeight) > 0 ? "+" : "")\(presenter.formatWeight(abs(presenter.weightDifference(targetWeight: delegate.targetWeight)), unit: presenter.weightUnit))")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(presenter.weightDifference(targetWeight: delegate.targetWeight) > 0 ? .green : .red)
-                    }
-                    
-                    HStack {
-                        Text("Weekly Rate")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit))/week")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                    }
-                }
+            if let current = presenter.currentWeight {
+                LabeledContent("Current Weight", value: presenter.formatWeight(current, unit: presenter.weightUnit))
             }
-            .padding(.vertical, 8)
+            LabeledContent("Target Weight", value: presenter.formatWeight(delegate.targetWeight, unit: presenter.weightUnit))
+            if let change = presenter.weightChange(targetWeight: delegate.targetWeight) {
+                LabeledContent("Weight Change") {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: change.isGain ? "arrow.up" : "arrow.down")
+                            .accessibilityHidden(true)
+                        Text(change.text)
+                    }
+                    .foregroundStyle(change.isGain ? Color.success : Color.danger)
+                }
+                LabeledContent("Weekly Rate", value: "\(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit))/week")
+            }
         } header: {
             Text("Weight Details")
         }
+        .font(.rowDetail)
     }
-    
+
     private var timelineSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .font(.title2)
-                        .foregroundColor(.accent)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Estimated Timeline")
-                            .font(.headline)
-                        if presenter.estimatedWeeks(delegate: delegate) > 0 {
-                            Text("\(presenter.estimatedWeeks(delegate: delegate)) weeks (\(presenter.estimatedMonths(delegate: delegate)) months)")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                        } else {
-                            Text("Maintaining current weight")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                        }
-                    }
-                    Spacer()
-                }
-                
-                if presenter.estimatedWeeks(delegate: delegate) > 0 {
-                    Text("Based on your selected rate of \(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit)) per week")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
+            if presenter.estimatedWeeks(delegate: delegate) > 0 {
+                summaryRow(
+                    title: "Estimated Timeline",
+                    value: Text("\(presenter.estimatedWeeks(delegate: delegate)) weeks (\(presenter.estimatedMonths(delegate: delegate)) months)"),
+                    detail: Text("Based on your selected rate of \(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit)) per week"),
+                    systemImage: Symbol.calendar
+                )
+            } else {
+                summaryRow(title: "Estimated Timeline", value: Text("Maintaining current weight"), detail: nil, systemImage: Symbol.calendar)
             }
-            .padding(.vertical, 8)
         } header: {
             Text("Timeline")
         }
     }
-    
+
     private var motivationSection: some View {
         Section {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Image(systemName: "heart.fill")
-                        .font(.title2)
-                        .foregroundColor(.pink)
-                    Text("You've Got This!")
-                        .font(.headline)
-                    Spacer()
-                }
-                
-                Text(presenter.motivationalMessage(objective: delegate.overarchingObjective))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, 8)
+            summaryRow(
+                title: "You've Got This!",
+                value: nil,
+                detail: Text(presenter.motivationalMessage(objective: delegate.overarchingObjective)),
+                systemImage: "heart.fill"
+            )
         } header: {
             Text("Motivation")
         }
     }
-    
-    // MARK: - Helper Methods
-    
-    private func weightRow(title: String, weight: Double, unit: WeightUnitPreference) -> some View {
-        HStack {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(presenter.formatWeight(weight, unit: unit))
-                .font(.subheadline)
-                .fontWeight(.medium)
-        }
-    }
-}
 
-private extension GoalSummaryView {
-    var objectiveTitle: String {
-        delegate.overarchingObjective.description
+    // MARK: - Helper Methods
+
+    private func summaryRow(title: LocalizedStringKey, value: Text?, detail: Text?, systemImage: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.m) {
+                Image(systemName: systemImage)
+                    .iconSize(.medium)
+                    .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(title)
+                        .font(.sectionTitle)
+                    if let value {
+                        value
+                            .font(.metric)
+                    }
+                }
+            }
+            if let detail {
+                detail
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, Spacing.s)
     }
-    
-    var objectiveDetail: String {
-        delegate.overarchingObjective.detailedDescription
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 struct SparklineConfiguration {
-    var lineColor: Color = .accent
+    var lineColor: Color = .accentColor
     var lineWidth: CGFloat = 2
     var fillColor: Color?
     var height: CGFloat = 40
@@ -84,6 +84,18 @@ struct SparklineChart: View {
             }
         }
         .frame(height: configuration.height)
+        .accessibilityElement()
+        .accessibilityLabel(Text("Trend"))
+        .accessibilityValue(accessibilitySummary)
+    }
+
+    /// "From 82.3 to 82.7". The card around the chart names the metric and its unit.
+    private var accessibilitySummary: String {
+        guard let first = data.min(by: { $0.date < $1.date }), let last = data.max(by: { $0.date < $1.date }) else {
+            return String(localized: "No data")
+        }
+        let format = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(0...1))
+        return String(localized: "From \(first.value.formatted(format)) to \(last.value.formatted(format))")
     }
 
     private var emptyPlaceholder: some View {
@@ -93,7 +105,7 @@ struct SparklineChart: View {
                 path.move(to: CGPoint(x: 0, y: yVal))
                 path.addLine(to: CGPoint(x: geo.size.width, y: yVal))
             }
-            .stroke(Color.gray.opacity(0.2), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            .stroke(.quaternary, style: StrokeStyle(lineWidth: 1, dash: [Spacing.xs, Spacing.xs]))
         }
     }
 }
@@ -109,7 +121,7 @@ struct SparklineChart: View {
             (date: Date.now.addingTimeInterval(-86400 * 1), value: 82.5),
             (date: Date.now, value: 82.7)
         ],
-        configuration: SparklineConfiguration(fillColor: .accent)
+        configuration: SparklineConfiguration(fillColor: .accentColor)
     )
     .frame(height: 36)
     .padding()
@@ -118,14 +130,14 @@ struct SparklineChart: View {
 #Preview("Single point") {
     SparklineChart(
         data: [(date: Date.now, value: 82.5)],
-        configuration: SparklineConfiguration(fillColor: .accent)
+        configuration: SparklineConfiguration(fillColor: .accentColor)
     )
     .frame(height: 36)
     .padding()
 }
 
 #Preview("Empty") {
-    SparklineChart(data: [], configuration: SparklineConfiguration(fillColor: .accent))
+    SparklineChart(data: [], configuration: SparklineConfiguration(fillColor: .accentColor))
         .frame(height: 36)
         .padding()
 }

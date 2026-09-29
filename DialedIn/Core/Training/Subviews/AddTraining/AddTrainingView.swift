@@ -14,27 +14,15 @@ struct AddTrainingView: View {
     var body: some View {
         List {
             Section {
-                CustomListCellView(sfSymbolName: "clipboard", title: String(localized: "New Program"))
-                .tappableBackground()
-                .anyButton {
+                ListRowButton(title: String(localized: "New Program"), systemImage: Symbol.program) {
                     presenter.onNewProgramPressed()
                 }
-                .removeListRowFormatting()
-                
-                CustomListCellView(sfSymbolName: "dumbbell", title: String(localized: "New Workout"))
-                .tappableBackground()
-                .anyButton {
+                ListRowButton(title: String(localized: "New Workout"), systemImage: Symbol.workout) {
                     presenter.onNewEmptyWorkoutPressed()
                 }
-                .removeListRowFormatting()
-
-                CustomListCellView(sfSymbolName: "list.bullet", title: String(localized: "New Exercise"))
-                .tappableBackground()
-                .anyButton {
+                ListRowButton(title: String(localized: "New Exercise"), systemImage: Symbol.exercise) {
                     presenter.onNewExercisePressed()
                 }
-                .removeListRowFormatting()
-
             }
             .listSectionMargins(.vertical, 0)
         }
@@ -54,12 +42,9 @@ struct AddTrainingView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.dismissScreen()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
 }
@@ -82,14 +67,14 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAddTrainingView(delegate: AddTrainingDelegate, onDismiss: (() -> Void)? = nil) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.28)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.addTrainingView(router: router, delegate: delegate)
         }
     }
 
     func showAddTrainingViewZoom(delegate: AddTrainingDelegate, transitionId: String?, namespace: Namespace.ID) {
         router.showScreenWithZoomTransition(
-            .sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.25)])),
+            .sheetConfig(config: .compact),
             transitionID: transitionId,
             namespace: namespace) { router in
                 builder.addTrainingView(router: router, delegate: delegate)

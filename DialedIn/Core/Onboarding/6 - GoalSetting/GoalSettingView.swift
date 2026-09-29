@@ -12,50 +12,30 @@ struct GoalSettingView: View {
     @State var presenter: GoalSettingPresenter
 
     var body: some View {
-        List {
-            goalSettingSection
+        OnboardingStepScaffold(
+            title: "Ready to Set a Goal?",
+            progress: OnboardingStep.goalSetting.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                Text("Depending on what your goal is, we will help you by generating a custom plan to help you get there. This can be changed in future, and your plan will be updated accordingly.")
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
+            } header: {
+                Text("Goal")
+            }
         }
-        .navigationTitle("Goal Setting")
         .navigationBarBackButtonHidden()
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .padding(.bottom)
-        }
     }
-    
-    private var goalSettingSection: some View {
-        Section {
-            Text("Depending on what your goal is, we will help you by generating a custom plan to help you get there. This can be changed in future, and your plan will be updated accordingly.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        } header: {
-            Text("Goal")
-        }
-    }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

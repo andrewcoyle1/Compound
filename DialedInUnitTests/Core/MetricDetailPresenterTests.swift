@@ -65,8 +65,9 @@ struct GoalProgressPresenterTests {
         )
     }
 
-    private func makeScreen(goal: WeightGoal?, weighIns: [BodyMeasurementEntry] = []) -> Screen {
+    private func makeScreen(goal: WeightGoal?, weighIns: [BodyMeasurementEntry] = [], unit: WeightUnitPreference? = nil) -> Screen {
         let interactor = Interactor()
+        interactor.currentUser = unit.map { UserModel(userId: "user-1", submittedWeightUnitPreference: $0) }
         interactor.currentGoal = goal
         interactor.bodyMeasurements = weighIns
         let router = Router()
@@ -208,6 +209,46 @@ struct GoalProgressPresenterTests {
         screen.presenter.onAddWeightPressed()
 
         #expect(screen.router.didShowLogWeight)
+    }
+
+    // MARK: - Units
+
+    /// Goals and weigh-ins are stored in kilograms, but a pounds user reads pounds everywhere else,
+    /// so this screen must not be the one place that shows kilograms.
+    @Test("Test A Pounds User Sees Entries And Labels In Pounds")
+    func testAPoundsUserSeesEntriesAndLabelsInPounds() async throws {
+        let screen = makeScreen(
+            goal: goal(from: 100, target: 90),
+            weighIns: [weighIn(id: "w1", weight: 95, daysAgo: 1)],
+            unit: .pounds
+        )
+
+        await screen.presenter.onAppear()
+        let entry = try #require(screen.presenter.entries.first)
+
+        #expect(screen.presenter.weightUnit == .pounds)
+        #expect(entry.displayValue.hasPrefix(Format.weight(kg: 95, unit: WeightUnitPreference.pounds)))
+        #expect(entry.displayValue.contains("lb"))
+        #expect(screen.presenter.weightText(90) == Format.weight(kg: 90, unit: WeightUnitPreference.pounds))
+        // Progress is unit-free: halfway is halfway in either unit.
+        #expect(abs(entry.progressPercent - 50) < 0.001)
+    }
+
+    @Test("Test A Kilogram Or Unknown User Sees Kilograms")
+    func testAKilogramOrUnknownUserSeesKilograms() async throws {
+        for unit in [WeightUnitPreference.kilograms, nil] {
+            let screen = makeScreen(
+                goal: goal(from: 100, target: 90),
+                weighIns: [weighIn(id: "w1", weight: 95, daysAgo: 1)],
+                unit: unit
+            )
+
+            await screen.presenter.onAppear()
+            let entry = try #require(screen.presenter.entries.first)
+
+            #expect(entry.displayValue.hasPrefix(Format.weight(kg: 95, unit: WeightUnitPreference.kilograms)))
+            #expect(screen.presenter.weightText(90) == Format.weight(kg: 90, unit: WeightUnitPreference.kilograms))
+        }
     }
 }
 

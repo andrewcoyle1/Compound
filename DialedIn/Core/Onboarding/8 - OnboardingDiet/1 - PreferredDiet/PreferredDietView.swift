@@ -9,66 +9,32 @@ import SwiftUI
 
 struct PreferredDietView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: PreferredDietPresenter
 
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Diet?",
+            progress: presenter.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.selectedDiet != nil, identifier: "Continue") { presenter.navigateToCalorieFloor() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             Section {
                 ForEach(PreferredDiet.allCases) { diet in
-                    HStack(alignment: .center, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(diet.description)
-                                .font(.headline)
-                            Text(diet.detailedDescription)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer(minLength: 8)
-                        Image(systemName: presenter.selectedDiet == diet ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(presenter.selectedDiet == diet ? .accent : .secondary)
-                    }
-                    .padding()
-                    .background(colorScheme.backgroundPrimary)
-                    .anyButton {
-                        presenter.selectedDiet = diet
+                    SelectableRow(title: diet.description, subtitle: diet.detailedDescription, isSelected: presenter.selectedDiet == diet) {
+                        presenter.onDietSelected(diet)
                     }
                 }
-                .removeListRowFormatting()
             }
         }
-        .navigationTitle("Choose your diet")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.navigateToCalorieFloor()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(presenter.selectedDiet == nil)
-            .padding(.bottom)
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

@@ -32,12 +32,10 @@ class ExerciseSettingsPresenter {
 
     var restSubtitle: String {
         if let override = restOverride {
-            let mins = override / 60
-            let secs = override % 60
-            return String(localized: "Custom (\(String(describing: mins))m \(String(format: "%02d", secs))s)")
+            return String(localized: "Custom (\(Format.duration(TimeInterval(override))))")
         }
         let defaultSecs = interactor.workoutSettings.defaultRestDurationSeconds
-        return String(localized: "Default (\(String(describing: defaultSecs))s)")
+        return String(localized: "Default (\(Format.duration(TimeInterval(defaultSecs))))")
     }
 
     /// Whether this exercise is worked one limb at a time, which is what decides if the
@@ -85,7 +83,7 @@ class ExerciseSettingsPresenter {
             subtitle: String(localized: "Select unit for '\(exercise.name)'"),
             buttons: {
                 AnyView(
-                    VStack(spacing: 8) {
+                    VStack(spacing: Spacing.s) {
                         ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                             Button(unit.displayName) {
                                 self.onSelectWeightUnit(unit)

@@ -59,9 +59,11 @@ class SharedItemPresenter {
                 try await interactor.updateShareStatus(.accepted, id: share.id)
                 status = .accepted
                 interactor.trackEvent(event: Event.acceptSuccess(kind: share.payload.kind))
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 interactor.trackEvent(event: Event.answerFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "Please try again."))
             }
             isWorking = false

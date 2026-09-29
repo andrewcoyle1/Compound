@@ -252,6 +252,7 @@ struct LogMeasurementPresenterTests {
         let saved = screen.interactor.saved.first
         #expect(saved?.waistCircumference == 32 * 2.54)
         #expect(screen.router.didDismiss)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     /// A second measurement on a day that already has an entry updates it. Creating another would
@@ -299,6 +300,7 @@ struct LogMeasurementPresenterTests {
         #expect(screen.router.alertedErrors.count == 1)
         #expect(screen.router.didDismiss == false)
         #expect(screen.presenter.isLoading == false)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     /// Signed out there is no one to attribute the entry to, so nothing is written.

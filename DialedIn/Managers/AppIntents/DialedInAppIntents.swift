@@ -140,7 +140,7 @@ struct WorkoutsThisWeekIntent: AppIntent {
 
 struct NextWorkoutIntent: AppIntent {
     static let title: LocalizedStringResource = "Today's Workout"
-    static let description: IntentDescription = "The workout your active programme has for today."
+    static let description: IntentDescription = "The workout your active program has for today."
     static let supportedModes: IntentModes = [.background, .foreground(.dynamic)]
 
     @MainActor

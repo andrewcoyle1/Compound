@@ -88,9 +88,11 @@ class CreateChallengePresenter {
                     memberIds: memberIds
                 )
                 interactor.trackEvent(event: Event.createSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 isSaving = false
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.createFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to create challenge"), subtitle: String(localized: "Please try again."))
             }

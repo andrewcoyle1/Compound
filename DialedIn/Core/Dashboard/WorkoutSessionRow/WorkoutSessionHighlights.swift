@@ -125,7 +125,7 @@ enum WorkoutSessionHighlights {
         case .weightReps:
             return "\(mark.value.formatted(.number.precision(.fractionLength(0...1)))) kg × \(mark.reps)"
         case .repsOnly:
-            return "\(Int(mark.value)) reps"
+            return Format.reps(Int(mark.value))
         case .timeOnly:
             return Duration.seconds(mark.value).formatted(.time(pattern: .minuteSecond))
         case .distanceTime:

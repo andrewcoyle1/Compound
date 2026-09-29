@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PaywallView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: PaywallPresenter
 
     var body: some View {
@@ -12,28 +11,21 @@ struct PaywallView: View {
                 if presenter.isLoadingProducts {
                     ProgressView()
                 } else if let errorMessage = presenter.loadErrorMessage {
-                    VStack(spacing: 12) {
-                        Text("Unable to load subscription options")
-                            .font(.headline)
-                            .foregroundStyle(colorScheme.backgroundPrimary)
+                    ContentUnavailableView {
+                        Label("Unable to load subscription options", systemImage: Symbol.error)
+                    } description: {
                         Text(errorMessage)
-                            .font(.subheadline)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                        
-                        Button {
+                    } actions: {
+                        CallToActionButton {
                             Task { await presenter.onLoadProducts() }
                         } label: {
                             Text("Try Again")
-                                .foregroundStyle(colorScheme.backgroundPrimary)
                         }
-                        .buttonStyle(.glassProminent)
                     }
-                    .padding()
                 } else if presenter.products.isEmpty {
-                    VStack(spacing: 8) {
-                        Text("No subscription options available right now.")
-                            .font(.headline)
+                    ContentUnavailableView {
+                        Label("No subscription options available right now.", systemImage: Symbol.info)
+                    } actions: {
                         Button("Refresh") {
                             Task { await presenter.onLoadProducts() }
                         }
@@ -41,14 +33,15 @@ struct PaywallView: View {
                 } else {
                     CustomPaywallView(
                         products: presenter.products,
-                        onBackButtonPressed: {
-                            presenter.onBackButtonPressed()
-                        },
+                        selectedProduct: presenter.selectedProduct,
                         onRestorePurchasePressed: {
                             presenter.onRestorePurchasePressed()
                         },
-                        onPurchaseProductPressed: { product in
-                            presenter.onPurchaseProductPressed(product: product)
+                        onProductSelected: { product in
+                            presenter.onProductSelected(product)
+                        },
+                        onSubscribePressed: {
+                            presenter.onSubscribePressed()
                         }
                     )
                 }
@@ -75,13 +68,10 @@ struct PaywallView: View {
         }
         .toolbar {
             if !presenter.isOnboarding {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
                         presenter.onBackButtonPressed()
-                    } label: {
-                        Image(systemName: "xmark")
                     }
-                    .accessibilityLabel("Close")
                 }
             }
         }

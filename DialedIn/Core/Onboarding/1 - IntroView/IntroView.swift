@@ -12,18 +12,32 @@ struct IntroView: View {
     @State var presenter: IntroPresenter
 
     var body: some View {
-        List {
-            trainingSection
-            nutritionSection
-            weightTracking
+        OnboardingStepScaffold(
+            title: "Why Compound?",
+            subtitle: "Welcome to Compound.",
+            progress: OnboardingStep.auth.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.navigateToAuth() },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            feature(
+                "Training",
+                title: "Track Your Workouts",
+                detail: "Log your strength and cardio sessions, follow expert routines, and visualize your progress over time. Stay motivated with streaks and personal bests.",
+                systemImage: Symbol.workout
+            )
+            feature(
+                "Nutrition",
+                title: "Monitor Your Nutrition",
+                detail: "Easily log meals, scan foods, and get AI-powered nutrition analysis. Set goals, track macros, and receive personalized recommendations to fuel your journey.",
+                systemImage: Symbol.nutrition
+            )
+            feature(
+                "Weight Tracking",
+                title: "Track Your Weight",
+                detail: "Log your weight over time and visualize your progress with interactive charts. Set goals, monitor trends, and stay accountable on your fitness journey.",
+                systemImage: Symbol.scaleWeight
+            )
         }
-        .navigationTitle("Welcome to Compound.")
-        .navigationBarTitleDisplayMode(.large)
-#if DEBUG || MOCK
-.toolbar {
-            toolbarContent
-        }
-        #endif
         #if !DEBUG && !MOCK
         .navigationBarBackButtonHidden(true)
         #endif
@@ -33,96 +47,23 @@ struct IntroView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.navigateToAuth()
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-        }
     }
-    
-    private var trainingSection: some View {
+
+    private func feature(_ header: LocalizedStringKey, title: LocalizedStringKey, detail: LocalizedStringKey, systemImage: String) -> some View {
         Section {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "dumbbell.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(.accent)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Track Your Workouts")
-                        .font(.headline)
-                    Text("Log your strength and cardio sessions, follow expert routines, and visualize your progress over time. Stay motivated with streaks and personal bests.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
+            OnboardingFeatureRow(title: title, detail: detail, systemImage: systemImage)
         } header: {
-            Text("Training")
+            Text(header)
         }
     }
-    
-    private var nutritionSection: some View {
-        Section {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "leaf.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(.green)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Monitor Your Nutrition")
-                        .font(.headline)
-                    Text("Easily log meals, scan foods, and get AI-powered nutrition analysis. Set goals, track macros, and receive personalized recommendations to fuel your journey.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Nutrition")
-        }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
-    
-    private var weightTracking: some View {
-        Section {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "scalemass.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 32, height: 32)
-                    .foregroundStyle(Color.accentColor)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Track Your Weight")
-                        .font(.headline)
-                    Text("Log your weight over time and visualize your progress with interactive charts. Set goals, monitor trends, and stay accountable on your fitness journey.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Weight Tracking")
-        }
-    }
-    
-#if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-#endif
-    
 }
 
 extension CoreBuilder {

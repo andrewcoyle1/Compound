@@ -195,6 +195,33 @@ struct PaywallPurchasePresenterTests {
 
     // MARK: - Buying
 
+    /// Subscribe used to be tappable before a plan was chosen and then silently did nothing. The
+    /// button is disabled until `selectedProduct` is set, and pressing it without one buys nothing.
+    @Test("Test Subscribe Without A Chosen Plan Buys Nothing")
+    func testSubscribeWithoutAChosenPlanBuysNothing() async {
+        let screen = makeScreen()
+
+        #expect(screen.presenter.selectedProduct == nil)
+        screen.presenter.onSubscribePressed()
+        await Task.yield()
+
+        #expect(screen.interactor.purchasedProductIds.isEmpty)
+        #expect(!screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Start"))
+    }
+
+    @Test("Test Subscribe Buys The Chosen Plan")
+    func testSubscribeBuysTheChosenPlan() async {
+        let screen = makeScreen()
+        screen.interactor.purchaseResult = [entitlement(active: true)]
+
+        screen.presenter.onProductSelected(product("yearly"))
+        screen.presenter.onSubscribePressed()
+
+        #expect(screen.presenter.selectedProduct?.id == "yearly")
+        #expect(screen.interactor.playedHaptics.map { "\($0)" }.first == "selection")
+        #expect(await TestManagers.eventually { screen.interactor.purchasedProductIds == ["yearly"] })
+    }
+
     /// The purchase that works: the user is charged and moved on. A paywall that stayed up here
     /// would have taken their money and shown them the same screen again.
     @Test("Test A Purchase With An Entitlement Moves The User On")
@@ -205,6 +232,7 @@ struct PaywallPurchasePresenterTests {
         screen.presenter.onPurchaseProductPressed(product: product())
 
         #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
         #expect(screen.interactor.purchasedProductIds == ["monthly"])
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Success"))
     }
@@ -250,6 +278,7 @@ struct PaywallPurchasePresenterTests {
 
         #expect(await TestManagers.eventually { screen.router.alertedErrors.count == 1 })
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Fail"))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(screen.router.shown.isEmpty)
     }
 

@@ -7,23 +7,7 @@ struct EditDeloadView: View {
     var body: some View {
         List {
             ForEach(presenter.allCases, id: \.self) { type in
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(type.title)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        Text(type.description)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    if type == presenter.selected {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.accent)
-                    }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
+                SelectableRow(title: type.title, subtitle: type.description, isSelected: type == presenter.selected) {
                     presenter.onSelect(type)
                 }
             }
@@ -32,10 +16,10 @@ struct EditDeloadView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { presenter.onCancelPressed() }
+                Button(role: .close) { presenter.onCancelPressed() }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") { presenter.onSavePressed() }
+                Button(role: .confirm) { presenter.onSavePressed() }
             }
         }
     }

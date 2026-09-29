@@ -10,14 +10,14 @@ struct OptimisationView: View {
     var body: some View {
         List {
             Section {
-                CustomToggleView(
+                ListRowToggle(
                     title: String(localized: "Quick Add"),
                     subtitle: String(localized: "Use default portion and skip the amount entry screen"),
-                    bool: $presenter.quickAddEnabled
+                    isOn: $presenter.quickAddEnabled
                 )
             }
         }
-        .navigationTitle("Optimisation")
+        .navigationTitle("Optimization")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

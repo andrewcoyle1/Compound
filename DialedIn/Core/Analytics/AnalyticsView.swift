@@ -14,7 +14,7 @@ struct AnalyticsDelegate {
 }
 
 /// Gutter between the analytics header cards, and between a card and the screen edge.
-private let headerCardSpacing: CGFloat = 16
+private let headerCardSpacing = Spacing.l
 
 struct AnalyticsView<NutritionChart: View>: View {
 
@@ -49,13 +49,16 @@ struct AnalyticsView<NutritionChart: View>: View {
         }
         // As QuickCharts' `ChartScreen` does for its chart: the header's colour carries on up behind
         // the navigation bar, even when the list is pulled down.
-        .topFill(Color(.secondarySystemGroupedBackground))
+        .topFill(Color.surface)
         .navigationTitle("Analytics")
         .minimizingLargeTitleBar()
         .scrollIndicators(.hidden)
         .toolbar {
             toolbarContent
         }
+        // A tab root stays alive across tab switches, so it loads once and then refreshes on the
+        // events that can change its data (foregrounding, a remote sync) rather than on every
+        // appearance. The pushed and sheeted Analytics screens that show "Today" use `.task`.
         .onFirstTask {
             await presenter.onFirstTask()
         }
@@ -88,7 +91,7 @@ struct AnalyticsView<NutritionChart: View>: View {
             .topFillEdge()
             // Edge to edge and up to the navigation bar, on the colour `topFill` carries above it.
             .listRowInsets(EdgeInsets())
-            .listRowBackground(Color(.secondarySystemGroupedBackground))
+            .listRowBackground(Color.surface)
         }
         .listSectionMargins(.all, 0)
         .listSectionSeparator(.hidden)
@@ -101,11 +104,12 @@ struct AnalyticsView<NutritionChart: View>: View {
     /// Header cards are sized from the scroll container rather than a fixed width, so they
     /// fit every device. A fixed 420pt was wider than the screen on all iPhones (iPhone 17
     /// is 402pt across) and clipped the trailing edge. Two cards share the width in
-    /// split view, where there is room for both.
+    /// split view, where there is room for both. The height is a minimum, so the grid's labels
+    /// can grow with Dynamic Type.
     @ViewBuilder
     private func headerCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
-            .frame(height: 300)
+            .frame(minHeight: 300)
             .containerRelativeFrame(
                 .horizontal,
                 count: layoutMode == .splitView ? 2 : 1,
@@ -122,30 +126,23 @@ struct AnalyticsView<NutritionChart: View>: View {
     private var moreSection: some View {
         Section {
             ForEach(presenter.hiddenSections) { section in
-                moreRow(title: section.title, systemImage: section.systemImage) {
+                ListRowButton(title: section.title, systemImage: section.systemImage) {
                     presenter.onHiddenSectionPressed(section)
                 }
             }
 
-            moreRow(title: String(localized: "Weekly Review"), systemImage: "chart.bar.doc.horizontal") {
+            ListRowButton(title: String(localized: "Weekly Review"), systemImage: "chart.bar.doc.horizontal") {
                 presenter.onWeeklyReviewPressed()
             }
 
             // "house" here was copied from the Dashboard tab and said nothing about what the row
             // does.
-            moreRow(title: String(localized: "Customise Analytics"), systemImage: "slider.horizontal.3") {
+            ListRowButton(title: String(localized: "Customize Analytics"), systemImage: "slider.horizontal.3") {
                 presenter.onCustomiseAnalyticsPressed()
             }
         } header: {
             Text("More")
         }
-    }
-
-    private func moreRow(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
-        Label(title, systemImage: systemImage)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .tappableBackground()
-            .anyButton(.highlight, action: action)
     }
 
     @ToolbarContentBuilder
@@ -184,17 +181,17 @@ struct AnalyticsView<NutritionChart: View>: View {
 private extension AnalyticsView {
 
     var insightsAndAnalyticsSection: some View {
-        let workoutColor = Color.orange
-        let expenditureColor = Color.pink
-        let weightTrendColor = Color.purple
-        let goalProgressColor = Color.green
+        let workoutColor = Color.Metric.workouts
+        let expenditureColor = Color.Metric.expenditure
+        let weightTrendColor = Color.Metric.scaleWeight
+        let goalProgressColor = Color.Metric.goalProgress
         return Section {
             AnalyticsCardGrid {
                 AnalyticsCard(
                     title: String(localized: "Workouts"),
                     subtitle: presenter.workoutSubtitle,
-                    subsubtitle: presenter.workoutLatestValueText,
-                    subsubsubtitle: presenter.workoutUnitText,
+                    value: presenter.workoutLatestValueText,
+                    unit: presenter.workoutUnitText,
                     themeColor: workoutColor,
                     chartConfiguration: .compact
                 ) {
@@ -233,8 +230,8 @@ private extension AnalyticsView {
                 AnalyticsCard(
                     title: String(localized: "Goal Progress"),
                     subtitle: presenter.goalProgressSubtitle,
-                    subsubtitle: presenter.goalProgressLatestValueText,
-                    subsubsubtitle: presenter.goalProgressUnitText,
+                    value: presenter.goalProgressLatestValueText,
+                    unit: presenter.goalProgressUnitText,
                     themeColor: goalProgressColor,
                     chartConfiguration: .compact
                 ) {
@@ -242,7 +239,8 @@ private extension AnalyticsView {
                         current: presenter.goalProgressPercent,
                         target: 100,
                         maxValue: 100,
-                        color: goalProgressColor
+                        color: goalProgressColor,
+                        unit: "%"
                     )
                 }
                 .analyticsCardButton {
@@ -252,8 +250,8 @@ private extension AnalyticsView {
                 AnalyticsCard(
                     title: String(localized: "Energy Balance"),
                     subtitle: presenter.energyBalanceSubtitle,
-                    subsubtitle: presenter.energyBalanceLatestValueText,
-                    subsubsubtitle: presenter.energyBalanceUnitText,
+                    value: presenter.energyBalanceLatestValueText,
+                    unit: presenter.energyBalanceUnitText,
                     themeColor: nil,
                     chartConfiguration: .compact
                 ) {
@@ -279,17 +277,17 @@ private extension AnalyticsView {
             AnalyticsCardGrid {
                 ConsistencyAnalyticsCard(
                     title: String(localized: "Weigh In"),
-                    value: "\(presenter.weighInCountThisWeek)",
-                    themeColor: .green,
+                    value: presenter.weighInCountThisWeek.formatted(),
+                    themeColor: Color.Metric.habits,
                     data: presenter.weighInContributionData,
-                    action: { presenter.onWeighInConsistencyPressed(themeColor: .green) }
+                    action: { presenter.onWeighInConsistencyPressed(themeColor: Color.Metric.habits) }
                 )
                 ConsistencyAnalyticsCard(
                     title: String(localized: "Workouts"),
-                    value: "\(presenter.workoutCountThisWeek)",
-                    themeColor: .orange,
+                    value: presenter.workoutCountThisWeek.formatted(),
+                    themeColor: Color.Metric.habits,
                     data: presenter.workoutContributionData,
-                    action: { presenter.onWorkoutConsistencyPressed(themeColor: .orange) }
+                    action: { presenter.onWorkoutConsistencyPressed(themeColor: Color.Metric.habits) }
                 )
             }
         } header: {
@@ -301,15 +299,16 @@ private extension AnalyticsView {
     }
 
     var nutritionSection: some View {
-        let proteinColor = MacroProgressChart.proteinColor
+        let macrosColor = Color.Metric.nutrition
+        let proteinColor = Color.protein
         return Section {
             AnalyticsCardGrid {
                 AnalyticsCard(
                     title: String(localized: "Macros"),
                     subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Last 7 Days"),
-                    subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : Int(presenter.macrosAverageCalories).formatted(),
-                    subsubsubtitle: "kcal",
-                    themeColor: proteinColor,
+                    value: presenter.macrosLast7Days.isEmpty ? Format.placeholder : presenter.macrosAverageCalories.formatted(.number.precision(.fractionLength(0))),
+                    unit: "kcal",
+                    themeColor: macrosColor,
                     chartConfiguration: .compact,
                     chart: {
                         let chartData = presenter.macrosLast7Days.isEmpty
@@ -319,13 +318,13 @@ private extension AnalyticsView {
                     }
                 )
                 .analyticsCardButton {
-                    presenter.onMacrosPressed(themeColor: proteinColor)
+                    presenter.onMacrosPressed(themeColor: macrosColor)
                 }
                 AnalyticsCard(
                     title: String(localized: "Protein"),
                     subtitle: presenter.macrosLast7Days.isEmpty ? String(localized: "No Data") : String(localized: "Today"),
-                    subsubtitle: presenter.macrosLast7Days.isEmpty ? "--" : presenter.proteinCurrent.formatted(.number.precision(.fractionLength(1))),
-                    subsubsubtitle: "g",
+                    value: presenter.macrosLast7Days.isEmpty ? Format.placeholder : presenter.proteinCurrent.formatted(.number.precision(.fractionLength(1))),
+                    unit: "g",
                     themeColor: proteinColor,
                     chartConfiguration: .compact,
                     chart: {
@@ -333,7 +332,8 @@ private extension AnalyticsView {
                             current: presenter.proteinCurrent,
                             target: presenter.proteinTarget,
                             maxValue: presenter.proteinMax,
-                            color: proteinColor
+                            color: proteinColor,
+                            unit: "g"
                         )
                     }
                 )
@@ -350,8 +350,8 @@ private extension AnalyticsView {
     }
 
     var bodyMetricsSection: some View {
-        let scaleWeightColor = Color.green
-        let bodyFatColor = Color.teal
+        let scaleWeightColor = Color.Metric.scaleWeight
+        let bodyFatColor = Color.Metric.bodyFat
         return Section {
             AnalyticsCardGrid {
                 SparklineAnalyticsCard(
@@ -382,7 +382,7 @@ private extension AnalyticsView {
     }
 
     var muscleGroupsSection: some View {
-        let muscleGroupColor = Color.blue
+        let muscleGroupColor = Color.Metric.muscleGroups
         return Section {
             AnalyticsCardGrid {
                 if presenter.muscleGroupCards.isEmpty {
@@ -392,8 +392,8 @@ private extension AnalyticsView {
                         AnalyticsCard(
                             title: item.muscle.name,
                             subtitle: String(localized: "Last 7 Days"),
-                            subsubtitle: item.totalSets.formatted(.number.precision(.fractionLength(0...1))),
-                            subsubsubtitle: "sets",
+                            value: item.totalSets.formatted(.number.precision(.fractionLength(0...1))),
+                            unit: String(localized: "sets"),
                             themeColor: muscleGroupColor,
                             chartConfiguration: .compact
                         ) {
@@ -414,7 +414,7 @@ private extension AnalyticsView {
     }
 
     var exercisesSection: some View {
-        let exerciseColor = Color.cyan
+        let exerciseColor = Color.Metric.exercises
         return Section {
             AnalyticsCardGrid {
                 if presenter.exerciseCards.isEmpty {
@@ -424,7 +424,7 @@ private extension AnalyticsView {
                         SparklineAnalyticsCard(
                             title: item.name,
                             subtitle: String(localized: "Last 7 Workouts"),
-                            value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : "--",
+                            value: item.latest1RM > 0 ? item.latest1RM.formatted(.number.precision(.fractionLength(1))) : Format.placeholder,
                             unit: item.unitText,
                             themeColor: exerciseColor,
                             data: item.sparklineData,
@@ -448,7 +448,7 @@ private extension AnalyticsView {
     }
 
     var generalSection: some View {
-        let stepsColor = Color.orange
+        let stepsColor = Color.Metric.steps
         return Section {
             AnalyticsCardGrid {
                 SparklineAnalyticsCard(

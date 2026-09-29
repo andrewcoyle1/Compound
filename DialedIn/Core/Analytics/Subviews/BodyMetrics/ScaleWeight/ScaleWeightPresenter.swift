@@ -72,7 +72,7 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
     var contributionSeries: TimeSeries? { nil }
 
     func displayValue(for entry: BodyMeasurementEntry) -> String {
-        guard let weightKg = entry.weightKg else { return "--" }
+        guard let weightKg = entry.weightKg else { return Format.placeholder }
         return UnitConversion.formatWeight(weightKg, unit: weightUnit)
     }
 
@@ -85,7 +85,7 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: true,
             sectionHeader: "Weight Entries",
             emptyStateMessage: "No weight entries",
-            chartColor: .green
+            chartColor: Color.Metric.scaleWeight
         )
     }
 

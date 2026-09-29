@@ -13,7 +13,7 @@ import SwiftUI
 struct UserAvatarView: View {
 
     let imageUrl: String?
-    var size: CGFloat = 44
+    var size: CGFloat = ControlSize.row
 
     var body: some View {
         ZStack {
@@ -35,7 +35,7 @@ struct UserAvatarView: View {
 struct UserRowView<Trailing: View>: View {
 
     let user: UserModel
-    var avatarSize: CGFloat = 44
+    var avatarSize: CGFloat = ControlSize.row
     @ViewBuilder var trailing: () -> Trailing
 
     private var displayName: String {
@@ -43,12 +43,13 @@ struct UserRowView<Trailing: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Spacing.m) {
             UserAvatarView(imageUrl: user.profileImageNameCalculated, size: avatarSize)
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 0) {
                 Text(displayName)
-                    .font(.body.weight(.medium))
+                    .font(.rowTitle)
+                    .fontWeight(.medium)
                     .lineLimit(1)
                 UsernameLabel(username: user.username)
             }
@@ -57,13 +58,13 @@ struct UserRowView<Trailing: View>: View {
 
             trailing()
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, Spacing.xs)
     }
 }
 
 extension UserRowView where Trailing == EmptyView {
 
-    init(user: UserModel, avatarSize: CGFloat = 44) {
+    init(user: UserModel, avatarSize: CGFloat = ControlSize.row) {
         self.init(user: user, avatarSize: avatarSize, trailing: { EmptyView() })
     }
 }
@@ -86,17 +87,21 @@ struct FollowButton: View {
     private var isFilled: Bool { state == .follow }
 
     var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(isFilled ? Color.accentColor : Color(.secondarySystemBackground))
-                // The accent is the label colour, so a filled capsule needs the background colour on top, not white.
-                .foregroundStyle(isFilled ? Color(.systemBackground) : Color.primary)
-                .clipShape(Capsule())
+        // Follow is the primary action, so it is the accent; Following and Requested are secondary.
+        Group {
+            if isFilled {
+                Button(title, action: action)
+                    .buttonStyle(.glassProminent)
+                    // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
+                    .foregroundStyle(.onAccent)
+            } else {
+                Button(title, action: action)
+                    .buttonStyle(.glass)
+            }
         }
-        .buttonStyle(.plain)
+        .font(.rowDetail)
+        .fontWeight(.semibold)
+        .controlSize(.small)
         .accessibilityHint(state == .requested ? "Cancels your follow request" : "")
     }
 }

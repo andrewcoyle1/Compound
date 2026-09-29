@@ -9,8 +9,9 @@ struct MuscleBalanceView: View {
     var body: some View {
         List {
             Group {
-                region(header: String(localized: "Upper"), rows: presenter.upperRows)
-                region(header: String(localized: "Lower"), rows: presenter.lowerRows)
+                ForEach(presenter.regions, id: \.self) { region in
+                    section(region)
+                }
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)
@@ -33,8 +34,9 @@ struct MuscleBalanceView: View {
         }
     }
 
-    private func region(header: String, rows: [MuscleBalanceRow]) -> some View {
-        Section {
+    private func section(_ region: BodyRegion) -> some View {
+        let rows = presenter.rows(for: region)
+        return Section {
             AnalyticsCardGrid {
                 ForEach(rows) { row in
                     tile(row)
@@ -46,9 +48,9 @@ struct MuscleBalanceView: View {
                     .removeListRowFormatting()
             }
         } header: {
-            SectionHeaderView(title: header)
+            SectionHeaderView(title: presenter.header(for: region))
         } footer: {
-            if header == "Lower" {
+            if presenter.showsFooter(for: region) {
                 Text("Working sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.")
                     .padding(.horizontal)
             }
@@ -58,30 +60,20 @@ struct MuscleBalanceView: View {
     private func tile(_ row: MuscleBalanceRow) -> some View {
         let color = row.status.color
         let isSelected = presenter.selectedMuscle == row.muscle
-        return VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(row.muscle.name)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                Spacer(minLength: 4)
-                Image(systemName: row.status.systemImage)
-                    .foregroundStyle(color)
-            }
-            Text(row.currentSets.formatted(.number.precision(.fractionLength(0...1))) + " sets")
-                .font(.title3.weight(.bold))
-            Text("\(row.status.label) · \(rangeText(row.range))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.opacity(0.18), in: .rect(cornerRadius: 12))
+        let sets = Format.sets(row.currentSets)
+        return Stat.tile(
+            value: sets,
+            label: "\(row.muscle.name) · \(row.status.label) \(rangeText(row.range))",
+            systemImage: row.status.systemImage,
+            tint: color
+        )
         .overlay {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: Radius.l, style: .continuous)
                 .strokeBorder(color, lineWidth: isSelected ? 2 : 0)
         }
+        // The reference pattern: one element, the muscle and its status first, the target after.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(row.muscle.name), \(row.currentSets.formatted(.number.precision(.fractionLength(0...1)))) sets, \(row.status.label)")
+        .accessibilityLabel("\(row.muscle.name), \(sets), \(row.status.label)")
         .accessibilityValue("Recommended \(rangeText(row.range)) sets a week")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .anyButton(.press) {
@@ -90,38 +82,39 @@ struct MuscleBalanceView: View {
     }
 
     private func trend(_ row: MuscleBalanceRow) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             Text("\(row.muscle.name) · last 12 weeks")
-                .font(.subheadline.weight(.semibold))
+                .font(.sectionTitle)
             SparklineChart(
                 data: presenter.sparklineData(for: row),
                 configuration: SparklineConfiguration(
                     lineColor: row.status.color,
                     lineWidth: 2,
                     fillColor: row.status.color,
-                    height: 60,
+                    height: ChartHeight.compact / 2,
                     showsPoints: true
                 )
             )
             Text("Target \(rangeText(row.range)) sets a week")
-                .font(.caption)
+                .font(.label)
                 .foregroundStyle(.secondary)
         }
-        .padding(12)
-        .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12))
+        .padding(Spacing.m)
+        .cardSurface(.tile)
     }
 
     private func rangeText(_ range: ClosedRange<Double>) -> String {
-        "\(Int(range.lowerBound))–\(Int(range.upperBound))"
+        Format.repRange(Int(range.lowerBound), Int(range.upperBound))
     }
 }
 
 extension MuscleBalanceStatus {
     var color: Color {
         switch self {
-        case .below:  return .orange
-        case .within: return .green
-        case .above:  return .blue
+        // Under and over are both "attention": the symbol and the word tell them apart.
+        case .below:  return .warning
+        case .within: return .success
+        case .above:  return .warning
         }
     }
 }

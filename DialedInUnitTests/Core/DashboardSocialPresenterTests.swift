@@ -304,7 +304,7 @@ struct SocialWorkoutSessionRowTests {
         )
         let screen = makeScreen(session: session, author: DashboardFixture.user("friend"))
 
-        #expect(screen.presenter.shareSummary == "Leg Day · 1 exercises · 2 sets · 1000 kg lifted")
+        #expect(screen.presenter.shareSummary == "Leg Day · 1 exercise · 2 sets · 1000 kg lifted")
     }
 
     /// A left set and a right set are one set, so a single-arm exercise logged as six rows shares as
@@ -326,7 +326,7 @@ struct SocialWorkoutSessionRowTests {
         )
         let screen = makeScreen(session: session, author: DashboardFixture.user("friend"))
 
-        #expect(screen.presenter.shareSummary == "Row · 1 exercises · 3 sets · 1200 kg lifted")
+        #expect(screen.presenter.shareSummary == "Row · 1 exercise · 3 sets · 1200 kg lifted")
     }
 
     /// A bodyweight or duration workout has no kilograms to report, so the volume clause is dropped
@@ -344,7 +344,7 @@ struct SocialWorkoutSessionRowTests {
         )
         let screen = makeScreen(session: session, author: DashboardFixture.user("friend"))
 
-        #expect(screen.presenter.shareSummary == "Core · 1 exercises · 1 sets")
+        #expect(screen.presenter.shareSummary == "Core · 1 exercise · 1 set")
     }
 
     /// The card's highlights come from the author's own history, asked of the interactor.
@@ -415,13 +415,8 @@ struct SocialCommentsPresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
 
-        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
-            alertTitles.append(title)
-        }
-
-        func showSimpleAlert(title: String, subtitle: String?) {
-            alertTitles.append(title)
-        }
+        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
+        func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
     private struct Screen {
@@ -566,6 +561,7 @@ struct SocialCommentsPresenterTests {
         #expect(screen.interactor.added.first?.sessionAuthorId == "friend")
         #expect(screen.presenter.commentDraft.isEmpty)
         #expect(screen.router.alertTitles.isEmpty)
+        #expect(await TestManagers.eventually { screen.interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
     // MARK: Replies
@@ -686,6 +682,7 @@ struct SocialCommentsPresenterTests {
         #expect(screen.presenter.comments.isEmpty)
         #expect(screen.presenter.commentDraft == "Strong session")
         #expect(screen.router.alertTitles == ["Unable to Post Comment"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
     // MARK: Deleting and reporting

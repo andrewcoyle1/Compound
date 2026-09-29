@@ -22,42 +22,25 @@ struct DateOfBirthView: View {
     var delegate: DateOfBirthDelegate
 
     var body: some View {
-        List {
-            DatePicker(selection: $presenter.dateOfBirth, in: presenter.dateRange, displayedComponents: .date) {
-                Text("When were you born?")
-                    .foregroundStyle(Color.secondary)
+        OnboardingStepScaffold(
+            title: "When Were You Born?",
+            progress: OnboardingStep.completeAccountSetup.progress,
+            primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
+            Section {
+                DatePicker("Date of birth", selection: $presenter.dateOfBirth, in: presenter.dateRange, displayedComponents: .date)
             }
-            .removeListRowFormatting()
         }
-        .navigationTitle("Date of birth")
-        #if DEBUG || MOCK
-        .toolbar {
-            toolbarContent
-        }
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
         #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-        }
     }
-    
-    #if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-    #endif
 }
 
 extension CoreBuilder {

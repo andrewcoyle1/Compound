@@ -102,6 +102,7 @@ class ProgramDesignPresenter {
     
     func onWorkoutTemplateModelSelected(_ dayPlan: WorkoutTemplateModel) {
         selectedWorkoutTemplateModel = dayPlan
+        interactor.playHaptic(option: .selection)
     }
     
     func onRemoveWorkoutTemplateModelPressed() {
@@ -168,6 +169,7 @@ class ProgramDesignPresenter {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: workoutTemplate, image: nil)
             }
         } catch {
+            interactor.playHaptic(option: .error)
             router.showAlert(error: error)
             return
         }
@@ -185,6 +187,7 @@ class ProgramDesignPresenter {
         do {
             try await interactor.saveTrainingProgram(trainingProgram: program)
             try await interactor.setActiveTrainingProgram(programId: program.id)
+            interactor.playHaptic(option: .success)
             // Onboarding hands in the closure that resumes it. This screen used to route
             // onboarding itself and never call it, so the closure was carried four screens for nothing.
             if let onComplete = delegate.onComplete {
@@ -193,6 +196,7 @@ class ProgramDesignPresenter {
                 router.dismissEnvironment()
             }
         } catch {
+            interactor.playHaptic(option: .error)
             router.showAlert(error: error)
         }
     }
@@ -228,8 +232,10 @@ class ProgramDesignPresenter {
             defer { isSaving = false }
             do {
                 try await interactor.saveTrainingProgram(trainingProgram: program)
+                interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
+                interactor.playHaptic(option: .error)
                 router.showAlert(error: error)
             }
         }

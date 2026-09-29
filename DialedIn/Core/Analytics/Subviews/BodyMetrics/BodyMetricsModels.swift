@@ -51,6 +51,16 @@ extension BodyMetricType {
         case percentage
     }
 
+    /// The metric's colour: the same scale weight and body fat hues as the Analytics tab, and one
+    /// shared hue for the circumferences.
+    var color: Color {
+        switch self {
+        case .scaleWeight:   return Color.Metric.scaleWeight
+        case .visualBodyFat: return Color.Metric.bodyFat
+        default:             return Color.Metric.measurements
+        }
+    }
+
     var measure: Measure {
         switch self {
         case .scaleWeight:   return .weightKilograms

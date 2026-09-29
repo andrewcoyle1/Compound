@@ -35,13 +35,12 @@ struct LegalView: View {
     private func legalRow(_ document: LegalDocument) -> some View {
         if let url = document.url {
             Link(destination: url) {
-                HStack {
-                    Text(document.title)
-                    Spacer()
+                ListRow(title: document.title, accessory: .custom(AnyView(
                     Image(systemName: "arrow.up.right")
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
-                }
+                        .accessibilityHidden(true)
+                )))
             }
             .foregroundStyle(.primary)
             .simultaneousGesture(TapGesture().onEnded {

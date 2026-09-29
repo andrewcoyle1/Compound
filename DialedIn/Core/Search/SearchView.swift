@@ -12,7 +12,6 @@ import SwiftUI
 /// once and the rows act: a workout starts, a person opens.
 struct SearchView: View {
 
-    @Environment(\.colorScheme) private var colorScheme
     @State var presenter: SearchPresenter
 
     let profileButtonTransition: String = "profile_button_transition"
@@ -99,12 +98,17 @@ struct SearchView: View {
                 .removeListRowFormatting()
             } else {
                 ScrollView(.horizontal) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.s) {
+                        // Shortcuts are links into other screens, so they carry the accent.
                         ForEach(presenter.quickActions) { action in
-                            QuickActionChip(title: action.title, systemImage: action.systemImage)
-                                .anyButton(.press) {
-                                    presenter.onQuickActionPressed(action)
-                                }
+                            Button {
+                                presenter.onQuickActionPressed(action)
+                            } label: {
+                                Chip(action.title, systemImage: action.systemImage)
+                                    .lineLimit(1)
+                                    .chipTapTarget()
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal)
@@ -120,7 +124,7 @@ struct SearchView: View {
         if !presenter.recentQueries.isEmpty {
             Section {
                 ForEach(presenter.recentQueries, id: \.self) { query in
-                    Label(query, systemImage: "clock.arrow.circlepath")
+                    Label(query, systemImage: Symbol.history)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .tappableBackground()
                         .anyButton(.highlight) {
@@ -135,7 +139,7 @@ struct SearchView: View {
                     Button("Clear") {
                         presenter.onClearRecentSearchesPressed()
                     }
-                    .font(.caption)
+                    .font(.label)
                 }
             }
         }
@@ -155,7 +159,7 @@ struct SearchView: View {
     private var noShortcutsSection: some View {
         Section {
             ContentUnavailableView {
-                Label("Search", systemImage: "magnifyingglass")
+                Label("Search", systemImage: Symbol.search)
             } description: {
                 Text("Find exercises, workouts, foods and people, or pick shortcuts to show here.")
             } actions: {
@@ -216,21 +220,22 @@ struct SearchView: View {
             Section {
                 ForEach(presenter.filteredWorkoutTemplates) { workout in
                     let subtitle = workout.exercises.map { $0.exercise.name }.joined(separator: ", ")
-                    HStack {
-                        CustomListCellView(
-                            imageName: workout.imageURL,
-                            title: workout.name,
-                            subtitle: subtitle.isEmpty ? nil : subtitle
-                        )
-                        .anyButton(.highlight) {
+                    HStack(spacing: Spacing.m) {
+                        Button {
                             presenter.onWorkoutPressed(workout: workout)
+                        } label: {
+                            ListRow(title: workout.name, subtitle: subtitle.isEmpty ? nil : subtitle, imageName: workout.imageURL)
+                                .contentShape(.rect)
                         }
                         Button("Start") {
                             presenter.onStartWorkoutPressed(workout: workout)
                         }
                         .buttonStyle(.glassProminent)
-                        .padding(.trailing)
+                        // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
+                        .foregroundStyle(.onAccent)
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical, Spacing.xs)
                     .removeListRowFormatting()
                 }
             } header: {
@@ -271,14 +276,14 @@ struct SearchView: View {
     private func searchItemSection(header: String, items: [any SearchListItem], action: @escaping (any SearchListItem) -> Void) -> some View {
         Section {
             ForEach(items, id: \.id) { item in
-                CustomListCellView(
-                    imageName: item.imageURL,
-                    title: item.name,
-                    subtitle: item.description
-                )
-                .anyButton(.highlight) {
+                Button {
                     action(item)
+                } label: {
+                    ListRow(title: item.name, subtitle: item.description, imageName: item.imageURL, accessory: .chevron)
+                        .contentShape(.rect)
                 }
+                .padding(.horizontal)
+                .padding(.vertical, Spacing.xs)
                 .removeListRowFormatting()
             }
         } header: {
@@ -305,24 +310,6 @@ protocol SearchListItem: Identifiable {
     var name: String { get }
     var description: String? { get }
     var imageURL: String? { get }
-}
-
-/// One shortcut in the empty state's row.
-private struct QuickActionChip: View {
-
-    @Environment(\.colorScheme) private var colorScheme
-
-    let title: String
-    let systemImage: String
-
-    var body: some View {
-        Label(title, systemImage: systemImage)
-            .font(.subheadline.weight(.medium))
-            .lineLimit(1)
-            .padding(.vertical, 10)
-            .padding(.horizontal, 14)
-            .background(colorScheme.backgroundPrimary, in: Capsule())
-    }
 }
 
 extension CoreBuilder {

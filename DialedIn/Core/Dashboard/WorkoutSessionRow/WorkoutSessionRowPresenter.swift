@@ -53,6 +53,49 @@ class WorkoutSessionRowPresenter {
         WorkoutSessionHighlights.streakText(session.streakCount)
     }
 
+    // MARK: - Stats
+
+    private var workingSets: [WorkoutSetModel] {
+        session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
+    }
+
+    var workingSetCount: Int { workingSets.count }
+
+    /// Working sets' weight × reps, `nil` when nothing was lifted. Tonnes from 1,000 kg up.
+    var volumeText: String? {
+        let kilograms = workingSets.reduce(0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
+        guard kilograms > 0 else { return nil }
+        // ponytail: tonnes have no `Format` function; add `Format.volume` if a second screen needs it.
+        guard kilograms < 1000 else { return "\((kilograms / 1000).formatted(.number.precision(.fractionLength(1)))) t" }
+        return Format.weight(kg: kilograms, unit: WeightUnitPreference.kilograms)
+    }
+
+    var durationText: String? {
+        session.endedAt.map { Format.duration($0.timeIntervalSince(session.dateCreated)) }
+    }
+
+    /// "3 × 10 @ 80 kg" for three working sets of ten: sets a side count once.
+    func setsDescription(for exercise: WorkoutExerciseModel) -> String {
+        guard let first = exercise.workingSets.first else { return String(localized: "\(exercise.setTargets.count) sets") }
+        let count = exercise.workingSetCount
+        guard let detail = Self.setDetail(first, mode: exercise.trackingMode) else { return String(localized: "\(count) sets") }
+        return "\(count) × \(detail)"
+    }
+
+    private static func setDetail(_ set: WorkoutSetModel, mode: TrackingMode) -> String? {
+        switch mode {
+        case .weightReps:
+            guard let reps = set.reps else { return nil }
+            return set.weightKg.map { "\(reps) @ \(Format.weight(kg: $0, unit: WeightUnitPreference.kilograms))" } ?? "\(reps)"
+        case .repsOnly:
+            return set.reps.map { "\($0)" }
+        case .timeOnly:
+            return set.durationSec.map { Format.duration(TimeInterval($0)) }
+        case .distanceTime:
+            return set.distanceMeters.map { Format.distance(meters: $0, unit: .kilometers) }
+        }
+    }
+
     func onWorkoutPressed() {
         router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session))
     }
@@ -91,7 +134,7 @@ class WorkoutSessionRowPresenter {
         let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
         var parts = [
             session.name,
-            "\(session.exercises.count) exercises",
+            String(localized: "\(session.exercises.count) exercises"),
             String(localized: "\(setCount) sets")
         ]
         if volume > 0 {

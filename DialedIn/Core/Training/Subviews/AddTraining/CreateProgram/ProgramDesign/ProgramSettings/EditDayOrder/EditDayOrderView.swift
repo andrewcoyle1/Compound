@@ -7,18 +7,12 @@ struct EditDayOrderView: View {
     var body: some View {
         List {
             ForEach(presenter.dayPlans) { plan in
-                HStack(spacing: 12) {
-                    Image(systemName: plan.exercises.isEmpty ? "bed.double" : "dumbbell")
-                        .frame(width: 24)
-                        .foregroundStyle(.secondary)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(plan.name)
-                            .font(.subheadline)
-                        Text(plan.exercises.isEmpty ? String(localized: "Rest") : String(localized: "Workout"))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
+                ListRow(
+                    title: plan.name,
+                    subtitle: plan.exercises.isEmpty ? String(localized: "Rest") : String(localized: "Workout"),
+                    systemImage: plan.exercises.isEmpty ? Symbol.restDay : Symbol.workout,
+                    tint: .secondary
+                )
             }
             .onMove { presenter.move(fromOffsets: $0, toOffset: $1) }
         }
@@ -27,10 +21,10 @@ struct EditDayOrderView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { presenter.onCancelPressed() }
+                Button(role: .close) { presenter.onCancelPressed() }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Save") { presenter.onSavePressed() }
+                Button(role: .confirm) { presenter.onSavePressed() }
             }
         }
     }

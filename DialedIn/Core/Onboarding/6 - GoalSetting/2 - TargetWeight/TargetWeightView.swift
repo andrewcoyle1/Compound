@@ -16,13 +16,18 @@ struct TargetWeightDelegate {
 }
 
 struct TargetWeightView: View {
-    
+
     @State var presenter: TargetWeightPresenter
-    
+
     var delegate: TargetWeightDelegate
-    
+
     var body: some View {
-        List {
+        OnboardingStepScaffold(
+            title: "What's Your Target?",
+            progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
+            primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
+            onDevSettingsPressed: onDevSettingsPressed
+        ) {
             if presenter.didInitialize && presenter.weightUnit == .kilograms {
                 kilogramsSection
             } else if presenter.didInitialize {
@@ -31,41 +36,11 @@ struct TargetWeightView: View {
                 loadingSection
             }
         }
-        .navigationTitle("Target Weight")
         .onFirstAppear {
             presenter.onAppear(delegate: delegate)
         }
-        #if DEBUG || MOCK
-                .toolbar {
-                    toolbarContent
-                }
-        #endif
-        .safeAreaInset(edge: .bottom) {
-            CallToActionButton {
-                presenter.onContinuePressed(delegate: delegate)
-            } label: {
-                Text("Continue")
-            }
-            .accessibilityIdentifier("Continue")
-            .disabled(!presenter.canContinue)
-            .padding(.bottom)
-        }
     }
-    
-#if DEBUG || MOCK
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-    }
-#endif
-    
+
     private var kilogramsSection: some View {
         Section {
             Picker("Kilograms", selection: $presenter.selectedKilograms) {
@@ -74,8 +49,6 @@ struct TargetWeightView: View {
                 }
             }
             .pickerStyle(.wheel)
-            .frame(height: 150)
-            .clipped()
             .onChange(of: presenter.selectedKilograms) { _, _ in
                 presenter.updateFromKilograms()
             }
@@ -84,17 +57,15 @@ struct TargetWeightView: View {
         }
         .removeListRowFormatting()
     }
-    
+
     private var poundsSection: some View {
         Section {
             Picker("Pounds", selection: $presenter.selectedPounds) {
                 ForEach(presenter.poundRange(delegate: delegate).reversed(), id: \.self) { value in
-                    Text("\(value) lbs").tag(value)
+                    Text("\(value) lb").tag(value)
                 }
             }
             .pickerStyle(.wheel)
-            .frame(height: 150)
-            .clipped()
             .onChange(of: presenter.selectedPounds) { _, _ in
                 presenter.updateFromPounds()
             }
@@ -103,14 +74,22 @@ struct TargetWeightView: View {
         }
         .removeListRowFormatting()
     }
-    
+
     private var loadingSection: some View {
         Section {
             ProgressView()
-                .frame(height: 150)
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.xxl)
         }
         .removeListRowFormatting()
+    }
+
+    private var onDevSettingsPressed: (() -> Void)? {
+        #if DEV || MOCK
+        presenter.onDevSettingsPressed
+        #else
+        nil
+        #endif
     }
 }
 

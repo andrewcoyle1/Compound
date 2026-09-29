@@ -48,7 +48,7 @@ struct WarmupSetsView<TrackerRow: View>: View {
         .navigationTitle("Warmup Sets")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
                 Button(role: .close) {
                     presenter.onDismissPressed()
                 }
@@ -95,7 +95,7 @@ extension CoreBuilder {
 extension CoreRouter {
 
     func showWarmupSetsView(delegate: WarmupSetsDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.medium]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.warmupSetsView(router: router, delegate: delegate)
         }
     }

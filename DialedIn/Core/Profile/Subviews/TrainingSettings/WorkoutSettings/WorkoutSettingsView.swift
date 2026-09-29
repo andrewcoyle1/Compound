@@ -30,65 +30,50 @@ struct WorkoutSettingsView: View {
     
     private var generalSection: some View {
         Section {
-            CustomLabelButtonView(
-                symbolName: "timer",
+            ListRowButton(
                 title: String(localized: "Rest Timer"),
-                subtitle: String(localized: "Configure rest timer settings")) {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .anyButton(.press) {
-                            presenter.onRestTimerSettingsPressed()
-                        }
-                    .accessibilityLabel("Rest Timer")
-                }
-            CustomLabelButtonView(
-                symbolName: "wand.and.stars",
+                subtitle: String(localized: "Configure rest timer settings"),
+                systemImage: Symbol.rest
+            ) {
+                presenter.onRestTimerSettingsPressed()
+            }
+            ListRowButton(
                 title: String(localized: "Smart Progression"),
-                subtitle: String(localized: "Configure smart progression settings")) {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .anyButton(.press) {
-                            presenter.onSmartProgressionSettingsPressed()
-                        }
-                    .accessibilityLabel("Smart Progression")
-                }
-            CustomLabelButtonView(
-                symbolName: "arrow.trianglehead.counterclockwise",
+                subtitle: String(localized: "Configure smart progression settings"),
+                systemImage: "wand.and.stars"
+            ) {
+                presenter.onSmartProgressionSettingsPressed()
+            }
+            ListRowButton(
                 title: String(localized: "Previous Reference"),
-                subtitle: String(localized: "Any Workout")) {
-                    Text("Edit")
-                        .padding(.horizontal, 8)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.2), in: .capsule)
-                        .anyButton(.press) {
-                            presenter.onPreviousReferenceSettingsPressed()
-                        }
-                }
-            CustomToggleView(
-                symbolName: "arrow.uturn.forward",
+                subtitle: String(localized: "Any Workout"),
+                systemImage: "arrow.trianglehead.counterclockwise"
+            ) {
+                presenter.onPreviousReferenceSettingsPressed()
+            }
+            ListRowToggle(
                 title: String(localized: "Propagate Changes"),
                 subtitle: String(localized: "Weight and rep edits will propagate to all sets with the same weight and reps"),
-                bool: $presenter.propagateChanges
+                systemImage: "arrow.uturn.forward",
+                isOn: $presenter.propagateChanges
             )
-            CustomToggleView(
-                symbolName: "heart.fill",
+            ListRowToggle(
                 title: String(localized: "Effort (RPE)"),
                 subtitle: String(localized: "Log how hard each set was, from RPE 6 to 10, on the reps keyboard"),
-                bool: $presenter.rirTracking
+                systemImage: "heart.fill",
+                isOn: $presenter.rirTracking
             )
-            CustomToggleView(
-                symbolName: "arrow.trianglehead.2.clockwise",
+            ListRowToggle(
                 title: String(localized: "Superset Auto-Scroll"),
                 subtitle: String(localized: "Scroll automatically between superset exercises after set completion"),
-                bool: $presenter.supersetAutoScroll
+                systemImage: "arrow.trianglehead.2.clockwise",
+                isOn: $presenter.supersetAutoScroll
             )
-            CustomToggleView(
-                symbolName: "arrow.right.to.line.compact",
+            ListRowToggle(
                 title: String(localized: "Exercise Auto-Next"),
                 subtitle: String(localized: "Scroll next automatically when an exercise is completed"),
-                bool: $presenter.exerciseAutoNext
+                systemImage: "arrow.right.to.line.compact",
+                isOn: $presenter.exerciseAutoNext
             )
 
         } header: {
@@ -99,23 +84,23 @@ struct WorkoutSettingsView: View {
     
     private var displaySection: some View {
         Section {
-            CustomToggleView(
-                symbolName: "sun.max",
+            ListRowToggle(
                 title: String(localized: "Keep Alive"),
                 subtitle: String(localized: "Keep your phone alive during active workout sessions"),
-                bool: $presenter.keepAlive
+                systemImage: "sun.max",
+                isOn: $presenter.keepAlive
             )
-            CustomToggleView(
-                symbolName: "timer",
+            ListRowToggle(
                 title: String(localized: "Workout Timer"),
                 subtitle: String(localized: "Show elapsed time during workout sessions"),
-                bool: $presenter.showWorkoutTimer
+                systemImage: Symbol.duration,
+                isOn: $presenter.showWorkoutTimer
             )
-            CustomToggleView(
-                symbolName: "scalemass",
+            ListRowToggle(
                 title: String(localized: "Bodyweight Contribution"),
                 subtitle: String(localized: "Display scale weight and body weight contribution during workout sessions"),
-                bool: $presenter.showBodyweightContribution
+                systemImage: Symbol.scaleWeight,
+                isOn: $presenter.showBodyweightContribution
             )
             
         } header: {
@@ -124,11 +109,11 @@ struct WorkoutSettingsView: View {
     }
     private var warmUpSection: some View {
         Section {
-            CustomToggleView(
-                symbolName: "figure.yoga",
+            ListRowToggle(
                 title: String(localized: "Add Smart Warm-Ups"),
                 subtitle: String(localized: "Warm-Ups will be automatically added to exercises in your workout depending on how fresh your muscles are and how heavy the weight is"),
-                bool: $presenter.addSmartWarmUps
+                systemImage: "figure.yoga",
+                isOn: $presenter.addSmartWarmUps
             )
 
         } header: {
@@ -140,19 +125,13 @@ struct WorkoutSettingsView: View {
     private var otherSection: some View {
         
         Section {
-            CustomLabelButtonView(
-                symbolName: "list.star",
+            ListRowButton(
                 title: String(localized: "Exercise Assessment"),
-                subtitle: String(localized: "A questionnaire about your experience with foundational movements that determines access to advanced exercises")) {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
-                        .foregroundStyle(.secondary)
-                        .padding()
-                        .anyButton(.press) {
-                            presenter.onExerciseAssessmentPressed()
-                        }
-                    .accessibilityLabel("Exercise Assessment")
-                }
+                subtitle: String(localized: "A questionnaire about your experience with foundational movements that determines access to advanced exercises"),
+                systemImage: "list.star"
+            ) {
+                presenter.onExerciseAssessmentPressed()
+            }
 
         } header: {
             Text("Other")

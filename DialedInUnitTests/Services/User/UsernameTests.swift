@@ -289,6 +289,31 @@ struct EditUsernamePresenterTests {
         #expect(!screen.presenter.isSaving)
     }
 
+    @Test("Test A Successful Save Claims The Handle And Plays The Success Haptic")
+    func testASuccessfulSaveClaimsTheHandleAndPlaysTheSuccessHaptic() async {
+        let screen = makeScreen()
+        type("new_handle", into: screen.presenter)
+        #expect(await TestManagers.eventually { screen.presenter.canSave })
+
+        await screen.presenter.onSavePressed()
+
+        #expect(screen.interactor.claimed == ["new_handle"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    @Test("Test A Failed Save Plays The Error Haptic")
+    func testAFailedSavePlaysTheErrorHaptic() async {
+        let screen = makeScreen()
+        screen.interactor.claimError = URLError(.notConnectedToInternet)
+        type("new_handle", into: screen.presenter)
+        #expect(await TestManagers.eventually { screen.presenter.canSave })
+
+        await screen.presenter.onSavePressed()
+
+        #expect(screen.router.alertTitles == ["Unable to save"])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
     @Test("Test It Starts On The Current Handle")
     func testItStartsOnTheCurrentHandle() {
         let presenter = makeScreen(username: "andrew").presenter

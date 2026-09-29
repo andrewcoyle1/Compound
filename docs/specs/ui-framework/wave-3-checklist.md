@@ -5,8 +5,8 @@ noted, in the folders it owns. The WP file adds its scope and its specific issue
 
 ## Before starting
 
-1. Run the screenshot deck into your worktree (`DERIVED=~/.dd-wpNN scripts/screenshots.sh
-   <udid>`) and note which `STARTSCREEN_*` screens are yours.
+1. Your "before" is the committed `Screenshots/` deck (25 Sep). Do not run a before capture,
+   because a full deck costs about an hour. Note which `STARTSCREEN_*` screens are yours.
 2. Build once and list the deprecation warnings that fall in your folders. That list is your
    to-do; it must be empty at the end.
 
@@ -28,7 +28,7 @@ noted, in the folders it owns. The WP file adds its scope and its specific issue
     needed), `Color.accent` and bare `.accent` retired.
   - Selection, primary actions, links, toggles and non-data progress use the accent.
   - Text on accent fills uses `onAccent`.
-  - Fix every entry in WP-01's accent-swap list that falls in your folders.
+  - Fix every entry in `accent-swap-findings.md` that falls in your folders.
 - [ ] **Type.** Tokens for numbers, titles and rows. `.font(.system(size:))` on images becomes
   `.iconSize`. Replace deprecated `.foregroundColor`.
 - [ ] **Spacing and radius.** Tokens only, continuous corners, no `.cornerRadius(`.

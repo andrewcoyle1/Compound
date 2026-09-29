@@ -34,33 +34,19 @@ struct AddBandView: View {
     }
     
     private var colourSection: some View {
-        VStack(alignment: .leading) {
-            Text("Plate Colour")
-                .font(.headline)
-            HStack {
-                ForEach(presenter.colours, id: \.self) { colour in
-                    ZStack {
-                        Circle()
-                            .opacity(0.3)
-                    }
-                    .foregroundStyle(colour)
-                    .overlay {
-                        Circle()
-                            .stroke(colour == presenter.selectedColour ? presenter.selectedColour ?? .primary : Color.clear, lineWidth: 4)
-                    }
-                    .anyButton {
-                        presenter.onColourPressed(colour: colour)
-                    }
-                }
-            }
-            .padding(.horizontal)
+        EquipmentColourPicker(
+            title: "Band Color",
+            colours: presenter.colours,
+            selectedColour: presenter.selectedColour
+        ) { colour in
+            presenter.onColourPressed(colour: colour)
         }
     }
-    
+
     private var labelSection: some View {
         VStack(alignment: .leading) {
             Text("Label")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField(text: $presenter.bandAvailable.name, prompt: Text(""), label: { Text("Label") })
                     .textFieldStyle(.roundedBorder)
@@ -72,7 +58,7 @@ struct AddBandView: View {
     private var weightSection: some View {
         VStack(alignment: .leading) {
             Text("Weight")
-                .font(.headline)
+                .font(.sectionTitle)
             ZStack(alignment: .trailing) {
                 TextField("", value: $presenter.bandAvailable.availableResistance, format: .number, prompt: Text(""))
                     .textFieldStyle(.roundedBorder)
@@ -86,22 +72,15 @@ struct AddBandView: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
-            Button {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
         
         ToolbarItem(placement: .confirmationAction) {
-            Button {
+            Button(role: .confirm) {
                 presenter.onSavePressed()
-            } label: {
-                Image(systemName: "checkmark")
             }
-            .accessibilityLabel("Save")
-            .buttonStyle(.glassProminent)
         }
     }
 }
@@ -123,7 +102,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showAddBandView(delegate: AddBandDelegate) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.42)]))) { router in
+        router.showScreen(.sheetConfig(config: .half)) { router in
             builder.addBandView(router: router, delegate: delegate)
         }
     }

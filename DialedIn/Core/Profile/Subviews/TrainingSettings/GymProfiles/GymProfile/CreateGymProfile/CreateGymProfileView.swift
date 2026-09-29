@@ -13,27 +13,17 @@ struct CreateGymProfileDelegate {
 
 struct CreateGymProfileView: View {
     
-    @Environment(\.colorScheme) private var colorScheme
-    
     @State var presenter: CreateGymProfilePresenter
     let delegate: CreateGymProfileDelegate
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("What would you like to name this gym?")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.bottom, 8)
-            Text("Name")
-            TextField(text: $presenter.gymProfileName) {
-                Text("")
+        List {
+            Section {
+                TextField("Name", text: $presenter.gymProfileName)
+            } header: {
+                Text("What would you like to name this gym?")
             }
-            .textFieldStyle(.roundedBorder)
-            
-            Spacer()
         }
-        .padding(.horizontal)
-        .background(colorScheme.backgroundSecondary)
         .navigationTitle("Create Gym Profile")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -42,14 +32,13 @@ struct CreateGymProfileView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(oldDelegate: delegate)
             } label: {
                 Text("Continue")
             }
             .disabled(!presenter.canSave)
-            .padding(.bottom)
         }
     }
 }

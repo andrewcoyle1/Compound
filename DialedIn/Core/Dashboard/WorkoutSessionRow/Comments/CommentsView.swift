@@ -24,19 +24,16 @@ struct CommentsView: View {
                     .removeListRowFormatting()
             } else if presenter.comments.isEmpty {
                 ContentUnavailableView(
-                    "No comments yet",
-                    systemImage: "tray",
-                    description:
-                        Text("Start the conversation.")
-                            .font(.caption)
-                    
+                    "No Comments Yet",
+                    systemImage: "bubble.left.and.bubble.right",
+                    description: Text("Start the conversation.")
                 )
                 .removeListRowFormatting()
             } else {
                 Section {
                     ForEach(presenter.comments) { comment in
                         commentRow(comment)
-                            .padding(.leading, presenter.isReply(comment) ? 40 : 0)
+                            .padding(.leading, presenter.isReply(comment) ? ControlSize.thumbnail : 0)
                             .swipeActions(edge: .leading) {
                                 Button {
                                     presenter.onReplyPressed(comment)
@@ -50,16 +47,16 @@ struct CommentsView: View {
                                     Button {
                                         presenter.onDeletePressed(comment)
                                     } label: {
-                                        Label("Delete", systemImage: "trash")
-                                            .tint(.red)
+                                        Label("Delete", systemImage: Symbol.delete)
                                     }
+                                    .tint(.danger)
                                 } else {
                                     Button {
                                         presenter.onReportPressed(comment)
                                     } label: {
                                         Label("Report", systemImage: "flag.fill")
-                                            .tint(.orange)
                                     }
+                                    .tint(.warning)
                                 }
                             }
                     }
@@ -83,23 +80,23 @@ struct CommentsView: View {
         HStack {
             // `Constants.randomImage` was the fallback here, so a commenter with no picture was
             // given someone else's at random, and a different one on every redraw.
-            UserAvatarView(imageUrl: comment.authorImageUrl, size: 40)
-            VStack(alignment: .leading, spacing: 4) {
+            UserAvatarView(imageUrl: comment.authorImageUrl, size: ControlSize.thumbnail)
+            VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     Text(comment.authorName ?? "Unknown")
-                        .font(.subheadline)
+                        .font(.rowDetail)
                         .fontWeight(.semibold)
                     Spacer()
                     Text(comment.dateCreated.formatted(.relative(presentation: .named)))
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                 }
                 Text(presenter.attributedText(for: comment))
-                    .font(.subheadline)
+                    .font(.rowDetail)
             }
             likeButton(comment)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xs)
     }
 
     private func likeButton(_ comment: WorkoutSessionComment) -> some View {
@@ -108,18 +105,18 @@ struct CommentsView: View {
         return Button {
             presenter.onLikePressed(comment)
         } label: {
-            VStack(spacing: 2) {
+            VStack(spacing: Spacing.xxs) {
                 Image(systemName: isLiked ? "heart.fill" : "heart")
-                    .foregroundStyle(isLiked ? Color.red : Color.secondary)
+                    .foregroundStyle(isLiked ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
                     .contentTransition(.symbolEffect(.replace))
                 if count > 0 {
-                    Text("\(count)")
-                        .font(.caption2)
+                    Text(count, format: .number)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
             }
-            .frame(minWidth: 32)
+            .frame(minWidth: Spacing.xxl)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isLiked ? String(localized: "Unlike comment") : String(localized: "Like comment"))
@@ -127,11 +124,11 @@ struct CommentsView: View {
     }
 
     private var inputBar: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.s) {
             if let parent = presenter.replyingTo {
                 HStack {
                     Text("Replying to \(parent.authorName ?? "comment")")
-                        .font(.caption)
+                        .font(.label)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button {
@@ -156,15 +153,15 @@ struct CommentsView: View {
 
     private var mentionSuggestionRow: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: 8) {
+            HStack(spacing: Spacing.s) {
                 ForEach(presenter.mentionSuggestions) { candidate in
                     Button {
                         presenter.onMentionSuggestionPressed(candidate)
                     } label: {
                         Text(candidate.label)
-                            .font(.subheadline)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .font(.rowDetail)
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, Spacing.xs)
                     }
                     .buttonStyle(.glass)
                     .accessibilityLabel("Mention \(candidate.fullName)")
@@ -175,7 +172,7 @@ struct CommentsView: View {
     }
 
     private var inputRow: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.s) {
             TextField(presenter.replyingTo == nil ? String(localized: "Add a comment…") : String(localized: "Add a reply…"), text: $presenter.commentDraft, axis: .vertical)
                 .lineLimit(1...4)
             Button {

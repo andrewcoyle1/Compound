@@ -59,9 +59,11 @@ class ShareToFollowerPresenter {
             do {
                 try await interactor.sendShare(delegate.payload, to: ids)
                 interactor.trackEvent(event: Event.sendSuccess)
+                interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
                 isSending = false
+                interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.sendFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to share"), subtitle: String(localized: "Please try again."))
             }

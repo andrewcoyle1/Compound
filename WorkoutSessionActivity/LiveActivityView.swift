@@ -32,7 +32,7 @@ struct LiveActivityView: View {
                 state: context.state,
                 workoutName: context.attributes.workoutName,
                 // The widget's accent is `labelColor`, so a prominent label needs the inverse.
-                prominentLabelColor: colorScheme.foregroundSecondary
+                prominentLabelColor: colorScheme.inverseLabel
             )
             .frame(height: LiveActivityLayout.contentHeight, alignment: .center)
             .padding(.horizontal, 16)

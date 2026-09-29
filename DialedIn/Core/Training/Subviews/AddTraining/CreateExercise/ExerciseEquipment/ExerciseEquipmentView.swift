@@ -17,42 +17,32 @@ struct ExerciseEquipmentView: View {
     var body: some View {
         List {
             Section {
-                ActionRow(title: String(localized: "Bodyweight Exercise"), subtitle: String(localized: "This exercise is performed with bodyweight, without additional resistance.")) {
-                    Toggle(isOn: $presenter.bodyweightExercise) { }
-                        .accessibilityIdentifier("ExerciseEquipment.bodyweight")
-                }
+                ListRowToggle(
+                    title: String(localized: "Bodyweight Exercise"),
+                    subtitle: String(localized: "This exercise is performed with bodyweight, without additional resistance."),
+                    isOn: $presenter.bodyweightExercise
+                )
+                .accessibilityIdentifier("ExerciseEquipment.bodyweight")
             }
             .listSectionMargins(.top, 0)
 
             if !presenter.bodyweightExercise {
                 ForEach(Array(presenter.variations.enumerated()), id: \.element.id) { index, variation in
                     Section {
-                        ActionRow(
+                        addRow(
                             title: String(localized: "Resistance"),
                             subtitle: presenter.resistanceSubtitle(for: variation),
-                            subsubtitle: variation.resistanceEquipment.isEmpty ? "Required" : nil
+                            note: variation.resistanceEquipment.isEmpty ? String(localized: "Required") : nil
                         ) {
-                            Text("Add")
-                                .padding(.vertical, 8)
-                                .padding(.horizontal)
-                                .background(Color.secondary.opacity(0.5), in: .capsule)
-                                .anyButton(.press) {
-                                    presenter.onAddResistancePressed(variationId: variation.id)
-                                }
+                            presenter.onAddResistancePressed(variationId: variation.id)
                         }
 
-                        ActionRow(
+                        addRow(
                             title: String(localized: "Support"),
                             subtitle: presenter.supportSubtitle(for: variation),
-                            subsubtitle: variation.supportEquipment.isEmpty ? "Optional" : nil
+                            note: variation.supportEquipment.isEmpty ? String(localized: "Optional") : nil
                         ) {
-                            Text("Add")
-                                .padding(.vertical, 8)
-                                .padding(.horizontal)
-                                .background(Color.secondary.opacity(0.5), in: .capsule)
-                                .anyButton(.press) {
-                                    presenter.onAddSupportPressed(variationId: variation.id)
-                                }
+                            presenter.onAddSupportPressed(variationId: variation.id)
                         }
                     } header: {
                         HStack {
@@ -62,12 +52,11 @@ struct ExerciseEquipmentView: View {
                                 Button(role: .destructive) {
                                     presenter.onDeleteVariationPressed(id: variation.id)
                                 } label: {
-                                    Image(systemName: "trash")
-                                        .font(.caption)
+                                    Image(systemName: Symbol.delete)
                                 }
                                 .accessibilityLabel("Delete variation")
                                 .buttonStyle(.plain)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(.danger)
                             }
                         }
                     }
@@ -77,7 +66,7 @@ struct ExerciseEquipmentView: View {
                     Button {
                         presenter.onAddVariationPressed()
                     } label: {
-                        Label("Add Variation", systemImage: "plus.circle")
+                        Label("Add Variation", systemImage: Symbol.add)
                     }
                 }
             }
@@ -90,46 +79,26 @@ struct ExerciseEquipmentView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .safeAreaInset(edge: .bottom) {
+        .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
             } label: {
                 Text("Next")
             }
             .accessibilityIdentifier("ExerciseEquipment.next")
-            .padding(.bottom)
-            .opacity(presenter.canContinue ? 1 : 0.3)
             .disabled(!presenter.canContinue)
         }
     }
-}
 
-struct ActionRow<ActionArea: View>: View {
-
-    var title: String
-    var subtitle: String?
-    var subsubtitle: String?
-    var actionArea: () -> ActionArea
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(title)
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if let subsubtitle {
-                        Text(subsubtitle)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                    }
-                }
-            }
-            Spacer()
-            actionArea()
-        }
+    /// `note` says whether the equipment is required, and joins the subtitle rather than taking a
+    /// third line.
+    private func addRow(title: String, subtitle: String?, note: String?, action: @escaping () -> Void) -> some View {
+        let detail = [subtitle, note].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        return ListRow(
+            title: title,
+            subtitle: detail.isEmpty ? nil : detail,
+            accessory: .custom(AnyView(RowChipButton("Add", subject: title, action: action)))
+        )
     }
 }
 

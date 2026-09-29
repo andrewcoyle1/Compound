@@ -25,18 +25,19 @@ struct EditLoadableAccessoryView: View {
         Section {
             VStack(alignment: .leading) {
                 Text("Weights")
-                    .font(.headline)
+                    .font(.sectionTitle)
                 HStack {
                     TextField("", value: $presenter.loadableAccessory.baseWeight, format: .number)
                         .textFieldStyle(.roundedBorder)
                     Spacer()
-                    Picker("", selection: $presenter.selectedUnit) {
+                    Picker("Unit", selection: $presenter.selectedUnit) {
                         ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                             Text(unit.abbreviation)
                         }
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 160)
+                    .labelsHidden()
+                    .fixedSize()
                 }
             }
         }
@@ -45,13 +46,10 @@ struct EditLoadableAccessoryView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
                 presenter.onDismissPressed()
-            } label: {
-                Image(systemName: "xmark")
             }
-            .accessibilityLabel("Close")
         }
     }
 }
@@ -72,7 +70,7 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showEditLoadableAccessoryView(loadableAccessory: Binding<LoadableAccessoryEquipment>) {
-        router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.fraction(0.2)]))) { router in
+        router.showScreen(.sheetConfig(config: .compact)) { router in
             builder.editLoadableAccessoryView(router: router, loadableAccessory: loadableAccessory)
         }
     }

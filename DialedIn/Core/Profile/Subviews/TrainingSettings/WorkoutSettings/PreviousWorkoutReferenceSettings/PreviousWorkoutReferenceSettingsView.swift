@@ -36,24 +36,9 @@ struct PreviousWorkoutReferenceSettingsView: View {
     /// A checkmark list rather than a `Picker`, so each option can carry the explanation the
     /// option enum already defines as its `subtitle`.
     private func optionRow(_ option: PreviousWorkoutReferenceOption) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(option.title)
-                Text(option.subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 0)
-            Image(systemName: "checkmark")
-                .foregroundStyle(.tint)
-                .opacity(presenter.previousWorkoutReference == option ? 1 : 0)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .tappableBackground()
-        .anyButton(.highlight) {
+        SelectableRow(title: option.title, subtitle: option.subtitle, isSelected: presenter.previousWorkoutReference == option) {
             presenter.previousWorkoutReference = option
         }
-        .accessibilityAddTraits(presenter.previousWorkoutReference == option ? [.isButton, .isSelected] : .isButton)
     }
 }
 

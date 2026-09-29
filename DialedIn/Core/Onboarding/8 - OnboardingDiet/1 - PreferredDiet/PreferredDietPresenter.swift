@@ -14,7 +14,13 @@ class PreferredDietPresenter {
     private let router: PreferredDietRouter
 
     var selectedDiet: PreferredDiet?
-    private var isFromSettings: Bool = false
+    private(set) var isFromSettings: Bool = false
+
+    /// Picking an option row: record it and give the selection tick.
+    func onDietSelected(_ value: PreferredDiet) {
+        selectedDiet = value
+        interactor.playHaptic(option: .selection)
+    }
 
     init(
         interactor: PreferredDietInteractor,

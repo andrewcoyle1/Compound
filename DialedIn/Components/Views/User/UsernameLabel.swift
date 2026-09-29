@@ -11,7 +11,7 @@ import SwiftUI
 struct UsernameLabel: View {
 
     let username: String?
-    var font: Font = .caption
+    var font: Font = .label
 
     var body: some View {
         if let username, !username.isEmpty {

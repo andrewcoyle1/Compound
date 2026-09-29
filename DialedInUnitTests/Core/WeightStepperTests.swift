@@ -187,7 +187,7 @@ struct WeightStepperTests {
         let step = step(.loadableBar, "barbell", unit: .pounds)
         // 20 kg bar is 44.092 lb; 2 × 1.25 kg is 5.512 lb.
         #expect(step.baseWeight == 44.092)
-        #expect(step.chip == "Bar 44.09 lbs")
+        #expect(step.chip == "Bar 44.09 lb")
         #expect(step.next(after: 44.092) == 49.604)
     }
 

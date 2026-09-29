@@ -336,7 +336,7 @@ struct OnboardingNamePhotoPresenterTests {
 @MainActor
 struct OnboardingGenderPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, GenderInteractor { }
+    private final class Interactor: SpyGlobalInteractor, GenderInteractor { func readSexFromAppleHealth() async -> Gender? { nil } }
 
     private final class Router: SpyOnboardingRouter, GenderRouter {
         private(set) var dateOfBirthDelegates: [DateOfBirthDelegate] = []
@@ -432,7 +432,7 @@ struct OnboardingGenderPresenterTests {
 @MainActor
 struct OnboardingDateOfBirthPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, DateOfBirthInteractor { }
+    private final class Interactor: SpyGlobalInteractor, DateOfBirthInteractor { func readDateOfBirthFromAppleHealth() async -> Date? { nil } }
 
     private final class Router: SpyOnboardingRouter, DateOfBirthRouter {
         private(set) var heightDelegates: [HeightDelegate] = []
@@ -540,7 +540,7 @@ struct OnboardingDateOfBirthPresenterTests {
 @MainActor
 struct OnboardingHeightPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, HeightInteractor { }
+    private final class Interactor: SpyGlobalInteractor, HeightInteractor { func readHeightCentimetersFromAppleHealth() async -> Double? { nil } }
 
     private final class Router: SpyOnboardingRouter, HeightRouter {
         private(set) var weightDelegates: [WeightDelegate] = []
@@ -673,7 +673,7 @@ struct OnboardingHeightPresenterTests {
 @MainActor
 struct OnboardingWeightPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, WeightInteractor { }
+    private final class Interactor: SpyGlobalInteractor, WeightInteractor { func readWeightKilogramsFromAppleHealth() async -> Double? { nil } }
 
     private final class Router: SpyOnboardingRouter, WeightRouter {
         private(set) var exerciseFrequencyDelegates: [ExerciseFrequencyDelegate] = []

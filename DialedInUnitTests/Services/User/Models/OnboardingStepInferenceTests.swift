@@ -111,7 +111,7 @@ struct OnboardingStepInferenceTests {
 
     // MARK: - The account setup guard
 
-    /// Account setup asks seven things and needs all of them. Any one missing sends the user back,
+    /// Account setup asks six things and needs all of them. Any one missing sends the user back,
     /// so each is checked on its own — a guard that dropped one would let a profile through with a
     /// hole in it.
     @Test("Test Any Missing Account Detail Returns To Account Setup")
@@ -122,13 +122,20 @@ struct OnboardingStepInferenceTests {
             ("height", user(height: nil)),
             ("weight", user(weight: nil)),
             ("exercise frequency", user(exerciseFrequency: nil)),
-            ("activity level", user(activityLevel: nil)),
-            ("cardio fitness", user(cardioFitness: nil))
+            ("activity level", user(activityLevel: nil))
         ]
 
         for (missing, user) in variants {
             #expect(user.inferredOnboardingStep == .completeAccountSetup, "missing \(missing) did not send the user back")
         }
+    }
+
+    /// Decision 8c: onboarding no longer asks for cardio fitness, so a profile without it has to
+    /// move past account setup. Requiring it sent everyone who joined since back to the start.
+    @Test("Test A Profile Without Cardio Fitness Is Not Sent Back")
+    func testAProfileWithoutCardioFitnessIsNotSentBack() {
+        #expect(user(cardioFitness: nil).inferredOnboardingStep == .complete)
+        #expect(user(cardioFitness: nil, disclaimerVersion: nil).inferredOnboardingStep == .healthDisclaimer)
     }
 
     // MARK: - Order

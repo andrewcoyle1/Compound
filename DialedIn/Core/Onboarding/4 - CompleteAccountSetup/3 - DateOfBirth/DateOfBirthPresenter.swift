@@ -24,6 +24,21 @@ class DateOfBirthPresenter {
         let earliest = Calendar.current.date(byAdding: .year, value: -120, to: now) ?? now
         return earliest...now
     }
+
+    var healthFill: AppleHealthFillState = .idle
+
+    /// A stored date outside the picker's range is treated as nothing found rather than clamped.
+    func onFillFromAppleHealthPressed() {
+        healthFill = .loading
+        Task {
+            let date = await interactor.readDateOfBirthFromAppleHealth().flatMap { dateRange.contains($0) ? $0 : nil }
+            if let date {
+                dateOfBirth = date
+            }
+            healthFill = date == nil ? .notFound : .filled
+            interactor.trackEvent(event: Event.fillFromHealth(found: date != nil))
+        }
+    }
     
     init(
         interactor: DateOfBirthInteractor,
@@ -48,10 +63,12 @@ func onDevSettingsPressed() {
 
     enum Event: LoggableEvent {
         case navigate
+        case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
             case .navigate: return "DateOfBirthView_Navigate"
+            case .fillFromHealth: return "DateOfBirthView_FillFromHealth"
             }
         }
 
@@ -59,13 +76,17 @@ func onDevSettingsPressed() {
             switch self {
             case .navigate:
                 return nil
+            case .fillFromHealth(let found):
+                return ["found": found]
             }
         }
 
         var type: LogType {
             switch self {
-            case .navigate: 
+            case .navigate:
                 return .info
+            case .fillFromHealth:
+                return .analytic
             }
         }
     }

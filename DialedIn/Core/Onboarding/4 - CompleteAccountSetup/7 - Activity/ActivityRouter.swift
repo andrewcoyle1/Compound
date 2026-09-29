@@ -10,7 +10,7 @@ protocol ActivityRouter: GlobalRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif
-    func showCardioFitnessView(delegate: CardioFitnessDelegate)
+    func showExpenditureView(delegate: ExpenditureDelegate)
 }
 
 extension CoreRouter: ActivityRouter { }

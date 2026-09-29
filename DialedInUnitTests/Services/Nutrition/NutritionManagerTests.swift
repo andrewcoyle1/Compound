@@ -286,6 +286,22 @@ struct NutritionManagerTests {
         #expect(abs((male - female) - (166 * 1.6)) < 0.01)
     }
 
+    /// Decision 8a: "Prefer not to say" sits halfway between the two, in both equations that
+    /// branch on sex (Mifflin's -78 is the midpoint of +5 and -161; Harris-Benedict averages its
+    /// two whole equations).
+    @Test("Test Prefer Not To Say Reads Halfway Between Men And Women")
+    func testPreferNotToSayReadsHalfwayBetweenMenAndWomen() {
+        let manager = TestManagers.nutritionManager()
+
+        for equation in [BMREquation.mifflinStJeor, .harrisBenedict] {
+            let male = manager.estimateTDEE(user: profile(gender: .male), equation: equation)
+            let female = manager.estimateTDEE(user: profile(gender: .female), equation: equation)
+            let midpoint = manager.estimateTDEE(user: profile(gender: .preferNotToSay), equation: equation)
+
+            #expect(abs(midpoint - (male + female) / 2) < 0.01)
+        }
+    }
+
     /// Harris-Benedict is the older equation and reads high, which is what the settings screen
     /// tells the user. If it ever read lower than Mifflin that caption would be wrong.
     @Test("Test Harris Benedict Reads Higher Than Mifflin On The Same Figures")

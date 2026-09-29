@@ -13,7 +13,12 @@ struct MockHealthService: HealthService {
     let delay: Double
     let showError: Bool
     let canRequestAuthorisationTest: Bool
-    
+    /// What Apple Health "holds" for the onboarding fill buttons; nil stands for nothing stored.
+    var dateOfBirth: Date?
+    var sex: Gender?
+    var heightCentimeters: Double?
+    var weightKilograms: Double?
+
     init(delay: Double = 0.0, showError: Bool = false, canRequestAuthorisation: Bool = true) {
         self.delay = delay
         self.showError = showError
@@ -42,5 +47,10 @@ struct MockHealthService: HealthService {
     func getHealthStore() -> HKHealthStore {
         HKHealthStore()
     }
+
+    func readDateOfBirth() -> Date? { dateOfBirth }
+    func readSex() -> Gender? { sex }
+    func readLatestHeightCentimeters() async -> Double? { heightCentimeters }
+    func readLatestWeightKilograms() async -> Double? { weightKilograms }
 }
 #endif

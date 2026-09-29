@@ -323,10 +323,15 @@ class NutritionManager {
         case .mifflinStJeor:
             return mifflinStJeorBMR(body: body)
         case .harrisBenedict:
-            if body.gender == .male {
-                return 88.362 + (13.397 * body.weightKg) + (4.799 * body.heightCm) - (5.677 * body.age)
+            let male = 88.362 + (13.397 * body.weightKg) + (4.799 * body.heightCm) - (5.677 * body.age)
+            let female = 447.593 + (9.247 * body.weightKg) + (3.098 * body.heightCm) - (4.330 * body.age)
+            switch body.gender {
+            case .male: return male
+            case .female: return female
+            // Harris-Benedict has two whole equations rather than one sex term, so the midpoint
+            // here is the average of the two, as Mifflin-St Jeor's -78 is of +5 and -161.
+            case .preferNotToSay: return (male + female) / 2
             }
-            return 447.593 + (9.247 * body.weightKg) + (3.098 * body.heightCm) - (4.330 * body.age)
         case .katchMcArdle:
             guard let bodyFat = body.bodyFatPercentage, bodyFat > 0, bodyFat < 100 else {
                 return mifflinStJeorBMR(body: body)
@@ -337,8 +342,7 @@ class NutritionManager {
     }
 
     private func mifflinStJeorBMR(body: BodyComposition) -> Double {
-        let genderCoefficient: Double = (body.gender == .male) ? 5 : -161
-        return (10 * body.weightKg) + (6.25 * body.heightCm) - (5 * body.age) + genderCoefficient
+        (10 * body.weightKg) + (6.25 * body.heightCm) - (5 * body.age) + body.gender.mifflinStJeorCoefficient
     }
 
     private func calculateAge(from dateOfBirth: Date?) -> Int {

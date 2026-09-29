@@ -80,6 +80,43 @@ struct HealthKitManagerTests {
         #expect(HealthDataScope.steps.typesToRead == [HKQuantityType(.stepCount)])
         #expect(HealthDataScope.bodyMeasurements.typesToShare == [HKQuantityType(.bodyMass)])
         #expect(HealthDataScope.bodyMeasurements.typesToRead == [HKQuantityType(.bodyMass), HKQuantityType(.bodyFatPercentage)])
+        // Onboarding's "Fill from Apple Health" buttons read one type each and write nothing.
+        #expect(HealthDataScope.dateOfBirth.typesToRead == [HKCharacteristicType(.dateOfBirth)])
+        #expect(HealthDataScope.sex.typesToRead == [HKCharacteristicType(.biologicalSex)])
+        #expect(HealthDataScope.height.typesToRead == [HKQuantityType(.height)])
+        #expect(HealthDataScope.weight.typesToRead == [HKQuantityType(.bodyMass)])
+        for scope in [HealthDataScope.dateOfBirth, .sex, .height, .weight] {
+            #expect(scope.typesToShare.isEmpty)
+        }
+    }
+
+    @Test("Test Each Onboarding Read Returns What Apple Health Holds")
+    func testEachOnboardingReadReturnsWhatAppleHealthHolds() async {
+        var service = MockHealthService()
+        let birth = Date(timeIntervalSince1970: 0)
+        service.dateOfBirth = birth
+        service.sex = .female
+        service.heightCentimeters = 170
+        service.weightKilograms = 65
+        let manager = HealthKitManager(service: service)
+
+        #expect(await manager.readDateOfBirth() == birth)
+        #expect(await manager.readSex() == .female)
+        #expect(await manager.readLatestHeightCentimeters() == 170)
+        #expect(await manager.readLatestWeightKilograms() == 65)
+    }
+
+    /// A refused or failed request is not an error on screen: the step says nothing was found and
+    /// manual entry carries on.
+    @Test("Test Onboarding Reads Return Nothing When Access Cannot Be Requested Or Fails")
+    func testOnboardingReadsReturnNothingWhenAccessFails() async {
+        var failing = MockHealthService(showError: true)
+        failing.weightKilograms = 65
+        #expect(await HealthKitManager(service: failing).readLatestWeightKilograms() == nil)
+
+        var unavailable = MockHealthService(canRequestAuthorisation: false)
+        unavailable.sex = .male
+        #expect(await HealthKitManager(service: unavailable).readSex() == nil)
     }
 
     @Test("Test No Scope Asks For Nutrition Data")

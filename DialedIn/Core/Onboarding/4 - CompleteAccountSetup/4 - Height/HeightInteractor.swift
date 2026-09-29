@@ -8,6 +8,7 @@
 @MainActor
 protocol HeightInteractor {
     func trackEvent(event: LoggableEvent)
+    func readHeightCentimetersFromAppleHealth() async -> Double?
 }
 
 extension CoreInteractor: HeightInteractor { }

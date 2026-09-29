@@ -28,6 +28,8 @@ enum LegalDocument: String, CaseIterable, Identifiable {
         }
     }
 
+    // swiftlint:disable:next todo
+    // TODO: The four addresses behind this are placeholders in `Constants`; replace them there with the documents published on the owner's website before release.
     /// ⚠️ These are placeholders pointing at apple.com, inherited from `Constants.termsofServiceURL`
     /// and `privacyPolicyURL`. They must be replaced with the real published documents before
     /// release — the App Store requires a working privacy policy link, and a health app shipping a

@@ -17,6 +17,25 @@ class HeightPresenter {
     var selectedCentimeters: Int = 175
     var selectedFeet: Int = 5
     var selectedInches: Int = 9
+    var healthFill: AppleHealthFillState = .idle
+
+    /// The metric wheel's range; a stored height outside it counts as nothing found.
+    static let centimetersRange = 100...250
+
+    func onFillFromAppleHealthPressed() {
+        healthFill = .loading
+        Task {
+            let centimeters = await interactor.readHeightCentimetersFromAppleHealth()
+                .map { Int($0.rounded()) }
+                .flatMap { Self.centimetersRange.contains($0) ? $0 : nil }
+            if let centimeters {
+                selectedCentimeters = centimeters
+                updateImperialFromCentimeters()
+            }
+            healthFill = centimeters == nil ? .notFound : .filled
+            interactor.trackEvent(event: Event.fillFromHealth(found: centimeters != nil))
+        }
+    }
 
     // Computed properties to keep measurements synchronized
     private var heightInCentimeters: Double {
@@ -93,10 +112,12 @@ func onDevSettingsPressed() {
 
     enum Event: LoggableEvent {
         case navigate
+        case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
             case .navigate: return "HeightView_Navigate"
+            case .fillFromHealth: return "HeightView_FillFromHealth"
             }
         }
 
@@ -104,6 +125,8 @@ func onDevSettingsPressed() {
             switch self {
             case .navigate:
                 return nil
+            case .fillFromHealth(let found):
+                return ["found": found]
             }
         }
 
@@ -111,6 +134,8 @@ func onDevSettingsPressed() {
             switch self {
             case .navigate:
                 return .info
+            case .fillFromHealth:
+                return .analytic
             }
         }
     }

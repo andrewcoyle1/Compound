@@ -34,10 +34,12 @@ struct WeightView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "What's Your Weight?",
+            subtitle: "Your weight feeds the calorie estimate and your goal. You can log a new weight at any time.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
             onDevSettingsPressed: onDevSettingsPressed
         ) {
+            AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             pickerSection
             if presenter.unit == .kilograms {
                 metricSection

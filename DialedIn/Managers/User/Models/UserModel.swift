@@ -369,8 +369,9 @@ struct UserModel: DataSyncModelProtocol, Equatable {
               submittedHeightCentimeters != nil,
               submittedWeightKilograms != nil,
               submittedExerciseFrequency != nil,
-              submittedDailyActivityLevel != nil,
-              submittedCardioFitnessLevel != nil else {
+              submittedDailyActivityLevel != nil else {
+            // Cardio fitness is not required: onboarding stopped asking for it (decision 8c), so
+            // requiring it would send everyone who joined since back to account setup.
             return .completeAccountSetup
         }
         // Compared against the current version, not merely checked for presence. A health notice
@@ -401,13 +402,29 @@ struct UserModel: DataSyncModelProtocol, Equatable {
     var username: String?
 }
 
-enum Gender: String, Codable, Sendable {
+/// Asked only for the calorie estimate ("Sex for Calorie Estimate" in onboarding). Stored by raw
+/// value, so the two original cases keep their strings and every existing profile still decodes.
+enum Gender: String, Codable, Sendable, CaseIterable {
     case male
     case female
+    /// Uses the midpoint of the male and female coefficients; the estimate is less accurate.
+    case preferNotToSay = "prefer_not_to_say"
+
     var description: String {
         switch self {
         case .male: return String(localized: "Male")
         case .female: return String(localized: "Female")
+        case .preferNotToSay: return String(localized: "Prefer not to say")
+        }
+    }
+
+    /// The sex term of the Mifflin-St Jeor equation. `preferNotToSay` takes the midpoint of +5 and
+    /// −161 (on docs/release-checklist.md for confirmation).
+    var mifflinStJeorCoefficient: Double {
+        switch self {
+        case .male: return 5
+        case .female: return -161
+        case .preferNotToSay: return -78
         }
     }
 }

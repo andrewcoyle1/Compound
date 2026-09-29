@@ -14,19 +14,19 @@ import Foundation
 struct OnboardingSelectionHapticsTests {
 
     private final class Interactor: SpyGlobalInteractor, GenderInteractor, ExerciseFrequencyInteractor, ActivityInteractor,
-        CardioFitnessInteractor, OverarchingObjectiveInteractor, PreferredDietInteractor, CalorieFloorInteractor,
+        OverarchingObjectiveInteractor, PreferredDietInteractor, CalorieFloorInteractor,
         CalorieDistributionInteractor, ProteinIntakeInteractor {
         var currentUser: UserModel?
         var activeTrainingProgram: TrainingProgram?
+        func readSexFromAppleHealth() async -> Gender? { nil }
     }
 
-    private final class Router: GenderRouter, ExerciseFrequencyRouter, ActivityRouter, CardioFitnessRouter,
+    private final class Router: GenderRouter, ExerciseFrequencyRouter, ActivityRouter,
         OverarchingObjectiveRouter, PreferredDietRouter, CalorieFloorRouter, CalorieDistributionRouter, ProteinIntakeRouter {
         let router: AnyRouter = TestRouting.anyRouter
         func showDevSettingsView() { }
         func showDateOfBirthView(delegate: DateOfBirthDelegate) { }
         func showActivityView(delegate: ActivityDelegate) { }
-        func showCardioFitnessView(delegate: CardioFitnessDelegate) { }
         func showExpenditureView(delegate: ExpenditureDelegate) { }
         func showTargetWeightView(delegate: TargetWeightDelegate) { }
         func showGoalSummaryView(delegate: GoalSummaryDelegate) { }
@@ -58,16 +58,12 @@ struct OnboardingSelectionHapticsTests {
         activity.onActivityLevelSelected(level)
         #expect(activity.selectedActivityLevel == level)
 
-        let cardio = CardioFitnessPresenter(interactor: interactor, router: router)
-        let fitness = CardioFitnessLevel.allCases[1]
-        cardio.onCardioFitnessSelected(fitness)
-        #expect(cardio.selectedCardioFitness == fitness)
-
         let objective = OverarchingObjectivePresenter(interactor: interactor, router: router)
         objective.onObjectiveSelected(.loseWeight)
         #expect(objective.selectedObjective == .loseWeight)
 
-        #expect(haptics(interactor) == Array(repeating: "selection", count: 5))
+        // Four, not five: the cardio fitness step left onboarding (decision 8c).
+        #expect(haptics(interactor) == Array(repeating: "selection", count: 4))
     }
 
     @Test("Choosing a diet answer records it and plays the selection tick")

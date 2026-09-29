@@ -35,6 +35,11 @@ struct TargetWeightView: View {
             } else {
                 loadingSection
             }
+            if presenter.didInitialize, let message = presenter.lowestTargetMessage(delegate: delegate) {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .onFirstAppear {
             presenter.onAppear(delegate: delegate)

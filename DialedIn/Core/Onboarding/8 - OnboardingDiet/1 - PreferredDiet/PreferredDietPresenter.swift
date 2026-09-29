@@ -36,7 +36,13 @@ class PreferredDietPresenter {
         if let diet = selectedDiet {
             let delegate = CalorieFloorDelegate(preferredDiet: diet, isFromSettings: isFromSettings)
             interactor.trackEvent(event: Event.navigate)
-            router.showCalorieFloorView(delegate: delegate)
+            if isFromSettings {
+                router.showCalorieFloorView(delegate: delegate)
+            } else {
+                // Onboarding applies the standard 1,200 kcal floor without asking (decision 3b):
+                // the 800 kcal floor is offered only from settings, which leaves this step one option.
+                router.showCalorieDistributionView(delegate: CalorieDistributionDelegate(delegate: delegate, calorieFloor: .standard))
+            }
         }
     }
 

@@ -79,6 +79,10 @@ struct WeightRateView: View {
                 .foregroundStyle(.secondary)
             }
             .padding(.vertical, Spacing.xs)
+
+            if let warning = presenter.rateWarningText(delegate: delegate) {
+                InlineMessage(.warning, warning)
+            }
         }
     }
 

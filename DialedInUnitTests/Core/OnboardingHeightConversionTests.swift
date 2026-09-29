@@ -16,6 +16,7 @@ struct OnboardingHeightConversionTests {
     private final class Interactor: HeightInteractor {
         private(set) var trackedEventNames: [String] = []
         func trackEvent(event: LoggableEvent) { trackedEventNames.append(event.eventName) }
+        func readHeightCentimetersFromAppleHealth() async -> Double? { nil }
     }
 
     private final class Router: HeightRouter {

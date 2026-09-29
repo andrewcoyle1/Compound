@@ -43,6 +43,37 @@ struct HealthKitService: HealthService {
     func getHealthStore() -> HKHealthStore {
         healthStore
     }
+
+    func readDateOfBirth() -> Date? {
+        guard let components = try? healthStore.dateOfBirthComponents() else { return nil }
+        return Calendar.current.date(from: components)
+    }
+
+    /// `.other` and `.notSet` give nil: neither says which coefficient applies, so the person picks.
+    func readSex() -> Gender? {
+        switch try? healthStore.biologicalSex().biologicalSex {
+        case .male: .male
+        case .female: .female
+        default: nil
+        }
+    }
+
+    func readLatestHeightCentimeters() async -> Double? {
+        await latestQuantity(.height, unit: .meterUnit(with: .centi))
+    }
+
+    func readLatestWeightKilograms() async -> Double? {
+        await latestQuantity(.bodyMass, unit: .gramUnit(with: .kilo))
+    }
+
+    private func latestQuantity(_ identifier: HKQuantityTypeIdentifier, unit: HKUnit) async -> Double? {
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: HKQuantityType(identifier))],
+            sortDescriptors: [SortDescriptor(\.endDate, order: .reverse)],
+            limit: 1
+        )
+        return try? await descriptor.result(for: healthStore).first?.quantity.doubleValue(for: unit)
+    }
 }
 
 #endif

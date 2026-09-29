@@ -24,10 +24,12 @@ struct DateOfBirthView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "When Were You Born?",
+            subtitle: "Your age feeds the calorie estimate. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
             onDevSettingsPressed: onDevSettingsPressed
         ) {
+            AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             Section {
                 DatePicker("Date of birth", selection: $presenter.dateOfBirth, in: presenter.dateRange, displayedComponents: .date)
                     .datePickerStyle(.wheel)

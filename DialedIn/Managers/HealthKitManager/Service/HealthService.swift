@@ -22,12 +22,18 @@ enum HealthDataScope: CaseIterable, Sendable {
     case steps
     /// Logging or viewing weight: reads and writes weight, reads body fat.
     case bodyMeasurements
+    /// Onboarding's "Fill from Apple Health" buttons: each reads the one value its step asks for.
+    case dateOfBirth
+    case sex
+    case height
+    case weight
 
     var typesToShare: Set<HKSampleType> {
         switch self {
         case .workouts: [HKObjectType.workoutType()]
         case .steps: []
         case .bodyMeasurements: [HKQuantityType(.bodyMass)]
+        case .dateOfBirth, .sex, .height, .weight: []
         }
     }
 
@@ -36,6 +42,10 @@ enum HealthDataScope: CaseIterable, Sendable {
         case .workouts: [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)]
         case .steps: [HKQuantityType(.stepCount)]
         case .bodyMeasurements: [HKQuantityType(.bodyMass), HKQuantityType(.bodyFatPercentage)]
+        case .dateOfBirth: [HKCharacteristicType(.dateOfBirth)]
+        case .sex: [HKCharacteristicType(.biologicalSex)]
+        case .height: [HKQuantityType(.height)]
+        case .weight: [HKQuantityType(.bodyMass)]
         }
     }
 }
@@ -46,5 +56,11 @@ protocol HealthService {
     func requestAuthorisation(for scope: HealthDataScope) async throws
     func needsAuthorisationForRequiredTypes() -> Bool
     func getHealthStore() -> HKHealthStore
+    // The reads behind onboarding's "Fill from Apple Health". Each returns nil when Apple Health
+    // holds nothing or read access was refused: HealthKit does not tell the two apart.
+    func readDateOfBirth() -> Date?
+    func readSex() -> Gender?
+    func readLatestHeightCentimeters() async -> Double?
+    func readLatestWeightKilograms() async -> Double?
 }
 #endif

@@ -35,9 +35,9 @@ class ActivityPresenter {
     
     func onContinuePressed(delegate: ActivityDelegate) {
         guard let activityLevel = selectedActivityLevel else { return }
-        let delegate = CardioFitnessDelegate(delegate: delegate, activityLevel: activityLevel)
+        let delegate = ExpenditureDelegate(delegate: delegate, activityLevel: activityLevel)
         interactor.trackEvent(event: Event.navigate)
-        router.showCardioFitnessView(delegate: delegate)
+        router.showExpenditureView(delegate: delegate)
     }
     
 #if DEV || MOCK

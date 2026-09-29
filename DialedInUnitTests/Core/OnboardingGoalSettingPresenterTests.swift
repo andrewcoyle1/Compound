@@ -221,8 +221,53 @@ struct OnboardingTargetWeightPresenterTests {
 
         let range = screen.presenter.kilogramRange(delegate: TargetWeightDelegate(overarchingObjective: .loseWeight))
 
-        #expect(range.lowerBound == 30)
+        // The bottom was a flat 30 kg for everybody. It is now a BMI of 18.5 for this user's
+        // 180 cm (decision 3a): 18.5 x 1.8 x 1.8 = 59.94 kg, rounded up so no stop is below it.
+        #expect(range.lowerBound == 60)
         #expect(range.upperBound == 80)
+    }
+
+    @Test("The pound wheel stops at the same BMI, rounded up")
+    func testThePoundWheelStopsAtTheSameBMI() {
+        let screen = makeScreen(user: goalUser(weightKg: 80, weightUnit: .pounds))
+
+        let range = screen.presenter.poundRange(delegate: TargetWeightDelegate(overarchingObjective: .loseWeight))
+
+        // 59.94 kg is 132.14 lb.
+        #expect(range.lowerBound == 133)
+    }
+
+    @Test("Without a height the wheel keeps its old floor and gives no reason")
+    func testWithoutAHeightTheWheelKeepsItsOldFloor() {
+        let user = UserModel(userId: "user-1", submittedWeightKilograms: 80, submittedWeightUnitPreference: .kilograms)
+        let screen = makeScreen(user: user)
+        let delegate = TargetWeightDelegate(overarchingObjective: .loseWeight)
+
+        #expect(screen.presenter.kilogramRange(delegate: delegate).lowerBound == 30)
+        #expect(screen.presenter.lowestTargetMessage(delegate: delegate) == nil)
+    }
+
+    @Test("The screen says why the wheel stops, only when losing")
+    func testTheScreenSaysWhyTheWheelStops() {
+        let screen = makeScreen()
+        screen.presenter.onAppear(delegate: TargetWeightDelegate(overarchingObjective: .loseWeight))
+
+        let message = screen.presenter.lowestTargetMessage(delegate: TargetWeightDelegate(overarchingObjective: .loseWeight))
+        #expect(message?.contains("60 kg") == true)
+        #expect(screen.presenter.lowestTargetMessage(delegate: TargetWeightDelegate(overarchingObjective: .gainWeight)) == nil)
+    }
+
+    /// Someone already at or under the floor gets a one-stop wheel above their own weight. That is
+    /// not a target to lose towards, so Continue stays off and the screen says why.
+    @Test("A weight already under the floor offers no target to lose towards")
+    func testAWeightUnderTheFloorOffersNoTarget() {
+        let screen = makeScreen(user: goalUser(weightKg: 55))
+        let delegate = TargetWeightDelegate(overarchingObjective: .loseWeight)
+        screen.presenter.onAppear(delegate: delegate)
+
+        #expect(screen.presenter.kilogramRange(delegate: delegate) == 60...60)
+        #expect(screen.presenter.canContinue == false)
+        #expect(screen.presenter.lowestTargetMessage(delegate: delegate)?.contains("already") == true)
     }
 
     /// And someone gaining cannot be offered one below it.

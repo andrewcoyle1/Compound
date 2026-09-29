@@ -23,7 +23,8 @@ final class OnboardingUITests: XCTestCase {
         setUpTraining(app)
         setUpDiet(app)
 
-        app.waitFor(app.buttons["Skip for now"].firstMatch).tap()
+        // The Strava step left onboarding (it is in Profile > Integrations), so the diet plan
+        // leads straight to the completion screen.
         app.continueFrom("Onboarding Complete!")
         app.waitFor(app.tabBars.firstMatch)
     }
@@ -44,20 +45,20 @@ final class OnboardingUITests: XCTestCase {
         app.waitFor(app.textFields.firstMatch).tap()
         app.textFields.firstMatch.typeText("Test")
         app.continueFrom("Your Name")
-        app.choose("Male", on: "Select your gender")
+        app.choose("Male", on: "Sex for Calorie Estimate")
         app.continueFrom("When Were You Born?")
         app.continueFrom("How Tall Are You?")
         app.continueFrom("What's Your Weight?")
         app.choose("Never", on: "Do You Work Out?")
-        app.choose("Sedentary", on: "What's your daily activity level outside of exercise?")
-        app.choose("Beginner", on: "How would you rate your cardiovascular fitness?")
+        // No cardio fitness step any more: activity leads straight to the expenditure estimate.
+        app.choose("Sedentary", on: "How Active Are You?")
         app.continueFrom("kcal/day")
         let disclaimer = app.waitFor(app.switches["HealthDisclaimerToggle"].firstMatch)
         // The identifier sits on the labelled row; the control that flips is the switch inside it.
         disclaimer.switches.firstMatch.tap()
         app.switches["HealthPrivacyPolicyToggle"].firstMatch.switches.firstMatch.tap()
+        // Continue saves the consent directly; the confirmation alert that followed is gone.
         app.continueFrom("Health Disclaimer")
-        app.waitFor(app.buttons["I Agree & Continue"].firstMatch).tap()
     }
 
     /// Lose weight, one target below the 70 kg default, at the default rate.
@@ -96,7 +97,7 @@ final class OnboardingUITests: XCTestCase {
     private func setUpDiet(_ app: XCUIApplication) {
         app.continueFrom("Diet Program")
         app.choose("Balanced", on: nil)
-        app.choose("Standard Floor (Recommended)", on: nil)
+        // Onboarding applies the standard calorie floor without a step of its own.
         app.choose("Distribute Evenly", on: nil)
         app.choose("Low", on: nil)
         app.continueFrom("Estimated TDEE", expected: false)

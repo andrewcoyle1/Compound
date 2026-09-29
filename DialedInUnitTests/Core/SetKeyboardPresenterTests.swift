@@ -57,6 +57,25 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.text == "0.52")
     }
 
+    /// A comma region types and shows a comma, and the weight still lands. `Double("82,5")` is nil,
+    /// so the old parse would have dropped a decimal weight typed with the region's separator.
+    @Test func aCommaRegionTypesAndReadsItsOwnSeparator() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "es_ES")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(keyboard.decimalSeparator == ",")
+
+        type("82.5", into: keyboard)
+        #expect(keyboard.text == "82,5")
+        #expect(box.value.weightKg == 82.5)
+
+        keyboard.close()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(keyboard.text == "82,5")
+        #expect(WeightStepper.format(82.5, locale: Locale(identifier: "es_ES")) == "82,5")
+    }
+
     @Test func repsTakeDigitsOnly() {
         let box = set()
         let keyboard = SetKeyboardPresenter()

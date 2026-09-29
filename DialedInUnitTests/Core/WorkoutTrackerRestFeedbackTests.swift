@@ -302,6 +302,10 @@ struct WorkoutTrackerRestFeedbackTests {
 
         #expect(screen.interactor.playedSounds == [.restComplete])
         #expect(screen.interactor.playedHaptics.count == 1)
+        // Not the `.success` a logged set plays, so the two can be told apart.
+        let isWarning: Bool
+        if case .warning? = screen.interactor.playedHaptics.first { isWarning = true } else { isWarning = false }
+        #expect(isWarning)
     }
 
     /// The two are separate settings because a gym is a place where one is wanted without the

@@ -13,6 +13,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     @State var presenter: WorkoutTrackerPresenter
 
@@ -70,7 +71,8 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     // MARK: - Workout Overview Card
     private var workoutOverviewCard: some View {
         Section {
-            LazyVGrid(columns: [GridItem(), GridItem(), GridItem()], alignment: .center, spacing: Spacing.l) {
+            // Two columns at accessibility sizes, where three squeezed each stat to a word a line.
+            LazyVGrid(columns: Array(repeating: GridItem(), count: dynamicTypeSize.isAccessibilitySize ? 2 : 3), alignment: .center, spacing: Spacing.l) {
                 Stat(value: presenter.exercisesCount, label: String(localized: "Current Workout"), size: .small, alignment: .center)
                 Stat(value: presenter.completedSetsFraction, label: String(localized: "Sets Completed"), size: .small, alignment: .center)
                 TimelineView(.periodic(from: presenter.workoutSession.dateCreated, by: 1)) { context in
@@ -167,44 +169,63 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     }
     
     // MARK: - Timer Header
+    /// Drawn only while a rest runs (`isRestActive`), with the same +15s and Skip the Lock Screen
+    /// offers, so ending a rest early does not mean locking the phone.
     private var timerHeaderView: some View {
-        HStack {
+        HStack(spacing: Spacing.s) {
             let now = Date()
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Label("Rest Timer", systemImage: Symbol.rest)
                     .font(.label)
                     .foregroundStyle(.secondary)
-                if let end = presenter.restEndTime,
-                   now < end {
-                    Text(timerInterval: now...end)
-                        .font(.metricLarge)
-                } else {
-                    Text((presenter.workoutSession.dateCreated), style: .timer)
-                        .font(.metricLarge)
-                }
+                Text(timerInterval: now...max(presenter.restEndTime ?? now, now))
+                    .font(.metricLarge)
             }
-            
+            .accessibilityElement(children: .combine)
+
             Spacer()
+
+            Button {
+                presenter.onAddRestTimePressed()
+            } label: {
+                Text("+15s")
+                    .tapTarget()
+            }
+            .accessibilityLabel("Add 15 seconds")
+
+            Button {
+                presenter.onSkipRestPressed()
+            } label: {
+                Text("Skip")
+                    .tapTarget()
+            }
+            .accessibilityLabel("Skip rest")
         }
+        .font(.rowTitle.weight(.semibold))
+        .buttonStyle(.plain)
+        .foregroundStyle(.tint)
         .padding(Spacing.s)
         .padding(.horizontal, Spacing.s)
-        .accessibilityElement(children: .combine)
         .glassEffect()
         .padding()
     }
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        // A chevron rather than `role: .close`: the workout keeps running behind it. A full-screen
+        // cover cannot be swiped away, so this is the visible way out.
+        ToolbarItem(placement: .cancellationAction) {
+            Button {
+                presenter.minimizeSession()
+            } label: {
+                Image(systemName: "chevron.down")
+            }
+            .accessibilityLabel("Minimize workout")
+        }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 // No "Resume Workout": the tracker has no paused state to resume from, so the
                 // item did nothing. Reinstate it alongside a real pause.
-                Button {
-                    presenter.minimizeSession()
-                } label: {
-                    Label("Minimize Tracker", systemImage: "chevron.down")
-                }
-
                 Button {
                     presenter.onFinishPressed()
                 } label: {
@@ -226,7 +247,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 Button(role: .destructive) {
                     presenter.onDiscardWorkoutPressed()
                 } label: {
-                    Label("Delete Workout", systemImage: Symbol.delete)
+                    Label("Discard Workout", systemImage: Symbol.delete)
                 }
             } label: {
                 Image(systemName: Symbol.more)
@@ -256,8 +277,23 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
+    /// The screen id the tracker is presented under, so a second request can see it is up.
+    static let workoutTrackerScreenId = "workout-tracker"
+
+    /// Every way into the tracker comes through here: the Live Activity, the widget, Training,
+    /// Search. A tap on the Live Activity while the tracker is already open must not stack a
+    /// second tracker on it, and with no workout under way the builder throws, which used to
+    /// present an empty cover with no way out.
     func showWorkoutTrackerView() {
-        router.showScreen(.fullScreenCover) { router in
+        guard !router.activeScreens.allScreens.contains(where: { $0.id == Self.workoutTrackerScreenId }) else { return }
+        guard builder.interactor.activeSession != nil else {
+            showSimpleAlert(
+                title: String(localized: "No Workout in Progress"),
+                subtitle: String(localized: "Start a workout from Training.")
+            )
+            return
+        }
+        router.showScreen(.fullScreenCover, id: Self.workoutTrackerScreenId) { router in
             try? builder.workoutTrackerView(router: router)
         }
     }

@@ -110,7 +110,7 @@ struct SetPosition: Equatable, Hashable, Sendable {
     }
 
     var label: String {
-        "\(isWarmup ? "Warmup" : "Set") \(index) of \(total)"
+        isWarmup ? String(localized: "Warmup \(index) of \(total)") : String(localized: "Set \(index) of \(total)")
     }
 }
 
@@ -161,11 +161,12 @@ enum LiveActivityFormat {
     }
 
     /// `400 m`, or kilometres above 1000 m (`1.50 km`), matching `UnitConversion.formatDistance`.
+    /// In the region's decimal separator.
     static func distance(_ meters: Double) -> String {
         if meters >= 1000 {
-            return String(format: "%.2f km", meters / 1000)
+            return "\((meters / 1000).formatted(.number.precision(.fractionLength(2)).grouping(.never))) km"
         }
-        return String(format: "%.0f m", meters)
+        return "\(meters.formatted(.number.precision(.fractionLength(0)).grouping(.never))) m"
     }
 
     /// `1:30`, `10:00` — minutes and zero-padded seconds, as the tracker shows durations.
@@ -174,12 +175,10 @@ enum LiveActivityFormat {
         return "\(clamped / 60):\(String(format: "%02d", clamped % 60))"
     }
 
+    /// One decimal at most, in the region's separator, and none when it is zero.
     private static func number(_ value: Double) -> String {
         let rounded = (value * 10).rounded() / 10
-        if rounded == rounded.rounded() {
-            return String(format: "%.0f", rounded)
-        }
-        return String(format: "%.1f", rounded)
+        return rounded.formatted(.number.precision(.fractionLength(0...1)).grouping(.never))
     }
 }
 

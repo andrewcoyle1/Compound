@@ -15,12 +15,16 @@ extension WorkoutTrackerPresenter {
         case startRestTimerCalled(inputDuration: Int, resolvedDuration: Int)
         case startRestTimerAfterCall(restEndTime: Date?)
         case progressionAdjusted(exerciseId: String, setsChanged: Int)
+        case restExtended(seconds: Int)
+        case restSkipped
 
         var eventName: String {
             switch self {
             case .startRestTimerCalled:     return "WorkoutTracker_StartRestTimer_Called"
             case .startRestTimerAfterCall:  return "WorkoutTracker_StartRestTimer_AfterCall"
             case .progressionAdjusted:      return "WorkoutTracker_Progression_Adjusted"
+            case .restExtended:             return "WorkoutTracker_Rest_Extended"
+            case .restSkipped:              return "WorkoutTracker_Rest_Skipped"
             }
         }
 
@@ -41,6 +45,10 @@ extension WorkoutTrackerPresenter {
                     "exercise_id": exerciseId,
                     "sets_changed": setsChanged
                 ]
+            case .restExtended(let seconds):
+                return ["seconds": seconds]
+            case .restSkipped:
+                return nil
             }
         }
 

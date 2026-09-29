@@ -212,9 +212,10 @@ enum WeightStepper {
         return (converted * 1000).rounded() / 1000
     }
 
-    /// Two decimals at most, and whole numbers without ".0".
-    static func format(_ value: Double) -> String {
+    /// Two decimals at most, whole numbers without a trailing zero, in the region's decimal
+    /// separator ("82,5" in Spanish) and without grouping, so it types back in as shown.
+    static func format(_ value: Double, locale: Locale = .current) -> String {
         let rounded = (value * 100).rounded() / 100
-        return rounded == rounded.rounded() && abs(rounded) < 1e15 ? String(Int(rounded)) : String(rounded)
+        return rounded.formatted(.number.precision(.fractionLength(0...2)).grouping(.never).locale(locale))
     }
 }

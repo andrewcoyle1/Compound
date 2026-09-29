@@ -121,8 +121,9 @@ class LiveActivityManager: LiveActivityUpdating {
         
         lastContentState = finalState
         
-        // Use different dismissal policies based on completion state
-        let dismissalPolicy: ActivityUIDismissalPolicy = isCompleted ? .default : .immediate
+        // A finished workout's summary stays for half an hour, the length the HIG suggests, rather
+        // than the system default of up to four; a discarded one goes at once.
+        let dismissalPolicy: ActivityUIDismissalPolicy = isCompleted ? .after(.now + 30 * 60) : .immediate
 
         guard let activity = resolveActivity(sessionId: session.id) else {
             logger.trackEvent(event: Event.endLiveActivityFail(error: LiveActivityError.noUpdatableActivity))

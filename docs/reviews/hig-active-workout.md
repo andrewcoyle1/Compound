@@ -32,6 +32,31 @@ Line numbers are from the working tree at review time. `WorkoutTrackerPresenter.
 `WorkoutTrackerInteractor.swift` and `PushManager.swift` had uncommitted edits by someone else
 while this was written, so their numbers may have moved by a few lines.
 
+## Resolution (2026-09-28, branch hig/workout)
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | skipped: decision | Swap still replaces logged sets. |
+| 2 | skipped: decision | Notification scheduling untouched; the permission request in `PushManager` stays. The in-app +15s moves the rest through `startRest` and, like the Lock Screen's, leaves the notification where it was. |
+| 3 | fixed | Complete and note buttons pad their label with `.tapTarget()`; set number, add set, the exercise capsules, Prev/Auto and the unit menus use `.controlSize(.large)` glass. Set and Done columns 44 pt, Prev 78 pt. Unmeasured. |
+| 4 | fixed | `widgetURL` on the banner and the island. `showWorkoutTrackerView()` (every entry point, including the tab bar's deep link) presents under a fixed id and returns when that screen is already up. |
+| 5 | fixed | +15s and Skip on the rest pill, 44 pt targets; the elapsed-time fallback is gone. |
+| 6 | skipped: decision | |
+| 7 | skipped: decision | |
+| 8 | fixed | `chevron.down` "Minimize workout" in `.cancellationAction`; the menu item removed. |
+| 9 | skipped: decision | Only text weights changed (finding 14). |
+| 10 | skipped: decision | The Done prompt and superset alert are unchanged. The unit-change alerts became confirmation dialogs, as `hig-handoffs.md` asked. |
+| 11 | skipped: decision | |
+| 12 | fixed | Keys and `String(localized:)` throughout; Spanish added to the widget catalog, "%lld exercises" plural, "days streak" reads "day streak" in English. |
+| 13 | fixed | "Discard Workout" / "Discard Workout?" / "The sets you logged will not be saved." |
+| 14 | fixed | Compact trailing `.caption.weight(.semibold)`, primary, monospaced; banner body medium. |
+| 15 | fixed | `.after(.now + 30 * 60)`. |
+| 16 | skipped: decision | |
+| 17 | fixed | `Image(decorative:)`; island image and ring labelled; progress line has a label and value. |
+| 18 | fixed | The keyboard sits in a `UIInputView` adopting `UIInputViewAudioFeedback`; every key plays the input click. |
+| 19 | fixed | Verb-first descriptions, Streak and Weekly Goal link to `compound://tab/training`, `widgetAccentable` on the flame, Today label, play icon and ring. The ring track's opacity is unchanged. |
+| Smaller | fixed | Rest-over haptic is `.warning`; keypad shows the region's separator and parses with `Double.typed`; summary volume in the user's unit and locale formatting; 14 pt margin; `keylineTint`; "Fills this set" hints; the validation alerts reworded. |
+
 ## Findings
 
 ### 1. Swapping an exercise throws away the sets already logged for it, without asking

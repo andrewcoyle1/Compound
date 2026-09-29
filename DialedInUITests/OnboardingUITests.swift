@@ -96,7 +96,7 @@ final class OnboardingUITests: XCTestCase {
     private func setUpDiet(_ app: XCUIApplication) {
         app.continueFrom("Diet Program")
         app.choose("Balanced", on: nil)
-        app.choose("Standard Floor (Recommended)", on: nil)
+        // Onboarding applies the standard calorie floor without a step of its own.
         app.choose("Distribute Evenly", on: nil)
         app.choose("Low", on: nil)
         app.continueFrom("Estimated TDEE", expected: false)

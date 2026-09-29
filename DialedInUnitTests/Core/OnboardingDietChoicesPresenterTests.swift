@@ -60,9 +60,11 @@ struct OnboardingPreferredDietPresenterTests {
     private final class Router: PreferredDietRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var delegates: [CalorieFloorDelegate] = []
+        private(set) var distributionDelegates: [CalorieDistributionDelegate] = []
 
         func showDevSettingsView() { }
         func showCalorieFloorView(delegate: CalorieFloorDelegate) { delegates.append(delegate) }
+        func showCalorieDistributionView(delegate: CalorieDistributionDelegate) { distributionDelegates.append(delegate) }
     }
 
     /// Nothing picked, nothing to carry — moving on would build a plan around a default the user
@@ -76,6 +78,7 @@ struct OnboardingPreferredDietPresenterTests {
         presenter.navigateToCalorieFloor()
 
         #expect(router.delegates.isEmpty)
+        #expect(router.distributionDelegates.isEmpty)
         // A navigation event logged without a navigation would read as a step the user completed.
         #expect(interactor.trackedEventNames.isEmpty)
     }
@@ -92,8 +95,25 @@ struct OnboardingPreferredDietPresenterTests {
 
         presenter.navigateToCalorieFloor()
 
-        #expect(router.delegates.first?.preferredDiet == diet)
+        // In onboarding the next question is the calorie distribution: the floor step is skipped
+        // (decision 3b), so the diet arrives there rather than at the floor screen.
+        #expect(router.distributionDelegates.first?.preferredDiet == diet)
         #expect(interactor.trackedEventNames == ["Onboarding_PrefDiet_Navigate"])
+    }
+
+    /// Decision 3b: onboarding applies the standard 1,200 kcal floor and never shows the step
+    /// that offers 800 kcal. It was the next screen for everybody.
+    @Test("Test Onboarding Applies The Standard Floor Without Asking")
+    func testOnboardingAppliesTheStandardFloorWithoutAsking() {
+        let router = Router()
+        let presenter = PreferredDietPresenter(interactor: Interactor(), router: router)
+        presenter.selectedDiet = .balanced
+
+        presenter.navigateToCalorieFloor()
+
+        #expect(router.delegates.isEmpty)
+        #expect(router.distributionDelegates.map(\.calorieFloor) == [.standard])
+        #expect(router.distributionDelegates.first?.isFromSettings == false)
     }
 
     /// The same screens are reachable from settings to rebuild an existing plan, and that flag

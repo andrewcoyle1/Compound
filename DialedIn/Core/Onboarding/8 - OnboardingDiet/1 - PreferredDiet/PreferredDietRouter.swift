@@ -11,6 +11,7 @@ protocol PreferredDietRouter: GlobalRouter {
 func showDevSettingsView()
 #endif
     func showCalorieFloorView(delegate: CalorieFloorDelegate)
+    func showCalorieDistributionView(delegate: CalorieDistributionDelegate)
 }
 
 extension CoreRouter: PreferredDietRouter { }

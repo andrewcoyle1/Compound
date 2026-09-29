@@ -131,3 +131,47 @@ Each presenter exposes `hasUnsavedChanges`. Its view adds
 - A toast raised while a sheet is up may appear behind it, because the overlay is on the root view.
 - The navigation and tab bars may still be tappable above the loading overlay.
 - Calendar month titles no longer stay pinned while scrolling.
+
+## From the second batch (profile, active workout, training library)
+
+### Managers and root (central, not an area)
+
+- **Account deletion does not revoke the Sign in with Apple token.**
+  `Root/RIBs/Core/CoreInteractor.swift:237` passes `revokeToken: false`. Do not simply switch it
+  on: in the `SwiftfulAuthenticatingFirebase` fork, `deleteAccountWithReauthentication` removes
+  the user document first and revokes second, so a failed revocation would leave a half-deleted
+  account. Fix the fork first (wrap the revocation in `do/catch`, log, carry on to
+  `user.delete()`), then pass `revokeToken: auth.authProviders.contains(.apple)`.
+- **Strava** (`Managers/Strava/StravaManager.swift`): make `isConnected` a stored property set in
+  `storeTokens` and `disconnect`; call `disconnect()` from `CoreInteractor.signOut()` and
+  `deleteAccount()`; deauthorize at Strava (`POST /oauth/deauthorize`); rename the test activity
+  "DialedIn Test Upload" to Compound.
+- **Rating**: add an App Store ID to `Utilities/Constants.swift` once the listing exists and open
+  the write-review URL from `ProfilePresenter.onRatingsButtonPressed`. `CoreRouter.showRatingsModal`
+  and `CoreBuilder.ratingsModal` have no caller from Profile any more; delete them if nothing
+  else uses them.
+- `Root/RIBs/Core/CoreRouter.swift:19`: `showWarmupSetInfoModal`'s `primaryButtonAction` parameter
+  is now always `{ }`. Remove it from `CoreRouter`, `SetTrackerRouter`, `SetTrackerRowRouter` and
+  the test doubles.
+- `Components/DesignSystem/Symbols.swift`: add `Symbol.distance`. The Distance Unit row borrows
+  `Symbol.cardio`.
+- `Components/Views/DashboardCard.swift`: `contentHeight` is still fixed, so the Training today
+  card can clip at accessibility sizes.
+- The catalog string "Unable to add" is now unused.
+
+### Packages
+
+- **SwiftfulPurchasing fork**: make `StoreKitPurchaseService.Error` public with a distinct
+  `pending` case. `PaywallPresenter.outcome(of:)` matches the error by case name until then.
+- **QuickCharts**: see the items marked "needs a package change" in `hig-analytics-charts.md`.
+
+### Assumptions to check when the unit suite runs
+
+- The paywall tests build `NSError(domain: "RevenueCat.ErrorCode", …)` by hand.
+- The Food Log hour test strips the narrow no-break space iOS puts before AM/PM.
+
+### Unverified, needs a device
+
+- The set tracker's new control sizes and column widths (Set and Done 44 pt, Prev 78 pt).
+- The set keyboard's background and sizing.
+- The Live Activity's tinted look, and that tapping it opens the tracker.

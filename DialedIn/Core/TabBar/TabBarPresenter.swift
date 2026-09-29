@@ -33,8 +33,6 @@ class TabBarPresenter {
     var showTabAccessory: Bool {
         activeSession != nil || draftMeal != nil
     }
-    
-    var tabAccessoryWidth: CGFloat = 400
 
     /// Which tab is showing. Held here so a `compound://` link or a push notification can change
     /// it. Keyed by the tab itself, not its title: the titles are translated, so in Spanish a

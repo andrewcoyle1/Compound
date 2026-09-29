@@ -65,7 +65,7 @@ class ShareToFollowerPresenter {
                 isSending = false
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.sendFail(error: error))
-                router.showSimpleAlert(title: String(localized: "Unable to share"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Share"), subtitle: String(localized: "Please try again."))
             }
         }
     }

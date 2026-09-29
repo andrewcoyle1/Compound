@@ -31,7 +31,7 @@ struct SharedItemView: View {
                     ForEach(template.exercises) { item in
                         ListRow(
                             title: item.exercise.name,
-                            imageName: item.exercise.imageURL ?? Constants.randomImage,
+                            imageName: item.exercise.imageURL,
                             resizingMode: .fit,
                             accessory: .value(String(localized: "\(item.setTargets.count) sets"))
                         )
@@ -59,10 +59,10 @@ struct SharedItemView: View {
                 CallToActionButton(isPrimaryAction: true, isLoading: presenter.isWorking) {
                     presenter.onAddToLibraryPressed()
                 } label: {
-                    Text("Add to my library")
+                    Text("Add to Library")
                 }
                 .disabled(presenter.isWorking)
-                Button("Dismiss") {
+                Button("Decline") {
                     presenter.onDismissSharePressed()
                 }
                 .disabled(presenter.isWorking)

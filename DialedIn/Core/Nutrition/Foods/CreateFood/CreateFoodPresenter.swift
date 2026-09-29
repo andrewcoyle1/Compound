@@ -104,6 +104,10 @@ class CreateFoodPresenter {
         // `#if canImport` pair duplicating each navigation call.
         let image = selectedImageData.flatMap { PlatformImage(data: $0) }
 
+        // swiftlint:disable:next todo
+        // TODO: the public food database contribution is not built yet, so
+        // `contributeToPublicDatabase` is always false — its toggle is hidden in
+        // `CreateFoodView`. Both return once the feature ships.
         if contributeToPublicDatabase {
             router.showFoodPackagingView(
                 delegate: FoodPackagingDelegate(

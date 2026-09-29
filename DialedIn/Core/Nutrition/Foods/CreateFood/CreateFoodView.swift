@@ -31,7 +31,10 @@ struct CreateFoodView: View {
             foodNameSection
             brandNameSection
             barcodeSection
-            submitToPublicDatabaseSection
+            // swiftlint:disable:next todo
+            // TODO: the public food database contribution is not built yet. Restore
+            // `submitToPublicDatabaseSection` here, and `FoodPackagingView` in
+            // `CreateFoodPresenter.onNextPressed`, when it is.
         }
         .navigationTitle("Create Food")
         .navigationBarTitleDisplayMode(.inline)

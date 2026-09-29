@@ -9,11 +9,30 @@ struct MuscleGroupsView: View {
     @State var presenter: MuscleGroupsPresenter
     let delegate: MuscleGroupsDelegate
     
+    private enum BodyRegion {
+        case upper, lower
+
+        var header: String {
+            switch self {
+            case .upper: return String(localized: "Upper")
+            case .lower: return String(localized: "Lower")
+            }
+        }
+
+        /// Each region needs its own literal, not a lowercased title, so it can be translated.
+        var emptyMessage: String {
+            switch self {
+            case .upper: return String(localized: "No upper body muscles to show yet.")
+            case .lower: return String(localized: "No lower body muscles to show yet.")
+            }
+        }
+    }
+
     var body: some View {
         List {
             Group {
-                muscleSection(header: String(localized: "Upper"), muscles: presenter.upperMuscles)
-                muscleSection(header: String(localized: "Lower"), muscles: presenter.lowerMuscles)
+                muscleSection(region: .upper, muscles: presenter.upperMuscles)
+                muscleSection(region: .lower, muscles: presenter.lowerMuscles)
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)
@@ -45,11 +64,11 @@ struct MuscleGroupsView: View {
     }
     
     @ViewBuilder
-    private func muscleSection(header: String, muscles: [Muscles]) -> some View {
+    private func muscleSection(region: BodyRegion, muscles: [Muscles]) -> some View {
         Section {
             AnalyticsCardGrid {
                 if muscles.isEmpty {
-                    AnalyticsEmptyCard(message: String(localized: "No \(header.lowercased()) body muscles to show yet."))
+                    AnalyticsEmptyCard(message: region.emptyMessage)
                 } else {
                     ForEach(muscles, id: \.self) { muscle in
                         muscleCard(muscle: muscle)
@@ -57,7 +76,7 @@ struct MuscleGroupsView: View {
                 }
             }
         } header: {
-            SectionHeaderView(title: header)
+            SectionHeaderView(title: region.header)
         }
     }
 

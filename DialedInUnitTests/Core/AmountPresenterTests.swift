@@ -269,13 +269,14 @@ struct MealItemAmountPresenterTests {
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
-    /// Logging a food and correcting one are different jobs, so the button says which.
-    @Test("Test Adding Logs And Editing Saves")
-    func testAddingLogsAndEditingSaves() {
+    /// Adding a food to the plate and correcting a logged one are different jobs, so the button
+    /// says which. "Add" rather than "Log": the meal itself is logged later, from Add Meal.
+    @Test("Test Adding Adds And Editing Saves")
+    func testAddingAddsAndEditingSaves() {
         let adding = MealItemAmountViewDelegate(mode: .addFood(food()), onConfirm: { _ in })
         let editing = MealItemAmountViewDelegate(mode: .editItem(loggedItem()), onConfirm: { _ in })
 
-        #expect(adding.confirmTitle == String(localized: "Log"))
+        #expect(adding.confirmTitle == String(localized: "Add"))
         #expect(editing.confirmTitle == String(localized: "Save"))
     }
 

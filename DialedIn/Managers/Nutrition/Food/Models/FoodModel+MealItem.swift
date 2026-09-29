@@ -50,3 +50,16 @@ extension FoodModel {
         )
     }
 }
+
+extension Array where Element == MealItemModel {
+    /// How many times this food is already on the plate, for the checkmark-and-count a picker row
+    /// shows in place of "+" once a food has been added.
+    func addedCount(forIngredientId ingredientId: String) -> Int {
+        filter { $0.sourceType == .ingredient && $0.sourceId == ingredientId }.count
+    }
+
+    /// The recipe equivalent of `addedCount(forIngredientId:)`.
+    func addedCount(forRecipeId recipeId: String) -> Int {
+        filter { $0.sourceType == .recipe && $0.sourceId == recipeId }.count
+    }
+}

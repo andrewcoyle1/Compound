@@ -41,7 +41,7 @@ struct MealItemAmountViewDelegate {
     /// verbs.
     var confirmTitle: String {
         switch mode {
-        case .addFood: return String(localized: "Log")
+        case .addFood: return String(localized: "Add")
         case .editItem: return String(localized: "Save")
         }
     }

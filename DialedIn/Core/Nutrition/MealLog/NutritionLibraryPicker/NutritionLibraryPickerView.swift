@@ -40,9 +40,12 @@ struct NutritionLibraryPickerView<
                     presenter.navToIngredientAmount(food, onPick: delegate.onPick)
                 }))
             case .search:
-                foodItemSearch(FoodItemSearchDelegate(onFoodSelected: { food in
-                    presenter.navToIngredientAmount(food, onPick: delegate.onPick)
-                }))
+                foodItemSearch(FoodItemSearchDelegate(
+                    onFoodSelected: { food in
+                        presenter.navToIngredientAmount(food, onPick: delegate.onPick)
+                    },
+                    mealItems: delegate.items
+                ))
             case .aiScanner:
                 foodPhotoScanner(FoodPhotoScannerDelegate(onPick: delegate.onPick))
             case .quickAdd:
@@ -72,6 +75,10 @@ struct NutritionLibraryPickerView<
                 Button(role: .close) {
                     presenter.dismissScreen()
                 }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Text("\(delegate.items.wrappedValue.count) on plate")
+                    .foregroundStyle(.secondary)
             }
         }
     }

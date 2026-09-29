@@ -52,9 +52,12 @@ class IngredientAmountPresenter {
         self.router = router
     }
 
+    /// Adds the food to the plate and returns to the list it was picked from, so a second tap on
+    /// the same row cannot silently add a second copy.
     func add(ingredient: FoodModel, onConfirm: @escaping (MealItemModel) -> Void) {
         interactor.playHaptic(option: .success)
         onConfirm(ingredient.mealItem(amount: amountValue, unit: selectedUnit))
+        router.dismissScreen()
     }
 
     func dismissScreen() {

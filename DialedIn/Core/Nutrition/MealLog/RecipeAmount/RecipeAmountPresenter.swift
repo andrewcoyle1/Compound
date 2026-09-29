@@ -66,6 +66,7 @@ class RecipeAmountPresenter {
         )
         interactor.playHaptic(option: .success)
         onConfirm(item)
+        router.dismissScreen()
     }
 
 #if DEV || MOCK

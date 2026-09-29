@@ -146,6 +146,16 @@ extension AppViewForUITesting {
             }),
             ("STARTSCREEN_FOODS", { builder.foodsView(router: $0).any() }),
             ("STARTSCREEN_FOOD_DETAIL", { builder.foodDetailView(router: $0, delegate: FoodDetailDelegate(food: .mock)).any() }),
+            ("STARTSCREEN_CREATE_FOOD", { builder.createFoodView(router: $0, delegate: CreateFoodDelegate()).any() }),
+            ("STARTSCREEN_MEAL_DESCRIBE", { builder.mealDescribeView(router: $0, delegate: MealDescribeDelegate(onPick: { _ in })).any() }),
+            // One item already on the plate, so the "N on plate" toolbar text and a quick-add
+            // checkmark have something to show.
+            ("STARTSCREEN_NUTRITION_LIBRARY_PICKER", { router in
+                builder.nutritionLibraryPickerView(
+                    router: router,
+                    delegate: NutritionLibraryPickerDelegate(items: .constant([.mock]), onPick: { _ in })
+                ).any()
+            }),
             ("STARTSCREEN_ANALYTICS", { builder.analyticsView(delegate: AnalyticsDelegate(), router: $0).any() }),
             ("STARTSCREEN_BODY_METRICS", { builder.bodyMetricsView(router: $0, delegate: BodyMetricsDelegate()).any() }),
             ("STARTSCREEN_SCALE_WEIGHT", { builder.scaleWeightView(router: $0, delegate: ScaleWeightDelegate()).any() }),

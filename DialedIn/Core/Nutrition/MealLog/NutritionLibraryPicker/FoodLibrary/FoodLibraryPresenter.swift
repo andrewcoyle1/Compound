@@ -55,6 +55,7 @@ class FoodLibraryPresenter {
     /// case it takes the same shortcut those tabs take.
     func onFavouriteFoodPressed(_ food: FoodModel, onPick: ((MealItemModel) -> Void)?) {
         if interactor.foodLogSettings.quickAddEnabled {
+            interactor.playHaptic(option: .success)
             onPick?(food.mealItem(amount: food.defaultPortionAmount))
             return
         }

@@ -6,7 +6,6 @@ protocol AccountInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     func signOut() async throws
     func deleteUserProfile()
-    func deleteAccount() async throws
     func updateProfileImageUrl(image: PlatformImage) async throws
     func updateUser(data: [String: any DMCodableSendable]) async throws
     func updatePrivacy(isPrivate: Bool) async throws

@@ -249,46 +249,10 @@ class AccountPresenter {
         router.dismissEnvironment()
     }
 
+    /// Opens the confirmation screen, which says what deleting does before anything is deleted.
     func onDeleteAccountPressed() {
         interactor.trackEvent(event: Event.deleteAccountStart)
-
-        router.showAlert(
-            title: String(localized: "Delete Account?"),
-            subtitle: String(localized: "This action is permanent and cannot be undone. Your data will be deleted from our server forever."),
-            buttons: {
-                AnyView(
-                    Group {
-                        Button("Delete", role: .destructive, action: {
-                            self.onDeleteAccountConfirmed()
-                        })
-                        // The alert had no way out but deleting the account.
-                        Button("Cancel", role: .cancel) { }
-                    }
-                )
-            }
-        )
-    }
-
-    /// Only ever called from the Delete button inside the confirmation above. Not private so that
-    /// the half of account deletion that runs after the user says yes can be tested: the alert
-    /// itself goes out through a `GlobalRouter` extension, which dispatches statically and so
-    /// cannot be intercepted.
-    func onDeleteAccountConfirmed() {
-        interactor.trackEvent(event: Event.deleteAccountStartConfirm)
-
-        Task {
-            do {
-                try await interactor.deleteAccount()
-                interactor.trackEvent(event: Event.deleteAccountSuccess)
-                dismissEnvironment()
-                try await Task.sleep(for: .seconds(1))
-                router.switchToOnboardingModule()
-
-            } catch {
-                router.showAlert(title: String(localized: "Unable to Delete Account"), error: error)
-                interactor.trackEvent(event: Event.deleteAccountFail(error: error))
-            }
-        }
+        router.showDeleteAccountView()
     }
 
 }
@@ -300,9 +264,6 @@ extension AccountPresenter {
         case signOutSuccess
         case signOutFail(error: Error)
         case deleteAccountStart
-        case deleteAccountStartConfirm
-        case deleteAccountSuccess
-        case deleteAccountFail(error: Error)
         case saveAccountPressed
         case onAppear(delegate: AccountDelegate)
         case onDisappear(delegate: AccountDelegate)
@@ -313,9 +274,6 @@ extension AccountPresenter {
             case .signOutSuccess:               return "Settings_SignOut_Success"
             case .signOutFail:                  return "Settings_SignOut_Fail"
             case .deleteAccountStart:           return "Settings_DeleteAccount_Start"
-            case .deleteAccountStartConfirm:    return "Settings_DeleteAccount_StartConfirm"
-            case .deleteAccountSuccess:         return "Settings_DeleteAccount_Success"
-            case .deleteAccountFail:            return "Settings_DeleteAccount_Fail"
             case .saveAccountPressed:           return "Settings_SaveAccount_Press"
             case .onAppear:                 return "AccountView_Appear"
             case .onDisappear:              return "AccountView_Disappear"
@@ -324,7 +282,7 @@ extension AccountPresenter {
         
         var parameters: [String: Any]? {
             switch self {
-            case .signOutFail(error: let error), .deleteAccountFail(error: let error):
+            case .signOutFail(error: let error):
                 return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
@@ -335,7 +293,7 @@ extension AccountPresenter {
         
         var type: LogType {
             switch self {
-            case .signOutFail, .deleteAccountFail:
+            case .signOutFail:
                 return .severe
             default:
                 return .analytic

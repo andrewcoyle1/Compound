@@ -88,7 +88,9 @@ struct CommentsView: View {
     }
 
     private func commentRow(_ comment: WorkoutSessionComment) -> some View {
-        HStack {
+        // Top-aligned: the avatar and the heart belong beside the name, not the middle of a row
+        // that the Reply button made taller.
+        HStack(alignment: .top) {
             // `Constants.randomImage` was the fallback here, so a commenter with no picture was
             // given someone else's at random, and a different one on every redraw.
             UserAvatarView(imageUrl: comment.authorImageUrl, size: ControlSize.thumbnail)
@@ -112,6 +114,10 @@ struct CommentsView: View {
                         .foregroundStyle(.secondary)
                         .frame(minHeight: ControlSize.row, alignment: .leading)
                         .contentShape(.rect)
+                        // The 44 pt hit area laid out as 28 pt: it overhangs the gap above and the
+                        // row's padding below, so Reply sits under the comment without a blank band.
+                        // More overhang would reach over the text and take taps meant for a mention.
+                        .padding(.vertical, -Spacing.s)
                 }
                 .buttonStyle(.plain)
             }

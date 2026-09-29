@@ -67,6 +67,19 @@ Add `-skip-testing:DialedInUITests` to anything routine. It is three tests, one 
 chronically flaky, and it needs its own simulator clone; it is also what makes a run report
 `** TEST FAILED **` when every unit test passed.
 
+**Simulator clones.** A parallel test run clones the destination simulator several times into
+`~/Library/Developer/XCTestDevices` and never removes the clones. On 29 Sep 2026 that had grown
+to 109 clones and about 250 GB, which macOS reports as "System Data".
+
+- Run `scripts/clean-simulators.sh` after a full-suite run, and before starting any fan-out. It
+  refuses to run while a test is in progress.
+- When several agents may be testing at once, each passes `-parallel-testing-enabled NO`, so it
+  creates no clones and cannot lose them to another agent's clean-up. A single suite is quick
+  enough serially.
+- `du` counts a clone's shared data once per clone, so its totals can exceed the size of the
+  disk. Judge by free space (`df -h /System/Volumes/Data`), and allow for deletion finishing in
+  the background.
+
 Read the counts from the result bundle:
 
 ```bash

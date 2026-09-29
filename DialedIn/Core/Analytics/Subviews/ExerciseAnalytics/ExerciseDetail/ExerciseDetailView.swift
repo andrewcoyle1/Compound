@@ -19,7 +19,7 @@ struct ExerciseDetailView: View {
     let delegate: ExerciseDetailDelegate
 
     var body: some View {
-        MetricDetailView(presenter: presenter)
+        MetricDetailView(presenter: presenter, showsCloseButton: !delegate.isPushed)
     }
 }
 

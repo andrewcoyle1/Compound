@@ -47,10 +47,14 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
 
     @State var presenter: Presenter
     var themeColor: Color?
+    /// Every one of these screens is pushed, where the system Back button closes it. Only a
+    /// screen that is also presented as a sheet asks for its own Close.
+    var showsCloseButton: Bool
 
-    init(presenter: Presenter, themeColor: Color? = nil) {
+    init(presenter: Presenter, themeColor: Color? = nil, showsCloseButton: Bool = false) {
         _presenter = State(initialValue: presenter)
         self.themeColor = themeColor
+        self.showsCloseButton = showsCloseButton
     }
 
     var body: some View {
@@ -123,9 +127,11 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
+        if showsCloseButton {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
             }
         }
 

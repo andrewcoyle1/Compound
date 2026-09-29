@@ -2,6 +2,15 @@
 
 Findings the reviewers marked as needing a product decision. Each line is the question; the finding has the detail.
 
+## Decided
+
+| Date | Decision | Settles |
+|---|---|---|
+| 2026-09-29 | **Glass buttons keep the system's size.** A glass `Button` only responds to taps on its visible glass, so its hit area cannot be widened without making the control bigger, and making it bigger broke the layouts. The small glass controls (Add set, the Equipment/Warmup/Targets/Swap/Superset chips, Prev/Auto, Nudge, Set goal, Accept, Decline) stay at their designed size, under 44 pt. Do not re-raise this as a finding. Plain buttons and glass menus still get `.tapTarget()`. | The tap-target findings for those controls in `hig-active-workout.md` (3), `hig-dashboard-social.md` (4) and `hig-foundations.md` (4); the open issue in `hig-screenshot-review.md` |
+| 2026-09-29 | **Notification settings get their own screen**, pushed from a gear button on Notifications. The screen is in progress. | `hig-dashboard-social.md` finding 8 |
+
+## Still open
+
 ## active-workout
 
 - **1. Swapping an exercise throws away the sets already logged for it, without asking** (hurts usability (data loss))  

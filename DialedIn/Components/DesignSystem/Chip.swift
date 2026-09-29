@@ -68,6 +68,10 @@ extension View {
     /// 44 pt frame on the label itself, which inside a glass button became the visible shape.
     /// A clipping container (a `ScrollView`, a `List` row) still bounds the overhang, so give that
     /// container the 44 pt height when the label sits at its edge.
+    ///
+    /// It widens plain buttons and glass menus. A glass `Button` ignores it: measured on iOS 27,
+    /// a tap 3 pt outside the visible glass does nothing. Those controls keep the system's size
+    /// by decision (`docs/reviews/hig-decisions.md`), so do not make them bigger to compensate.
     func tapTarget() -> some View {
         background {
             Color.clear

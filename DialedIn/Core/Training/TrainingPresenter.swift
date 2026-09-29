@@ -73,19 +73,18 @@ class TrainingPresenter {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
     
-    func onAddPressed() {
-        let delegate = AddTrainingDelegate(
-            onSelectProgram: { [weak self] in
-                self?.router.showCreateProgramView(delegate: CreateProgramDelegate())
-            },
-            onSelectWorkout: { [weak self] in
-                self?.router.showCreateWorkoutView(delegate: CreateWorkoutDelegate())
-            },
-            onSelectExercise: { [weak self] in
-                self?.router.showCreateExerciseView()
-            }
-        )
-        router.showAddTrainingView(delegate: delegate, onDismiss: nil)
+    // MARK: - Add Menu
+
+    func onNewProgramPressed() {
+        router.showCreateProgramView(delegate: CreateProgramDelegate())
+    }
+
+    func onNewWorkoutPressed() {
+        router.showCreateWorkoutView(delegate: CreateWorkoutDelegate())
+    }
+
+    func onNewExercisePressed() {
+        router.showCreateExerciseView()
     }
     
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {

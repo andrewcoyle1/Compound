@@ -186,6 +186,7 @@ struct ProfileAccountPresenterTests {
             submittedGender: .male,
             submittedHeightCentimeters: 182.5,
             submittedExerciseFrequency: .threeToFour,
+            submittedDailyActivityLevel: .light,
             submittedCardioFitnessLevel: .intermediate
         ))
 
@@ -198,6 +199,7 @@ struct ProfileAccountPresenterTests {
         #expect(screen.presenter.heightText == "182.5")
         #expect(screen.presenter.selectedExerciseFrequency == .threeToFour)
         #expect(screen.presenter.selectedCardioFitnessLevel == .intermediate)
+        #expect(screen.presenter.selectedActivityLevel == .light)
     }
 
     /// Nothing stored means nothing to prefill — in particular the date of birth keeps its "today"
@@ -305,6 +307,7 @@ struct ProfileAccountPresenterTests {
         screen.presenter.selectedGender = .male
         screen.presenter.selectedCardioFitnessLevel = .advanced
         screen.presenter.selectedExerciseFrequency = .fiveToSix
+        screen.presenter.selectedActivityLevel = .veryActive
 
         await screen.presenter.saveProfile()
 
@@ -314,6 +317,20 @@ struct ProfileAccountPresenterTests {
         #expect(string(saved ?? [:], .submittedGender) == Gender.male.rawValue)
         #expect(string(saved ?? [:], .submittedCardioFitnessLevel) == CardioFitnessLevel.advanced.rawValue)
         #expect(string(saved ?? [:], .submittedExerciseFrequency) == ExerciseFrequency.fiveToSix.rawValue)
+        #expect(string(saved ?? [:], .submittedDailyActivityLevel) == ActivityLevel.veryActive.rawValue)
+    }
+
+    /// "Prefer not to say" is one of the answers onboarding offers, so Account offers it too and
+    /// saves it under its own raw value.
+    @Test("Test Prefer Not To Say Is Saved As A Sex")
+    func testPreferNotToSayIsSavedAsASex() async {
+        let screen = makeScreen()
+        screen.presenter.firstName = "Andrew"
+        screen.presenter.selectedGender = .preferNotToSay
+
+        await screen.presenter.saveProfile()
+
+        #expect(string(screen.interactor.savedData.first ?? [:], .submittedGender) == "prefer_not_to_say")
     }
 
     /// A name typed with a trailing space is still that name. Storing the space would show up in
@@ -343,6 +360,7 @@ struct ProfileAccountPresenterTests {
         #expect(saved?[UserModel.CodingKeys.submittedGender.rawValue] == nil)
         #expect(saved?[UserModel.CodingKeys.submittedCardioFitnessLevel.rawValue] == nil)
         #expect(saved?[UserModel.CodingKeys.submittedExerciseFrequency.rawValue] == nil)
+        #expect(saved?[UserModel.CodingKeys.submittedDailyActivityLevel.rawValue] == nil)
     }
 
     @Test("Test A Successful Save Is Tracked")

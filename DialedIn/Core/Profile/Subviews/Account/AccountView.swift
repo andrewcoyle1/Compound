@@ -94,12 +94,14 @@ struct AccountView: View {
                 .textContentType(.familyName)
 
             DatePicker("Date of birth", selection: $presenter.dateOfBirth, in: ...Date(), displayedComponents: .date)
+            // Sex, as onboarding asks it: only the calorie estimate uses it.
             Picker(selection: $presenter.selectedGender) {
                 Text("Not specified").tag(nil as Gender?)
-                Text("Male").tag(Gender.male as Gender?)
-                Text("Female").tag(Gender.female as Gender?)
+                ForEach(Gender.allCases, id: \.self) { gender in
+                    Text(gender.description).tag(gender as Gender?)
+                }
             } label: {
-                Text("Gender")
+                Text("Sex")
             }
 
             // Typed in the Units screen's length unit; the presenter converts to centimetres on save.
@@ -128,7 +130,17 @@ struct AccountView: View {
                     Text(frequency.description).tag(frequency as ExerciseFrequency?)
                 }
             } label: {
-                Text("Lifting Experience")
+                // Onboarding's "Do You Work Out?" step: one name for one setting.
+                Text("Exercise Frequency")
+            }
+
+            Picker(selection: $presenter.selectedActivityLevel) {
+                Text("Not specified").tag(nil as ActivityLevel?)
+                ForEach(ActivityLevel.allCases, id: \.self) { level in
+                    Text(level.description).tag(level as ActivityLevel?)
+                }
+            } label: {
+                Text("Daily Activity")
             }
         }
     }

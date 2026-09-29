@@ -34,12 +34,14 @@ struct NotificationsView: View {
                     presenter.onDismissPressed()
                 }
             }
-            ToolbarItem(placement: .navigation) {
+            // The close button owns the leading edge, so settings sit apart from it on the trailing one.
+            ToolbarItem(placement: .primaryAction) {
                 Button {
                     presenter.onNotificationSettingsPressed()
                 } label: {
-                    Image(systemName: "gear")
+                    Image(systemName: Symbol.settings)
                 }
+                .accessibilityLabel("Notification Settings")
             }
         }
         .task {

@@ -32,10 +32,12 @@ struct HeightView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "How Tall Are You?",
+            subtitle: "Your height feeds the calorie estimate. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
             onDevSettingsPressed: onDevSettingsPressed
         ) {
+            AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             pickerSection
             if presenter.unit == .centimeters {
                 metricSection
@@ -59,7 +61,7 @@ struct HeightView: View {
     private var metricSection: some View {
         Section {
             Picker("Centimeters", selection: $presenter.selectedCentimeters) {
-                ForEach(100...250, id: \.self) { value in
+                ForEach(HeightPresenter.centimetersRange, id: \.self) { value in
                     Text("\(value) cm").tag(value)
                 }
             }

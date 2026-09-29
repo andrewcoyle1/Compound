@@ -40,7 +40,7 @@ struct ActivityView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "How Active Are You?",
-            subtitle: "What's your daily activity level outside of exercise?",
+            subtitle: "Your activity outside exercise feeds the calorie estimate.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
             onDevSettingsPressed: onDevSettingsPressed

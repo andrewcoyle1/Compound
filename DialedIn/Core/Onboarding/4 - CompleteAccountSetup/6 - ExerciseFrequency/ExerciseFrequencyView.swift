@@ -38,6 +38,7 @@ struct ExerciseFrequencyView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "Do You Work Out?",
+            subtitle: "How often you exercise feeds the calorie estimate. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
             onDevSettingsPressed: onDevSettingsPressed

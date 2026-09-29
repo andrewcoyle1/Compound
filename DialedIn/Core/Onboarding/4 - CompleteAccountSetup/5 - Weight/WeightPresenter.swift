@@ -16,6 +16,24 @@ class WeightPresenter {
     var unit: UnitOfWeight = .kilograms
     var selectedKilograms: Int = 70
     var selectedPounds: Int = 154
+    var healthFill: AppleHealthFillState = .idle
+
+    /// Fills both wheels, so the result stands whichever unit is showing. A stored weight outside
+    /// the wheel's range counts as nothing found.
+    func onFillFromAppleHealthPressed() {
+        healthFill = .loading
+        Task {
+            let kilograms = await interactor.readWeightKilogramsFromAppleHealth()
+                .map { Int($0.rounded()) }
+                .flatMap { Self.kilogramsRange.contains($0) ? $0 : nil }
+            if let kilograms {
+                selectedKilograms = kilograms
+                updatePoundsFromKilograms()
+            }
+            healthFill = kilograms == nil ? .notFound : .filled
+            interactor.trackEvent(event: Event.fillFromHealth(found: kilograms != nil))
+        }
+    }
 
     // Matches the wheel's own range, which in turn matches what `heightCm`/`weightKg` in
     // `ExpenditurePresenter` already accept — widening one without the other left the maths able
@@ -87,10 +105,12 @@ func onDevSettingsPressed() {
 
     enum Event: LoggableEvent {
         case navigate
+        case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
             case .navigate: return "WeightView_Navigate"
+            case .fillFromHealth: return "WeightView_FillFromHealth"
             }
         }
 
@@ -98,6 +118,8 @@ func onDevSettingsPressed() {
             switch self {
             case .navigate:
                 return nil
+            case .fillFromHealth(let found):
+                return ["found": found]
             }
         }
 
@@ -105,6 +127,8 @@ func onDevSettingsPressed() {
             switch self {
             case .navigate:
                 return .info
+            case .fillFromHealth:
+                return .analytic
             }
         }
     }

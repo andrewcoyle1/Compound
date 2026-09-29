@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol GenderInteractor: GlobalInteractor { }
+protocol GenderInteractor: GlobalInteractor {
+    func readSexFromAppleHealth() async -> Gender?
+}
 
 extension CoreInteractor: GenderInteractor { }

@@ -14,9 +14,30 @@ class GenderPresenter {
     private let router: GenderRouter
 
     var selectedGender: Gender?
-    
+    var healthFill: AppleHealthFillState = .idle
+
+    /// Male, Female, then "Prefer not to say" (decision 8a).
+    let options: [Gender] = Gender.allCases
+
     var canSubmit: Bool {
         selectedGender != nil
+    }
+
+    /// Only "Prefer not to say" carries a note: it uses the midpoint coefficient.
+    func detail(for gender: Gender) -> String? {
+        gender == .preferNotToSay ? String(localized: "Your calorie estimate will be less accurate.") : nil
+    }
+
+    func onFillFromAppleHealthPressed() {
+        healthFill = .loading
+        Task {
+            let sex = await interactor.readSexFromAppleHealth()
+            if let sex {
+                selectedGender = sex
+            }
+            healthFill = sex == nil ? .notFound : .filled
+            interactor.trackEvent(event: Event.fillFromHealth(found: sex != nil))
+        }
     }
 
     /// Picking an option row: record it and give the selection tick.
@@ -59,17 +80,21 @@ func onDevSettingsPressed() {
         case onAppear
         case onDisappear
         case navigate
+        case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
             case .onAppear:             return "GenderView_Appear"
             case .onDisappear:          return "GenderView_Disappear"
             case .navigate: return "GenderView_Navigate"
+            case .fillFromHealth: return "GenderView_FillFromHealth"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .fillFromHealth(let found):
+                return ["found": found]
             default:
                 return nil
             }

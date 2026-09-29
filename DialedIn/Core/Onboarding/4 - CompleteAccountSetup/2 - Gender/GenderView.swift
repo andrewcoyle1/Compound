@@ -13,15 +13,16 @@ struct GenderView: View {
 
     var body: some View {
         OnboardingStepScaffold(
-            title: "What's Your Gender?",
-            subtitle: "Select your gender",
+            title: "Sex for Calorie Estimate",
+            subtitle: "Used only to estimate the calories you burn. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed() },
             onDevSettingsPressed: onDevSettingsPressed
         ) {
+            AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             Section {
-                ForEach([Gender.male, .female], id: \.self) { gender in
-                    SelectableRow(title: gender.description, isSelected: presenter.selectedGender == gender) {
+                ForEach(presenter.options, id: \.self) { gender in
+                    SelectableRow(title: gender.description, subtitle: presenter.detail(for: gender), isSelected: presenter.selectedGender == gender) {
                         presenter.onGenderSelected(gender)
                     }
                 }

@@ -61,9 +61,9 @@ struct WeightRateView: View {
                     ) {
                         Text("Weekly rate")
                     } minimumValueLabel: {
-                        Text(Format.weight(kg: presenter.minWeightChangeRate, unit: presenter.weightUnit))
+                        Text(Format.weight(kg: presenter.minWeightChangeRate, unit: presenter.weightUnit, maximumFractionDigits: 2))
                     } maximumValueLabel: {
-                        Text(Format.weight(kg: presenter.maxWeightChangeRate, unit: presenter.weightUnit))
+                        Text(Format.weight(kg: presenter.maxWeightChangeRate, unit: presenter.weightUnit, maximumFractionDigits: 2))
                     }
                     .accessibilityValue(presenter.weeklyWeightChangeText(delegate: delegate))
 

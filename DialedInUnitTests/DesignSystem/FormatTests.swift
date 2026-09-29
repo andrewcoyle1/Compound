@@ -51,6 +51,14 @@ struct FormatTests {
         #expect(Format.weight(kg: 82.5, unit: WeightUnitPreference.kilograms, locale: german) == "82,5 kg")
     }
 
+    /// The weekly rate slider's minimum is 0.25 kg. At one decimal it read "0.2 kg".
+    @Test func weightKeepsTwoDecimalsWhenAsked() {
+        let british = Locale(identifier: "en_GB")
+
+        #expect(Format.weight(kg: 0.25, unit: WeightUnitPreference.kilograms, maximumFractionDigits: 2, locale: british) == "0.25 kg")
+        #expect(Format.weight(kg: 0.5, unit: WeightUnitPreference.kilograms, maximumFractionDigits: 2, locale: british) == "0.5 kg")
+    }
+
     @Test func weightConvertsToPounds() {
         // 82.5 × 2.20462 = 181.88
         #expect(Format.weight(kg: 82.5, unit: ExerciseWeightUnit.pounds, locale: english) == "181.9 lb")

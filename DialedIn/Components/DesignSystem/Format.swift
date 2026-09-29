@@ -40,12 +40,23 @@ enum Format {
     }
 
     /// `"82.5 kg"` / `"181.9 lb"`, up to one decimal, from a value stored in kilograms.
-    static func weight(kg kilograms: Double, unit: WeightUnitPreference, locale: Locale = .autoupdatingCurrent) -> String {
-        weight(UnitConversion.convertWeight(kilograms, to: unit), isPounds: unit == .pounds, locale: locale)
+    /// A weekly rate passes `maximumFractionDigits: 2`, because at one decimal 0.25 kg reads "0.2 kg".
+    static func weight(
+        kg kilograms: Double,
+        unit: WeightUnitPreference,
+        maximumFractionDigits: Int = 1,
+        locale: Locale = .autoupdatingCurrent
+    ) -> String {
+        weight(
+            UnitConversion.convertWeight(kilograms, to: unit),
+            isPounds: unit == .pounds,
+            maximumFractionDigits: maximumFractionDigits,
+            locale: locale
+        )
     }
 
-    private static func weight(_ value: Double, isPounds: Bool, locale: Locale) -> String {
-        "\(value.formatted(.number.precision(.fractionLength(0...1)).locale(locale))) \(isPounds ? "lb" : "kg")"
+    private static func weight(_ value: Double, isPounds: Bool, maximumFractionDigits: Int = 1, locale: Locale) -> String {
+        "\(value.formatted(.number.precision(.fractionLength(0...maximumFractionDigits)).locale(locale))) \(isPounds ? "lb" : "kg")"
     }
 
     /// `"8 reps"`, `"1 rep"`.

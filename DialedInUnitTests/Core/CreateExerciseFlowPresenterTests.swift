@@ -132,6 +132,25 @@ struct CreateExercisePresenterTests {
         func showMuscleGroupPickerView(delegate: MuscleGroupPickerDelegate) {
             muscleGroupDelegates.append(delegate)
         }
+
+        private(set) var dialogTitles: [String] = []
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            dialogTitles.append(title)
+        }
+    }
+
+    /// Close on a blank form leaves at once; once anything is typed or picked it asks first.
+    @Test("Test Closing After Typing Asks Before Discarding")
+    func testClosingAfterTypingAsksBeforeDiscarding() {
+        let blank = makeScreen()
+        blank.presenter.exerciseName = "   "
+        blank.presenter.onCancelPressed()
+        #expect(blank.router.dialogTitles.isEmpty)
+
+        let filled = makeScreen()
+        filled.presenter.laterality = .unilateral
+        filled.presenter.onCancelPressed()
+        #expect(filled.router.dialogTitles == ["Discard Changes?"])
     }
 
     private struct Screen {

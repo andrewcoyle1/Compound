@@ -14,6 +14,17 @@ class FinalExerciseDetailsPresenter {
     var exerciseDescription: String = ""
 
     static let contributionRange = 0...100
+    static let alternateNamesLimit = 300
+
+    /// Out of range disabled Next with nothing on screen saying why.
+    var isContributionInRange: Bool {
+        Self.contributionRange.contains(bodyweightContribution)
+    }
+
+    /// The counter read "n/300" and nothing stopped at 300.
+    func onAlternateNamesChanged(_ text: String) {
+        alternateNames = String(text.prefix(Self.alternateNamesLimit))
+    }
 
     init(interactor: FinalExerciseDetailsInteractor, router: FinalExerciseDetailsRouter) {
         self.interactor = interactor
@@ -22,7 +33,7 @@ class FinalExerciseDetailsPresenter {
 
     /// The field was labelled "Required" but accepted any integer, negative or over 100.
     func canContinue(delegate: FinalExerciseDetailsDelegate) -> Bool {
-        !delegate.isBodyweight || Self.contributionRange.contains(bodyweightContribution)
+        !delegate.isBodyweight || isContributionInRange
     }
 
     /// The footer read "XX kg at your current weight." verbatim.

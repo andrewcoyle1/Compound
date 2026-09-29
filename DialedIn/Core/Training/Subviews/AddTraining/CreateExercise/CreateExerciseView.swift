@@ -66,11 +66,11 @@ struct CreateExerciseView: View {
         Section {
             HStack(spacing: 0) {
                 CustomPickerView(
-                    text: presenter.trackableMetricA?.name ?? "None",
+                    text: presenter.trackableMetricA?.name ?? String(localized: "None"),
                     isHighlighted: presenter.trackableMetricA == nil,
                     action: {
                         presenter.trackableMetricPressed(
-                            navigationTitle: "Trackable Metric 1",
+                            navigationTitle: String(localized: "Trackable Metric 1"),
                             metric: $presenter.trackableMetricA
                         )
                     }
@@ -78,11 +78,11 @@ struct CreateExerciseView: View {
                 .accessibilityIdentifier("CreateExercise.metricA")
                 Divider()
                 CustomPickerView(
-                    text: presenter.trackableMetricB?.name ?? "None",
+                    text: presenter.trackableMetricB?.name ?? String(localized: "None"),
                     isHighlighted: presenter.trackableMetricB == nil,
                     action: {
                         presenter.trackableMetricPressed(
-                            navigationTitle: "Trackable Metric 2",
+                            navigationTitle: String(localized: "Trackable Metric 2"),
                             metric: $presenter.trackableMetricB
                         )
                     }
@@ -102,11 +102,11 @@ struct CreateExerciseView: View {
     private var typeSection: some View {
         Section {
             CustomPickerView(
-                text: presenter.exerciseType?.name ?? "None",
+                text: presenter.exerciseType?.name ?? String(localized: "None"),
                 isHighlighted: presenter.exerciseType == nil,
                 action: {
                     presenter.exerciseTypePressed(
-                        navigationTitle: "Exercise Type",
+                        navigationTitle: String(localized: "Exercise Type"),
                         type: $presenter.exerciseType
                     )
                 }
@@ -120,11 +120,11 @@ struct CreateExerciseView: View {
     private var lateralitySection: some View {
         Section {
             CustomPickerView(
-                text: presenter.laterality?.name ?? "None",
+                text: presenter.laterality?.name ?? String(localized: "None"),
                 isHighlighted: presenter.laterality == nil,
                 action: {
                     presenter.lateralityPressed(
-                        navigationTitle: "Laterality",
+                        navigationTitle: String(localized: "Laterality"),
                         item: $presenter.laterality
                     )
                 }

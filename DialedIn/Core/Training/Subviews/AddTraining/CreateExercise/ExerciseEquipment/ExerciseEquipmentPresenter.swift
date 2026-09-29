@@ -63,7 +63,7 @@ class ExerciseEquipmentPresenter {
         }
         let delegate = EquipmentPickerDelegate(
             items: equipmentItems,
-            headerTitle: "Resistance Equipment",
+            headerTitle: String(localized: "Resistance Equipment"),
             chosenItem: chosenBinding
         )
         router.showEquipmentPickerView(delegate: delegate)
@@ -82,7 +82,7 @@ class ExerciseEquipmentPresenter {
         }
         let delegate = EquipmentPickerDelegate(
             items: equipmentItems,
-            headerTitle: "Support Equipment",
+            headerTitle: String(localized: "Support Equipment"),
             chosenItem: chosenBinding
         )
         router.showEquipmentPickerView(delegate: delegate)

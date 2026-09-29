@@ -259,6 +259,8 @@ struct TrainingHomePresenterTests {
 
         #expect(screen.router.shown == ["sessionDetail"])
         #expect(screen.router.sessionDetailDelegates.first?.initialSession.id == "s1")
+        // Browsing from the tab pushes the session; it used to open as a sheet.
+        #expect(screen.router.sessionDetailDelegates.first?.isPushed == true)
         #expect(screen.interactor.trackedEventNames == [
             "TrainingView_OpenCompletedSession_Start",
             "TrainingView_OpenCompletedSession_Success"

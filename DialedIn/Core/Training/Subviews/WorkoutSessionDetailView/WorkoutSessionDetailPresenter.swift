@@ -144,6 +144,22 @@ class WorkoutSessionDetailPresenter {
         self.dismissScreen()
     }
 
+    /// Leaves editing without saving. A pushed screen hides Back while editing, so this is the way
+    /// out there; unsaved notes are asked about and then put back as they were.
+    func onEndEditingPressed(initialSession: WorkoutSessionModel, session: Binding<WorkoutSessionModel>) {
+        guard hasUnsavedChanges(session: initialSession, editedSession: session.wrappedValue) else {
+            isEditMode = false
+            return
+        }
+        let restored = lastSavedSession ?? initialSession
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in
+                session.wrappedValue = restored
+                self?.isEditMode = false
+            }
+        }
+    }
+
     private func dismissScreen() {
         router.dismissScreen()
     }

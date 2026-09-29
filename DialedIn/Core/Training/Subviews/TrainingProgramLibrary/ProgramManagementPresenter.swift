@@ -98,10 +98,6 @@ func onDevSettingsPressed() {
     router.showDevSettingsView()
 }
 #endif
-
-    func dismissScreen() {
-        router.dismissScreen()
-    }
 }
 
 extension TrainingProgramLibraryPresenter {

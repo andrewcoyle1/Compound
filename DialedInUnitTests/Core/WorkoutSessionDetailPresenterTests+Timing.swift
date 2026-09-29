@@ -162,6 +162,26 @@ extension WorkoutSessionDetailPresenterTests {
         #expect(screen.router.dialogTitles == ["Discard Changes?"])
     }
 
+    /// A pushed session hides Back while editing, so the close button ends the edit instead. With
+    /// nothing typed it just stops editing; with typed notes it asks before throwing them away.
+    @Test("Test Ending An Edit Asks Only When Notes Changed")
+    func testEndingAnEditAsksOnlyWhenNotesChanged() {
+        let screen = makeScreen()
+        let original = session()
+        let workout = MutableSession(original)
+
+        screen.presenter.enterEditMode(session: workout.value)
+        screen.presenter.onEndEditingPressed(initialSession: original, session: workout.binding)
+        #expect(!screen.presenter.isEditMode)
+        #expect(screen.router.dialogTitles.isEmpty)
+
+        screen.presenter.enterEditMode(session: workout.value)
+        workout.value.notes = "Felt strong"
+        screen.presenter.onEndEditingPressed(initialSession: original, session: workout.binding)
+        #expect(screen.presenter.isEditMode)
+        #expect(screen.router.dialogTitles == ["Discard Changes?"])
+    }
+
     /// A timing edit saves the whole session, so afterwards nothing is unsaved even though the
     /// session no longer matches what the screen opened with.
     @Test("Test A Saved Timing Edit Leaves Nothing Unsaved")

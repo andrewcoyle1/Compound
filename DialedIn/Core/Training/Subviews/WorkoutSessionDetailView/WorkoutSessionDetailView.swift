@@ -9,9 +9,13 @@ import SwiftUI
 
 struct WorkoutSessionDetailDelegate {
     let initialSession: WorkoutSessionModel
+    /// Pushed when browsing from the Training tab, where the system Back button closes it. The
+    /// Dashboard feed, Notifications and a just-finished workout present it as a sheet with Close.
+    let isPushed: Bool
 
-    init(workoutSession: WorkoutSessionModel) {
+    init(workoutSession: WorkoutSessionModel, isPushed: Bool = false) {
         self.initialSession = workoutSession
+        self.isPushed = isPushed
     }
 }
 
@@ -48,7 +52,10 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         .toolbar {
             toolbarContent
         }
-        .interactiveDismissDisabled(presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
+        // Back cannot be intercepted, so while editing it is hidden and the close button ends the
+        // edit, asking first when the notes changed.
+        .navigationBarBackButtonHidden(presenter.isEditMode)
+        .interactiveDismissDisabled(!delegate.isPushed && presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
         .onAppear {
             presenter.loadUnitPreferences(for: session)
         }
@@ -148,9 +155,17 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
+        if presenter.isEditMode {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onEndEditingPressed(initialSession: delegate.initialSession, session: $session)
+                }
+            }
+        } else if !delegate.isPushed {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
+                }
             }
         }
         
@@ -236,7 +251,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(delegate.isPushed ? .push : .sheet) { router in
             builder.workoutSessionDetailView(router: router, delegate: delegate)
         }
     }

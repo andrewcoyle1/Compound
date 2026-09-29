@@ -166,7 +166,7 @@ class TrainingPresenter {
             interactor.trackEvent(event: Event.openCompletedSessionFail(error: TrainingError.sessionNotFound))
             return
         }
-        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session))
+        router.showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true))
         interactor.trackEvent(event: Event.openCompletedSessionSuccess)
     }
 
@@ -203,7 +203,7 @@ class TrainingPresenter {
     }
     
     func onWorkoutLibraryPressed() {
-        router.showWorkoutsView(delegate: WorkoutsDelegate())
+        router.showWorkoutsView(delegate: WorkoutsDelegate(isPushed: true))
     }
     
     func onWorkoutHistoryPressed() {

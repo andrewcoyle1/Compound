@@ -61,7 +61,7 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
             sectionHeader: "Entries",
             emptyStateMessage: "No body fat entries",
             chartColor: Color.Metric.bodyFat,
-            addActionTitle: "Sync from Health",
+            addActionTitle: "Sync from Apple Health",
             addActionSystemImage: "arrow.clockwise"
         )
     }

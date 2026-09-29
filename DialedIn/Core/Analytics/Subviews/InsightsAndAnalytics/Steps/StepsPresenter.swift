@@ -94,7 +94,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
             sectionHeader: "Daily Steps",
             emptyStateMessage: "No step data",
             chartType: .bar,
-            addActionTitle: "Sync from Health",
+            addActionTitle: "Sync from Apple Health",
             addActionSystemImage: "arrow.clockwise"
         )
     }
@@ -113,8 +113,8 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
                     try await interactor.requestHealthKitAuthorisation(for: .steps)
                 } catch {
                     router.showSimpleAlert(
-                        title: String(localized: "Unable to Access Health"),
-                        subtitle: "Allow step access in the Health app to sync your steps."
+                        title: String(localized: "Unable to Access Apple Health"),
+                        subtitle: String(localized: "Allow step access in the Apple Health app to sync your steps.")
                     )
                     return
                 }

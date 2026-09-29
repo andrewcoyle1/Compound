@@ -29,6 +29,15 @@ Paths are relative to `DialedIn/`. `T/` stands for `Core/Training/`, `S/` for
 `CW/` for `…/AddTraining/CreateWorkout/` and `CE/` for `…/AddTraining/CreateExercise/`.
 Findings are most serious first.
 
+## Decisions built (2026-09-29, branch hig/training)
+
+| Decision | Status | What changed |
+|---|---|---|
+| 6 (Training) | built | Programs, Workout Library and Workout History push on the Training tab with no Close; a finished workout pushes from the calendar, active program and History (`WorkoutSessionDetailDelegate.isPushed`) and stays a sheet with Close from Dashboard, Notifications and the tracker; the Workout Library stays a sheet from Analytics (`WorkoutsDelegate.isPushed`); Program Settings pushes inside the editor. Editing notes on a pushed workout hides Back and the close button ends the edit, asking when notes changed. |
+| 11a (now) | built | "Edit Notes" row with no chevron; Save is a `Button(role: .confirm)` in `.confirmationAction` while editing; set and exercise editing code kept with a TODO. |
+| 13d | built | The + is a menu (New Program, New Workout, New Exercise); the Add Training module is deleted. `showAddTrainingViewZoom` had no callers. |
+| 13e | built | "Primary"/"Secondary" badge on each chosen tile, heavier ring for Primary, one line explaining the taps, 2 then 1 columns at accessibility sizes, placeholder marked TODO; Type, Laterality and both metrics are in-row menu pickers. |
+
 ## Resolution (2026-09-28, branch hig/training)
 
 | # | Status | What changed |

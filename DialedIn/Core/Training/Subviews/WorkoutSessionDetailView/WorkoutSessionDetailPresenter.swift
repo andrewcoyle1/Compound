@@ -259,6 +259,10 @@ class WorkoutSessionDetailPresenter {
     }
     
     // MARK: - Exercise Updates
+
+    // Nothing on screen calls the set and exercise editing below yet: "Edit Notes" edits notes only.
+    // swiftlint:disable:next todo
+    // TODO: Real editing of a finished workout's sets and exercises is planned (decision 11a, second step). Wire these into the session detail's edit mode, and rename "Edit Notes" back to an editor row, once it is built.
     
     func updateExercise(session: Binding<WorkoutSessionModel>, at index: Int, with updated: WorkoutExerciseModel) {
         guard session.wrappedValue.exercises.indices.contains(index) else { return }

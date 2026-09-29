@@ -98,12 +98,11 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         presenter.onEditDurationPressed(session: $session)
                     }
                 }
-                ListRowButton(
-                    title: String(localized: "Edit Workout"),
-                    subtitle: String(localized: "Go to the workout editor"),
-                    systemImage: Symbol.edit
-                ) {
-                    presenter.enterEditMode(session: session)
+                // Notes are all it edits, so it says so and opens nothing: no chevron.
+                if !presenter.isEditMode {
+                    ListRowButton(title: String(localized: "Edit Notes"), systemImage: Symbol.edit, accessory: .none) {
+                        presenter.enterEditMode(session: session)
+                    }
                 }
             } else {
                 ListRow(
@@ -187,21 +186,20 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             }
         }
 
-        if presenter.isAuthor(sessionAuthorId: session.authorId) {
+        if presenter.isEditMode {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(role: .confirm) {
+                    Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
+                }
+                .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
+            }
+        } else if presenter.isAuthor(sessionAuthorId: session.authorId) {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    if presenter.isEditMode {
-                        Button(role: .confirm) {
-                            Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
-                        }
-                        .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
-                        .fontWeight(.semibold)
-                    } else {
-                        Button {
-                            presenter.enterEditMode(session: session)
-                        } label: {
-                            Label("Edit", systemImage: Symbol.edit)
-                        }
+                    Button {
+                        presenter.enterEditMode(session: session)
+                    } label: {
+                        Label("Edit Notes", systemImage: Symbol.edit)
                     }
 
                     Button(role: .destructive) {

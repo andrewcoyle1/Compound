@@ -18,11 +18,13 @@ class HealthDisclaimerPresenter {
 
     var canContinue: Bool { acceptedTerms && acceptedPrivacy }
         
-    var disclaimerString: String = """
-            DialedIn is not a medical device and does not provide medical advice. The information presented is for general educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.
-            Always consult a qualified healthcare provider before starting any diet, exercise, or weight‑loss program, changing medications, or if you have questions about a medical condition. 
+    // The wording of the legal text itself and its links are waiting on a decision (finding 2);
+    // this only fixes the name and localizes what was a plain, unlocalized `String`.
+    var disclaimerString: String = String(localized: """
+            Compound is not a medical device and does not provide medical advice. The information presented is for general educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.
+            Always consult a qualified healthcare provider before starting any diet, exercise, or weight‑loss program, changing medications, or if you have questions about a medical condition.
             If you experience chest pain, shortness of breath, dizziness, or other concerning symptoms, stop activity and seek medical attention immediately. If you believe you may be experiencing a medical emergency, call your local emergency number right away.
-            """
+            """)
     
     init(
         interactor: HealthDisclaimerInteractor,
@@ -35,17 +37,14 @@ class HealthDisclaimerPresenter {
     func onContinuePressed() {
         guard canContinue else { return }
         router.showHealthDisclaimerConfirmationModal(
-            onConfirmPressed: self.onConfirmPressed,
-            onCancelPressed: self.onCancelPressed
+            onConfirmPressed: { [weak self] in Task { @MainActor in self?.onConfirmPressed() } },
+            onCancelPressed: { [weak self] in Task { @MainActor in self?.onCancelPressed() } }
         )
     }
     
-    private func onCancelPressed() {
-        router.dismissModal()
-    }
-    
+    private func onCancelPressed() { }
+
     private func onConfirmPressed() {
-        router.dismissModal()
         router.showLoadingModal()
 
         // Recorded against the versions `inferredOnboardingStep` checks, so the two cannot drift.
@@ -65,8 +64,8 @@ class HealthDisclaimerPresenter {
                 
                 router.dismissModal()
                 router.showSimpleAlert(
-                    title: String(localized: "Unable to save"),
-                    subtitle: "We were unable to save your consent. Please check your internet connection and try again."
+                    title: String(localized: "Unable to Save Consent"),
+                    subtitle: String(localized: "Please check your internet connection and try again.")
                 )
             }
         }

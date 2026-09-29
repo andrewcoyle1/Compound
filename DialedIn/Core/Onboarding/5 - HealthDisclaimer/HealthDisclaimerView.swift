@@ -36,7 +36,6 @@ struct HealthDisclaimerView: View {
             }
         }
         .scrollIndicators(.hidden)
-        .navigationBarBackButtonHidden()
     }
 
     private var onDevSettingsPressed: (() -> Void)? {

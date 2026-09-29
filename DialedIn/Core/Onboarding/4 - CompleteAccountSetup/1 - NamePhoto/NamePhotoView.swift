@@ -32,16 +32,31 @@ struct NamePhotoView: View {
     }
 
     private var imageSection: some View {
-        Button {
-            presenter.isImagePickerPresented = true
-        } label: {
-            photo
-                .frame(maxWidth: .infinity)
-                .contentShape(.rect)
+        Section {
+            Button {
+                presenter.isImagePickerPresented = true
+            } label: {
+                photo
+                    .frame(maxWidth: .infinity)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(presenter.hasPhoto ? "Change Photo" : "Add Photo (Optional)")
+            .photosPicker(isPresented: $presenter.isImagePickerPresented, selection: $presenter.selectedPhotoItem, matching: .images)
+
+            if presenter.hasPhoto {
+                Button(role: .destructive) {
+                    presenter.removePhoto()
+                } label: {
+                    Text("Remove Photo")
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            if presenter.photoLoadFailed {
+                InlineMessage(.error, "Couldn't load that photo. Try a different one.")
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Add Photo (Optional)")
-        .photosPicker(isPresented: $presenter.isImagePickerPresented, selection: $presenter.selectedPhotoItem, matching: .images)
         .removeListRowFormatting()
     }
 

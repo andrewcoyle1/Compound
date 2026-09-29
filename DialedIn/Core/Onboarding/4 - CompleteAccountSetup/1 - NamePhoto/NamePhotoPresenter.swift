@@ -19,6 +19,7 @@ class NamePhotoPresenter {
     var selectedPhotoItem: PhotosPickerItem?
     var selectedImageData: Data?
     var isImagePickerPresented: Bool = false
+    var photoLoadFailed: Bool = false
 
     var currentUser: UserModel? {
         interactor.currentUser
@@ -26,6 +27,17 @@ class NamePhotoPresenter {
     
     var canContinue: Bool {
         !firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// A photo is picked, or the account already has one — either way the control's label and the
+    /// option to remove it need to reflect that, not the fixed "Add Photo" it always showed.
+    var hasPhoto: Bool {
+        selectedImageData != nil || currentUser?.profileImageNameCalculated != nil
+    }
+
+    func removePhoto() {
+        selectedPhotoItem = nil
+        selectedImageData = nil
     }
     
     init(
@@ -100,14 +112,17 @@ func onDevSettingsPressed() {
         }
         interactor.trackEvent(event: Event.profilePhotoSelected)
         interactor.trackEvent(event: Event.profilePhotoLoadStart)
+        photoLoadFailed = false
         do {
             if let data = try await photoItem.loadTransferable(type: Data.self) {
                 selectedImageData = data
                 interactor.trackEvent(event: Event.profilePhotoLoadSuccess)
             } else {
+                photoLoadFailed = true
                 interactor.trackEvent(event: Event.profilePhotoLoadEmpty)
             }
         } catch {
+            photoLoadFailed = true
             interactor.trackEvent(event: Event.profilePhotoLoadFail(error: error))
         }
     }

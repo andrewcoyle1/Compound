@@ -73,6 +73,9 @@ enum WidgetSnapshotStore {
     /// card when nothing is under way).
     static let workoutURL = URL(string: "compound://workout")!
 
+    /// `compound://tab/training`, where the streak and the weekly goal are counted from.
+    static let trainingURL = URL(string: "compound://tab/training")!
+
     static func read(from defaults: UserDefaults? = SharedWorkoutStorage.sharedDefaults) -> WidgetSnapshot? {
         guard let data = defaults?.data(forKey: key) else { return nil }
         return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)

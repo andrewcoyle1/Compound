@@ -36,6 +36,9 @@ struct WorkoutSessionActivity: Widget {
             } minimal: {
                 minimal(context: context)
             }
+            // The same link as the banner: a tap opens the tracker, not wherever the app was left.
+            .widgetURL(WidgetSnapshotStore.workoutURL)
+            .keylineTint(Color.accentColor)
         }
     }
 
@@ -65,9 +68,16 @@ struct WorkoutSessionActivity: Widget {
         switch phase(context) {
         case let .resting(until, _, _, _):
             RestRing(until: until, size: 18, showsCountdown: false)
+                .accessibilityLabel("Resting")
         default:
             ExerciseImage(imageName: context.state.currentExerciseImageName, size: 20)
+                .accessibilityLabel(exerciseLabel(context))
         }
+    }
+
+    /// What VoiceOver hears for the island's image, which is the only content when minimal.
+    private func exerciseLabel(_ context: ActivityViewContext<WorkoutActivityAttributes>) -> Text {
+        context.state.currentExerciseName.map { Text(verbatim: $0) } ?? Text("Workout")
     }
 
     @ViewBuilder
@@ -80,12 +90,12 @@ struct WorkoutSessionActivity: Widget {
         case let .resting(until, _, _, _):
             Text(timerInterval: Date()...max(until, Date()), countsDown: true)
                 .monospacedDigit()
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary)
                 .frame(maxWidth: 44)
         case .allSetsDone:
             Text("Done")
-                .font(.footnote)
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.green)
         default:
             EmptyView()
@@ -96,8 +106,9 @@ struct WorkoutSessionActivity: Widget {
     private func compactTargetLabel(_ target: LiveActivitySetTarget, unit: LiveActivityWeightUnit) -> some View {
         if let label = target.label(weightUnit: unit) {
             Text(label)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(.primary)
                 .lineLimit(1)
         }
     }
@@ -107,11 +118,14 @@ struct WorkoutSessionActivity: Widget {
         switch phase(context) {
         case let .resting(until, _, _, _):
             RestRing(until: until, size: 18, showsCountdown: false)
+                .accessibilityLabel("Resting")
         case .allSetsDone:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(.green)
+                .accessibilityLabel("All sets complete")
         default:
             ExerciseImage(imageName: context.state.currentExerciseImageName, size: 18)
+                .accessibilityLabel(exerciseLabel(context))
         }
     }
 }

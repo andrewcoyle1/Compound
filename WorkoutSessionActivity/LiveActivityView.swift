@@ -35,11 +35,14 @@ struct LiveActivityView: View {
                 prominentLabelColor: colorScheme.inverseLabel
             )
             .frame(height: LiveActivityLayout.contentHeight, alignment: .center)
-            .padding(.horizontal, 16)
+            // The system's standard Lock Screen margin for Live Activities.
+            .padding(.horizontal, 14)
             .padding(.vertical, 12)
 
             progressLine
         }
+        // A tap opens the tracker, as the Today widget's does.
+        .widgetURL(WidgetSnapshotStore.workoutURL)
     }
 
     /// The only whole-workout indicator: a 1-pt line along the bottom edge.
@@ -54,6 +57,9 @@ struct LiveActivityView: View {
             }
         }
         .frame(height: 1)
+        .accessibilityElement()
+        .accessibilityLabel("Workout progress")
+        .accessibilityValue("\(context.state.completedSetsCount) of \(context.state.totalSetsCount) sets")
     }
 
     private var progressFraction: CGFloat {

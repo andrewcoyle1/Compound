@@ -56,7 +56,7 @@ struct LiveActivityPhaseContent: View {
                 targetActionRow(target: next, prefix: "Rest over")
 
             case .allSetsDone:
-                doneRow(text: "All sets complete")
+                doneRow(text: Text("All sets complete"))
                 finishRow
 
             case .paused:
@@ -69,12 +69,13 @@ struct LiveActivityPhaseContent: View {
 
             case let .ended(summary):
                 if showsEnded {
-                    doneRow(text: workoutName)
+                    doneRow(text: Text(verbatim: workoutName))
                     summaryRow(summary)
                 }
             }
         }
-        .font(.subheadline)
+        // Medium, not regular: text on the Lock Screen is read at a glance, often mid-set.
+        .font(.subheadline.weight(.medium))
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -108,12 +109,12 @@ struct LiveActivityPhaseContent: View {
         .frame(height: LiveActivityLayout.rowHeight)
     }
 
-    private func doneRow(text: String) -> some View {
+    private func doneRow(text: Text) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.title3)
                 .foregroundStyle(.green)
-            Text(text)
+            text
                 .font(.headline)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
@@ -128,7 +129,7 @@ struct LiveActivityPhaseContent: View {
     private func restingCorrectionRow(logged: LoggedSet?) -> some View {
         if let logged {
             HStack(spacing: 8) {
-                Text("Logged \(logged.label(weightUnit: state.weightUnit) ?? "set")")
+                Text("Logged \(logged.label(weightUnit: state.weightUnit) ?? String(localized: "set"))")
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Spacer(minLength: 4)
@@ -157,7 +158,7 @@ struct LiveActivityPhaseContent: View {
 
     // MARK: Row 2 variants
 
-    private func targetActionRow(target: LiveActivitySetTarget, prefix: String?) -> some View {
+    private func targetActionRow(target: LiveActivitySetTarget, prefix: LocalizedStringKey?) -> some View {
         HStack(spacing: 8) {
             if let prefix {
                 Text(prefix)
@@ -192,7 +193,7 @@ struct LiveActivityPhaseContent: View {
             if let nextExerciseName {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("Next: \(nextExerciseName)")
-                        .font(.caption)
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                     if let label {
@@ -211,7 +212,7 @@ struct LiveActivityPhaseContent: View {
             Spacer(minLength: 4)
             Button(intent: AdjustRestTimerIntent(adjustment: 15)) {
                 Text("+15s")
-                    .font(.footnote)
+                    .font(.footnote.weight(.semibold))
                     .padding(2)
             }
             .buttonStyle(.bordered)
@@ -219,10 +220,11 @@ struct LiveActivityPhaseContent: View {
             .tint(.accent)
             .disabled(state.isProcessingIntent)
             .opacity(state.isProcessingIntent ? 0.5 : 1)
+            .accessibilityLabel("Add 15 seconds")
 
             Button(intent: SkipRestTimerIntent()) {
                 Text("Skip")
-                    .font(.footnote)
+                    .font(.footnote.weight(.semibold))
                     .padding(2)
             }
             .buttonStyle(.bordered)
@@ -250,7 +252,7 @@ struct LiveActivityPhaseContent: View {
         .frame(height: LiveActivityLayout.rowHeight)
     }
 
-    private func pausedRow(label: String?) -> some View {
+    private func pausedRow(label: LocalizedStringKey?) -> some View {
         HStack(spacing: 6) {
             if let label {
                 Text(label)
@@ -271,20 +273,20 @@ struct LiveActivityPhaseContent: View {
                 summaryMetric(title: "Duration", value: LiveActivitySummaryFormat.duration(duration))
             }
             if let sets = summary.completedSetsCount {
-                summaryMetric(title: "Sets", value: "\(sets)")
+                summaryMetric(title: "Sets", value: sets.formatted())
             }
             if let volume = summary.volumeKg, volume > 0 {
-                summaryMetric(title: "Volume", value: LiveActivitySummaryFormat.volume(volume))
+                summaryMetric(title: "Volume", value: LiveActivitySummaryFormat.volume(volume, unit: state.weightUnit))
             }
             Spacer(minLength: 0)
         }
         .frame(height: LiveActivityLayout.rowHeight)
     }
 
-    private func summaryMetric(title: String, value: String) -> some View {
+    private func summaryMetric(title: LocalizedStringKey, value: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.caption2)
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(.secondary)
             Text(value)
                 .font(.subheadline.weight(.semibold))
@@ -304,7 +306,9 @@ struct ExerciseImage: View {
 
     var body: some View {
         if let imageName, !imageName.isEmpty {
-            Image(imageName)
+            // Decorative: the exercise name beside it says what it is, and `Image(_:)` would read
+            // the asset name ("BarbellBenchPress") to VoiceOver.
+            Image(decorative: imageName)
                 .renderingMode(.original)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -315,6 +319,7 @@ struct ExerciseImage: View {
                 .font(.system(size: size * 0.63))
                 .foregroundStyle(.secondary)
                 .frame(width: size, height: size)
+                .accessibilityHidden(true)
         }
     }
 }
@@ -365,24 +370,21 @@ struct RestRing: View {
 
 // MARK: - Summary formatting
 
-/// The end-of-workout figures, formatted as the old summary view formatted them.
+/// The end-of-workout figures, in the region's number format and the user's weight unit.
 enum LiveActivitySummaryFormat {
 
-    static func duration(_ seconds: TimeInterval) -> String {
-        let hours = Int(seconds) / 3600
-        let minutes = Int(seconds) / 60 % 60
-        let secs = Int(seconds) % 60
-        if hours > 0 {
-            return String(format: "%d:%02d:%02d", hours, minutes, secs)
-        }
-        return String(format: "%d:%02d", minutes, secs)
+    /// "52:00", or "1:05:30" past the hour.
+    static func duration(_ seconds: TimeInterval, locale: Locale = .current) -> String {
+        let whole = max(0, Int(seconds.isFinite ? seconds : 0))
+        let pattern: Duration.TimeFormatStyle.Pattern = whole >= 3600 ? .hourMinuteSecond : .minuteSecond
+        return Duration.seconds(whole).formatted(.time(pattern: pattern).locale(locale))
     }
 
-    static func volume(_ kilograms: Double) -> String {
-        if kilograms >= 1000 {
-            return String(format: "%.1fk kg", kilograms / 1000)
-        }
-        return String(format: "%.0f kg", kilograms)
+    /// "4.3K kg", "850 lb": compact, because the banner has a column's width for it.
+    static func volume(_ kilograms: Double, unit: LiveActivityWeightUnit, locale: Locale = .current) -> String {
+        let value = unit.value(fromKilograms: kilograms)
+        let number = value.formatted(.number.notation(.compactName).precision(.fractionLength(0...1)).locale(locale))
+        return "\(number) \(unit.abbreviation)"
     }
 }
 

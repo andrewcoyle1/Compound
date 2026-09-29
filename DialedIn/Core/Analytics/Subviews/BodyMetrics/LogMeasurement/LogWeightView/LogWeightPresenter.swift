@@ -74,7 +74,7 @@ class LogWeightPresenter {
             router.dismissScreen()
         } catch {
             interactor.playHaptic(option: .error)
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Save Weight"), error: error)
         }
 
         isLoading = false

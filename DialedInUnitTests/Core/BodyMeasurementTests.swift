@@ -152,10 +152,12 @@ struct LogMeasurementPresenterTests {
     }
 
     private final class Router: LogMeasurementRouter {
+        let router: AnyRouter = TestRouting.anyRouter
         private(set) var didDismiss = false
         private(set) var alertedErrors: [Error] = []
 
         func showAlert(error: Error) { alertedErrors.append(error) }
+        func showAlert(title: String, error: Error) { alertedErrors.append(error) }
         func dismissScreen() { didDismiss = true }
     }
 

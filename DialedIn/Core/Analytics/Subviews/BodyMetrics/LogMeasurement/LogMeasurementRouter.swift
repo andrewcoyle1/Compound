@@ -6,8 +6,7 @@
 //
 
 @MainActor
-protocol LogMeasurementRouter {
-    func showAlert(error: Error)
+protocol LogMeasurementRouter: GlobalRouter {
     func dismissScreen()
 }
 

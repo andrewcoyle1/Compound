@@ -30,6 +30,8 @@ struct LogMeasurementView: View {
         }
     }
 
+    // The picker's own "Date" label already says what the row is; a header and footer that both
+    // repeated it added nothing.
     private var dateSection: some View {
         Section {
             DatePicker(
@@ -39,10 +41,6 @@ struct LogMeasurementView: View {
                 displayedComponents: [.date]
             )
             .datePickerStyle(.compact)
-        } header: {
-            Text("Date")
-        } footer: {
-            Text("Select the date for this measurement entry")
         }
     }
 

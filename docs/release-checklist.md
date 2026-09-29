@@ -22,6 +22,8 @@ Things that must be true before a build goes to the App Store. Each is marked in
 - [ ] Lowest selectable target weight: BMI 18.5 for the person's height.
 - [ ] Calorie floors: 1,200 kcal standard; 800 kcal offered only in settings.
 - [ ] The midpoint coefficient used for "Prefer not to say" in the calorie estimate.
+- [ ] For "Prefer not to say", the Harris-Benedict estimate uses the average of its two equations.
+- [ ] The weekly-rate bands: warning from 80% of the person's maximum, "Conservative" at 50% or less.
 - [ ] Spanish for the two health consent texts (marked `needs_review` in the string catalog).
 - [ ] Whether health consent may be one "Agree and Continue" button or needs separate toggles.
 

@@ -93,32 +93,32 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `DialedIn/Core/DevSettings` | 4 | 803 | DEV/MOCK-only developer tools screen |
 | `DialedIn/Core/Notifications` | 9 | 1,084 | Activity notifications inbox |
 | `DialedIn/Core/Nutrition` | 147 | 12,613 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
-| `DialedIn/Core/Onboarding` | 115 | 7,535 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
+| `DialedIn/Core/Onboarding` | 109 | 7,371 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `DialedIn/Core/Paywalls` | 7 | 648 | Paywall screens |
-| `DialedIn/Core/Profile` | 205 | 13,278 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
+| `DialedIn/Core/Profile` | 205 | 13,290 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
 | `DialedIn/Core/Search` | 4 | 814 | User search |
 | `DialedIn/Core/Sharing` | 8 | 496 | Share-to-follower and shared-item viewer |
 | `DialedIn/Core/TabBar` | 5 | 523 | Tab bar, DeepLink parsing, tab selection |
-| `DialedIn/Core/Training` | 211 | 17,320 | Training tab: workouts, tracker, programs, history, create flows |
+| `DialedIn/Core/Training` | 211 | 17,453 | Training tab: workouts, tracker, programs, history, create flows |
 | `DialedIn/Components` | 72 | 6,741 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `DialedIn/Managers` | 242 | 29,819 | App-owned managers, models and services (see Managers table) |
-| `DialedIn/Root` | 22 | 3,208 | AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
-| `DialedIn/Utilities` | 14 | 940 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
+| `DialedIn/Managers` | 244 | 30,225 | App-owned managers, models and services (see Managers table) |
+| `DialedIn/Root` | 22 | 3,214 | AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `DialedIn/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `DialedIn/Extensions` | 13 | 638 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `DialedIn/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 590 | Code compiled into both the app and the Live Activity extension |
-| `WorkoutSessionActivity` | 136 | 1,756 | Live Activity / Dynamic Island / home widget extension |
-| `DialedInUnitTests` | 251 | 70,931 | Swift Testing unit suites (BlueprintName DialedInUnitTests) |
-| `DialedInUITests` | 7 | 542 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
+| `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
+| `DialedInUnitTests` | 257 | 71,600 | Swift Testing unit suites (BlueprintName DialedInUnitTests) |
+| `DialedInUITests` | 7 | 543 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 8 | 16,741 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
-| `scripts` | 5 | 662 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 43 | 9,579 | Specs, reviews, audits, this map |
+| `scripts` | 6 | 700 | Screenshot, contact-sheet, smoke-test generation, this map |
+| `docs` | 44 | 9,756 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-205 presenter-backed modules.
+203 presenter-backed modules.
 
 ### `DialedIn/Components` (4 modules)
 
@@ -235,7 +235,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **RecipeStart** | [Recipes/RecipeStart](DialedIn/Core/Nutrition/Recipes/RecipeStart) | 120 |  | RecipeStartDelegate, `showStartRecipeView` | RecipeStartDelegate.swift |  |
 | **TimelineActions** | [TimelineActions](DialedIn/Core/Nutrition/TimelineActions) | 365 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
 
-### `DialedIn/Core/Onboarding` (28 modules)
+### `DialedIn/Core/Onboarding` (26 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
@@ -243,30 +243,28 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **Intro** | [1 - IntroView](DialedIn/Core/Onboarding/1%20-%20IntroView) | 193 | Auth | `showIntroView` |  |  |
 | **Auth** | [2 - AuthView](DialedIn/Core/Onboarding/2%20-%20AuthView) | 435 | Paywall, Subscription | `showAuthView` |  |  |
 | **Subscription** | [3 - Subscription](DialedIn/Core/Onboarding/3%20-%20Subscription) | 151 | CompleteAccountSetup, Paywall | `showSubscriptionView` |  |  |
-| **CompleteAccountSetup** | [4 - CompleteAccountSetup](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup) | 148 | NamePhoto | `showCompleteAccountSetupView` |  |  |
+| **CompleteAccountSetup** | [4 - CompleteAccountSetup](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup) | 195 | NamePhoto | `showCompleteAccountSetupView` | CardioFitnessLevel.swift |  |
 | **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 349 | Gender | `showNamePhotoView` |  |  |
-| **Gender** | [4 - CompleteAccountSetup/2 - Gender](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/2%20-%20Gender) | 186 | DateOfBirth | `showGenderView` |  |  |
-| **DateOfBirth** | [4 - CompleteAccountSetup/3 - DateOfBirth](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth) | 174 | Height | DateOfBirthDelegate, `showDateOfBirthView` |  |  |
-| **Height** | [4 - CompleteAccountSetup/4 - Height](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height) | 291 | Weight | HeightDelegate, `showHeightView` |  |  |
-| **Weight** | [4 - CompleteAccountSetup/5 - Weight](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight) | 294 | ExerciseFrequency | WeightDelegate, `showWeightView` |  | WeightTrendPresenterTests.swift |
-| **ExerciseFrequency** | [4 - CompleteAccountSetup/6 - ExerciseFrequency](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency) | 213 | Activity | ExerciseFrequencyDelegate, `showExerciseFrequencyView` |  |  |
-| **Activity** | [4 - CompleteAccountSetup/7 - Activity](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 231 | CardioFitness | ActivityDelegate, `showActivityView` |  |  |
-| **CardioFitness** | [4 - CompleteAccountSetup/8 - CardioFitness](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/8%20-%20CardioFitness) | 236 | Expenditure | CardioFitnessDelegate, `showCardioFitnessView` |  |  |
-| **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 578 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
-| **HealthDisclaimer** | [5 - HealthDisclaimer](DialedIn/Core/Onboarding/5%20-%20HealthDisclaimer) | 265 | GoalSetting, HealthDisclaimerConfirmationModal | `showHealthDisclaimerConfirmationModal`, `showHealthDisclaimerView` |  |  |
+| **Gender** | [4 - CompleteAccountSetup/2 - Gender](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/2%20-%20Gender) | 214 | DateOfBirth | `showGenderView` |  |  |
+| **DateOfBirth** | [4 - CompleteAccountSetup/3 - DateOfBirth](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth) | 200 | Height | DateOfBirthDelegate, `showDateOfBirthView` |  |  |
+| **Height** | [4 - CompleteAccountSetup/4 - Height](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height) | 319 | Weight | HeightDelegate, `showHeightView` |  |  |
+| **Weight** | [4 - CompleteAccountSetup/5 - Weight](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight) | 321 | ExerciseFrequency | WeightDelegate, `showWeightView` |  | WeightTrendPresenterTests.swift |
+| **ExerciseFrequency** | [4 - CompleteAccountSetup/6 - ExerciseFrequency](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency) | 214 | Activity | ExerciseFrequencyDelegate, `showExerciseFrequencyView` |  |  |
+| **Activity** | [4 - CompleteAccountSetup/7 - Activity](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 231 | Expenditure | ActivityDelegate, `showActivityView` |  |  |
+| **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](DialedIn/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 577 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
+| **HealthDisclaimer** | [5 - HealthDisclaimer](DialedIn/Core/Onboarding/5%20-%20HealthDisclaimer) | 255 | GoalSetting | `showHealthDisclaimerView` |  |  |
 | **GoalSetting** | [6 - GoalSetting](DialedIn/Core/Onboarding/6%20-%20GoalSetting) | 148 | OverarchingObjective | `showGoalSettingView` |  |  |
 | **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](DialedIn/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 206 | GoalSummary, TargetWeight | `showOverarchingObjectiveView` |  |  |
-| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](DialedIn/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 350 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
-| **WeightRate** | [6 - GoalSetting/3 - WeightRate](DialedIn/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 371 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
+| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](DialedIn/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 390 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
+| **WeightRate** | [6 - GoalSetting/3 - WeightRate](DialedIn/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 407 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
 | **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](DialedIn/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 456 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
 | **CustomisingDietProgram** | [8 - OnboardingDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet) | 152 | PreferredDiet | `showCustomisingDietProgramView` |  |  |
-| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 208 | CalorieFloor | `showPreferredDietView` |  |  |
+| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 215 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
 | **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 219 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
 | **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 248 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
 | **ProteinIntake** | [8 - OnboardingDiet/5 - ProteinIntake](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake) | 220 | DietPlan | ProteinIntakeDelegate, `showProteinIntakeView` |  |  |
-| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 297 | StravaConnect | DietPlanDelegate, `showDietPlanView` |  |  |
+| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](DialedIn/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 298 | OnboardingCompleted | DietPlanDelegate, `showDietPlanView` |  |  |
 | **OnboardingCompleted** | [9 - OnboardingCompleted](DialedIn/Core/Onboarding/9%20-%20OnboardingCompleted) | 197 |  | `showOnboardingCompletedView` |  |  |
-| **StravaConnect** | [9 - StravaConnect](DialedIn/Core/Onboarding/9%20-%20StravaConnect) | 215 | OnboardingCompleted | `showStravaConnectView` |  |  |
 
 ### `DialedIn/Core/Paywalls` (1 modules)
 
@@ -322,7 +320,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **AddPinLoadedMachineRange** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPinLoadedMachine/AddPinLoadedMachineRange](DialedIn/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPinLoadedMachine/AddPinLoadedMachineRange) | 271 |  | AddPinLoadedMachineRangeDelegate, `showAddPinLoadedMachineRangeView` |  |  |
 | **EditPlateLoadedMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine](DialedIn/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine) | 166 |  | `showEditPlateLoadedMachineView` |  |  |
 | **EditWeightRange** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange](DialedIn/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange) | 240 |  | EditWeightRangeDelegate |  |  |
-| **WorkoutSettings** | [Subviews/TrainingSettings/WorkoutSettings](DialedIn/Core/Profile/Subviews/TrainingSettings/WorkoutSettings) | 340 | ExerciseAssessment, PreviousWorkoutReferenceSettings, RestTimerSettings, SmartProgressionSettings | WorkoutSettingsDelegate, `showWorkoutSettingsView` |  |  |
+| **WorkoutSettings** | [Subviews/TrainingSettings/WorkoutSettings](DialedIn/Core/Profile/Subviews/TrainingSettings/WorkoutSettings) | 352 | ExerciseAssessment, PreviousWorkoutReferenceSettings, RestTimerSettings, SmartProgressionSettings | WorkoutSettingsDelegate, `showWorkoutSettingsView` |  |  |
 | **PreviousWorkoutReferenceSettings** | [Subviews/TrainingSettings/WorkoutSettings/PreviousWorkoutReferenceSettings](DialedIn/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/PreviousWorkoutReferenceSettings) | 177 |  | PrevWORefSettingsDelegate, `showPreviousWorkoutReferenceSettingsView` |  |  |
 | **RestTimerSettings** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings](DialedIn/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings) | 329 | TimerDuration | RestTimerSettingsDelegate, `showRestTimerSettingsView` |  |  |
 | **TimerDuration** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration](DialedIn/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration) | 442 |  | TimerDurationDelegate, `showTimerDurationView` |  | TimerDurationPresenterTests.swift |
@@ -389,12 +387,12 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **WorkoutHistory** | [Subviews/WorkoutHistory](DialedIn/Core/Training/Subviews/WorkoutHistory) | 307 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
 | **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](DialedIn/Core/Training/Subviews/WorkoutSessionDetailView) | 956 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
 | **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](DialedIn/Core/Training/Subviews/WorkoutTemplateDetail) | 360 | CreateWorkout, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
-| **WorkoutTracker** | [Subviews/WorkoutTracker](DialedIn/Core/Training/Subviews/WorkoutTracker) | 1772 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings | `showWorkoutTrackerView` | WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
+| **WorkoutTracker** | [Subviews/WorkoutTracker](DialedIn/Core/Training/Subviews/WorkoutTracker) | 1818 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings | `showWorkoutTrackerView` | WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
 | **ExerciseTracker** | [Subviews/WorkoutTracker/ExerciseTracker](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker) | 269 | WorkoutNotes | ExerciseTrackerDelegate |  |  |
-| **SetTracker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker) | 704 | ExerciseSettings, RestModal, SetTarget, SwapExercisePicker, WarmupSetInfoModal, WarmupSets, WorkoutExerciseEquipmentSheet | SetTrackerDelegate |  | SetTrackerPresenterTests.swift |
-| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 794 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
+| **SetTracker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker) | 754 | ExerciseSettings, RestModal, SetTarget, SwapExercisePicker, WarmupSetInfoModal, WarmupSets, WorkoutExerciseEquipmentSheet | SetTrackerDelegate |  | SetTrackerPresenterTests.swift |
+| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 822 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
 | **SetKeyboard** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard) | 1013 |  |  | PlateCalculator.swift, SetKeyboardTextField.swift, WeightStepper.swift | SetKeyboardPresenterTests.swift |
-| **SwapExercisePicker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker) | 112 |  | `showSwapExercisePickerView` |  |  |
+| **SwapExercisePicker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker) | 121 |  | `showSwapExercisePickerView` |  |  |
 | **WarmupSets** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets) | 180 |  | WarmupSetsDelegate, `showWarmupSetsView` |  |  |
 | **WorkoutExerciseEquipmentSheet** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet](DialedIn/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet) | 324 |  | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
 | **WorkoutNotes** | [Subviews/WorkoutTracker/WorkoutNotes](DialedIn/Core/Training/Subviews/WorkoutTracker/WorkoutNotes) | 158 |  | WorkoutNotesDelegate, `showWorkoutNotesView` |  |  |
@@ -409,15 +407,15 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **AnalyticsSettingsManager** | [DialedIn/Managers/Analytics/AnalyticsSettings](DialedIn/Managers/Analytics/AnalyticsSettings/AnalyticsSettingsManager.swift) | 57 | Document<AnalyticsSettings> | AnalyticsSettings |  |  | AnalyticsSettingsManagerTests.swift |
 | **BodyMeasurementsManager** | [DialedIn/Managers/BodyMeasurements](DialedIn/Managers/BodyMeasurements/BodyMeasurementsManager.swift) | 363 | Collection<BodyMeasurementEntry> | BodyMeasurementEntry, WeightSource |  |  | BodyMeasurementsManagerTests.swift |
 | **GoalManager** | [DialedIn/Managers/Goal](DialedIn/Managers/Goal/GoalManager.swift) | 94 | Document<WeightGoal> | WeightGoal, WeightGoalBuilder |  |  | GoalManagerTests.swift |
-| **HKWorkoutManager** | [DialedIn/Managers/HKWorkout](DialedIn/Managers/HKWorkout/HKWorkoutManager.swift) | 533 |  |  |  |  | HKWorkoutManagerRestTests.swift |
-| **HealthKitManager** | [DialedIn/Managers/HealthKitManager](DialedIn/Managers/HealthKitManager/HealthKitManager.swift) | 72 |  |  |  |  | HealthKitManagerTests.swift |
+| **HKWorkoutManager** | [DialedIn/Managers/HKWorkout](DialedIn/Managers/HKWorkout/HKWorkoutManager.swift) | 643 |  |  |  |  | HKWorkoutManagerPauseTests.swift, HKWorkoutManagerRestAlertTests.swift, HKWorkoutManagerRestTests.swift |
+| **HealthKitManager** | [DialedIn/Managers/HealthKitManager](DialedIn/Managers/HealthKitManager/HealthKitManager.swift) | 117 |  |  |  |  | HealthKitManagerTests.swift |
 | **ImageUploadManager** | [DialedIn/Managers/ImageUpload](DialedIn/Managers/ImageUpload/ImageUploadManager.swift) | 43 |  |  | FirebaseImageUploadService, ImageUploadService, MockImageUploadService |  | ImageUploadManagerTests.swift |
-| **LiveActivityManager** | [DialedIn/Managers/LiveActivities](DialedIn/Managers/LiveActivities/LiveActivityManager.swift) | 473 |  |  |  | LiveActivityManager+Events.swift | LiveActivityManagerTests.swift |
+| **LiveActivityManager** | [DialedIn/Managers/LiveActivities](DialedIn/Managers/LiveActivities/LiveActivityManager.swift) | 507 |  |  |  | LiveActivityManager+Events.swift | LiveActivityManagerTests.swift |
 | **ActivityNotificationManager** | [DialedIn/Managers/Notifications](DialedIn/Managers/Notifications/ActivityNotificationManager.swift) | 111 |  |  |  |  | ActivityNotificationManagerTests.swift |
 | **FoodManager** | [DialedIn/Managers/Nutrition/Food](DialedIn/Managers/Nutrition/Food/FoodManager.swift) | 63 | Collection<FoodModel> | FoodModel, FoodModel+MealItem, ServingUnit |  |  | FoodManagerTests.swift |
 | **FoodLogSettingsManager** | [DialedIn/Managers/Nutrition/FoodLogSettings](DialedIn/Managers/Nutrition/FoodLogSettings/FoodLogSettingsManager.swift) | 88 | Document<FoodLogSettings> | FoodLogSettings |  |  | FoodLogSettingsManagerTests.swift |
 | **MealLogManager** | [DialedIn/Managers/Nutrition/MealLog](DialedIn/Managers/Nutrition/MealLog/MealLogManager.swift) | 340 | Collection<MealLogModel> | MealItemModel, MealItemSourceType, MealLogModel, MealLogModel+Mocks |  |  | MealLogManagerTests.swift |
-| **NutritionManager** | [DialedIn/Managers/Nutrition/NutritionManager](DialedIn/Managers/Nutrition/NutritionManager/NutritionManager.swift) | 433 | Document<DietPlan> | DailyMacroTarget, DailyNutritionBreakdown, DietPlan |  |  | NutritionManagerDietPlanTests.swift, NutritionManagerTests.swift |
+| **NutritionManager** | [DialedIn/Managers/Nutrition/NutritionManager](DialedIn/Managers/Nutrition/NutritionManager/NutritionManager.swift) | 437 | Document<DietPlan> | DailyMacroTarget, DailyNutritionBreakdown, DietPlan |  |  | NutritionManagerDietPlanTests.swift, NutritionManagerTests.swift |
 | **NutritionStrategyManager** | [DialedIn/Managers/Nutrition/NutritionStrategy](DialedIn/Managers/Nutrition/NutritionStrategy/NutritionStrategyManager.swift) | 188 | Collection<NutritionDayAnnotation>, Document<CheckInRecord>, Document<LoggingBreak> | CheckInRecord, LoggingBreak, NutritionDayAnnotation |  |  | NutritionStrategyManagerTests.swift |
 | **NutritionStrategySettingsManager** | [DialedIn/Managers/Nutrition/NutritionStrategySettings](DialedIn/Managers/Nutrition/NutritionStrategySettings/NutritionStrategySettingsManager.swift) | 57 | Document<NutritionStrategySettings> | NutritionStrategySettings |  |  | NutritionStrategySettingsManagerTests.swift |
 | **RecipeTemplateManager** | [DialedIn/Managers/Nutrition/RecipeTemplate](DialedIn/Managers/Nutrition/RecipeTemplate/RecipeTemplateManager.swift) | 63 | Collection<RecipeTemplateModel> | RecipeIngredientModel, RecipeTemplateModel |  |  | RecipeTemplateManagerTests.swift |
@@ -576,13 +574,13 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`DialedInUnitTests/Components`** (7): `AutoSelectNumberFieldTextTests`, `CalendarDayMarkerAccessibilityTests`, `CalendarHeaderPresenterTests`, `CustomPaywallViewTests`, `ListBuilderSelectionTests`, `MetricChartReadingsTests`, `SetDetailRowTests`
 
-**`DialedInUnitTests/Core`** (133): `AIFoodInputPresenterTests`, `ActiveTrainingProgramPresenterTests`, `AddMealPresenterTests`, `AmountPresenterTests`, `AnalyticsBodyMetricsPresenterTests`, `AnalyticsConsistencyPresenterTests`, `AnalyticsExercisePresenterTests`, `AnalyticsInsightsPresenterTests`, `AnalyticsNutritionPresenterTests`, `AnalyticsPresenterTests`, `AppShellPresenterTests`, `BarcodeScannerPresenterTests`, `BodyMeasurementTests`, `ChallengesPresenterTests`, `CheckInPresenterTests`, `CircleGoalsPresenterTests`, `CircleWeekTests`, `CommentLikesTests`, `CommentMentionsTests`, `ContentDeletionPresenterTests`, `CreateExerciseEquipmentPresenterTests`, `CreateExerciseFlowPresenterTests`, `CreateFoodFlowPresenterTests`, `CreateProgramFlowPresenterTests`, `CreateWorkoutFlowPresenterTests`, `CreateWorkoutWrapperPresenterTests`, `DashboardCirclePresenterTests`, `DashboardPresenterTests`, `DashboardSocialPresenterTests`, `DevToolsPresenterTests`, `EnergyBalancePresenterTests`, `ErrorAlertMessageTests`, `ExerciseModelDetailPresenterTests`, `FeedLoadingTests`, `FollowersListRemoveTests`, `FoodDefinitionPresenterTests`, `FoodItemQuickAddPresenterTests`, `FoodLibraryPresenterTests`, `FoodLogSettingsStaleSnapshotTests`, `GeneralSettingsPresenterTests`, `GymEquipmentAdderPresenterTests`, `GymEquipmentEditorPresenterTests`, `GymMachineEditorPresenterTests`, `GymProfilePresenterTests`, `GymProfilesListPresenterTests`, `HabitsPresenterTests`, `InviteTests`, `MacroHeaderRemainingTests`, `MealHourHeaderPresenterTests`, `MetricDetailPresenterTests`, `MuscleBalanceTests`, `MuscleGroupDetailPresenterTests`, `NotificationGroupingTests`, `NotificationSettingsPresenterTests`, `NotificationTapThroughTests`, `NotificationsFollowRequestTests`, `NutritionOverviewPresenterTests`, `NutritionPresenterTests`, `NutritionSettingsPresenterTests`, `NutritionSettingsTilePresenterTests`, `NutritionTargetChartColourTests`, `OfflineDetectionTests`, `OnboardingAccountSetupPresenterTests`, `OnboardingAuthPresenterTests`, `OnboardingCompletedRetryTests`, `OnboardingDietChoicesPresenterTests`, `OnboardingDietPlanPresenterTests`, `OnboardingEntryPresenterTests`, `OnboardingExpenditurePresenterTests`, `OnboardingFinishPresenterTests`, `OnboardingGoalSettingPresenterTests`, `OnboardingGoalSummaryEstimateTests`, `OnboardingGoalSummaryPresenterTests`, `OnboardingHeightConversionTests`, `OnboardingLifestylePresenterTests`, `OnboardingSelectionHapticsTests`, `OnboardingStepRouterTests`, `OnboardingWeightRatePresenterTests`, `PaywallPresenterTests`, `PrevWORefSettingsPresenterTests`, `PreviousWorkoutReferenceResolverTests`, `ProfileAccountPresenterTests`, `ProfileAppInfoPresenterTests`, `ProfilePresenterTests`, `ProgramDesignPresenterTests`, `ProgramSettingsFlowPresenterTests`, `ProgramSharingTests`, `ProgressPhotosPresenterTests`, `RecipeFlowPresenterTests`, `RecipePreparationPresenterTests`, `RecipeScalingPresenterTests`, `ReportReasonsTests`, `ReviewPromptPolicyTests`, `SaveFailureAlertTests`, `SearchPresenterTests`, `SearchQuickActionTests`, `SessionVolumeUnitTests`, `SessionWebLinkTests`, `SetKeyboardPresenterTests`, `SetSideTrackingTests`, `SetTrackerPresenterTests`, `SettingsSnapshotRefreshTests`, `ShareCardTests`, `SignOutListenersTests`, `SocialProfilePresenterTests`, `SocialSafetyTests`, `StreakVisibilityTests`, `TimelineActionsPresenterTests`, `TimerDurationPresenterTests`, `TrainingHomePresenterTests`, `TrainingLibraryPresenterTests`, `TrainingSettingsPresenterTests`, `WeeklyReviewTests`, `WeightStepperTests`, `WeightTrendPresenterTests`, `WorkoutBuildUnsavedChangesTests`, `WorkoutNotesTests`, `WorkoutPresenterTests`, `WorkoutSessionAuthorTests`, `WorkoutSessionDeleteFailureTests`, `WorkoutSessionDetailPresenterTests`, `WorkoutSessionHighlightsTests`, `WorkoutSessionRowStatsTests`, `WorkoutSessionSaveAsTemplateTests`, `WorkoutSessionTemplateBuilderTests`, `WorkoutTrackerFinishTests`, `WorkoutTrackerPresenterProgressionTests`, `WorkoutTrackerPresenterTests`, `WorkoutTrackerQuickFinishTests`, `WorkoutTrackerRestFeedbackTests`, `WorkoutTrackerSupersetTests`, `WorkoutTrackingRowPresenterTests`, `WorkoutTrackingSheetPresenterTests`
+**`DialedInUnitTests/Core`** (135): `AIFoodInputPresenterTests`, `ActiveTrainingProgramPresenterTests`, `AddMealPresenterTests`, `AmountPresenterTests`, `AnalyticsBodyMetricsPresenterTests`, `AnalyticsConsistencyPresenterTests`, `AnalyticsExercisePresenterTests`, `AnalyticsInsightsPresenterTests`, `AnalyticsNutritionPresenterTests`, `AnalyticsPresenterTests`, `AppShellPresenterTests`, `BarcodeScannerPresenterTests`, `BodyMeasurementTests`, `ChallengesPresenterTests`, `CheckInPresenterTests`, `CircleGoalsPresenterTests`, `CircleWeekTests`, `CommentLikesTests`, `CommentMentionsTests`, `ContentDeletionPresenterTests`, `CreateExerciseEquipmentPresenterTests`, `CreateExerciseFlowPresenterTests`, `CreateFoodFlowPresenterTests`, `CreateProgramFlowPresenterTests`, `CreateWorkoutFlowPresenterTests`, `CreateWorkoutWrapperPresenterTests`, `DashboardCirclePresenterTests`, `DashboardPresenterTests`, `DashboardSocialPresenterTests`, `DevToolsPresenterTests`, `EnergyBalancePresenterTests`, `ErrorAlertMessageTests`, `ExerciseModelDetailPresenterTests`, `FeedLoadingTests`, `FollowersListRemoveTests`, `FoodDefinitionPresenterTests`, `FoodItemQuickAddPresenterTests`, `FoodLibraryPresenterTests`, `FoodLogSettingsStaleSnapshotTests`, `GeneralSettingsPresenterTests`, `GymEquipmentAdderPresenterTests`, `GymEquipmentEditorPresenterTests`, `GymMachineEditorPresenterTests`, `GymProfilePresenterTests`, `GymProfilesListPresenterTests`, `HabitsPresenterTests`, `InviteTests`, `MacroHeaderRemainingTests`, `MealHourHeaderPresenterTests`, `MetricDetailPresenterTests`, `MuscleBalanceTests`, `MuscleGroupDetailPresenterTests`, `NotificationGroupingTests`, `NotificationSettingsPresenterTests`, `NotificationTapThroughTests`, `NotificationsFollowRequestTests`, `NutritionOverviewPresenterTests`, `NutritionPresenterTests`, `NutritionSettingsPresenterTests`, `NutritionSettingsTilePresenterTests`, `NutritionTargetChartColourTests`, `OfflineDetectionTests`, `OnboardingAccountSetupPresenterTests`, `OnboardingAppleHealthFillTests`, `OnboardingAuthPresenterTests`, `OnboardingCompletedRetryTests`, `OnboardingDietChoicesPresenterTests`, `OnboardingDietPlanPresenterTests`, `OnboardingEntryPresenterTests`, `OnboardingExpenditurePresenterTests`, `OnboardingFinishPresenterTests`, `OnboardingGoalSettingPresenterTests`, `OnboardingGoalSummaryEstimateTests`, `OnboardingGoalSummaryPresenterTests`, `OnboardingHealthConsentPresenterTests`, `OnboardingHeightConversionTests`, `OnboardingLifestylePresenterTests`, `OnboardingSelectionHapticsTests`, `OnboardingStepRouterTests`, `OnboardingWeightRatePresenterTests`, `PaywallPresenterTests`, `PrevWORefSettingsPresenterTests`, `PreviousWorkoutReferenceResolverTests`, `ProfileAccountPresenterTests`, `ProfileAppInfoPresenterTests`, `ProfilePresenterTests`, `ProgramDesignPresenterTests`, `ProgramSettingsFlowPresenterTests`, `ProgramSharingTests`, `ProgressPhotosPresenterTests`, `RecipeFlowPresenterTests`, `RecipePreparationPresenterTests`, `RecipeScalingPresenterTests`, `ReportReasonsTests`, `ReviewPromptPolicyTests`, `SaveFailureAlertTests`, `SearchPresenterTests`, `SearchQuickActionTests`, `SessionVolumeUnitTests`, `SessionWebLinkTests`, `SetKeyboardPresenterTests`, `SetSideTrackingTests`, `SetTrackerPresenterTests`, `SettingsSnapshotRefreshTests`, `ShareCardTests`, `SignOutListenersTests`, `SocialProfilePresenterTests`, `SocialSafetyTests`, `StreakVisibilityTests`, `TimelineActionsPresenterTests`, `TimerDurationPresenterTests`, `TrainingHomePresenterTests`, `TrainingLibraryPresenterTests`, `TrainingSettingsPresenterTests`, `WeeklyReviewTests`, `WeightStepperTests`, `WeightTrendPresenterTests`, `WorkoutBuildUnsavedChangesTests`, `WorkoutNotesTests`, `WorkoutPresenterTests`, `WorkoutSessionAuthorTests`, `WorkoutSessionDeleteFailureTests`, `WorkoutSessionDetailPresenterTests`, `WorkoutSessionHighlightsTests`, `WorkoutSessionRowStatsTests`, `WorkoutSessionSaveAsTemplateTests`, `WorkoutSessionTemplateBuilderTests`, `WorkoutTrackerFinishTests`, `WorkoutTrackerPresenterProgressionTests`, `WorkoutTrackerPresenterTests`, `WorkoutTrackerQuickFinishTests`, `WorkoutTrackerRestFeedbackTests`, `WorkoutTrackerSupersetTests`, `WorkoutTrackingRowPresenterTests`, `WorkoutTrackingSheetPresenterTests`
 
 **`DialedInUnitTests/DesignSystem`** (2): `FormatTests`, `OnboardingStepProgressTests`
 
 **`DialedInUnitTests/Extensions`** (2): `CollectionAndStringExtensionTests`, `DateExtensionTests`
 
-**`DialedInUnitTests/Managers`** (22): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `StepsManagerTests`, `StravaManagerTests`, `WorkoutLocationTypeDescriptionTests`
+**`DialedInUnitTests/Managers`** (26): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `HKWorkoutManagerPauseTests`, `HKWorkoutManagerRestAlertTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `RestOverMessageTests`, `StepsManagerTests`, `StravaManagerTests`, `WorkoutLocationTypeDescriptionTests`, `WorkoutSettingsLockScreenTests`
 
 **`DialedInUnitTests/Managers/FirestoreCost`** (2): `DataAccessLogTests`, `FollowingQueriesTests`
 
@@ -643,6 +641,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 | File | Lines |
 |---|---:|
+| [scripts/clean-simulators.sh](scripts/clean-simulators.sh) | 38 |
 | [scripts/codebase-map.py](scripts/codebase-map.py) | 378 |
 | [scripts/contact-sheet.py](scripts/contact-sheet.py) | 42 |
 | [scripts/gen-smoke-tests.sh](scripts/gen-smoke-tests.sh) | 29 |
@@ -650,15 +649,16 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [scripts/screenshots.sh](scripts/screenshots.sh) | 94 |
 | [docs/AppPrivacy.md](docs/AppPrivacy.md) | 101 |
 | [docs/dead-settings-audit.md](docs/dead-settings-audit.md) | 279 |
-| [docs/reviews/hig-active-workout.md](docs/reviews/hig-active-workout.md) | 504 |
+| [docs/release-checklist.md](docs/release-checklist.md) | 47 |
+| [docs/reviews/hig-active-workout.md](docs/reviews/hig-active-workout.md) | 519 |
 | [docs/reviews/hig-analytics-charts.md](docs/reviews/hig-analytics-charts.md) | 462 |
 | [docs/reviews/hig-dashboard-social.md](docs/reviews/hig-dashboard-social.md) | 537 |
-| [docs/reviews/hig-decisions.md](docs/reviews/hig-decisions.md) | 125 |
+| [docs/reviews/hig-decisions.md](docs/reviews/hig-decisions.md) | 198 |
 | [docs/reviews/hig-foundations.md](docs/reviews/hig-foundations.md) | 502 |
 | [docs/reviews/hig-handoffs.md](docs/reviews/hig-handoffs.md) | 216 |
-| [docs/reviews/hig-index.md](docs/reviews/hig-index.md) | 169 |
+| [docs/reviews/hig-index.md](docs/reviews/hig-index.md) | 182 |
 | [docs/reviews/hig-nutrition.md](docs/reviews/hig-nutrition.md) | 521 |
-| [docs/reviews/hig-onboarding-data-steps.md](docs/reviews/hig-onboarding-data-steps.md) | 510 |
+| [docs/reviews/hig-onboarding-data-steps.md](docs/reviews/hig-onboarding-data-steps.md) | 525 |
 | [docs/reviews/hig-profile-settings-paywalls.md](docs/reviews/hig-profile-settings-paywalls.md) | 506 |
 | [docs/reviews/hig-screenshot-review.md](docs/reviews/hig-screenshot-review.md) | 256 |
 | [docs/reviews/hig-shell-navigation.md](docs/reviews/hig-shell-navigation.md) | 528 |

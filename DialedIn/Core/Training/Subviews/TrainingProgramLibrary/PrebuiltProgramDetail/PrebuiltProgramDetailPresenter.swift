@@ -46,7 +46,7 @@ class PrebuiltProgramDetailPresenter {
         } catch {
             interactor.trackEvent(event: Event.startFail(programId: program.id, error: error))
             interactor.playHaptic(option: .error)
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Start Program"), error: error)
         }
     }
 }

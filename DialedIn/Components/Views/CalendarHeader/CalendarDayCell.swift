@@ -119,7 +119,7 @@ struct CalendarDayCell: View {
                 Capsule()
                     .inset(by: Self.ringWidth / 2)
                     .trim(from: 0, to: marker.fraction)
-                    .stroke(progressStyle(for: marker), style: StrokeStyle(lineWidth: Self.ringWidth, lineCap: .round))
+                    .stroke(progressStyle(for: marker), style: strokeStyle(for: marker))
             }
         }
     }
@@ -151,6 +151,16 @@ struct CalendarDayCell: View {
             return AnyShapeStyle(Color.success.opacity(0.5))
         }
         return AnyShapeStyle(.tint)
+    }
+
+    /// Met and over-goal used to differ only by the ring's hue (green vs. red), which colour-blind
+    /// people can't reliably tell apart. Over-goal now also dashes, so the two differ by shape.
+    private func strokeStyle(for marker: CalendarDayMarker) -> StrokeStyle {
+        StrokeStyle(
+            lineWidth: Self.ringWidth,
+            lineCap: .round,
+            dash: marker.ringIsDashed ? [Self.ringWidth * 1.5, Self.ringWidth * 1.5] : []
+        )
     }
 
     private func badge(_ count: Int) -> some View {

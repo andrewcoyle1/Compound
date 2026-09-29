@@ -29,6 +29,10 @@ Things that must be true before a build goes to the App Store. Each is marked in
 
 ## Check once
 
+- [ ] **The Production build's optimisation level.** It is `-Osize` to avoid a compiler crash in
+      Xcode 27.0 (see `CLAUDE.md`, Code Health Baseline). Try the default `-O` again with each
+      new Xcode, or build releases with Xcode 26.6.
+
 - [ ] How long Google's Vertex AI keeps the photos and text sent for analysis, so the in-app
       disclosure stays true.
 - [ ] The Time Sensitive Notifications capability is enabled for the app ID.

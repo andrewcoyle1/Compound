@@ -39,35 +39,35 @@ class AddPinLoadedMachineRangePresenter {
         router.dismissScreen()
     }
     
-    func onSavePressed() {
+    /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
+    /// disabled until then, rather than reporting the problem in an alert after the tap.
+    var validationMessage: String? {
         guard range.minWeight < range.maxWeight else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "The range start must be less than the range end."))
-            return
+            return String(localized: "The range start must be less than the range end.")
         }
-        
         guard range.increment > 0 else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "The increment must be greater than zero."))
-            return
+            return String(localized: "The increment must be greater than zero.")
         }
-        
         let normalizedName = range.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard pinLoadedMachine.wrappedValue.ranges.contains(where: {
             $0.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 .localizedCaseInsensitiveCompare(normalizedName) == .orderedSame
         }) == false else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "A range with this name already exists."))
-            return
+            return String(localized: "A range with this name already exists.")
         }
-        
         guard pinLoadedMachine.wrappedValue.ranges.contains(where: {
             $0.minWeight == range.minWeight &&
             $0.maxWeight == range.maxWeight &&
             $0.increment == range.increment &&
             $0.unit == range.unit
         }) == false else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This range is already added."))
-            return
+            return String(localized: "This range is already added.")
         }
+        return nil
+    }
+
+    func onSavePressed() {
+        guard validationMessage == nil else { return }
         
         var updatedMachine = pinLoadedMachine.wrappedValue
         updatedMachine.ranges.append(range)

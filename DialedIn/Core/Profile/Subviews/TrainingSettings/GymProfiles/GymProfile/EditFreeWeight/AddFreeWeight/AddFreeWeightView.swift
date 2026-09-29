@@ -18,6 +18,11 @@ struct AddFreeWeightView: View {
                 weightSection
             }
             .listSectionMargins(.vertical, 0)
+            if let message = presenter.validationMessage {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .navigationTitle("Add")
         .navigationSubtitle(presenter.freeWeight.wrappedValue.name)
@@ -48,7 +53,7 @@ struct AddFreeWeightView: View {
             Text("Weight")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.freeWeightAvailable.availableWeights, format: .number, prompt: Text(""))
+                TextField("Weight", value: $presenter.freeWeightAvailable.availableWeights, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -69,6 +74,7 @@ struct AddFreeWeightView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .disabled(presenter.validationMessage != nil)
         }
     }
 }

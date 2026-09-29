@@ -61,13 +61,19 @@ class AddFreeWeightPresenter {
         router.dismissScreen()
     }
     
-    func onSavePressed() {
+    /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
+    /// disabled until then, rather than reporting the problem in an alert after the tap.
+    var validationMessage: String? {
         guard freeWeight.wrappedValue.range.contains(where: {
             $0.availableWeights == freeWeightAvailable.availableWeights && $0.unit == freeWeightAvailable.unit
         }) == false else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
-            return 
+            return String(localized: "This weight is already added.")
         }
+        return nil
+    }
+
+    func onSavePressed() {
+        guard validationMessage == nil else { return }
         self.freeWeight.wrappedValue.range.append(self.freeWeightAvailable)
         router.dismissScreen()
     }

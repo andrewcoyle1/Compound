@@ -17,6 +17,11 @@ struct AddBandView: View {
                 weightSection
             }
             .listSectionMargins(.vertical, 0)
+            if let message = presenter.validationMessage {
+                Section {
+                    InlineMessage(.info, message)
+                }
+            }
         }
         .navigationTitle("Add")
         .navigationSubtitle(presenter.band.wrappedValue.name)
@@ -48,7 +53,7 @@ struct AddBandView: View {
             Text("Label")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField(text: $presenter.bandAvailable.name, prompt: Text(""), label: { Text("Label") })
+                TextField(text: $presenter.bandAvailable.name, label: { Text("Label") })
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.default)
             }
@@ -60,7 +65,7 @@ struct AddBandView: View {
             Text("Weight")
                 .font(.sectionTitle)
             ZStack(alignment: .trailing) {
-                TextField("", value: $presenter.bandAvailable.availableResistance, format: .number, prompt: Text(""))
+                TextField("Weight", value: $presenter.bandAvailable.availableResistance, format: .number, prompt: Text("0"))
                     .textFieldStyle(.roundedBorder)
                     .keyboardType(.decimalPad)
                 Text(presenter.unit.abbreviation)
@@ -81,6 +86,7 @@ struct AddBandView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .disabled(presenter.validationMessage != nil)
         }
     }
 }

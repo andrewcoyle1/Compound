@@ -64,17 +64,22 @@ class AddBandPresenter {
         router.dismissScreen()
     }
     
-    func onSavePressed() {
+    /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
+    /// disabled until then, rather than reporting the problem in an alert after the tap.
+    var validationMessage: String? {
         guard band.wrappedValue.range.contains(where: {
             $0.availableResistance == bandAvailable.availableResistance && $0.unit == bandAvailable.unit
         }) == false else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "This weight is already added."))
-            return 
+            return String(localized: "This weight is already added.")
         }
         guard bandAvailable.name.isEmpty == false else {
-            router.showSimpleAlert(title: String(localized: "Unable to add"), subtitle: String(localized: "Please enter a name for this weight."))
-            return
+            return String(localized: "Please enter a name for this weight.")
         }
+        return nil
+    }
+
+    func onSavePressed() {
+        guard validationMessage == nil else { return }
         self.band.wrappedValue.range.append(self.bandAvailable)
         router.dismissScreen()
     }

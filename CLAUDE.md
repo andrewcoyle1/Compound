@@ -544,12 +544,20 @@ As of the UI framework merge, the Development and Mock schemes and the
 `WorkoutSessionActivityExtension` scheme build with **zero warnings**, and `swiftlint --strict`
 reports **zero violations** across 1,520 files, including the design-system custom rules.
 
-Under **Xcode 27.0** the Production (Release, whole-module-optimised) build crashes the compiler:
-an LLVM verifier failure, "Instruction does not dominate all uses", in the `DialedIn` module. Before
-the UI framework merge it already failed, one step earlier, on an optimizer crash that
-`WeeklyReviewPresenter`'s `now:` default now avoids, so this is the toolchain rather than the
-swarm's code. CI pins Xcode 26.6; check
-Production there, or with 26.6 installed, before treating it as a regression. Treat any new warning as something to
+Under **Xcode 27.0** the Production scheme builds only because the app target's Release
+configuration sets `SWIFT_OPTIMIZATION_LEVEL = "-Osize"`. At the default `-O` the compiler
+crashes: an LLVM verifier failure, "Instruction does not dominate all uses". Xcode shows it as
+"Command SwiftCompile failed with a nonzero exit code".
+
+- The crash is reported against `CallToActionButton.o`. That is misleading: in a whole-module
+  build, shared and specialised generic code is emitted into the first file's unit, and that
+  file is first in the list. Marking that file's code `@_optimize(none)` changes nothing (tried
+  29 Sep 2026). The function at fault has not been identified.
+- It predates the UI framework and the HIG work. CI pins Xcode 26.6, which does not crash.
+- Put the setting back to the default when a toolchain builds Production at `-O`: delete the
+  one line from the Release configuration in `project.pbxproj` and build the scheme.
+
+Treat any new warning as something to
 fix rather than accumulate.
 
 Building a scheme does not compile the test target, so a warning in `DialedInUnitTests` shows up

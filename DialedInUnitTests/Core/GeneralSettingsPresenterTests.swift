@@ -6,6 +6,7 @@
 //
 
 import Testing
+import AuthenticationServices
 import Foundation
 @testable import DialedIn
 
@@ -533,9 +534,23 @@ struct GeneralSettingsIntegrationsTests {
         screen.presenter.onStravaConnectPressed()
         await TestManagers.eventually { !screen.router.alerts.isEmpty }
 
-        #expect(screen.router.alerts == ["Connection Failed"])
+        // Was "Connection Failed" with the raw error as its message; now fixed copy.
+        #expect(screen.router.alerts == ["Unable to Connect Strava"])
         #expect(!screen.presenter.stravaIsConnected)
         #expect(!screen.presenter.isConnectingStrava)
+    }
+
+    /// Closing Strava's sign-in page is not a failure, so it says nothing.
+    @Test("Test Cancelling The Strava Sign In Says Nothing")
+    func testCancellingTheStravaSignInSaysNothing() async {
+        let screen = makeScreen()
+        screen.interactor.authenticateError = ASWebAuthenticationSessionError(.canceledLogin)
+
+        screen.presenter.onStravaConnectPressed()
+        #expect(await TestManagers.eventually { !screen.presenter.isConnectingStrava })
+
+        #expect(screen.router.alerts.isEmpty)
+        #expect(!screen.presenter.stravaIsConnected)
     }
 
     /// Disconnect asks first, and once confirmed the row follows at once: the manager's state is

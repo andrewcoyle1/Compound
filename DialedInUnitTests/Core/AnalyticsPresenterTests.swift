@@ -341,8 +341,8 @@ struct AnalyticsPresenterTests {
         surplus.presenter.loadMacrosData()
         balanced.presenter.loadMacrosData()
 
-        #expect(deficit.presenter.energyBalanceLatestValueText == "\(1000.formatted()) deficit")
-        #expect(surplus.presenter.energyBalanceLatestValueText == "500 surplus")
+        #expect(deficit.presenter.energyBalanceLatestValueText == "\(1000.formatted()) kcal deficit")
+        #expect(surplus.presenter.energyBalanceLatestValueText == "500 kcal surplus")
         #expect(balanced.presenter.energyBalanceLatestValueText == "Balanced")
     }
 

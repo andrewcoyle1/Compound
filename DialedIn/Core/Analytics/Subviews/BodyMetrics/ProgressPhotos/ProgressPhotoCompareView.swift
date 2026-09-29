@@ -15,9 +15,18 @@ struct ProgressPhotoCompareView: View {
 
     let delegate: ProgressPhotoCompareDelegate
 
-    private enum Mode: String, CaseIterable {
-        case sideBySide = "Side by Side"
-        case slider = "Slider"
+    private enum Mode: CaseIterable {
+        case sideBySide
+        case slider
+
+        /// `rawValue` fed straight into `Text($0.rawValue)`, which does not localize — a `String`
+        /// read from a variable isn't seen by the string catalog extractor, only a literal is.
+        var title: String {
+            switch self {
+            case .sideBySide: return String(localized: "Side by Side")
+            case .slider: return String(localized: "Slider")
+            }
+        }
     }
 
     @State private var mode: Mode = .sideBySide
@@ -27,7 +36,7 @@ struct ProgressPhotoCompareView: View {
     var body: some View {
         VStack(spacing: Spacing.l) {
             Picker("Layout", selection: $mode) {
-                ForEach(Mode.allCases, id: \.self) { Text($0.rawValue) }
+                ForEach(Mode.allCases, id: \.self) { Text($0.title) }
             }
             .pickerStyle(.segmented)
 
@@ -47,16 +56,20 @@ struct ProgressPhotoCompareView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func photo(_ photo: ProgressPhotoModel) -> some View {
+    /// `description` is left `nil` in the slider overlay, where the caller wraps the whole overlay
+    /// in one accessibility element with its own label.
+    private func photo(_ photo: ProgressPhotoModel, description: String? = nil) -> some View {
         Color.clear
             .aspectRatio(3 / 4, contentMode: .fit)
-            .overlay { ImageLoaderView(urlString: photo.imageUrl ?? "", resizingMode: .fill) }
+            .overlay {
+                ImageLoaderView(urlString: photo.imageUrl ?? "", resizingMode: .fill, imageDescription: description)
+            }
             .clipped()
     }
 
     private func column(_ model: ProgressPhotoModel, caption: String) -> some View {
         VStack(spacing: Spacing.s) {
-            photo(model)
+            photo(model, description: caption)
                 .clipShape(.rect(cornerRadius: Radius.m, style: .continuous))
             Text(caption)
                 .font(.label)

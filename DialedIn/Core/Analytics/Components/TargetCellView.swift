@@ -49,11 +49,18 @@ struct TargetCellView: View {
 
             ZStack {
                 ZStack {
-                    ProgressView(value: clampedProgress)
-                        .progressViewStyle(.linear)
-                        .tint(tint)
-                        .frame(width: progressBarWidth, height: Spacing.s)
-                        .padding(padding)
+                    // A drawn bar, not `ProgressView`: this fill is a fixed, already-known amount
+                    // eaten today, not a transient operation in flight — the component the
+                    // guidelines describe for progress is the wrong one for static data.
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(.quaternary)
+                        Capsule()
+                            .fill(tint)
+                            .frame(width: progressBarWidth * clampedProgress)
+                    }
+                    .frame(width: progressBarWidth, height: Spacing.s)
+                    .padding(padding)
                     GeometryReader { geo in
                         let width: CGFloat = geo.size.width
                         let height: CGFloat = geo.size.height

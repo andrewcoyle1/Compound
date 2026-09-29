@@ -46,6 +46,13 @@ struct NutritionAnalyticsView: View {
         .onNotificationReceived(name: Constants.remoteDataSyncDidComplete) { _ in
             Task { await presenter.loadData() }
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
+            }
+        }
     }
     
     private var caloriesAndMacrosSection: some View {

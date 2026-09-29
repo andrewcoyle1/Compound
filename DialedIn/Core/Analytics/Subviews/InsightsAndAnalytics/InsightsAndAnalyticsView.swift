@@ -75,7 +75,6 @@ struct InsightsAndAnalyticsView: View {
                 title: String(localized: "Energy Balance"),
                 subtitle: presenter.energyBalanceSubtitle,
                 value: presenter.energyBalanceLatestValueText,
-                unit: presenter.energyBalanceUnitText,
                 themeColor: nil,
                 chartConfiguration: .compact
             ) {

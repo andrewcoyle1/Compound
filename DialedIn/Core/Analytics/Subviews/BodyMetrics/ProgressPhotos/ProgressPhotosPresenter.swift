@@ -65,10 +65,6 @@ class ProgressPhotosPresenter {
         await interactor.startListeningForProgressPhotos()
     }
 
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     // MARK: Add
 
     func onCameraPressed() {
@@ -89,7 +85,7 @@ class ProgressPhotosPresenter {
             }
             onImagePicked(image)
         } catch {
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Load Photo"), error: error)
         }
     }
 
@@ -124,7 +120,7 @@ class ProgressPhotosPresenter {
             interactor.trackEvent(event: Event.addSuccess(pose: pose))
         } catch {
             interactor.trackEvent(event: Event.addFail(error: error))
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Add Photo"), error: error)
         }
     }
 
@@ -160,6 +156,18 @@ class ProgressPhotosPresenter {
 
     // MARK: Delete
 
+    /// Delete used to live only in the photo's context menu, which the HIG asks not to rely on —
+    /// tapping a single photo to select it now also enables this toolbar action for it.
+    var selectedPhotoForDelete: ProgressPhotoModel? {
+        guard selectedIds.count == 1 else { return nil }
+        return photos.first { $0.id == selectedIds[0] }
+    }
+
+    func onDeleteToolbarPressed() {
+        guard let photo = selectedPhotoForDelete else { return }
+        onDeletePressed(photo)
+    }
+
     func onDeletePressed(_ photo: ProgressPhotoModel) {
         photoPendingDelete = photo
     }
@@ -173,7 +181,7 @@ class ProgressPhotosPresenter {
             interactor.trackEvent(event: Event.deleteSuccess)
         } catch {
             interactor.trackEvent(event: Event.deleteFail(error: error))
-            router.showAlert(error: error)
+            router.showAlert(title: String(localized: "Unable to Delete Photo"), error: error)
         }
     }
 }

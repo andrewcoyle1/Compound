@@ -79,15 +79,14 @@ struct AnalyticsView<NutritionChart: View>: View {
     }
     
     private var headerSection: some View {
+        // There is only ever one header card today, so this used to be a `ScrollView(.horizontal)`
+        // around a single item: nothing to scroll to, and in split view the card took half the
+        // width with the other half left empty.
         Section {
-            ScrollView(.horizontal) {
-                HStack(spacing: headerCardSpacing) {
-                    nutritionTargetSection
-                }
-                .scrollTargetLayout()
+            HStack(spacing: headerCardSpacing) {
+                nutritionTargetSection
             }
-            .contentMargins(.horizontal, headerCardSpacing, for: .scrollContent)
-            .scrollTargetBehavior(.viewAligned)
+            .padding(.horizontal, headerCardSpacing)
             .topFillEdge()
             // Edge to edge and up to the navigation bar, on the colour `topFill` carries above it.
             .listRowInsets(EdgeInsets())
@@ -251,7 +250,6 @@ private extension AnalyticsView {
                     title: String(localized: "Energy Balance"),
                     subtitle: presenter.energyBalanceSubtitle,
                     value: presenter.energyBalanceLatestValueText,
-                    unit: presenter.energyBalanceUnitText,
                     themeColor: nil,
                     chartConfiguration: .compact
                 ) {

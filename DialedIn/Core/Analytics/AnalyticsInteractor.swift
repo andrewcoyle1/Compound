@@ -28,6 +28,7 @@ protocol AnalyticsInteractor: GlobalInteractor {
     func estimateTDEE(user: UserModel?) -> Double
     var stepsHistory: [StepsModel] { get }
     func backfillStepsFromHealthKit() async
+    var expenditureHistory: [ExpenditureEstimate] { get }
 }
 
 extension CoreInteractor: AnalyticsInteractor { }

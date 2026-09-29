@@ -9,6 +9,7 @@ protocol InsightsAndAnalyticsInteractor: GlobalInteractor {
     var workoutSessions: [WorkoutSessionModel] { get }
     func getDailyTotals(dayKey: String) throws -> DailyMacroTarget
     func estimateTDEE(user: UserModel?) -> Double
+    var expenditureHistory: [ExpenditureEstimate] { get }
 }
 
 extension CoreInteractor: InsightsAndAnalyticsInteractor { }

@@ -27,6 +27,10 @@ class NutritionAnalyticsPresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
 
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     var dayKey: String {
         selectedDate.dayKey
     }

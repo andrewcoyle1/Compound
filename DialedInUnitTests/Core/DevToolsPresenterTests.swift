@@ -497,6 +497,7 @@ struct DevToolsNotificationsPresenterTests {
         func showSocialProfileView(delegate: SocialProfileDelegate) { }
         func showSharedItemView(delegate: SharedItemDelegate) { }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }
+        func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { }
     }
 
     private struct Screen {

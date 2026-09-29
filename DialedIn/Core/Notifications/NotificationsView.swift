@@ -38,6 +38,13 @@ struct NotificationsView: View {
                     presenter.onDismissPressed()
                 }
             }
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    presenter.onNotificationSettingsPressed()
+                } label: {
+                    Image(systemName: "gear")
+                }
+            }
         }
         .task {
             await presenter.loadNotifications()
@@ -54,8 +61,8 @@ struct NotificationsView: View {
             // Push permission governs only the push switches. The activity list is in-app and was
             // hidden behind the prompt, so a simulator (or a user) that never granted push saw none.
             switch presenter.authorizationStatus {
-            case .authorized:
-                socialPushSection
+//            case .authorized:
+//                socialPushSection
             case .notDetermined:
                 notDeterminedContent
             case .denied, .provisional, .ephemeral:

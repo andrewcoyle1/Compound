@@ -261,6 +261,10 @@ class NotificationsPresenter {
             }
         }
     }
+    
+    func onNotificationSettingsPressed() {
+        router.showNotificationSettingsView(delegate: NotificationSettingsDelegate())
+    }
 }
 
 extension NotificationsPresenter {

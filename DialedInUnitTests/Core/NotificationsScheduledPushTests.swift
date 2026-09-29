@@ -69,6 +69,7 @@ struct NotificationsScheduledPushTests {
         func showSocialProfileView(delegate: SocialProfileDelegate) { }
         func showSharedItemView(delegate: SharedItemDelegate) { }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }
+        func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { }
     }
 
     /// The stored JSON keys, which are what `functions/lib.js` reads.

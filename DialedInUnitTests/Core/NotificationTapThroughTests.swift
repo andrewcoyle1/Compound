@@ -89,6 +89,7 @@ struct NotificationTapThroughTests {
         func showSocialProfileView(delegate: SocialProfileDelegate) { shown.append("profile:\(delegate.user.userId)") }
         func showSharedItemView(delegate: SharedItemDelegate) { shown.append("share:\(delegate.share.id)|\(delegate.senderName)") }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { shown.append("challenge:\(delegate.challenge.id)") }
+        func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { }
     }
 
     private struct Screen {

@@ -90,6 +90,7 @@ struct NotificationsFollowRequestTests {
         func showSocialProfileView(delegate: SocialProfileDelegate) { }
         func showSharedItemView(delegate: SharedItemDelegate) { }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }
+        func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { }
     }
 
     private func request(_ id: String) -> FollowRequestModel {

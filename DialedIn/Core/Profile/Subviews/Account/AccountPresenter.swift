@@ -144,9 +144,11 @@ class AccountPresenter {
             #endif
 
             interactor.trackEvent(eventName: "profile_edit_save_success", parameters: [:], type: .analytic)
+            interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
             interactor.trackEvent(eventName: "profile_edit_save_failed", parameters: ["error": String(describing: error)], type: .analytic)
+            interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Unable to save"),
                 subtitle: "Please check your internet connection and try again."

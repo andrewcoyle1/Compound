@@ -206,6 +206,17 @@ struct AccountView: View {
             }
             .accessibilityLabel(presenter.currentUser?.submittedProfileImage == nil ? String(localized: "Add profile photo") : String(localized: "Change profile photo"))
         }
+        // The fields above are editors, and without this nothing on the screen could be saved.
+        ToolbarItem(placement: .confirmationAction) {
+            if presenter.isSaving {
+                ProgressView()
+            } else {
+                Button(role: .confirm) {
+                    Task { await presenter.saveProfile() }
+                }
+                .disabled(!presenter.canSave)
+            }
+        }
     }
 
 }

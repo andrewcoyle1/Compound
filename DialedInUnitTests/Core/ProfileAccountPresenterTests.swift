@@ -335,6 +335,25 @@ struct ProfileAccountPresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("profile_edit_save_failed"))
         #expect(!screen.interactor.trackedEventNames.contains("profile_edit_save_success"))
         #expect(!screen.presenter.isSaving)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    /// The screen had no Save button, so `saveProfile()` had no caller outside these tests and
+    /// every edit was lost on Back. The button now calls it; a save confirms itself with a success
+    /// haptic, and nothing is written or played until the person asks to save.
+    @Test("Test A Save Confirms With A Success Haptic Only When Asked")
+    func testASaveConfirmsWithASuccessHapticOnlyWhenAsked() async {
+        let screen = makeScreen(user: UserModel(userId: "user-1", firstName: "Andrew"))
+        screen.presenter.prefillFromCurrentUser()
+        screen.presenter.lastName = "Coyle"
+
+        #expect(screen.interactor.savedData.isEmpty)
+        #expect(screen.interactor.playedHaptics.isEmpty)
+
+        await screen.presenter.saveProfile()
+
+        #expect(string(screen.interactor.savedData.first ?? [:], .submittedLastName) == "Coyle")
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     // MARK: - Profile photo

@@ -26,8 +26,6 @@ struct ShortcutsView: View {
                 }
             } header: {
                 Text("On the Search Tab")
-            } footer: {
-                Text("Tap Edit to reorder or remove.")
             }
 
             if !presenter.availableActions.isEmpty {

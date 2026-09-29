@@ -162,47 +162,33 @@ struct NutritionSettingsFoodLogTests {
         #expect(screen.interactor.savedSettings.last?.endHour == 21)
     }
 
-    /// The row's subtitle is the only place the chosen range is shown, and midnight and midday are
-    /// where a naive 12-hour conversion produces "0 AM" and "0 PM".
-    @Test("Test The Hour Range Subtitle Reads In Twelve Hour Time")
-    func testTheHourRangeSubtitleReadsInTwelveHourTime() {
-        let screen = makeScreen { settings in
-            settings.startHour = 0
-            settings.endHour = 12
+    /// Midnight and midday are where a naive 12-hour conversion produces "0 AM" and "0 PM".
+    /// Formatted by the system, so a 24-hour region gets a 24-hour clock.
+    @Test("Test Hours Read In The Region's Clock")
+    func testHoursReadInTheRegionsClock() {
+        let american = Locale(identifier: "en_US")
+        let usLabels = [0, 7, 12, 23].map {
+            FoodLogSettingsPresenter.hourLabel($0, locale: american).replacingOccurrences(of: "\u{202F}", with: " ")
         }
+        #expect(usLabels == ["12 AM", "7 AM", "12 PM", "11 PM"])
 
-        #expect(screen.presenter.hourRangeSubtitle == "12 AM – 12 PM")
-
-        let evening = makeScreen { settings in
-            settings.startHour = 7
-            settings.endHour = 23
-        }
-        #expect(evening.presenter.hourRangeSubtitle == "7 AM – 11 PM")
-    }
-
-    @Test("Test The Hour Range Picker Opens On Request")
-    func testTheHourRangePickerOpensOnRequest() {
-        let screen = makeScreen()
-
-        screen.presenter.onEditHourRangePressed()
-
-        #expect(screen.presenter.isShowingHourRangePicker)
+        let german = FoodLogSettingsPresenter.hourLabel(23, locale: Locale(identifier: "de_DE"))
+        #expect(german.contains("23"))
+        #expect(!german.contains("PM"))
     }
 
     // MARK: Alignment
 
-    /// The side the timestamp sits on. The picker itself is raised through a `GlobalRouter`
-    /// extension, so its buttons cannot be pressed from here — what is checked is that the stored
-    /// value and the subtitle that reports it agree, which is what the user sees on the row.
-    @Test("Test The Timestamp Side Is Saved And Reported")
-    func testTheTimestampSideIsSavedAndReported() async {
+    /// The side the timestamp sits on, chosen with an inline picker bound to this property.
+    @Test("Test The Timestamp Side Is Saved")
+    func testTheTimestampSideIsSaved() async {
         let screen = makeScreen()
-        #expect(screen.presenter.alignmentSubtitle == "Left")
+        #expect(screen.presenter.timestampSide == .left)
 
         screen.presenter.timestampSide = .right
         await TestManagers.eventually { !screen.interactor.savedSettings.isEmpty }
 
-        #expect(screen.presenter.alignmentSubtitle == "Right")
+        #expect(screen.presenter.timestampSide == .right)
         #expect(screen.interactor.savedSettings.last?.timestampSide == .right)
     }
 
@@ -362,6 +348,23 @@ struct NutritionSettingsExpenditureTests {
 
         #expect(screen.interactor.savedSettings.last?.calculationStartDate == nil)
         #expect(screen.presenter.calculationStartDateLabel == "Default")
+        #expect(!screen.presenter.isChoosingStartDate)
+    }
+
+    /// The picker saves as it changes, so Cancel has to put the old date back, not just close.
+    @Test("Test Cancelling The Start Date Restores The Previous Date")
+    func testCancellingTheStartDateRestoresThePreviousDate() async {
+        let original = Date(timeIntervalSince1970: 1_700_000_000)
+        let screen = makeScreen { settings in
+            settings.calculationStartDate = original
+        }
+        screen.presenter.onEditStartDatePressed()
+        screen.presenter.calculationStartDate = Date(timeIntervalSince1970: 1_710_000_000)
+
+        screen.presenter.onCancelStartDatePressed()
+        await TestManagers.eventually { screen.interactor.savedSettings.count == 2 }
+
+        #expect(screen.interactor.savedSettings.last?.calculationStartDate == original)
         #expect(!screen.presenter.isChoosingStartDate)
     }
 

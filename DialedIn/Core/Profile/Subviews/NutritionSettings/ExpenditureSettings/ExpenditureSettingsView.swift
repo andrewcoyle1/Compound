@@ -38,7 +38,7 @@ struct ExpenditureSettingsView: View {
             Section {
                 ListRowToggle(
                     title: String(localized: "Step-Informed Updates"),
-                    subtitle: String(localized: "Uses step trends to speed up expenditure updates during periods where the step data improves confidence"),
+                    subtitle: String(localized: "Use your steps to update expenditure sooner"),
                     isOn: Binding(
                         get: { presenter.stepInformedUpdates },
                         set: { presenter.stepInformedUpdates = $0 }
@@ -46,7 +46,7 @@ struct ExpenditureSettingsView: View {
                 )
                 ListRowToggle(
                     title: String(localized: "Predictive Goal Adjustment"),
-                    subtitle: String(localized: "Applies a predictive adjustment to expenditure based on the likely impact of goal changes"),
+                    subtitle: String(localized: "Adjust expenditure ahead of a change in goal"),
                     isOn: Binding(
                         get: { presenter.predictiveGoalAdjustments },
                         set: { presenter.predictiveGoalAdjustments = $0 }
@@ -114,6 +114,9 @@ struct ExpenditureSettingsView: View {
             .navigationTitle("Calculation Start")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { presenter.onCancelStartDatePressed() }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .confirm) { presenter.isChoosingStartDate = false }
                 }

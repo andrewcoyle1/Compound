@@ -19,11 +19,6 @@ struct RestTimerSettingsView: View {
         }
         .navigationTitle("Rest Timer")
         .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $presenter.isEditingScaling) {
-            if let type = presenter.editingScaling {
-                scalingPicker(for: type)
-            }
-        }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -36,6 +31,13 @@ struct RestTimerSettingsView: View {
 
     private var behaviourSection: some View {
         Section {
+            // The master switch, first rather than under Notifications.
+            ListRowToggle(
+                title: String(localized: "Use Rest Timers"),
+                subtitle: String(localized: "Rest timers will count down after each exercise set"),
+                systemImage: Symbol.rest,
+                isOn: $presenter.useRestTimers
+            )
             ListRowButton(
                 title: String(localized: "Timer Duration"),
                 subtitle: String(localized: "Configure rest duration for different exercise types"),
@@ -69,12 +71,6 @@ struct RestTimerSettingsView: View {
     private var notificationsSection: some View {
         Section {
             ListRowToggle(
-                title: String(localized: "Use Rest Timers"),
-                subtitle: String(localized: "Rest timers will count down after each exercise set"),
-                systemImage: Symbol.rest,
-                isOn: $presenter.useRestTimers
-            )
-            ListRowToggle(
                 title: String(localized: "Play Sound"),
                 subtitle: String(localized: "Play sound when rest time is over"),
                 systemImage: "music.note",
@@ -93,48 +89,18 @@ struct RestTimerSettingsView: View {
 
     private var scalingSection: some View {
         Section {
-            ListRowButton(
-                title: String(localized: "Rest After Last Warm-Up Set"),
-                subtitle: presenter.formattedScaling(presenter.warmUpRestScaling),
-                systemImage: "figure.yoga"
-            ) {
-                presenter.onEditWarmUpScalingPressed()
-            }
-            ListRowButton(
-                title: String(localized: "Rest Between Exercises"),
-                subtitle: presenter.formattedScaling(presenter.betweenExercisesRestScaling),
-                systemImage: "arrow.forward.circle"
-            ) {
-                presenter.onEditBetweenExercisesScalingPressed()
-            }
-            ListRowButton(
-                title: String(localized: "Rest Between Left/Right Sets"),
-                subtitle: presenter.formattedScaling(presenter.sideSetRestScaling),
-                systemImage: "signpost.right.and.left.fill"
-            ) {
-                presenter.onEditSideSetsScalingPressed()
-            }
-        } header: {
-            Text("Rest Scaling")
-        }
-    }
-
-    // MARK: - Scaling Picker Sheet
-
-    @ViewBuilder
-    private func scalingPicker(for type: RestTimerSettingsPresenter.ScalingType) -> some View {
-        let options: [Double] = [0.25, 0.50, 0.75, 1.0, 1.25, 1.50, 2.0]
-        let current = presenter.currentScaling(for: type)
-        NavigationStack {
-            List {
-                ForEach(options, id: \.self) { option in
-                    SelectableRow(title: presenter.formattedScaling(option), isSelected: abs(current - option) < 0.001) {
-                        presenter.updateScaling(for: type, value: option)
+            ForEach(RestTimerSettingsPresenter.ScalingType.allCases) { type in
+                Picker(type.label, selection: Binding(
+                    get: { presenter.currentScaling(for: type) },
+                    set: { presenter.updateScaling(for: type, value: $0) }
+                )) {
+                    ForEach(RestTimerSettingsPresenter.scalingOptions, id: \.self) { option in
+                        Text(presenter.formattedScaling(option)).tag(option)
                     }
                 }
             }
-            .navigationTitle(type.label)
-            .navigationBarTitleDisplayMode(.inline)
+        } header: {
+            Text("Rest Scaling")
         }
     }
 }

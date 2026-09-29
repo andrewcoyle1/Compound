@@ -9,8 +9,6 @@ class FoodLogSettingsPresenter {
 
     private var settings: FoodLogSettings
 
-    var isShowingHourRangePicker: Bool = false
-
     var showOverages: Bool {
         get { settings.showOverages }
         set { settings.showOverages = newValue; save() }
@@ -23,8 +21,8 @@ class FoodLogSettingsPresenter {
     /// read is a subtitle that cannot silently invert again.
     var showOveragesSubtitle: String {
         showOverages
-            ? "Negative numbers will be used in nutrient remaining views if you exceed your target."
-            : "No negative numbers will be used if you exceed a nutrient target."
+            ? String(localized: "Negative numbers will be used in nutrient remaining views if you exceed your target.")
+            : String(localized: "No negative numbers will be used if you exceed a nutrient target.")
     }
 
     var showsFoodTimestamps: Bool {
@@ -77,21 +75,15 @@ class FoodLogSettingsPresenter {
         set { settings.showOpenFoodFactsFoods = newValue; save() }
     }
 
-    var hourRangeSubtitle: String {
-        "\(hourLabel(startHour)) – \(hourLabel(endHour))"
-    }
-
-    var alignmentSubtitle: String {
-        timestampSide == .left ? String(localized: "Left") : String(localized: "Right")
-    }
-
-    private func hourLabel(_ hour: Int) -> String {
-        switch hour {
-        case 0: return String(localized: "12 AM")
-        case 12: return String(localized: "12 PM")
-        case 1..<12: return String(localized: "\(String(describing: hour)) AM")
-        default: return String(localized: "\(String(describing: hour - 12)) PM")
-        }
+    /// An hour of the day as the device writes it: "7 AM" on a 12-hour clock, "07" on a 24-hour one.
+    static func hourLabel(_ hour: Int, locale: Locale = .current) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        let date = calendar.date(from: DateComponents(hour: hour)) ?? .now
+        var style = Date.FormatStyle.dateTime.hour()
+        style.timeZone = .gmt
+        style.locale = locale
+        return date.formatted(style)
     }
 
     init(interactor: FoodLogSettingsInteractor, router: FoodLogSettingsRouter) {
@@ -124,26 +116,6 @@ class FoodLogSettingsPresenter {
 
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
-    }
-
-    func onEditHourRangePressed() {
-        isShowingHourRangePicker = true
-    }
-
-    func onEditAlignmentPressed() {
-        router.showAlert(
-            title: String(localized: "Timestamp Side"),
-            subtitle: nil,
-            buttons: {
-                AnyView(
-                    VStack {
-                        Button("Left") { self.timestampSide = .left }
-                        Button("Right") { self.timestampSide = .right }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                )
-            }
-        )
     }
 
     func onLoggedBannerPressed() {

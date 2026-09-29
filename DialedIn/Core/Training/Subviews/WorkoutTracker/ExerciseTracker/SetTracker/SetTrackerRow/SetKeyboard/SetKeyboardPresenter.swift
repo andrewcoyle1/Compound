@@ -68,6 +68,12 @@ final class SetKeyboardPresenter {
 
     private var editingSet: Binding<WorkoutSetModel>?
 
+    /// Whose decimal separator the keypad shows and types. A test sets another region's.
+    var locale: Locale = .current
+
+    /// "," in most of Europe and South America, "." elsewhere: what the decimal key shows.
+    var decimalSeparator: String { locale.decimalSeparator ?? "." }
+
     /// Called by Done. The row offers to log the set if it is ready.
     var onOfferCompletion: (() -> Void)?
 
@@ -124,15 +130,16 @@ final class SetKeyboardPresenter {
 
     // MARK: - Keys
 
-    /// A digit or ".", from the keypad or a hardware keyboard.
+    /// A digit or a decimal separator, from the keypad or a hardware keyboard. Either "." or ","
+    /// types the region's separator, so a hardware keyboard works whichever the user reaches for.
     func type(_ key: Character) {
         guard let field = activeField else { return }
         let base = replacesOnNextKey ? "" : text
         let candidate: String
         switch key {
         case ".", ",":
-            guard field.takesDecimals, !base.contains(".") else { return }
-            candidate = (base.isEmpty ? "0" : base) + "."
+            guard field.takesDecimals, !base.contains(decimalSeparator) else { return }
+            candidate = (base.isEmpty ? "0" : base) + decimalSeparator
         case "0"..."9":
             candidate = base + String(key)
         default:
@@ -159,7 +166,7 @@ final class SetKeyboardPresenter {
             // mmss: up to 99:99, which is read as 100:39.
             return candidate.count <= 4
         case .weight, .distance:
-            let parts = candidate.split(separator: ".", omittingEmptySubsequences: false)
+            let parts = candidate.components(separatedBy: decimalSeparator)
             let wholeDigits = field == .distance ? 5 : 4
             return (parts.first?.count ?? 0) <= wholeDigits && (parts.count < 2 || parts[1].count <= 2)
         }
@@ -171,11 +178,11 @@ final class SetKeyboardPresenter {
         switch field {
         case .weight:
             bandIndex = nil
-            set.wrappedValue.weightKg = Double(text).map { UnitConversion.convertWeightToKg($0, from: context.unit) }
+            set.wrappedValue.weightKg = Double.typed(text, locale: locale).map { UnitConversion.convertWeightToKg($0, from: context.unit) }
         case .reps:
             set.wrappedValue.reps = Int(text)
         case .distance:
-            set.wrappedValue.distanceMeters = Double(text).map { UnitConversion.convertDistanceToMeters($0, from: context.distanceUnit) }
+            set.wrappedValue.distanceMeters = Double.typed(text, locale: locale).map { UnitConversion.convertDistanceToMeters($0, from: context.distanceUnit) }
         case .duration:
             set.wrappedValue.durationSec = Self.seconds(fromDigits: text)
         }
@@ -295,12 +302,12 @@ final class SetKeyboardPresenter {
             return names[bandIndex]
         }
         if field == .duration { return set.durationSec.map { Format.duration(TimeInterval($0)) } ?? "" }
-        return Self.text(for: field, set: set, unit: unit, distanceUnit: distanceUnit)
+        return Self.text(for: field, set: set, unit: unit, distanceUnit: distanceUnit, locale: locale)
     }
 
     private func currentText(for field: SetKeyboardField) -> String {
         guard let set = editingSet?.wrappedValue else { return "" }
-        return Self.text(for: field, set: set, unit: context.unit, distanceUnit: context.distanceUnit)
+        return Self.text(for: field, set: set, unit: context.unit, distanceUnit: context.distanceUnit, locale: locale)
     }
 
     /// What typing starts from: the stored value as the keys would enter it.
@@ -308,15 +315,16 @@ final class SetKeyboardPresenter {
         for field: SetKeyboardField,
         set: WorkoutSetModel,
         unit: ExerciseWeightUnit,
-        distanceUnit: ExerciseDistanceUnit = .meters
+        distanceUnit: ExerciseDistanceUnit = .meters,
+        locale: Locale = .current
     ) -> String {
         switch field {
         case .weight:
-            return set.weightKg.map { WeightStepper.format(UnitConversion.convertWeight($0, to: unit)) } ?? ""
+            return set.weightKg.map { WeightStepper.format(UnitConversion.convertWeight($0, to: unit), locale: locale) } ?? ""
         case .reps:
             return set.reps.map(String.init) ?? ""
         case .distance:
-            return set.distanceMeters.map { WeightStepper.format(UnitConversion.convertDistance($0, to: distanceUnit)) } ?? ""
+            return set.distanceMeters.map { WeightStepper.format(UnitConversion.convertDistance($0, to: distanceUnit), locale: locale) } ?? ""
         case .duration:
             return set.durationSec.map(digits(fromSeconds:)) ?? ""
         }

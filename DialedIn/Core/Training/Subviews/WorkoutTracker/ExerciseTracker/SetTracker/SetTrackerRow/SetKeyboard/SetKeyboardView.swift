@@ -50,7 +50,7 @@ struct SetKeyboardView: View {
     private var stepperRow: some View {
         let unit = presenter.context.unit.abbreviation
         return HStack(spacing: Spacing.s) {
-            keyButton(systemImage: "minus", label: "Decrease weight") { presenter.stepDown() }
+            keyButton(systemImage: "minus", label: String(localized: "Decrease weight")) { presenter.stepDown() }
             HStack(spacing: Spacing.s) {
                 Text(stepSummary)
                     .font(.subheadline.monospacedDigit())
@@ -93,7 +93,7 @@ struct SetKeyboardView: View {
         Group {
             switch presenter.plateLoad {
             case .loadable(let perSide)?:
-                Text(perSide.isEmpty ? String(localized: "Empty bar") : String(localized: "Per side: ") + perSide.map(WeightStepper.format).joined(separator: " + ") + " \(unit)")
+                Text(perSide.isEmpty ? String(localized: "Empty bar") : String(localized: "Per side: ") + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit)")
             case let .notLoadable(below, above)?:
                 HStack(spacing: Spacing.s) {
                     Label("Not loadable", systemImage: Symbol.warning)
@@ -193,11 +193,11 @@ struct SetKeyboardView: View {
             }
             GridRow {
                 digit("7"); digit("8"); digit("9")
-                keyButton(title: String(localized: "Done"), label: "Done", prominent: true) { presenter.done() }
+                keyButton(title: String(localized: "Done"), label: String(localized: "Done"), prominent: true) { presenter.done() }
             }
             GridRow {
                 if presenter.activeField?.takesDecimals == true {
-                    keyButton(title: ".", label: String(localized: "Decimal point")) { presenter.type(".") }
+                    keyButton(title: presenter.decimalSeparator, label: String(localized: "Decimal point")) { presenter.type(".") }
                 } else {
                     Color.clear.frame(height: 1).accessibilityHidden(true)
                 }
@@ -221,8 +221,13 @@ struct SetKeyboardView: View {
         keyButton(title: String(key), label: String(key)) { presenter.type(key) }
     }
 
+    /// Every key clicks as the system keyboard's do, following the user's Keyboard Clicks
+    /// setting. The input view adopts `UIInputViewAudioFeedback`, which is what lets it sound.
     private func keyButton(title: String, label: String, prominent: Bool = false, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            UIDevice.current.playInputClick()
+            action()
+        } label: {
             Text(title)
                 .font(.title3.weight(prominent ? .semibold : .regular))
                 .frame(maxWidth: .infinity, minHeight: keyHeight)
@@ -235,7 +240,10 @@ struct SetKeyboardView: View {
     }
 
     private func keyButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            UIDevice.current.playInputClick()
+            action()
+        } label: {
             Image(systemName: systemImage)
                 .font(.title3)
                 .frame(maxWidth: .infinity, minHeight: keyHeight)

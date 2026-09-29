@@ -21,18 +21,38 @@ enum SetKeyboardLaunch {
 @MainActor
 final class SetKeyboardInputHost {
     private var hostingController: UIHostingController<SetKeyboardView>?
+    private var inputView: SetKeyboardInputView?
 
-    /// The hosting view is the input view itself and sizes to the SwiftUI content, so the
-    /// keyboard grows when the plate strip or effort row appears.
+    /// The hosting view sizes to the SwiftUI content, so the keyboard grows when the plate strip
+    /// or effort row appears. It sits inside a self-sizing `UIInputView`, which is what lets the
+    /// keys play the system keyboard click.
     func view(for presenter: SetKeyboardPresenter) -> UIView {
-        if let view = hostingController?.view { return view }
+        if let inputView { return inputView }
         let host = UIHostingController(rootView: SetKeyboardView(presenter: presenter))
         host.sizingOptions = .intrinsicContentSize
         host.view.backgroundColor = .clear
         host.view.translatesAutoresizingMaskIntoConstraints = false
+
+        let container = SetKeyboardInputView(frame: .zero, inputViewStyle: .default)
+        container.allowsSelfSizing = true
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            host.view.topAnchor.constraint(equalTo: container.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+        ])
+
         hostingController = host
-        return host.view
+        inputView = container
+        return container
     }
+}
+
+/// `UIDevice.playInputClick()` only sounds from an input view that asks for clicks.
+final class SetKeyboardInputView: UIInputView, UIInputViewAudioFeedback {
+    var enableInputClicksWhenVisible: Bool { true }
 }
 
 struct SetKeyboardTextField: UIViewRepresentable {

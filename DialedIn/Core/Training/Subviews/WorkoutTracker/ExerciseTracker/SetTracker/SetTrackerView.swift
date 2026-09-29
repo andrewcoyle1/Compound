@@ -98,7 +98,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                         )
                     } label: {
                         let groupLabel: String = {
-                            guard let groupId = delegate.exercise.wrappedValue.supersetGroupId else { return "Superset" }
+                            guard let groupId = delegate.exercise.wrappedValue.supersetGroupId else { return String(localized: "Superset") }
                             let count = delegate.allWorkoutExercises.filter { $0.supersetGroupId == groupId }.count
                             return count > 2 ? String(localized: "Remove Circuit") : String(localized: "Remove Superset")
                         }()
@@ -125,6 +125,8 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .buttonStyle(.glass)
                 .tint(.secondary)
                 .buttonBorderShape(.capsule)
+                // The 44 pt minimum hit area: these are tapped between sets, often one handed.
+                .controlSize(.large)
             }
         }
     }
@@ -133,14 +135,14 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         let unitPreference = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
         return HStack(alignment: .firstTextBaseline) {
             Text("Set")
-                .frame(width: 34, alignment: .center)
+                .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
             Spacer()
             prevAutoHeader(exercise: delegate.exercise)
             Spacer()
             inputHeaders(unitPreference: unitPreference)
             Spacer()
             Text("Done")
-                .frame(width: 32, alignment: .center)
+                .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
         }
         .font(.caption2)
         .foregroundStyle(.secondary)
@@ -187,9 +189,10 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             }
         }
         .buttonStyle(.glass)
+        .controlSize(.large)
         .font(.caption2)
         .foregroundStyle(.secondary)
-        .frame(width: 90, alignment: .center)
+        .frame(width: SetTrackerRowView.previousColumnWidth, alignment: .center)
     }
     
     private var addSetButton: some View {
@@ -204,7 +207,8 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             .tint(.secondary)
             .buttonStyle(.glass)
             .buttonBorderShape(.circle)
-            .frame(width: 34, alignment: .center)
+            .controlSize(.large)
+            .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
             Spacer()
         }
         
@@ -232,6 +236,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .padding(.horizontal, Spacing.s)
         }
         .buttonStyle(.glass)
+        .controlSize(.large)
         .accessibilityLabel("Weight unit, \(unitPreference.weightUnit.displayName)")
     }
 
@@ -255,6 +260,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .padding(.horizontal, Spacing.s)
         }
         .buttonStyle(.glass)
+        .controlSize(.large)
         .accessibilityLabel("Distance unit, \(unitPreference.distanceUnit.displayName)")
     }
 }

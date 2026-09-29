@@ -41,21 +41,16 @@ struct SetTrackerRowView: View {
         .dynamicTypeSize(...SetTrackerRowView.maxDynamicTypeSize)
         .padding(.vertical, Spacing.xs)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                presenter.deleteSet(setId: delegate.set.id, exercise: delegate.exercise)
-            } label: {
-                Label("Delete", systemImage: Symbol.delete)
-            }
+            deleteSetButton
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            Button {
-                presenter.onRestPickerRequested(
-                    exercise: delegate.exercise.wrappedValue,
-                    setId: delegate.set.wrappedValue.id
-                )
-            } label: {
-                Label("Rest Timer", systemImage: Symbol.rest)
-            }
+            restTimerButton
+        }
+        // `rowActions` does this for one edge; this row swipes both ways, so one menu carries both
+        // actions for anyone who cannot swipe.
+        .contextMenu {
+            restTimerButton
+            deleteSetButton
         }
         .moveDisabled(true)
         .onAppear {
@@ -67,6 +62,31 @@ struct SetTrackerRowView: View {
     }
     
     static let maxDynamicTypeSize = DynamicTypeSize.xxxLarge
+
+    /// Column widths the headers share. The set number and Done are the 44 pt minimum hit area;
+    /// Prev gave up the room they needed.
+    static let setColumnWidth = ControlSize.row
+    static let previousColumnWidth: CGFloat = 78
+    static let doneColumnWidth = ControlSize.row
+
+    private var deleteSetButton: some View {
+        Button(role: .destructive) {
+            presenter.deleteSet(setId: delegate.set.id, exercise: delegate.exercise)
+        } label: {
+            Label("Delete", systemImage: Symbol.delete)
+        }
+    }
+
+    private var restTimerButton: some View {
+        Button {
+            presenter.onRestPickerRequested(
+                exercise: delegate.exercise.wrappedValue,
+                setId: delegate.set.wrappedValue.id
+            )
+        } label: {
+            Label("Rest Timer", systemImage: Symbol.rest)
+        }
+    }
 
     func setNumber(set: Binding<WorkoutSetModel>) -> some View {
         Menu {
@@ -84,9 +104,12 @@ struct SetTrackerRowView: View {
         }
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
+        // The large glass size is the 44 pt minimum; a hit area padded inside the label would make
+        // the circle bigger still.
+        .controlSize(.large)
         .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
         .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))
-        .frame(width: 34, alignment: .center)
+        .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
         .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
     }
 
@@ -168,7 +191,7 @@ struct SetTrackerRowView: View {
                 emptyTargetLabel
             }
         }
-        .frame(width: 90, alignment: .center)
+        .frame(width: SetTrackerRowView.previousColumnWidth, alignment: .center)
     }
 
     @ViewBuilder
@@ -193,6 +216,7 @@ struct SetTrackerRowView: View {
                     .anyButton {
                         fill(delegate.set, from: suggestion)
                     }
+                    .accessibilityHint("Fills this set")
                     .disabled(delegate.set.wrappedValue.completedAt != nil)
             } else if let target {
                 autoRangeLabel(target: target)
@@ -243,12 +267,12 @@ struct SetTrackerRowView: View {
             Image(systemName: state.systemImage)
                 .font(.title3)
                 .foregroundStyle(state.tint)
-                .frame(minHeight: cellHeight)
+                .tapTarget()
         }
         .accessibilityLabel(state.accessibilityLabel)
         .accessibilityValue(state.accessibilityValue)
         .buttonStyle(.plain)
-        .frame(width: 32, alignment: .center)
+        .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
         .disabled(state == .notReady)
     }
 
@@ -266,6 +290,7 @@ struct SetTrackerRowView: View {
                         delegate.set.wrappedValue.weightKg = weight
                         delegate.set.wrappedValue.reps = reps
                     }
+                    .accessibilityHint("Fills this set")
                     .disabled(delegate.set.wrappedValue.completedAt != nil)
             } else {
                 emptyTargetLabel

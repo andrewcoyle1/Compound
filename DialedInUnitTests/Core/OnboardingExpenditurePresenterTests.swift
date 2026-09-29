@@ -314,7 +314,8 @@ struct ExpenditurePresenterDegenerateInputTests {
         let zero = sut.bmrInt(weight: 80, height: 0, dateOfBirth: expenditureBirthDate(yearsAgo: 30), gender: .male)
 
         #expect(infinite == zero)
-        #expect(infinite == 1405)
+        // 655 + 6.25 x 100: the floor is the 100 cm the height wheel starts at, where it was 120.
+        #expect(infinite == 1280)
     }
 
     @Test("An absurd weight is capped rather than converted")

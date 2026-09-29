@@ -70,6 +70,7 @@ struct ProgressPhotosPresenterTests {
         func showDevSettingsView() { }
         func showProgressPhotoCompareView(delegate: ProgressPhotoCompareDelegate) { compared.append(delegate) }
         func showAlert(error: Error) { alertTitles.append("Error") }
+        func showAlert(title: String, error: Error) { alertTitles.append(title) }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
@@ -140,7 +141,8 @@ struct ProgressPhotosPresenterTests {
         screen.presenter.onImagePicked(image)
         await screen.presenter.onPoseSelected(.front)
 
-        #expect(screen.router.alertTitles == ["Error"])
+        // The alert says what failed, where it used to be titled "Error".
+        #expect(screen.router.alertTitles == ["Unable to Add Photo"])
         #expect(screen.presenter.photos.isEmpty)
     }
 

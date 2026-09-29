@@ -304,7 +304,7 @@ struct SocialWorkoutSessionRowTests {
         )
         let screen = makeScreen(session: session, author: DashboardFixture.user("friend"))
 
-        #expect(screen.presenter.shareSummary == "Leg Day · 1 exercise · 2 sets · 1000 kg lifted")
+        #expect(screen.presenter.shareSummary == "Leg Day · 1 exercise · 2 sets · \(1000.formatted()) kg lifted")
     }
 
     /// A left set and a right set are one set, so a single-arm exercise logged as six rows shares as
@@ -326,7 +326,7 @@ struct SocialWorkoutSessionRowTests {
         )
         let screen = makeScreen(session: session, author: DashboardFixture.user("friend"))
 
-        #expect(screen.presenter.shareSummary == "Row · 1 exercise · 3 sets · 1200 kg lifted")
+        #expect(screen.presenter.shareSummary == "Row · 1 exercise · 3 sets · \(1200.formatted()) kg lifted")
     }
 
     /// A bodyweight or duration workout has no kilograms to report, so the volume clause is dropped

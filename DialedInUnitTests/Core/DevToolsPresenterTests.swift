@@ -83,6 +83,8 @@ struct DevToolsSettingsPresenterTests {
         private(set) var didSwitchToOnboarding = false
 
         func showAlert(error: Error) { alertedErrors.append(error) }
+        // Error alerts now carry a title saying what failed; they are the same alert to a test.
+        func showAlert(title: String, error: Error) { alertedErrors.append(error) }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { }
 
@@ -486,6 +488,8 @@ struct DevToolsNotificationsPresenterTests {
         private(set) var alertedErrors: [Error] = []
 
         func showAlert(error: Error) { alertedErrors.append(error) }
+        // Error alerts now carry a title saying what failed; they are the same alert to a test.
+        func showAlert(title: String, error: Error) { alertedErrors.append(error) }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { }
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { }

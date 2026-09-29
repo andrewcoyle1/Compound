@@ -36,8 +36,15 @@ struct NutritionPresenterTests {
 
         private(set) var addedMeals: [MealLogModel] = []
         private(set) var deletedMealIds: [String] = []
-        private(set) var didScheduleReminders = false
         var writeError: Error?
+
+        // MARK: ReminderOfferInteractor — the meal-reminder offer on this screen's first appear.
+        var privateUserSettings = PrivateUserSettings()
+        var currentStreakData = CurrentStreakData.mockEmpty()
+        func canRequestNotificationAuthorisation() async -> Bool { false }
+        func requestPushAuthorisation() async throws -> Bool { true }
+        func setMealReminders(isEnabled: Bool) async throws { }
+        func setStreakReminder(isEnabled: Bool) async throws { }
 
         func getMeals(for dayKey: String) throws -> [MealLogModel] {
             mealsByDayKey[dayKey] ?? []
@@ -60,10 +67,6 @@ struct NutritionPresenterTests {
         func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws {
             if let writeError { throw writeError }
             deletedMealIds.append(id)
-        }
-
-        func scheduleMealReminderNotifications() async throws {
-            didScheduleReminders = true
         }
     }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-protocol NutritionInteractor: GlobalInteractor {
+protocol NutritionInteractor: ReminderOfferInteractor {
     var currentUser: UserModel? { get }
     var userMeals: [MealLogModel] { get }
     var draftMeal: MealLogModel? { get }
@@ -21,7 +21,6 @@ protocol NutritionInteractor: GlobalInteractor {
     func addMeal(_ meal: MealLogModel) async throws
     func deleteDraftMeal() throws
     func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws
-    func scheduleMealReminderNotifications() async throws
 }
 
 extension CoreInteractor: NutritionInteractor { }

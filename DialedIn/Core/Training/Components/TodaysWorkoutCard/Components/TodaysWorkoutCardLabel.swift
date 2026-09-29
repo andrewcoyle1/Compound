@@ -42,7 +42,9 @@ struct TodaysWorkoutCardLabel: View {
                 clipShape: AnyShape(Circle())
             )
         }
-        .frame(width: 100, height: 100)
+        // Up to 100 pt, and smaller when the footer's text grows and leaves less of the card.
+        .aspectRatio(1, contentMode: .fit)
+        .frame(maxWidth: 100, maxHeight: 100)
         .overlay(Circle().stroke(.surface, lineWidth: 2))
         .accessibilityHidden(true)
     }
@@ -93,6 +95,8 @@ private struct TodaysWorkoutCardFooter: View {
     let subtitle: String
     let showsChevron: Bool
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         HStack(spacing: Spacing.m) {
             Image(systemName: systemImage)
@@ -107,7 +111,8 @@ private struct TodaysWorkoutCardFooter: View {
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
-            .lineLimit(1)
+            // Wraps at the accessibility sizes rather than cutting "Recovery is part of the process." short.
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
             Spacer()
             if showsChevron {
                 Image(systemName: "chevron.forward")

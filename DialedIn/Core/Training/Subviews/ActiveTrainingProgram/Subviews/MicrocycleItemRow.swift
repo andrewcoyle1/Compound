@@ -13,11 +13,12 @@ struct MicrocycleItemRow: View {
         
     var body: some View {
         HStack {
+            // Full contrast: a finished day still opens its session, and the checkmark says it is done.
             WorkoutTemplateRow(workoutTemplate: item.workoutTemplate)
-                .opacity(item.isCompleted ? 0.3 : 1)
             Spacer()
-            // The same glyph `ListRow` draws for a checked row: accent when done, empty otherwise.
-            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
+            // A checkmark when done. Otherwise a chevron, because the row opens the workout: the empty
+            // circle it used to show is `ListRow`'s unchecked option.
+            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "chevron.forward")
                 .iconSize(.small)
                 .foregroundStyle(item.isCompleted ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                 .accessibilityHidden(true)

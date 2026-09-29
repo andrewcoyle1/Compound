@@ -127,8 +127,8 @@ struct ExerciseListBuilderView: View {
     private var resetChip: some View {
         if presenter.filters.isActive {
             Image(systemName: "arrow.counterclockwise")
-                .padding(Spacing.s)
-                .glassEffect(.clear.interactive())
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+                .glassEffect(.regular.interactive())
                 .anyButton {
                     presenter.onResetFiltersPressed()
                 }
@@ -184,22 +184,20 @@ struct ExerciseListBuilderView: View {
         name: KeyPath<Option, String>,
         selection: Binding<Set<Option>>
     ) -> some View {
+        // Toggles, and the menu stays open between picks: several can be chosen in one visit.
         Menu {
             ForEach(options) { option in
-                Button {
-                    if selection.wrappedValue.contains(option) {
-                        selection.wrappedValue.remove(option)
-                    } else {
-                        selection.wrappedValue.insert(option)
+                Toggle(option[keyPath: name], isOn: Binding(
+                    get: { selection.wrappedValue.contains(option) },
+                    set: { isOn in
+                        if isOn {
+                            selection.wrappedValue.insert(option)
+                        } else {
+                            selection.wrappedValue.remove(option)
+                        }
+                        presenter.onFilterChanged(title)
                     }
-                    presenter.onFilterChanged(title)
-                } label: {
-                    if selection.wrappedValue.contains(option) {
-                        Label(option[keyPath: name], systemImage: "checkmark")
-                    } else {
-                        Text(option[keyPath: name])
-                    }
-                }
+                ))
             }
         } label: {
             chipLabel(
@@ -209,6 +207,7 @@ struct ExerciseListBuilderView: View {
                 count: selection.wrappedValue.count
             )
         }
+        .menuActionDismissBehavior(.disabled)
     }
 
     /// Range of motion and stability are 0...5 ratings, so the chip offers a floor rather than an
@@ -237,6 +236,8 @@ struct ExerciseListBuilderView: View {
         }
     }
 
+    /// An active filter is filled with the accent, not just tinted, and counts its picks from one:
+    /// a single pick used to change nothing but a colour that matched the inactive one.
     private func chipLabel(
         _ title: String,
         systemImage: String,
@@ -246,17 +247,19 @@ struct ExerciseListBuilderView: View {
         HStack(spacing: Spacing.xs) {
             Image(systemName: systemImage)
             Text(title)
-            if count > 1 {
+            if count > 0 {
                 Text("\(count)")
                     .font(.label)
                     .padding(.horizontal, Spacing.xs)
-                    .background(Color.tintedSurface(.accentColor), in: .capsule)
+                    .background(Color.tintedSurface(.onAccent), in: .capsule)
             }
         }
         .lineLimit(1)
-        .padding(Spacing.s)
-        .foregroundStyle(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
-        .glassEffect(.clear.interactive())
+        .padding(.horizontal, Spacing.m)
+        .frame(minHeight: ControlSize.row)
+        .foregroundStyle(isActive ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+        .glassEffect(isActive ? .regular.tint(.accentColor).interactive() : .regular.interactive())
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
     private var userExercisesSection: some View {
@@ -266,11 +269,16 @@ struct ExerciseListBuilderView: View {
                     exerciseRow(exercise)
                 }
             } else {
-                ContentUnavailableView(
-                    "No Custom Exercises",
-                    systemImage: Symbol.exercise,
-                    description: Text("You have no custom exercises.")
-                )
+                ContentUnavailableView {
+                    Label("No Custom Exercises", systemImage: Symbol.exercise)
+                } description: {
+                    Text("You have no custom exercises.")
+                } actions: {
+                    Button("Create Exercise") {
+                        presenter.onAddExercisePressed()
+                    }
+                    .buttonStyle(.glass)
+                }
             }
         } header: {
             HStack {

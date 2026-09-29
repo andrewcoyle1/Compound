@@ -24,7 +24,7 @@ struct ExerciseFilters {
         var name: String {
             switch self {
             case .all:      return String(localized: "All Exercises")
-            case .mine:     return String(localized: "My Exercises")
+            case .mine:     return String(localized: "Custom Exercises")
             case .official: return String(localized: "Official Exercises")
             }
         }

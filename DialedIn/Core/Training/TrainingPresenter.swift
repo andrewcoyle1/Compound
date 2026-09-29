@@ -171,8 +171,10 @@ class TrainingPresenter {
         interactor.trackEvent(event: Event.openCompletedSessionSuccess)
     }
 
+    /// A choice among however many workouts the day holds, so an action sheet: an alert holds
+    /// three buttons at most.
     private func showSessionPicker(sessions: [WorkoutSessionModel]) {
-        router.showAlert(
+        router.showConfirmationDialog(
             title: String(localized: "Multiple Workouts"),
             subtitle: String(localized: "Which workout would you like to open?"),
             buttons: {

@@ -14,6 +14,8 @@ class WorkoutTemplateDetailPresenter {
     private let router: WorkoutTemplateDetailRouter
 
     private(set) var isDeleting: Bool = false
+    /// Start Workout had no guard, so a second tap during the start ran it twice.
+    private(set) var isStarting: Bool = false
 
     var isBookmarked: Bool = false
     var isFavourited: Bool = false
@@ -65,7 +67,7 @@ class WorkoutTemplateDetailPresenter {
             onDismiss()
         } catch {
             isDeleting = false
-            router.showSimpleAlert(title: String(localized: "Failed to delete workout"), subtitle: String(localized: "Please try again later"))
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Workout"), subtitle: String(localized: "Please try again."))
         }
     }
 
@@ -90,30 +92,22 @@ class WorkoutTemplateDetailPresenter {
     
     // MARK: - Active Workout Safeguard
     
+    /// The shared prompt, so both start buttons ask the same question with the same answers.
     private func checkForActiveWorkout(onResumeWorkout: @escaping @Sendable () -> Void, onStartNewWorkout: @escaping @Sendable () -> Void) -> Bool {
-        guard let activeSession = activeSession else {
+        guard activeSession != nil else {
             return true
         }
-        
-        router.showAlert(
-            title: String(localized: "Workout In Progress"),
-            subtitle: String(localized: "You already have '\(activeSession.name)' in progress. What would you like to do?"),
-            buttons: {
-                AnyView(
-                    VStack {
-                        Button("Resume Current Workout") {
-                            onResumeWorkout()
-                        }
-                        Button("Discard & Start New", role: .destructive) {
-                            try? self.interactor.deleteActiveSession()
-                            onStartNewWorkout()
-                        }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                )
+
+        router.showActiveWorkoutAlert(
+            onResume: onResumeWorkout,
+            onReplace: { [weak self] in
+                Task { @MainActor in
+                    try? self?.interactor.deleteActiveSession()
+                    onStartNewWorkout()
+                }
             }
         )
-        
+
         return false
     }
     
@@ -124,7 +118,10 @@ class WorkoutTemplateDetailPresenter {
     }
     
     private func performStartWorkout(onStartWorkout: (() -> Void)?, workoutTemplate: WorkoutTemplateModel, trainingProgramId: String?, isDeloadCycle: Bool = false) {
+        guard !isStarting else { return }
+        isStarting = true
         Task {
+            defer { isStarting = false }
             do {
                 try await self.interactor.startWorkout(for: workoutTemplate, in: trainingProgramId)
                 if isDeloadCycle, var session = self.activeSession {
@@ -135,7 +132,7 @@ class WorkoutTemplateDetailPresenter {
                 self.router.dismissScreen()
                 onStartWorkout?()
             } catch {
-                self.router.showSimpleAlert(title: String(localized: "Unable to start workout"), subtitle: String(localized: "Please try again."))
+                self.router.showSimpleAlert(title: String(localized: "Unable to Start Workout"), subtitle: String(localized: "Please try again."))
             }
         }
     }

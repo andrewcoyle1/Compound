@@ -26,6 +26,33 @@ behavior say so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Resolution (2026-09-28, branch hig/profile)
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | fixed | Confirm button in Account's toolbar calls `saveProfile()` (spinner while saving, disabled without a first name); success/error haptics. Verified: no app caller before. |
+| 2 | skipped: decision | — |
+| 3 | needs a change elsewhere | `CoreInteractor.deleteAccount` passes `revokeToken: false`; the package revokes only when true. See the report. |
+| 4 | skipped: decision | — |
+| 5 | skipped: decision | Only the failure alert's title changed ("Unable to Delete Account"). |
+| 6 | fixed | A subscriber gets Apple's `manageSubscriptionsSheet` (plan, price, renewal, cancel), not the paywall; status reads "Premium"/"Free". Redeem Code not added. |
+| 7 | fixed | Cancel is a no-op, Ask to Buy shows an inline "Waiting for approval" on both variants, the load-failure alert is gone, other alerts have titles. The package's error type is internal, so it is matched by case name (`ponytail:` comment). |
+| 8 | skipped: decision | — |
+| 9 | fixed | Saves on `onDisappear` when edited (any route out), system back button restored, blank name saved as "Untitled Gym Profile", failure after leaving is a toast. |
+| 10 | skipped: decision | Licenses is now pushed inside About (listed in the hand-offs); the rest waits on the decision. |
+| 11 | fixed in scope | Presenter stores `stravaIsConnected` and refreshes it; Disconnect is its own row with a confirmation; Connect is borderless; Test Upload is `#if DEV \|\| MOCK` and toasts. Manager changes are needed elsewhere. |
+| 12 | partly fixed | Modal deleted, row is "Rate Compound" and calls the system prompt directly. No App Store ID exists yet for the write-review URL. |
+| 13 | fixed | All 17 fields labeled with their caption and a "0" placeholder; each `Add*` presenter exposes `validationMessage`, confirm is disabled until nil and the reason shows as `InlineMessage` under the fields. |
+| 14 | fixed | "Sign-In Method" row (Apple / Google / Not saved); "Sign Out"; "Save Account". |
+| 15 | fixed | Hours formatted with `Date.FormatStyle` (12/24-hour); Units defaults from `Locale.measurementSystem`; Account height typed in the Units length unit, converted on save. |
+| 16 | skipped: decision | Exercise Assessment's subtitle was shortened under finding 17 only. |
+| 17 | fixed | Five subtitles cut to one line, "On"/"Off"/"Show" removed, Previous Reference reads the stored option, the two static Strategy labels removed, "Keep Screen On". |
+| 18 | fixed | Hour range, timestamp side and rest scaling are inline pickers; the start-date sheet has a close button that restores the old date. |
+| 19 | fixed | The Edit link's label is padded to 44 pt. |
+| 20 | fixed | Sections no longer gated on a first name; header says "Add your name". |
+| Smaller | fixed | Paywall header scrolls; RevenueCat close button only in onboarding; only the custom paywall loads products; Reset Default Timers in its own section with a confirmation; distinct rest-scaling titles and Use Rest Timers first; Shortcuts footer and Favorites header reworded; Discard Gym Profile alert gone; date of birth capped at today; `Symbol.duration` removed from three unrelated rows; Profile, Food Log and Account strings localized. Not done: `FeatureUnavailableView(summary:)` strings (finding 16's screens). |
+| Hand-offs | fixed | Every site listed for Core/Profile and Core/Paywalls in `hig-handoffs.md`, plus `FoodLogSettingsPresenter:134`. |
+
 ## Findings
 
 ### 1. Nothing on the Account screen can be saved

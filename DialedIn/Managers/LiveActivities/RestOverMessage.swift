@@ -36,9 +36,9 @@ extension WorkoutActivityAttributes.ContentState {
         case (nil, nil):
             break
         }
-        // Metres: the activity carries no distance unit, and shows metres itself.
         if let distance = targetDistanceMeters {
-            segments.append(Format.distance(meters: distance, exerciseUnit: .meters))
+            let distanceUnit: ExerciseDistanceUnit = self.distanceUnit == .miles ? .miles : .meters
+            segments.append(Format.distance(meters: distance, exerciseUnit: distanceUnit))
         }
         if let duration = targetDurationSec {
             segments.append(Format.duration(TimeInterval(duration)))

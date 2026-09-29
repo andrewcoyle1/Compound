@@ -391,7 +391,7 @@ extension HKWorkoutManager {
 
     /// How long after the end of a rest the backstop notification waits for `endRest` to withdraw
     /// it and alert through the Live Activity instead.
-    static let restOverBackstopDelay: TimeInterval = 2
+    static let restOverBackstopDelay = RestOverAlert.standInDelay
 
     /// With no Live Activity the notification is the rest-over alert, due on the second. With one,
     /// the activity alerts from `endRest`, but that needs the app running: a suspended app's timer
@@ -399,8 +399,10 @@ extension HKWorkoutManager {
     /// late, and `endRest` withdraws it when it gets there first. Scheduling again under the same
     /// id replaces the pending request, so +15s moves it rather than adding a second.
     private func scheduleRestOverNotification(endTime: Date, session: WorkoutSessionModel, currentExerciseIndex: Int) {
-        let viaActivity = liveActivityUpdater?.isShowingLiveActivity == true
-        let date = viaActivity ? endTime.addingTimeInterval(Self.restOverBackstopDelay) : endTime
+        let date = RestOverAlert.notificationDate(
+            restEnd: endTime,
+            showingLiveActivity: liveActivityUpdater?.isShowingLiveActivity == true
+        )
         let body = liveActivityUpdater?.restOverMessage(session: session, currentExerciseIndex: currentExerciseIndex)
         let sound = restAlertSound
         let notifier = restOverNotifier
@@ -451,16 +453,23 @@ extension HKWorkoutManager {
         // from another's; the tracker listens by name alone.
         NotificationCenter.default.post(name: Constants.workoutRestDidComplete, object: self)
 
-        // The Live Activity is the rest-over channel when there is one. On time, it takes over from
+        // The Live Activity is the rest-over channel when there is one. On time (the app is in
+        // front, or kept running behind a locked screen by the workout session), it takes over from
         // the backstop notification; late (the app was suspended and has just woken), the
         // notification has already said it, and the activity is only cleared below.
-        if let updater = liveActivityUpdater, updater.isShowingLiveActivity,
-           let endedAt, Date().timeIntervalSince(endedAt) < Self.restOverBackstopDelay {
+        let channel = endedAt.map {
+            RestOverAlert.channel(
+                showingLiveActivity: liveActivityUpdater?.isShowingLiveActivity == true,
+                lateBy: Date().timeIntervalSince($0),
+                sound: restAlertSound
+            )
+        } ?? .notification
+        if channel != .notification {
             withdrawRestOverNotification()
-            if restAlertSound {
-                updater.announceRestOver(isActive: isWorkoutActive)
-                return
-            }
+        }
+        if channel == .liveActivity, let updater = liveActivityUpdater {
+            updater.announceRestOver(isActive: isWorkoutActive)
+            return
         }
 
         guard activeSessionModel != nil else {
@@ -488,7 +497,9 @@ extension HKWorkoutManager {
     private func scheduleRestEndTimer(endTime: Date) {
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
         let delta = max(0, endTime.timeIntervalSinceNow)
-        timer.schedule(deadline: .now() + delta)
+        // A tight leeway: in the background the system may otherwise coalesce the timer past the
+        // stand-in notification's two seconds, and the Live Activity would lose the alert to it.
+        timer.schedule(deadline: .now() + delta, leeway: .milliseconds(100))
         // `@Sendable` is load-bearing, not decoration. This function is MainActor-isolated so that
         // `restTimer` can be assigned synchronously below, but a DispatchSource event handler runs
         // on the queue the source was made with — the global utility queue here. Without the

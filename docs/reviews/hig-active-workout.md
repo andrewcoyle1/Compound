@@ -32,6 +32,14 @@ Line numbers are from the working tree at review time. `WorkoutTrackerPresenter.
 `WorkoutTrackerInteractor.swift` and `PushManager.swift` had uncommitted edits by someone else
 while this was written, so their numbers may have moved by a few lines.
 
+## Decisions built (2026-09-29, branch hig/workout2)
+
+| Decision | Status | What changed |
+|---|---|---|
+| W1 | built in part | `UIBackgroundModes` = `processing` in `Info.plist.example`, as Apple's iOS 26 workout sample declares (no `INFOPLIST_KEY_` setting exists for it); the owner's own `Info.plist` needs the same. The rest-over choice is `RestOverAlert.channel`, tested; the rest timer's leeway is 100 ms. The 2 s notification stays for everyone. Unverified on a device. |
+| W3 | built in part | `paused_seconds` (optional) stamped at finish from the tracker and the Live Activity, a running pause included; `activeDuration` read by the detail and its editor, feed rows, share card, Live Activity summary and Strava. The rest-over distance follows the exercise's unit via an optional `distanceUnit` on the activity state; `Dependencies.swift` must pass it, and the server share page (`functions/lib.js`) still shows wall time. |
+| 11d | built | "Upload Workouts to Strava?" (Connect Strava / Not Now) over the session detail once the first finished workout has saved and Strava is not connected; answered once per person. `StravaOffer.shouldOffer` is tested. |
+
 ## Decisions built (2026-09-29, branch hig/workout)
 
 | Decision | Status | What changed |

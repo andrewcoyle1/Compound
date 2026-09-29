@@ -24,6 +24,10 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// The author's training streak as of finishing this session, stamped by the finish path so
     /// followers — who cannot read the author's streak — can see it. Absent on older sessions.
     var streakCount: Int?
+    /// Time spent paused, stamped when the workout is finished, so its duration is active time
+    /// only. Absent on sessions saved before pausing was recorded and on ones never paused, which
+    /// then read exactly as before.
+    private(set) var pausedSeconds: TimeInterval?
 
     init(
         id: String = UUID().uuidString,
@@ -72,6 +76,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case isRestDay = "is_rest_day"
         case likedByUserIds = "liked_by_user_ids"
         case streakCount = "streak_count"
+        case pausedSeconds = "paused_seconds"
         case hidden
     }
 
@@ -247,9 +252,18 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         }
     }
 
-    mutating func endSession(at date: Date) {
+    /// `pausedSeconds` is everything spent paused up to `date`, a pause still running included, so
+    /// a workout finished while paused leaves that pause out too.
+    mutating func endSession(at date: Date, pausedSeconds: TimeInterval = 0) {
         self.endedAt = date
         self.dateModified = date
+        self.pausedSeconds = pausedSeconds > 0 ? pausedSeconds : nil
+    }
+
+    /// How long the workout was under way, paused time left out; nil while it is running. Every
+    /// screen, share card and upload that shows a session's duration reads this.
+    var activeDuration: TimeInterval? {
+        endedAt.map { max(0, $0.timeIntervalSince(dateCreated) - (pausedSeconds ?? 0)) }
     }
 
     /// Moves a completed session to a different start time, keeping however long it took. Editing
@@ -263,11 +277,12 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         dateModified = Date()
     }
 
-    /// Sets how long the session lasted, measured from its start. A non-positive duration would
-    /// put the end before the beginning, so it is refused.
+    /// Sets how long the session lasted, in active time as `activeDuration` shows it: the end moves
+    /// past the start by that plus the time spent paused. A non-positive duration would put the end
+    /// before the beginning, so it is refused.
     mutating func updateDuration(_ seconds: TimeInterval) {
         guard seconds > 0 else { return }
-        endedAt = dateCreated.addingTimeInterval(seconds)
+        endedAt = dateCreated.addingTimeInterval(seconds + (pausedSeconds ?? 0))
         dateModified = Date()
     }
     

@@ -76,7 +76,8 @@ extension WorkoutTrackerPresenter {
     }
 
     func finishWorkout() {
-        workoutSession.endSession(at: Date())
+        let now = Date()
+        workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         isDone = true
         UIApplication.shared.isIdleTimerDisabled = false
         router.dismissScreen()

@@ -89,7 +89,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                 ) {
                     presenter.onEditStartTimePressed(session: $session)
                 }
-                if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
+                if let duration = session.activeDuration {
                     ListRowButton(
                         title: String(localized: "Duration"),
                         subtitle: Format.duration(duration),
@@ -110,7 +110,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     subtitle: session.dateCreated.formatted(date: .long, time: .shortened),
                     systemImage: Symbol.calendar
                 )
-                if let duration = session.endedAt?.timeIntervalSince(session.dateCreated) {
+                if let duration = session.activeDuration {
                     ListRow(title: String(localized: "Duration"), subtitle: Format.duration(duration), systemImage: Symbol.duration)
                 }
             }

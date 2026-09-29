@@ -73,7 +73,7 @@ class StravaManager {
     // MARK: - Upload
 
     func uploadWorkout(_ session: WorkoutSessionModel) async throws {
-        guard let endedAt = session.endedAt else { return }
+        guard let duration = session.activeDuration else { return }
 
         let accessToken = try await validAccessToken()
 
@@ -84,7 +84,7 @@ class StravaManager {
             name: session.name,
             sportType: "WeightTraining",
             startDateLocal: formatter.string(from: session.dateCreated),
-            elapsedTime: Int(endedAt.timeIntervalSince(session.dateCreated)),
+            elapsedTime: Int(duration),
             description: session.notes
         )
 

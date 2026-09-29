@@ -39,9 +39,7 @@ struct MealAccessoryView: View {
 
     /// "Continue draft meal, 2 items" — one label for the whole button.
     private var accessibilityLabel: String {
-        let count = presenter.draftMeal.items.count
-        let items = count == 1 ? String(localized: "1 item") : String(localized: "\(count) items")
-        return String(localized: "Continue draft meal, \(items)")
+        String(localized: "Continue draft meal, \(presenter.draftMeal.items.count) items")
     }
 
     private var itemsLine: Text {
@@ -56,7 +54,7 @@ struct MealAccessoryView: View {
         if isInline {
             // No room to spare inline: one line.
             HStack {
-                (Text("Unlogged meal").fontWeight(.semibold) + Text(" · ") + itemsLine)
+                Text("\(Text("Unlogged meal").fontWeight(.semibold)) · \(itemsLine)")
                     .font(.rowDetail)
                     .lineLimit(1)
                 Spacer()

@@ -35,7 +35,14 @@ Things that must be true before a build goes to the App Store. Each is marked in
 
 - [ ] How long Google's Vertex AI keeps the photos and text sent for analysis, so the in-app
       disclosure stays true.
-- [ ] The Time Sensitive Notifications capability is enabled for the app ID.
+- [ ] **Time Sensitive Notifications.** Enable the capability for the App ID, then add
+      `com.apple.developer.usernotifications.time-sensitive` (true) to `DialedIn.entitlements` and
+      `DialedIn-Debug.entitlements`. It is left out until then, because a device build will not
+      sign with an entitlement the App ID lacks. Without it "Rest complete" is delivered as an
+      ordinary notification.
+- [ ] **Deploy the Cloud Functions** (`firebase deploy --only functions`) together with the app
+      release that expects them: localized pushes, interruption levels, the real badge count.
+- [ ] Run `npm run test:triggers` in `functions/` on a machine with Java 21 or later.
 - [ ] A capture of the screenshot deck on iOS 26.5, which renders differently from iOS 27.
 - [ ] Large text sizes, VoiceOver and iPad, on a device.
 

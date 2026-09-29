@@ -41,7 +41,7 @@ extension WorkoutTrackerPresenter {
                 saveTitle: "Finish",
                 onDidDismiss: {
                     guard didConfirm, !self.isDone else { return }
-                    self.finishWorkout()
+                    self.onFinishConfirmed()
                 }
             )
         )

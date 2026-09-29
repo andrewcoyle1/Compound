@@ -182,7 +182,11 @@ struct WorkoutFinishNoteTests {
 
     @Test("Test Finishing Saves The Session Note Then Ends The Workout")
     func testFinishingSavesTheSessionNoteThenEndsTheWorkout() async throws {
-        let screen = try NotesFixture.tracker()
+        // A logged set, because finishing a workout with none now asks first (see
+        // `WorkoutTrackerFinishTests`); this test is about the note.
+        var exercise = NotesFixture.exercise()
+        exercise.sets = [WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 8, isWarmup: false, completedAt: NotesFixture.start, dateCreated: NotesFixture.start)]
+        let screen = try NotesFixture.tracker(exercises: [exercise])
         let presenter = screen.presenter, interactor = screen.interactor, router = screen.router
 
         presenter.onFinishPressed()

@@ -195,6 +195,51 @@ struct WorkoutTrackerFinishTests {
         #expect(screen.interactor.shownToasts.allSatisfy { $0.style == .progress })
     }
 
+    // MARK: - Summary, haptic, and the empty workout
+
+    /// The session detail is the summary, so whoever presented the tracker is handed the finished
+    /// session as it goes, and the save plays the success haptic when it lands.
+    @Test("Test Finishing Hands Over The Session And Plays The Success Haptic")
+    func testFinishingHandsOverTheSessionAndPlaysTheSuccessHaptic() async throws {
+        let screen = try makeScreen()
+        var finished: [WorkoutSessionModel] = []
+        screen.presenter.onWorkoutFinished = { finished.append($0) }
+
+        screen.presenter.onFinishConfirmed()
+        await screen.presenter.pendingFinishTask?.value
+
+        #expect(finished.map(\.id) == ["session-1"])
+        #expect(finished.first?.endedAt != nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" }.last == "success")
+        #expect(screen.router.confirmations.isEmpty)
+    }
+
+    /// A failed save has nothing to celebrate.
+    @Test("Test A Failed Save Plays No Success Haptic")
+    func testAFailedSavePlaysNoSuccessHaptic() async throws {
+        let screen = try makeScreen()
+        screen.interactor.endWorkoutSessionError = NSError(domain: "FIRFirestoreErrorDomain", code: 7)
+
+        screen.presenter.finishWorkout()
+        await screen.presenter.pendingFinishTask?.value
+
+        #expect(!screen.interactor.playedHaptics.map { "\($0)" }.contains("success"))
+    }
+
+    /// With no set logged the save is replaced by a question: Discard Workout, Save Anyway, or
+    /// Cancel. Nothing ends until it is answered.
+    @Test("Test Finishing With No Set Logged Asks First")
+    func testFinishingWithNoSetLoggedAsksFirst() throws {
+        let screen = try makeScreen()
+        screen.presenter.workoutSession.exercises[0].sets[0].completedAt = nil
+
+        screen.presenter.onFinishConfirmed()
+
+        #expect(screen.router.confirmations == ["No Sets Logged"])
+        #expect(!screen.presenter.isDone)
+        #expect(screen.router.shown.isEmpty)
+    }
+
     // MARK: - Pause
 
     /// Pause and Resume in the menu go through the one toggle the clock, Apple Health and the Live

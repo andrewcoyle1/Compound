@@ -233,6 +233,12 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
     func showGymProfileView(delegate: GymProfileDelegate) { shown.append("gymProfile") }
     func dismissScreen() { shown.append("dismiss") }
+    /// Titles of the confirmation dialogs raised. The buttons are views, so tests call the
+    /// presenter methods they would.
+    private(set) var confirmations: [String] = []
+    func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        confirmations.append(title)
+    }
 }
 
 extension RetryBackoff {

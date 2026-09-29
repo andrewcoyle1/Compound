@@ -266,11 +266,12 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
 }
 
 extension CoreBuilder {
-    func workoutTrackerView(router: AnyRouter) throws -> some View {
+    func workoutTrackerView(router: AnyRouter, onWorkoutFinished: ((WorkoutSessionModel) -> Void)? = nil) throws -> some View {
         let trackerPresenter = try WorkoutTrackerPresenter(
             interactor: interactor,
             router: CoreRouter(router: router, builder: self)
         )
+        trackerPresenter.onWorkoutFinished = onWorkoutFinished
         return WorkoutTrackerView(
             presenter: trackerPresenter,
             exerciseTrackerView: { delegate, onStartRest in
@@ -301,9 +302,20 @@ extension CoreRouter {
             )
             return
         }
-        router.showScreen(.fullScreenCover, id: Self.workoutTrackerScreenId) { router in
-            try? builder.workoutTrackerView(router: router)
-        }
+        // Set by the tracker when the workout is finished. The detail is presented from here, once
+        // the cover is down: the tracker's own router goes with it.
+        var finishedSession: WorkoutSessionModel?
+        router.showScreen(
+            .fullScreenCover,
+            id: Self.workoutTrackerScreenId,
+            onDidDismiss: {
+                guard let finishedSession else { return }
+                showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate(workoutSession: finishedSession))
+            },
+            destination: { router in
+                try? builder.workoutTrackerView(router: router, onWorkoutFinished: { finishedSession = $0 })
+            }
+        )
     }
 }
 

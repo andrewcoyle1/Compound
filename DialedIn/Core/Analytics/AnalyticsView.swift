@@ -18,7 +18,6 @@ private let headerCardSpacing = Spacing.l
 
 struct AnalyticsView<NutritionChart: View>: View {
 
-    @Environment(\.layoutMode) private var layoutMode
     @Environment(\.scenePhase) private var scenePhase
 
     @State var presenter: AnalyticsPresenter
@@ -100,20 +99,14 @@ struct AnalyticsView<NutritionChart: View>: View {
     // empty header, which draws as a stray gap under the header cards. Removed; the header cards
     // above it already carry the carousel this was presumably meant to hold.
 
-    /// Header cards are sized from the scroll container rather than a fixed width, so they
-    /// fit every device. A fixed 420pt was wider than the screen on all iPhones (iPhone 17
-    /// is 402pt across) and clipped the trailing edge. Two cards share the width in
-    /// split view, where there is room for both. The height is a minimum, so the grid's labels
-    /// can grow with Dynamic Type.
+    /// Header cards share the padded row's width. `containerRelativeFrame` sized them from the
+    /// whole list row, which outside the old scroll view made each card as wide as the screen
+    /// before the row's padding was added, so the grid ran off both edges. The height is a
+    /// minimum, so the grid's labels can grow with Dynamic Type.
     @ViewBuilder
     private func headerCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
-            .frame(minHeight: 300)
-            .containerRelativeFrame(
-                .horizontal,
-                count: layoutMode == .splitView ? 2 : 1,
-                spacing: headerCardSpacing
-            )
+            .frame(maxWidth: .infinity, minHeight: 300)
     }
 
     private var nutritionTargetSection: some View {

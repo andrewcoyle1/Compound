@@ -58,18 +58,31 @@ extension WorkoutSessionDetailPresenterTests {
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
-    @Test("Test Moving The Start From The Sheet Saves It")
-    func testMovingTheStartFromTheSheetSavesIt() async {
+    /// The picker used to write on every movement, with no way back. It now holds the time until
+    /// confirm, and closing the sheet leaves the session as it was.
+    @Test("Test Moving The Start Picker Saves Nothing Until Confirmed")
+    func testMovingTheStartPickerSavesNothingUntilConfirmed() async throws {
         let screen = makeScreen()
         let workout = MutableSession(session(duration: 3600))
         let newStart = start.addingTimeInterval(-600)
         screen.presenter.onEditStartTimePressed(session: workout.binding)
 
-        screen.router.startTimeDate?.wrappedValue = newStart
+        let picker = try #require(screen.router.startTimeDate)
+        #expect(picker.wrappedValue == start)
+        picker.wrappedValue = start.addingTimeInterval(-60)
+        picker.wrappedValue = newStart
+        await settle()
+
+        #expect(workout.value.dateCreated == start)
+        #expect(screen.interactor.savedSessions.isEmpty)
+        #expect(screen.interactor.playedHaptics.isEmpty)
+
+        screen.router.startTimeSave?()
         await settle()
 
         #expect(workout.value.dateCreated == newStart)
         #expect(screen.interactor.savedSessions.count == 1)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     @Test("Test A Failed Timing Save Plays The Error Haptic")
@@ -128,5 +141,38 @@ extension WorkoutSessionDetailPresenterTests {
 
         #expect(screen.router.shown.isEmpty)
         #expect(!screen.presenter.isEditMode)
+    }
+}
+
+// MARK: - Unsaved changes
+extension WorkoutSessionDetailPresenterTests {
+    /// Swiping the sheet down or tapping close with typed notes used to drop them; close asked, the
+    /// swipe did not. Both now go through the same check, and nothing unsaved closes at once.
+    @Test("Test Closing With Unsaved Notes Asks First")
+    func testClosingWithUnsavedNotesAsksFirst() {
+        let screen = makeScreen()
+        let original = session()
+        var edited = original
+        edited.notes = "Felt strong"
+
+        screen.presenter.onClosePressed(initialSession: original, session: original)
+        #expect(screen.router.dialogTitles.isEmpty)
+
+        screen.presenter.onClosePressed(initialSession: original, session: edited)
+        #expect(screen.router.dialogTitles == ["Discard Changes?"])
+    }
+
+    /// A timing edit saves the whole session, so afterwards nothing is unsaved even though the
+    /// session no longer matches what the screen opened with.
+    @Test("Test A Saved Timing Edit Leaves Nothing Unsaved")
+    func testASavedTimingEditLeavesNothingUnsaved() async {
+        let screen = makeScreen()
+        let original = session(duration: 3600)
+        let workout = MutableSession(original)
+
+        screen.presenter.onStartTimeChanged(start.addingTimeInterval(-600), session: workout.binding)
+        await settle()
+
+        #expect(!screen.presenter.hasUnsavedChanges(session: original, editedSession: workout.value))
     }
 }

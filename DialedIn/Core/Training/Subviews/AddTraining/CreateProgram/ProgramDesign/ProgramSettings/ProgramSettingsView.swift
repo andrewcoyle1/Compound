@@ -31,22 +31,18 @@ struct ProgramSettingsView: View {
             toolbarContent
         }
         .bottomCTA {
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onActivatePressed(program: program)
             } label: {
                 Text("Activate Program")
             }
+            .disabled(presenter.isSaving)
         }
     }
 
-    private func editRow(title: String, subtitle: String, systemImage: String, tint: Color? = nil, action: @escaping () -> Void) -> some View {
-        ListRow(
-            title: title,
-            subtitle: subtitle,
-            systemImage: systemImage,
-            tint: tint,
-            accessory: .custom(AnyView(RowChipButton(subject: title, action: action)))
-        )
+    /// The whole row opens the editor. Only a 20 pt "Edit" chip at its end used to.
+    private func editRow(title: String, subtitle: String?, systemImage: String, tint: Color? = nil, action: @escaping () -> Void) -> some View {
+        ListRowButton(title: title, subtitle: subtitle, systemImage: systemImage, tint: tint, action: action)
     }
 
     private var editProgramName: some View {
@@ -58,7 +54,7 @@ struct ProgramSettingsView: View {
     private var editCycleCount: some View {
         Stepper(value: $program.numMicrocycles, in: 1...16) {
             ListRow(
-                title: String(localized: "Number of cycles"),
+                title: String(localized: "Number of Cycles"),
                 subtitle: String(AttributedString(localized: "^[\(program.numMicrocycles) cycle](inflect: true)").characters),
                 systemImage: "arrow.trianglehead.2.clockwise"
             )
@@ -67,8 +63,9 @@ struct ProgramSettingsView: View {
 
     private var editColourAndIcon: some View {
         editRow(
+            // The row's own glyph shows both; the hex string and symbol name were no help as text.
             title: String(localized: "Color & Icon"),
-            subtitle: "\(program.colour.description.capitalized), \(program.icon.capitalized)",
+            subtitle: nil,
             systemImage: program.icon,
             tint: Color(hex: program.colour)
         ) {
@@ -77,7 +74,7 @@ struct ProgramSettingsView: View {
     }
 
     private var editDayOrder: some View {
-        editRow(title: String(localized: "Day Order"), subtitle: dayOrderSubtitle, systemImage: Symbol.calendar) {
+        editRow(title: String(localized: "Day Order"), subtitle: presenter.dayOrderSubtitle(program: program), systemImage: Symbol.calendar) {
             presenter.onEditDayOrderPressed(program: $program)
         }
     }
@@ -90,7 +87,7 @@ struct ProgramSettingsView: View {
 
     private var editPeriodisation: some View {
         ListRowToggle(
-            title: String(localized: "Periodisation"),
+            title: String(localized: "Periodization"),
             subtitle: String(localized: "Organize your training into phases that vary intensity and volume to support continuous progress and effective recovery."),
             systemImage: "water.waves",
             isOn: $program.periodisation
@@ -104,18 +101,6 @@ struct ProgramSettingsView: View {
                 presenter.onDismissPressed()
             }
         }
-    }
-
-    private var dayOrderSubtitle: String {
-        var subtitle = ""
-        for plan in program.workoutTemplates {
-            if plan.exercises.isEmpty {
-                subtitle += "R "
-            } else {
-                subtitle += "W "
-            }
-        }
-        return subtitle
     }
 }
 

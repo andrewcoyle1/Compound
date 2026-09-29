@@ -9,10 +9,12 @@
 
 import SwiftUI
 
-/// Changes save as the picker moves, so Done only closes.
+/// Holds the picked time until confirm, like the duration sheet beside it: closing leaves the
+/// session as it was.
 struct WorkoutSessionStartTimeSheet: View {
     @Binding var date: Date
-    let onDone: () -> Void
+    let onClose: () -> Void
+    let onSave: () -> Void
 
     var body: some View {
         Form {
@@ -25,8 +27,11 @@ struct WorkoutSessionStartTimeSheet: View {
         .navigationTitle("Start Time")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close, action: onClose)
+            }
             ToolbarItem(placement: .confirmationAction) {
-                Button(role: .confirm, action: onDone)
+                Button(role: .confirm, action: onSave)
             }
         }
     }
@@ -68,9 +73,16 @@ struct WorkoutSessionDurationSheet: View {
 }
 
 extension CoreRouter {
-    func showSessionStartTimeView(date: Binding<Date>) {
+    func showSessionStartTimeView(date: Binding<Date>, onSave: @escaping () -> Void) {
         router.showScreen(.sheetConfig(config: .full)) { router in
-            WorkoutSessionStartTimeSheet(date: date, onDone: { router.dismissScreen() })
+            WorkoutSessionStartTimeSheet(
+                date: date,
+                onClose: { router.dismissScreen() },
+                onSave: {
+                    onSave()
+                    router.dismissScreen()
+                }
+            )
         }
     }
 
@@ -92,7 +104,7 @@ extension CoreRouter {
 #Preview("Start time") {
     @Previewable @State var date = Date()
     NavigationStack {
-        WorkoutSessionStartTimeSheet(date: $date, onDone: { })
+        WorkoutSessionStartTimeSheet(date: $date, onClose: { }, onSave: { })
     }
 }
 

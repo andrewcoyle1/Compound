@@ -49,6 +49,11 @@ class ExerciseSavePresenter {
         }
     }
 
+    /// The review used to print the equipment's id where the step before printed its name.
+    func equipmentName(for ref: EquipmentRef) -> String {
+        GymProfileModel.allEquipmentCatalog.first { $0.ref == ref }?.name ?? ref.equipmentId
+    }
+
     func onViewAppear(delegate: ExerciseSaveDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
     }

@@ -33,26 +33,30 @@ struct ProgramDesignView<DefineWorkout: View>: View {
     
     @State var presenter: ProgramDesignPresenter
     let delegate: ProgramDesignDelegate
+    /// Opened as a sheet on a saved program, rather than pushed as the create flow's last step.
+    private let isEditing: Bool
     
     @ViewBuilder var workoutDefinitionView: (DefineWorkoutDelegate) -> DefineWorkout
     
     init(presenter: ProgramDesignPresenter, delegate: ProgramDesignDelegate, workoutDefinitionView: @escaping (DefineWorkoutDelegate) -> DefineWorkout) {
         self.presenter = presenter
         self.delegate = delegate
+        self.isEditing = false
         self.workoutDefinitionView = workoutDefinitionView
     }
     
     init(presenter: ProgramDesignPresenter, delegate: EditTrainingProgramDelegate, workoutDefinitionView: @escaping (DefineWorkoutDelegate) -> DefineWorkout) {
         self.presenter = presenter
         self.delegate = ProgramDesignDelegate(id: delegate.program.id, authorId: delegate.program.authorId, name: delegate.program.name, colour: Color(hex: delegate.program.colour), icon: delegate.program.icon)
+        self.isEditing = true
         self.workoutDefinitionView = workoutDefinitionView
     }
     
     var body: some View {
         workoutDefinitionSection(dayPlan: presenter.selectedWorkoutTemplateModel)
-            .navigationTitle("Create Program")
+            .navigationTitle(isEditing ? String(localized: "Edit Program") : String(localized: "Create Program"))
             .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden()
+            .interactiveDismissDisabled(presenter.hasUnsavedChanges)
             .onAppear {
                 presenter.onViewAppear()
             }
@@ -150,7 +154,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
     @ViewBuilder
     private var bottomActions: some View {
         if !presenter.isProgramActive {
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onActivatePressed(delegate: delegate)
             } label: {
                 Text("Activate Program")
@@ -160,7 +164,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
         }
 
         if delegate.onComplete == nil {
-            CallToActionButton(isPrimaryAction: false) {
+            CallToActionButton(isPrimaryAction: false, isLoading: presenter.isSaving) {
                 presenter.onSavePressed(delegate: delegate)
             } label: {
                 Text("Save Program")
@@ -174,7 +178,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
         Section {
             ScrollView(.horizontal) {
                 HStack {
-                    Button {
+                    Button(role: .destructive) {
                         presenter.onRemoveWorkoutTemplateModelPressed()
                     } label: {
                         Label("Remove", systemImage: Symbol.delete)
@@ -200,16 +204,16 @@ struct ProgramDesignView<DefineWorkout: View>: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDismissPressed(delegate: delegate)
-            } label: {
-                Image(systemName: "chevron.left")
+        // The create flow keeps the system back button, and its swipe, to step back to the icon.
+        if isEditing {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onClosePressed()
+                }
+                .accessibilityIdentifier("ProgramDesign.close")
             }
-            .accessibilityLabel("Back")
-            .accessibilityIdentifier("ProgramDesign.back")
         }
-        
+
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onProgramSettingsPressed(program: $presenter.program)
@@ -217,6 +221,22 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                 Image(systemName: Symbol.settings)
             }
             .accessibilityLabel("Program settings")
+        }
+
+        // A saved program's share and delete, as workout templates have them.
+        if isEditing {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("Share with Friends", systemImage: Symbol.share) {
+                        presenter.onSharePressed()
+                    }
+                    Button("Delete Program", systemImage: Symbol.delete, role: .destructive) {
+                        presenter.onDeletePressed()
+                    }
+                } label: {
+                    Label("More", systemImage: Symbol.more)
+                }
+            }
         }
     }
 }

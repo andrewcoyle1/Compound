@@ -24,7 +24,8 @@ struct InactiveTrainingProgramView<ProgramDisclosure: View>: View {
             ForEach(delegate.inactivePrograms) { program in
                 trainingProgramDisclosureGroup(
                     TrainingProgramDisclosureGroupDelegate(
-                        trainingProgram: program
+                        trainingProgram: program,
+                        onDelete: delegate.onDelete
                     )
                 )
                 .swipeActions(edge: .trailing) {

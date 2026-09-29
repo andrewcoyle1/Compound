@@ -7,7 +7,7 @@ struct EquipmentPickerDelegate {
     
     init(
         items: [AnyEquipment],
-        headerTitle: String = "Equipment",
+        headerTitle: String = String(localized: "Equipment"),
         chosenItem: Binding<[EquipmentRef]>
     ) {
         self.items = items
@@ -33,8 +33,12 @@ struct EquipmentPickerView: View {
         List {
             equipmentSections
         }
+        .overlay {
+            if sectionedEquipment.isEmpty && !searchQuery.isEmpty {
+                ContentUnavailableView.search(text: searchQuery)
+            }
+        }
         .navigationTitle(delegate.headerTitle)
-        .navigationSubtitle("Choose One")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

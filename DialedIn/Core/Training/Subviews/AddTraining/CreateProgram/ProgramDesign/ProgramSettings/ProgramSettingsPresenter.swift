@@ -6,7 +6,10 @@ class ProgramSettingsPresenter {
     
     private let interactor: ProgramSettingsInteractor
     private let router: ProgramSettingsRouter
-    
+
+    /// A second tap on Activate while the first was saving ran the write twice.
+    private(set) var isSaving = false
+
     init(interactor: ProgramSettingsInteractor, router: ProgramSettingsRouter) {
         self.interactor = interactor
         self.router = router
@@ -49,6 +52,11 @@ class ProgramSettingsPresenter {
         )
     }
 
+    /// The days in order, by name. It used to read "R W W ".
+    func dayOrderSubtitle(program: TrainingProgram) -> String {
+        program.workoutTemplates.map(\.name).joined(separator: ", ")
+    }
+
     func onEditDeloadPressed(program: Binding<TrainingProgram>) {
         router.showEditDeloadView(
             selected: program.wrappedValue.deload,
@@ -57,7 +65,10 @@ class ProgramSettingsPresenter {
     }
 
     func onActivatePressed(program: TrainingProgram) {
+        guard !isSaving else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             do {
                 try await interactor.saveTrainingProgram(trainingProgram: program)
                 try await interactor.setActiveTrainingProgram(programId: program.id)
@@ -65,7 +76,7 @@ class ProgramSettingsPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(error: error)
+                router.showAlert(title: String(localized: "Unable to Activate Program"), error: error)
             }
         }
     }

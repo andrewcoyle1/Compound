@@ -7,7 +7,12 @@ class DefineWorkoutWrapperPresenter {
     private let interactor: DefineWorkoutWrapperInteractor
     private let router: DefineWorkoutWrapperRouter
     
-    var exercises: [WorkoutTemplateExercise]
+    /// Backing out to change the name or gym used to throw the whole exercise list away. Every
+    /// change is written through to the name step's draft, which outlives this screen.
+    var exercises: [WorkoutTemplateExercise] {
+        didSet { draft?.wrappedValue = exercises }
+    }
+    private let draft: Binding<[WorkoutTemplateExercise]>?
     private(set) var isSaving: Bool = false
 
     var currentUser: UserModel? {
@@ -22,11 +27,13 @@ class DefineWorkoutWrapperPresenter {
     init(
         interactor: DefineWorkoutWrapperInteractor,
         router: DefineWorkoutWrapperRouter,
-        exercises: [WorkoutTemplateExercise] = []
+        exercises: [WorkoutTemplateExercise] = [],
+        draft: Binding<[WorkoutTemplateExercise]>? = nil
     ) {
         self.interactor = interactor
         self.router = router
-        self.exercises = exercises
+        self.draft = draft
+        self.exercises = draft?.wrappedValue ?? exercises
     }
     
     func onViewAppear() {

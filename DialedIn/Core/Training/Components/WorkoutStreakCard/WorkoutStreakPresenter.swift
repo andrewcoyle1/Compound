@@ -84,11 +84,16 @@ class WorkoutStreakPresenter {
         interactor.workoutSessions.filter { $0.endedAt != nil && !$0.isRestDay }.count
     }
 
+    /// The first day of this week in the user's own calendar. Counting back to weekday 1 always
+    /// started the row on Sunday, even where the week starts on Monday.
+    var startOfWeek: Date {
+        let calendar = Calendar.current
+        return calendar.dateInterval(of: .weekOfYear, for: Date())?.start ?? calendar.startOfDay(for: Date())
+    }
+
     var workoutDaysThisWeek: Set<Date> {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let weekdayIndex = calendar.component(.weekday, from: today) - 1
-        let weekStart = calendar.date(byAdding: .day, value: -weekdayIndex, to: today) ?? today
+        let weekStart = startOfWeek
         let weekDays = Set((0..<7).compactMap {
             calendar.date(byAdding: .day, value: $0, to: weekStart)
         })

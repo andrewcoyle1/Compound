@@ -37,8 +37,13 @@ class WorkoutSessionDetailPresenter {
         return userId == sessionAuthorId
     }
         
+    /// What was last written to the backend from this screen. A timing edit saves the whole
+    /// session, so after one the screen has nothing unsaved even though it no longer matches what
+    /// it opened with.
+    private var lastSavedSession: WorkoutSessionModel?
+
     func hasUnsavedChanges(session: WorkoutSessionModel, editedSession: WorkoutSessionModel) -> Bool {
-        editedSession != session
+        editedSession != (lastSavedSession ?? session)
     }
     
     init(
@@ -123,25 +128,18 @@ class WorkoutSessionDetailPresenter {
         loadUnitPreferences(for: session)
     }
         
-    func showDiscardChangesAlert(session: WorkoutSessionModel) {
-        router.showAlert(
-            title: String(localized: "Discard changes?"),
-            subtitle: String(localized: "You have unsaved changes. This will discard them."),
-            buttons: {
-                AnyView(
-                    VStack {
-                        Button("Discard Changes", role: .destructive) {
-                            self.onDismissPressed()
-                        }
-                        Button("Keep Editing", role: .cancel) {
-
-                        }
-                    }
-                )
-            }
-        )
+    /// The close button and the swipe both stop here when something is unsaved; the view blocks the
+    /// swipe from the same check.
+    func onClosePressed(initialSession: WorkoutSessionModel, session: WorkoutSessionModel) {
+        guard hasUnsavedChanges(session: initialSession, editedSession: session) else {
+            onDismissPressed()
+            return
+        }
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in self?.onDismissPressed() }
+        }
     }
-    
+
     func onDismissPressed() {
         self.dismissScreen()
     }
@@ -155,13 +153,16 @@ class WorkoutSessionDetailPresenter {
     var durationHours: Int = 1
     var durationMinutes: Int = 0
 
+    /// The picker edits a copy. Nothing is written until the sheet's confirm button, and closing it
+    /// leaves the session as it was.
+    var startDate = Date()
+
     func onEditStartTimePressed(session: Binding<WorkoutSessionModel>) {
         guard isAuthor(sessionAuthorId: session.wrappedValue.authorId) else { return }
+        startDate = session.wrappedValue.dateCreated
         router.showSessionStartTimeView(
-            date: Binding(
-                get: { session.wrappedValue.dateCreated },
-                set: { self.onStartTimeChanged($0, session: session) }
-            )
+            date: Binding(get: { self.startDate }, set: { self.startDate = $0 }),
+            onSave: { self.onStartTimeChanged(self.startDate, session: session) }
         )
     }
 
@@ -178,8 +179,8 @@ class WorkoutSessionDetailPresenter {
         )
     }
 
-    /// Both timing edits save straight away rather than joining the exercise-editing flow — the
-    /// user changed one field in a picker and expects it kept.
+    /// Both timing edits save from their sheet's confirm button rather than joining the
+    /// exercise-editing flow — the user changed one field in a picker and expects it kept.
     func onStartTimeChanged(_ date: Date, session: Binding<WorkoutSessionModel>) {
         session.wrappedValue.updateStart(date)
         persistTimingChange(session.wrappedValue)
@@ -196,12 +197,13 @@ class WorkoutSessionDetailPresenter {
         Task {
             do {
                 try await interactor.saveWorkoutSession(session)
+                lastSavedSession = session
                 interactor.playHaptic(option: .success)
             } catch {
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(
-                    title: String(localized: "Save Failed"),
-                    subtitle: "Unable to save the change. Please try again."
+                    title: String(localized: "Unable to Save Workout"),
+                    subtitle: String(localized: "Unable to save the change. Please try again.")
                 )
             }
         }
@@ -234,8 +236,8 @@ class WorkoutSessionDetailPresenter {
         } catch {
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(
-                title: String(localized: "Save Failed"),
-                subtitle: "Unable to save changes. Please try again."
+                title: String(localized: "Unable to Save Workout"),
+                subtitle: String(localized: "Unable to save changes. Please try again.")
             )
         }
     }

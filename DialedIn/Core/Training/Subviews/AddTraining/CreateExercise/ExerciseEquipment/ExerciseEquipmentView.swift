@@ -57,6 +57,7 @@ struct ExerciseEquipmentView: View {
                                 .accessibilityLabel("Delete variation")
                                 .buttonStyle(.plain)
                                 .foregroundStyle(.danger)
+                                .tapTarget()
                             }
                         }
                     }
@@ -91,14 +92,10 @@ struct ExerciseEquipmentView: View {
     }
 
     /// `note` says whether the equipment is required, and joins the subtitle rather than taking a
-    /// third line.
+    /// third line. The whole row opens the picker; only a small "Add" chip at its end used to.
     private func addRow(title: String, subtitle: String?, note: String?, action: @escaping () -> Void) -> some View {
         let detail = [subtitle, note].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
-        return ListRow(
-            title: title,
-            subtitle: detail.isEmpty ? nil : detail,
-            accessory: .custom(AnyView(RowChipButton("Add", subject: title, action: action)))
-        )
+        return ListRowButton(title: title, subtitle: detail.isEmpty ? nil : detail, action: action)
     }
 }
 

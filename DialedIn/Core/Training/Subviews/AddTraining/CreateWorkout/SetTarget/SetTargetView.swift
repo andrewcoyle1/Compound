@@ -8,19 +8,7 @@ struct SetTargetDelegate {
 struct SetTargetView: View {
     
     @State var presenter: SetTargetPresenter
-    
-    /// The committed binding from the parent (only written to on save)
-    private let committedExercise: Binding<WorkoutTemplateExercise>
-    
-    /// Local working copy that drives the UI
-    @State private var workingExercise: WorkoutTemplateExercise
-    
-    init(presenter: SetTargetPresenter, delegate: SetTargetDelegate) {
-        self.presenter = presenter
-        self.committedExercise = delegate.exercise
-        self._workingExercise = State(initialValue: delegate.exercise.wrappedValue)
-    }
-    
+
     @ScaledMetric(relativeTo: .body) private var numberColumnWidth: CGFloat = 44
 
     var body: some View {
@@ -38,25 +26,31 @@ struct SetTargetView: View {
                 }
                 .font(.label)
                 .foregroundStyle(.secondary)
-                
-                ForEach($workingExercise.setTargets) { $setTarget in
+                // Each field names its own column and set, so the headings would only be read twice.
+                .accessibilityHidden(true)
+
+                ForEach($presenter.workingExercise.setTargets) { $setTarget in
                     HStack {
                         numberBadge("\(setTarget.setNumber)")
+                            .accessibilityLabel("Set \(setTarget.setNumber)")
 
                         TextField("Optional", text: intTextBinding($setTarget.minReps))
                             .keyboardType(.numberPad)
                             .textFieldStyle(.roundedBorder)
-                        
+                            .accessibilityLabel("Set \(setTarget.setNumber), minimum reps")
+
                         TextField("Optional", text: intTextBinding($setTarget.maxReps))
                             .keyboardType(.numberPad)
                             .textFieldStyle(.roundedBorder)
-                        
-                        numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                            .accessibilityLabel("Set \(setTarget.setNumber), maximum reps")
 
+                        numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                            .accessibilityLabel("Reps in reserve")
+                            .accessibilityValue(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
                     }
-                    .swipeActions(edge: .trailing) {
+                    .rowActions {
                         Button(role: .destructive) {
-                            removeSetTarget(setTarget)
+                            presenter.onDeleteSetPressed(setTarget)
                         } label: {
                             Label("Delete", systemImage: Symbol.delete)
                         }
@@ -65,7 +59,7 @@ struct SetTargetView: View {
                     .listRowInsets(.vertical, 0)
                 }
                 Button {
-                    addSetTarget()
+                    presenter.onAddSetPressed()
                 } label: {
                     Label("Add Set", systemImage: Symbol.add)
                 }
@@ -77,12 +71,12 @@ struct SetTargetView: View {
                     title: String(localized: "Set Rest Timers"),
                     subtitle: String(localized: "This will override default exercise settings."),
                     systemImage: Symbol.rest,
-                    isOn: $workingExercise.setRestTimers
+                    isOn: $presenter.workingExercise.setRestTimers
                 )
             }
         }
         .navigationTitle("Targets")
-        .navigationSubtitle(workingExercise.exercise.name)
+        .navigationSubtitle(presenter.workingExercise.exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
@@ -93,19 +87,20 @@ struct SetTargetView: View {
         .toolbar {
             toolbarContent
         }
+        .interactiveDismissDisabled(presenter.hasUnsavedChanges)
     }
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {
             Button(role: .close) {
-                presenter.onDismissPressed()
+                presenter.onClosePressed()
             }
         }
         
         ToolbarItem(placement: .confirmationAction) {
             Button(role: .confirm) {
-                saveAndDismiss()
+                presenter.onSavePressed()
             }
         }
     }
@@ -122,25 +117,6 @@ struct SetTargetView: View {
             .frame(width: numberColumnWidth)
     }
 
-    private func addSetTarget() {
-        let count = workingExercise.setTargets.count
-        workingExercise.setTargets.append(SetTarget(setNumber: count + 1))
-    }
-    
-    private func removeSetTarget(_ setTarget: SetTarget) {
-        workingExercise.setTargets.removeAll { $0.id == setTarget.id }
-        // Renumber remaining sets
-        for index in workingExercise.setTargets.indices {
-            workingExercise.setTargets[index].setNumber = index + 1
-        }
-    }
-    
-    private func saveAndDismiss() {
-        // Write the entire working copy back to trigger @Observable detection
-        committedExercise.wrappedValue = workingExercise
-        presenter.onDismissPressed()
-    }
-    
     private func intTextBinding(_ value: Binding<Int?>) -> Binding<String> {
         Binding(
             get: {
@@ -165,9 +141,9 @@ extension CoreBuilder {
         SetTargetView(
             presenter: SetTargetPresenter(
                 interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
+                router: CoreRouter(router: router, builder: self),
+                delegate: delegate
+            )
         )
     }
     

@@ -78,11 +78,15 @@ struct FinalExerciseDetailsView: View {
     private var bodyweightSection: some View {
         Section {
             HStack {
-                TextField("", value: $presenter.bodyweightContribution, format: .number)
+                TextField("Body weight contribution, percent", value: $presenter.bodyweightContribution, format: .number, prompt: Text("75"))
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("FinalExerciseDetails.contribution")
                 Text("%")
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+            if !presenter.isContributionInRange {
+                InlineMessage(.error, "Enter a number from 0 to 100.")
             }
         } header: {
             HStack {
@@ -97,7 +101,7 @@ struct FinalExerciseDetailsView: View {
 
     private var alternateNamesSection: some View {
         Section {
-            TextField(text: $presenter.alternateNames, prompt: Text("Optionally add other names")) {
+            TextField(text: Binding(get: { presenter.alternateNames }, set: { presenter.onAlternateNamesChanged($0) }), prompt: Text("Optionally add other names")) {
                 Text("Alternate Names")
             }
             .lineLimit(2)
@@ -105,7 +109,7 @@ struct FinalExerciseDetailsView: View {
             HStack {
                 Text("Alternate Names")
                 Spacer()
-                Text("\(presenter.alternateNames.count)/300")
+                Text("\(presenter.alternateNames.count)/\(FinalExerciseDetailsPresenter.alternateNamesLimit)")
             }
         } footer: {
             Text("Separate names with a comma.")

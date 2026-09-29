@@ -68,8 +68,7 @@ struct WorkoutStreakCard: View {
     private var weeklyDotsRow: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        let weekdayIndex = calendar.component(.weekday, from: today) - 1
-        let startOfWeek = calendar.date(byAdding: .day, value: -weekdayIndex, to: today) ?? today
+        let startOfWeek = presenter.startOfWeek
         let workoutDays = presenter.workoutDaysThisWeek
         // The calendar's own letters, indexed by each day's weekday, so they are localised.
         let labels = calendar.veryShortWeekdaySymbols

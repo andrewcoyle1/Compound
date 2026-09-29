@@ -30,8 +30,8 @@ struct ActiveTrainingProgramView: View {
                 .anyButton(.press) {
                     presenter.onProgramPressed(program: delegate.program)
                 }
-                .swipeActions(edge: .trailing) {
-                    Button("Delete", role: .destructive) {
+                .rowActions {
+                    Button("Delete", systemImage: Symbol.delete, role: .destructive) {
                         presenter.onProgramDeletePressed(program: delegate.program)
                     }
                 }

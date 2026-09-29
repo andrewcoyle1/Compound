@@ -206,27 +206,19 @@ class ActiveTrainingProgramPresenter {
 
     // MARK: - Active Workout Safeguard
 
+    /// The shared prompt, so both start buttons ask the same question with the same answers.
     private func checkForActiveWorkout(onResumeWorkout: @escaping @Sendable () -> Void, onStartNewWorkout: @escaping @Sendable () -> Void) -> Bool {
-        guard let activeSession = activeSession else {
+        guard activeSession != nil else {
             return true
         }
 
-        router.showAlert(
-            title: String(localized: "Workout In Progress"),
-            subtitle: String(localized: "You already have '\(activeSession.name)' in progress. What would you like to do?"),
-            buttons: {
-                AnyView(
-                    VStack {
-                        Button("Resume Current Workout") {
-                            onResumeWorkout()
-                        }
-                        Button("Discard & Start New", role: .destructive) {
-                            try? self.interactor.deleteActiveSession()
-                            onStartNewWorkout()
-                        }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                )
+        router.showActiveWorkoutAlert(
+            onResume: onResumeWorkout,
+            onReplace: { [weak self] in
+                Task { @MainActor in
+                    try? self?.interactor.deleteActiveSession()
+                    onStartNewWorkout()
+                }
             }
         )
 

@@ -165,6 +165,7 @@ struct PrebuiltProgramDetailPresenterTests {
 
         func dismissScreen() { dismissed += 1 }
         func showAlert(error: Error) { errors += 1 }
+        func showAlert(title: String, error: Error) { errors += 1 }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { }
         func showDevSettingsView() { }

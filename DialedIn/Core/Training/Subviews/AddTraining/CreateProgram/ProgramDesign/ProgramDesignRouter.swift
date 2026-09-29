@@ -4,6 +4,7 @@ import SwiftUI
 protocol ProgramDesignRouter: GlobalRouter {
     func showRenameWorkoutTemplateModelView(delegate: RenameWorkoutTemplateModelDelegate)
     func showProgramSettingsView(program: Binding<TrainingProgram>)
+    func showShareToFollowerView(delegate: ShareToFollowerDelegate)
 }
 
 extension CoreRouter: ProgramDesignRouter { }

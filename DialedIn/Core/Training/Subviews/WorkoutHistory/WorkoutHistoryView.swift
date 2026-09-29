@@ -23,9 +23,10 @@ struct WorkoutHistoryView<WorkoutSessionRow: View>: View {
         List {
             if presenter.isLoading && presenter.workoutSessions.isEmpty {
                 loadingState
-            } else if let user = presenter.currentUser {
+            } else if let user = presenter.currentUser, !presenter.workoutSessions.isEmpty {
                 listContents(user: user)
             } else {
+                // Also with no sessions: a signed-in user with none saw a "0" header over nothing.
                 emptyState
             }
         }
@@ -59,7 +60,7 @@ struct WorkoutHistoryView<WorkoutSessionRow: View>: View {
         ContentUnavailableView {
             Label("No Workout History", systemImage: Symbol.history)
         } description: {
-            Text("Complete your first workout to see it here")
+            Text("Complete your first workout to see it here.")
         } actions: {
             Button {
                 presenter.onReloadPressed()

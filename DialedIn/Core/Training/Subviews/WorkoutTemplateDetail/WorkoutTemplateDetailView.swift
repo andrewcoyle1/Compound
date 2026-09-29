@@ -38,7 +38,7 @@ struct WorkoutTemplateDetailView: View {
             toolbarContent
         }
         .bottomCTA {
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.isStarting) {
                 presenter.onStartWorkoutPressed(
                     onStartWorkout: delegate.onStartWorkoutPressed,
                     workoutTemplate: delegate.workoutTemplate,
@@ -48,6 +48,7 @@ struct WorkoutTemplateDetailView: View {
             } label: {
                 Text("Start Workout")
             }
+            .disabled(presenter.isStarting)
         }
     }
 
@@ -106,7 +107,7 @@ struct WorkoutTemplateDetailView: View {
         } header: {
             // The "+" here had its action commented out. Authors add exercises through Edit
             // Workout in the toolbar menu; nobody else can change the template.
-            Text("\(delegate.workoutTemplate.exercises.count) Exercises")
+            Text("^[\(delegate.workoutTemplate.exercises.count) Exercise](inflect: true)")
         }
     }
 

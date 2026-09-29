@@ -65,9 +65,15 @@ struct WorkoutSessionDetailPresenterTests {
         func showDevSettingsView() { shown.append("devSettings") }
         func showExercisesPickerView(delegate: ExercisesPickerDelegate) { shown.append("exercisesPicker") }
         private(set) var startTimeDate: Binding<Date>?
-        func showSessionStartTimeView(date: Binding<Date>) {
+        private(set) var startTimeSave: (() -> Void)?
+        func showSessionStartTimeView(date: Binding<Date>, onSave: @escaping () -> Void) {
             shown.append("startTime")
             startTimeDate = date
+            startTimeSave = onSave
+        }
+        private(set) var dialogTitles: [String] = []
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            dialogTitles.append(title)
         }
         private(set) var durationSave: (() -> Void)?
         func showSessionDurationView(hours: Binding<Int>, minutes: Binding<Int>, onSave: @escaping () -> Void) {

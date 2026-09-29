@@ -25,7 +25,7 @@ struct PrebuiltProgramDetailView: View {
             CallToActionButton(isLoading: presenter.isStarting) {
                 Task { await presenter.onStartPressed() }
             } label: {
-                Text("Start this program")
+                Text("Start Program")
             }
             .disabled(presenter.isStarting)
         }
@@ -40,7 +40,7 @@ struct PrebuiltProgramDetailView: View {
             LabeledContent("Workouts per microcycle", value: "\(presenter.workoutCount)")
             LabeledContent("Microcycles", value: "\(presenter.program.numMicrocycles)")
             LabeledContent("Deload", value: presenter.program.deload.title)
-            LabeledContent("Periodisation", value: presenter.program.periodisation ? String(localized: "On") : String(localized: "Off"))
+            LabeledContent("Periodization", value: presenter.program.periodisation ? String(localized: "On") : String(localized: "Off"))
         }
     }
 

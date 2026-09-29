@@ -5,6 +5,8 @@ struct DefineWorkoutWrapperDelegate {
     let gymProfile: GymProfileModel
     /// Set when editing: the saved model keeps this template's id so the save updates it in place.
     var workoutTemplate: WorkoutTemplateModel?
+    /// Held by the name step, so going back to it and forward again keeps the exercises chosen here.
+    var draftExercises: Binding<[WorkoutTemplateExercise]>?
 }
 
 struct DefineWorkoutWrapperView<DefineWorkout: View>: View {
@@ -32,7 +34,7 @@ struct DefineWorkoutWrapperView<DefineWorkout: View>: View {
                 presenter.onViewDisappear()
             }
             .bottomCTA {
-                CallToActionButton {
+                CallToActionButton(isLoading: presenter.isSaving) {
                     presenter.onConfirmPressed(delegate: self.delegate)
                 } label: {
                     Text("Save")
@@ -50,7 +52,8 @@ extension CoreBuilder {
             presenter: DefineWorkoutWrapperPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                exercises: delegate.workoutTemplate?.exercises ?? []
+                exercises: delegate.workoutTemplate?.exercises ?? [],
+                draft: delegate.draftExercises
             ),
             delegate: delegate,
             defineWorkoutView: { delegate in

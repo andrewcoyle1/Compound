@@ -45,7 +45,7 @@ struct WorkoutSessionAuthorTests {
         // disappears while the protocol requirement stays.
         func showDevSettingsView() { }
         func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
-        func showSessionStartTimeView(date: Binding<Date>) { }
+        func showSessionStartTimeView(date: Binding<Date>, onSave: @escaping () -> Void) { }
         func showSessionDurationView(hours: Binding<Int>, minutes: Binding<Int>, onSave: @escaping () -> Void) { }
     }
 

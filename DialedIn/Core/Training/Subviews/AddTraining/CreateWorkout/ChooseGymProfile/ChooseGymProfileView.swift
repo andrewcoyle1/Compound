@@ -3,6 +3,8 @@ import SwiftUI
 struct ChooseGymProfileDelegate {
     let name: String
     var workoutTemplate: WorkoutTemplateModel?
+    /// Passed on to the exercise step; see `DefineWorkoutWrapperDelegate.draftExercises`.
+    var draftExercises: Binding<[WorkoutTemplateExercise]>?
 }
 
 struct ChooseGymProfileView: View {

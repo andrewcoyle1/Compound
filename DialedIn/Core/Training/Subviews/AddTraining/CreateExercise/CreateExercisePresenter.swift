@@ -89,8 +89,20 @@ class CreateExercisePresenter {
         )
     }
 
+    /// Anything typed or picked. Close used to drop it without asking.
+    var hasUnsavedChanges: Bool {
+        let hasName = !(exerciseName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return hasName || trackableMetricA != nil || trackableMetricB != nil || exerciseType != nil || laterality != nil
+    }
+
     func onCancelPressed() {
-        router.dismissScreen()
+        guard hasUnsavedChanges else {
+            router.dismissScreen()
+            return
+        }
+        router.showDiscardChangesDialog { [weak self] in
+            Task { @MainActor in self?.router.dismissScreen() }
+        }
     }
 
 #if DEV || MOCK

@@ -58,7 +58,6 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
                 ),
                 $isCalendarExpanded
             )
-            .background(.bar)
         }
     }
 
@@ -82,7 +81,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
 
     private var moreSection: some View {
         Section("More") {
-            ListRowButton(title: "Training Program Library", systemImage: Symbol.library) {
+            ListRowButton(title: "Programs", systemImage: Symbol.library) {
                 presenter.onTrainingProgramLibraryView()
             }
             ListRowButton(title: "Workout Library", systemImage: Symbol.workout) {

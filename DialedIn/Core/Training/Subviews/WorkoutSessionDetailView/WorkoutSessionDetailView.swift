@@ -48,6 +48,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         .toolbar {
             toolbarContent
         }
+        .interactiveDismissDisabled(presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
         .onAppear {
             presenter.loadUnitPreferences(for: session)
         }
@@ -149,11 +150,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         
         ToolbarItem(placement: .cancellationAction) {
             Button(role: .close) {
-                if presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session) {
-                    presenter.showDiscardChangesAlert(session: session)
-                } else {
-                    presenter.onDismissPressed()
-                }
+                presenter.onClosePressed(initialSession: delegate.initialSession, session: session)
             }
         }
         
@@ -165,7 +162,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     }
                 }
                 if let link = presenter.webLink(session: session) {
-                    Button("Copy Link", systemImage: Symbol.share) {
+                    // No icon, like the formats above it: a menu group has icons on all or none.
+                    Button("Copy Link") {
                         presenter.onCopyLinkPressed(link, session: session)
                     }
                 }

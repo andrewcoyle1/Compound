@@ -17,7 +17,7 @@ struct ProgramIconView: View {
     
     var body: some View {
         VStack(spacing: Spacing.l) {
-            Text("What icon should we use to display this program?")
+            Text("Choose an icon for this program.")
                 .font(.sectionTitle)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)

@@ -26,10 +26,6 @@ class ExerciseSettingsPresenter {
 
     // MARK: - Computed Subtitles
 
-    var weightsSubtitle: String {
-        "\(unitPreference.weightUnit.displayName) · \(unitPreference.distanceUnit.displayName)"
-    }
-
     var restSubtitle: String {
         if let override = restOverride {
             return String(localized: "Custom (\(Format.duration(TimeInterval(override))))")
@@ -50,14 +46,14 @@ class ExerciseSettingsPresenter {
     /// screen that owns it.
     var sideSetRestSubtitle: String {
         let settings = interactor.workoutSettings
-        guard settings.restBetweenSideSets else { return "Off" }
+        guard settings.restBetweenSideSets else { return String(localized: "Off") }
         let percent = Int((settings.sideSetRestScaling * 100).rounded())
         return String(localized: "\(String(describing: percent))% of the rest timer")
     }
 
     var noteSubtitle: String {
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return "None" }
+        guard !trimmed.isEmpty else { return String(localized: "None") }
         return trimmed.components(separatedBy: "\n").first ?? trimmed
     }
 
@@ -77,25 +73,8 @@ class ExerciseSettingsPresenter {
         router.showExerciseModelDetailView(delegate: ExerciseModelDetailDelegate(exerciseModel: exercise))
     }
 
-    func onWeightsPressed() {
-        router.showAlert(
-            title: String(localized: "Weight Unit"),
-            subtitle: String(localized: "Select unit for '\(exercise.name)'"),
-            buttons: {
-                AnyView(
-                    VStack(spacing: Spacing.s) {
-                        ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
-                            Button(unit.displayName) {
-                                self.onSelectWeightUnit(unit)
-                            }
-                        }
-                        Button("Cancel", role: .cancel) { }
-                    }
-                )
-            }
-        )
-    }
-
+    /// The units are pickers in their rows. Weight used to open an alert listing the units as
+    /// buttons, and distance could not be changed at all.
     func onSelectWeightUnit(_ unit: ExerciseWeightUnit) {
         interactor.setWeightUnit(unit, for: exercise.id)
         unitPreference = ExerciseUnitPreference(

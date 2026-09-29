@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TrainingProgramDisclosureGroupDelegate {
     var trainingProgram: TrainingProgram
+    /// Adds Delete beside Share in the row's menu, so it is not reachable by swipe alone.
+    var onDelete: ((TrainingProgram) -> Void)?
     
     var eventParameters: [String: Any]? {
         nil
@@ -28,6 +30,11 @@ struct TrainingProgramDisclosureGroupView: View {
                 .contextMenu {
                     Button("Share with Friends", systemImage: Symbol.share) {
                         presenter.onSharePressed(delegate.trainingProgram)
+                    }
+                    if let onDelete = delegate.onDelete {
+                        Button("Delete Program", systemImage: Symbol.delete, role: .destructive) {
+                            onDelete(delegate.trainingProgram)
+                        }
                     }
                 }
         }

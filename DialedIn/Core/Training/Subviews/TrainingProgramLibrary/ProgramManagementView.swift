@@ -29,7 +29,7 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
                 templatesSection
             }
         }
-        .navigationTitle("My Programs")
+        .navigationTitle("Programs")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent
@@ -91,7 +91,15 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
         ContentUnavailableView {
             Label("No Programs", systemImage: Symbol.program)
         } description: {
-            Text("Create your first training program to get started")
+            Text("Create your first training program to get started.")
+        } actions: {
+            Button {
+                presenter.onCreateProgramPressed()
+            } label: {
+                Text("Create Program")
+                    .foregroundStyle(.onAccent)
+            }
+            .buttonStyle(.glassProminent)
         }
     }
 

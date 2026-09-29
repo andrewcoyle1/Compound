@@ -74,7 +74,7 @@ struct ExerciseSaveView: View {
             // nothing to add to. Wiring it means threading a callback from ExerciseListBuilder through
             // CreateExercise to here — the same prefill plumbing ExerciseSettings' "Edit Duplicate"
             // needs, noted there too.
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onCreatePressed(delegate: delegate)
             } label: {
                 Text("Create")
@@ -91,7 +91,7 @@ struct ExerciseSaveView: View {
             LabeledContent("Type", value: delegate.type?.name ?? String(localized: "None"))
             LabeledContent("Laterality", value: delegate.laterality?.name ?? String(localized: "None"))
         } header: {
-            finalHeader(String(localized: "Definition"))
+            Text("Definition")
         }
     }
 
@@ -107,7 +107,7 @@ struct ExerciseSaveView: View {
             }
             .scrollIndicators(.hidden)
         } header: {
-            finalHeader(String(localized: "Target Muscles"))
+            Text("Target Muscles")
         }
     }
 
@@ -131,14 +131,14 @@ struct ExerciseSaveView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(variation.resistanceEquipment, id: \.self) { equipment in
-                        LabeledContent("Resistance", value: equipment.equipmentId)
+                        LabeledContent("Resistance", value: presenter.equipmentName(for: equipment))
                     }
                     ForEach(variation.supportEquipment, id: \.self) { equipment in
-                        LabeledContent("Support", value: equipment.equipmentId)
+                        LabeledContent("Support", value: presenter.equipmentName(for: equipment))
                     }
                 }
             } header: {
-                finalHeader(String(localized: "Variation \(index + 1)"))
+                Text("Variation \(index + 1)")
             }
         }
     }
@@ -148,15 +148,6 @@ struct ExerciseSaveView: View {
             LabeledContent("Body Weight Contribution", value: Format.percent(Double(delegate.bodyweightContribution) / 100))
             LabeledContent("Alternative Names", value: delegate.alternativeNamesConcatenated)
             LabeledContent("Description", value: delegate.exerciseDescription)
-        }
-    }
-
-    /// "Final": these were settled on earlier steps and are not edited here.
-    private func finalHeader(_ title: String) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(title)
-            Spacer()
-            Text("Final")
         }
     }
 }

@@ -21,7 +21,7 @@ struct ExercisesPickerView<ExerciseList: View>: View {
         
         let listDelegate = ExerciseListBuilderDelegate(
             onExerciseSelectionChanged: presenter.onExercisePressed,
-            selectedExercises: presenter.workingExercises.map(\.exercise)
+            selectedExercises: presenter.selectedExercises
         )
         exerciseListViewBuilder(listDelegate)
             .navigationTitle(presenter.workingExercises.isEmpty ? String(localized: "Select at least one exercise") : String(AttributedString(localized: "^[\(presenter.workingExercises.count) exercise](inflect: true) selected").characters))
@@ -39,9 +39,11 @@ struct ExercisesPickerView<ExerciseList: View>: View {
                         presenter.onSavePressed()
                     }
                     .accessibilityIdentifier("ExercisesPicker.confirm")
+                    .disabled(!presenter.canSave)
                 }
 
             }
+            .interactiveDismissDisabled(presenter.hasUnsavedChanges)
     }
 }
 

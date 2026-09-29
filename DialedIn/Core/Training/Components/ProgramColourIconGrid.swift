@@ -18,17 +18,23 @@ struct ProgramColourIconGrid: View {
     let onColourPressed: (Color) -> Void
     let onIconPressed: (String) -> Void
 
-    @ScaledMetric(relativeTo: .body) private var swatchSide = ControlSize.thumbnail
+    @ScaledMetric(relativeTo: .body) private var swatchSide = ControlSize.row
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Fewer, larger swatches at the accessibility sizes, where six across no longer fit.
+    private func columns(_ count: Int) -> [GridItem] {
+        Array(repeating: GridItem(), count: dynamicTypeSize.isAccessibilitySize ? min(count, 4) : count)
+    }
 
     var body: some View {
         VStack(spacing: Spacing.l) {
-            HStack {
+            LazyVGrid(columns: columns(colours.count), spacing: Spacing.s) {
                 ForEach(colours, id: \.self) { colour in
                     swatch(systemImage: selectedIcon, colour: colour, isSelected: colour == selectedColour)
                         .anyButton {
                             onColourPressed(colour)
                         }
-                        .accessibilityLabel(colour.description.capitalized)
+                        .accessibilityLabel(Self.name(of: colour))
                         .accessibilityAddTraits(colour == selectedColour ? [.isButton, .isSelected] : .isButton)
                 }
             }
@@ -36,17 +42,44 @@ struct ProgramColourIconGrid: View {
 
             Divider()
 
-            LazyVGrid(columns: Array(repeating: GridItem(), count: 6), spacing: Spacing.s) {
+            LazyVGrid(columns: columns(6), spacing: Spacing.s) {
                 ForEach(icons, id: \.self) { icon in
                     swatch(systemImage: icon, colour: selectedColour, isSelected: icon == selectedIcon)
                         .anyButton {
                             onIconPressed(icon)
                         }
-                        .accessibilityLabel(icon)
+                        .accessibilityLabel(Self.name(of: icon))
                         .accessibilityAddTraits(icon == selectedIcon ? [.isButton, .isSelected] : .isButton)
                 }
             }
             .padding(.horizontal)
+        }
+    }
+
+    /// VoiceOver used to read `Color.description` and the SF Symbol's name.
+    static func name(of colour: Color) -> String {
+        switch colour {
+        case .primary: String(localized: "Default")
+        case .red: String(localized: "Red")
+        case .orange: String(localized: "Orange")
+        case .yellow: String(localized: "Yellow")
+        case .green: String(localized: "Green")
+        case .blue: String(localized: "Blue")
+        case .purple: String(localized: "Purple")
+        default: String(localized: "Color")
+        }
+    }
+
+    static func name(of icon: String) -> String {
+        switch icon {
+        case "flag.pattern.checkered": String(localized: "Checkered Flag")
+        case "arcade.stick": String(localized: "Joystick")
+        case "gamecontroller": String(localized: "Game Controller")
+        case "figure.walk": String(localized: "Walking Figure")
+        case "airplane.up.right": String(localized: "Airplane")
+        case "sailboat.fill": String(localized: "Sailboat")
+        case "gauge.with.dots.needle.bottom.100percent": String(localized: "Gauge")
+        default: String(localized: "Icon")
         }
     }
 

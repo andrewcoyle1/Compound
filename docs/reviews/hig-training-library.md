@@ -29,6 +29,34 @@ Paths are relative to `DialedIn/`. `T/` stands for `Core/Training/`, `S/` for
 `CW/` for `…/AddTraining/CreateWorkout/` and `CE/` for `…/AddTraining/CreateExercise/`.
 Findings are most serious first.
 
+## Resolution (2026-09-28, branch hig/training)
+
+| # | Status | What changed |
+|---|---|---|
+| 1 | skipped: decision | Libraries still open as sheets. |
+| 2 | skipped: decision | "Edit Workout" still toggles the notes field only. |
+| 3 | fixed | Session detail, set targets and exercise picker block the swipe and ask through `showDiscardChangesDialog` only when something changed; Create Exercise's close asks; the workout builder's exercises survive going back (held by the name step); the program editor asks only when the program differs. |
+| 4 | fixed | Session picker and program activation are action sheets; activation answers Save Templates / Don't Save / Cancel; both private in-progress prompts use `showActiveWorkoutAlert`; weight and distance units are in-row menu pickers. |
+| 5 | fixed | Start Time holds the date, has close and Done, and saves once on Done. |
+| 6 | fixed | Create flow keeps the system Back button; the edit sheet has `role: .close` in `.cancellationAction`, titled Edit Program. |
+| 7 | fixed | Program editor More menu (Share with Friends, Delete Program); Delete in the library row's menu; exercises get Edit (reorder, delete) and `.rowActions`; set targets and the active program use `.rowActions`. |
+| 8 | fixed | Set fields labelled by set and column; contribution field named; swatches named. |
+| 9 | fixed | `RowChipButton` deleted, rows are `ListRowButton`; filter chips and reset 44 pt; variation delete `.tapTarget()`; swatches `ControlSize.row`. |
+| 10 | fixed | Active chips filled with the accent, count from 1, `.isSelected`; multi-select are `Toggle`s with `.menuActionDismissBehavior(.disabled)`; regular glass. |
+| 11 | fixed, partly | History branches on no sessions; No Programs offers Create Program; No Custom Exercises offers Create Exercise; equipment search has `ContentUnavailableView.search`. History's "Start Workout" action not added: starting and presenting the tracker from inside the History sheet depends on finding 1. |
+| 12 | fixed | `.onMove` plus `EditButton` on the workout's exercises. |
+| 13 | fixed | Review names equipment; colour/icon subtitle dropped; day order by name. |
+| 14 | fixed | Inline error under the contribution; alternate names capped at 300; min above max swapped on save; picker confirm disabled at zero and existing exercises shown ticked and locked. |
+| 15 | skipped: decision | Add Training sheet unchanged. |
+| 16 | skipped: decision | Type/Laterality sheets and muscle grid unchanged. |
+| 17 | fixed | Spinners on Create, Save (workout), Save/Activate Program, Program Settings Activate, Start Workout; Activate and Start Workout guarded against a second tap. |
+| 18 | fixed | Titled `showAlert(title:error:)` in program design, settings and prebuilt detail; fragment titles title-cased. |
+| 19 | fixed | Programs; icon prompt; no "Choose One"; rows replace Add/Edit chips; Start Program; title-case headers; "Final" dropped; "Custom Exercises" filter. |
+| 20 | fixed | `.background(.bar)` removed. |
+| 21 | fixed | Opacity dropped. |
+| Smaller | fixed | "1 Exercise" via `inflect`; Periodization; listed strings localized; share menu without mixed icons; microcycle chevron; Remove Day destructive; distance unit picker; today card circle shrinks and text wraps. Program Settings' own Activate button kept (the review's own judgment call), now guarded and with a spinner. |
+| Hand-offs | fixed | All Core/Training sites outside WorkoutTracker. `WorkoutSessionDetailPresenter:471` not a problem: the modal covers rendering the share image, not a read. `CreateWorkoutView`/`CreateProgramView` images left decorative (the default). |
+
 ## Findings
 
 ### 1. Libraries open as sheets, and sheets then stack three and four deep

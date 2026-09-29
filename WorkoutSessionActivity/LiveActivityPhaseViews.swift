@@ -4,7 +4,7 @@
 //
 //  The two rows each `LiveActivityPhase` renders (spec: docs/specs/live-activity.md §3).
 //
-//  The lock-screen banner wraps these in a fixed-height container with a progress line;
+//  The lock-screen banner wraps these in a container of at least a fixed height, with a progress line;
 //  the Dynamic Island's expanded region uses them as-is. Nothing in here reads the colour
 //  scheme: the one scheme-dependent value, the label colour on a `.borderedProminent`
 //  button, is passed in, because the island always renders on black.
@@ -25,6 +25,33 @@ enum LiveActivityLayout {
     static let contentHeight: CGFloat = rowHeight * 2 + rowSpacing
     static let imageSize: CGFloat = 38
     static let imageCornerRadius: CGFloat = 6
+    /// The largest text size the banner takes. The tallest phase is a headline and a subheadline
+    /// over a prominent button: by the HIG's leading at AX1 that is 34 + 31 pt, then 31 pt and the
+    /// button's insets, about 120 pt of rows and 145 with the margins and progress line, inside the
+    /// 160 pt the system allows. At AX2 it comes to about 163, so the rows would be cut off.
+    static let maxDynamicTypeSize = DynamicTypeSize.accessibility1
+}
+
+/// Rows and the container keep their fixed height up to the default text size, so the banner
+/// looks as it always has and does not jump between phases, and grow past it so larger text is
+/// not clipped.
+private struct LiveActivityMinimumHeight: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    let height: CGFloat
+
+    func body(content: Content) -> some View {
+        content.frame(minHeight: height, maxHeight: dynamicTypeSize > .large ? nil : height)
+    }
+}
+
+extension View {
+    func liveActivityRowHeight() -> some View {
+        modifier(LiveActivityMinimumHeight(height: LiveActivityLayout.rowHeight))
+    }
+
+    func liveActivityContentHeight() -> some View {
+        modifier(LiveActivityMinimumHeight(height: LiveActivityLayout.contentHeight))
+    }
 }
 
 // MARK: - Phase content
@@ -106,7 +133,7 @@ struct LiveActivityPhaseContent: View {
             Spacer(minLength: 0)
         }
         .opacity(dimmed ? 0.6 : 1)
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     private func doneRow(text: Text) -> some View {
@@ -120,7 +147,7 @@ struct LiveActivityPhaseContent: View {
                 .lineLimit(1)
             Spacer(minLength: 0)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     /// Row 1 while resting: the correction window. Without a logged set (the rest was
@@ -136,7 +163,7 @@ struct LiveActivityPhaseContent: View {
                 repsAdjustButton(delta: -1, systemImage: "minus")
                 repsAdjustButton(delta: 1, systemImage: "plus")
             }
-            .frame(height: LiveActivityLayout.rowHeight)
+            .liveActivityRowHeight()
         } else {
             exerciseRow(detail: currentPositionLabel, dimmed: false)
         }
@@ -181,7 +208,7 @@ struct LiveActivityPhaseContent: View {
             .tint(.accent)
             .disabled(state.targetSetId == nil || state.isProcessingIntent)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     /// Row 2 while resting. When the rest leads into a different exercise the name goes above
@@ -233,7 +260,7 @@ struct LiveActivityPhaseContent: View {
             .disabled(state.isProcessingIntent)
             .opacity(state.isProcessingIntent ? 0.5 : 1)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     private var finishRow: some View {
@@ -249,7 +276,7 @@ struct LiveActivityPhaseContent: View {
             .tint(.accent)
             .disabled(state.isProcessingIntent)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     private func pausedRow(label: LocalizedStringKey?) -> some View {
@@ -264,7 +291,7 @@ struct LiveActivityPhaseContent: View {
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     private func summaryRow(_ summary: Summary) -> some View {
@@ -280,7 +307,7 @@ struct LiveActivityPhaseContent: View {
             }
             Spacer(minLength: 0)
         }
-        .frame(height: LiveActivityLayout.rowHeight)
+        .liveActivityRowHeight()
     }
 
     private func summaryMetric(title: LocalizedStringKey, value: String) -> some View {

@@ -111,9 +111,10 @@ struct OnboardingStepScaffold<Content: View>: View {
             .accessibilityIdentifier(primary.identifier ?? "")
             if let secondary {
                 Button(action: secondary.action) {
+                    // The 44 pt height in the layout, so the hit area stops short of the button above.
                     Text(secondary.title)
-                        .frame(maxWidth: .infinity)
-                        .tapTarget()
+                        .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)

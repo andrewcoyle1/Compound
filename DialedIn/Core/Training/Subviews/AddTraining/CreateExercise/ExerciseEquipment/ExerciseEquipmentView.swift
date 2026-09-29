@@ -53,11 +53,11 @@ struct ExerciseEquipmentView: View {
                                     presenter.onDeleteVariationPressed(id: variation.id)
                                 } label: {
                                     Image(systemName: Symbol.delete)
+                                        .tapTarget()
                                 }
                                 .accessibilityLabel("Delete variation")
                                 .buttonStyle(.plain)
                                 .foregroundStyle(.danger)
-                                .tapTarget()
                             }
                         }
                     }

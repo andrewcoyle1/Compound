@@ -60,16 +60,30 @@ extension View {
 
 extension View {
     /// Pads a small button label's hit area out to the 44 x 44 pt minimum without changing how it
-    /// looks. Apply it to the label, inside the `Button`: outside, the frame is not part of the
-    /// button and the extra area does not respond.
+    /// looks or how much room it takes. Apply it to the label, inside the `Button`: outside, the
+    /// area is not part of the button and does not respond.
+    ///
+    /// The hit area is an invisible background that overhangs the label, so it never enlarges a
+    /// `.glass` capsule drawn around the label or pushes neighbouring views apart. It used to be a
+    /// 44 pt frame on the label itself, which inside a glass button became the visible shape.
+    /// A clipping container (a `ScrollView`, a `List` row) still bounds the overhang, so give that
+    /// container the 44 pt height when the label sits at its edge.
     func tapTarget() -> some View {
-        frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-            .contentShape(.rect)
+        background {
+            Color.clear
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+                .contentShape(.rect)
+        }
     }
 
     /// A chip is about 20 pt tall. Inside a button, this pads its hit area out to the minimum.
+    ///
+    /// Unlike `tapTarget()` it takes the 44 pt height in the layout: chips sit in horizontal
+    /// scroll views, which would clip a hit area that only overhangs. A chip draws its own capsule,
+    /// so the taller frame stays invisible.
     func chipTapTarget() -> some View {
-        tapTarget()
+        frame(minHeight: ControlSize.row)
+            .contentShape(.rect)
     }
 }
 

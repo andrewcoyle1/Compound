@@ -43,8 +43,11 @@ struct SectionHeaderView: View {
                 // A link, so it takes the accent (CONTRACT.md § Accent). The caption-sized label
                 // is padded out to the 44 pt minimum hit area.
                 Button(action: onActionPressed) {
+                    // A 44 pt frame rather than `tapTarget()`'s overhang: as a list section header
+                    // this sits in its own cell, which would clip a hit area reaching past it.
                     Text(actionTitle)
-                        .tapTarget()
+                        .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .font(.label)

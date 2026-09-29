@@ -136,13 +136,10 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // With the app in front the tracker plays its own rest-over sound and haptic; a banner and
-        // a second sound on top of them would announce the same moment twice.
-        guard notification.request.identifier != RestOverNotification.id else {
-            completionHandler([])
-            return
-        }
-        completionHandler([.banner, .sound, .badge])
+        // With the app in front the tracker plays its own rest-over sound and haptic, and social
+        // activity already shows in the app, so neither banners over the screen.
+        let type = notification.request.content.userInfo["type"] as? String
+        completionHandler(PushManager.foregroundPresentation(identifier: notification.request.identifier, type: type))
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
@@ -151,6 +148,9 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // Sendable; `DeepLink` is.
         let deepLink = DeepLink(pushUserInfo: response.notification.request.content.userInfo)
         await storePendingDeepLink(deepLink)
+        // Opening a notification is reading it: the icon's count clears now, not only once the
+        // Notifications screen is opened.
+        try? await center.setBadgeCount(0)
     }
 
     /// Parks the destination on `PushManager` and tells a tab bar already on screen to take it. On a

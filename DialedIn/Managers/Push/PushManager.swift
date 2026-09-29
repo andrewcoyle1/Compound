@@ -73,84 +73,94 @@ class PushManager {
         }
     }
     
-    func schedulePushNotificationsForNextWeek() {
-        LocalNotifications.removeAllPendingNotifications()
-        LocalNotifications.removeAllDeliveredNotifications()
-        
-        Task {
-            do {
-                // Scheduling without permission throws UNErrorDomain 2003 and logged a failure on every launch.
-                guard [.authorized, .provisional, .ephemeral].contains(try await checkPushNotificationAuthorisation()) else { return }
+    // MARK: - Come-back reminders
 
-                // Tomorrow
-                try await scheduleNotification(
-                    title: "Keep up the momentum!",
-                    subtitle: "Your next workout is just a day away. Ready to crush it tomorrow?",
-                    triggerDate: Date().addingTimeInterval(days: 1)
-                )
+    /// A day, three days and five days out, rescheduled each time the app signs in or comes to the
+    /// front, so they arrive only after that long away.
+    static let comeBackReminderIDs = ["come_back_reminder_1", "come_back_reminder_3", "come_back_reminder_5"]
 
-                // In 3 days
-                try await scheduleNotification(
-                    title: "Stay Consistent",
-                    subtitle: "It's been a few days since your last session. Let's get moving!",
-                    triggerDate: Date().addingTimeInterval(days: 3)
-                )
-                
-                // In 5 days
-                try await scheduleNotification(
-                    title: "Don't Lose Your Streak!",
-                    subtitle: "Come back for a workout and keep your progress going strong.",
-                    triggerDate: Date().addingTimeInterval(days: 5)
-                )
-                                
-                logManager?.trackEvent(event: Event.weekScheduledSuccess)
-            } catch {
-                logManager?.trackEvent(event: Event.weekScheduledFail(error: error))
-            }
+    /// The three come-back reminders, counted from now. Statements, not instructions, and no emoji.
+    static func comeBackReminderRequests() -> [UNNotificationRequest] {
+        let reminders = [
+            (days: 1, title: String(localized: "Keep the Momentum"), body: String(localized: "Your training plan is ready for your next session.")),
+            (days: 3, title: String(localized: "Stay Consistent"), body: String(localized: "It's been a few days since you opened Compound. Your plan is ready when you are.")),
+            (days: 5, title: String(localized: "Your Progress Is Waiting"), body: String(localized: "Your workouts and history are right where you left them."))
+        ]
+        return zip(comeBackReminderIDs, reminders).map { id, reminder in
+            let content = UNMutableNotificationContent()
+            content.title = reminder.title
+            content.body = reminder.body
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(reminder.days) * 86_400, repeats: false)
+            return UNNotificationRequest(identifier: id, content: content, trigger: trigger)
         }
     }
-        
+
+    /// Every pending request this app still means to deliver. Anything else pending was left by an
+    /// older version (its come-back reminders had random ids) and is withdrawn.
+    /// ponytail: a new local notification must add its id here, or the next launch withdraws it.
+    static var knownPendingIDs: Set<String> {
+        Set(comeBackReminderIDs + mealReminderIDs + [RestOverNotification.id])
+    }
+
+    /// Schedules the come-back reminders afresh when they are on, and only withdraws them when off.
+    func scheduleComeBackReminders(isEnabled: Bool) async {
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests().map(\.identifier)
+        let stale = pending.filter { !Self.knownPendingIDs.contains($0) }
+        center.removePendingNotificationRequests(withIdentifiers: stale + Self.comeBackReminderIDs)
+        guard isEnabled else { return }
+        do {
+            // Scheduling without permission throws UNErrorDomain 2003 and logged a failure on every launch.
+            guard [.authorized, .provisional, .ephemeral].contains(try await checkPushNotificationAuthorisation()) else { return }
+            for request in Self.comeBackReminderRequests() {
+                try await center.add(request)
+            }
+            logManager?.trackEvent(event: Event.weekScheduledSuccess)
+        } catch {
+            logManager?.trackEvent(event: Event.weekScheduledFail(error: error))
+        }
+    }
+
     func schedulePushNotification(delegate: PushNotificationDelegate) async throws {
         // Onboarding no longer asks for notifications, so the first feature that needs one does.
         // Today that is the rest timer. iOS shows the alert once; after that this is a no-op.
         if await canRequestAuthorisation() {
             _ = try? await requestAuthorisation()
         }
-        let content = AnyNotificationContent(id: delegate.identifier, title: delegate.title, body: delegate.subtitle, sound: delegate.sound, badge: delegate.badge)
-        let trigger = NotificationTriggerOption.date(date: delegate.triggerDate, repeats: delegate.repeats)
-        try await LocalNotifications.scheduleNotification(content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: delegate.identifier, content: delegate.content, trigger: delegate.trigger)
+        try await UNUserNotificationCenter.current().add(request)
     }
-    
-    private func scheduleNotification(title: String, subtitle: String, triggerDate: Date) async throws {
-        let content = AnyNotificationContent(title: title, body: subtitle)
-        let trigger = NotificationTriggerOption.date(date: triggerDate, repeats: false)
-        try await LocalNotifications.scheduleNotification(content: content, trigger: trigger)
-    }
+
+    // MARK: - Meal reminders
 
     static let mealReminderIDs = ["meal_reminder_breakfast", "meal_reminder_lunch", "meal_reminder_dinner"]
 
-    func scheduleMealReminderNotifications() async throws {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: Self.mealReminderIDs)
-
-        // swiftlint:disable:next large_tuple
-        let reminders: [(id: String, title: String, body: String, hour: Int, minute: Int)] = [
-            ("meal_reminder_breakfast", "Time for Breakfast 🍳", "Don't forget to log your breakfast.", 8, 0),
-            ("meal_reminder_lunch", "Lunch Time 🥗", "Log your lunch to stay on track.", 12, 30),
-            ("meal_reminder_dinner", "Dinner Reminder 🍽️", "Time to log your dinner.", 18, 30)
+    /// Breakfast, lunch and dinner, daily. Passive: they wait in Notification Center rather than
+    /// lighting the screen.
+    static func mealReminderRequests() -> [UNNotificationRequest] {
+        let reminders = [
+            (title: String(localized: "Breakfast"), body: String(localized: "A reminder to log your breakfast."), hour: 8, minute: 0),
+            (title: String(localized: "Lunch"), body: String(localized: "A reminder to log your lunch."), hour: 12, minute: 30),
+            (title: String(localized: "Dinner"), body: String(localized: "A reminder to log your dinner."), hour: 18, minute: 30)
         ]
-
-        for reminder in reminders {
+        return zip(mealReminderIDs, reminders).map { id, reminder in
             let content = UNMutableNotificationContent()
             content.title = reminder.title
             content.body = reminder.body
             content.sound = .default
+            content.interruptionLevel = .passive
+            let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: reminder.hour, minute: reminder.minute), repeats: true)
+            return UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        }
+    }
 
-            var components = DateComponents()
-            components.hour = reminder.hour
-            components.minute = reminder.minute
-
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            let request = UNNotificationRequest(identifier: reminder.id, content: content, trigger: trigger)
+    /// Schedules the meal reminders when on and withdraws them when off. Off is the default, so a
+    /// device that had them scheduled by an older version, unasked, loses them here.
+    func setMealReminders(isEnabled: Bool) async throws {
+        cancelMealReminderNotifications()
+        guard isEnabled else { return }
+        for request in Self.mealReminderRequests() {
             try await UNUserNotificationCenter.current().add(request)
         }
         logManager?.trackEvent(event: Event.mealRemindersScheduled)
@@ -158,6 +168,22 @@ class PushManager {
 
     func cancelMealReminderNotifications() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: Self.mealReminderIDs)
+    }
+
+    // MARK: - Foreground presentation
+
+    /// Types the Cloud Functions send for social activity (`data.type` in `functions/lib.js`).
+    nonisolated static let socialPushTypes: Set<String> = [
+        "like", "comment", "mention", "follow", "followAccepted", "follow_request", "nudge", "share", "challenge_complete"
+    ]
+
+    /// How a notification shows while the app is in front. Social activity already appears in the
+    /// app (the in-app banner and the bell's badge), so it goes quietly to Notification Center. The
+    /// rest-over alert is silent here because the tracker plays its own sound and haptic.
+    nonisolated static func foregroundPresentation(identifier: String, type: String?) -> UNNotificationPresentationOptions {
+        if identifier == RestOverNotification.id { return [] }
+        if let type, socialPushTypes.contains(type) { return [.list, .badge] }
+        return [.banner, .sound, .badge]
     }
 
     enum Event: LoggableEvent {
@@ -218,10 +244,6 @@ extension CoreInteractor {
         await pushManager.canRequestAuthorisation()
     }
     
-    func schedulePushNotificationsForNextWeek() {
-        pushManager.schedulePushNotificationsForNextWeek()
-    }
-    
     func removeDeliveredNotifications(ids: [String]) {
         pushManager.removeDeliveredNotifications(ids: ids)
     }
@@ -230,12 +252,36 @@ extension CoreInteractor {
         pushManager.clearAllDeliveredNotifications()
     }
 
-    func scheduleMealReminderNotifications() async throws {
-        try await pushManager.scheduleMealReminderNotifications()
+    /// Brings this device's local reminders into line with the private settings: come-back
+    /// reminders rescheduled when on, meal reminders scheduled when on and withdrawn when off.
+    /// Called once signed in, when the settings document is cached, and on each return to the app.
+    func applyLocalReminderSettings() async {
+        let settings = privateUserSettings
+        await pushManager.scheduleComeBackReminders(isEnabled: settings.isComeBackRemindersEnabled)
+        try? await pushManager.setMealReminders(isEnabled: settings.isMealRemindersEnabled)
     }
 
-    func cancelMealReminderNotifications() {
-        pushManager.cancelMealReminderNotifications()
+    /// Nutrition calls this on its first visit. Meal reminders are off unless chosen, so it only
+    /// keeps the device in step with the switch; the offer is `ReminderOfferFlow`'s.
+    func scheduleMealReminderNotifications() async throws {
+        try await pushManager.setMealReminders(isEnabled: privateUserSettings.isMealRemindersEnabled)
+    }
+
+    func setComeBackReminders(isEnabled: Bool) async throws {
+        try await updatePrivateUserSettings { $0.pushComeBackReminders = isEnabled }
+        await pushManager.scheduleComeBackReminders(isEnabled: isEnabled)
+    }
+
+    /// The switch is saved even when scheduling fails (no permission yet): it takes effect at the
+    /// next sign-in once notifications are allowed.
+    func setMealReminders(isEnabled: Bool) async throws {
+        try await updatePrivateUserSettings { $0.pushMealReminders = isEnabled }
+        try? await pushManager.setMealReminders(isEnabled: isEnabled)
+    }
+
+    /// Sent by the server (`streakReminder` in `functions/`), so only the setting changes here.
+    func setStreakReminder(isEnabled: Bool) async throws {
+        try await updatePrivateUserSettings { $0.socialPushStreakReminder = isEnabled }
     }
 
     func consumePendingDeepLink() -> DeepLink? {
@@ -249,4 +295,21 @@ extension CoreInteractor {
         NotificationCenter.default.post(name: .pushNotification, object: nil)
     }
 
+}
+
+/// The alert text `functions/lib.js` sends as `loc-key` and `title-loc-key`. iOS looks each key up
+/// in this app's string catalog when the push arrives, so spelling them here is what puts them in
+/// the catalog to be translated. The social ones the Notifications screen already shows ("%@ liked
+/// your workout") are not repeated. Arguments are strings, as loc-args are.
+enum RemotePushCopy {
+    static func catalogEntries(_ first: String, _ second: String) -> [String] {
+        [
+            String(localized: "\(first) replied to your comment: \"\(second)\""),
+            String(localized: "\(first) wants to follow you"),
+            String(localized: "Streak at Risk"),
+            String(localized: "Your \(first)-day streak ends at midnight."),
+            String(localized: "Your Week"),
+            String(localized: "Workouts this week: you \(first), your circle \(second).")
+        ]
+    }
 }

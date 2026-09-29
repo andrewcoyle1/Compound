@@ -18,8 +18,8 @@ import UserNotifications
 ///
 /// - `checkPushNotificationAuthorisation`, `requestAuthorisation` and `canRequestAuthorisation`,
 ///   which read or raise the system permission prompt;
-/// - `schedulePushNotificationsForNextWeek`, `schedulePushNotification` and
-///   `scheduleMealReminderNotifications`, which register real requests with the notification
+/// - `scheduleComeBackReminders`, `schedulePushNotification` and
+///   `setMealReminders`, which register real requests with the notification
 ///   centre — calling any of them from a test would leave three to six notifications pending on
 ///   the simulator, and the success and failure events they log are only reachable through that;
 /// - `removeDeliveredNotifications`, `clearAllDeliveredNotifications` and
@@ -54,21 +54,69 @@ struct PushManagerTests {
         #expect(Set(PushManager.mealReminderIDs).count == PushManager.mealReminderIDs.count)
     }
 
-    // MARK: - The re-engagement week
+    // MARK: - The come-back reminders
 
-    /// The week is laid out at one, three and five days out. They have to be in order, distinct,
-    /// and inside the week — a reminder that lands after the next scheduling run would be
-    /// cancelled by it and never delivered, since each run clears everything pending first.
-    @Test("Test The Week Is Laid Out On Rising Offsets Inside Seven Days")
-    func testTheWeekIsLaidOutOnRisingOffsetsInsideSevenDays() {
-        let now = Date(timeIntervalSince1970: 1_700_000_000)
+    /// Changed: the week used to be scheduled under random ids after clearing everything pending,
+    /// which also withdrew the meal reminders and the rest-over alert. The three reminders now have
+    /// fixed ids, so the switch can withdraw exactly them, and land one, three and five days out.
+    @Test("Test The Come Back Reminders Land One Three And Five Days Out Under Fixed Ids")
+    func testTheComeBackRemindersLandOneThreeAndFiveDaysOut() throws {
+        let requests = PushManager.comeBackReminderRequests()
 
-        let triggers = [1, 3, 5].map { now.addingTimeInterval(days: $0) }
+        #expect(requests.map(\.identifier) == PushManager.comeBackReminderIDs)
+        let intervals = try requests.map { try #require($0.trigger as? UNTimeIntervalNotificationTrigger).timeInterval }
+        #expect(intervals == [86_400, 3 * 86_400, 5 * 86_400])
+        let titles = requests.map(\.content.title)
+        #expect(titles.allSatisfy { !$0.contains("!") })
+    }
 
-        #expect(triggers == triggers.sorted())
-        #expect(Set(triggers).count == 3)
-        #expect(triggers.allSatisfy { $0 > now })
-        #expect(triggers.allSatisfy { $0 < now.addingTimeInterval(days: 7) })
+    /// Anything pending that this version does not know was left by an older one and is withdrawn;
+    /// what it does know has to survive that sweep.
+    @Test("Test The Known Pending Ids Cover Every Local Notification")
+    func testTheKnownPendingIdsCoverEveryLocalNotification() {
+        let known = PushManager.knownPendingIDs
+        #expect(known.isSuperset(of: PushManager.comeBackReminderIDs))
+        #expect(known.isSuperset(of: PushManager.mealReminderIDs))
+        #expect(known.contains(RestOverNotification.id))
+    }
+
+    // MARK: - Meal reminders
+
+    @Test("Test Meal Reminders Are Passive Daily Reminders At Meal Times")
+    func testMealRemindersArePassiveDailyReminders() throws {
+        let requests = PushManager.mealReminderRequests()
+
+        #expect(requests.map(\.identifier) == PushManager.mealReminderIDs)
+        let levels = requests.map(\.content.interruptionLevel)
+        #expect(levels == [.passive, .passive, .passive])
+        let triggers = try requests.map { try #require($0.trigger as? UNCalendarNotificationTrigger) }
+        let hours = triggers.map(\.dateComponents.hour)
+        #expect(hours == [8, 12, 18])
+        let allRepeat = triggers.allSatisfy { $0.repeats }
+        #expect(allRepeat)
+    }
+
+    // MARK: - Foreground presentation
+
+    /// Social activity already shows in the app, so it goes to Notification Center quietly; the
+    /// rest-over alert shows nothing (the tracker has its own); anything else keeps its banner.
+    @Test("Test Social Pushes Go Quietly To The List While The App Is In Front")
+    func testForegroundPresentation() {
+        for type in ["like", "comment", "mention", "follow", "followAccepted", "follow_request", "nudge", "share", "challenge_complete"] {
+            #expect(PushManager.foregroundPresentation(identifier: "x", type: type) == [.list, .badge])
+        }
+        #expect(PushManager.foregroundPresentation(identifier: RestOverNotification.id, type: nil) == [])
+        #expect(PushManager.foregroundPresentation(identifier: "x", type: "streakReminder") == [.banner, .sound, .badge])
+        #expect(PushManager.foregroundPresentation(identifier: "x", type: nil) == [.banner, .sound, .badge])
+    }
+
+    /// The server's catalog keys have to format to the English `functions/lib.js` sends beside them.
+    @Test("Test The Server's Push Copy Formats As The Server Writes It")
+    func testRemotePushCopyMatchesTheServer() {
+        let entries = RemotePushCopy.catalogEntries("Jane", "Hi")
+        #expect(entries.contains("Jane replied to your comment: \"Hi\""))
+        #expect(entries.contains("Jane wants to follow you"))
+        #expect(entries.contains("Workouts this week: you Jane, your circle Hi."))
     }
 
     /// A day is added as a fixed 86,400 seconds rather than as a calendar day, so the three
@@ -107,6 +155,28 @@ struct PushManagerTests {
         #expect(delegate.sound)
         #expect(delegate.badge == nil)
         #expect(delegate.repeats == false)
+        #expect(delegate.interruptionLevel == .active)
+        #expect(delegate.content.sound != nil)
+    }
+
+    /// "Rest Complete" is Time Sensitive, and with "Play Sound" off it is still delivered: a banner
+    /// with no sound, so a locked phone still shows the rest ended.
+    @Test("Test A Silent Time Sensitive Notification Keeps Its Banner And Drops Its Sound")
+    func testASilentTimeSensitiveNotification() {
+        let delegate = PushNotificationDelegate(
+            identifier: RestOverNotification.id,
+            title: "Rest Complete",
+            subtitle: "Next: Squat",
+            triggerDate: Date(timeIntervalSince1970: 1_700_000_000),
+            sound: false,
+            interruptionLevel: .timeSensitive
+        )
+
+        let content = delegate.content
+        #expect(content.sound == nil)
+        #expect(content.title == "Rest Complete")
+        #expect(content.body == "Next: Squat")
+        #expect(content.interruptionLevel == .timeSensitive)
     }
 
     /// A repeating notification with a badge is the other shape in use. `AnyNotificationContent`,

@@ -70,6 +70,8 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             assert.equal(sent[0].token, "tok-r");
             assert.equal(sent[0].notification.body, "Ann liked your workout");
             assert.equal(sent[0].data.session_id, "s1");
+            // The badge counts the recipient's unread notifications, the new one included.
+            assert.equal(sent[0].apns.payload.aps.badge, 1);
         });
 
         test("sends nothing when the type is opted out, falling back to the user doc", async () => {
@@ -413,7 +415,7 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
         after(() => mock.timers.reset());
 
         test("streakReminder warns a user whose streak ends tonight, and no one else", async () => {
-            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18 };
+            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18, social_push_streak_reminder: true };
             await seed({
                 "users/a/private/settings": { ...settings, fcm_token: "tok-a" },
                 "user_streaks/a/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - 20 * HOUR) },
@@ -425,7 +427,7 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             await run(fns.streakReminder, {});
             mock.timers.reset();
             assert.deepEqual(sent.map((m) => m.token), ["tok-a"]);
-            assert.equal(sent[0].notification.body, "Your 4-day streak ends at midnight");
+            assert.equal(sent[0].notification.body, "Your 4-day streak ends at midnight.");
         });
 
         test("weeklyDigest counts the user's and their circle's sessions over seven days", async () => {
@@ -444,7 +446,7 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             await run(fns.weeklyDigest, {});
             mock.timers.reset();
             assert.deepEqual(sent.map((m) => m.token), ["tok-u"]);
-            assert.equal(sent[0].notification.body, "This week: you trained 1 time, your circle 2");
+            assert.equal(sent[0].notification.body, "Workouts this week: you 1, your circle 2.");
         });
     });
 

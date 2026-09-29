@@ -32,7 +32,10 @@ extension PushManager: RestOverNotifying {
             subtitle: body ?? "",
             triggerDate: date,
             sound: sound,
-            badge: nil
+            badge: nil,
+            // About something happening now, so it breaks through a Focus. With "Play Sound" off it
+            // is still delivered, as a silent banner, so a locked phone shows the rest has ended.
+            interruptionLevel: .timeSensitive
         )
         // Through `schedulePushNotification`, which asks for permission the first time. A failure
         // is dropped: the rest runs out whether or not anything announces it.

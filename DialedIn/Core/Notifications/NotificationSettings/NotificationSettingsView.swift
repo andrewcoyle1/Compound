@@ -85,10 +85,12 @@ struct NotificationSettingsView: View {
                 }
             }
             ListRowToggle(title: "Weekly digest", isOn: $presenter.isWeeklyDigestEnabled)
+            ListRowToggle(title: "Workout reminders", isOn: $presenter.isComeBackRemindersEnabled)
+            ListRowToggle(title: "Meal reminders", isOn: $presenter.isMealRemindersEnabled)
         } header: {
             Text("Reminders")
         } footer: {
-            Text("The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening.")
+            Text("The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner.")
         }
     }
 }

@@ -124,9 +124,7 @@ class WorkoutSessionRowPresenter {
         router.showCommentsView(delegate: CommentsDelegate(session: session))
     }
 
-    /// The share button used to raise a "Not implemented yet." alert. There is no deep link for a
-    /// session, so there is no URL to share — but the summary the row already displays is worth
-    /// sharing on its own, and the view hands this to a `ShareLink`.
+    /// The Share button's message beside `webLink`, or all it sends where there is no link.
     var shareSummary: String {
         let workingSets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
         // Every row counts towards the volume — both sides were lifted — but a left and a right
@@ -193,19 +191,11 @@ class WorkoutSessionRowPresenter {
         }
     }
 
-    // MARK: Copy Link
+    // MARK: Link
 
     /// The session's public web page, absent where that page would refuse it.
     var webLink: URL? {
         SessionWebLink.url(for: session, author: author)
-    }
-
-    func onCopyLinkPressed(_ link: URL) {
-        UIPasteboard.general.url = link
-        interactor.playHaptic(option: .success)
-        // A haptic alone is nothing on iPad, and nothing at all with haptics off.
-        interactor.showAppToast(AppToast(style: .success, message: String(localized: "Link copied")))
-        interactor.trackEvent(event: Event.copyLink(sessionId: session.id))
     }
 
     // MARK: Save as Template
@@ -256,14 +246,12 @@ class WorkoutSessionRowPresenter {
         case saveAsTemplateSuccess(sessionId: String, exerciseCount: Int)
         case saveAsTemplateUnresolved(sessionId: String)
         case saveAsTemplateFail(error: Error)
-        case copyLink(sessionId: String)
 
         var eventName: String {
             switch self {
             case .saveAsTemplateSuccess: return "WorkoutSessionRow_SaveAsTemplate_Success"
             case .saveAsTemplateUnresolved: return "WorkoutSessionRow_SaveAsTemplate_Unresolved"
             case .saveAsTemplateFail: return "WorkoutSessionRow_SaveAsTemplate_Fail"
-            case .copyLink: return "WorkoutSessionRow_CopyLink"
             }
         }
 
@@ -271,7 +259,7 @@ class WorkoutSessionRowPresenter {
             switch self {
             case .saveAsTemplateSuccess(let sessionId, let exerciseCount):
                 return ["session_id": sessionId, "exercise_count": exerciseCount]
-            case .saveAsTemplateUnresolved(let sessionId), .copyLink(let sessionId):
+            case .saveAsTemplateUnresolved(let sessionId):
                 return ["session_id": sessionId]
             case .saveAsTemplateFail(let error):
                 return error.eventParameters

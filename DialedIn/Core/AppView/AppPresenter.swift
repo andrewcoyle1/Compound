@@ -44,10 +44,6 @@ class AppPresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
     
-    func schedulePushNotifications() {
-        interactor.schedulePushNotificationsForNextWeek()
-    }
-    
     /// The id of the toast that says the app cannot reach the server, so a later success can take
     /// exactly that one down.
     static let connectionToastId = "app_connection"
@@ -112,8 +108,12 @@ class AppPresenter {
         await checkUserStatus(attempt: attempt + 1)
     }
 
+    /// Signed in: the private settings are cached by now, so the device's local reminders are
+    /// brought into line with them. Also runs on each return to the app, which moves the come-back
+    /// reminders out to a day, three and five days from now.
     private func onConnected() {
         if toast?.id == Self.connectionToastId { toast = nil }
+        Task { await interactor.applyLocalReminderSettings() }
     }
 
     func onNewActivityNotification(notification: Notification) {

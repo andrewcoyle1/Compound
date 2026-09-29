@@ -47,7 +47,7 @@ struct AppShellAppPresenterTests {
         private(set) var loggedInUids: [String] = []
         private(set) var signInAttempts = 0
         private(set) var savedTokens: [String] = []
-        private(set) var didSchedulePushNotifications = false
+        private(set) var didApplyLocalReminderSettings = false
 
         func logIn(user: UserAuthInfo, isNewUser: Bool) async throws {
             if !logInErrors.isEmpty, let error = logInErrors.removeFirst() { throw error }
@@ -68,7 +68,7 @@ struct AppShellAppPresenterTests {
             savedTokens.append(token)
         }
 
-        func schedulePushNotificationsForNextWeek() { didSchedulePushNotifications = true }
+        func applyLocalReminderSettings() async { didApplyLocalReminderSettings = true }
 
         func syncAllRemoteDataIfLoggedIn() async { }
     }
@@ -334,11 +334,22 @@ struct AppShellAppPresenterTests {
 
         screen.presenter.onViewAppear()
         screen.presenter.onViewDisappear()
-        screen.presenter.schedulePushNotifications()
 
         #expect(screen.interactor.trackedScreenEventNames == ["AppView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["AppView_Disappear"])
-        #expect(screen.interactor.didSchedulePushNotifications)
+    }
+
+    /// Changed: the local reminders used to be scheduled from the root's first appearance, before
+    /// sign-in, so they could not read the switches in the private settings. They are now applied
+    /// once signed in, when those settings are cached.
+    @Test("Test Local Reminders Are Applied Once Signed In")
+    func testLocalRemindersAreAppliedOnceSignedIn() async {
+        let screen = makeScreen(auth: UserAuthInfo(uid: "existing-1"))
+        #expect(!screen.interactor.didApplyLocalReminderSettings)
+
+        await screen.presenter.checkUserStatus()
+
+        #expect(await TestManagers.eventually { screen.interactor.didApplyLocalReminderSettings })
     }
 }
 

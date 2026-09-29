@@ -31,9 +31,6 @@ struct AppView<Content: View>: View {
             ),
             content: {
                 content()
-                    .onFirstAppear {
-                        presenter.schedulePushNotifications()
-                    }
                     .task {
                         await presenter.checkUserStatus()
                     }

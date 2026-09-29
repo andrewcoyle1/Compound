@@ -26,6 +26,20 @@ behavior say so.
 
 Paths are relative to `DialedIn/`. Findings are most serious first.
 
+## Decisions built (2026-09-29, branch hig/profile)
+
+| Decision | Status | What changed |
+|---|---|---|
+| 1 | built | "Why Subscribe?" says a subscription is required, with Sign Out and an Account row; the onboarding paywall has both in an Account menu (`PaywallExits`). A lapsed returning subscriber now lands on "Why Subscribe?" (`WelcomePresenter`). |
+| 1a | not built (recorded) | TODO marker in `SubscriptionPresenter.onContinuePressed` where the app-managed trial will hook in. |
+| 6 | built | About, exercise detail and the seven equipment lists push inside the Profile sheet without their Close buttons; Add forms stay sheets. Equipment edits under a pushed list save as they happen. The paywall from Profile stays a full-screen cover. |
+| 7e | built | "Notification Settings" row in Profile's General section. |
+| 10a | built | `DeleteAccount` module replaces the alert: what is deleted, 30 days, Apple billing with Manage Subscription, sign-in note, loading modal, "Account Deleted" then Done. Cancelling sign-in is silent (`SignInCancellation`). |
+| 10b | built | "Compound" on both paywalls, same features as "Why Subscribe?", plans first with the first preselected and a checkmark, period from `Product.SubscriptionPeriod` formatting, Terms and Privacy under Restore. Profile's status reads Active/Inactive. |
+| 10c | built | Knowledge Base, Roadmap, App Icon, Tutorials, Exercise Assessment and Premove hidden with a TODO each; Siri lists the four shipped App Shortcuts. |
+| 10d | built in part | `ReviewMoment` rule, tests and `requestReviewIfEarned(_:)`; custom card deleted. The two call sites (workout finishing, food logging) are outside this area. |
+| O1 | built | Daily Activity picker in Account, saved with the profile. Also: "Sex" with every `Gender` case, "Exercise Frequency" for "Lifting Experience", Strava sign-in cancel silent with fixed failure copy. |
+
 ## Resolution (2026-09-28, branch hig/profile)
 
 | # | Status | What changed |

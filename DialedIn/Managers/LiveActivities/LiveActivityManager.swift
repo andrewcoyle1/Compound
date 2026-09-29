@@ -105,7 +105,8 @@ class LiveActivityManager: LiveActivityUpdating {
         
         // Add summary metrics for completed workouts
         if isCompleted {
-            let elapsedTime = Date().timeIntervalSince(session.dateCreated)
+            // Active time, as the saved session will show it; the clock's own reckoning if unstamped.
+            let elapsedTime = session.activeDuration ?? Date().timeIntervalSince(session.dateCreated)
             let allSets = session.exercises.flatMap { $0.sets }
             // Sets pair; volume does not — both sides of a set are real work lifted.
             let completedSetsCount = session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }

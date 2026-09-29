@@ -55,7 +55,7 @@ struct ShareCardContent: Equatable {
             avatarURL: author?.profileImageNameCalculated,
             sessionName: session.name,
             dateText: session.dateCreated.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(locale)),
-            durationText: durationText(from: session.dateCreated, to: session.endedAt),
+            durationText: durationText(from: session.dateCreated, to: session.activeDuration.map(session.dateCreated.addingTimeInterval)),
             volumeText: volumeText(volume, locale: locale),
             setCount: setCount,
             personalRecordLines: personalRecords.map { "\($0.exerciseName) \($0.detail)" },

@@ -71,7 +71,7 @@ class WorkoutSessionRowPresenter {
     }
 
     var durationText: String? {
-        session.endedAt.map { Format.duration($0.timeIntervalSince(session.dateCreated)) }
+        session.activeDuration.map { Format.duration($0) }
     }
 
     /// "3 × 10 @ 80 kg" for three working sets of ten: sets a side count once.

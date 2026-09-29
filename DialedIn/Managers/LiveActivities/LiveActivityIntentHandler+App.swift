@@ -149,7 +149,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     /// active session in place for Training to offer again.
     func completeWorkout() async {
         guard var session = workoutSessionManager.activeSession else { return }
-        session.endSession(at: Date())
+        let now = Date()
+        session.endSession(at: now, pausedSeconds: hkWorkoutManager.totalPausedDuration(at: now))
 
         _ = await finishWorkout(session, using: WorkoutFinishManagers(
             sessions: workoutSessionManager,

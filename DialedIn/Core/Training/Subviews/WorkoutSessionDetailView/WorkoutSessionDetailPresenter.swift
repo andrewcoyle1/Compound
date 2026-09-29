@@ -185,7 +185,7 @@ class WorkoutSessionDetailPresenter {
     func onEditDurationPressed(session: Binding<WorkoutSessionModel>) {
         guard isAuthor(sessionAuthorId: session.wrappedValue.authorId) else { return }
         let current = session.wrappedValue
-        let duration = current.endedAt?.timeIntervalSince(current.dateCreated) ?? 0
+        let duration = current.activeDuration ?? 0
         durationHours = Int(duration) / 3600
         durationMinutes = (Int(duration) % 3600) / 60
         router.showSessionDurationView(

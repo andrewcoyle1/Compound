@@ -26,6 +26,8 @@ struct CircleWeeklySummaryCard: View {
                 .buttonStyle(.plain)
                 .labelStyle(.iconOnly)
                 .foregroundStyle(.secondary)
+                .contentShape(.rect)
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                 .accessibilityLabel("Dismiss last week's summary")
         }
         .padding()

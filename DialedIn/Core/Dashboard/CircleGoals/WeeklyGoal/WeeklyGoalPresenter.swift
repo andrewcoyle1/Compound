@@ -38,7 +38,7 @@ class WeeklyGoalPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to save your goal"), subtitle: String(localized: "Please try again."))
+                router.showSimpleAlert(title: String(localized: "Unable to Save Goal"), subtitle: String(localized: "Please try again."))
             }
         }
     }

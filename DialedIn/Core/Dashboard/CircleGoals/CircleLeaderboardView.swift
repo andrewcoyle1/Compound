@@ -25,7 +25,7 @@ struct CircleLeaderboardView: View {
                 }
             }
         } label: {
-            Text("This week")
+            Text("This Week")
                 .font(.sectionTitle)
         }
         .padding(.horizontal)
@@ -43,7 +43,7 @@ struct CircleLeaderboardView: View {
                     .foregroundStyle(.secondary)
                     .frame(minWidth: rankWidth)
                 UserAvatarView(imageUrl: standing.user.profileImageNameCalculated, size: 32)
-                Text(isOwn ? "You" : standing.name)
+                Text(isOwn ? String(localized: "You") : standing.name)
                     .font(.rowDetail)
                     .fontWeight(isOwn ? .semibold : .regular)
                     .lineLimit(1)
@@ -63,7 +63,7 @@ struct CircleLeaderboardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(rank). \(isOwn ? "You" : standing.name), \(standing.sessions) of \(standing.goal) sessions")
+        .accessibilityLabel("\(rank). \(isOwn ? String(localized: "You") : standing.name), \(standing.sessions) of \(standing.goal) sessions")
         .accessibilityHint("Opens their profile")
     }
 }

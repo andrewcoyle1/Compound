@@ -71,7 +71,7 @@ struct WeeklyGoalPresenterTests {
 
         presenter.onSavePressed()
 
-        #expect(await TestManagers.eventually { router.alertTitles == ["Unable to save your goal"] })
+        #expect(await TestManagers.eventually { router.alertTitles == ["Unable to Save Goal"] })
         #expect(await TestManagers.eventually { !presenter.isSaving })
         #expect(interactor.playedHaptics.map { "\($0)" } == ["error"])
     }

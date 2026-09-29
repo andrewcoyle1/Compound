@@ -91,8 +91,11 @@ struct WeeklyReviewView: View {
 
     private func weekHeader(_ review: WeeklyReview) -> some View {
         HStack {
-            Button("Previous week", systemImage: "chevron.left") {
+            Button {
                 presenter.onPreviousWeekPressed()
+            } label: {
+                Label("Previous week", systemImage: "chevron.backward")
+                    .tapTarget()
             }
             .labelStyle(.iconOnly)
             Spacer()
@@ -100,8 +103,11 @@ struct WeeklyReviewView: View {
                 .font(.rowDetail)
                 .fontWeight(.semibold)
             Spacer()
-            Button("Next week", systemImage: "chevron.right") {
+            Button {
                 presenter.onNextWeekPressed()
+            } label: {
+                Label("Next week", systemImage: "chevron.forward")
+                    .tapTarget()
             }
             .labelStyle(.iconOnly)
             .disabled(!presenter.canShowNextWeek)

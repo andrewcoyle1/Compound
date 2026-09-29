@@ -10,7 +10,7 @@ struct WeeklyGoalView: View {
         List {
             Section {
                 Stepper(value: $presenter.goal, in: CircleWeek.goalRange) {
-                    Text("\(presenter.goal) \(presenter.goal == 1 ? String(localized: "session") : String(localized: "sessions")) a week")
+                    Text("^[\(presenter.goal) session](inflect: true) a week")
                         .font(.sectionTitle)
                 }
             } footer: {

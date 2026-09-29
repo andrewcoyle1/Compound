@@ -154,16 +154,16 @@ struct WeeklyReview: Equatable {
             return String(localized: "No sessions logged this week.")
         }
         if sessionCount >= goal, prCount > 0 {
-            return String(localized: "Goal hit and \(String(describing: prCount)) \(prCount == 1 ? String(localized: "PR") : String(localized: "PRs")) set. Great week.")
+            return String(AttributedString(localized: "Goal hit and \(prCount) ^[PR](inflect: true) set. Great week.").characters)
         }
         if sessionCount >= goal {
-            return String(localized: "Goal hit: \(String(describing: sessionCount)) of \(String(describing: goal)) sessions.")
+            return String(localized: "Goal hit: \(sessionCount) of \(goal) sessions.")
         }
         if let change = volumeChange, change >= 0.1 {
             return String(localized: "Volume up \(Self.percent(change)) on last week.")
         }
         let toGo = CircleWeek.remaining(sessions: sessionCount, goal: goal)
-        return String(localized: "\(String(describing: toGo)) more \(toGo == 1 ? String(localized: "session") : String(localized: "sessions")) would have hit your goal.")
+        return String(AttributedString(localized: "^[\(toGo) more session](inflect: true) would have hit your goal.").characters)
     }
 
     var dateRangeText: String {
@@ -172,10 +172,10 @@ struct WeeklyReview: Equatable {
         return (week.start..<end).formatted(.interval.day().month(.abbreviated))
     }
 
-    var sessionsText: String { "\(sessionCount) of \(goal)" }
+    var sessionsText: String { String(localized: "\(sessionCount) of \(goal)") }
 
     var volumeText: String {
-        ShareCardContent.volumeText(volumeKg) ?? "0 kg"
+        ShareCardContent.volumeText(volumeKg) ?? Format.weight(kg: 0, unit: WeightUnitPreference.kilograms)
     }
 
     /// "+12% vs last week"; nil when there is nothing to compare with.
@@ -190,14 +190,14 @@ struct WeeklyReview: Equatable {
 
     var weightText: String? {
         guard let latest = latestWeightKg else { return nil }
-        let value = "\(latest.formatted(.number.precision(.fractionLength(0...1)))) kg"
+        let value = Format.weight(kg: latest, unit: WeightUnitPreference.kilograms)
         guard let change = weightChangeKg else { return value }
         let sign = change > 0 ? "+" : change < 0 ? "−" : "±"
-        return String(localized: "\(String(describing: value)) (\(sign)\(abs(change).formatted(.number.precision(.fractionLength(0...1)))) kg)")
+        return String(localized: "\(value) (\(sign)\(Format.weight(kg: abs(change), unit: WeightUnitPreference.kilograms)))")
     }
 
     var nutritionText: String? {
-        nutrition.map { "\($0.daysOnTarget) of \($0.daysLogged) logged days on target" }
+        nutrition.map { String(localized: "\($0.daysOnTarget) of \($0.daysLogged) logged days on target") }
     }
 
     private static func percent(_ fraction: Double) -> String {

@@ -20,7 +20,7 @@ struct NutritionCard: View {
     
     private var cardItem: some View {
         VStack(spacing: Spacing.l) {
-            HStack(alignment: .center, spacing: Spacing.xl) {
+            AdaptiveStack(horizontalAlignment: .leading, spacing: Spacing.xl) {
                 ActivityRingView(
                     text: calories.formatted(.number.precision(.fractionLength(0))),
                     imageName: Symbol.calories + ".fill",
@@ -30,9 +30,9 @@ struct NutritionCard: View {
                 )
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    macroBar(label: "Protein", value: proteinGrams, target: proteinTarget, color: .protein)
-                    macroBar(label: "Carbs", value: carbGrams, target: carbTarget, color: .carbs)
-                    macroBar(label: "Fat", value: fatGrams, target: fatTarget, color: .fat)
+                    macroBar(label: String(localized: "Protein"), value: proteinGrams, target: proteinTarget, color: .protein)
+                    macroBar(label: String(localized: "Carbs"), value: carbGrams, target: carbTarget, color: .carbs)
+                    macroBar(label: String(localized: "Fat"), value: fatGrams, target: fatTarget, color: .fat)
                 }
                 .frame(maxWidth: .infinity)
             }

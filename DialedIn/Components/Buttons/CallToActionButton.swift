@@ -14,6 +14,8 @@ import SwiftUI
 /// is disabled, and VoiceOver reads "Loading".
 struct CallToActionButton<Content: View>: View {
 
+    @Environment(\.isEnabled) private var isEnabled
+
     var isPrimaryAction: Bool = true
     var isLoading: Bool = false
     var action: () -> Void
@@ -46,6 +48,14 @@ struct CallToActionButton<Content: View>: View {
         .accessibilityValue(isLoading ? Text("Loading") : Text(verbatim: ""))
     }
 
+    /// Disabled, the prominent capsule is no longer the accent, so `onAccent` would sit on a
+    /// near-surface grey (white on white in light mode). `secondary` reads on it in both
+    /// appearances and still says the button is unavailable.
+    private var labelStyle: Color {
+        guard isEnabled else { return .secondary }
+        return isPrimaryAction ? .onAccent : .primary
+    }
+
     private var makeButton: some View {
         Button {
             action()
@@ -59,7 +69,7 @@ struct CallToActionButton<Content: View>: View {
                             .tint(isPrimaryAction ? Color.onAccent : Color.primary)
                     }
                 }
-                .foregroundStyle(isPrimaryAction ? Color.onAccent : Color.primary)
+                .foregroundStyle(labelStyle)
                 .padding(.vertical, Spacing.m)
                 .frame(maxWidth: .infinity)
         }

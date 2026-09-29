@@ -115,6 +115,7 @@ class WorkoutSessionRowPresenter {
             } catch {
                 isLiked = wasLiked
                 likeCount += wasLiked ? 1 : -1
+                interactor.playHaptic(option: .error)
             }
         }
     }
@@ -138,7 +139,7 @@ class WorkoutSessionRowPresenter {
             String(localized: "\(setCount) sets")
         ]
         if volume > 0 {
-            parts.append("\(Int(volume)) kg lifted")
+            parts.append(String(localized: "\(Int(volume)) kg lifted"))
         }
         return parts.joined(separator: " · ")
     }
@@ -174,12 +175,16 @@ class WorkoutSessionRowPresenter {
         ShareCardContent.make(session: session, author: author, personalRecords: personalRecords, weeklyWorkoutNumber: weeklyWorkoutNumber)
     }
 
+    /// Rendering the share image is a read, not a write — the More button shows its own spinner
+    /// instead of a modal blocking the whole screen for it.
+    private(set) var isRenderingShareImage = false
+
     func onShareImagePressed(format: WorkoutShareCardView.Format) {
         let content = shareCardContent
-        router.showLoadingModal()
+        isRenderingShareImage = true
         Task {
             let image = await ShareCardRenderer.renderCard(content, format: format)
-            router.dismissModal()
+            isRenderingShareImage = false
             if let image {
                 router.showShareSheet(items: [image])
             } else {
@@ -198,6 +203,8 @@ class WorkoutSessionRowPresenter {
     func onCopyLinkPressed(_ link: URL) {
         UIPasteboard.general.url = link
         interactor.playHaptic(option: .success)
+        // A haptic alone is nothing on iPad, and nothing at all with haptics off.
+        interactor.showAppToast(AppToast(style: .success, message: String(localized: "Link copied")))
         interactor.trackEvent(event: Event.copyLink(sessionId: session.id))
     }
 
@@ -224,12 +231,7 @@ class WorkoutSessionRowPresenter {
             do {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: template, image: nil)
                 interactor.trackEvent(event: Event.saveAsTemplateSuccess(sessionId: session.id, exerciseCount: template.exercises.count))
-                router.showAlert(title: String(localized: "Saved to your workouts"), subtitle: template.name) {
-                    AnyView(VStack {
-                        Button("Open") { self.onOpenSavedTemplatePressed(template) }
-                        Button("OK", role: .cancel) { }
-                    })
-                }
+                interactor.showAppToast(AppToast(style: .success, message: String(localized: "Saved \(template.name) to your workouts")))
             } catch {
                 interactor.trackEvent(event: Event.saveAsTemplateFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
@@ -248,12 +250,6 @@ class WorkoutSessionRowPresenter {
 
     func onShareTemplatePressed(_ template: WorkoutTemplateModel) {
         router.showShareToFollowerView(delegate: ShareToFollowerDelegate(payload: .template(template)))
-    }
-
-    func onOpenSavedTemplatePressed(_ template: WorkoutTemplateModel) {
-        router.showWorkoutTemplateDetailView(
-            delegate: WorkoutTemplateDetailDelegate(workoutTemplate: template, trainingProgramId: nil, onStartWorkoutPressed: nil)
-        )
     }
 
     enum Event: LoggableEvent {

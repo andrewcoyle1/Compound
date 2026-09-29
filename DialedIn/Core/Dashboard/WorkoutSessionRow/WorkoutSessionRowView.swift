@@ -94,7 +94,7 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
         if !presenter.personalRecords.isEmpty || presenter.streakText != nil || presenter.weeklyWorkoutText != nil {
             FlowLayout(spacing: Spacing.xs) {
                 ForEach(presenter.personalRecords, id: \.exerciseName) { record in
-                    highlightCapsule("PR: \(record.exerciseName) \(record.detail)", systemImage: Symbol.personalRecord, tint: .personalRecord)
+                    highlightCapsule(String(localized: "PR: \(record.exerciseName) \(record.detail)"), systemImage: Symbol.personalRecord, tint: .personalRecord)
                 }
                 if let streak = presenter.streakText {
                     highlightCapsule(streak, systemImage: Symbol.streak, tint: Color.Metric.workouts)
@@ -163,8 +163,9 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                 presenter.onLikeButtonPressed()
             } label: {
                 Label("\(presenter.likeCount)", systemImage: presenter.isLiked ? "hand.thumbsup.fill" : "hand.thumbsup")
+                    .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                    .contentShape(.rect)
             }
-            .frame(maxWidth: .infinity)
             .foregroundStyle(presenter.isLiked ? Color.accentColor : Color.secondary)
             .accessibilityLabel(presenter.isLiked ? String(localized: "Unlike") : String(localized: "Like"))
             .accessibilityValue(presenter.likeCount == 1 ? String(localized: "1 like") : String(localized: "\(presenter.likeCount) likes"))
@@ -172,20 +173,22 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                 presenter.onCommentButtonPressed()
             } label: {
                 Image(systemName: "bubble")
+                    .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                    .contentShape(.rect)
             }
-            .frame(maxWidth: .infinity)
             .accessibilityLabel("Comments")
             ShareLink(item: presenter.shareSummary) {
                 Image(systemName: Symbol.share)
+                    .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                    .contentShape(.rect)
             }
-            .frame(maxWidth: .infinity)
             .accessibilityLabel("Share workout")
             Menu {
                 Button("Save as Template", systemImage: "square.and.arrow.down") {
                     presenter.onSaveAsTemplatePressed()
                 }
                 if let template = presenter.shareableTemplate {
-                    Button("Share Workout with Friends", systemImage: "paperplane") {
+                    Button("Share with Friends…", systemImage: "paperplane") {
                         presenter.onShareTemplatePressed(template)
                     }
                 }
@@ -202,14 +205,21 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
                     }
                 }
                 if presenter.canReport {
-                    Button("Report Workout", systemImage: "exclamationmark.bubble") {
+                    Button("Report Workout…", systemImage: "exclamationmark.bubble") {
                         presenter.onReportPressed()
                     }
                 }
             } label: {
-                Image(systemName: Symbol.more)
+                if presenter.isRenderingShareImage {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                } else {
+                    Image(systemName: Symbol.more)
+                        .frame(maxWidth: .infinity, minHeight: ControlSize.row)
+                        .contentShape(.rect)
+                }
             }
-            .frame(maxWidth: .infinity)
+            .disabled(presenter.isRenderingShareImage)
             .accessibilityLabel("More actions")
         }
         .font(.rowDetail)

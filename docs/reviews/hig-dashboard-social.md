@@ -33,6 +33,39 @@ DerivedData checkout, not from this worktree.
 Paths are relative to `DialedIn/` unless they start with `functions/`. Findings are most serious
 first.
 
+## Resolution (2026-09-28, branch hig/dashboard)
+
+| Finding | Status | What changed |
+|---|---|---|
+| 1 | skipped: decision | Come-back/meal-reminder scheduling lives in `Managers/Push/`, not owned here. |
+| 2 | not a problem | Already a `.sheetConfig(config: .half)` sheet with Cancel via `role: .close`, and "Report sent" already raises a toast, not an alert. Verified against current code — no change needed. |
+| 3 | fixed | `DashboardView` sizes the carousel from `@ScaledMetric` `carouselContentHeight` (based on `DashboardCard.contentHeight`) instead of the static value, so the outer scroll container grows with Dynamic Type. `NutritionCard` stacks the ring above the macro bars at accessibility sizes via `AdaptiveStack`. `ActivityRingView`/`DashboardCard` (Components/Views/, not owned) already scale — verified, no change needed there. |
+| 4 | fixed | 44pt hit targets: Comments (like, cancel-reply, send, new Reply button), SocialProfile (weekly-goal button, Followers/Following stats, See All), WorkoutSessionRow footer (like/comment/share/more — frame moved onto the labels), CircleActivityStripView (Nudge/Set goal, dropped `.controlSize(.mini)`), CircleWeeklySummaryCard/InviteFriendCard/UsernameBannerView close buttons, WeeklyReviewView's prev/next chevrons, ChallengesDashboardSection's New button. `Components/Views/User/UserRowView.swift` and `Components/Views/SectionHeaderView.swift` are outside `Components/Views/` ownership here — see Needs a change elsewhere. |
+| 5 | fixed | Comments, SocialProfile (sessions) and Notifications now keep a `loadFailed` flag instead of discarding the error, and show `ContentUnavailableView` with a Try Again button instead of a false empty state. |
+| 6 | fixed | Comments: visible "Reply" text button under each comment; swipe actions moved to `.rowActions` so Delete/Report also appear in a context menu. FollowersList's Remove moved to `.rowActions` too. |
+| 7 | skipped: decision | Notifications-as-sheet vs pushed screen is unresolved. |
+| 8 | skipped: decision | Settings-screen location (here vs Profile) is unresolved. |
+| 9 | fixed | `NotificationsPresenter` only shows the full-screen spinner before the first successful load (`hasLoadedOnce`); pull-to-refresh no longer tears the list down. |
+| 10 | needs a change elsewhere | `Root/AppDelegate.swift:134-140`, not owned. |
+| 11 | skipped: decision | Interruption levels/badges are unresolved and live in `functions/`/`Managers/Push/`, not owned. |
+| 12 | needs a change elsewhere | `functions/lib.js` and `Managers/Push/PushManager.swift`, not owned. The eight notification row titles in `NotificationsView.swift` are localized and cleaned up (title case, no emoji) as far as this area's files allow. |
+| 13 | skipped: decision | Share button primary (link vs image) is unresolved. |
+| 14 | fixed (within owned folders) | Alert titles say what failed and are title-cased throughout Dashboard/Challenges/Notifications/Sharing; the draft-meal picker-as-alert now uses `showDraftMealDialog`; the comment delete alert now has an explicit Cancel; "Saved to your workouts" is a toast, not an alert. `Root/RIBs/ReportFlow.swift` and `Root/RIBs/FollowFlow.swift` sentence-case titles are outside ownership — see Needs a change elsewhere. |
+| 15 | fixed (within owned folders) | Localized every bare-literal site in scope, including notification row titles, "PR:"/"kg lifted", macro labels, "You" fallbacks, and hand-written plurals (now `inflect: true`). `Managers/Invites/CoreInteractor+Invites.swift` is outside ownership — see Needs a change elsewhere. |
+| 16 | fixed | "Decline"/"Add to Library" on SharedItemView; "Report…"/"Report Workout…"/"Share with Friends…" carry an ellipsis; "This Week" title-cased; FollowersList empty state reads "No Followers Yet". |
+| 17 | not applicable | `Core/Profile/ProfilePresenter.swift` is outside this assignment's owned folders. |
+
+**Smaller items:** nutrition card no longer fakes a target (shows totals/empty bars instead of
+invented 2000 kcal etc.) — fixed. `SharedItemView`'s exercise-image fallback to
+`Constants.randomImage` removed (uses the design system's own `nil`-image placeholder) — fixed.
+Comment delete alert now has an explicit Cancel — fixed. A failed like now plays an error haptic
+(WorkoutSessionRow and Comments) — fixed. Copy Link now also raises a toast, not haptic alone —
+fixed. Seventy lines of commented-out streak code in `DashboardPresenter` deleted — fixed. Kept as
+is: the feed/share volume being always kg (a unit-preference wiring change, larger than a smaller
+item); the bare `ProgressView` loading states that `CONTRACT.md` asks to redact (a contract item,
+left for a follow-up pass); the `.provisional`/`.ephemeral` "Notifications Disabled" wording (the
+review itself notes it is latent, since the app requests neither today).
+
 ## Findings
 
 ### 1. The app schedules reminders nobody asked for, and nothing in the app turns them off

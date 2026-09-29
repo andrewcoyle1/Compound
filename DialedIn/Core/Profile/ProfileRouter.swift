@@ -26,7 +26,6 @@ protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showExpenditureSettingsView(delegate: ExpenditureSettingsDelegate)
     func showStrategySettingsView(delegate: StrategySettingsDelegate)
     func showPreferredDietView(isFromSettings: Bool)
-    func showRatingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void)
 }
 
 extension CoreRouter: ProfileRouter { }

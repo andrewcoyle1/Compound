@@ -75,12 +75,21 @@ class ProfilePresenter {
     /// The screen that used to state this read a stored property nothing ever assigned, so it said
     /// FREE to everyone, premium subscribers included. This reads the entitlement directly.
     var subscriptionStatus: String {
-        interactor.isPremium ? String(localized: "PREMIUM") : String(localized: "FREE")
+        interactor.isPremium ? String(localized: "Premium") : String(localized: "Free")
     }
 
+    /// Apple's Manage Subscriptions sheet: plan, price, renewal date, cancel. Bound by the view.
+    var isManageSubscriptionsPresented: Bool = false
+
+    /// A subscriber is shown their subscription, not sold one: the paywall made an active
+    /// subscription look lapsed and offered no way to cancel.
     func onSubscriptionPressed() {
         interactor.trackEvent(eventName: "ProfileView_Subscription_Press", parameters: nil, type: .analytic)
-        router.showPaywall()
+        if interactor.isPremium {
+            isManageSubscriptionsPresented = true
+        } else {
+            router.showPaywall()
+        }
     }
 
     func onExerciseLibraryPressed() {
@@ -98,7 +107,7 @@ class ProfilePresenter {
         guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else {
             router.showSimpleAlert(
                 title: String(localized: "Unable to Open Mail"),
-                subtitle: "Email \(Constants.supportEmail) and we will get back to you."
+                subtitle: String(localized: "Email \(Constants.supportEmail) and we will get back to you.")
             )
             return
         }
@@ -112,7 +121,7 @@ class ProfilePresenter {
         interactor.trackEvent(eventName: "ProfileView_KnowledgeBase_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(
             title: String(localized: "Knowledge Base"),
-            subtitle: "There is no help site yet. In the meantime, Support emails us directly and we will answer you there."
+            subtitle: String(localized: "There is no help site yet. In the meantime, Support emails us directly and we will answer you there.")
         )
     }
 
@@ -120,7 +129,7 @@ class ProfilePresenter {
         interactor.trackEvent(eventName: "ProfileView_Roadmap_Press", parameters: nil, type: .analytic)
         router.showSimpleAlert(
             title: String(localized: "Roadmap"),
-            subtitle: "The public roadmap is not published yet. Send feature requests through Support and they will go on the list."
+            subtitle: String(localized: "The public roadmap is not published yet. Send feature requests through Support and they will go on the list.")
         )
     }
 
@@ -143,24 +152,11 @@ class ProfilePresenter {
         router.showLegalView(delegate: LegalDelegate())
     }
     
+    /// Straight to the system review prompt. The row used to open a "Are you enjoying AIChat?"
+    /// modal first and only asked the App Store after a "Yes".
     func onRatingsButtonPressed() {
         interactor.trackEvent(event: Event.ratingsPressed)
-        
-        func onEnjoyingAppYesPressed() {
-            interactor.trackEvent(event: Event.ratingsYesPressed)
-            router.dismissModal()
-            AppStoreRatingsHelper.requestRatingsReview()
-        }
-        
-        func onEnjoyingAppNoPressed() {
-            interactor.trackEvent(event: Event.ratingsNoPressed)
-            router.dismissModal()
-        }
-        
-        router.showRatingsModal(
-            onYesPressed: onEnjoyingAppYesPressed,
-            onNoPressed: onEnjoyingAppNoPressed
-        )
+        AppStoreRatingsHelper.requestRatingsReview()
     }
     
     func onFoodLogSettingsPressed() {
@@ -200,14 +196,10 @@ class ProfilePresenter {
     
     enum Event: LoggableEvent {
         case ratingsPressed
-        case ratingsYesPressed
-        case ratingsNoPressed
 
         var eventName: String {
             switch self {
             case .ratingsPressed:               return "ProfileView_Ratings_Pressed"
-            case .ratingsYesPressed:            return "ProfileView_RatingsYes_Pressed"
-            case .ratingsNoPressed:             return "ProfileView_RatingsNo_Pressed"
             }
         }
 
@@ -220,7 +212,7 @@ class ProfilePresenter {
 
         var type: LogType {
             switch self {
-            case .ratingsPressed, .ratingsYesPressed, .ratingsNoPressed:
+            case .ratingsPressed:
                 return .analytic
             }
         }

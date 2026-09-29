@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct ProfileView: View {
     
@@ -13,22 +14,21 @@ struct ProfileView: View {
     @ScaledMetric(relativeTo: .title3) private var avatarSide: CGFloat = 80
 
     var body: some View {
+        // Every section shows whatever the profile holds: gating them on a first name left the
+        // sheet blank, Sign Out and Delete Account included, until the user document arrived.
         List {
-            if let user = presenter.currentUser,
-               let firstName = user.firstNameCalculated,
-                !firstName.isEmpty {
-                profileHeaderSection
-                    .listSectionMargins(.top, 0)
-                
-                generalSection
-                nutritionSettingsSection
-                trainingSettingsSection
-                
-                communityAndSupportSection
-                
-                otherSection
-            }
+            profileHeaderSection
+                .listSectionMargins(.top, 0)
+
+            generalSection
+            nutritionSettingsSection
+            trainingSettingsSection
+
+            communityAndSupportSection
+
+            otherSection
         }
+        .manageSubscriptionsSheet(isPresented: $presenter.isManageSubscriptionsPresented)
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
@@ -39,43 +39,42 @@ struct ProfileView: View {
     
     private var profileHeaderSection: some View {
         Section {
-            if let user = presenter.currentUser {
-                Button {
-                    presenter.onProfileEditPressed()
-                } label: {
-                    HStack(spacing: Spacing.l) {
-                        ZStack {
-                            Image(systemName: Symbol.profile)
-                                .resizable()
-                                .scaledToFit()
-                                .foregroundStyle(.secondary)
-                            if let urlString = user.profileImageNameCalculated {
-                                ImageLoaderView(urlString: urlString, clipShape: AnyShape(Circle()))
-                            }
+            let user = presenter.currentUser
+            Button {
+                presenter.onProfileEditPressed()
+            } label: {
+                HStack(spacing: Spacing.l) {
+                    ZStack {
+                        Image(systemName: Symbol.profile)
+                            .resizable()
+                            .scaledToFit()
+                            .foregroundStyle(.secondary)
+                        if let urlString = user?.profileImageNameCalculated {
+                            ImageLoaderView(urlString: urlString, clipShape: AnyShape(Circle()))
                         }
-                        .frame(width: avatarSide, height: avatarSide)
-                        .accessibilityHidden(true)
-
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(presenter.fullName)
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.primary)
-                            if let email = user.emailCalculated {
-                                Text(email)
-                                    .font(.rowDetail)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Image(systemName: "chevron.forward")
-                            .font(.rowDetail.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                            .accessibilityHidden(true)
                     }
-                    .contentShape(.rect)
+                    .frame(width: avatarSide, height: avatarSide)
+                    .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(presenter.fullName.isEmpty ? String(localized: "Add your name") : presenter.fullName)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(presenter.fullName.isEmpty ? .secondary : .primary)
+                        if let email = user?.emailCalculated {
+                            Text(email)
+                                .font(.rowDetail)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "chevron.forward")
+                        .font(.rowDetail.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
                 }
+                .contentShape(.rect)
             }
         } header: {
             Text("Profile")
@@ -156,7 +155,7 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Support"), systemImage: "questionmark.circle") {
                 presenter.onSupportPressed()
             }
-            ListRowButton(title: String(localized: "Rate us on the app store"), systemImage: "star") {
+            ListRowButton(title: String(localized: "Rate Compound"), systemImage: "star") {
                 presenter.onRatingsButtonPressed()
             }
         } header: {

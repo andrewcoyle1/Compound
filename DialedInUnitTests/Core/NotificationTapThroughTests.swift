@@ -72,13 +72,26 @@ struct NotificationTapThroughTests {
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []
 
+        private(set) var pushedDelegates: [Bool] = []
+
         func showAlert(error: Error) { alertTitles.append("error") }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
-        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("session:\(delegate.initialSession.id)") }
-        func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) { shown.append("thread:\(delegate.initialSession.id)") }
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
+            shown.append("session:\(delegate.initialSession.id)")
+            pushedDelegates.append(delegate.isPushed)
+        }
+        // Decision 6: everything opened from Notifications pushes rather than sheets, so the
+        // workout-plus-thread router method changed name (and always pushes both screens).
+        func showWorkoutSessionThreadPushed(delegate: WorkoutSessionDetailDelegate) {
+            shown.append("thread:\(delegate.initialSession.id)")
+            pushedDelegates.append(delegate.isPushed)
+        }
         func showSocialProfileView(delegate: SocialProfileDelegate) { shown.append("profile:\(delegate.user.userId)") }
-        func showSharedItemView(delegate: SharedItemDelegate) { shown.append("share:\(delegate.share.id)|\(delegate.senderName)") }
+        func showSharedItemView(delegate: SharedItemDelegate) {
+            shown.append("share:\(delegate.share.id)|\(delegate.senderName)")
+            pushedDelegates.append(delegate.isPushed)
+        }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { shown.append("challenge:\(delegate.challenge.id)") }
         func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { }
     }
@@ -122,6 +135,9 @@ struct NotificationTapThroughTests {
         #expect(screen.router.shown == ["session:s1"])
         #expect(screen.interactor.sessionRequests == ["s1|author"])
         #expect(screen.interactor.trackedEventNames.contains("NotificationsView_Notification_Pressed"))
+        // Decision 6: browsing pushes — a workout opened from Notifications carries no Close
+        // button of its own, the system Back button replaces it.
+        #expect(screen.router.pushedDelegates == [true])
     }
 
     @Test("Test Tapping A Comment Or Mention Opens The Thread")
@@ -134,6 +150,8 @@ struct NotificationTapThroughTests {
         await TestManagers.eventually { screen.router.shown.count == 2 }
 
         #expect(screen.router.shown == ["thread:s1", "thread:s1"])
+        // One push to the workout then its comments, not two sheets stacked inside the sheet.
+        #expect(screen.router.pushedDelegates == [true, true])
     }
 
     @Test("Test Tapping A Follow Opens The Followers Profile")
@@ -174,6 +192,7 @@ struct NotificationTapThroughTests {
 
         #expect(screen.router.shown == ["share:mock_share_program|Fan"])
         #expect(screen.interactor.sessionRequests.isEmpty)
+        #expect(screen.router.pushedDelegates == [true])
     }
 
     @Test("Test A Share That Cannot Be Read Alerts")

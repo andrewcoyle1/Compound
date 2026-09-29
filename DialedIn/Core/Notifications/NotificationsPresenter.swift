@@ -155,16 +155,18 @@ class NotificationsPresenter {
                     let user = try await interactor.getUser(userId: notification.actorId)
                     router.showSocialProfileView(delegate: SocialProfileDelegate(user: user))
                 case .like, .comment, .mention:
+                    // Browsing pushes: everything opened from inside the Notifications sheet
+                    // pushes within it rather than sheeting on top.
                     let session = try await interactor.fetchWorkoutSession(id: notification.sessionId, authorId: notification.sessionAuthorId)
-                    let delegate = WorkoutSessionDetailDelegate(workoutSession: session)
+                    let delegate = WorkoutSessionDetailDelegate(workoutSession: session, isPushed: true)
                     if notification.type == .like {
                         router.showWorkoutSessionDetailView(delegate: delegate)
                     } else {
-                        router.showWorkoutSessionThread(delegate: delegate)
+                        router.showWorkoutSessionThreadPushed(delegate: delegate)
                     }
                 case .share:
                     let share = try await interactor.fetchShare(id: notification.shareId ?? "")
-                    router.showSharedItemView(delegate: SharedItemDelegate(share: share, senderName: notification.actorName))
+                    router.showSharedItemView(delegate: SharedItemDelegate(share: share, senderName: notification.actorName, isPushed: true))
                 case .challengeComplete:
                     let challenge = try await interactor.fetchChallenge(id: notification.challengeId ?? "")
                     router.showChallengeDetailView(delegate: ChallengeDetailDelegate(challenge: challenge))

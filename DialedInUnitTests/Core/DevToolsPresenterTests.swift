@@ -457,7 +457,7 @@ struct DevToolsNotificationsPresenterTests {
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
         func showSimpleAlert(title: String, subtitle: String?) { }
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { }
-        func showWorkoutSessionThread(delegate: WorkoutSessionDetailDelegate) { }
+        func showWorkoutSessionThreadPushed(delegate: WorkoutSessionDetailDelegate) { }
         func showSocialProfileView(delegate: SocialProfileDelegate) { }
         func showSharedItemView(delegate: SharedItemDelegate) { }
         func showChallengeDetailView(delegate: ChallengeDetailDelegate) { }

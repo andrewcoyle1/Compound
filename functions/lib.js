@@ -681,7 +681,9 @@ export function personalRecordLines(session, priorSessions, limit = 3) {
 export function sessionPageContent(session, author, priorSessions = []) {
     const start = toDate(session.date_created);
     const end = toDate(session.ended_at);
-    const seconds = start && end ? Math.max(0, Math.floor((end - start) / 1000)) : null;
+    // Paused time is left out, as it is in the app. Sessions saved before the field existed have none.
+    const paused = Math.floor(session.paused_seconds ?? 0);
+    const seconds = start && end ? Math.max(0, Math.floor((end - start) / 1000) - paused) : null;
     const hours = Math.floor((seconds ?? 0) / 3600);
     const minutes = Math.floor(((seconds ?? 0) % 3600) / 60);
     const volume = (session.exercises ?? []).flatMap(workingSets).reduce((sum, set) => sum + (set.weight_kg ?? 0) * (set.reps ?? 0), 0);

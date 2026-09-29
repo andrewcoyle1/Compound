@@ -7,7 +7,7 @@ import {
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
     isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
-    SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS,
+    SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent,
 } from "./lib.js";
 
 test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", () => {
@@ -727,4 +727,11 @@ test("the unread badge counts unread notifications and pending follow requests",
     assert.match(source, /collection\("notifications"\)\.where\("is_read", "==", false\)\.count\(\)/);
     assert.match(source, /collection\("follow_requests"\)\.where\("status", "==", "pending"\)\.count\(\)/);
     assert.match(source, /buildActivityPush\(notification, recipient, await unreadBadgeCount\(userRef\)\)/);
+});
+
+test("sessionPageContent leaves paused time out of the duration", () => {
+    const session = { date_created: new Date("2026-09-29T10:00:00Z"), ended_at: new Date("2026-09-29T11:00:00Z") };
+    assert.equal(sessionPageContent(session, {}).durationText, "1h 0m");
+    assert.equal(sessionPageContent({ ...session, paused_seconds: 600.7 }, {}).durationText, "50m");
+    assert.equal(sessionPageContent({ ...session, paused_seconds: 99999 }, {}).durationText, "0m");
 });

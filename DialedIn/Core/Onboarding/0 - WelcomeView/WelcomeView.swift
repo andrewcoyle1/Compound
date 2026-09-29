@@ -49,13 +49,12 @@ struct WelcomeView: View {
         }
         #endif
         .bottomCTA {
-            CallToActionButton {
+            CallToActionButton(isLoading: presenter.currentUser == nil) {
                 presenter.onContinuePressed()
             } label: {
                 Text("Get Started")
             }
             .accessibilityIdentifier("GetStartedButton")
-            .disabled(presenter.currentUser == nil)
         }
     }
 

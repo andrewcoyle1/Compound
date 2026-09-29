@@ -70,12 +70,6 @@ struct EditFreeWeightView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
-            }
-        }
-        
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddPressed()
@@ -104,7 +98,9 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func showEditFreeWeightView(freeWeight: Binding<FreeWeights>) {
-        router.showScreen(.sheet) { router in
+        // Pushed inside the Profile sheet: browsing a list is a push, and only the Add form above it
+        // is a sheet, so at most one modal sits over Profile.
+        router.showScreen(.push) { router in
             builder.editFreeWeightView(router: router, freeWeight: freeWeight)
         }
     }

@@ -86,10 +86,6 @@ class EditCableMachinePresenter {
         router.showEditWeightRangeView(delegate: EditWeightRangeDelegate(equipmentName: cableMachine.name, range: range))
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let cableMachineBinding = Binding(
             get: { self.cableMachine },

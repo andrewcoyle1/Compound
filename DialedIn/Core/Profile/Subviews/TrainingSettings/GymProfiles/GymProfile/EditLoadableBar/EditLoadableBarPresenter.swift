@@ -76,10 +76,6 @@ class EditLoadableBarPresenter {
         loadableBar = updated
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let loadableBarBinding = Binding(
             get: { self.loadableBar },

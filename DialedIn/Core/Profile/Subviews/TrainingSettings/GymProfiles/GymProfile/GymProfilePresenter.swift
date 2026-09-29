@@ -10,10 +10,18 @@ class GymProfilePresenter {
     
     var filter: ListFilter = .all
     var gymProfile: GymProfileModel {
-        didSet { hasUnsavedChanges = true }
+        didSet {
+            hasUnsavedChanges = true
+            if isEditorPushed { scheduleSaveWhileCovered() }
+        }
     }
     /// Set by any edit, including the equipment editors' bindings, and cleared by a save.
     private(set) var hasUnsavedChanges = false
+    /// An equipment editor is pushed over this screen. This screen's `onDisappear` ran when the
+    /// editor was pushed, and does not run again if the whole Profile sheet is swiped away from
+    /// the editor, so edits made there save as they happen.
+    private(set) var isEditorPushed = false
+    private var coveredSave: Task<Void, Never>?
     var searchQuery: String = ""
 
     var selectedPhotoItem: PhotosPickerItem?
@@ -35,6 +43,7 @@ class GymProfilePresenter {
     }
     
     func onViewAppear() {
+        isEditorPushed = false
         interactor.trackScreenEvent(event: Event.onAppear)
     }
     
@@ -114,7 +123,20 @@ class GymProfilePresenter {
         return profile
     }
 
-    private func saveGymProfile(reportFailure: (() -> Void)? = nil, onComplete: @escaping () -> Void) {
+    /// Debounced, so switching several weights on in a row writes once.
+    private func scheduleSaveWhileCovered() {
+        coveredSave?.cancel()
+        coveredSave = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(500))
+            guard let self, !Task.isCancelled, self.hasUnsavedChanges else { return }
+            self.saveGymProfile(confirms: false, reportFailure: { [interactor] in
+                interactor.showAppToast(AppToast(style: .failure, message: String(localized: "Unable to save gym profile")))
+            }, onComplete: { })
+        }
+    }
+
+    /// `confirms: false` skips the success haptic, for saves the person did not ask for by leaving.
+    private func saveGymProfile(confirms: Bool = true, reportFailure: (() -> Void)? = nil, onComplete: @escaping () -> Void) {
         let profile = profileToSave
         hasUnsavedChanges = false
         Task {
@@ -122,7 +144,7 @@ class GymProfilePresenter {
                 interactor.trackEvent(event: Event.saveGymProfileStart)
                 try await interactor.saveGymProfile(profile: profile, image: nil)
                 interactor.trackEvent(event: Event.saveGymProfileSuccess)
-                interactor.playHaptic(option: .success)
+                if confirms { interactor.playHaptic(option: .success) }
                 onComplete()
             } catch {
                 hasUnsavedChanges = true
@@ -193,22 +215,27 @@ class GymProfilePresenter {
     }
     
     func onEditFreeWeightPressed(freeWeight: Binding<FreeWeights>) {
+        isEditorPushed = true
         router.showEditFreeWeightView(freeWeight: freeWeight)
     }
 
     func onEditLoadableBarPressed(loadableBar: Binding<LoadableBars>) {
+        isEditorPushed = true
         router.showEditLoadableBarView(loadableBar: loadableBar)
     }
 
     func onEditFixedWeightBarPressed(fixedWeightBar: Binding<FixedWeightBars>) {
+        isEditorPushed = true
         router.showEditFixedWeightBarView(fixedWeightBar: fixedWeightBar)
     }
 
     func onEditBandPressed(band: Binding<Bands>) {
+        isEditorPushed = true
         router.showEditBandView(band: band)
     }
     
     func onEditBodyWeightPressed(bodyWeight: Binding<BodyWeights>) {
+        isEditorPushed = true
         router.showEditBodyWeightView(bodyWeight: bodyWeight)
     }
 
@@ -217,6 +244,7 @@ class GymProfilePresenter {
     }
 
     func onEditCableMachinePressed(cableMachine: Binding<CableMachine>) {
+        isEditorPushed = true
         router.showEditCableMachineView(cableMachine: cableMachine)
     }
 
@@ -225,6 +253,7 @@ class GymProfilePresenter {
     }
 
     func onEditPinLoadedMachinePressed(pinLoadedMachine: Binding<PinLoadedMachine>) {
+        isEditorPushed = true
         router.showEditPinLoadedMachineView(pinLoadedMachine: pinLoadedMachine)
     }
     

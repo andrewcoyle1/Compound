@@ -15,10 +15,6 @@ class AboutPresenter {
         self.router = router
     }
 
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     func onLicencesPressed() {
         router.showLicencesView(delegate: LicencesDelegate())
     }

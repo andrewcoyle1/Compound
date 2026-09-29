@@ -76,10 +76,6 @@ class EditBandPresenter {
         band = updated
     }
     
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
     func onAddPressed() {
         let bandBinding = Binding(
             get: { self.band },

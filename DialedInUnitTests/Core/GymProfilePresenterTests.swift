@@ -328,6 +328,26 @@ struct GymProfilePresenterTests {
         #expect(screen.presenter.hasUnsavedChanges)
     }
 
+    /// The equipment editors are pushed now, so this screen has already disappeared when they edit
+    /// it, and swiping the Profile sheet away from an editor would not save. Edits made under a
+    /// pushed editor save by themselves, quietly, and coming back stops that.
+    @Test("Test Edits Under A Pushed Editor Save Without Leaving")
+    func testEditsUnderAPushedEditorSaveWithoutLeaving() async throws {
+        let screen = makeScreen(freeWeights: [freeWeight("Dumbbells")])
+        let binding = try #require(screen.presenter.filteredFreeWeights.first)
+        screen.presenter.onEditFreeWeightPressed(freeWeight: binding)
+
+        binding.wrappedValue.isActive = true
+        #expect(await TestManagers.eventually { !screen.interactor.savedProfiles.isEmpty })
+
+        #expect(screen.interactor.savedProfiles.count == 1)
+        #expect(screen.interactor.playedHaptics.isEmpty)
+        #expect(!screen.presenter.hasUnsavedChanges)
+
+        screen.presenter.onViewAppear()
+        #expect(!screen.presenter.isEditorPushed)
+    }
+
     /// Continuing through onboarding has the same failure: nothing is saved, nothing is routed to,
     /// and the step has no other way forward.
     @Test("Test A Failed Save Blocks Continuing And Says So")

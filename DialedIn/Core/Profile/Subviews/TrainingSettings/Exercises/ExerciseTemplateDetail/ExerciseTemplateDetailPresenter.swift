@@ -122,10 +122,6 @@ class ExerciseModelDetailPresenter {
         formattedWeight(kilos)
     }
         
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-
     private(set) var isDeleting: Bool = false
 
     /// Only the author's own exercises can go; the seeded library is shared by everyone.

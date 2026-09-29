@@ -99,25 +99,54 @@ struct OnboardingWeightRatePresenterTests {
     }
 
     /// The category label under the slider is what tells a user their chosen rate is aggressive.
-    /// Both thresholds are inclusive, so the boundary values belong to the outer bands.
+    /// The thresholds were
+    /// fixed at 0.4 and 0.8 kg; they are now half and four-fifths of the person's own maximum,
+    /// which at 80 kg is 0.8 kg a week, so 0.4 and 0.64.
     @Test("The rate category changes at its thresholds")
     func testTheRateCategoryChangesAtItsThresholds() {
         let screen = makeScreen()
+        screen.presenter.onAppear(delegate: delegate())
 
         screen.presenter.weightChangeRate = 0.25
         #expect(screen.presenter.currentRateCategory == .conservative)
 
-        screen.presenter.weightChangeRate = 0.4
+        screen.presenter.weightChangeRate = 0.35
         #expect(screen.presenter.currentRateCategory == .conservative)
 
         screen.presenter.weightChangeRate = 0.5
         #expect(screen.presenter.currentRateCategory == .standard)
+        #expect(screen.presenter.rateWarningText(delegate: delegate()) == nil)
+
+        screen.presenter.weightChangeRate = 0.65
+        #expect(screen.presenter.currentRateCategory == .aggressive)
+        #expect(screen.presenter.rateWarningText(delegate: delegate()) != nil)
+        #expect(screen.presenter.rateWarningText(delegate: delegate(.gainWeight, target: 90)) != nil)
 
         screen.presenter.weightChangeRate = 0.8
         #expect(screen.presenter.currentRateCategory == .aggressive)
+    }
 
-        screen.presenter.weightChangeRate = 1.5
-        #expect(screen.presenter.currentRateCategory == .aggressive)
+    /// Decision 3: at most 1% of body weight a week, and never above the old 1.5 kg.
+    @Test("The maximum rate is one percent of body weight, capped at 1.5 kg", arguments: [
+        (80.0, 0.8), (60.0, 0.6), (30.0, 0.3), (150.0, 1.5), (220.0, 1.5), (73.0, 0.7)
+    ])
+    func testTheMaximumRateIsOnePercentOfBodyWeight(weightKg: Double, expected: Double) {
+        let screen = makeScreen(user: rateUser(weightKg: weightKg))
+        screen.presenter.onAppear(delegate: delegate())
+
+        #expect(abs(screen.presenter.maxWeightChangeRate - expected) < 0.0001)
+        // The default opens below the warning band, however light the person.
+        #expect(screen.presenter.weightChangeRate <= screen.presenter.maxWeightChangeRate)
+    }
+
+    @Test("A light person's default rate opens below the warning")
+    func testALightPersonsDefaultOpensBelowTheWarning() {
+        let screen = makeScreen(user: rateUser(weightKg: 50))
+        screen.presenter.onAppear(delegate: delegate(.loseWeight, target: 45))
+
+        // The maximum is 0.5 kg; the old 0.5 default would open on the warning.
+        #expect(abs(screen.presenter.weightChangeRate - 0.35) < 0.0001)
+        #expect(screen.presenter.rateWarningText(delegate: delegate(.loseWeight, target: 45)) == nil)
     }
 
     // MARK: - What the rate reads as
@@ -208,7 +237,9 @@ struct OnboardingWeightRatePresenterTests {
         )
     }
 
-    /// At 1.5 kg a week the deficit is 1653 kcal a day. Off 2000 that read "~ 346 kcal".
+    /// At 1.5 kg a week the deficit is 1653 kcal a day. Off 2000 that read "~ 346 kcal". The
+    /// slider no longer reaches 1.5 kg for this 80 kg user, but the floor still has to hold for a
+    /// rate the presenter is handed.
     @Test("The calorie estimate never reads below the calorie floor")
     func testTheCalorieEstimateNeverReadsBelowTheCalorieFloor() {
         let screen = makeScreen()

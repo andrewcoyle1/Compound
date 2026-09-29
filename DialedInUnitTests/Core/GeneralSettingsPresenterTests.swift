@@ -531,12 +531,19 @@ struct GeneralSettingsIntegrationsTests {
         #expect(!screen.presenter.isConnectingStrava)
     }
 
-    @Test("Test Disconnecting Strava Drops The Connection")
-    func testDisconnectingStravaDropsTheConnection() {
+    /// Disconnect asks first, and once confirmed the row follows at once: the manager's state is
+    /// in the Keychain, which the screen cannot observe, so it used to keep saying "Connected".
+    @Test("Test Disconnecting Strava Asks First Then Drops The Connection")
+    func testDisconnectingStravaAsksFirstThenDropsTheConnection() {
         let screen = makeScreen()
         screen.interactor.stravaIsConnected = true
+        screen.presenter.onViewAppear()
+        #expect(screen.presenter.stravaIsConnected)
 
         screen.presenter.onStravaDisconnectPressed()
+        #expect(!screen.interactor.didDisconnect)
+
+        screen.presenter.onStravaDisconnectConfirmed()
 
         #expect(screen.interactor.didDisconnect)
         #expect(!screen.presenter.stravaIsConnected)
@@ -549,8 +556,10 @@ struct GeneralSettingsIntegrationsTests {
         let screen = makeScreen()
 
         screen.presenter.onStravaTestUploadPressed()
-        await TestManagers.eventually { !screen.router.alerts.isEmpty }
-        #expect(screen.router.alerts == ["Upload Successful"])
+        await TestManagers.eventually { !screen.interactor.shownToasts.isEmpty }
+        let toastStyles = screen.interactor.shownToasts.map { $0.style }
+        #expect(toastStyles == [.success])
+        #expect(screen.router.alerts.isEmpty)
         #expect(!screen.presenter.isTestingStravaUpload)
 
         let failing = makeScreen()

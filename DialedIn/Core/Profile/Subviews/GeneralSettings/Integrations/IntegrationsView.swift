@@ -20,6 +20,8 @@ struct IntegrationsView: View {
                     accessory: .custom(AnyView(stravaAction))
                 )
                 if presenter.stravaIsConnected {
+                    #if DEV || MOCK
+                    // Posts a real activity to the person's Strava account, so development builds only.
                     HStack {
                         Spacer()
                         if presenter.isTestingStravaUpload {
@@ -28,8 +30,11 @@ struct IntegrationsView: View {
                             Button("Test Upload") { presenter.onStravaTestUploadPressed() }
                                 .font(.rowDetail)
                                 .foregroundStyle(.secondary)
+                                .buttonStyle(.borderless)
                         }
                     }
+                    #endif
+                    Button("Disconnect Strava", role: .destructive) { presenter.onStravaDisconnectPressed() }
                 }
             } header: {
                 Text("Available Integrations")
@@ -49,12 +54,11 @@ struct IntegrationsView: View {
     private var stravaAction: some View {
         if presenter.isConnectingStrava {
             ProgressView()
-        } else if presenter.stravaIsConnected {
-            Button("Disconnect", role: .destructive) { presenter.onStravaDisconnectPressed() }
-                .font(.rowDetail)
-        } else {
+        } else if !presenter.stravaIsConnected {
+            // Borderless, so only the button responds rather than the whole row.
             Button("Connect") { presenter.onStravaConnectPressed() }
                 .font(.rowDetail)
+                .buttonStyle(.borderless)
         }
     }
 }

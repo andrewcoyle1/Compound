@@ -157,6 +157,23 @@ struct ServingUnitPickerPresenterTests {
         #expect(presenter.calories(ingredient: bread()) == 100)
     }
 
+    /// The screen opens on the food's own portion, as its row and Quick Add describe it, rather
+    /// than a flat 100 g.
+    @Test("Test The Amount Opens On The Food's Portion")
+    func testTheAmountOpensOnTheFoodsPortion() {
+        let presenter = IngredientAmountPresenter(interactor: IngredientInteractor(), router: IngredientRouter())
+
+        presenter.onViewAppear(ingredient: bread())
+
+        #expect(presenter.selectedUnit == slice)
+        #expect(presenter.amountText == "1")
+
+        // Coming back to the screen keeps what was typed.
+        presenter.amountText = "3"
+        presenter.onViewAppear(ingredient: bread())
+        #expect(presenter.amountText == "3")
+    }
+
     @Test("Test Going Back To Grams Keeps The Same Quantity")
     func testGoingBackToGramsKeepsTheSameQuantity() {
         let presenter = IngredientAmountPresenter(interactor: IngredientInteractor(), router: IngredientRouter())

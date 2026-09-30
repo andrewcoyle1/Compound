@@ -52,6 +52,23 @@ class IngredientAmountPresenter {
         self.router = router
     }
 
+    private var hasStartedFromPortion = false
+
+    /// Opens on the food's own portion, the one its row in the list and Quick Add describe, rather
+    /// than a flat 100 g: rolled oats listed at "0.5 cup" used to open at 100 g. Once only, so
+    /// coming back from the unit picker keeps what was typed.
+    func onViewAppear(ingredient: FoodModel) {
+        guard !hasStartedFromPortion else { return }
+        hasStartedFromPortion = true
+        if let portion = ingredient.portionNameCalculated,
+           let unit = ingredient.servingUnits.first(where: { $0.name == portion }) {
+            selectedUnit = unit
+            amountText = (ingredient.portionQuantityCalculated ?? 1).formatted(.number.grouping(.never))
+        } else {
+            amountText = NutritionScaling.rounded(ingredient.defaultPortionAmount).formatted(.number.grouping(.never))
+        }
+    }
+
     /// Adds the food to the plate and returns to the list it was picked from, so a second tap on
     /// the same row cannot silently add a second copy.
     func add(ingredient: FoodModel, onConfirm: @escaping (MealItemModel) -> Void) {

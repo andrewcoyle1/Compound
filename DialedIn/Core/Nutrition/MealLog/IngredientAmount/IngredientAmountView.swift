@@ -49,6 +49,9 @@ struct IngredientAmountView: View {
             )
         }
         .navigationTitle(delegate.ingredient.name)
+        .onAppear {
+            presenter.onViewAppear(ingredient: delegate.ingredient)
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

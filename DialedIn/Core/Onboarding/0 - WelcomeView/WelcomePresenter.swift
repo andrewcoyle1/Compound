@@ -85,13 +85,6 @@ class WelcomePresenter {
             router.routeToOnboardingStep(step, onComplete: handleNavigation)
         }
     }
-
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
 }
 
 extension WelcomePresenter {

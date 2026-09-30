@@ -16,7 +16,7 @@ struct GoalSettingView: View {
             title: "Ready to Set a Goal?",
             progress: OnboardingStep.goalSetting.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 Text("Your goal generates a custom plan to get you there. This can be changed later, and your plan will update accordingly.")
@@ -26,14 +26,6 @@ struct GoalSettingView: View {
                 Text("Goal")
             }
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

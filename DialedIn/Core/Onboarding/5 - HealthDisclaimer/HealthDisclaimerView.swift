@@ -16,7 +16,7 @@ struct HealthDisclaimerView: View {
             title: "Do You Agree?",
             progress: OnboardingStep.healthDisclaimer.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 Text(presenter.disclaimerString)
@@ -58,13 +58,6 @@ struct HealthDisclaimerView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

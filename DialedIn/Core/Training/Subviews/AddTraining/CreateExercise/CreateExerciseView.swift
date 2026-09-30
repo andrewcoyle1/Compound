@@ -110,18 +110,6 @@ struct CreateExerciseView: View {
             }
         }
         
-        #if DEBUG || MOCK
-        ToolbarSpacer(.fixed, placement: .topBarLeading)
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
-        
     }
 }
 

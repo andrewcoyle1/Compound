@@ -188,12 +188,6 @@ class GoalSummaryPresenter {
         }
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case goalSaveStart
         case goalSaveSuccess

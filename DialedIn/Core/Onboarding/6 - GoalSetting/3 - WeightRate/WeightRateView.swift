@@ -32,7 +32,7 @@ struct WeightRateView: View {
             title: "At What Rate?",
             progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             if presenter.didInitialize {
                 rateSelectionSection
@@ -112,13 +112,6 @@ struct WeightRateView: View {
         .removeListRowFormatting()
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

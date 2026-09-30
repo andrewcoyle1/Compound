@@ -17,7 +17,7 @@ struct OverarchingObjectiveView: View {
             subtitle: "Choose one",
             progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(OverarchingObjective.allCases, id: \.self) { objective in
@@ -29,13 +29,6 @@ struct OverarchingObjectiveView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

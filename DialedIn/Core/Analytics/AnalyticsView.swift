@@ -139,18 +139,6 @@ struct AnalyticsView<NutritionChart: View>: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-
-        #if DEV || MOCK
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
-
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button {

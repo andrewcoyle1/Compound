@@ -75,11 +75,6 @@ class WorkoutHistoryPresenter {
         }
     }
     
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }
 
 extension WorkoutHistoryPresenter {

@@ -261,12 +261,6 @@ class ExpenditurePresenter {
         Calendar.current.date(byAdding: .year, value: -30, to: Date()) ?? Date()
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case profileSaveStart
         case profileSaveSuccess

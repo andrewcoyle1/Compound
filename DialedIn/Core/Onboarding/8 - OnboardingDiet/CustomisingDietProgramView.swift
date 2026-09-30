@@ -16,7 +16,7 @@ struct CustomisingDietProgramView: View {
             title: "Ready to Plan Meals?",
             progress: OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.navigateToPreferredDiet() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 Text("Let's get to work creating a custom diet program tuned to your needs. This will evolve over time as we learn how your body responds to the diet and make the necessary changes. This can always be manually altered later if you would like a specific change.")
@@ -28,13 +28,6 @@ struct CustomisingDietProgramView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

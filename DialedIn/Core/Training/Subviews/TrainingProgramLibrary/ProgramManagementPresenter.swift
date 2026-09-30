@@ -93,11 +93,6 @@ class TrainingProgramLibraryPresenter {
         router.showCreateProgramView(delegate: CreateProgramDelegate())
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }
 
 extension TrainingProgramLibraryPresenter {

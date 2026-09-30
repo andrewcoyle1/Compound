@@ -204,12 +204,6 @@ class SocialPresenter {
         router.showNotificationsView()
     }
     
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
-
     func loadNotifications() async {
         // Silent: background refresh of the unread badge.
         try? await interactor.fetchActivityNotifications()

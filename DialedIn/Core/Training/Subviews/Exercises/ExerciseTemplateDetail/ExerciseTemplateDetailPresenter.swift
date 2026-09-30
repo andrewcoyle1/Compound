@@ -156,11 +156,6 @@ class ExerciseModelDetailPresenter {
         }
     }
     
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }
 
 enum CustomSection: Hashable {

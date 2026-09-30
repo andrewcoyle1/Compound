@@ -510,11 +510,6 @@ class WorkoutSessionDetailPresenter {
         interactor.trackEvent(event: Event.copyLink(sessionId: session.id))
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }
 
 extension WorkoutSessionDetailPresenter {

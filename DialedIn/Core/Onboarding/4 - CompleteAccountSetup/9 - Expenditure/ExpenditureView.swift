@@ -45,7 +45,7 @@ struct ExpenditureView: View {
             title: "How Much Do You Burn?",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             overviewSection
             breakdownSection
@@ -55,14 +55,6 @@ struct ExpenditureView: View {
         .onFirstAppear {
             presenter.estimateExpenditure(delegate: delegate)
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 
     private var overviewSection: some View {

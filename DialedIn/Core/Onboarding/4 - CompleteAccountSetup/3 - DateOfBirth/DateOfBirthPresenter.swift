@@ -55,12 +55,6 @@ class DateOfBirthPresenter {
         router.showHeightView(delegate: delegate)
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case navigate
         case fillFromHealth(found: Bool)

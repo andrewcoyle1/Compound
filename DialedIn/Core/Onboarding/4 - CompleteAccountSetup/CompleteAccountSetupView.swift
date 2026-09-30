@@ -16,7 +16,7 @@ struct CompleteAccountSetupView: View {
             title: "Ready to Begin?",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.handleNavigation() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 Text("A few details tailor your recommendations to your fitness journey.")
@@ -27,13 +27,6 @@ struct CompleteAccountSetupView: View {
         .navigationBarBackButtonHidden()
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

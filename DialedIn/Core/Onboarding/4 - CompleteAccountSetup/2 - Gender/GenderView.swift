@@ -17,7 +17,7 @@ struct GenderView: View {
             subtitle: "Used only to estimate the calories you burn. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             Section {
@@ -34,14 +34,6 @@ struct GenderView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

@@ -206,6 +206,10 @@ struct NutritionView<
 
     private var moreSection: some View {
         Section {
+            ListRowButton(title: "TimelineActions", systemImage: Symbol.more) {
+                presenter.onTimelineActionsPressed()
+            }
+            .accessibilityLabel("Timeline actions")
             ListRowButton(title: String(localized: "Nutrition Overview"), systemImage: Symbol.nutrition) {
                 presenter.onNutritionOverviewPressed()
             }
@@ -234,19 +238,6 @@ struct NutritionView<
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        
-        #if DEV || MOCK
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        ToolbarSpacer(.fixed, placement: .topBarTrailing)
-        #endif
-        
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onLogMealPressed()
@@ -265,14 +256,6 @@ struct NutritionView<
             .accessibilityLabel("Show calendar")
         }
 
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onTimelineActionsPressed()
-            } label: {
-                Image(systemName: Symbol.more)
-            }
-            .accessibilityLabel("Timeline actions")
-        }
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         ToolbarItem(placement: .topBarTrailing) {
             ProfileButton(

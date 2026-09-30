@@ -60,12 +60,6 @@ class DietPlanPresenter {
         }
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case saveDietPlanStart
         case saveDietPlanSuccess

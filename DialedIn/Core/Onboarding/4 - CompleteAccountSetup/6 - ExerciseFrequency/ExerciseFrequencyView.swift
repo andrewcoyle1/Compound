@@ -41,7 +41,7 @@ struct ExerciseFrequencyView: View {
             subtitle: "How often you exercise feeds the calorie estimate. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(ExerciseFrequency.allCases, id: \.self) { frequency in
@@ -53,13 +53,6 @@ struct ExerciseFrequencyView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

@@ -7,9 +7,6 @@
 
 @MainActor
 protocol NamePhotoRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
     func showGenderView()
 }
 

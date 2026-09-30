@@ -137,12 +137,6 @@ class WorkoutTemplateDetailPresenter {
         }
     }
 
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
-
     /// The call behind every exercise row was commented out, so the rows highlighted on press and
     /// then did nothing. Opens the exercise's own detail — history, charts and records.
     func onExercisePressed(_ exercise: ExerciseModel) {

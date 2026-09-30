@@ -6,10 +6,6 @@
 //
 
 @MainActor
-protocol RecipeAmountRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
-}
+protocol RecipeAmountRouter: GlobalRouter { }
 
 extension CoreRouter: RecipeAmountRouter { }

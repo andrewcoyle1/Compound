@@ -43,7 +43,7 @@ struct ActivityView: View {
             subtitle: "Your activity outside exercise feeds the calorie estimate.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canSubmit, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(ActivityLevel.allCases, id: \.self) { level in
@@ -55,13 +55,6 @@ struct ActivityView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

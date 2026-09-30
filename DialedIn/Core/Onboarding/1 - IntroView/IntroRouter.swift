@@ -7,9 +7,6 @@
 
 @MainActor
 protocol IntroRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
     func showAuthView()
 }
 

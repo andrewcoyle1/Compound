@@ -16,7 +16,7 @@ struct PreferredDietView: View {
             title: "What's Your Diet?",
             progress: presenter.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", isEnabled: presenter.selectedDiet != nil, identifier: "Continue") { presenter.navigateToCalorieFloor() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(PreferredDiet.allCases) { diet in
@@ -26,14 +26,6 @@ struct PreferredDietView: View {
                 }
             }
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

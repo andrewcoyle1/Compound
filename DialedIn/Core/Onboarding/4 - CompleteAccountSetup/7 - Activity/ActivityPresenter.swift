@@ -40,12 +40,6 @@ class ActivityPresenter {
         router.showExpenditureView(delegate: delegate)
     }
     
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case navigate
 

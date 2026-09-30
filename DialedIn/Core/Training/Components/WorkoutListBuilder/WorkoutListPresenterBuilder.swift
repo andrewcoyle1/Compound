@@ -84,12 +84,6 @@ class WorkoutListPresenterBuilder {
         interactor.trackEvent(event: Event.workoutSelected(workout: workout))
         onWorkoutPressed?(workout)
     }
-
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
 }
 
 extension WorkoutListPresenterBuilder {

@@ -17,11 +17,7 @@ class RecipeDetailPresenter {
     var isFavourited: Bool = false
 
     var showStartSessionSheet: Bool = false
-    
-    #if DEBUG || MOCK
-    var showDebugView: Bool = false
-    #endif
-    
+        
     var currentUser: UserModel? {
         interactor.currentUser
     }
@@ -85,12 +81,6 @@ class RecipeDetailPresenter {
         case .units: return "units"
         }
     }
-
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 
     func onStartRecipePressed(recipe: RecipeTemplateModel) {
         router.showStartRecipeView(delegate: RecipeStartDelegate(recipe: recipe))

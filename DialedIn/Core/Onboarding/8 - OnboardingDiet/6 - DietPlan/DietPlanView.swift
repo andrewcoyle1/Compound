@@ -52,7 +52,7 @@ struct DietPlanView: View {
             title: "Happy With This?",
             progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.navigate() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             if let plan = presenter.plan {
                 chartSection(plan)
@@ -123,13 +123,6 @@ struct DietPlanView: View {
         .font(.rowDetail)
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

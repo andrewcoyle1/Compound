@@ -184,12 +184,6 @@ class WeightRatePresenter {
         return String(localized: "Approximate end date: \(String(describing: formatter.string(from: endDate)))")
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case navigate
 

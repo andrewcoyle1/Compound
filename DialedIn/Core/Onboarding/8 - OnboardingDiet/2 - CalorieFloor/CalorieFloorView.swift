@@ -27,7 +27,7 @@ struct CalorieFloorView: View {
             title: "What's Your Floor?",
             progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", isEnabled: presenter.selectedFloor != nil, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(CalorieFloor.allCases) { floor in
@@ -37,14 +37,6 @@ struct CalorieFloorView: View {
                 }
             }
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

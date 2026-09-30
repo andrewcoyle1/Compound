@@ -268,12 +268,6 @@ class TrainingPresenter {
             try await self?.interactor.startWorkout(for: workout, in: nil)
         }
     }
-    
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
 }
 
 enum TrainingError: LocalizedError {

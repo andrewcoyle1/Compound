@@ -30,7 +30,8 @@ struct ProfileView: View {
         }
         .manageSubscriptionsSheet(isPresented: $presenter.isManageSubscriptionsPresented)
         .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
+        .toolbarRole(.browser)
         .scrollIndicators(.hidden)
         .toolbar {
             toolbarContent
@@ -76,8 +77,6 @@ struct ProfileView: View {
                 }
                 .contentShape(.rect)
             }
-        } header: {
-            Text("Profile")
         }
     }
 
@@ -177,7 +176,7 @@ struct ProfileView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
+        ToolbarItem(placement: .topBarTrailing) {
             Button(role: .close) {
                 presenter.onDismissPressed()
             }

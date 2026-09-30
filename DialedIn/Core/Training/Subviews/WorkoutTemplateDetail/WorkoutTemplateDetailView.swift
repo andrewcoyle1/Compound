@@ -80,16 +80,6 @@ struct WorkoutTemplateDetailView: View {
             }
         }
 
-        #if DEBUG || MOCK
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
     }
     
     private var targetMusclesSection: some View {

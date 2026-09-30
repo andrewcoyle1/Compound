@@ -82,12 +82,6 @@ class CreateRecipePresenter {
         ingredients.remove(atOffsets: offsets)
     }
 
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
-
     func onNextPressed() {
         guard canSave, let servingQuantity else { return }
         let name = recipeName.capitalized

@@ -71,12 +71,6 @@ class CalorieDistributionPresenter {
         }
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case trainingContextLoaded(daysPerWeek: Int?)
         case calorieDistributionPrefilled(distribution: CalorieDistribution, reason: String)

@@ -7,9 +7,6 @@
 
 @MainActor
 protocol PreferredDietRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
     func showCalorieFloorView(delegate: CalorieFloorDelegate)
     func showCalorieDistributionView(delegate: CalorieDistributionDelegate)
 }

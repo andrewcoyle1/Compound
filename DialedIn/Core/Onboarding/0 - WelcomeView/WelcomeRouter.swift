@@ -7,9 +7,6 @@
 
 @MainActor
 protocol WelcomeRouter: OnboardingStepRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
     func showPaywall(isOnboarding: Bool)
     func showIntroView()
     func showAuthView()

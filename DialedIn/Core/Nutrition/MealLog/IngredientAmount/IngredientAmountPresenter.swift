@@ -64,9 +64,4 @@ class IngredientAmountPresenter {
         router.dismissScreen()
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }

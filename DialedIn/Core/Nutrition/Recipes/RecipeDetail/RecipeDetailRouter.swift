@@ -7,9 +7,6 @@
 
 @MainActor
 protocol RecipeDetailRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
     func showStartRecipeView(delegate: RecipeStartDelegate)
 }
 

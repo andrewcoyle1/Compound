@@ -6,10 +6,6 @@
 //
 
 @MainActor
-protocol AddFoodRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
-}
+protocol AddFoodRouter: GlobalRouter { }
 
 extension CoreRouter: AddFoodRouter { }

@@ -68,10 +68,4 @@ class RecipeAmountPresenter {
         onConfirm(item)
         router.dismissScreen()
     }
-
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }

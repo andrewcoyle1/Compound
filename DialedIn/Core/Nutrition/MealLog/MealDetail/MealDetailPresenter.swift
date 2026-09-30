@@ -82,12 +82,6 @@ class MealDetailPresenter {
             }
         }
     }
-
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
 }
 
 extension MealDetailPresenter {

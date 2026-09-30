@@ -82,12 +82,6 @@ class CreateExercisePresenter {
         }
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear

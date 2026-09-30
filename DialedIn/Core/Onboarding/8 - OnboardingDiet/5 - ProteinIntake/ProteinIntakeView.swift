@@ -36,7 +36,7 @@ struct ProteinIntakeView: View {
             title: "How Much Protein?",
             progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", isEnabled: presenter.selectedProteinIntake != nil, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(ProteinIntake.allCases) { intake in
@@ -48,13 +48,6 @@ struct ProteinIntakeView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

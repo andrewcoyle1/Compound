@@ -167,16 +167,6 @@ struct FoodDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        #if DEBUG || MOCK
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
 
         ToolbarItem(placement: .topBarTrailing) {
             Button {

@@ -9,10 +9,6 @@ import SwiftUI
 
 @MainActor
 protocol NutritionRouter: GlobalRouter {
-    #if DEV || MOCK
-    func showDevSettingsView()
-    #endif
-
     func showAddMealView(delegate: AddMealDelegate)
     func showMealDetailView(delegate: MealDetailDelegate)
     func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate)

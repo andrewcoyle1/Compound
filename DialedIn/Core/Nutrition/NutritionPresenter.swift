@@ -180,20 +180,6 @@ final class NutritionPresenter {
         router.showProfileViewZoom(transitionId: transitionId, namespace: namespace)
     }
 
-    #if DEV || MOCK
-    func onDevSettingsPressed() {
-        router.showDevSettingsView()
-    }
-    #endif
-
-//    func saveMeal(_ meal: MealLogModel) async {
-//        do {
-//            try await interactor.addMeal(meal)
-//        } catch {
-//            router.showAlert(error: error)
-//        }
-//    }
-    
     func deleteMealItem(_ item: MealItemModel, from meal: MealLogModel) {
         var updatedMeal = meal
         updatedMeal.items.removeAll { $0.itemId == item.itemId }

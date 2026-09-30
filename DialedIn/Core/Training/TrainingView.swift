@@ -142,27 +142,6 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-
-        #if DEV || MOCK
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: "info")
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
-
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                isCalendarExpanded = true
-            } label: {
-                Image(systemName: Symbol.calendar)
-            }
-            .accessibilityLabel("Show calendar")
-        }
-
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
                 Button {
@@ -192,6 +171,15 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
             .accessibilityLabel("Add training")
         }
         
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                isCalendarExpanded = true
+            } label: {
+                Image(systemName: Symbol.calendar)
+            }
+            .accessibilityLabel("Show calendar")
+        }
+
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         
         ToolbarItem(placement: .topBarTrailing) {

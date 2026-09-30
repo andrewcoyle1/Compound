@@ -27,7 +27,7 @@ struct DateOfBirthView: View {
             subtitle: "Your age feeds the calorie estimate. You can change it later in Profile.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             AppleHealthFillSection(state: presenter.healthFill, action: presenter.onFillFromAppleHealthPressed)
             Section {
@@ -37,13 +37,6 @@ struct DateOfBirthView: View {
         }
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

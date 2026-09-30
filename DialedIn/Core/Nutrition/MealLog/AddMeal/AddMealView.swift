@@ -21,12 +21,14 @@ struct AddMealView: View {
         List {
             yourPlateSection
             nutritionSection
-            if presenter.showAllNutrients {
+
+            DisclosureGroup {
                 ForEach(Macros.allCases, id: \.self) { category in
                     breakdownSection(for: category)
                 }
+            } label: {
+                ListRow(title: String(localized: "Show all nutrients"), systemImage: Symbol.nutrition)
             }
-            ListRowToggle(title: String(localized: "Show all nutrients"), systemImage: Symbol.nutrition, isOn: $presenter.showAllNutrients)
         }
         .navigationTitle("Add Meal")
 //        .navigationSubtitle("\(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))")
@@ -264,12 +266,11 @@ struct AddMealView: View {
             }
         }
 
-//        ToolbarSpacer(.flexible, placement: .topBarLeading)
-        ToolbarItem(placement: .title) {
+        ToolbarItem(placement: .subtitle) {
             Button {
                 presenter.onEditMealTimePressed()
             } label: {
-                    Text(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))
+                Text(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))
                     .underline()
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

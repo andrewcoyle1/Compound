@@ -34,7 +34,7 @@ struct CalorieDistributionView: View {
             title: "Even or Varied?",
             progress: delegate.isFromSettings ? nil : OnboardingStep.customiseProgram.progress,
             primary: .init(title: "Continue", isEnabled: presenter.selectedCalorieDistribution != nil, identifier: "Continue") { presenter.navigateToProteinIntake(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             Section {
                 ForEach(CalorieDistribution.allCases) { distribution in
@@ -44,14 +44,6 @@ struct CalorieDistributionView: View {
                 }
             }
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

@@ -17,7 +17,7 @@ struct IntroView: View {
             subtitle: "Welcome to Compound.",
             progress: OnboardingStep.auth.progress,
             primary: .init(title: "Continue", identifier: "Continue") { presenter.navigateToAuth() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             feature(
                 "Training",
@@ -55,14 +55,6 @@ struct IntroView: View {
         } header: {
             Text(header)
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

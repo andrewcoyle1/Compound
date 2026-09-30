@@ -6,10 +6,6 @@
 //
 
 @MainActor
-protocol IngredientAmountRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
-}
+protocol IngredientAmountRouter: GlobalRouter { }
 
 extension CoreRouter: IngredientAmountRouter { }

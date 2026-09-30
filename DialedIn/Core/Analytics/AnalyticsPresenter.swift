@@ -109,15 +109,6 @@ class AnalyticsPresenter {
     // analytics, and navigated nowhere. Both now live on `TabBarPresenter`, which is the only place
     // in the app that can actually change what is on screen; see `DeepLink`.
 
-    func onDevSettingsPressed() {
-        #if MOCK || DEV
-        interactor.trackEvent(event: Event.onDevSettings)
-        router.showDevSettingsView()
-        #else
-        interactor.trackEvent(event: Event.onDevSettingsFail)
-        #endif
-    }
-
     func onSubscribePressed() {
         router.showPaywall()
     }

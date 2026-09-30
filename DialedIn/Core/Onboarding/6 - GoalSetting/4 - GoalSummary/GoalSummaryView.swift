@@ -47,7 +47,7 @@ struct GoalSummaryView: View {
             primary: presenter.isStandaloneMode
                 ? .init(title: "Complete", isEnabled: !presenter.isLoading, identifier: "Complete") { presenter.onCompletePressed(delegate: delegate) }
                 : .init(title: "Continue", isEnabled: !presenter.isLoading, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             goalOverviewSection
             weightDetailsSection
@@ -154,13 +154,6 @@ struct GoalSummaryView: View {
         .padding(.vertical, Spacing.s)
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

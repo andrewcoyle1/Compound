@@ -17,7 +17,7 @@ struct NamePhotoView: View {
             title: "What's Your Name?",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.saveAndContinue() },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             imageSection
             nameSection
@@ -100,14 +100,6 @@ struct NamePhotoView: View {
         } footer: {
             Text("Help us personalize your experience by providing your name. You can also add a profile photo if you'd like.")
         }
-    }
-
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
     }
 }
 

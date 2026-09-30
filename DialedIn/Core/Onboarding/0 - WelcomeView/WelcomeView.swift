@@ -36,18 +36,6 @@ struct WelcomeView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        #if DEV || MOCK
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    presenter.onDevSettingsPressed()
-                } label: {
-                    Image(systemName: Symbol.info)
-                }
-                .accessibilityLabel("Developer settings")
-            }
-        }
-        #endif
         .bottomCTA {
             CallToActionButton(isLoading: presenter.currentUser == nil) {
                 presenter.onContinuePressed()

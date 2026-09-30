@@ -97,12 +97,6 @@ class WeightPresenter {
         router.showExerciseFrequencyView(delegate: delegate)
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     enum Event: LoggableEvent {
         case navigate
         case fillFromHealth(found: Bool)

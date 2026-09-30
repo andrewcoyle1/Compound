@@ -6,10 +6,6 @@
 //
 
 @MainActor
-protocol LogWeightRouter: GlobalRouter {
-#if DEV || MOCK
-func showDevSettingsView()
-#endif
-}
+protocol LogWeightRouter: GlobalRouter { }
 
 extension CoreRouter: LogWeightRouter { }

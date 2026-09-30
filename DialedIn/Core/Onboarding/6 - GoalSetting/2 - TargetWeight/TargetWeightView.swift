@@ -26,7 +26,7 @@ struct TargetWeightView: View {
             title: "What's Your Target?",
             progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed(delegate: delegate) },
-            onDevSettingsPressed: onDevSettingsPressed
+            onDevSettingsPressed: nil
         ) {
             if presenter.didInitialize && presenter.weightUnit == .kilograms {
                 kilogramsSection
@@ -89,13 +89,6 @@ struct TargetWeightView: View {
         .removeListRowFormatting()
     }
 
-    private var onDevSettingsPressed: (() -> Void)? {
-        #if DEV || MOCK
-        presenter.onDevSettingsPressed
-        #else
-        nil
-        #endif
-    }
 }
 
 extension CoreBuilder {

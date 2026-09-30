@@ -112,16 +112,6 @@ struct ExerciseModelDetailView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        #if DEBUG || MOCK
-        ToolbarItem(placement: .topBarLeading) {
-            Button {
-                presenter.onDevSettingsPressed()
-            } label: {
-                Image(systemName: Symbol.info)
-            }
-            .accessibilityLabel("Developer settings")
-        }
-        #endif
         if presenter.canDelete(exercise: delegate.exerciseModel) {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

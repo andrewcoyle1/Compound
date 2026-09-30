@@ -41,18 +41,6 @@ struct OnboardingCompletedView: View {
         #if !DEBUG && !MOCK
         .navigationBarBackButtonHidden(true)
         #endif
-        #if DEV || MOCK
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    presenter.onDevSettingsPressed()
-                } label: {
-                    Image(systemName: Symbol.info)
-                }
-                .accessibilityLabel("Developer settings")
-            }
-        }
-        #endif
     }
 }
 

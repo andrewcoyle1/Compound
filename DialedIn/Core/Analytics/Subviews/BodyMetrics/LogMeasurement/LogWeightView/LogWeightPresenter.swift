@@ -84,12 +84,6 @@ class LogWeightPresenter {
         isLoading = false
     }
 
-#if DEV || MOCK
-func onDevSettingsPressed() {
-    router.showDevSettingsView()
-}
-#endif
-
     func onDismissPressed() {
         router.dismissScreen()
     }

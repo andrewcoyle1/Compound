@@ -16,30 +16,56 @@ struct MealHourHeaderView: View {
     
     @State var presenter: MealHourHeaderPresenter
     let delegate: MealHourHeaderDelegate
-    
+
+    /// The time and the add button share one height, so the pair reads as a matched set. The time
+    /// was a chip about 26 pt tall and the add a system bordered circle about 34 pt; nothing tied
+    /// them together.
+    @ScaledMetric(relativeTo: .caption) private var controlHeight: CGFloat = 32
+
+    /// The widest time of day, so every hour's capsule is the same width in both 24- and 12-hour
+    /// locales ("22:00", "10:00 PM"). Proportional digits made "11:00" narrower than "08:00".
+    private static let widestHour = Calendar.current.date(bySettingHour: 22, minute: 0, second: 0, of: .now) ?? .now
+
     var body: some View {
         HStack {
-            Text(delegate.hour, style: .time)
-                .lineLimit(1)
-                .chipStyle(tint: .secondary, filled: false)
-                .onLongPressGesture {
-                    if !presenter.showAddFoodsButton {
-                        presenter.onAddMealPressed(selectedTime: delegate.hour)
-                    }
-                }
-                .accessibilityAction(named: Text("Add meal")) {
+            ZStack {
+                Text(Self.widestHour, style: .time)
+                    .hidden()
+                Text(delegate.hour, style: .time)
+            }
+            .font(.label)
+            .fontWeight(.semibold)
+            .monospacedDigit()
+            .lineLimit(1)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Spacing.s)
+            .frame(minHeight: controlHeight)
+            .background(Color.tintedSurface(.secondary), in: .capsule)
+            .onLongPressGesture {
+                if !presenter.showAddFoodsButton {
                     presenter.onAddMealPressed(selectedTime: delegate.hour)
                 }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(delegate.hour, style: .time))
+            .accessibilityAction(named: Text("Add meal")) {
+                presenter.onAddMealPressed(selectedTime: delegate.hour)
+            }
 
             if presenter.showAddFoodsButton {
                 Button {
                     presenter.onAddMealPressed(selectedTime: delegate.hour)
                 } label: {
                     Image(systemName: Symbol.add)
+                        .font(.label)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.tint)
+                        .frame(width: controlHeight, height: controlHeight)
+                        .background(Color.tintedSurface(.secondary), in: .circle)
+                        .tapTarget()
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel("Add meal")
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.circle)
             }
 
             Spacer()

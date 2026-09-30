@@ -97,7 +97,7 @@ struct AddMealView: View {
                     Button("Add") {
                         presenter.onShowPickerPressed()
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                 }
             } else {
                 ForEach(presenter.mealLog.items) { mealItem in
@@ -127,7 +127,7 @@ struct AddMealView: View {
                         Image(systemName: Symbol.edit)
                     }
                     .accessibilityLabel("Edit \(mealItem.displayName)")
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .buttonBorderShape(.circle)
                 }
             ))

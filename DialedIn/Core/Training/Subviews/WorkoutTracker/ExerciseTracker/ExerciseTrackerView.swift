@@ -56,7 +56,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     @ViewBuilder
     func exerciseHeader(_ exercise: WorkoutExerciseModel) -> some View {
         HStack(alignment: .center) {
-            ImageLoaderView(urlString: exercise.imageName ?? Constants.randomImage, resizingMode: .fit)
+            ExerciseImageView(name: exercise.name, imageName: exercise.imageName)
                 .frame(width: thumbnailSide, height: thumbnailSide)
                 .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
                 .accessibilityHidden(true)

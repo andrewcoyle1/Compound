@@ -38,7 +38,7 @@ struct MealHourHeaderView: View {
                     Image(systemName: Symbol.add)
                 }
                 .accessibilityLabel("Add meal")
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .buttonBorderShape(.circle)
             }
 

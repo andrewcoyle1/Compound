@@ -23,6 +23,8 @@ struct CreateChallengeView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+            } header: {
+                Text("Challenge Setup")
             } footer: {
                 if let message = presenter.validationMessage {
                     Text(message)

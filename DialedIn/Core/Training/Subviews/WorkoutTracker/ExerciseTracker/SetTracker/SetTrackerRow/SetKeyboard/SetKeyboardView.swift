@@ -69,7 +69,7 @@ struct SetKeyboardView: View {
                     Text("Plates")
                         .font(.subheadline.bold())
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .accessibilityHint("Shows the plates for each side of the bar")
             }
             keyButton(systemImage: Symbol.add, label: "Increase weight") { presenter.stepUp() }
@@ -102,7 +102,7 @@ struct SetKeyboardView: View {
                         Button("\(WeightStepper.format(value)) \(unit)") {
                             presenter.applyWeight(displayValue: value)
                         }
-                        .buttonStyle(.glass)
+                        .buttonStyle(.bordered)
                         .accessibilityLabel("Use \(WeightStepper.format(value)) \(unit)")
                     }
                 }

@@ -74,7 +74,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
                     Text("Choose Program")
                         .foregroundStyle(.onAccent)
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
             }
         }
     }

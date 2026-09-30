@@ -113,7 +113,7 @@ struct CreateRecipeView: View {
                         .iconSize(.medium)
                 }
                 .accessibilityLabel("Add ingredient")
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .buttonBorderShape(.circle)
             }
         }

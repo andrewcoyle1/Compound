@@ -66,7 +66,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
             .toolbar {
                 toolbarContent
             }
-            .safeAreaInset(edge: .top) {
+            .safeAreaBar(edge: .top) {
                 topSafeAreaSection
             }
             .bottomCTA {
@@ -113,7 +113,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                 } label: {
                     Label("Add Day", systemImage: Symbol.add)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
             }
             .padding(.horizontal)
         }
@@ -130,7 +130,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                         .foregroundStyle(.onAccent)
                         .fontWeight(.bold)
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
                 .accessibilityAddTraits(.isSelected)
             } else {
                 Button {
@@ -139,7 +139,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     Text(dayPlan.name)
                         .fontWeight(.regular)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
             }
         }
     }
@@ -149,6 +149,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
             daySelectionSection
             dayOptionBar
         }
+        .padding(.vertical, 8)
     }
     
     @ViewBuilder
@@ -183,7 +184,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     } label: {
                         Label("Remove", systemImage: Symbol.delete)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .disabled(!presenter.canRemoveWorkoutTemplateModel)
                         .padding(.leading)
                     
@@ -192,7 +193,7 @@ struct ProgramDesignView<DefineWorkout: View>: View {
                     } label: {
                         Label("Rename", systemImage: Symbol.edit)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .padding(.trailing)
                 }
             }

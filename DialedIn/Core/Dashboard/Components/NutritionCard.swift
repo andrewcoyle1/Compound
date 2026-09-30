@@ -60,7 +60,7 @@ struct NutritionCard: View {
                 Text("Log a Meal")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
         }
     }
     

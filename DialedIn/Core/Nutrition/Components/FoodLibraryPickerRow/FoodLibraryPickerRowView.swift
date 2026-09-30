@@ -95,7 +95,7 @@ struct FoodLibraryPickerRowView<T: FoodItem>: View {
                     ? "\(delegate.addedCount) \(delegate.item.name) on plate"
                     : "Quick add \(delegate.item.name)"
             )
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .buttonBorderShape(delegate.addedCount > 0 ? .capsule : .circle)
         }
     }

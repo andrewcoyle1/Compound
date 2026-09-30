@@ -36,6 +36,7 @@ struct SharedItemView: View {
                             title: item.exercise.name,
                             imageName: item.exercise.imageURL,
                             resizingMode: .fit,
+                            initialsWhenMissing: true,
                             accessory: .value(String(localized: "\(item.setTargets.count) sets"))
                         )
                     }

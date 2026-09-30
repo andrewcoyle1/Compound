@@ -27,7 +27,7 @@ struct FoodAnalysisResultRow: View {
                     .labelStyle(.iconOnly)
                     .foregroundStyle(.onAccent)
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.borderedProminent)
             .buttonBorderShape(.circle)
             .accessibilityLabel(Text("Add \(item.name)"))
         }

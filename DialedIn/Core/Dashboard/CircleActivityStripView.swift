@@ -158,14 +158,14 @@ struct CircleActivityStripView: View {
 }
 
 private extension View {
-    /// The Nudge and Set goal buttons under a face: secondary, so glass, and small enough to sit
-    /// under a 52 pt avatar. The label's `tapTarget()` carries the 44 pt hit area; without the
-    /// mini size the glass grew into a 57 pt blob as wide as the face.
+    /// The Nudge and Set goal buttons under a face: secondary content controls, so bordered (glass
+    /// is for the navigation layer, not content), and small enough to sit under a 52 pt avatar.
+    /// The label's `tapTarget()` carries the 44 pt hit area, so the control can stay mini.
     func circlePillStyle() -> some View {
         font(.label)
             .fontWeight(.semibold)
             .lineLimit(1)
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .controlSize(.mini)
     }
 }

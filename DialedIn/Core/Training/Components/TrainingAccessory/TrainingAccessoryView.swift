@@ -82,9 +82,9 @@ struct TrainingAccessoryView: View {
             Circle()
                 .fill(.canvas)
 
-            ImageLoaderView(
-                urlString: exercise.imageName ?? "SplashScreen",
-                resizingMode: .fit,
+            ExerciseImageView(
+                name: exercise.name,
+                imageName: exercise.imageName,
                 clipShape: AnyShape(Circle())
             )
             .grayscale(isCompleted ? 1 : 0)

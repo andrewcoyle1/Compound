@@ -65,7 +65,7 @@ struct FoodPhotoScannerView: View {
                     Button("Open Settings") {
                         presenter.onOpenSettingsPressed()
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                 }
             case .unsupported:
                 ContentUnavailableView {
@@ -174,7 +174,7 @@ struct FoodPhotoScannerView: View {
             capturedImage = nil
             presenter.onRetakePressed()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
     }
 }
 

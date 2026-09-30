@@ -70,7 +70,7 @@ struct TemplateExerciseRow: View {
         // The image goes above the details at accessibility sizes; beside them it left the name a
         // few letters before the ellipsis.
         AdaptiveStack {
-            ImageLoaderView(urlString: exercise.exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
+            ExerciseImageView(name: exercise.exercise.name, imageName: exercise.exercise.imageURL)
                 .frame(width: imageSide, height: imageSide)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: Spacing.xs) {

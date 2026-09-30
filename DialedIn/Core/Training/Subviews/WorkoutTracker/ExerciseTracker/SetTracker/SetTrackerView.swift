@@ -133,7 +133,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                     }
                 }
                 .font(.caption)
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .tint(.secondary)
                 .buttonBorderShape(.capsule)
             }
@@ -211,7 +211,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                     .tapTarget()
             }
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
         // Small, so "Auto" and its icon fit the Prev column; the hit area is the label's.
         .controlSize(.small)
         .font(.caption2)
@@ -230,7 +230,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             }
             .accessibilityLabel("Add set")
             .tint(.secondary)
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .buttonBorderShape(.circle)
             .frame(width: SetTrackerRowView.setColumnWidth, alignment: .center)
             Spacer()
@@ -260,7 +260,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .padding(.horizontal, Spacing.s)
                 .tapTarget()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
         .accessibilityLabel("Weight unit, \(unitPreference.weightUnit.displayName)")
     }
 
@@ -284,7 +284,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .padding(.horizontal, Spacing.s)
                 .tapTarget()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
         .accessibilityLabel("Distance unit, \(unitPreference.distanceUnit.displayName)")
     }
 }

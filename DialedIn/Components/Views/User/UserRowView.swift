@@ -93,12 +93,12 @@ struct FollowButton: View {
         Group {
             if isFilled {
                 Button(title, action: action)
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                     // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
                     .foregroundStyle(.onAccent)
             } else {
                 Button(title, action: action)
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
             }
         }
         .font(.rowDetail)

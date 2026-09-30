@@ -99,7 +99,7 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
                 Text("Create Program")
                     .foregroundStyle(.onAccent)
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.borderedProminent)
         }
     }
 

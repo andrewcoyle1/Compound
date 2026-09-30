@@ -106,7 +106,7 @@ struct BarcodeScannerView: View {
             Button("Open Settings") {
                 presenter.onOpenSettingsPressed()
             }
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.borderedProminent)
             enterManuallyButton
         }
     }
@@ -125,7 +125,7 @@ struct BarcodeScannerView: View {
         Button("Enter Manually") {
             presenter.onManualEntryPressed()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
     }
 
     // MARK: - Manual entry
@@ -189,7 +189,7 @@ struct BarcodeScannerView: View {
             } label: {
                 Image(systemName: "keyboard")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.bordered)
             .buttonBorderShape(.circle)
             .accessibilityLabel("Enter manually")
 
@@ -199,7 +199,7 @@ struct BarcodeScannerView: View {
                 } label: {
                     Image(systemName: presenter.isTorchOn ? "flashlight.on.fill" : "flashlight.off.fill")
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .buttonBorderShape(.circle)
                 .accessibilityLabel(presenter.isTorchOn ? String(localized: "Turn off flashlight") : String(localized: "Turn on flashlight"))
             }
@@ -249,7 +249,7 @@ struct BarcodeScannerView: View {
                 .glassEffect()
 
                 Button("Re-scan", action: presenter.onRescanPressed)
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
             } else if presenter.scannedCode != nil {
                 // Over the live camera, so it sits on the same glass capsule as the other hints.
                 Text("Label text captured")
@@ -261,7 +261,7 @@ struct BarcodeScannerView: View {
 
                 HStack(spacing: Spacing.m) {
                     Button("Re-scan", action: presenter.onRescanPressed)
-                        .buttonStyle(.glass)
+                        .buttonStyle(.bordered)
 
                     Button {
                         Task { await presenter.onParseLabelPressed() }
@@ -269,7 +269,7 @@ struct BarcodeScannerView: View {
                         Text("Parse Label")
                             .foregroundStyle(.onAccent)
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                 }
             } else {
                 Text("Point camera at a nutrition label")
@@ -352,7 +352,7 @@ struct BarcodeScannerView: View {
         if presenter.scanningMode == .barcode {
             HStack(spacing: Spacing.m) {
                 Button("Re-scan", action: presenter.onRescanPressed)
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity)
 
                 if let ingredient = presenter.parsedIngredient {
@@ -362,7 +362,7 @@ struct BarcodeScannerView: View {
                         Text("Use This Food")
                             .foregroundStyle(.onAccent)
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -371,7 +371,7 @@ struct BarcodeScannerView: View {
                 Button("Dismiss") {
                     presenter.onDismissLabelResultPressed()
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .frame(maxWidth: .infinity)
 
                 if presenter.parsedIngredient != nil {
@@ -389,7 +389,7 @@ struct BarcodeScannerView: View {
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(.onAccent)
                     }
-                    .buttonStyle(.glassProminent)
+                    .buttonStyle(.borderedProminent)
                     .disabled(presenter.isSavingIngredient)
                 }
             }

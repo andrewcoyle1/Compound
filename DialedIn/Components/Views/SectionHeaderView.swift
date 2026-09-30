@@ -46,10 +46,8 @@ struct SectionHeaderView: View {
                     // A 44 pt frame rather than `tapTarget()`'s overhang: as a list section header
                     // this sits in its own cell, which would clip a hit area reaching past it.
                     Text(actionTitle)
-                        .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-                        .contentShape(.rect)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
                 .font(.label)
                 .foregroundStyle(.tint)
                 .accessibilityLabel("\(actionTitle), \(title)")

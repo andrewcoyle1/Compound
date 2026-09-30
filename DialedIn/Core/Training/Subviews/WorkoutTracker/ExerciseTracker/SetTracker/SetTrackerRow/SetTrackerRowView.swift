@@ -122,7 +122,7 @@ struct SetTrackerRowView: View {
                 .font(.caption)
                 .tapTarget()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
         .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
         .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))

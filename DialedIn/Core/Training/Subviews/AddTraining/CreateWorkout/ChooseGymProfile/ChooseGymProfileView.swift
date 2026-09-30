@@ -24,7 +24,7 @@ struct ChooseGymProfileView: View {
                     Button("Create Gym Profile") {
                         presenter.onCreateGymProfilePressed()
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                 }
                 .removeListRowFormatting()
             }

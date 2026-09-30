@@ -299,7 +299,7 @@ struct DevSettingsView: View {
                             .font(.label)
                     }
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .disabled(presenter.testSessionId.isEmpty || presenter.isFetchingSession)
                 
                 if let error = presenter.fetchError {

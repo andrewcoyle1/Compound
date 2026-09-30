@@ -14,7 +14,7 @@ struct SwapExercisePickerView: View {
             Button {
                 presenter.onExerciseSelected(exercise)
             } label: {
-                ListRow(title: exercise.name, imageName: exercise.imageURL ?? Constants.randomImage, resizingMode: .fit)
+                ListRow(title: exercise.name, imageName: exercise.imageURL, resizingMode: .fit, initialsWhenMissing: true)
                     .contentShape(.rect)
             }
         }

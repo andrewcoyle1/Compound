@@ -36,9 +36,9 @@ struct TodaysWorkoutCardLabel: View {
             Circle()
                 .fill(.canvas)
 
-            ImageLoaderView(
-                urlString: exercise.imageURL ?? "SplashScreen",
-                resizingMode: .fit,
+            ExerciseImageView(
+                name: exercise.name,
+                imageName: exercise.imageURL,
                 clipShape: AnyShape(Circle())
             )
         }

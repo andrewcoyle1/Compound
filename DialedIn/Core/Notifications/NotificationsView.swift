@@ -113,7 +113,7 @@ struct NotificationsView: View {
         } label: {
             Text("Accept").tapTarget()
         }
-        .buttonStyle(.glassProminent)
+        .buttonStyle(.borderedProminent)
         // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
         .foregroundStyle(.onAccent)
 
@@ -122,7 +122,7 @@ struct NotificationsView: View {
         } label: {
             Text("Decline").tapTarget()
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.bordered)
     }
 
     private func activityNotificationTitle(_ notification: ActivityNotificationModel) -> String {

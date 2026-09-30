@@ -162,7 +162,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                     Image(systemName: Symbol.add)
                 }
                 .accessibilityLabel("Add exercise")
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .buttonBorderShape(.circle)
             }
         }

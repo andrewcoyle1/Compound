@@ -290,7 +290,7 @@ struct ExerciseListBuilderView: View {
                 } label: {
                     Image(systemName: Symbol.add)
                 }
-                .buttonStyle(.glass)
+                .buttonStyle(.bordered)
                 .buttonBorderShape(.circle)
                 .accessibilityLabel("Add exercise")
             }
@@ -337,6 +337,7 @@ struct ExerciseListBuilderView: View {
                 subtitle: exercise.description,
                 imageName: exercise.imageURL,
                 resizingMode: .fit,
+                initialsWhenMissing: true,
                 accessory: accessory(for: exercise)
             )
             .contentShape(.rect)

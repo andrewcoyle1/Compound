@@ -37,16 +37,6 @@ struct DefineWorkoutView: View {
         .navigationTitle(delegate.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Adding exercises is what this screen is for, so its add lives in the toolbar.
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    presenter.onAddExercisePressed()
-                } label: {
-                    Image(systemName: Symbol.add)
-                }
-                .accessibilityLabel("Add exercise")
-                .accessibilityIdentifier("DefineWorkout.addExercise")
-            }
             // Reordering, and a visible way to delete, for a list that is otherwise swipe-only.
             if !presenter.exercises.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -97,7 +87,19 @@ struct DefineWorkoutView: View {
             .onMove { presenter.moveExercises(from: $0, to: $1) }
             .onDelete { presenter.deleteExercises(at: $0) }
         } header: {
-            Text("^[\(presenter.exercises.count) Exercise](inflect: true)")
+            HStack(alignment: .firstTextBaseline) {
+                Text("^[\(presenter.exercises.count) Exercise](inflect: true)")
+                Spacer()
+                Button {
+                    presenter.onAddExercisePressed()
+                } label: {
+                    Image(systemName: Symbol.add)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+                .accessibilityLabel("Add exercise")
+                .accessibilityIdentifier("DefineWorkout.addExercise")
+            }
         }
     }
 }

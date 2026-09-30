@@ -141,7 +141,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     ListRow(
                         title: exercise.name,
                         subtitle: presenter.exerciseSummary(exercise),
-                        imageName: exercise.imageName ?? Constants.randomImage
+                        imageName: exercise.imageName,
+                        initialsWhenMissing: true
                     )
                 }
             }

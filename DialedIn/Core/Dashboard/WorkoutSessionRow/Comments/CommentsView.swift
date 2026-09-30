@@ -191,7 +191,7 @@ struct CommentsView: View {
                             .padding(.horizontal, Spacing.s)
                             .padding(.vertical, Spacing.xs)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
                     .accessibilityLabel("Mention \(candidate.fullName)")
                 }
             }

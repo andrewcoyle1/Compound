@@ -88,9 +88,9 @@ struct NutritionOverviewView: View {
                     Text(primary.0)
                         .foregroundStyle(.onAccent)
                 }
-                .buttonStyle(.glassProminent)
+                .buttonStyle(.borderedProminent)
                 Button(secondary.0, action: secondary.1)
-                    .buttonStyle(.glass)
+                    .buttonStyle(.bordered)
             }
         }
         .padding(.vertical, Spacing.xs)

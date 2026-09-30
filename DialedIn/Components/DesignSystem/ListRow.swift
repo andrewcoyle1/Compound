@@ -31,8 +31,9 @@ struct ListRow: View {
     private enum Leading {
         case none
         case symbol(String)
-        /// A remote URL or bundled asset name; `nil` draws a placeholder so rows stay aligned.
-        case image(String?, ContentMode)
+        /// A remote URL or bundled asset name; `nil` draws a placeholder so rows stay aligned, or
+        /// the title's initials when the `Bool` is set.
+        case image(String?, ContentMode, Bool)
     }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -72,17 +73,19 @@ struct ListRow: View {
         self.accessory = accessory
     }
 
-    /// A row led by a thumbnail: a remote URL or a bundled asset name. `nil` shows a placeholder.
+    /// A row led by a thumbnail: a remote URL or a bundled asset name. `nil` shows a placeholder,
+    /// or the title's initials when `initialsWhenMissing` is set (exercises).
     init(
         title: String,
         subtitle: String? = nil,
         imageName: String?,
         resizingMode: ContentMode = .fill,
+        initialsWhenMissing: Bool = false,
         accessory: Accessory = .none
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.leading = .image(imageName, resizingMode)
+        self.leading = .image(imageName, resizingMode, initialsWhenMissing)
         self.tint = AnyShapeStyle(.tint)
         self.accessory = accessory
     }
@@ -115,9 +118,11 @@ struct ListRow: View {
                 .foregroundStyle(tint)
                 .frame(width: iconSide, height: iconSide)
                 .accessibilityHidden(true)
-        case .image(let name, let mode):
+        case .image(let name, let mode, let initialsWhenMissing):
             Group {
-                if let name {
+                if initialsWhenMissing {
+                    ExerciseImageView(name: title, imageName: name, resizingMode: mode)
+                } else if let name {
                     ImageLoaderView(urlString: name, resizingMode: mode)
                 } else {
                     Rectangle().fill(.quaternary)
@@ -330,7 +335,7 @@ private struct ListRowPreview: View {
                 ListRow(title: "Chevron", systemImage: Symbol.settings, accessory: .chevron)
                 ListRow(title: "Checkmark", systemImage: Symbol.exercise, accessory: .checkmark(true))
                 ListRow(title: "Value", systemImage: Symbol.scaleWeight, tint: .Metric.scaleWeight, accessory: .value("82.5 kg"))
-                ListRow(title: "Custom", subtitle: "Trailing view of the caller's choosing", systemImage: Symbol.rest, accessory: .custom(AnyView(Button("Edit") { }.buttonStyle(.glass))))
+                ListRow(title: "Custom", subtitle: "Trailing view of the caller's choosing", systemImage: Symbol.rest, accessory: .custom(AnyView(Button("Edit") { }.buttonStyle(.bordered))))
                 ListRow(title: "Thumbnail", subtitle: "Bench Press, Squat, Deadlift", imageName: Constants.randomImage, accessory: .chevron)
                 ListRow(title: "No image", subtitle: "A placeholder keeps rows aligned", imageName: nil)
             }

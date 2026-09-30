@@ -15,6 +15,7 @@ struct MealAccessoryView: View {
 
     @State var presenter: MealAccessoryPresenter
     @Environment(\.tabViewBottomAccessoryPlacement) private var placement
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let delegate: MealAccessoryDelegate
 
@@ -24,17 +25,21 @@ struct MealAccessoryView: View {
         } label: {
             workoutDescriptionSection
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.horizontal)
                 .tappableBackground()
         }
         .buttonStyle(.plain)
+        // The accessory is a fixed-height capsule: past AX1 even one line no longer fits in it.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
     }
 
+    /// Inline beside the minimised tab bar, or text too large for two lines in the fixed-height
+    /// capsule (two lines overflowed it from XXL up).
     private var isInline: Bool {
-        placement == .inline
+        placement == .inline || dynamicTypeSize > .xLarge
     }
 
     /// "Continue draft meal, 2 items" — one label for the whole button.

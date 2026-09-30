@@ -15,6 +15,7 @@ struct TrainingAccessoryView: View {
 
     @State var presenter: TrainingAccessoryPresenter
     @Environment(\.tabViewBottomAccessoryPlacement) private var placement
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let delegate: TrainingAccessoryDelegate
 
@@ -24,17 +25,21 @@ struct TrainingAccessoryView: View {
         } label: {
             workoutDescriptionSection
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.horizontal)
                 .tappableBackground()
         }
         .buttonStyle(.plain)
+        // The accessory is a fixed-height capsule: past AX1 even one line no longer fits in it.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(.isButton)
     }
 
+    /// Inline beside the minimised tab bar, or text too large for two lines in the fixed-height
+    /// capsule (two lines overflowed it from XXL up).
     private var isInline: Bool {
-        placement == .inline
+        placement == .inline || dynamicTypeSize > .xLarge
     }
 
     /// "Resume workout, Push Day, 12 minutes" — one label for the whole button now that the
@@ -116,7 +121,7 @@ struct TrainingAccessoryView: View {
             if let restEndTime = presenter.restEndTime,
                now < restEndTime {
                     // Rest timer
-                    HStack(alignment: .bottom, spacing: Spacing.xs) {
+                    HStack(alignment: .bottom, spacing: 0) {
                         Text("Rest: ")
                         Text(timerInterval: now...restEndTime)
                             .monospacedDigit()
@@ -125,7 +130,7 @@ struct TrainingAccessoryView: View {
             
             } else {
                 // Elapsed time
-                HStack(spacing: Spacing.xs) {
+                HStack(spacing: 0) {
                     Text("Elapsed: ")
                     Text(active.dateCreated, style: .timer)
                         .monospacedDigit()

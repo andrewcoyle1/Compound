@@ -212,7 +212,7 @@ struct ActiveMesocyclePresenterTests {
 
         _ = screen.presenter.microcycleItems(mesocycle: mesocycle(days: [day("Upper"), day("Lower")], cycles: 4))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 1/4")
     }
 
     /// Part of a cycle is not a cycle.
@@ -226,7 +226,7 @@ struct ActiveMesocyclePresenterTests {
 
         _ = screen.presenter.microcycleItems(mesocycle: mesocycle(days: days, cycles: 4))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 1/4")
     }
 
     @Test("Test Finishing Every Day Advances The Cycle And Clears The Ticks")
@@ -239,7 +239,7 @@ struct ActiveMesocyclePresenterTests {
 
         let items = screen.presenter.microcycleItems(mesocycle: mesocycle(days: days, cycles: 4))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 4")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 2/4")
         #expect(items.allSatisfy { !$0.isCompleted })
     }
 
@@ -254,7 +254,7 @@ struct ActiveMesocyclePresenterTests {
 
         let items = screen.presenter.microcycleItems(mesocycle: mesocycle(days: days, cycles: 4))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 1/4")
         #expect(try #require(items.first).completedSessionId == "s1")
     }
 
@@ -267,7 +267,7 @@ struct ActiveMesocyclePresenterTests {
 
         _ = screen.presenter.microcycleItems(mesocycle: mesocycle(days: days, cycles: 4))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 4")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 2/4")
     }
 
     /// A finished block stays on its last microcycle, every day ticked, until the plan moves on.
@@ -281,7 +281,7 @@ struct ActiveMesocyclePresenterTests {
 
         let items = screen.presenter.microcycleItems(mesocycle: followed)
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 2")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 2/2")
         #expect(items.allSatisfy { $0.isCompleted })
     }
 
@@ -317,12 +317,12 @@ struct ActiveMesocyclePresenterTests {
 
         screen.presenter.onCycleSelected(0)
         let past = screen.presenter.microcycleItems(mesocycle: followed)
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 3")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 1/3")
         #expect(past.allSatisfy { $0.timing == .past && $0.isCompleted })
 
         screen.presenter.onCycleSelected(2)
         let future = screen.presenter.microcycleItems(mesocycle: followed)
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 3 of 3")
+        #expect(screen.presenter.microcycleHeaderText == "Micro 3/3")
         #expect(future.allSatisfy { $0.timing == .future && !$0.canSkip })
 
         screen.presenter.onCycleSelected(1)

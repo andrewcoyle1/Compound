@@ -16,12 +16,7 @@ struct BodyMetricCardView: View {
         ) {
             SparklineChart(
                 data: card.sparklineData,
-                configuration: SparklineConfiguration(
-                    lineColor: themeColor,
-                    lineWidth: 2,
-                    fillColor: themeColor,
-                    height: AnalyticsCardChartConfiguration.compact.height
-                )
+                color: themeColor
             )
         }
         .analyticsCardButton(action: onPress)
@@ -46,12 +41,7 @@ struct BodyRatioCardView: View {
         ) {
             SparklineChart(
                 data: card.sparklineData,
-                configuration: SparklineConfiguration(
-                    lineColor: themeColor,
-                    lineWidth: 2,
-                    fillColor: themeColor,
-                    height: AnalyticsCardChartConfiguration.compact.height
-                )
+                color: themeColor
             )
         }
         .analyticsCardButton(action: onPress)

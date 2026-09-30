@@ -68,12 +68,7 @@ struct SparklineAnalyticsCard: View {
         ) {
             SparklineChart(
                 data: data,
-                configuration: SparklineConfiguration(
-                    lineColor: themeColor,
-                    lineWidth: 2,
-                    fillColor: themeColor,
-                    height: AnalyticsCardChartConfiguration.compact.height
-                )
+                color: themeColor
             )
         }
         .analyticsCardButton(action: action)

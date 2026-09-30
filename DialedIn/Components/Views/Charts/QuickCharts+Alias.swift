@@ -27,3 +27,5 @@ typealias ContributionLegend = QuickCharts.ContributionLegend
 typealias ContributionStyle = QuickCharts.ContributionStyle
 typealias ContributionLayout = QuickCharts.ContributionLayout
 typealias ContributionCell = QuickCharts.ContributionCell
+typealias ChartThumbnail = QuickCharts.ChartThumbnail
+typealias ProgressThumbnail = QuickCharts.ProgressThumbnail

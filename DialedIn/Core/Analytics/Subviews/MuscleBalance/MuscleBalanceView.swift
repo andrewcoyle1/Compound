@@ -80,13 +80,8 @@ struct MuscleBalanceView: View {
                 .font(.sectionTitle)
             SparklineChart(
                 data: presenter.sparklineData(for: row),
-                configuration: SparklineConfiguration(
-                    lineColor: row.status.color,
-                    lineWidth: 2,
-                    fillColor: row.status.color,
-                    height: ChartHeight.compact / 2,
-                    showsPoints: true
-                )
+                color: row.status.color,
+                height: ChartHeight.compact / 2
             )
             Text("Target \(rangeText(row.range)) sets a week")
                 .font(.label)

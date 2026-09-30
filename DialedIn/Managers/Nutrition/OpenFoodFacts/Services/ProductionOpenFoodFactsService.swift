@@ -13,10 +13,13 @@ final class ProductionOpenFoodFactsService: OpenFoodFactsService {
     private let functions = Functions.functions(region: "us-central1")
 
     func lookupBarcode(_ code: String) async throws -> FoodModel {
-        guard let url = URL(string: "https://world.openfoodfacts.org/api/v0/product/\(code).json") else {
+        guard let url = URL(string: "https://world.openfoodfacts.org/api/v2/product/\(code).json") else {
             throw OFFError.invalidResponse
         }
-        let (data, _) = try await session.data(from: url)
+        // OFF asks every app to name itself; anonymous traffic is the first to be rate-limited.
+        var request = URLRequest(url: url)
+        request.setValue("DialedIn/1.0 (iOS; contact@dialedinapp.com)", forHTTPHeaderField: "User-Agent")
+        let (data, _) = try await session.data(for: request)
         let response = try JSONDecoder().decode(OFFBarcodeResponse.self, from: data)
         guard response.status == 1, let product = response.product, let food = product.toFoodModel(barcode: code) else {
             throw OFFError.productNotFound
@@ -43,13 +46,15 @@ final class ProductionOpenFoodFactsService: OpenFoodFactsService {
         let servingSize = product["servingSize"] as? String
         let parsed = servingSize.map { parseServingSize($0) }
 
+        let code = product["code"] as? String
         return FoodModel(
-            ingredientId: UUID().uuidString,
+            ingredientId: code.map { FoodModel.openFoodFactsId(barcode: $0) } ?? UUID().uuidString,
             authorId: nil,
             name: name,
             brandName: product["brandName"] as? String,
             measurementMethod: .weight,
             nutrients: nutrientMap(from: product),
+            barcode: code,
             servingWeight: product["servingWeight"] as? Double,
             portionSize: parsed?.portionSize,
             portionName: parsed?.portionName,

@@ -7,6 +7,15 @@
 
 import Foundation
 
+extension FoodModel {
+
+    /// An Open Food Facts product's id, from its barcode. Search and barcode lookups used to give
+    /// each result a fresh UUID, so logging the same product twice saved it to the library twice.
+    static func openFoodFactsId(barcode: String) -> String {
+        "off-\(barcode)"
+    }
+}
+
 struct OFFProductDTO: Decodable {
     let productName: String?
     let brands: String?
@@ -32,7 +41,7 @@ struct OFFProductDTO: Decodable {
         let parsed = servingSize.map { parseServingSize($0) }
 
         return FoodModel(
-            ingredientId: UUID().uuidString,
+            ingredientId: FoodModel.openFoodFactsId(barcode: barcode),
             authorId: nil,
             name: name,
             brandName: brands,
@@ -48,49 +57,75 @@ struct OFFProductDTO: Decodable {
         )
     }
 
-    /// Maps the OFF per-100g nutriment fields onto `NutrientMap`. Extracted from
-    /// `toFoodModel` so that function stays inside the body-length limit.
-    private func nutrientMap() -> NutrientMap {
-        let nutrient = nutriments
+    /// Each nutrient, the OFF names it may be stored under (first found wins), and the factor from
+    /// OFF's unit to the app's. OFF normalises every `_100g` value to grams, so a milligram field
+    /// is ×1000 and a microgram one ×1,000,000: iron at 0.012 g is 12 mg. They used to be stored
+    /// as read, which put every mineral and vitamin a thousand or a million times too low.
+    /// Mirrors `OFF_NUTRIENTS` in `functions/lib.js`, which maps search results the same way.
+    struct NutrientSource {
+        let key: NutrientKey
+        let names: [String]
+        let factor: Double
 
-        var nutrients = NutrientMap()
-        func set(_ key: NutrientKey, _ value: Double?) {
-            if let value { nutrients[key] = value }
+        init(_ key: NutrientKey, _ names: [String], _ factor: Double) {
+            self.key = key
+            self.names = names
+            self.factor = factor
         }
-        set(.calories, nutrient?.energyKcal100g ?? nutrient?.energyKj100g.map { $0 / 4.184 })
-        set(.protein, nutrient?.proteins100g)
-        set(.carbs, nutrient?.carbohydrates100g)
-        set(.fatTotal, nutrient?.fat100g)
-        set(.fatSaturated, nutrient?.saturatedFat100g)
-        set(.fiber, nutrient?.fiber100g)
-        set(.sugar, nutrient?.sugars100g)
-        set(.sodiumMg, nutrient?.sodium100g.map { $0 * 1000 })
-        set(.potassiumMg, nutrient?.potassium100g)
-        set(.calciumMg, nutrient?.calcium100g)
-        set(.ironMg, nutrient?.iron100g)
-        set(.vitaminAMcg, nutrient?.vitaminA100g)
-        set(.vitaminB6Mg, nutrient?.vitaminB6100g)
-        set(.vitaminB12Mcg, nutrient?.vitaminB12100g)
-        set(.vitaminCMg, nutrient?.vitaminC100g)
-        set(.vitaminDMcg, nutrient?.vitaminD100g)
-        set(.vitaminEMg, nutrient?.vitaminE100g)
-        set(.vitaminKMcg, nutrient?.vitaminK100g)
-        set(.magnesiumMg, nutrient?.magnesium100g)
-        set(.zincMg, nutrient?.zinc100g)
-        set(.biotinMcg, nutrient?.biotin100g)
-        set(.copperMg, nutrient?.copper100g)
-        set(.folateMcg, nutrient?.folates100g)
-        set(.iodineMcg, nutrient?.iodine100g)
-        set(.niacinMg, nutrient?.niacin100g)
-        set(.thiaminMg, nutrient?.thiamin100g)
-        set(.caffeineMg, nutrient?.caffeine100g)
-        set(.chlorideMg, nutrient?.chloride100g)
-        set(.seleniumMcg, nutrient?.selenium100g)
-        set(.manganeseMg, nutrient?.manganese100g)
-        set(.phosphorusMg, nutrient?.phosphorus100g)
-        set(.riboflavinMg, nutrient?.riboflavin100g)
-        set(.cholesterolMg, nutrient?.cholesterol100g)
-        set(.pantothenicAcidMg, nutrient?.pantothenicAcid100g)
+    }
+
+    static let nutrientTable: [NutrientSource] = {
+        let grams = 1.0, milligrams = 1_000.0, micrograms = 1_000_000.0
+        return [
+            NutrientSource(.protein, ["proteins"], grams),
+            NutrientSource(.carbs, ["carbohydrates"], grams),
+            NutrientSource(.fatTotal, ["fat"], grams),
+            NutrientSource(.fatSaturated, ["saturated-fat"], grams),
+            NutrientSource(.fiber, ["fiber"], grams),
+            NutrientSource(.sugar, ["sugars"], grams),
+            NutrientSource(.sodiumMg, ["sodium"], milligrams),
+            NutrientSource(.potassiumMg, ["potassium"], milligrams),
+            NutrientSource(.calciumMg, ["calcium"], milligrams),
+            NutrientSource(.ironMg, ["iron"], milligrams),
+            NutrientSource(.magnesiumMg, ["magnesium"], milligrams),
+            NutrientSource(.zincMg, ["zinc"], milligrams),
+            NutrientSource(.phosphorusMg, ["phosphorus"], milligrams),
+            NutrientSource(.manganeseMg, ["manganese"], milligrams),
+            NutrientSource(.copperMg, ["copper"], milligrams),
+            NutrientSource(.chlorideMg, ["chloride"], milligrams),
+            NutrientSource(.cholesterolMg, ["cholesterol"], milligrams),
+            NutrientSource(.caffeineMg, ["caffeine"], milligrams),
+            NutrientSource(.vitaminCMg, ["vitamin-c"], milligrams),
+            NutrientSource(.vitaminEMg, ["vitamin-e"], milligrams),
+            NutrientSource(.vitaminB6Mg, ["vitamin-b6"], milligrams),
+            NutrientSource(.thiaminMg, ["vitamin-b1", "thiamin"], milligrams),
+            NutrientSource(.riboflavinMg, ["vitamin-b2", "riboflavin"], milligrams),
+            NutrientSource(.niacinMg, ["vitamin-pp", "niacin"], milligrams),
+            NutrientSource(.pantothenicAcidMg, ["pantothenic-acid"], milligrams),
+            NutrientSource(.vitaminAMcg, ["vitamin-a"], micrograms),
+            NutrientSource(.vitaminDMcg, ["vitamin-d"], micrograms),
+            NutrientSource(.vitaminKMcg, ["vitamin-k"], micrograms),
+            NutrientSource(.vitaminB12Mcg, ["vitamin-b12"], micrograms),
+            NutrientSource(.biotinMcg, ["biotin", "vitamin-b7"], micrograms),
+            NutrientSource(.folateMcg, ["vitamin-b9", "folates"], micrograms),
+            NutrientSource(.iodineMcg, ["iodine"], micrograms),
+            NutrientSource(.seleniumMcg, ["selenium"], micrograms)
+        ]
+    }()
+
+    /// The product's nutrients per 100 g in the app's units. Energy falls back to kilojoules when
+    /// a product lists only those.
+    func nutrientMap() -> NutrientMap {
+        let values = nutriments?.per100g ?? [:]
+        var nutrients = NutrientMap()
+        if let kcal = values["energy-kcal"] ?? (values["energy-kj"] ?? values["energy"]).map({ $0 / 4.184 }) {
+            nutrients[.calories] = kcal
+        }
+        for entry in Self.nutrientTable {
+            if let value = entry.names.lazy.compactMap({ values[$0] }).first {
+                nutrients[entry.key] = value * entry.factor
+            }
+        }
         return nutrients
     }
 }

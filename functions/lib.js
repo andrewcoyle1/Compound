@@ -748,3 +748,85 @@ ${c.streakText ? `<p>🔥 ${escapeHtml(c.streakText)}</p>` : ""}
 export function notFoundPageHtml() {
     return page({ title: "Workout not found · DialedIn", description: "This workout isn't available.", body: `<article class="card"><h1>Workout not found</h1><p>This workout is private or no longer available.</p></article>` });
 }
+
+// ---------------------------------------------------------------------------
+// Open Food Facts
+// ---------------------------------------------------------------------------
+
+// Full-text search. `world.openfoodfacts.org/api/v2/search` ignores `search_terms` (it only
+// filters by tags) and returned the most-scanned products for every query, which the relevance
+// filter then threw away, so every search came back empty. `/cgi/search.pl` does match text but
+// is rate-limited to the point of serving an HTML "temporarily unavailable" page.
+export const OFF_SEARCH_URL = "https://search.openfoodfacts.org/search";
+export const OFF_SEARCH_FIELDS = "code,product_name,brands,nutriments,serving_size,serving_quantity,image_front_small_url";
+
+// Each app nutrient, the OFF nutriment names it may be stored under (first found wins), and the
+// factor from OFF's unit to the app's. OFF normalises every `_100g` value to grams, so a
+// milligram field is ×1000 and a microgram field ×1,000,000; iron at 0.012 g is 12 mg.
+const G = 1;
+const MG = 1_000;
+const MCG = 1_000_000;
+export const OFF_NUTRIENTS = [
+    ["protein", ["proteins"], G],
+    ["carbs", ["carbohydrates"], G],
+    ["fatTotal", ["fat"], G],
+    ["fatSaturated", ["saturated-fat"], G],
+    ["fiber", ["fiber"], G],
+    ["sugar", ["sugars"], G],
+    ["sodiumMg", ["sodium"], MG],
+    ["potassiumMg", ["potassium"], MG],
+    ["calciumMg", ["calcium"], MG],
+    ["ironMg", ["iron"], MG],
+    ["magnesiumMg", ["magnesium"], MG],
+    ["zincMg", ["zinc"], MG],
+    ["phosphorusMg", ["phosphorus"], MG],
+    ["manganeseMg", ["manganese"], MG],
+    ["copperMg", ["copper"], MG],
+    ["chlorideMg", ["chloride"], MG],
+    ["cholesterolMg", ["cholesterol"], MG],
+    ["caffeineMg", ["caffeine"], MG],
+    ["vitaminCMg", ["vitamin-c"], MG],
+    ["vitaminEMg", ["vitamin-e"], MG],
+    ["vitaminB6Mg", ["vitamin-b6"], MG],
+    ["thiaminMg", ["vitamin-b1", "thiamin"], MG],
+    ["riboflavinMg", ["vitamin-b2", "riboflavin"], MG],
+    ["niacinMg", ["vitamin-pp", "niacin"], MG],
+    ["pantothenicAcidMg", ["pantothenic-acid"], MG],
+    ["vitaminAMcg", ["vitamin-a"], MCG],
+    ["vitaminDMcg", ["vitamin-d"], MCG],
+    ["vitaminKMcg", ["vitamin-k"], MCG],
+    ["vitaminB12Mcg", ["vitamin-b12"], MCG],
+    ["biotinMcg", ["biotin", "vitamin-b7"], MCG],
+    ["folateMcg", ["vitamin-b9", "folates"], MCG],
+    ["iodineMcg", ["iodine"], MCG],
+    ["seleniumMcg", ["selenium"], MCG],
+];
+
+// One search hit as the app's `foodSearch` row, or null for a hit with no name. Energy falls back
+// to kilojoules when a product only lists those.
+export function offProductToFood(product) {
+    const name = (product.product_name ?? "").trim();
+    if (!name) return null;
+    const nutriments = product.nutriments ?? {};
+    const per100g = (key) => {
+        const value = nutriments[`${key}_100g`];
+        return typeof value === "number" && Number.isFinite(value) ? value : null;
+    };
+    const kj = per100g("energy-kj") ?? per100g("energy");
+    const food = {
+        // The barcode, so the app can give a product the same id however it was found.
+        code: product.code ?? null,
+        name,
+        // search-a-licious returns brands as an array; the product API as a comma-separated string.
+        brandName: Array.isArray(product.brands) ? (product.brands.join(", ") || null) : (product.brands ?? null),
+        imageURL: product.image_front_small_url ?? null,
+        servingWeight: typeof product.serving_quantity === "number" ? product.serving_quantity : (Number(product.serving_quantity) || null),
+        servingSize: product.serving_size ?? null,
+        calories: per100g("energy-kcal") ?? (kj != null ? kj / 4.184 : null),
+    };
+    for (const [appKey, offKeys, factor] of OFF_NUTRIENTS) {
+        const value = offKeys.map(per100g).find((v) => v != null);
+        food[appKey] = value != null ? value * factor : null;
+    }
+    return food;
+}

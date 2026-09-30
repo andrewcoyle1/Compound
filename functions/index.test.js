@@ -7,7 +7,7 @@ import {
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
     isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
-    SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent,
+    SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
 } from "./lib.js";
 
 test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", () => {
@@ -734,4 +734,32 @@ test("sessionPageContent leaves paused time out of the duration", () => {
     assert.equal(sessionPageContent(session, {}).durationText, "1h 0m");
     assert.equal(sessionPageContent({ ...session, paused_seconds: 600.7 }, {}).durationText, "50m");
     assert.equal(sessionPageContent({ ...session, paused_seconds: 99999 }, {}).durationText, "0m");
+});
+
+test("offProductToFood converts OFF's grams into the app's mg and mcg and joins brand arrays", () => {
+    const food = offProductToFood({
+        product_name: " Weetabix Original ",
+        brands: ["Weetabix", "Weetabix Ltd"],
+        serving_quantity: 37.5,
+        nutriments: {
+            "energy-kcal_100g": 362, proteins_100g: 12, sodium_100g: 0.112,
+            iron_100g: 0.012, "vitamin-b1_100g": 0.0012, "vitamin-pp_100g": 0.014, "vitamin-d_100g": 0.0000025,
+        },
+    });
+    assert.equal(food.name, "Weetabix Original");
+    assert.equal(food.brandName, "Weetabix, Weetabix Ltd");
+    assert.equal(food.calories, 362);
+    assert.equal(food.protein, 12);
+    assert.ok(Math.abs(food.sodiumMg - 112) < 1e-9);
+    assert.ok(Math.abs(food.ironMg - 12) < 1e-9);
+    assert.ok(Math.abs(food.thiaminMg - 1.2) < 1e-9);
+    assert.ok(Math.abs(food.niacinMg - 14) < 1e-9);
+    assert.ok(Math.abs(food.vitaminDMcg - 2.5) < 1e-9);
+    assert.equal(food.calciumMg, null);
+});
+
+test("offProductToFood falls back to kilojoules and drops nameless hits", () => {
+    assert.ok(Math.abs(offProductToFood({ product_name: "Oats", brands: "Tesco", nutriments: { "energy-kj_100g": 1569 } }).calories - 375) < 0.1);
+    assert.equal(offProductToFood({ product_name: "Oats", brands: "Tesco" }).brandName, "Tesco");
+    assert.equal(offProductToFood({ product_name: "  " }), null);
 });

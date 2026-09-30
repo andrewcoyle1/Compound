@@ -13643,6 +13643,7 @@
       }
     },
     "New challenge" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

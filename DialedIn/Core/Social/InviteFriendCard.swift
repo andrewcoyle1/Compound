@@ -44,7 +44,7 @@ struct InviteFriendCard: View {
         .padding()
         .cardSurface()
         .padding(.horizontal)
-        .padding(.bottom, Spacing.s)
+        .padding(.bottom, Spacing.m)
     }
 }
 

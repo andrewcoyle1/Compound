@@ -16,31 +16,22 @@ struct ChallengesDashboardSection: View {
     let onCreatePressed: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.m) {
-            HStack {
-                Text("Challenges")
-                    .font(.sectionTitle)
-                Spacer()
-                Button {
-                    onCreatePressed()
-                } label: {
-                    Label("New", systemImage: Symbol.add)
-                        .tapTarget()
-                }
-                .font(.rowDetail)
-                .accessibilityLabel("New challenge")
-            }
+        Section {
             if cards.isEmpty {
                 Text("Challenge your circle to train a set number of times.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.bottom, Spacing.m)
             }
             ForEach(cards) { card in
                 cardView(card)
             }
+        } header: {
+            SectionHeaderView(title: "Challenges", actionTitle: "New", onActionPressed: onCreatePressed)
+                // Social zeroes the list's insets, header included, so the header brings its gutter.
+                .padding(.horizontal)
         }
-        .padding(.horizontal)
-        .padding(.vertical, Spacing.s)
     }
 
     private func cardView(_ card: SocialPresenter.ChallengeCard) -> some View {
@@ -64,11 +55,13 @@ struct ChallengesDashboardSection: View {
                     .font(.label)
                     .foregroundStyle(.tertiary)
             }
-            .padding(Spacing.m)
+            .padding()
             .cardSurface()
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .padding(.horizontal)
+        .padding(.bottom, Spacing.m)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens the standings")
     }

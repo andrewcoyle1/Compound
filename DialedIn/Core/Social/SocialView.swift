@@ -31,8 +31,49 @@ struct SocialView<WorkoutSessionRow: View>: View {
                     onEnterInviteCodePressed: { presenter.onEnterInviteCodePressed() }
                 )
             } else {
-                if presenter.needsUsername { UsernameBannerView { presenter.onPickUsernamePressed() } }
-                workoutFeedSection
+                // One pattern for every block: each card, and each section header, brings its own
+                // inner padding, 16 pt gutter and bottom gap (as the shared `WorkoutSessionRowView`
+                // does), so the list adds none — no insets, no separators, no section margins.
+                Group {
+                    Section {
+                        if presenter.needsUsername {
+                            UsernameBannerView { presenter.onPickUsernamePressed() }
+                        }
+                        if let summary = presenter.weeklySummary {
+                            CircleWeeklySummaryCard(summary: summary) { presenter.onWeeklySummaryDismissed() }
+                        }
+                        if presenter.showsInviteCard {
+                            InviteFriendCard { presenter.onInviteCardPressed() } onDismiss: { presenter.onInviteCardDismissed() }
+                        }
+                    }
+
+                    if !presenter.circleMembers.isEmpty {
+                        Section {
+                            CircleLeaderboardView(
+                                standings: presenter.circleStandings,
+                                currentUserId: presenter.currentUserId,
+                                onRowPressed: { presenter.onLeaderboardRowPressed($0) }
+                            )
+                        }
+                    }
+
+                    if presenter.showsChallengesSection {
+                        ChallengesDashboardSection(
+                            cards: presenter.challengeCards,
+                            currentUserId: presenter.currentUserId,
+                            onCardPressed: { presenter.onChallengePressed($0) },
+                            onCreatePressed: { presenter.onCreateChallengePressed() }
+                        )
+                    }
+
+                    workoutFeedSection
+                }
+                .removeListRowFormatting()
+                // Cards sit apart with a gap; a divider in it draws a hairline between two surfaces.
+                .listRowSeparator(.hidden)
+                .listSectionSeparator(.hidden)
+                // The margin would sit outside each card's own gutter and inset it twice.
+                .listSectionMargins(.horizontal, 0)
             }
         }
         .scrollIndicators(.hidden)
@@ -52,6 +93,14 @@ struct SocialView<WorkoutSessionRow: View>: View {
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
+        }
+        .safeAreaBar(edge: .top) {
+            CircleActivityStripView(
+                members: presenter.circleMembers,
+                onMemberPressed: { presenter.onCircleMemberPressed($0) },
+                onNudgePressed: { presenter.onNudgePressed($0) },
+                onSetGoalPressed: presenter.showsWeeklyGoalPrompt ? { presenter.onSetWeeklyGoalPressed() } : nil
+            )
         }
         .toolbar { toolbarContent }
         // A push tap about a session — see `DeepLink.post()`.
@@ -77,44 +126,16 @@ struct SocialView<WorkoutSessionRow: View>: View {
             await presenter.loadChallenges()
         }
     }
-
+    
     /// One section for the whole feed. Every row used to be wrapped in a `Section` of its own so
     /// that the first could carry the header, which gave each row the full section inset and a
     /// header that only appeared when the feed was non-empty in exactly the right way.
     private var workoutFeedSection: some View {
         Section {
-            if let summary = presenter.weeklySummary {
-                CircleWeeklySummaryCard(summary: summary) { presenter.onWeeklySummaryDismissed() }
-                    .removeListRowFormatting()
-                    .listRowSeparator(.hidden)
-            }
-            // MARK: - RatingReferral
-            if presenter.showsInviteCard { InviteFriendCard { presenter.onInviteCardPressed() } onDismiss: { presenter.onInviteCardDismissed() }.removeListRowFormatting().listRowSeparator(.hidden) }
-            if !presenter.circleMembers.isEmpty {
-                CircleActivityStripView(
-                    members: presenter.circleMembers,
-                    onMemberPressed: { presenter.onCircleMemberPressed($0) },
-                    onNudgePressed: { presenter.onNudgePressed($0) },
-                    onSetGoalPressed: presenter.showsWeeklyGoalPrompt ? { presenter.onSetWeeklyGoalPressed() } : nil
-                )
-                .removeListRowFormatting()
-                .listRowSeparator(.hidden)
-                CircleLeaderboardView(
-                    standings: presenter.circleStandings,
-                    currentUserId: presenter.currentUserId,
-                    onRowPressed: { presenter.onLeaderboardRowPressed($0) }
-                )
-                .removeListRowFormatting()
-                .listRowSeparator(.hidden)
-            }
-            // MARK: - Challenges
-            if presenter.showsChallengesSection { challengesSection }
             if presenter.isFeedLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, Spacing.xxl)
-                    .removeListRowFormatting()
-                    .listRowSeparator(.hidden)
             } else if presenter.feedSessions.isEmpty {
                 ContentUnavailableView {
                     Label("No Activity Yet", systemImage: Symbol.friends)
@@ -128,16 +149,11 @@ struct SocialView<WorkoutSessionRow: View>: View {
                     // The label is drawn on the accent, so it needs onAccent, not the accent's own colour.
                     .foregroundStyle(.onAccent)
                 }
-                .removeListRowFormatting()
                 suggestedPeopleRows
             } else {
                 ForEach(presenter.feedSessions) { session in
                     if let author = presenter.author(for: session) {
                         workoutSessionRow(WorkoutSessionRowDelegate(session: session, author: author))
-                            .removeListRowFormatting()
-                            // The rows are separate cards with a gap between them; a divider in that
-                            // gap draws a hairline floating between two rounded surfaces.
-                            .listRowSeparator(.hidden)
                     }
                 }
             }
@@ -147,13 +163,8 @@ struct SocialView<WorkoutSessionRow: View>: View {
                 actionTitle: String(localized: "Find People"),
                 onActionPressed: presenter.feedSessions.isEmpty ? nil : { presenter.onFindPeoplePressed() }
             )
+            .padding(.horizontal)
         }
-        .listSectionMargins(.top, 0)
-        // The section's default horizontal margin sat outside the cards' own padding, so the feed
-        // cards were inset further than the carousel cards above them. The cards bring their own
-        // gutter; the section should not add a second one.
-        .listSectionMargins(.horizontal, 0)
-        .listSectionSeparator(.hidden)
     }
     
     /// A handful of people to follow, so a new user has a feed by the time they scroll back up.
@@ -170,7 +181,6 @@ struct SocialView<WorkoutSessionRow: View>: View {
                 presenter.onSuggestedUserPressed(user: user)
             }
             .padding(.horizontal)
-            .removeListRowFormatting()
         }
     }
 
@@ -228,19 +238,4 @@ extension CoreBuilder {
         )
     }
 
-}
-
-// MARK: - Challenges
-
-extension SocialView {
-    var challengesSection: some View {
-        ChallengesDashboardSection(
-            cards: presenter.challengeCards,
-            currentUserId: presenter.currentUserId,
-            onCardPressed: { presenter.onChallengePressed($0) },
-            onCreatePressed: { presenter.onCreateChallengePressed() }
-        )
-        .removeListRowFormatting()
-        .listRowSeparator(.hidden)
-    }
 }

@@ -16,35 +16,37 @@ struct UsernameBannerView: View {
 
     var body: some View {
         if !isDismissed {
-            Section {
-                // Two plain buttons rather than a tappable row holding a button: in a List row the
-                // row's button would swallow the dismiss tap.
-                HStack(spacing: Spacing.m) {
-                    Button(action: onPickPressed) {
-                        HStack(spacing: Spacing.m) {
-                            Image(systemName: "at")
-                                .iconSize(.medium)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.tint)
-                            Text("Pick a username so friends can find you")
-                                .font(.rowDetail)
-                                .fontWeight(.medium)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .contentShape(Rectangle())
+            // Two plain buttons rather than a tappable row holding a button: in a List row the
+            // row's button would swallow the dismiss tap.
+            HStack(spacing: Spacing.m) {
+                Button(action: onPickPressed) {
+                    HStack(spacing: Spacing.m) {
+                        Image(systemName: "at")
+                            .iconSize(.medium)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.tint)
+                        Text("Pick a username so friends can find you")
+                            .font(.rowDetail)
+                            .fontWeight(.medium)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .buttonStyle(.plain)
-                    Button(role: .close) {
-                        isDismissed = true
-                    }
-                    .buttonStyle(.plain)
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(.secondary)
-                    .contentShape(.rect)
-                    .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
-                    .accessibilityLabel("Dismiss")
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                Button(role: .close) {
+                    isDismissed = true
+                }
+                .buttonStyle(.plain)
+                .labelStyle(.iconOnly)
+                .foregroundStyle(.secondary)
+                .contentShape(.rect)
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+                .accessibilityLabel("Dismiss")
             }
+            .padding()
+            .cardSurface()
+            .padding(.horizontal)
+            .padding(.bottom, Spacing.m)
         }
     }
 }

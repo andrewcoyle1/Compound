@@ -28,8 +28,10 @@ struct CircleLeaderboardView: View {
             Text("This Week")
                 .font(.sectionTitle)
         }
+        .padding()
+        .cardSurface()
         .padding(.horizontal)
-        .padding(.vertical, Spacing.xs)
+        .padding(.bottom, Spacing.m)
     }
 
     private func row(_ standing: CircleWeek.Standing, rank: Int) -> some View {

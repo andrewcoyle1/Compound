@@ -81,8 +81,8 @@ struct SocialView<WorkoutSessionRow: View>: View {
         .minimizingLargeTitleBar()
         .searchable(
             text: $presenter.peopleSearch.query,
-            isPresented: $presenter.isSearchPresented,
-            placement: .toolbar,
+//            isPresented: $presenter.isSearchPresented,
+            placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Name or @username")
         )
         .onChange(of: presenter.peopleSearch.query) {
@@ -164,6 +164,7 @@ struct SocialView<WorkoutSessionRow: View>: View {
                 onActionPressed: presenter.feedSessions.isEmpty ? nil : { presenter.onFindPeoplePressed() }
             )
             .padding(.horizontal)
+            .padding(.bottom, 8)
         }
     }
     

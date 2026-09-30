@@ -28,8 +28,6 @@ struct WeeklyReviewCard: View {
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
             }
-            .padding()
-            .cardSurface()
             .contentShape(.rect)
         }
         .buttonStyle(.plain)

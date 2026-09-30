@@ -53,6 +53,7 @@ struct SectionHeaderView: View {
                 .accessibilityLabel("\(actionTitle), \(title)")
             }
         }
+        .padding(.horizontal)
     }
 }
 

@@ -13,7 +13,7 @@ struct NutritionCard: View {
     let onLogMealTapped: () -> Void
     
     var body: some View {
-        TodayCard(title: String(localized: "Today's Nutrition")) {
+        Section("Today's Nutrition") {
             cardItem
         }
     }
@@ -83,53 +83,16 @@ struct NutritionCard: View {
 
 #Preview {
     List {
-        Section {
-            TabView {
-                Tab {
-                    NutritionCard(
-                        calories: 1450,
-                        calorieTarget: 2200,
-                        proteinGrams: 110,
-                        proteinTarget: 150,
-                        carbGrams: 180,
-                        carbTarget: 250,
-                        fatGrams: 45,
-                        fatTarget: 70,
-                        onLogMealTapped: {}
-                    )
-                }
-                Tab {
-                    NutritionCard(
-                        calories: 1450,
-                        calorieTarget: 2200,
-                        proteinGrams: 110,
-                        proteinTarget: 150,
-                        carbGrams: 180,
-                        carbTarget: 250,
-                        fatGrams: 45,
-                        fatTarget: 70,
-                        onLogMealTapped: {}
-                    )
-                }
-                Tab {
-                    NutritionCard(
-                        calories: 1450,
-                        calorieTarget: 2200,
-                        proteinGrams: 110,
-                        proteinTarget: 150,
-                        carbGrams: 180,
-                        carbTarget: 250,
-                        fatGrams: 45,
-                        fatTarget: 70,
-                        onLogMealTapped: {}
-                    )
-                }
-            }
-            .tabViewStyle(.page)
-        }
-        .frame(height: 240)
-        .listSectionMargins(.horizontal, 0)
-        .removeListRowFormatting()
-        .listRowSeparator(.hidden)
+        NutritionCard(
+            calories: 1450,
+            calorieTarget: 2200,
+            proteinGrams: 110,
+            proteinTarget: 150,
+            carbGrams: 180,
+            carbTarget: 250,
+            fatGrams: 45,
+            fatTarget: 70,
+            onLogMealTapped: {}
+        )
     }
 }

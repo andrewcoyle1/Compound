@@ -17,7 +17,7 @@ struct TodaysWorkoutCard: View {
     let delegate: TodaysWorkoutCardDelegate
     
     var body: some View {
-        TodayCard(title: String(localized: "Today's Workout"), drawsSurface: false) {
+        Section("Today's Workout") {
             ZStack(alignment: .leading) {
                 if presenter.isTodayRestDay {
                     restDayCard
@@ -70,17 +70,7 @@ extension CoreBuilder {
     
     RouterView { router in
         List {
-            Section {
-                TabView {
-                    Tab {
-                        builder.todaysWorkoutCard(router: router, delegate: delegate)
-                    }
-                }
-                .tabViewStyle(.page)
-                .frame(height: 240)
-                
-            }
-            .listSectionMargins(.all, 0)
+            builder.todaysWorkoutCard(router: router, delegate: delegate)
         }
     }
 }

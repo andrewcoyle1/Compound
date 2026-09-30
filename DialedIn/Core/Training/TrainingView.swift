@@ -42,7 +42,11 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
             }
         }
         .navigationTitle("Training")
-        .searchable(text: $presenter.searchString, placement: .toolbar, prompt: Text("Exercises and workouts"))
+        .searchable(
+            text: $presenter.searchString,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: Text("Exercises and workouts")
+        )
         .minimizingLargeTitleBar()
         .scrollIndicators(.hidden)
         .toolbar {

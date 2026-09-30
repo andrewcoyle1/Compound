@@ -11,8 +11,8 @@ struct TodayDelegate {
     }
 }
 
-/// The user's own day, as a stack of cards: what is due this week, then workout, food, weigh-in
-/// and streak. One column on iPhone; as many as fit at regular width.
+/// The user's own day, as a list of sections: what is due this week, then workout, food, weigh-in
+/// and streak.
 struct TodayView<TodaysCard: View, StreakCard: View>: View {
 
     @State var presenter: TodayPresenter
@@ -25,26 +25,19 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
 
     @Namespace private var namespace
 
-    private let columns = [GridItem(.adaptive(minimum: 320), spacing: Spacing.l, alignment: .top)]
-
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.l) {
-                if presenter.dueCheckInWeekStart != nil { checkInCard }
-                if presenter.showsWeeklyReviewCard {
-                    WeeklyReviewCard { presenter.onWeeklyReviewPressed() }
-                }
-                LazyVGrid(columns: columns, spacing: Spacing.l) {
-                    workoutCard
-                    nutritionCard
-                    weighInCard
-                    workoutStreakCard(WorkoutStreakDelegate())
-                }
+        List {
+            if presenter.dueCheckInWeekStart != nil {
+                Section { checkInCard }
             }
-            .padding(.horizontal, Spacing.l)
-            .padding(.bottom, Spacing.xl)
+            if presenter.showsWeeklyReviewCard {
+                Section { WeeklyReviewCard { presenter.onWeeklyReviewPressed() } }
+            }
+            workoutCard
+            nutritionCard
+            weighInCard
+            workoutStreakCard(WorkoutStreakDelegate())
         }
-        .background(Color.canvas)
         .scrollIndicators(.hidden)
         .navigationTitle("Today")
         .navigationSubtitle(Date.now.formatted(date: .abbreviated, time: .omitted))
@@ -62,15 +55,14 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
             todaysWorkoutCard(TodaysWorkoutCardDelegate(todaysWorkoutTemplate: template))
         } else {
             // Without a plan for today the card stays, so the first card is always the workout.
-            TodayCard(title: String(localized: "Today's Workout")) {
+            Section("Today's Workout") {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(presenter.hasActiveProgram ? "Nothing scheduled today." : "No active program.")
                         .font(.rowTitle)
                     Text("Start an empty workout and add exercises as you go.")
                         .font(.rowDetail)
                         .foregroundStyle(.secondary)
-                    Spacer(minLength: 0)
-                    Button {
+                        Button {
                         presenter.onStartEmptyWorkoutPressed()
                     } label: {
                         Text("Start Empty Workout")
@@ -112,7 +104,7 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     // MARK: - Weigh-in
 
     private var weighInCard: some View {
-        TodayCard(title: String(localized: "Weigh-In")) {
+        Section("Weigh-In") {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 if let weight = presenter.latestWeightText, let date = presenter.latestWeighInDate {
                     Stat(value: weight, label: presenter.hasWeighedInToday
@@ -125,7 +117,6 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                         .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
-                Spacer(minLength: 0)
                 Button {
                     presenter.onLogWeightPressed()
                 } label: {
@@ -160,9 +151,6 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                 .buttonStyle(.bordered)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardSurface()
     }
 
     // MARK: - Toolbar

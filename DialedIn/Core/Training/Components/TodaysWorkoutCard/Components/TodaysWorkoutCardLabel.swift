@@ -126,44 +126,17 @@ private struct TodaysWorkoutCardFooter: View {
 }
 
 private extension View {
-    /// Fills the Dashboard card's content height, so the whole surface is the tap target.
+    /// Fills the row's width, so the whole row is the tap target.
     func todaysWorkoutCardSurface() -> some View {
-        padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .cardSurface()
+        frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(.rect)
     }
 }
 
 #Preview("Today's Workout") {
     List {
-        Section {
-            TodaysWorkoutCardLabel(template: .mock)
-                .frame(height: TodayCard<EmptyView>.contentHeight)
-        }
-        .frame(height: 240)
-        .removeListRowFormatting()
-    }
-}
-
-#Preview("Tabs") {
-    List {
-        Section {
-            TabView {
-                Tab {
-                    RestDayCard()
-                }
-                Tab {
-                    WorkoutCompletedCard(template: .mock)
-                }
-                Tab {
-                    TodaysWorkoutCardLabel(template: .mock)
-                }
-            }
-            .tabViewStyle(.page)
-        }
-        .frame(height: 240)
-        .listSectionMargins(.horizontal, 0)
-        .removeListRowFormatting()
-        .listRowSeparator(.hidden)
+        Section { TodaysWorkoutCardLabel(template: .mock) }
+        Section { WorkoutCompletedCard(template: .mock) }
+        Section { RestDayCard() }
     }
 }

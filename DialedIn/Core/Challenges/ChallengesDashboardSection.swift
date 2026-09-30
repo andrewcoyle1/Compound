@@ -31,6 +31,7 @@ struct ChallengesDashboardSection: View {
             SectionHeaderView(title: "Challenges", actionTitle: "New", onActionPressed: onCreatePressed)
                 // Social zeroes the list's insets, header included, so the header brings its gutter.
                 .padding(.horizontal)
+                .padding(.bottom, 8)
         }
     }
 

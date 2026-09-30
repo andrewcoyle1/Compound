@@ -34,6 +34,10 @@ struct CalendarHeaderView: View {
     /// and date at the larger sizes, which need about twice that.
     @ScaledMetric(relativeTo: .subheadline) private var rowHeight: CGFloat = 70
 
+    /// Puts the outermost capsules on the list's section margin (16 pt), less the capsule's own
+    /// inset inside its cell.
+    private static let sideMargin = Spacing.l - CalendarDayCell.capsuleInset
+
     var body: some View {
         // Built once per body pass and looked up per cell.
         let markers = presenter.markersByDay()
@@ -43,9 +47,9 @@ struct CalendarHeaderView: View {
                 ForEach(presenter.days, id: \.self) { (day: Date) in
                     dayCell(day, marker: markers[day])
                         // A day is a page, so each cell is exactly a seventh of the strip. The
-                        // side inset the week-paged version needed is gone with it: there is no
-                        // page edge left to inset, and padding here would make the cells
-                        // narrower than the step the scroll view snaps by.
+                        // side inset is a content margin, which this frame already subtracts;
+                        // padding here would make the cells narrower than the step the scroll
+                        // view snaps by.
                         .containerRelativeFrame(
                             .horizontal,
                             count: CalendarHeaderPresenter.visibleDayCount,
@@ -59,6 +63,8 @@ struct CalendarHeaderView: View {
             .scrollTargetLayout()
         }
         .frame(height: rowHeight)
+        // A content margin rather than padding, so the days still scroll out to the screen edges.
+        .contentMargins(.horizontal, Self.sideMargin, for: .scrollContent)
         .scrollIndicators(.hidden)
         .scrollPosition(id: $leadingDay, anchor: .leading)
         .scrollTargetBehavior(.viewAligned)
@@ -130,12 +136,12 @@ struct CalendarHeaderView: View {
             }
             .padding(.horizontal, CalendarDayCell.capsuleInset)
         }
-        .containerRelativeFrame(
-            .horizontal,
-            count: CalendarHeaderPresenter.visibleDayCount,
-            span: 1,
-            spacing: 0
-        )
+        // Outside the scroll content, so the container here is the full width: take the strip's
+        // margins off by hand to match the cells.
+        .containerRelativeFrame(.horizontal) { length, _ in
+            (length - 2 * Self.sideMargin) / CGFloat(CalendarHeaderPresenter.visibleDayCount)
+        }
+        .padding(.horizontal, Self.sideMargin)
         .opacity(isHidden ? 0 : 1)
         // Hidden means gone: left in the hierarchy it would keep swallowing taps on the day
         // underneath it.

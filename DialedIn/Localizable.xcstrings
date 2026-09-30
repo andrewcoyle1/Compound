@@ -2349,9 +2349,6 @@
         }
       }
     },
-    "12 days" : {
-      "shouldTranslate" : false
-    },
     "12 Hour" : {
       "localizations" : {
         "es" : {

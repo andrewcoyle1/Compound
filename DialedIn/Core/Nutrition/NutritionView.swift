@@ -44,7 +44,11 @@ struct NutritionView<
         }
         .scrollIndicators(.hidden)
         .navigationTitle("Nutrition")
-        .searchable(text: $presenter.searchString, placement: .toolbar, prompt: Text("Foods and recipes"))
+        .searchable(
+            text: $presenter.searchString,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: Text("Foods and recipes")
+        )
         .minimizingLargeTitleBar()
         .onAppear { presenter.onViewAppear(delegate: delegate) }
         .onDisappear { presenter.onViewDisappear(delegate: delegate) }

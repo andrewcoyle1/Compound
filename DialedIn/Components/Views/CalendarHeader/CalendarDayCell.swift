@@ -129,7 +129,9 @@ struct CalendarDayCell: View {
     /// How far the capsule is inset from the cell's own width. The cell keeps its full seventh of
     /// the strip as a tap target; only the capsule narrows. Not private, because the header's
     /// "Today" button draws the same capsule over the edge cell and has to match.
-    static let capsuleInset: CGFloat = 7
+    ///
+    /// Half the gap between neighbouring capsules, which comes out at `Spacing.l`.
+    static let capsuleInset: CGFloat = Spacing.s
 
     /// The unfilled remainder, and the whole stroke on a day with nothing logged. One colour in
     /// every state now that the ring never overlaps the selection.

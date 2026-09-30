@@ -118,7 +118,7 @@ struct CalendarDayCell: View {
         }
     }
 
-    private static let ringWidth: CGFloat = 3
+    private static let ringWidth: CGFloat = 2
 
     /// How far the capsule is inset from the cell's own width. The cell keeps its full seventh of
     /// the strip as a tap target; only the capsule narrows. Not private, because the header's

@@ -13,8 +13,14 @@ class MealAccessoryPresenter {
     
     private let interactor: MealAccessoryInteractor
     private let router: MealAccessoryRouter
-    var draftMeal: MealLogModel
-    
+    private let delegate: MealAccessoryDelegate
+
+    /// Read live, not copied: SwiftUI keeps this presenter while the accessory stays up, so a copy
+    /// taken at init froze the count and calories, and a tap reopened that stale draft.
+    var draftMeal: MealLogModel {
+        interactor.draftMeal ?? delegate.draftMeal
+    }
+
     init(
         interactor: MealAccessoryInteractor,
         router: MealAccessoryRouter,
@@ -22,7 +28,7 @@ class MealAccessoryPresenter {
     ) {
         self.interactor = interactor
         self.router = router
-        self.draftMeal = delegate.draftMeal
+        self.delegate = delegate
     }
     
     func reopenMealLog() {

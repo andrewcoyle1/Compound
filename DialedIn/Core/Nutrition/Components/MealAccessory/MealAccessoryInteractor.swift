@@ -8,6 +8,8 @@
 import SwiftUI
 
 @MainActor
-protocol MealAccessoryInteractor: GlobalInteractor { }
+protocol MealAccessoryInteractor: GlobalInteractor {
+    var draftMeal: MealLogModel? { get }
+}
 
 extension CoreInteractor: MealAccessoryInteractor { }

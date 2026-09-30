@@ -103,7 +103,9 @@ class AddMealPresenter {
             interactor.trackEvent(event: Event.saveMealStart)
             do {
                 try await interactor.saveMeal(mealLog)
-                try interactor.deleteDraftMeal()
+                // The meal is saved at this point. A draft that will not delete must not report
+                // the save as failed: the screen stayed open and a second Log saved it twice.
+                try? interactor.deleteDraftMeal()
                 interactor.trackEvent(event: Event.saveMealSuccess)
                 interactor.playHaptic(option: .success)
                 self.dismissScreen()
@@ -114,7 +116,7 @@ class AddMealPresenter {
                 // sitting there, unlogged, with nothing to say the save was even attempted.
                 router.showSimpleAlert(
                     title: String(localized: "Unable to Save Meal"),
-                    subtitle: "Please check your internet connection and try again."
+                    subtitle: String(localized: "Please check your internet connection and try again.")
                 )
             }
         }

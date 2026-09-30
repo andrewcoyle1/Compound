@@ -21,27 +21,11 @@ struct FoodItemQuickAddPresenterTests {
 
     // MARK: - Doubles
 
-    private final class Interactor: SpyGlobalInteractor, FoodItemQuickAddInteractor {
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        private(set) var savedMeals: [MealLogModel] = []
-        var saveError: Error?
+    private final class Interactor: SpyGlobalInteractor, FoodItemQuickAddInteractor { }
 
-        func saveMeal(_ meal: MealLogModel) async throws {
-            if let saveError { throw saveError }
-            savedMeals.append(meal)
-        }
-    }
-
-    /// `showSimpleAlert` is a `GlobalRouter` extension, but this screen's router restates it as a
-    /// requirement, so it dispatches through the protocol and the double sees it. `dismissScreen()`
-    /// is not restated and cannot be observed.
+    /// `dismissScreen()` is a `GlobalRouter` extension and cannot be observed.
     private final class Router: FoodItemQuickAddRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var simpleAlerts: [String] = []
-
-        func showSimpleAlert(title: String, subtitle: String?) {
-            simpleAlerts.append(title)
-        }
     }
 
     /// Holds whatever the picker is handed back.
@@ -115,6 +99,17 @@ struct FoodItemQuickAddPresenterTests {
 
         // 1oz is 28.35g, so 28.35 * 4 = 113 to the nearest whole calorie.
         #expect(screen.presenter.computedTotalEnergy == 113)
+    }
+
+    /// The footer shows the macro sum in the unit the energy field is set to.
+    @Test("Test The Macro Sum Follows The Energy Unit")
+    func testTheMacroSumFollowsTheEnergyUnit() {
+        let screen = makeScreen()
+        screen.presenter.proteinValue = 25
+
+        #expect(screen.presenter.macroEnergyInSelectedUnit == 100)
+        screen.presenter.unitOfEnergy = .kjoule
+        #expect(screen.presenter.macroEnergyInSelectedUnit == 418)
     }
 
     @Test("Test Energy Is Zero With Nothing Entered")
@@ -199,10 +194,8 @@ struct FoodItemQuickAddPresenterTests {
         let screen = filledScreen(name: "")
 
         screen.presenter.onQuickAddPressed(delegate: screen.delegate)
-        screen.presenter.onLogFoodPressed()
 
         #expect(screen.box.picked.isEmpty)
-        #expect(screen.interactor.savedMeals.isEmpty)
     }
 
     // MARK: - Handing the item back to the picker
@@ -273,71 +266,6 @@ struct FoodItemQuickAddPresenterTests {
         #expect(item?.nutrients[.protein] == 10)
         #expect(item?.nutrients[.carbs] == nil)
         #expect(item?.nutrients[.fatTotal] == nil)
-    }
-
-    // MARK: - Logging it directly
-
-    /// Log Food bypasses the plate and writes a meal of its own.
-    @Test("Test Log Food Writes A Meal Carrying The Item")
-    func testLogFoodWritesAMealCarryingTheItem() async {
-        let screen = filledScreen(name: "Leftovers")
-
-        screen.presenter.onLogFoodPressed()
-        await TestManagers.eventually { !screen.interactor.savedMeals.isEmpty }
-
-        let meal = screen.interactor.savedMeals.first
-        #expect(meal?.authorId == "user-1")
-        #expect(meal?.items.map(\.displayName) == ["Leftovers"])
-        #expect(meal?.dayKey == Date().dayKey)
-    }
-
-    /// Nothing is handed to the picker: the whole point of this path is that it does not join the
-    /// plate being assembled, and doing both would log the entry twice.
-    @Test("Test Log Food Does Not Also Hand The Item To The Picker")
-    func testLogFoodDoesNotAlsoHandTheItemToThePicker() async {
-        let screen = filledScreen()
-
-        screen.presenter.onLogFoodPressed()
-        await TestManagers.eventually { !screen.interactor.savedMeals.isEmpty }
-
-        #expect(screen.box.picked.isEmpty)
-    }
-
-    @Test("Test A Successful Log Is Tracked Start And Success")
-    func testASuccessfulLogIsTrackedStartAndSuccess() async {
-        let screen = filledScreen()
-
-        screen.presenter.onLogFoodPressed()
-        await TestManagers.eventually { !screen.interactor.savedMeals.isEmpty }
-
-        #expect(screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Start"))
-        await TestManagers.eventually {
-            screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Success")
-        }
-    }
-
-    @Test("Test A Failed Log Is Reported")
-    func testAFailedLogIsReported() async {
-        let screen = filledScreen()
-        screen.interactor.saveError = URLError(.networkConnectionLost)
-
-        screen.presenter.onLogFoodPressed()
-        await TestManagers.eventually { !screen.router.simpleAlerts.isEmpty }
-
-        #expect(screen.router.simpleAlerts == ["Unable to Log Food"])
-        #expect(screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Fail"))
-        #expect(!screen.interactor.trackedEventNames.contains("FoodItemQuickAddView_LogFood_Success"))
-    }
-
-    /// Without a signed-in user there is no author to file the meal under, so nothing is written.
-    @Test("Test Logging Without A User Writes Nothing")
-    func testLoggingWithoutAUserWritesNothing() {
-        let screen = filledScreen()
-        screen.interactor.currentUser = nil
-
-        screen.presenter.onLogFoodPressed()
-
-        #expect(screen.interactor.savedMeals.isEmpty)
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

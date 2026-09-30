@@ -272,7 +272,9 @@ struct BarcodeScannerView: View {
                     .buttonStyle(.borderedProminent)
                 }
             } else {
-                Text("Point camera at a nutrition label")
+                // `savedSuccessfully` was set after a save and never shown, so saving a label
+                // looked like it had done nothing.
+                Text(presenter.savedSuccessfully ? "Saved to your library. Point camera at another label." : "Point camera at a nutrition label")
                     .font(.rowDetail)
                     .foregroundStyle(.primary)
                     .padding(.horizontal)
@@ -376,12 +378,20 @@ struct BarcodeScannerView: View {
 
                 if presenter.parsedIngredient != nil {
                     Button {
-                        Task { await presenter.onSaveIngredientPressed() }
+                        Task {
+                            if delegate.onFoodFound != nil {
+                                await presenter.onUseLabelFoodPressed(delegate: delegate)
+                            } else {
+                                await presenter.onSaveIngredientPressed()
+                            }
+                        }
                     } label: {
                         Group {
                             if presenter.isSavingIngredient {
                                 ProgressView()
                                     .tint(.onAccent)
+                            } else if delegate.onFoodFound != nil {
+                                Text("Use This Food")
                             } else {
                                 Text("Save to Library")
                             }

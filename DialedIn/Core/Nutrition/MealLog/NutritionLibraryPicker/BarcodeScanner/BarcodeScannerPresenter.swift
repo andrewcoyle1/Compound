@@ -231,6 +231,17 @@ class BarcodeScannerPresenter {
     func onUseThisFoodPressed(_ food: FoodModel, delegate: BarcodeScannerDelegate) {
         delegate.onFoodFound?(food)
     }
+
+    /// Logging a meal: the label's food is saved to the library and put on the plate, as a scanned
+    /// barcode's is. Label mode used to offer only "Save to Library", so a label read while logging
+    /// never reached the meal.
+    func onUseLabelFoodPressed(delegate: BarcodeScannerDelegate) async {
+        guard let ingredient = parsedIngredient else { return }
+        await onSaveIngredientPressed()
+        if savedSuccessfully {
+            delegate.onFoodFound?(ingredient)
+        }
+    }
 }
 
 extension BarcodeScannerPresenter {

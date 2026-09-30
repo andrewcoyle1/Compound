@@ -31,7 +31,6 @@ struct AddMealView: View {
             }
         }
         .navigationTitle("Add Meal")
-//        .navigationSubtitle("\(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $presenter.isEditingMealTime) {
             mealTimeSheet
@@ -93,14 +92,17 @@ struct AddMealView: View {
         Section {
             if presenter.mealLog.items.isEmpty {
                 ContentUnavailableView {
-                    Label("Your plate is empty", systemImage: Symbol.meal)
+                    Label("Your Plate Is Empty", systemImage: Symbol.meal)
                 } description: {
                     Text("Add foods using Search, Scan or AI.")
                 } actions: {
-                    Button("Add") {
+                    Button {
                         presenter.onShowPickerPressed()
+                    } label: {
+                        Text("Add Food")
+                            .foregroundStyle(.onAccent)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.borderedProminent)
                 }
             } else {
                 ForEach(presenter.mealLog.items) { mealItem in
@@ -141,9 +143,8 @@ struct AddMealView: View {
             Button {
                 presenter.onEditMealItem(mealItem)
             } label: {
-                Image(systemName: Symbol.edit)
+                Label("Edit", systemImage: Symbol.edit)
             }
-            .accessibilityLabel("Edit \(mealItem.displayName)")
             Button(role: .destructive) {
                 presenter.onDeleteMealItem(mealItem)
             } label: {
@@ -270,12 +271,19 @@ struct AddMealView: View {
             Button {
                 presenter.onEditMealTimePressed()
             } label: {
-                Text(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))
-                    .underline()
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                // A menu-style label, not an underlined numeric date that read as a web link.
+                HStack(spacing: Spacing.xxs) {
+                    Text(presenter.mealLog.date.formatted(.dateTime.day().month().hour().minute()))
+                    Image(systemName: "chevron.down")
+                        .font(.caption2.weight(.semibold))
+                        .accessibilityHidden(true)
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             }
-            .accessibilityLabel("Change meal time")
+            .accessibilityLabel("Meal time")
+            .accessibilityValue(presenter.mealLog.date.formatted(date: .abbreviated, time: .shortened))
+            .accessibilityHint("Changes when this meal was eaten")
         }
     }
 }

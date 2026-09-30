@@ -35,6 +35,14 @@ class FoodItemQuickAddPresenter {
         self.router = router
     }
     
+    /// The macro sum in the unit the energy field is showing, for the footer under it. It printed
+    /// the kcal figure beside whichever unit was picked, so in kilojoules it was 4.2 times low.
+    var macroEnergyInSelectedUnit: Int {
+        unitOfEnergy == .kjoule
+            ? Int((Double(computedTotalEnergy) * Self.kilojoulesPerKilocalorie).rounded())
+            : computedTotalEnergy
+    }
+
     /// Energy in kcal, which is what `NutrientKey.calories` stores. A typed-in figure wins over the
     /// macro sum, so a user who knows the label value is not overruled by rounding in the macros.
     var resolvedCalories: Double {
@@ -65,38 +73,6 @@ class FoodItemQuickAddPresenter {
         interactor.playHaptic(option: .success)
         delegate.onPick(quickAddItem())
         router.dismissScreen()
-    }
-
-    /// Commits the macros to the log as a meal of their own, bypassing the plate entirely — for
-    /// when the user wants the entry recorded now rather than assembled into something larger.
-    /// Set while the entry is being logged, so a second tap cannot log it twice.
-    private(set) var isSaving: Bool = false
-
-    func onLogFoodPressed() {
-        guard canSubmit, !isSaving, let authorId = interactor.currentUser?.userId else { return }
-        let name = trimmedName
-        let meal = MealLogModel(
-            authorId: authorId,
-            dayKey: Date().dayKey,
-            date: Date(),
-            items: [quickAddItem()]
-        )
-
-        interactor.trackEvent(event: Event.onLogFoodStart(name: name))
-        isSaving = true
-        Task {
-            defer { isSaving = false }
-            do {
-                try await interactor.saveMeal(meal)
-                interactor.trackEvent(event: Event.onLogFoodSuccess(name: name))
-                interactor.playHaptic(option: .success)
-                router.dismissScreen()
-            } catch {
-                interactor.trackEvent(event: Event.onLogFoodFail(error: error))
-                interactor.playHaptic(option: .error)
-                router.showSimpleAlert(title: String(localized: "Unable to Log Food"), subtitle: String(localized: "Please try again."))
-            }
-        }
     }
 
     private var trimmedName: String {
@@ -142,18 +118,12 @@ extension FoodItemQuickAddPresenter {
         case onAppear(delegate: FoodItemQuickAddDelegate)
         case onDisappear(delegate: FoodItemQuickAddDelegate)
         case onQuickAdd(name: String)
-        case onLogFoodStart(name: String)
-        case onLogFoodSuccess(name: String)
-        case onLogFoodFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:                 return "FoodItemQuickAddView_Appear"
             case .onDisappear:              return "FoodItemQuickAddView_Disappear"
             case .onQuickAdd:               return "FoodItemQuickAddView_QuickAdd"
-            case .onLogFoodStart:           return "FoodItemQuickAddView_LogFood_Start"
-            case .onLogFoodSuccess:         return "FoodItemQuickAddView_LogFood_Success"
-            case .onLogFoodFail:            return "FoodItemQuickAddView_LogFood_Fail"
             }
         }
 
@@ -161,20 +131,13 @@ extension FoodItemQuickAddPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .onQuickAdd(name: let name), .onLogFoodStart(name: let name), .onLogFoodSuccess(name: let name):
+            case .onQuickAdd(name: let name):
                 return ["food_name": name]
-            case .onLogFoodFail(error: let error):
-                return error.eventParameters
             }
         }
 
         var type: LogType {
-            switch self {
-            case .onLogFoodFail:
-                return .severe
-            default:
-                return .analytic
-            }
+            .analytic
         }
     }
 

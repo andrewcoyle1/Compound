@@ -22,7 +22,7 @@ struct FoodItemQuickAddView: View {
             Section {
                 NumberField("0", value: $presenter.energyValue, units: Array(EnergyUnit.allCases), selection: $presenter.unitOfEnergy, label: String(localized: "Energy"))
             } footer: {
-                Text("Macro sum is \(presenter.computedTotalEnergy) \(presenter.unitOfEnergy.name)")
+                Text("Macros add up to \(presenter.macroEnergyInSelectedUnit) \(presenter.unitOfEnergy.acronym)")
             }
             Section("Macros") {
                 macroField("Protein", value: $presenter.proteinValue)
@@ -36,12 +36,6 @@ struct FoodItemQuickAddView: View {
                 presenter.onQuickAddPressed(delegate: delegate)
             } label: {
                 Text("Add to Plate")
-            }
-            .disabled(!presenter.canSubmit)
-            CallToActionButton(isPrimaryAction: false, isLoading: presenter.isSaving) {
-                presenter.onLogFoodPressed()
-            } label: {
-                Text("Log")
             }
             .disabled(!presenter.canSubmit)
         }

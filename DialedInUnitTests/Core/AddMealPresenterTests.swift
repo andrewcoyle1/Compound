@@ -35,6 +35,7 @@ struct AddMealPresenterTests {
         private(set) var savedMeals: [MealLogModel] = []
         var saveError: Error?
         var draftWriteError: Error?
+        var draftDeleteError: Error?
 
         func getDailyTotals(dayKey: String) throws -> DailyMacroTarget {
             guard let totals = totalsByDayKey[dayKey] else { throw URLError(.fileDoesNotExist) }
@@ -52,6 +53,7 @@ struct AddMealPresenterTests {
 
         func deleteDraftMeal() throws {
             draftDeletes += 1
+            if let draftDeleteError { throw draftDeleteError }
         }
 
         func saveMeal(_ meal: MealLogModel) async throws {
@@ -358,6 +360,21 @@ struct AddMealPresenterTests {
         #expect(screen.interactor.draftDeletes == 1)
         #expect(screen.interactor.trackedEventNames.contains("AddMealView_SaveMeal_Success"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// The meal is logged once it saves. A draft that then fails to delete used to report the save
+    /// as failed and leave the screen open, so a second tap on Log saved the meal twice.
+    @Test("Test A Draft That Will Not Delete Does Not Fail The Save")
+    func testADraftThatWillNotDeleteDoesNotFailTheSave() async {
+        let screen = makeScreen(meal: meal(items: [item(id: "a", calories: 100)]))
+        screen.interactor.draftDeleteError = CocoaError(.fileWriteUnknown)
+
+        screen.presenter.saveMeal()
+        await TestManagers.eventually { screen.interactor.trackedEventNames.contains("AddMealView_SaveMeal_Success") }
+
+        #expect(screen.interactor.savedMeals.count == 1)
+        #expect(screen.router.alerts.isEmpty)
+        #expect(!screen.interactor.trackedEventNames.contains("AddMealView_SaveMeal_Fail"))
     }
 
     /// A failed save keeps the draft, so the meal is still there to try again with.

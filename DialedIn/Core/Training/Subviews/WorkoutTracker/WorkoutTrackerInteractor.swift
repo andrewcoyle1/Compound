@@ -166,6 +166,7 @@ extension CoreInteractor: WorkoutTrackerInteractor {
             gymProfiles: gymProfileManager,
             programs: trainingProgramManager,
             users: userManager,
+            plans: trainingPlanManager,
             streak: streakManager,
             strava: stravaManager,
             logger: logManager

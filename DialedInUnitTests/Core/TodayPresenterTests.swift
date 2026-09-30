@@ -18,7 +18,15 @@ struct TodayPresenterTests {
         var userImageUrl: String?
         var currentUser: UserModel? = DashboardFixture.user("me")
         var activeTrainingProgram: TrainingProgram?
+        var currentTrainingPlan: TrainingPlan?
         var workoutSessions: [WorkoutSessionModel] = []
+        private(set) var repeatPlanCount = 0
+
+        /// The program followed from the start of time, so every fixture session counts.
+        var activeProgramRun: ProgramSchedule.Run? {
+            activeTrainingProgram.map { ProgramSchedule.Run(program: $0, startedAt: .distantPast) }
+        }
+        func repeatCurrentTrainingPlan() async throws { repeatPlanCount += 1 }
         var activeSession: WorkoutSessionModel?
         var draftMeal: MealLogModel?
         var bodyMeasurements: [BodyMeasurementEntry] = []

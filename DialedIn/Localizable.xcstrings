@@ -409,6 +409,16 @@
         }
       }
     },
+    "%@ complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ completado"
+          }
+        }
+      }
+    },
     "%@ consumed" : {
       "localizations" : {
         "es" : {
@@ -3262,6 +3272,16 @@
         }
       }
     },
+    "Add programs below. Each one is a block, run in this order." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade programas abajo. Cada uno es un bloque y se hacen en este orden."
+          }
+        }
+      }
+    },
     "Add Range" : {
       "localizations" : {
         "es" : {
@@ -3514,6 +3534,16 @@
         }
       }
     },
+    "Adds this program as the next block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade este programa como el siguiente bloque"
+          }
+        }
+      }
+    },
     "Adductors" : {
       "localizations" : {
         "es" : {
@@ -3620,6 +3650,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tras el calentamiento"
+          }
+        }
+      }
+    },
+    "After the last block you can repeat the plan from the first one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras el último bloque puedes repetir el plan desde el primero."
           }
         }
       }
@@ -4750,12 +4790,42 @@
         }
       }
     },
+    "Block %@ of %@ · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloque %1$@ de %2$@ · %3$@"
+          }
+        }
+      }
+    },
     "Block %@?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Bloquear a %@?"
+          }
+        }
+      }
+    },
+    "Block %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloque %lld"
+          }
+        }
+      }
+    },
+    "Blocks" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloques"
           }
         }
       }
@@ -6669,6 +6739,16 @@
         }
       }
     },
+    "Counts this workout as done and moves the next one up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da este entrenamiento por hecho y adelanta el siguiente"
+          }
+        }
+      }
+    },
     "Create" : {
       "localizations" : {
         "es" : {
@@ -6695,6 +6775,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crea un plan de dieta y aquí aparecerán tus objetivos diarios de calorías y macros."
+          }
+        }
+      }
+    },
+    "Create or start a program first, then build a plan from it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea o empieza un programa primero y después arma un plan con él."
           }
         }
       }
@@ -6781,11 +6871,22 @@
       }
     },
     "Create program" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crear programa"
+          }
+        }
+      }
+    },
+    "Create program or plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear programa o plan"
           }
         }
       }
@@ -9204,6 +9305,16 @@
         }
       }
     },
+    "Every block is done. Run it again from the first block, or pick something new." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has terminado todos los bloques. Repítelo desde el primero o elige algo nuevo."
+          }
+        }
+      }
+    },
     "Every exercise type goes back to its default rest time. Exercise timers are kept." : {
       "localizations" : {
         "es" : {
@@ -11591,6 +11702,16 @@
         }
       }
     },
+    "It will count as done for this microcycle, and the next workout moves up to today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contará como hecho en este microciclo y el siguiente entrenamiento pasa a hoy."
+          }
+        }
+      }
+    },
     "It's been a few days since you opened Compound. Your plan is ready when you are." : {
       "localizations" : {
         "es" : {
@@ -13690,6 +13811,16 @@
         }
       }
     },
+    "New Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo plan"
+          }
+        }
+      }
+    },
     "New Program" : {
       "localizations" : {
         "es" : {
@@ -13736,6 +13867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siguiente"
+          }
+        }
+      }
+    },
+    "Next Microcycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microciclo siguiente"
           }
         }
       }
@@ -15952,6 +16093,16 @@
         }
       }
     },
+    "Plan name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del plan"
+          }
+        }
+      }
+    },
     "Plate" : {
       "localizations" : {
         "es" : {
@@ -16372,6 +16523,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anterior"
+          }
+        }
+      }
+    },
+    "Previous Microcycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microciclo anterior"
           }
         }
       }
@@ -17243,6 +17404,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Genera las tarjetas Historia y Cuadrada de la primera sesión de prueba y guarda ambas en la fototeca."
+          }
+        }
+      }
+    },
+    "Repeat Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir plan"
           }
         }
       }
@@ -19456,6 +19627,16 @@
         }
       }
     },
+    "Skip %@?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Omitir %@?"
+          }
+        }
+      }
+    },
     "Skip for now" : {
       "localizations" : {
         "es" : {
@@ -19507,12 +19688,32 @@
         }
       }
     },
+    "Skipped" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitido"
+          }
+        }
+      }
+    },
     "Skip This Week" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omitir esta semana"
+          }
+        }
+      }
+    },
+    "Skip Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir entrenamiento"
           }
         }
       }
@@ -19835,6 +20036,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empezar comida nueva"
+          }
+        }
+      }
+    },
+    "Start Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar plan"
           }
         }
       }
@@ -22702,6 +22913,16 @@
         }
       }
     },
+    "Unable to Repeat Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo repetir el plan"
+          }
+        }
+      }
+    },
     "Unable to Restore Purchases" : {
       "localizations" : {
         "es" : {
@@ -22980,6 +23201,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo omitir la revisión"
+          }
+        }
+      }
+    },
+    "Unable to Skip Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo omitir el entrenamiento"
+          }
+        }
+      }
+    },
+    "Unable to Start Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo empezar el plan"
           }
         }
       }
@@ -23266,6 +23507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hasta %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Upcoming" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximo"
           }
         }
       }
@@ -25475,6 +25726,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu plato"
+          }
+        }
+      }
+    },
+    "Your Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus programas"
           }
         }
       }

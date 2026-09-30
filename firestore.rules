@@ -104,6 +104,13 @@ service cloud.firestore {
         allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
       }
 
+      // Training Plans subcollection: the blocks being followed and progress through them
+      match /training_plans/{training_plan_id} {
+        allow read: if isAuthed() && request.auth.uid == user_id;
+        allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;
+        allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
+      }
+
       // Workout Sessions subcollection
       // Write rules are owner-only. Reads for the owner are covered here;
       // reads for the following feed are covered by the collection group rule below.

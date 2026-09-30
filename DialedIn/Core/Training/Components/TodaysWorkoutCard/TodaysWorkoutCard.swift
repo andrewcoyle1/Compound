@@ -39,11 +39,28 @@ struct TodaysWorkoutCard: View {
     }
     
     private var startWorkoutCard: some View {
-        TodaysWorkoutCardLabel(template: delegate.todaysWorkoutTemplate)
-            .anyButton(.press) {
-                presenter.onTodaysWorkoutPressed()
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            TodaysWorkoutCardLabel(template: delegate.todaysWorkoutTemplate)
+                .anyButton(.press) {
+                    presenter.onTodaysWorkoutPressed()
+                }
+                .accessibilityHint("Opens today's workout")
+            if presenter.canSkip {
+                Button("Skip Workout", systemImage: Symbol.skip) {
+                    presenter.onSkipPressed()
+                }
+                .font(.label)
+                .buttonStyle(.borderless)
+                .accessibilityHint("Counts this workout as done and moves the next one up")
             }
-            .accessibilityHint("Opens today's workout")
+        }
+        .contextMenu {
+            if presenter.canSkip {
+                Button("Skip Workout", systemImage: Symbol.skip) {
+                    presenter.onSkipPressed()
+                }
+            }
+        }
     }
 }
 

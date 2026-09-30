@@ -34,6 +34,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     private let gymProfileManager: GymProfileManager
     private let trainingProgramManager: TrainingProgramManager
     private let userManager: UserManager
+    private let trainingPlanManager: TrainingPlanManager?
     private let streakManager: StreakManager?
     private let stravaManager: StravaManager?
     private let logManager: LogManager
@@ -48,6 +49,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         gymProfileManager: GymProfileManager,
         trainingProgramManager: TrainingProgramManager,
         userManager: UserManager,
+        trainingPlanManager: TrainingPlanManager? = nil,
         streakManager: StreakManager? = nil,
         stravaManager: StravaManager? = nil,
         logManager: LogManager = LogManager(services: [])
@@ -61,6 +63,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         self.gymProfileManager = gymProfileManager
         self.trainingProgramManager = trainingProgramManager
         self.userManager = userManager
+        self.trainingPlanManager = trainingPlanManager
         self.streakManager = streakManager
         self.stravaManager = stravaManager
         self.logManager = logManager
@@ -159,6 +162,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
             gymProfiles: gymProfileManager,
             programs: trainingProgramManager,
             users: userManager,
+            plans: trainingPlanManager,
             streak: streakManager,
             strava: stravaManager,
             logger: logManager

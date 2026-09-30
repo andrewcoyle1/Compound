@@ -106,12 +106,17 @@ struct TrainingProgramLibraryView<ProgramDisclosure: View, InactiveSection: View
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
-            Button {
-                presenter.onCreateProgramPressed()
+            Menu {
+                Button("New Program", systemImage: Symbol.program) {
+                    presenter.onCreateProgramPressed()
+                }
+                Button("New Plan", systemImage: Symbol.calendar) {
+                    presenter.onCreatePlanPressed()
+                }
             } label: {
                 Image(systemName: Symbol.add)
             }
-            .accessibilityLabel("Create program")
+            .accessibilityLabel("Create program or plan")
         }
     }
 }

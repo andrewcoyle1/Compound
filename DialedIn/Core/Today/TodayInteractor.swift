@@ -11,6 +11,9 @@ protocol TodayInteractor: ReminderOfferInteractor {
     var userImageUrl: String? { get }
     var currentUser: UserModel? { get }
     var activeTrainingProgram: TrainingProgram? { get }
+    var activeProgramRun: ProgramSchedule.Run? { get }
+    var currentTrainingPlan: TrainingPlan? { get }
+    func repeatCurrentTrainingPlan() async throws
     var workoutSessions: [WorkoutSessionModel] { get }
     var activeSession: WorkoutSessionModel? { get }
     var draftMeal: MealLogModel? { get }

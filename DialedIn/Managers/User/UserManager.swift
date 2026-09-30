@@ -455,10 +455,6 @@ class UserManager {
 extension CoreInteractor {
     // MARK: UserManager
     
-    func setActiveTrainingProgram(programId: String) async throws {
-        try await userManager.updateActiveTrainingProgramId(programId: programId)
-    }
-
     var currentUser: UserModel? {
         userManager.currentUser
     }

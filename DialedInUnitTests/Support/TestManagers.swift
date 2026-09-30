@@ -297,6 +297,17 @@ enum TestManagers {
         return manager
     }
 
+    /// A training plan manager already listening, so `trainingPlans` holds `plans`.
+    static func signedInTrainingPlanManager(plans: [TrainingPlan] = []) async -> TrainingPlanManager {
+        let manager = TrainingPlanManager(
+            trainingPlanSyncEngine: collectionEngine(plans, key: "training-plans"),
+            logManager: LogManager(services: [])
+        )
+        await manager.signIn()
+        await eventually { manager.trainingPlans.count == plans.count }
+        return manager
+    }
+
     static func exerciseSettingsManager(
         settings: [ExerciseSettingsModel] = []
     ) -> ExerciseSettingsManager {

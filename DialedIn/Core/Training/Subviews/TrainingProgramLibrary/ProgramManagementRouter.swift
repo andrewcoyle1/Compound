@@ -16,6 +16,7 @@ func showDevSettingsView()
     func showCreateProgramView(delegate: CreateProgramDelegate)
     func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate)
     func showPrebuiltProgramDetailView(program: TrainingProgram)
+    func showCreatePlanView()
 }
 
 extension CoreRouter: TrainingProgramLibraryRouter { }

@@ -57,6 +57,7 @@ struct WorkoutFinishManagers {
     let gymProfiles: GymProfileManager
     let programs: TrainingProgramManager
     let users: UserManager
+    var plans: TrainingPlanManager?
     var streak: StreakManager?
     var strava: StravaManager?
     let logger: LogManager
@@ -107,23 +108,37 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
             logger.trackEvent(eventName: "strava_upload_error", parameters: ["error": error.localizedDescription], type: .warning)
         }
     }
+    let sessionsIncludingThis = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
     if outcome == .saved {
+        await advancePlan(using: managers, sessions: sessionsIncludingThis)
         refreshWidgetSnapshot(
             users: managers.users,
             programs: managers.programs,
-            sessions: managers.sessions.workoutSessions.filter { $0.id != session.id } + [session],
+            plans: managers.plans,
+            sessions: sessionsIncludingThis,
             streak: managers.streak?.currentStreakData.currentStreak
         )
         recordFinishedSessionForReviewPrompt(session)
         if let user = managers.users.currentUser {
-            let sessions = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
             requestReviewIfEarned(.workoutFinished(
-                sessionsThisWeek: CircleWeek.sessionCount(of: user.userId, inWeekOf: .now, sessions: sessions),
+                sessionsThisWeek: CircleWeek.sessionCount(of: user.userId, inWeekOf: .now, sessions: sessionsIncludingThis),
                 weeklyGoal: CircleWeek.goal(for: user)
             ))
         }
     }
     return outcome
+}
+
+/// A workout that finishes the block's last open slot moves the plan on. Best-effort: the
+/// session is saved either way, and the next finish or skip tries again.
+@MainActor
+private func advancePlan(using managers: WorkoutFinishManagers, sessions: [WorkoutSessionModel]) async {
+    guard let plans = managers.plans else { return }
+    do {
+        try await advancePlanIfBlockComplete(plans: plans, programs: managers.programs, users: managers.users, sessions: sessions)
+    } catch {
+        managers.logger.trackEvent(eventName: "finish_workout_plan_advance_error", parameters: ["error": error.localizedDescription], type: .warning)
+    }
 }
 
 #endif

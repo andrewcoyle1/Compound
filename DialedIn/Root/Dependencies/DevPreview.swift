@@ -26,6 +26,7 @@ class DevPreview {
         container.register(WorkoutTemplateManager.self, service: workoutTemplateManager)
         container.register(WorkoutSessionManager.self, service: workoutSessionManager)
         container.register(TrainingProgramManager.self, service: trainingProgramManager)
+        container.register(TrainingPlanManager.self, service: trainingPlanManager)
         container.register(GymProfileManager.self, service: gymProfileManager)
         container.register(FoodManager.self, service: foodManager)
         container.register(RecipeTemplateManager.self, service: recipeTemplateManager)
@@ -81,6 +82,7 @@ class DevPreview {
     let workoutTemplateManager: WorkoutTemplateManager
     let workoutSessionManager: WorkoutSessionManager
     let trainingProgramManager: TrainingProgramManager
+    let trainingPlanManager: TrainingPlanManager
     let gymProfileManager: GymProfileManager
     let foodManager: FoodManager
     let recipeTemplateManager: RecipeTemplateManager
@@ -228,6 +230,15 @@ class DevPreview {
             logger: logManager
         )
         self.trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.programs), logManager: logManager)
+        self.trainingPlanManager = TrainingPlanManager(
+            trainingPlanSyncEngine: CollectionSyncEngine<TrainingPlan>(
+                remote: MockRemoteCollectionService(collection: []),
+                managerKey: TrainingPlanManager.managerKey,
+                enableLocalPersistence: false,
+                logger: logManager
+            ),
+            logManager: logManager
+        )
         let gymProfileSyncEngine = CollectionSyncEngine<GymProfileModel>(
             remote: MockRemoteCollectionService(collection: GymProfileModel.mocks),
             managerKey: Keys.gymProfileManagerKey,

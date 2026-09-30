@@ -18,6 +18,7 @@ extension CoreInteractor {
         workoutSessionManager.signOut()
         gymProfileManager.signOut()
         trainingProgramManager.signOut()
+        trainingPlanManager.signOut()
         exerciseModelManager.signOut()
         workoutSettingsManager.signOut()
         foodLogSettingsManager.signOut()

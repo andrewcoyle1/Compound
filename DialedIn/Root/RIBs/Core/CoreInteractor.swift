@@ -33,6 +33,7 @@ struct CoreInteractor: GlobalInteractor {
     let workoutTemplateManager: WorkoutTemplateManager
     let workoutSessionManager: WorkoutSessionManager
     let trainingProgramManager: TrainingProgramManager
+    let trainingPlanManager: TrainingPlanManager
     let gymProfileManager: GymProfileManager
     let foodManager: FoodManager
     let recipeTemplateManager: RecipeTemplateManager
@@ -87,6 +88,7 @@ struct CoreInteractor: GlobalInteractor {
         self.workoutTemplateManager = container.resolve(WorkoutTemplateManager.self)!
         self.workoutSessionManager = container.resolve(WorkoutSessionManager.self)!
         self.trainingProgramManager = container.resolve(TrainingProgramManager.self)!
+        self.trainingPlanManager = container.resolve(TrainingPlanManager.self)!
         self.gymProfileManager = container.resolve(GymProfileManager.self)!
         self.foodManager = container.resolve(FoodManager.self)!
         self.recipeTemplateManager = container.resolve(RecipeTemplateManager.self)!
@@ -148,6 +150,7 @@ struct CoreInteractor: GlobalInteractor {
         async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
         async let gymProfileSignIn: () = gymProfileManager.signIn()
         async let trainingProgramSignIn: () = trainingProgramManager.signIn(userId: user.uid)
+        async let trainingPlanSignIn: () = trainingPlanManager.signIn()
         // Not `currentUser` directly: on a fresh install the listener has not delivered the
         // profile yet, and an empty list here left the feed and the circle empty until relaunch.
         let followingIds = await userManager.currentUserOrFetched(userId: user.uid)?.followingIds ?? []
@@ -170,6 +173,7 @@ struct CoreInteractor: GlobalInteractor {
         try await shortcutSettingsSignIn
         await exerciseSettingsSignIn
         await trainingProgramSignIn
+        await trainingPlanSignIn
         try await nutritionSignIn
         try await goalSignIn
         await stepsSignIn
@@ -190,6 +194,7 @@ struct CoreInteractor: GlobalInteractor {
         try? exerciseModelManager.seedExercisesIfNeeded()
         try? workoutTemplateManager.seedWorkoutTemplatesIfNeeded(exercises: exerciseModelManager.allExercises)
         try? trainingProgramManager.seedProgramsIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
+        await migrateActiveProgramToPlanIfNeeded()
 
         // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
         routePendingDeepLinkAfterLogIn()

@@ -13,6 +13,8 @@ struct WorkoutTemplateDetailDelegate {
     let onStartWorkoutPressed: (@Sendable () -> Void)?
     var isDeloadCycle: Bool = false
     var periodisationPhase: PeriodisationPhase?
+    /// False for a preview of a later microcycle's day, which is not started from there.
+    var allowsStart: Bool = true
 }
 
 struct WorkoutTemplateDetailView: View {
@@ -38,17 +40,19 @@ struct WorkoutTemplateDetailView: View {
             toolbarContent
         }
         .bottomCTA {
-            CallToActionButton(isLoading: presenter.isStarting) {
-                presenter.onStartWorkoutPressed(
-                    onStartWorkout: delegate.onStartWorkoutPressed,
-                    workoutTemplate: delegate.workoutTemplate,
-                    trainingProgramId: delegate.trainingProgramId,
-                    isDeloadCycle: delegate.isDeloadCycle
-                )
-            } label: {
-                Text("Start Workout")
+            if delegate.allowsStart {
+                CallToActionButton(isLoading: presenter.isStarting) {
+                    presenter.onStartWorkoutPressed(
+                        onStartWorkout: delegate.onStartWorkoutPressed,
+                        workoutTemplate: delegate.workoutTemplate,
+                        trainingProgramId: delegate.trainingProgramId,
+                        isDeloadCycle: delegate.isDeloadCycle
+                    )
+                } label: {
+                    Text("Start Workout")
+                }
+                .disabled(presenter.isStarting)
             }
-            .disabled(presenter.isStarting)
         }
     }
 

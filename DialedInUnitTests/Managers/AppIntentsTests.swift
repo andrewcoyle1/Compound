@@ -129,11 +129,19 @@ struct AppIntentsTests {
         #expect(answer.sentence == "Today's workout is Upper, 2 exercises.")
     }
 
+    /// A rest day is one the program pre-completed for today after the workout before it.
     @Test func nextWorkoutOnARestDay() throws {
+        let upper = Self.template(name: "Upper")
         let rest = Self.template(name: "Rest", exerciseCount: 0)
-        let stub = StubAppIntentsInteractor(user: Self.user(), program: Self.program([rest], name: "Block 1"))
+        let program = Self.program([upper, rest], name: "Block 1")
+        let now = Date()
+        let restSession = WorkoutSessionModel(
+            authorId: "me", name: "Rest", workoutTemplateId: rest.id, trainingProgramId: program.id,
+            dateCreated: now, endedAt: now, exercises: [], isRestDay: true
+        )
+        let stub = StubAppIntentsInteractor(user: Self.user(), program: program, sessions: [restSession])
 
-        let answer = try stub.nextWorkout()
+        let answer = try stub.nextWorkout(now: now)
 
         #expect(answer.template == nil)
         #expect(answer.sentence == "Today is a rest day in Block 1.")
@@ -177,6 +185,11 @@ private final class StubAppIntentsInteractor: AppIntentsInteractor {
     var workoutSessions: [WorkoutSessionModel]
     var activeTrainingProgram: TrainingProgram?
     var allWorkoutTemplates: [WorkoutTemplateModel]
+
+    /// The program followed from the start of time, so every fixture session counts.
+    var activeProgramRun: ProgramSchedule.Run? {
+        activeTrainingProgram.map { ProgramSchedule.Run(program: $0, startedAt: .distantPast) }
+    }
 
     private(set) var trackerOpenCount = 0
     private(set) var startedTemplateIds: [String] = []

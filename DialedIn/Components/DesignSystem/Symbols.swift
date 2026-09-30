@@ -97,6 +97,12 @@ enum Symbol {
     static let search = "magnifyingglass"
     static let filter = "line.3.horizontal.decrease"
     static let more = "ellipsis"
+    /// Skipping a planned workout so the next one moves up.
+    static let skip = "forward.end"
+    /// Stepping between pages, such as the microcycles of a program.
+    static let previous = "chevron.left"
+    static let next = "chevron.right"
+    static let repeatPlan = "arrow.counterclockwise"
 
     // Status
     static let info = "info.circle"

@@ -93,6 +93,11 @@ class TrainingProgramLibraryPresenter {
         router.showCreateProgramView(delegate: CreateProgramDelegate())
     }
 
+    /// A plan runs saved programs as blocks, one after another.
+    func onCreatePlanPressed() {
+        router.showCreatePlanView()
+    }
+
 }
 
 extension TrainingProgramLibraryPresenter {

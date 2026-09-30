@@ -478,6 +478,7 @@ struct TrainingProgramManagementPresenterTests {
         func showDevSettingsView() { shown.append("devSettings") }
         func showProgramSettingsView(program: Binding<TrainingProgram>) { shown.append("programSettings") }
         func showCreateProgramView(delegate: CreateProgramDelegate) { shown.append("createProgram") }
+        func showCreatePlanView() { shown.append("createPlan") }
         func showPrebuiltProgramDetailView(program: TrainingProgram) { shown.append("prebuilt:\(program.id)") }
 
         func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate) {

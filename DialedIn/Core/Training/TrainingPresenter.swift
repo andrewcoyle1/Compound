@@ -18,12 +18,6 @@ struct MicrocycleWorkoutTemplateModelItem: Identifiable {
     }
 }
 
-struct MicrocycleCycleState {
-    let cycleIndex: Int
-    let cyclesTotal: Int
-    let completedInCurrentCycle: Set<String>
-}
-
 @Observable
 @MainActor
 class TrainingPresenter {

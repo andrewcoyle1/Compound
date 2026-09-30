@@ -58,7 +58,29 @@ class TodayPresenter {
     /// Today's day plan in the active program, or nil when there is no program or it schedules
     /// nothing. The card is always shown: without a plan it offers an empty workout instead.
     var todaysWorkoutTemplate: WorkoutTemplateModel? {
-        TodaysWorkoutSchedule.item(program: interactor.activeTrainingProgram, sessions: interactor.workoutSessions)?.dayPlan
+        ProgramSchedule.todayItem(run: interactor.activeProgramRun, sessions: interactor.workoutSessions)?.dayPlan
+    }
+
+    /// Every block of the plan is done; the card offers a repeat instead of a workout.
+    var isPlanComplete: Bool {
+        interactor.currentTrainingPlan?.status == .completed
+    }
+
+    var completedPlanName: String {
+        interactor.currentTrainingPlan?.name ?? ""
+    }
+
+    func onRepeatPlanPressed() {
+        interactor.trackEvent(event: Event.repeatPlanPressed)
+        Task {
+            do {
+                try await interactor.repeatCurrentTrainingPlan()
+                interactor.playHaptic(option: .success)
+            } catch {
+                interactor.playHaptic(option: .error)
+                router.showAlert(title: String(localized: "Unable to Repeat Plan"), error: error)
+            }
+        }
     }
 
     var hasActiveProgram: Bool {
@@ -213,6 +235,7 @@ extension TodayPresenter {
         case onAppear(delegate: TodayDelegate)
         case onDisappear(delegate: TodayDelegate)
         case chooseProgramPressed
+        case repeatPlanPressed
         case startEmptyWorkoutPressed
         case logMealPressed
         case logWeightPressed
@@ -225,6 +248,7 @@ extension TodayPresenter {
             case .onAppear:                 return "TodayView_Appear"
             case .onDisappear:              return "TodayView_Disappear"
             case .chooseProgramPressed:     return "TodayView_ChooseProgram_Press"
+            case .repeatPlanPressed:        return "TodayView_RepeatPlan_Press"
             case .startEmptyWorkoutPressed: return "TodayView_StartEmptyWorkout_Press"
             case .logMealPressed:           return "TodayView_LogMeal_Press"
             case .logWeightPressed:         return "TodayView_LogWeight_Press"

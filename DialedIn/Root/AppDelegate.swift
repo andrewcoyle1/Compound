@@ -83,6 +83,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             gymProfileManager: container.resolve(GymProfileManager.self)!,
             trainingProgramManager: container.resolve(TrainingProgramManager.self)!,
             userManager: container.resolve(UserManager.self)!,
+            trainingPlanManager: container.resolve(TrainingPlanManager.self),
             streakManager: container.resolve(StreakManager.self),
             stravaManager: container.resolve(StravaManager.self),
             logManager: container.resolve(LogManager.self)!

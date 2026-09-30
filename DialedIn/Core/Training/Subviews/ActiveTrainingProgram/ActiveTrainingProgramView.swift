@@ -16,7 +16,7 @@ struct ActiveTrainingProgramView: View {
     var body: some View {
         Section {
             DisclosureGroup(isExpanded: $presenter.activeProgramIsExpanded) {
-                let items = presenter.currentMicrocycleItems(program: delegate.program)
+                let items = presenter.microcycleItems(program: delegate.program)
                 ForEach(items) { item in
                     microcycleItemRow(item: item)
                 }
@@ -37,12 +37,22 @@ struct ActiveTrainingProgramView: View {
                 }
             }
         } header: {
-            HStack {
+            HStack(spacing: Spacing.s) {
                 Text("Active Program")
                 Spacer()
-                // Not a link: nothing opens from here, so it no longer draws as one.
+                Button("Previous Microcycle", systemImage: Symbol.previous) {
+                    presenter.onPreviousCyclePressed()
+                }
+                .disabled(!presenter.canShowPreviousCycle)
                 Text(presenter.microcycleHeaderText)
+                    .monospacedDigit()
+                Button("Next Microcycle", systemImage: Symbol.next) {
+                    presenter.onNextCyclePressed()
+                }
+                .disabled(!presenter.canShowNextCycle)
             }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.borderless)
         }
         .listSectionMargins(.top, 0)
     }
@@ -51,10 +61,13 @@ struct ActiveTrainingProgramView: View {
     private func microcycleItemRow(item: MicrocycleItem) -> some View {
         MicrocycleItemRow(item: item)
             .anyButton(.highlight) {
-                if let sessionId = item.completedSessionId {
-                    presenter.openCompletedSession(sessionId: sessionId)
-                } else {
-                    presenter.startWorkoutTemplateModelWorkout(item.workoutTemplate, in: item.trainingProgramId)
+                presenter.onItemPressed(item)
+            }
+            .rowActions {
+                if item.canSkip {
+                    Button("Skip", systemImage: Symbol.skip) {
+                        presenter.onSkipPressed(item)
+                    }
                 }
             }
     }

@@ -356,6 +356,7 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `ExerciseModelManager` | Exercise library (local SwiftData + Firestore) + prebuilt seeding |
 | `ExerciseUnitPreferenceManager` | Per-exercise weight/distance unit preferences |
 | `TrainingProgramManager` | Training programs with local/remote sync |
+| `TrainingPlanManager` | Plans: ordered blocks of programs, the current block's start and skips. `ProgramSchedule` derives today's workout and microcycle progress from it (a queue, not a calendar) |
 | `GymProfileManager` | Available equipment per gym |
 | `NutritionManager` / `MealLogManager` | Food logging and nutrition targets |
 | `FoodManager` / `RecipeTemplateManager` | Food and recipe library |

@@ -15,14 +15,14 @@ extension WidgetSnapshot {
     /// have come back through the listener yet.
     static func make(
         userId: String,
-        program: TrainingProgram?,
+        run: ProgramSchedule.Run?,
         sessions: [WorkoutSessionModel],
         streak: Int?,
         weeklyGoal: Int,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> WidgetSnapshot {
-        let item = TodaysWorkoutSchedule.item(program: program, sessions: sessions, now: now, calendar: calendar)
+        let item = ProgramSchedule.todayItem(run: run, sessions: sessions, now: now, calendar: calendar)
         return WidgetSnapshot(
             todaysWorkout: item.map {
                 TodaysWorkout(
@@ -46,6 +46,7 @@ extension WidgetSnapshot {
 func refreshWidgetSnapshot(
     users: UserManager,
     programs: TrainingProgramManager,
+    plans: TrainingPlanManager?,
     sessions: [WorkoutSessionModel],
     streak: Int?,
     weeklyGoal: Int? = nil
@@ -53,7 +54,8 @@ func refreshWidgetSnapshot(
     guard let user = users.currentUser else { return }
     WidgetSnapshotStore.write(.make(
         userId: user.userId,
-        program: programs.activeProgram(for: user),
+        run: plans?.run(for: programs.activeProgram(for: user))
+            ?? programs.activeProgram(for: user).map { ProgramSchedule.Run(program: $0, startedAt: $0.dateCreated) },
         sessions: sessions,
         streak: streak,
         weeklyGoal: weeklyGoal ?? CircleWeek.goal(for: user)
@@ -70,6 +72,7 @@ extension CoreInteractor {
         DialedIn.refreshWidgetSnapshot(
             users: userManager,
             programs: trainingProgramManager,
+            plans: trainingPlanManager,
             sessions: workoutSessionManager.workoutSessions,
             streak: streakManager.currentStreakData.currentStreak,
             weeklyGoal: weeklyGoal

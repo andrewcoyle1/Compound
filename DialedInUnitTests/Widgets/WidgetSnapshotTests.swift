@@ -124,7 +124,7 @@ struct WidgetSnapshotTests {
 
         let built = WidgetSnapshot.make(
             userId: "user-1",
-            program: program(template: template),
+            run: ProgramSchedule.Run(program: program(template: template), startedAt: .distantPast),
             sessions: [finished, someoneElse],
             streak: 9,
             weeklyGoal: 4,
@@ -141,7 +141,7 @@ struct WidgetSnapshotTests {
 
     @Test("Test No Program Means No Workout Today")
     func testNoProgramMeansNoWorkoutToday() {
-        let built = WidgetSnapshot.make(userId: "user-1", program: nil, sessions: [], streak: nil, weeklyGoal: 3, now: Self.wednesday, calendar: Self.calendar)
+        let built = WidgetSnapshot.make(userId: "user-1", run: nil, sessions: [], streak: nil, weeklyGoal: 3, now: Self.wednesday, calendar: Self.calendar)
         #expect(built.todaysWorkout == nil)
         #expect(built.currentStreak == 0)
         #expect(built.sessionsThisWeek == 0)

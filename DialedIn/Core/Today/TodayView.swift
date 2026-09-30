@@ -53,6 +53,8 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     private var workoutCard: some View {
         if let template = presenter.todaysWorkoutTemplate {
             todaysWorkoutCard(TodaysWorkoutCardDelegate(todaysWorkoutTemplate: template))
+        } else if presenter.isPlanComplete {
+            planCompleteCard
         } else {
             // Without a plan for today the card stays, so the first card is always the workout.
             Section("Today's Workout") {
@@ -80,6 +82,33 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                         .buttonStyle(.bordered)
                     }
                 }
+            }
+        }
+    }
+
+    private var planCompleteCard: some View {
+        Section("Today's Workout") {
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                Text("\(presenter.completedPlanName) complete")
+                    .font(.rowTitle)
+                Text("Every block is done. Run it again from the first block, or pick something new.")
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
+                Button {
+                    presenter.onRepeatPlanPressed()
+                } label: {
+                    Label("Repeat Plan", systemImage: Symbol.repeatPlan)
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(.onAccent)
+                }
+                .buttonStyle(.borderedProminent)
+                Button {
+                    presenter.onChooseProgramPressed()
+                } label: {
+                    Text("Choose Program")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
             }
         }
     }

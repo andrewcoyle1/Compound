@@ -15,6 +15,7 @@ protocol AppIntentsInteractor {
     var activeSession: WorkoutSessionModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var activeTrainingProgram: TrainingProgram? { get }
+    var activeProgramRun: ProgramSchedule.Run? { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
     func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws
@@ -103,7 +104,7 @@ extension AppIntentsInteractor {
     func nextWorkout(now: Date = Date(), calendar: Calendar = .current) throws -> (template: WorkoutTemplateModel?, sentence: String) {
         guard currentUser != nil else { throw AppIntentsError.notSignedIn }
         guard let program = activeTrainingProgram else { return (nil, AppIntentsPhrasing.noProgram) }
-        guard let item = TodaysWorkoutSchedule.item(program: program, sessions: workoutSessions, now: now, calendar: calendar) else {
+        guard let item = ProgramSchedule.todayItem(run: activeProgramRun, sessions: workoutSessions, now: now, calendar: calendar) else {
             return (nil, AppIntentsPhrasing.noProgram)
         }
         if item.dayPlan.exercises.isEmpty {

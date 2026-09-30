@@ -26,7 +26,14 @@ struct ActiveTrainingProgramPresenterTests {
     private final class Interactor: SpyGlobalInteractor, ActiveTrainingProgramInteractor {
         var activeSession: WorkoutSessionModel?
         var workoutSessions: [WorkoutSessionModel] = []
+        var activeProgramRun: ProgramSchedule.Run?
+        var currentTrainingPlan: TrainingPlan?
+        private(set) var skippedSlotIds: [String] = []
         private(set) var didDeleteActiveSession = false
+
+        func skipScheduledWorkout(_ slot: ProgramSchedule.Slot) async throws {
+            skippedSlotIds.append(slot.id)
+        }
         private(set) var deletedProgramIds: [String] = []
 
         func deleteActiveSession() throws {
@@ -89,7 +96,8 @@ struct ActiveTrainingProgramPresenterTests {
             numMicrocycles: cycles,
             deload: deload,
             periodisation: periodisation,
-            workoutTemplates: days
+            workoutTemplates: days,
+            dateCreated: start
         )
     }
 
@@ -134,9 +142,9 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Lower"), day("Full Body")]
         let screen = makeScreen()
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days))
+        let items = screen.presenter.microcycleItems(program: program(days: days))
 
-        #expect(items.map(\.id) == ["upper", "lower", "full body"])
+        #expect(items.map(\.workoutTemplate.id) == ["upper", "lower", "full body"])
     }
 
     /// A program with no days of its own is given a default set at init, so the only way to see an
@@ -147,7 +155,7 @@ struct ActiveTrainingProgramPresenterTests {
         var empty = program(days: [day("Upper")])
         empty.workoutTemplates = []
 
-        let items = screen.presenter.currentMicrocycleItems(program: empty)
+        let items = screen.presenter.microcycleItems(program: empty)
 
         #expect(items.isEmpty)
         #expect(screen.presenter.microcycleHeaderText == "Current Microcycle")
@@ -158,7 +166,7 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Lower")]
         let screen = makeScreen()
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days))
+        let items = screen.presenter.microcycleItems(program: program(days: days))
 
         #expect(items.allSatisfy { !$0.isCompleted })
     }
@@ -168,7 +176,7 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Lower")]
         let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1)])
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days))
+        let items = screen.presenter.microcycleItems(program: program(days: days))
 
         #expect(try #require(items.first).completedSessionId == "s1")
         #expect(try #require(items.last).isCompleted == false)
@@ -181,7 +189,7 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Lower")]
         let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1, matchByNameOnly: true)])
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days))
+        let items = screen.presenter.microcycleItems(program: program(days: days))
 
         #expect(try #require(items.first).completedSessionId == "s1")
     }
@@ -191,7 +199,7 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Lower")]
         let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1, programId: "other-program")])
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days))
+        let items = screen.presenter.microcycleItems(program: program(days: days))
 
         #expect(items.allSatisfy { !$0.isCompleted })
     }
@@ -202,7 +210,7 @@ struct ActiveTrainingProgramPresenterTests {
     func testAFreshProgramStartsOnTheFirstMicrocycle() {
         let screen = makeScreen()
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: [day("Upper"), day("Lower")], cycles: 4))
+        _ = screen.presenter.microcycleItems(program: program(days: [day("Upper"), day("Lower")], cycles: 4))
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
     }
@@ -216,7 +224,7 @@ struct ActiveTrainingProgramPresenterTests {
             session(id: "s2", day: days[1], order: 2)
         ])
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: days, cycles: 4))
+        _ = screen.presenter.microcycleItems(program: program(days: days, cycles: 4))
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
     }
@@ -229,7 +237,7 @@ struct ActiveTrainingProgramPresenterTests {
             session(id: "s2", day: days[1], order: 2)
         ])
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days, cycles: 4))
+        let items = screen.presenter.microcycleItems(program: program(days: days, cycles: 4))
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 4")
         #expect(items.allSatisfy { !$0.isCompleted })
@@ -244,7 +252,7 @@ struct ActiveTrainingProgramPresenterTests {
             session(id: "s2", day: days[0], order: 2)
         ])
 
-        let items = screen.presenter.currentMicrocycleItems(program: program(days: days, cycles: 4))
+        let items = screen.presenter.microcycleItems(program: program(days: days, cycles: 4))
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 4")
         #expect(try #require(items.first).completedSessionId == "s1")
@@ -257,20 +265,108 @@ struct ActiveTrainingProgramPresenterTests {
         let days = [day("Upper"), day("Rest", hasExercises: false)]
         let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1)])
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: days, cycles: 4))
+        _ = screen.presenter.microcycleItems(program: program(days: days, cycles: 4))
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 4")
     }
 
-    /// The program repeats rather than ending, so the cycle after the last is the first again.
-    @Test("Test The Cycle Wraps Round At The End Of The Program")
-    func testTheCycleWrapsRoundAtTheEndOfTheProgram() {
+    /// A finished block stays on its last microcycle, every day ticked, until the plan moves on.
+    /// It used to wrap silently back to the first.
+    @Test("Test A Finished Block Stays On Its Last Microcycle")
+    func testAFinishedBlockStaysOnItsLastMicrocycle() {
         let days = [day("Upper")]
         let screen = makeScreen(sessions: (1...2).map { session(id: "s\($0)", day: days[0], order: $0) })
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: days, cycles: 2))
+        let items = screen.presenter.microcycleItems(program: program(days: days, cycles: 2))
 
-        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 2")
+        #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 2")
+        #expect(items.allSatisfy { $0.isCompleted })
+    }
+
+    /// Sessions from before the block started belong to an earlier run of it.
+    @Test("Test Sessions Before The Block Started Are Not Credited")
+    func testSessionsBeforeTheBlockStartedAreNotCredited() {
+        let days = [day("Upper"), day("Lower")]
+        let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1)])
+        let followed = program(days: days, cycles: 4)
+        screen.interactor.activeProgramRun = ProgramSchedule.Run(program: followed, startedAt: start.addingTimeInterval(10 * 86400))
+
+        let items = screen.presenter.microcycleItems(program: followed)
+
+        #expect(items.allSatisfy { !$0.isCompleted })
+    }
+
+    // MARK: - Browsing microcycles
+
+    @Test("Test Paging Shows Past And Future Microcycles")
+    func testPagingShowsPastAndFutureMicrocycles() throws {
+        let days = [day("Upper"), day("Lower")]
+        let screen = makeScreen(sessions: [
+            session(id: "s1", day: days[0], order: 1),
+            session(id: "s2", day: days[1], order: 2)
+        ])
+        let followed = program(days: days, cycles: 3)
+
+        _ = screen.presenter.microcycleItems(program: followed)
+        #expect(screen.presenter.canShowPreviousCycle)
+        #expect(screen.presenter.canShowNextCycle)
+
+        screen.presenter.onPreviousCyclePressed()
+        let past = screen.presenter.microcycleItems(program: followed)
+        #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 3")
+        #expect(past.allSatisfy { $0.timing == .past && $0.isCompleted })
+        #expect(!screen.presenter.canShowPreviousCycle)
+
+        screen.presenter.onNextCyclePressed()
+        screen.presenter.onNextCyclePressed()
+        let future = screen.presenter.microcycleItems(program: followed)
+        #expect(screen.presenter.microcycleHeaderText == "Microcycle 3 of 3")
+        #expect(future.allSatisfy { $0.timing == .future && !$0.canSkip })
+        #expect(!screen.presenter.canShowNextCycle)
+    }
+
+    /// A day in a later microcycle is a preview: it opens the template without a start button.
+    @Test("Test A Future Day Opens As A Preview")
+    func testAFutureDayOpensAsAPreview() throws {
+        let screen = makeScreen()
+        let followed = program(days: [day("Upper")], cycles: 2)
+        _ = screen.presenter.microcycleItems(program: followed)
+        screen.presenter.onNextCyclePressed()
+
+        let item = try #require(screen.presenter.microcycleItems(program: followed).first)
+        screen.presenter.onItemPressed(item)
+
+        #expect(screen.router.shown == ["templateDetail"])
+        #expect(screen.interactor.activeSession == nil)
+    }
+
+    @Test("Test A Skipped Day Shows As Skipped And Cannot Be Skipped Again")
+    func testASkippedDayShowsAsSkipped() throws {
+        let days = [day("Upper"), day("Lower")]
+        let screen = makeScreen()
+        let followed = program(days: days, cycles: 2)
+        screen.interactor.activeProgramRun = ProgramSchedule.Run(
+            program: followed,
+            startedAt: start,
+            skips: [PlanSkip(blockIndex: 0, cycleIndex: 0, position: 0, templateId: "upper", date: start)]
+        )
+
+        let items = screen.presenter.microcycleItems(program: followed)
+
+        #expect(try #require(items.first).isSkipped)
+        #expect(try #require(items.first).canSkip == false)
+        #expect(try #require(items.last).isToday)
+    }
+
+    @Test("Test Skipping A Day Asks The Plan To Skip Its Slot")
+    func testSkippingADayAsksThePlanToSkipItsSlot() async throws {
+        let screen = makeScreen()
+        let items = screen.presenter.microcycleItems(program: program(days: [day("Upper"), day("Lower")], cycles: 2))
+        let first = try #require(items.first)
+
+        screen.presenter.onSkipPressed(first)
+
+        #expect(await TestManagers.eventually { screen.interactor.skippedSlotIds == [first.id] })
     }
 
     // MARK: - Deload
@@ -305,7 +401,7 @@ struct ActiveTrainingProgramPresenterTests {
     func testReadingTheDaysSetsTheDeloadFlag() {
         let screen = makeScreen()
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: [day("Upper")], cycles: 4, deload: .start))
+        _ = screen.presenter.microcycleItems(program: program(days: [day("Upper")], cycles: 4, deload: .start))
 
         #expect(screen.presenter.isDeloadCycle)
     }
@@ -347,7 +443,7 @@ struct ActiveTrainingProgramPresenterTests {
     func testReadingTheDaysSetsThePhase() {
         let screen = makeScreen()
 
-        _ = screen.presenter.currentMicrocycleItems(program: program(days: [day("Upper")], cycles: 9, periodisation: true))
+        _ = screen.presenter.microcycleItems(program: program(days: [day("Upper")], cycles: 9, periodisation: true))
 
         #expect(screen.presenter.periodisationPhase == .hypertrophy)
     }

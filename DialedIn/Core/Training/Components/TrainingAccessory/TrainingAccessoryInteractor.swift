@@ -11,6 +11,7 @@ import SwiftUI
 protocol TrainingAccessoryInteractor: GlobalInteractor {
     var activeSession: WorkoutSessionModel? { get }
     var restEndTime: Date? { get }
+    func cancelRest()
 }
 
 extension CoreInteractor: TrainingAccessoryInteractor { }

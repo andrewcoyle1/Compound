@@ -20,20 +20,29 @@ struct TrainingAccessoryView: View {
     let delegate: TrainingAccessoryDelegate
 
     var body: some View {
-        Button {
-            presenter.reopenActiveSession()
-        } label: {
-            workoutDescriptionSection
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal)
-                .tappableBackground()
+        // The skip button sits beside the main button rather than inside it: nested, VoiceOver
+        // could not reach it, since the main button reads as one element.
+        HStack(spacing: 0) {
+            Button {
+                presenter.reopenActiveSession()
+            } label: {
+                summary
+                    .frame(maxWidth: .infinity)
+                    .padding(.leading)
+                    .padding(.trailing, showsSkipRest ? 0 : Spacing.l)
+                    .tappableBackground()
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityAddTraits(.isButton)
+
+            if showsSkipRest {
+                skipRestButton
+            }
         }
-        .buttonStyle(.plain)
         // The accessory is a fixed-height capsule: past AX1 even one line no longer fits in it.
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityAddTraits(.isButton)
     }
 
     /// Inline beside the minimised tab bar, or text too large for two lines in the fixed-height
@@ -42,72 +51,55 @@ struct TrainingAccessoryView: View {
         placement == .inline || dynamicTypeSize > .xLarge
     }
 
-    /// "Resume workout, Push Day, 12 minutes" — one label for the whole button now that the
-    /// pieces (name, timer, thumbnails) no longer need to be spoken separately.
+    /// Dropped only beside the minimised tab bar, not for large text: the name truncates first.
+    private var showsSkipRest: Bool {
+        presenter.isRestActive && placement != .inline
+    }
+
+    /// "Resume workout, Push Day, 12 minutes" — one label for the whole button.
     private var accessibilityLabel: String {
         let elapsedMinutes = max(0, Int(Date().timeIntervalSince(delegate.active.dateCreated) / 60))
         return String(localized: "Resume workout, \(delegate.active.name), \(elapsedMinutes) minutes")
     }
 
-    @ViewBuilder
-    private var workoutDescriptionSection: some View {
-        if isInline {
-            // No room to spare inline: one line, no thumbnails.
-            HStack {
+    /// Music's MiniPlayer shape: a leading visual, title over subtitle, and the one live value
+    /// trailing. Inline it keeps the ring, the name and the timer.
+    private var summary: some View {
+        HStack(spacing: Spacing.m) {
+            progressRing
+            if isInline {
                 workoutName
-                Spacer()
-                timeSection(workoutSession: delegate.active)
-            }
-        } else {
-            HStack {
-                VStack(alignment: .leading) {
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
                     workoutName
-                    timeSection(workoutSession: delegate.active)
+                    Text(presenter.progressLabel)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
-                Spacer()
-                exerciseImagesSection
             }
+            Spacer(minLength: Spacing.s)
+            timer
         }
     }
 
-    private var exerciseImagesSection: some View {
-        HStack(spacing: -Spacing.s) {
-            if let activeSession = presenter.activeSession {
-                ForEach(activeSession.exercises.prefix(5)) { exercise in
-                    exerciseCircle(exercise: exercise)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func exerciseCircle(exercise: WorkoutExerciseModel) -> some View {
-        let isCompleted = !exercise.sets.isEmpty && exercise.sets.allSatisfy { $0.completedAt != nil }
+    /// Sets done, as a ring around the workout symbol. Fixed, not scaled: the capsule's height is.
+    private var progressRing: some View {
         ZStack {
             Circle()
-                .fill(.canvas)
-
-            ExerciseImageView(
-                name: exercise.name,
-                imageName: exercise.imageName,
-                clipShape: AnyShape(Circle())
-            )
-            .grayscale(isCompleted ? 1 : 0)
-
-            if isCompleted {
-                Circle()
-                    .fill(.black.opacity(0.4))
-                Image(systemName: "checkmark")
-                    .font(.label.weight(.bold))
-                    .foregroundStyle(.white)
-            }
+                .stroke(Color.tintedSurface(.accentColor), lineWidth: 3)
+            Circle()
+                .trim(from: 0, to: presenter.progress)
+                .stroke(.tint, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Image(systemName: Symbol.workout)
+                .font(.label.weight(.semibold))
+                .foregroundStyle(.tint)
         }
-        // Fixed, not scaled: the tab bar accessory has a fixed height and larger circles would clip.
-        .frame(width: 38, height: 38)
-        .overlay(Circle().stroke(.surface, lineWidth: 2))
+        .frame(width: 32, height: 32)
         .accessibilityHidden(true)
     }
-    
+
     private var workoutName: some View {
         Text(delegate.active.name)
             .font(.rowDetail)
@@ -115,31 +107,35 @@ struct TrainingAccessoryView: View {
             .lineLimit(1)
     }
 
-    private func timeSection(workoutSession active: WorkoutSessionModel) -> some View {
-        Group {
-            let now = Date()
-            if let restEndTime = presenter.restEndTime,
-               now < restEndTime {
-                    // Rest timer
-                    HStack(alignment: .bottom, spacing: 0) {
-                        Text("Rest: ")
-                        Text(timerInterval: now...restEndTime)
-                            .monospacedDigit()
-                            .foregroundStyle(.tint)
-                    }
-            
-            } else {
-                // Elapsed time
-                HStack(spacing: 0) {
-                    Text("Elapsed: ")
-                    Text(active.dateCreated, style: .timer)
-                        .monospacedDigit()
-                }
-            }
+    /// Rest counts down in the accent; otherwise the elapsed time, secondary. No "Rest:" or
+    /// "Elapsed:" prefix: the colour and the skip button say which it is. `restEndTime` clears
+    /// when the rest ends, which redraws this back to the elapsed time.
+    @ViewBuilder
+    private var timer: some View {
+        let now = Date()
+        if let end = presenter.restEndTime, now < end {
+            Text(timerInterval: now...end)
+                .font(.metricSmall)
+                .foregroundStyle(.tint)
+        } else {
+            Text(delegate.active.dateCreated, style: .timer)
+                .font(.metricSmall)
+                .foregroundStyle(.secondary)
         }
-        .foregroundStyle(.secondary)
-        .font(.rowDetail)
-        .multilineTextAlignment(.leading)
+    }
+
+    private var skipRestButton: some View {
+        Button {
+            presenter.onSkipRestPressed()
+        } label: {
+            Image(systemName: "forward.end.fill")
+                .font(.rowTitle)
+                .frame(width: ControlSize.row, height: ControlSize.row)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .padding(.trailing, Spacing.s)
+        .accessibilityLabel("Skip rest")
     }
 }
 

@@ -23,7 +23,7 @@ struct MealAccessoryView: View {
         Button {
             presenter.reopenMealLog()
         } label: {
-            workoutDescriptionSection
+            summary
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
                 .tappableBackground()
@@ -47,34 +47,42 @@ struct MealAccessoryView: View {
         String(localized: "Continue draft meal, \(presenter.draftMeal.items.count) items")
     }
 
+    private var itemCountLine: Text {
+        Text("^[\(presenter.draftMeal.items.count) item](inflect: true)")
+            .foregroundStyle(.secondary)
+    }
+
     private var itemsLine: Text {
         Text("^[\(presenter.draftMeal.items.count) item](inflect: true) · \(Format.kcal(presenter.draftMeal.totalCalories))")
             .foregroundStyle(.secondary)
     }
 
-    /// Says what it is, an unlogged meal, and what is on it. It used to reuse the workout
-    /// accessory: an "Elapsed" timer and a checkmark over every thumbnail.
-    @ViewBuilder
-    private var workoutDescriptionSection: some View {
-        if isInline {
-            // No room to spare inline: one line.
-            HStack {
-                Text("\(Text("Unlogged meal").fontWeight(.semibold)) · \(itemsLine)")
+    /// The same shape as the workout accessory: a leading symbol, title over subtitle.
+    private var summary: some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: Symbol.meal)
+                .font(.label.weight(.semibold))
+                .foregroundStyle(.tint)
+                .frame(width: 32, height: 32)
+                .background(Color.tintedSurface(.accentColor), in: .circle)
+                .accessibilityHidden(true)
+            if isInline {
+                // Calories dropped inline: there is room for the title and the count, not both.
+                Text("\(Text("Unlogged meal").fontWeight(.semibold)) · \(itemCountLine)")
                     .font(.rowDetail)
                     .lineLimit(1)
-                Spacer()
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Unlogged meal")
+                        .font(.rowDetail)
+                        .fontWeight(.semibold)
+                        .lineLimit(1)
+                    itemsLine
+                        .font(.rowDetail)
+                        .lineLimit(1)
+                }
             }
-        } else {
-            VStack(alignment: .leading) {
-                Text("Unlogged meal")
-                    .font(.rowDetail)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                itemsLine
-                    .font(.rowDetail)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: Spacing.s)
         }
     }
 }

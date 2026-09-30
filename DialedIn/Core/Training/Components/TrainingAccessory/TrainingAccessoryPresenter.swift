@@ -26,8 +26,9 @@ class TrainingAccessoryPresenter {
         self.router = router
     }
     
+    /// Sets done out of all sets, for the ring. Zero, not NaN, for a workout with no sets yet.
     var progress: Double {
-        guard let active = interactor.activeSession else { return 0 }
+        guard let active = interactor.activeSession, totalSetsCount(active) > 0 else { return 0 }
         return Double(completedSetsCount(active)) / Double(totalSetsCount(active))
     }
 
@@ -46,6 +47,11 @@ class TrainingAccessoryPresenter {
         interactor.restEndTime
     }
     
+    func onSkipRestPressed() {
+        interactor.trackEvent(event: Event.skipRest)
+        interactor.cancelRest()
+    }
+
     func reopenActiveSession() {
         router.showWorkoutTrackerView()
     }
@@ -59,12 +65,17 @@ class TrainingAccessoryPresenter {
         session.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
     }
 
-    func totalVolume(_ session: WorkoutSessionModel) -> Double {
-        session.exercises.flatMap(\.sets)
-            .compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
+    enum Event: LoggableEvent {
+        case skipRest
+
+        var eventName: String {
+            switch self {
+            case .skipRest: return "TrainingAccessory_SkipRest"
             }
-            .reduce(0.0, +)
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
     }
 }

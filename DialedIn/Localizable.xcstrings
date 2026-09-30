@@ -2082,6 +2082,16 @@
         }
       }
     },
+    "^[%lld item](inflect: true)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "^[%lld elemento](inflect: true)"
+          }
+        }
+      }
+    },
     "^[%lld item](inflect: true) · %@" : {
       "localizations" : {
         "es" : {
@@ -8630,6 +8640,7 @@
       }
     },
     "Elapsed: " : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17704,6 +17715,7 @@
       }
     },
     "Rest: " : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

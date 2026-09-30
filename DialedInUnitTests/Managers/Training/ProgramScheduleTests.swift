@@ -172,4 +172,42 @@ struct ProgramScheduleTests {
         #expect(item?.dayPlan.id == "rest 1")
         #expect(item?.dayPlan.exercises.isEmpty == true)
     }
+
+    // MARK: - Accounts from before plans
+
+    /// The old schedule counted every session the program had, so a user who has not finished a
+    /// whole block keeps every tick, including sessions from before the program was created.
+    @Test("Test A Legacy Run Counts All Of The Program's History")
+    func testALegacyRunCountsAllOfTheProgramsHistory() {
+        let beforeCreation = session("a", dayOffset: -30)
+        let legacy = ProgramSchedule.legacyRun(program: program(), sessions: [beforeCreation])
+
+        #expect(legacy.startedAt == Date(timeIntervalSince1970: 0))
+        #expect(ProgramSchedule.progress(of: legacy, sessions: [beforeCreation]).next?.dayPlan.id == "b")
+    }
+
+    /// The old schedule went back to the first microcycle after the last. A user past the end of
+    /// the block resumes where it had them, not on a finished block with nothing scheduled.
+    @Test("Test A Legacy Run Resumes After The Last Full Pass Through The Block")
+    func testALegacyRunResumesAfterTheLastFullPass() {
+        // Two microcycles a block: two full passes, then A of the third.
+        let sessions = ["a", "b", "c", "a", "b", "c", "a", "b", "c", "a", "b", "c", "a"]
+            .enumerated().map { session($1, dayOffset: $0) }
+        let legacy = ProgramSchedule.legacyRun(program: program(cycles: 2), sessions: sessions)
+        let progress = ProgramSchedule.progress(of: legacy, sessions: sessions)
+
+        #expect(legacy.startedAt > sessions[11].endedAt!)
+        #expect(progress.currentCycleIndex == 0)
+        #expect(progress.cycles[0][0].completedSessionId == sessions[12].id)
+        #expect(progress.next?.dayPlan.id == "b")
+    }
+
+    @Test("Test A Legacy Run Exactly At The End Of A Block Starts Fresh")
+    func testALegacyRunExactlyAtTheEndOfABlockStartsFresh() {
+        let sessions = ["a", "b", "c", "a", "b", "c"].enumerated().map { session($1, dayOffset: $0) }
+        let legacy = ProgramSchedule.legacyRun(program: program(cycles: 2), sessions: sessions)
+
+        #expect(ProgramSchedule.progress(of: legacy, sessions: sessions).next?.dayPlan.id == "a")
+        #expect(today(legacy, sessions, dayOffset: 6)?.dayPlan.id == "a")
+    }
 }

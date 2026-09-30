@@ -45,13 +45,13 @@ class TrainingPlanManager {
     }
 
     /// The block to schedule from. With no plan yet (an account from before plans, or the mock
-    /// build) the program is followed from its creation, which counts the same history as before.
-    func run(for program: TrainingProgram?) -> ProgramSchedule.Run? {
+    /// build) the program is followed the way the old schedule followed it.
+    func run(for program: TrainingProgram?, sessions: [WorkoutSessionModel]) -> ProgramSchedule.Run? {
         guard let program else { return nil }
         if let plan = currentPlan, plan.currentProgramId == program.id {
             return ProgramSchedule.Run(program: program, startedAt: plan.blockStartedAt, skips: plan.currentSkips)
         }
-        return ProgramSchedule.Run(program: program, startedAt: program.dateCreated)
+        return ProgramSchedule.legacyRun(program: program, sessions: sessions)
     }
 
     /// Starts `programIds` as a plan and ends whatever plan was current.
@@ -159,7 +159,7 @@ func advancePlanIfBlockComplete(
     sessions: [WorkoutSessionModel]
 ) async throws {
     guard let plan = plans.currentPlan,
-          let run = plans.run(for: programs.activeProgram(for: users.currentUser)) else { return }
+          let run = plans.run(for: programs.activeProgram(for: users.currentUser), sessions: sessions) else { return }
     let progress = ProgramSchedule.progress(of: run, sessions: sessions)
     guard let advanced = try await plans.advanceIfBlockComplete(plan, progress: progress),
           advanced.status == .active, let programId = advanced.currentProgramId else { return }
@@ -174,7 +174,7 @@ extension CoreInteractor {
     }
 
     var activeProgramRun: ProgramSchedule.Run? {
-        trainingPlanManager.run(for: activeTrainingProgram)
+        trainingPlanManager.run(for: activeTrainingProgram, sessions: workoutSessions)
     }
 
     var todaysScheduledItem: MicrocycleWorkoutTemplateModelItem? {
@@ -218,10 +218,19 @@ extension CoreInteractor {
     }
 
     /// Accounts from before plans follow a program with no plan behind it. Wraps it in a plan of
-    /// one block dated from the program's creation, so the progress shown does not change.
+    /// one block starting where the old schedule had them, so the progress shown does not change.
+    /// Then moves on any block finished elsewhere, so a completed block is never left with
+    /// nothing scheduled until the next workout.
     func migrateActiveProgramToPlanIfNeeded() async {
-        guard trainingPlanManager.currentPlan == nil, activeTrainingProgram != nil else { return }
-        _ = try? await currentTrainingPlanCreatingIfNeeded()
+        if trainingPlanManager.currentPlan == nil, activeTrainingProgram != nil {
+            _ = try? await currentTrainingPlanCreatingIfNeeded()
+        }
+        try? await advancePlanIfBlockComplete(
+            plans: trainingPlanManager,
+            programs: trainingProgramManager,
+            users: userManager,
+            sessions: workoutSessions
+        )
     }
 
     private func currentTrainingPlanCreatingIfNeeded() async throws -> TrainingPlan {
@@ -231,7 +240,7 @@ extension CoreInteractor {
             authorId: userId,
             name: program.name,
             programIds: [program.id],
-            startedAt: program.dateCreated
+            startedAt: ProgramSchedule.legacyRun(program: program, sessions: workoutSessions).startedAt
         )
     }
 }

@@ -156,12 +156,12 @@ class ActiveTrainingProgramPresenter {
         }
     }
 
-    /// The plan's block when it is this program, otherwise the program from its creation.
+    /// The plan's block when it is this program, otherwise the program as the old schedule saw it.
     private func run(for program: TrainingProgram) -> ProgramSchedule.Run {
         if let run = interactor.activeProgramRun, run.program.id == program.id {
             return ProgramSchedule.Run(program: program, startedAt: run.startedAt, skips: run.skips)
         }
-        return ProgramSchedule.Run(program: program, startedAt: program.dateCreated)
+        return ProgramSchedule.legacyRun(program: program, sessions: workoutSessions)
     }
 
     func onItemPressed(_ item: MicrocycleItem) {

@@ -45,6 +45,11 @@ enum ProgramSchedule {
             if case .done(let sessionId, _) = state { return sessionId }
             return nil
         }
+
+        var completedAt: Date? {
+            if case .done(_, let completedAt) = state { return completedAt }
+            return nil
+        }
     }
 
     struct Progress {
@@ -61,6 +66,22 @@ enum ProgramSchedule {
         }
 
         var isBlockComplete: Bool { next == nil }
+    }
+
+    /// Where an account from before plans was. The old schedule counted every session the program
+    /// ever had, name-matched ones included, and went back to the first microcycle after the last,
+    /// so the run starts just after the last full pass through the block. Starting from the
+    /// program's creation instead left anyone past their last microcycle with nothing scheduled.
+    static func legacyRun(program: TrainingProgram, sessions: [WorkoutSessionModel]) -> Run {
+        // The epoch rather than `.distantPast`, which is outside what Firestore can store.
+        var startedAt = Date(timeIntervalSince1970: 0)
+        while true {
+            let progress = progress(of: Run(program: program, startedAt: startedAt), sessions: sessions)
+            guard progress.isBlockComplete,
+                  let finishedAt = progress.cycles.joined().compactMap(\.completedAt).max() else { break }
+            startedAt = finishedAt.addingTimeInterval(0.001)
+        }
+        return Run(program: program, startedAt: startedAt)
     }
 
     static func progress(of run: Run, sessions: [WorkoutSessionModel]) -> Progress {

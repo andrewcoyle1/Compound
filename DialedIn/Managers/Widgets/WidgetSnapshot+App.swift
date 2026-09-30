@@ -54,8 +54,8 @@ func refreshWidgetSnapshot(
     guard let user = users.currentUser else { return }
     WidgetSnapshotStore.write(.make(
         userId: user.userId,
-        run: plans?.run(for: programs.activeProgram(for: user))
-            ?? programs.activeProgram(for: user).map { ProgramSchedule.Run(program: $0, startedAt: $0.dateCreated) },
+        run: plans?.run(for: programs.activeProgram(for: user), sessions: sessions)
+            ?? programs.activeProgram(for: user).map { ProgramSchedule.legacyRun(program: $0, sessions: sessions) },
         sessions: sessions,
         streak: streak,
         weeklyGoal: weeklyGoal ?? CircleWeek.goal(for: user)

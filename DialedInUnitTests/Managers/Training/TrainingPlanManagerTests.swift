@@ -48,8 +48,8 @@ struct TrainingPlanManagerTests {
         try await manager.startPlan(authorId: "me", name: "Plan", programIds: [block.id], startedAt: start.addingTimeInterval(3600))
         #expect(await TestManagers.eventually { manager.currentPlan != nil })
 
-        #expect(manager.run(for: block)?.startedAt == start.addingTimeInterval(3600))
-        #expect(manager.run(for: program("elsewhere"))?.startedAt == start)
+        #expect(manager.run(for: block, sessions: [])?.startedAt == start.addingTimeInterval(3600))
+        #expect(manager.run(for: program("elsewhere"), sessions: [])?.startedAt == Date(timeIntervalSince1970: 0))
     }
 
     @Test("Test Finishing A Block Moves To The Next From A Clean Start")

@@ -276,8 +276,10 @@ struct ActiveTrainingProgramPresenterTests {
     func testAFinishedBlockStaysOnItsLastMicrocycle() {
         let days = [day("Upper")]
         let screen = makeScreen(sessions: (1...2).map { session(id: "s\($0)", day: days[0], order: $0) })
+        let followed = program(days: days, cycles: 2)
+        screen.interactor.activeProgramRun = ProgramSchedule.Run(program: followed, startedAt: start)
 
-        let items = screen.presenter.microcycleItems(program: program(days: days, cycles: 2))
+        let items = screen.presenter.microcycleItems(program: followed)
 
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 2 of 2")
         #expect(items.allSatisfy { $0.isCompleted })

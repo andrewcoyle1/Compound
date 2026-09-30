@@ -21,12 +21,12 @@ enum CheckInStep: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .introduction:   return String(localized: "Your week")
-        case .partialLogging: return String(localized: "Partial logging")
-        case .weighIn:        return String(localized: "Weigh-in")
+        case .introduction:   return String(localized: "Your Week")
+        case .partialLogging: return String(localized: "Partial Logging")
+        case .weighIn:        return String(localized: "Weigh-In")
         case .fasting:        return String(localized: "Fasting")
-        case .loggingBreak:   return String(localized: "Logging break")
-        case .programUpdate:  return String(localized: "Program update")
+        case .loggingBreak:   return String(localized: "Logging Break")
+        case .programUpdate:  return String(localized: "Program Update")
         }
     }
 
@@ -51,7 +51,7 @@ struct CheckInDayRow: Identifiable, Equatable, Sendable {
     }
 
     var intakeDescription: String {
-        guard let intakeKcal else { return "Nothing logged" }
-        return String(localized: "\(String(describing: Int(intakeKcal))) kcal")
+        guard let intakeKcal else { return String(localized: "Nothing logged") }
+        return Format.kcal(intakeKcal)
     }
 }

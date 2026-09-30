@@ -31,7 +31,11 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                 Section { checkInCard }
             }
             if presenter.showsWeeklyReviewCard {
-                Section { WeeklyReviewCard { presenter.onWeeklyReviewPressed() } }
+                Section {
+                    ListRowButton(title: "Your weekly review is ready", systemImage: "chart.bar.doc.horizontal") {
+                        presenter.onWeeklyReviewPressed()
+                    }
+                }
             }
             workoutCard
             nutritionCard
@@ -39,8 +43,8 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
             workoutStreakCard(WorkoutStreakDelegate())
         }
         .scrollIndicators(.hidden)
+        // No subtitle: it shrinks the large title, which every other tab root shows full size.
         .navigationTitle("Today")
-        .navigationSubtitle(Date.now.formatted(date: .abbreviated, time: .omitted))
         .minimizingLargeTitleBar()
         .onAppear { presenter.onViewAppear(delegate: delegate) }
         .onDisappear { presenter.onViewDisappear(delegate: delegate) }
@@ -56,28 +60,26 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         } else if presenter.isMacrocycleComplete {
             macrocycleCompleteCard
         } else {
-            // Without a plan for today the card stays, so the first card is always the workout.
+            // Without a plan for today the section stays, so the first card is always the workout.
             Section("Today's Workout") {
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(presenter.hasActiveMesocycle ? "Nothing scheduled today." : "No active mesocycle.")
-                        .font(.rowTitle)
+                ContentUnavailableView {
+                    Label(
+                        presenter.hasActiveMesocycle ? "Nothing Scheduled" : "No Active Mesocycle",
+                        systemImage: presenter.hasActiveMesocycle ? Symbol.rest : Symbol.mesocycle
+                    )
+                } description: {
                     Text("Start an empty workout and add exercises as you go.")
-                        .font(.rowDetail)
-                        .foregroundStyle(.secondary)
-                        Button {
+                } actions: {
+                    Button {
                         presenter.onStartEmptyWorkoutPressed()
                     } label: {
                         Text("Start Empty Workout")
-                            .frame(maxWidth: .infinity)
                             .foregroundStyle(.onAccent)
                     }
                     .buttonStyle(.borderedProminent)
                     if !presenter.hasActiveMesocycle {
-                        Button {
+                        Button("Choose Mesocycle") {
                             presenter.onChooseMesocyclePressed()
-                        } label: {
-                            Text("Choose Mesocycle")
-                                .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                     }
@@ -88,25 +90,20 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
 
     private var macrocycleCompleteCard: some View {
         Section("Today's Workout") {
-            VStack(alignment: .leading, spacing: Spacing.m) {
-                Text("\(presenter.completedMacrocycleName) complete")
-                    .font(.rowTitle)
+            ContentUnavailableView {
+                Label("\(presenter.completedMacrocycleName) complete", systemImage: Symbol.success)
+            } description: {
                 Text("Every mesocycle is done. Run it again from the first one, or pick something new.")
-                    .font(.rowDetail)
-                    .foregroundStyle(.secondary)
+            } actions: {
                 Button {
                     presenter.onRepeatMacrocyclePressed()
                 } label: {
                     Label("Repeat Macrocycle", systemImage: Symbol.repeatMacrocycle)
-                        .frame(maxWidth: .infinity)
                         .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.borderedProminent)
-                Button {
+                Button("Choose Mesocycle") {
                     presenter.onChooseMesocyclePressed()
-                } label: {
-                    Text("Choose Mesocycle")
-                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
             }
@@ -133,26 +130,25 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     // MARK: - Weigh-in
 
     private var weighInCard: some View {
-        Section("Weigh-In") {
-            VStack(alignment: .leading, spacing: Spacing.m) {
-                if let weight = presenter.latestWeightText, let date = presenter.latestWeighInDate {
-                    Stat(value: weight, label: presenter.hasWeighedInToday
-                        ? String(localized: "Logged today")
-                        : String(localized: "Last logged \(date.formatted(.relative(presentation: .named)))"))
-                } else {
+        Section {
+            if let weight = presenter.latestWeightText, let date = presenter.latestWeighInDate {
+                Stat(value: weight, label: presenter.hasWeighedInToday
+                    ? String(localized: "Logged today")
+                    : String(localized: "Last logged \(date.formatted(.relative(presentation: .named)))"))
+            } else {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text("No weigh-ins yet.")
                         .font(.rowTitle)
                     Text("A weigh-in a day keeps your trend and targets accurate.")
                         .font(.rowDetail)
                         .foregroundStyle(.secondary)
                 }
-                Button {
-                    presenter.onLogWeightPressed()
-                } label: {
-                    Text("Log Weight")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
+            }
+        } header: {
+            // The action in the header, as the Progress tab's sections carry theirs, rather than a
+            // full-width button inside the card.
+            SectionHeaderView(title: "Weigh-In", actionTitle: "Log Weight", padsEdges: false) {
+                presenter.onLogWeightPressed()
             }
         }
     }
@@ -197,6 +193,25 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         }
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         #endif
+
+        // The same quick actions the other tabs keep behind their add button.
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button("Log Meal", systemImage: Symbol.meal) {
+                    presenter.onLogMealPressed()
+                }
+                Button("Log Weight", systemImage: Symbol.scaleWeight) {
+                    presenter.onLogWeightPressed()
+                }
+                Button("Start Empty Workout", systemImage: Symbol.workout) {
+                    presenter.onStartEmptyWorkoutPressed()
+                }
+            } label: {
+                Image(systemName: Symbol.add)
+            }
+            .accessibilityLabel("Log")
+        }
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
         ToolbarItem(placement: .topBarTrailing) {
             ProfileButton(

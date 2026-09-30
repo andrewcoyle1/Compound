@@ -19,18 +19,23 @@ struct SectionHeaderView: View {
     /// already showing everything wants something else ("Find People").
     var actionTitle: String
     var onActionPressed: (() -> Void)?
+    /// The header pads itself in from the edges, for the lists that zero their section margins
+    /// (the Progress tab's card grids). In a list with the standard margins that indents it
+    /// twice, so pass `false` there.
+    var padsEdges: Bool = true
 
     /// A literal title is looked up in the string catalog, so a call site cannot ship English by
     /// passing a bare string.
-    init(title: LocalizedStringResource, actionTitle: LocalizedStringResource = "See All", onActionPressed: (() -> Void)? = nil) {
-        self.init(title: String(localized: title), actionTitle: String(localized: actionTitle), onActionPressed: onActionPressed)
+    init(title: LocalizedStringResource, actionTitle: LocalizedStringResource = "See All", padsEdges: Bool = true, onActionPressed: (() -> Void)? = nil) {
+        self.init(title: String(localized: title), actionTitle: String(localized: actionTitle), padsEdges: padsEdges, onActionPressed: onActionPressed)
     }
 
     /// For a title that is already a runtime `String`, localized or user content.
     @_disfavoredOverload
-    init(title: String, actionTitle: String = String(localized: "See All"), onActionPressed: (() -> Void)? = nil) {
+    init(title: String, actionTitle: String = String(localized: "See All"), padsEdges: Bool = true, onActionPressed: (() -> Void)? = nil) {
         self.title = title
         self.actionTitle = actionTitle
+        self.padsEdges = padsEdges
         self.onActionPressed = onActionPressed
     }
 
@@ -53,7 +58,7 @@ struct SectionHeaderView: View {
                 .accessibilityLabel("\(actionTitle), \(title)")
             }
         }
-        .padding(.horizontal)
+        .padding(.horizontal, padsEdges ? nil : 0)
     }
 }
 

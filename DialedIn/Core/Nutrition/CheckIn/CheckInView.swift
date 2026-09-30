@@ -31,7 +31,10 @@ struct CheckInView: View {
             case nil:             EmptyView()
             }
         }
-        .navigationTitle(presenter.currentStep?.title ?? "Weekly check-in")
+        // Each step's choices are the flow's buttons, pinned under the list as every other flow
+        // has them, rather than rows that read as more data.
+        .bottomCTA { actions }
+        .navigationTitle(presenter.currentStep?.title ?? String(localized: "Weekly Check-In"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent
@@ -51,7 +54,6 @@ struct CheckInView: View {
             summaryRow(title: String(localized: "Days logged"), value: "\(presenter.loggedDayCount) of 7")
             summaryRow(title: String(localized: "Weigh-ins"), value: "\(presenter.weighInCount)")
             summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
-            continueButton("Continue")
         } header: {
             Text("The last seven days")
         }
@@ -70,9 +72,6 @@ struct CheckInView: View {
         } footer: {
             Text("Days you mark as incomplete are left out of your expenditure estimate.")
         }
-        Section {
-            continueButton("Continue")
-        }
     }
 
     @ViewBuilder
@@ -89,16 +88,6 @@ struct CheckInView: View {
             selectedPounds: $presenter.selectedPounds,
             selectedPoundsTenths: $presenter.selectedPoundsTenths
         )
-        Section {
-            Button("Log Weight") {
-                presenter.onLogWeightPressed()
-            }
-            .disabled(presenter.isSaving)
-            Button("Skip") {
-                presenter.onSkipWeighInPressed()
-            }
-            .disabled(presenter.isSaving)
-        }
     }
 
     @ViewBuilder
@@ -114,36 +103,25 @@ struct CheckInView: View {
         } footer: {
             Text("A fasting day counts as 0 kcal rather than a day you forgot to log.")
         }
-        Section {
-            continueButton("Continue")
-        }
     }
 
     @ViewBuilder
     private var loggingBreakStep: some View {
         if presenter.hasOpenLoggingBreak {
             Section {
-                Button("End My Break") {
-                    presenter.onEndLoggingBreakPressed()
-                }
-                .disabled(presenter.isSaving)
-                continueButton("Stay on a Break")
+                Text("Your expenditure estimate is frozen while the break is open.")
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
             } header: {
                 Text("You are on a logging break")
-            } footer: {
-                Text("Your expenditure estimate is frozen while the break is open.")
             }
         } else {
             Section {
-                Button("Start a Break") {
-                    presenter.onStartLoggingBreakPressed()
-                }
-                .disabled(presenter.isSaving)
-                continueButton("No Thanks")
+                Text("Your estimate freezes until you end the break, and the check-in stops asking.")
+                    .font(.rowDetail)
+                    .foregroundStyle(.secondary)
             } header: {
                 Text("Take a break from logging?")
-            } footer: {
-                Text("Your estimate freezes until you end the break, and the check-in stops asking.")
             }
         }
     }
@@ -154,14 +132,6 @@ struct CheckInView: View {
             Section {
                 Text(summary)
                     .font(.rowDetail)
-                Button("Accept") {
-                    presenter.onAcceptProposalPressed()
-                }
-                .disabled(presenter.isSaving)
-                Button("Not Now") {
-                    presenter.onDonePressed()
-                }
-                .disabled(presenter.isSaving)
             } header: {
                 Text("New targets suggested")
             }
@@ -169,14 +139,47 @@ struct CheckInView: View {
             Section {
                 summaryRow(title: String(localized: "Expenditure"), value: presenter.expenditureDescription)
                 summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
-                Button("Done") {
-                    presenter.onDonePressed()
-                }
-                .disabled(presenter.isSaving)
             } header: {
                 Text("Your targets are unchanged this week")
             }
         }
+    }
+
+    // MARK: - Actions
+
+    @ViewBuilder
+    private var actions: some View {
+        switch presenter.currentStep {
+        case .introduction, .partialLogging, .fasting:
+            actionButton("Continue") { presenter.onContinuePressed() }
+        case .weighIn:
+            actionButton("Log Weight") { presenter.onLogWeightPressed() }
+            actionButton("Skip", isPrimary: false) { presenter.onSkipWeighInPressed() }
+        case .loggingBreak:
+            if presenter.hasOpenLoggingBreak {
+                actionButton("End My Break") { presenter.onEndLoggingBreakPressed() }
+                actionButton("Stay on a Break", isPrimary: false) { presenter.onContinuePressed() }
+            } else {
+                actionButton("No Thanks") { presenter.onContinuePressed() }
+                actionButton("Start a Break", isPrimary: false) { presenter.onStartLoggingBreakPressed() }
+            }
+        case .programUpdate:
+            if presenter.proposalSummary != nil {
+                actionButton("Accept") { presenter.onAcceptProposalPressed() }
+                actionButton("Not Now", isPrimary: false) { presenter.onDonePressed() }
+            } else {
+                actionButton("Done") { presenter.onDonePressed() }
+            }
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private func actionButton(_ title: LocalizedStringKey, isPrimary: Bool = true, action: @escaping () -> Void) -> some View {
+        CallToActionButton(isPrimaryAction: isPrimary, isLoading: isPrimary && presenter.isSaving, action: action) {
+            Text(title)
+        }
+        .disabled(presenter.isSaving)
     }
 
     // MARK: - Pieces
@@ -192,13 +195,6 @@ struct CheckInView: View {
                 .font(.rowDetail)
                 .foregroundStyle(.secondary)
         }
-    }
-
-    private func continueButton(_ title: String) -> some View {
-        Button(title) {
-            presenter.onContinuePressed()
-        }
-        .disabled(presenter.isSaving)
     }
 
     @ToolbarContentBuilder

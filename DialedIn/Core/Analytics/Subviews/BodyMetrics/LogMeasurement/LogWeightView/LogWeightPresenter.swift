@@ -52,9 +52,15 @@ class LogWeightPresenter {
             unit = preference == .kilograms ? .kilograms : .pounds
         }
 
-        // Set initial weight to current weight if available. A whole-number entry saved before the
-        // tenths wheel existed splits to a tenths digit of 0.
-        if let currentWeight = user.submittedWeightKilograms {
+        // Start from the latest weigh-in, which is what Today and the charts show, and fall back to
+        // the weight given at onboarding. That profile weight alone used to open the wheel on a
+        // number days or weeks old. A whole-number entry saved before the tenths wheel existed
+        // splits to a tenths digit of 0.
+        let latestWeighIn = interactor.bodyMeasurements
+            .filter { $0.deletedAt == nil && $0.weightKg != nil }
+            .max { $0.date < $1.date }?
+            .weightKg
+        if let currentWeight = latestWeighIn ?? user.submittedWeightKilograms {
             (selectedKilograms, selectedKilogramsTenths) = DecimalWheelValue.split(currentWeight)
             (selectedPounds, selectedPoundsTenths) = DecimalWheelValue.split(UnitConversion.kgToLbs(currentWeight))
         }

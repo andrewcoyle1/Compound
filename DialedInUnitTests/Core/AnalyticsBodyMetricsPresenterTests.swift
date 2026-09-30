@@ -573,6 +573,23 @@ struct AnalyticsLogWeightPresenterTests {
         #expect(screen.presenter.selectedPounds == 180)
     }
 
+    /// The latest weigh-in wins over the onboarding weight, so the wheel opens on the number Today
+    /// shows rather than one from weeks ago.
+    @Test("Test The Wheels Open On The Latest Weigh-In")
+    func testTheWheelsOpenOnTheLatestWeighIn() async {
+        let screen = makeScreen(user: UserModel(userId: "user-1", submittedWeightKilograms: 70))
+        let now = Date()
+        screen.interactor.bodyMeasurements = [
+            BodyMeasurementEntry(authorId: "user-1", weightKg: 71, date: now.addingTimeInterval(-86_400 * 3)),
+            BodyMeasurementEntry(authorId: "user-1", weightKg: 72.4, date: now.addingTimeInterval(-3_600))
+        ]
+
+        await screen.presenter.loadInitialData()
+
+        #expect(screen.presenter.selectedKilograms == 72)
+        #expect(screen.presenter.selectedKilogramsTenths == 4)
+    }
+
     /// A kilogram entry is stored as typed.
     @Test("Test Kilograms Are Stored As Typed")
     func testKilogramsAreStoredAsTyped() async {

@@ -13,8 +13,10 @@ struct NutritionCard: View {
     let onLogMealTapped: () -> Void
     
     var body: some View {
-        Section("Today's Nutrition") {
+        Section {
             cardItem
+        } header: {
+            SectionHeaderView(title: "Today's Nutrition", actionTitle: "Log Meal", padsEdges: false, onActionPressed: onLogMealTapped)
         }
     }
     
@@ -55,12 +57,6 @@ struct NutritionCard: View {
                     }
                 }
             }
-            
-            Button(action: onLogMealTapped) {
-                Text("Log a Meal")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
         }
     }
     

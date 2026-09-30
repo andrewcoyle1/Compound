@@ -53,10 +53,13 @@ struct NutritionTargetChartView: View {
         } description: {
             Text("Create a diet plan and your daily calorie and macro targets appear here.")
         } actions: {
-            Button("Create Diet Plan") {
+            Button {
                 presenter.onCreatePlanPressed()
+            } label: {
+                Text("Create Diet Plan")
+                    .foregroundStyle(.onAccent)
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.borderedProminent)
         }
     }
 

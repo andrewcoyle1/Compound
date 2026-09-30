@@ -274,10 +274,13 @@ struct ExerciseListBuilderView: View {
                 } description: {
                     Text("You have no custom exercises.")
                 } actions: {
-                    Button("Create Exercise") {
+                    Button {
                         presenter.onAddExercisePressed()
+                    } label: {
+                        Text("Create Exercise")
+                            .foregroundStyle(.onAccent)
                     }
-                    .buttonStyle(.glass)
+                    .buttonStyle(.borderedProminent)
                 }
             }
         } header: {

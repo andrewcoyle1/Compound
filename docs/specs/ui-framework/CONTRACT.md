@@ -65,7 +65,7 @@ recolour the whole app. That only holds if code never bypasses it.
 - `Color.accent` and bare `.accent` (about 40 sites today) are retired.
 
 **Use the accent for:**
-- primary buttons (`.glassProminent` already takes the tint)
+- primary buttons (`.borderedProminent` in content and `.glassProminent` in the navigation layer both take the tint)
 - selected state in chips, segments and selectable rows (the checkmark)
 - toggles, sliders and progress indicators that are not data
 - links, and "See All" style actions
@@ -257,5 +257,5 @@ for picker and segment changes. There are no raw `UI*FeedbackGenerator`s.
 | Destructive | `Button(role: .destructive)`. Irreversible ones confirm through `router.showConfirmationDialog` / alert with a Cancel. |
 | Selection | Anything showing selected state adds `.accessibilityAddTraits(.isSelected)` when selected. |
 | Status | Never colour alone. Pair it with a symbol or text. |
-| Buttons | `.glassProminent` primary, `.glass` secondary, `ListRowButton` for rows in a List, `.anyButton(.press)` for tappable cards. No `.bordered`/`.borderedProminent`. |
+| Buttons | In content: `.borderedProminent` primary (label in `.onAccent`), `.bordered` secondary, `ListRowButton` for rows in a List, `.anyButton(.press)` for tappable cards. Glass (`.glass`, `.glassProminent`, `.glassEffect`) only in the navigation layer the HIG reserves it for: toolbar items, the pinned `.bottomCTA`, bars pinned over a scrolling list, and controls floating over media, toasts and modals. Never on a button inside a card, a row or an empty state. |
 | Deprecated APIs | `.foregroundColor` becomes `.foregroundStyle`. `.cornerRadius` becomes a clip shape. `.navigationBar*` placements become `.topBar*`. |

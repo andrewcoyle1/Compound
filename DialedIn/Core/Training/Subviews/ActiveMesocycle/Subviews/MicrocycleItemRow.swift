@@ -19,6 +19,9 @@ struct MicrocycleItemRow: View {
             if item.isToday {
                 Chip("Today")
             }
+            if item.isBeforeStart {
+                Chip("Not tracked")
+            }
             // A checkmark when done, the skip symbol when skipped. Otherwise a chevron, because the
             // row opens the workout: the empty circle it used to show is `ListRow`'s unchecked option.
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : (item.isSkipped ? Symbol.skip : "chevron.forward"))
@@ -34,6 +37,7 @@ struct MicrocycleItemRow: View {
     private var accessibilityValue: Text {
         if item.isCompleted { return Text("Completed") }
         if item.isSkipped { return Text("Skipped") }
+        if item.isBeforeStart { return Text("Not tracked") }
         return item.timing == .future ? Text("Upcoming") : Text("Not started")
     }
 }

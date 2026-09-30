@@ -11,6 +11,8 @@ struct MicrocycleItem: Identifiable {
     let completedSessionId: String?
     let mesocycleId: String
     var isSkipped: Bool = false
+    /// In a microcycle before the one the user joined the mesocycle at.
+    var isBeforeStart: Bool = false
     /// The day plan the schedule puts on today — the same answer Today's workout card gives.
     var isToday: Bool = false
     var timing: Timing = .current
@@ -150,6 +152,7 @@ class ActiveMesocyclePresenter {
                 completedSessionId: slot.completedSessionId,
                 mesocycleId: mesocycle.id,
                 isSkipped: slot.state == .skipped,
+                isBeforeStart: slot.state == .beforeStart,
                 isToday: isToday,
                 timing: shown < currentCycle ? .past : (shown == currentCycle ? .current : .future),
                 slot: slot

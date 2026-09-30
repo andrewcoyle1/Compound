@@ -297,14 +297,14 @@ enum TestManagers {
         return manager
     }
 
-    /// A training plan manager already listening, so `macrocycles` holds `plans`.
-    static func signedInMacrocycleManager(plans: [Macrocycle] = []) async -> MacrocycleManager {
+    /// A macrocycle manager already listening, so `macrocycles` holds `macrocycles`.
+    static func signedInMacrocycleManager(macrocycles: [Macrocycle] = []) async -> MacrocycleManager {
         let manager = MacrocycleManager(
-            macrocycleSyncEngine: collectionEngine(plans, key: "training-plans"),
+            macrocycleSyncEngine: collectionEngine(macrocycles, key: "training-plans"),
             logManager: LogManager(services: [])
         )
         await manager.signIn()
-        await eventually { manager.macrocycles.count == plans.count }
+        await eventually { manager.macrocycles.count == macrocycles.count }
         return manager
     }
 

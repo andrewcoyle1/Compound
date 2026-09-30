@@ -106,13 +106,8 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
-            Menu {
-                Button("New Mesocycle", systemImage: Symbol.mesocycle) {
-                    presenter.onCreateMesocyclePressed()
-                }
-                Button("New Macrocycle", systemImage: Symbol.calendar) {
-                    presenter.onCreateMacrocyclePressed()
-                }
+            Button {
+                presenter.onCreateMesocyclePressed()
             } label: {
                 Image(systemName: Symbol.add)
             }

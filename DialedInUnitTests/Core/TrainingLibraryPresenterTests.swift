@@ -478,7 +478,6 @@ struct MesocycleManagementPresenterTests {
         func showDevSettingsView() { shown.append("devSettings") }
         func showMesocycleSettingsView(mesocycle: Binding<Mesocycle>) { shown.append("programSettings") }
         func showCreateMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("createProgram") }
-        func showCreateMacrocycleView() { shown.append("createPlan") }
         func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle) { shown.append("prebuilt:\(mesocycle.id)") }
 
         func showEditMesocycleView(delegate: EditMesocycleDelegate) {

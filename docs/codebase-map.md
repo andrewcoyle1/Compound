@@ -99,18 +99,18 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `DialedIn/Core/Profile` | 201 | 12,682 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
 | `DialedIn/Core/Sharing` | 8 | 502 | Share-to-follower and shared-item viewer |
 | `DialedIn/Core/TabBar` | 5 | 473 | Tab bar, DeepLink parsing, tab selection |
-| `DialedIn/Core/Training` | 222 | 18,830 | Training tab: workouts, tracker, programs, history, create flows |
-| `DialedIn/Components` | 73 | 6,806 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `DialedIn/Managers` | 245 | 30,783 | App-owned managers, models and services (see Managers table) |
-| `DialedIn/Root` | 22 | 3,327 | AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `DialedIn/Core/Training` | 226 | 19,201 | Training tab: workouts, tracker, programs, history, create flows |
+| `DialedIn/Components` | 73 | 6,808 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
+| `DialedIn/Managers` | 245 | 30,866 | App-owned managers, models and services (see Managers table) |
+| `DialedIn/Root` | 22 | 3,330 | AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `DialedIn/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `DialedIn/Extensions` | 13 | 638 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `DialedIn/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 600 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
-| `DialedInUnitTests` | 270 | 72,915 | Swift Testing unit suites (BlueprintName DialedInUnitTests) |
+| `DialedInUnitTests` | 271 | 73,163 | Swift Testing unit suites (BlueprintName DialedInUnitTests) |
 | `DialedInUITests` | 7 | 573 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 9 | 16,844 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `functions` | 10 | 17,005 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 700 | Screenshot, contact-sheet, smoke-test generation, this map |
 | `docs` | 46 | 10,080 | Specs, reviews, audits, this map |
@@ -118,7 +118,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-204 presenter-backed modules.
+205 presenter-backed modules.
 
 ### `DialedIn/Components` (4 modules)
 
@@ -345,16 +345,16 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **Today** | [DialedIn/Core/Today](DialedIn/Core/Today) | 564 | AddMeal, CheckIn, LogWeight, MesocycleLibrary, ProfileViewZoom, WeeklyReview, WorkoutTracker | TodayDelegate |  | TodayPresenterTests.swift |
 | **WeeklyReview** | [WeeklyReview](DialedIn/Core/Today/WeeklyReview) | 592 |  | `showWeeklyReviewView` | WeeklyReview.swift, WeeklyReviewCard.swift, WeeklyReviewShareCardView.swift |  |
 
-### `DialedIn/Core/Training` (49 modules)
+### `DialedIn/Core/Training` (50 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Training** | [DialedIn/Core/Training](DialedIn/Core/Training) | 610 | CreateExercise, CreateMesocycle, CreateWorkout, EditMesocycle, ExerciseDetail, Exercises, MesocycleLibrary, ProfileViewZoom, WorkoutHistory, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker, Workouts | TrainingDelegate |  | TrainingHomePresenterTests.swift, TrainingLibraryPresenterTests.swift, TrainingSettingsPresenterTests.swift |
+| **Training** | [DialedIn/Core/Training](DialedIn/Core/Training) | 629 | CreateExercise, CreateMesocycle, CreateWorkout, EditMesocycle, ExerciseDetail, Exercises, MacrocycleDetail, Macrocycles, MesocycleLibrary, ProfileViewZoom, WorkoutHistory, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker, Workouts | TrainingDelegate |  | TrainingHomePresenterTests.swift, TrainingLibraryPresenterTests.swift, TrainingSettingsPresenterTests.swift |
 | **ExerciseListBuilder** | [Components/ExerciseListBuilder](DialedIn/Core/Training/Components/ExerciseListBuilder) | 705 | CreateExercise | ExerciseListBuilderDelegate, `showExerciseListBuilderView` | ExerciseFilters.swift |  |
-| **TodaysWorkoutCard** | [Components/TodaysWorkoutCard](DialedIn/Core/Training/Components/TodaysWorkoutCard) | 443 | WorkoutTemplateDetail, WorkoutTracker | TodaysWorkoutCardDelegate | MesocycleSchedule.swift, TodaysWorkoutCard.swift |  |
+| **TodaysWorkoutCard** | [Components/TodaysWorkoutCard](DialedIn/Core/Training/Components/TodaysWorkoutCard) | 453 | WorkoutTemplateDetail, WorkoutTracker | TodaysWorkoutCardDelegate | MesocycleSchedule.swift, TodaysWorkoutCard.swift |  |
 | **TrainingAccessory** | [Components/TrainingAccessory](DialedIn/Core/Training/Components/TrainingAccessory) | 283 | WorkoutTracker | TrainingAccessoryDelegate |  |  |
 | **WorkoutStreak** | [Components/WorkoutStreakCard](DialedIn/Core/Training/Components/WorkoutStreakCard) | 273 |  | WorkoutStreakDelegate | WorkoutStreakCard.swift |  |
-| **ActiveMesocycle** | [Subviews/ActiveMesocycle](DialedIn/Core/Training/Subviews/ActiveMesocycle) | 504 | EditMesocycle, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | ActiveMesocycleDelegate, `showActiveMesocycleView` |  | ActiveMesocyclePresenterTests.swift |
+| **ActiveMesocycle** | [Subviews/ActiveMesocycle](DialedIn/Core/Training/Subviews/ActiveMesocycle) | 507 | EditMesocycle, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | ActiveMesocycleDelegate, `showActiveMesocycleView` |  | ActiveMesocyclePresenterTests.swift |
 | **CreateExercise** | [Subviews/AddTraining/CreateExercise](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise) | 302 | MuscleGroupPicker | `showCreateExerciseView` |  | CreateExerciseEquipmentPresenterTests.swift, CreateExerciseFlowPresenterTests.swift |
 | **EquipmentPicker** | [Subviews/AddTraining/CreateExercise/EquipmentPicker](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise/EquipmentPicker) | 243 |  | EquipmentPickerDelegate, `showEquipmentPickerView` |  |  |
 | **ExerciseEquipment** | [Subviews/AddTraining/CreateExercise/ExerciseEquipment](DialedIn/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseEquipment) | 319 | EquipmentPicker, FinalExerciseDetails | ExerciseEquipmentDelegate, `showExerciseEquipmentView` |  |  |
@@ -380,8 +380,9 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseSettings** | [Subviews/ExerciseSettings](DialedIn/Core/Training/Subviews/ExerciseSettings) | 325 | ExerciseModelDetail, RestModal, RestTimerSettings, WorkoutNotes | ExerciseSettingsDelegate, `showExerciseSettingsView` |  |  |
 | **Exercises** | [Subviews/Exercises](DialedIn/Core/Training/Subviews/Exercises) | 110 | CreateExercise, ExerciseModelDetail | `showExercisesView` |  |  |
 | **ExerciseTemplateDetail** | [Subviews/Exercises/ExerciseTemplateDetail](DialedIn/Core/Training/Subviews/Exercises/ExerciseTemplateDetail) | 797 |  | ExerciseModelDetailDelegate, `showDeleteConfirmation`, `showExerciseModelDetailView` | ExerciseModelDetailStats.swift, ExerciseTemplateDetailDelegate.swift |  |
-| **MesocycleManagement** | [Subviews/MesocycleLibrary](DialedIn/Core/Training/Subviews/MesocycleLibrary) | 339 | CreateMacrocycle, CreateMesocycle, EditMesocycle, MesocycleSettings, PrebuiltMesocycleDetail | `showDeleteAlert`, `showMesocycleLibraryView` |  |  |
-| **CreateMacrocycle** | [Subviews/MesocycleLibrary/CreateMacrocycle](DialedIn/Core/Training/Subviews/MesocycleLibrary/CreateMacrocycle) | 251 |  | `showCreateMacrocycleView` |  |  |
+| **Macrocycles** | [Subviews/Macrocycles](DialedIn/Core/Training/Subviews/Macrocycles) | 193 | MacrocycleDetail | `showMacrocyclesView` |  |  |
+| **MacrocycleDetail** | [Subviews/Macrocycles/MacrocycleDetail](DialedIn/Core/Training/Subviews/Macrocycles/MacrocycleDetail) | 404 |  | MacrocycleDetailDelegate, `showMacrocycleDetailView` |  | MacrocycleDetailPresenterTests.swift |
+| **MesocycleManagement** | [Subviews/MesocycleLibrary](DialedIn/Core/Training/Subviews/MesocycleLibrary) | 328 | CreateMesocycle, EditMesocycle, MesocycleSettings, PrebuiltMesocycleDetail | `showDeleteAlert`, `showMesocycleLibraryView` |  |  |
 | **InactiveMesocycle** | [Subviews/MesocycleLibrary/InactiveMesocycle](DialedIn/Core/Training/Subviews/MesocycleLibrary/InactiveMesocycle) | 155 |  | InactiveMesocycleDelegate, `showInactiveMesocycleView` |  |  |
 | **MesocycleDisclosureGroup** | [Subviews/MesocycleLibrary/MesocycleDisclosureGroup](DialedIn/Core/Training/Subviews/MesocycleLibrary/MesocycleDisclosureGroup) | 163 | EditMesocycle, ShareToFollower | MesocycleDisclosureGroupDelegate, `showMesocycleDisclosureGroupView` |  |  |
 | **PrebuiltMesocycleDetail** | [Subviews/MesocycleLibrary/PrebuiltMesocycleDetail](DialedIn/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail) | 209 |  | `showPrebuiltMesocycleDetailView` |  |  |
@@ -432,7 +433,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseSettingsManager** | [DialedIn/Managers/Training/Exercise/ExerciseSettings](DialedIn/Managers/Training/Exercise/ExerciseSettings/ExerciseSettingsManager.swift) | 76 | Collection<ExerciseSettingsModel> | ExerciseSettingsModel |  |  | ExerciseSettingsManagerTests.swift |
 | **ExerciseUnitPreferenceManager** | [DialedIn/Managers/Training/Exercise](DialedIn/Managers/Training/Exercise/ExerciseUnitPreferenceManager.swift) | 155 |  | BodyRegion, EquipmentVariation, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MuscleVolume, Muscles, SetTarget, SetTargetSetType, … +3 more |  |  | ExerciseUnitPreferenceManagerTests.swift |
 | **GymProfileManager** | [DialedIn/Managers/Training/GymProfile](DialedIn/Managers/Training/GymProfile/GymProfileManager.swift) | 110 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +22 more |  |  | GymProfileManagerTests.swift |
-| **MacrocycleManager** | [DialedIn/Managers/Training/Macrocycle](DialedIn/Managers/Training/Macrocycle/MacrocycleManager.swift) | 246 | Collection<Macrocycle> | Macrocycle |  |  | MacrocycleManagerTests.swift |
+| **MacrocycleManager** | [DialedIn/Managers/Training/Macrocycle](DialedIn/Managers/Training/Macrocycle/MacrocycleManager.swift) | 311 | Collection<Macrocycle> | Macrocycle |  |  | MacrocycleManagerTests.swift |
 | **MesocycleManager** | [DialedIn/Managers/Training/Mesocycle](DialedIn/Managers/Training/Mesocycle/MesocycleManager.swift) | 274 | Collection<Mesocycle> | Mesocycle |  |  | MesocycleManagerTests.swift |
 | **WorkoutSessionManager** | [DialedIn/Managers/Training/WorkoutSession](DialedIn/Managers/Training/WorkoutSession/WorkoutSessionManager.swift) | 401 | Collection<WorkoutSessionModel>, CollectionGroup<WorkoutSessionModel> | SetSide, WorkoutExerciseModel, WorkoutSessionComment, WorkoutSessionModel, WorkoutSessionModel+Prefill, WorkoutSessionModel+WarmupSets, WorkoutSetModel, WorkoutSetPairing | FirebaseWorkoutSessionLikeService, MockWorkoutSessionLikeService, WorkoutSessionLikeService |  | WorkoutSessionManagerTests.swift |
 | **WorkoutSettingsManager** | [DialedIn/Managers/Training/WorkoutSettings](DialedIn/Managers/Training/WorkoutSettings/WorkoutSettingsManager.swift) | 47 | Document<WorkoutSettings> | WorkoutSettings |  |  | WorkoutSettingsManagerTests.swift |
@@ -525,51 +526,53 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | `/users/{user_id}/steps/{entry_id}` | [rules:71](firestore.rules#L71) |
 | `/users/{user_id}/goals/{goal_id}` | [rules:82](firestore.rules#L82) |
 | `/users/{user_id}/gym_profiles/{gym_profile_id}` | [rules:94](firestore.rules#L94) |
-| `/users/{user_id}/training_programs/{training_program_id}` | [rules:101](firestore.rules#L101) |
-| `/users/{user_id}/training_plans/{training_plan_id}` | [rules:108](firestore.rules#L108) |
-| `/users/{user_id}/workout_sessions/{workout_session_id}` | [rules:117](firestore.rules#L117) |
-| `/users/{user_id}/workout_templates/{workout_templates_id}` | [rules:134](firestore.rules#L134) |
-| `/users/{user_id}/workout_settings/{workout_settings_id}` | [rules:141](firestore.rules#L141) |
-| `/users/{user_id}/exercise_settings/{exercise_settings_id}` | [rules:146](firestore.rules#L146) |
-| `/users/{user_id}/food_log_settings/{food_log_settings_id}` | [rules:151](firestore.rules#L151) |
-| `/users/{user_id}/analytics_settings/{analytics_settings_id}` | [rules:156](firestore.rules#L156) |
-| `/users/{user_id}/shortcut_settings/{shortcut_settings_id}` | [rules:161](firestore.rules#L161) |
-| `/users/{user_id}/nutrition_strategy_settings/{nutrition_strategy_settings_id}` | [rules:166](firestore.rules#L166) |
-| `/users/{user_id}/nutrition_day_annotations/{day_key}` | [rules:172](firestore.rules#L172) |
-| `/users/{user_id}/logging_break/{logging_break_id}` | [rules:183](firestore.rules#L183) |
-| `/users/{user_id}/check_in_record/{check_in_record_id}` | [rules:193](firestore.rules#L193) |
-| `/users/{user_id}/meal_logs/{document=**}` | [rules:204](firestore.rules#L204) |
-| `/users/{user_id}/recipe_templates/{workout_templates_id}` | [rules:209](firestore.rules#L209) |
-| `/users/{user_id}/foods/{food_id}` | [rules:216](firestore.rules#L216) |
-| `/users/{user_id}/follow_requests/{requester_id}` | [rules:228](firestore.rules#L228) |
-| `/users/{user_id}/notifications/{notification_id}` | [rules:250](firestore.rules#L250) |
-| `/user_streaks/{user_id}` | [rules:266](firestore.rules#L266) |
-| `/user_streaks/{user_id}/workout/{document_id}` | [rules:271](firestore.rules#L271) |
-| `/user_streaks/{user_id}/workout/{document_id}/data/{data_id}` | [rules:274](firestore.rules#L274) |
-| `/food_search_cache/{doc}` | [rules:282](firestore.rules#L282) |
-| `/{path=**}/workout_sessions/{workout_session_id}` | [rules:291](firestore.rules#L291) |
-| `/{path=**}/follow_requests/{requester_id}` | [rules:299](firestore.rules#L299) |
-| `/ingredient_templates/{ingredient_id}` | [rules:304](firestore.rules#L304) |
-| `/recipe_templates/{recipe_id}` | [rules:311](firestore.rules#L311) |
-| `/diet_plans/{user_id}` | [rules:318](firestore.rules#L318) |
-| `/gym_profiles/{gym_profile_id}` | [rules:325](firestore.rules#L325) |
-| `/exercise_templates/{exercise_id}` | [rules:332](firestore.rules#L332) |
-| `/exercise_history/{exercise_history_id}` | [rules:339](firestore.rules#L339) |
-| `/workout_templates/{workout_template_id}` | [rules:345](firestore.rules#L345) |
-| `/workout_exercises/{exercise_id}` | [rules:356](firestore.rules#L356) |
-| `/workout_sets/{set_id}` | [rules:363](firestore.rules#L363) |
-| `/program_templates/{program_template_id}` | [rules:370](firestore.rules#L370) |
-| `/training_plans/{training_plan_id}` | [rules:377](firestore.rules#L377) |
-| `/training_programs/{training_program_id}` | [rules:385](firestore.rules#L385) |
-| `/reports/{report_id}` | [rules:395](firestore.rules#L395) |
-| `/moderation_queue/{target_id}` | [rules:415](firestore.rules#L415) |
-| `/workout_session_comments/{comment_id}` | [rules:421](firestore.rules#L421) |
-| `/usernames/{handle}` | [rules:461](firestore.rules#L461) |
-| `/shares/{share_id}` | [rules:473](firestore.rules#L473) |
-| `/challenges/{challenge_id}` | [rules:499](firestore.rules#L499) |
-| `/progress/{member_id}` | [rules:530](firestore.rules#L530) |
-| `/invites/{code}` | [rules:541](firestore.rules#L541) |
-| `/users/{user_id}/progress_photos/{photo_id}` | [rules:558](firestore.rules#L558) |
+| `/users/{user_id}/mesocycles/{mesocycle_id}` | [rules:101](firestore.rules#L101) |
+| `/users/{user_id}/macrocycles/{macrocycle_id}` | [rules:108](firestore.rules#L108) |
+| `/users/{user_id}/training_programs/{training_program_id}` | [rules:116](firestore.rules#L116) |
+| `/users/{user_id}/training_plans/{training_plan_id}` | [rules:122](firestore.rules#L122) |
+| `/users/{user_id}/workout_sessions/{workout_session_id}` | [rules:131](firestore.rules#L131) |
+| `/users/{user_id}/workout_templates/{workout_templates_id}` | [rules:148](firestore.rules#L148) |
+| `/users/{user_id}/workout_settings/{workout_settings_id}` | [rules:155](firestore.rules#L155) |
+| `/users/{user_id}/exercise_settings/{exercise_settings_id}` | [rules:160](firestore.rules#L160) |
+| `/users/{user_id}/food_log_settings/{food_log_settings_id}` | [rules:165](firestore.rules#L165) |
+| `/users/{user_id}/analytics_settings/{analytics_settings_id}` | [rules:170](firestore.rules#L170) |
+| `/users/{user_id}/shortcut_settings/{shortcut_settings_id}` | [rules:175](firestore.rules#L175) |
+| `/users/{user_id}/nutrition_strategy_settings/{nutrition_strategy_settings_id}` | [rules:180](firestore.rules#L180) |
+| `/users/{user_id}/nutrition_day_annotations/{day_key}` | [rules:186](firestore.rules#L186) |
+| `/users/{user_id}/logging_break/{logging_break_id}` | [rules:197](firestore.rules#L197) |
+| `/users/{user_id}/check_in_record/{check_in_record_id}` | [rules:207](firestore.rules#L207) |
+| `/users/{user_id}/meal_logs/{document=**}` | [rules:218](firestore.rules#L218) |
+| `/users/{user_id}/recipe_templates/{workout_templates_id}` | [rules:223](firestore.rules#L223) |
+| `/users/{user_id}/foods/{food_id}` | [rules:230](firestore.rules#L230) |
+| `/users/{user_id}/follow_requests/{requester_id}` | [rules:242](firestore.rules#L242) |
+| `/users/{user_id}/notifications/{notification_id}` | [rules:264](firestore.rules#L264) |
+| `/user_streaks/{user_id}` | [rules:280](firestore.rules#L280) |
+| `/user_streaks/{user_id}/workout/{document_id}` | [rules:285](firestore.rules#L285) |
+| `/user_streaks/{user_id}/workout/{document_id}/data/{data_id}` | [rules:288](firestore.rules#L288) |
+| `/food_search_cache/{doc}` | [rules:296](firestore.rules#L296) |
+| `/{path=**}/workout_sessions/{workout_session_id}` | [rules:305](firestore.rules#L305) |
+| `/{path=**}/follow_requests/{requester_id}` | [rules:313](firestore.rules#L313) |
+| `/ingredient_templates/{ingredient_id}` | [rules:318](firestore.rules#L318) |
+| `/recipe_templates/{recipe_id}` | [rules:325](firestore.rules#L325) |
+| `/diet_plans/{user_id}` | [rules:332](firestore.rules#L332) |
+| `/gym_profiles/{gym_profile_id}` | [rules:339](firestore.rules#L339) |
+| `/exercise_templates/{exercise_id}` | [rules:346](firestore.rules#L346) |
+| `/exercise_history/{exercise_history_id}` | [rules:353](firestore.rules#L353) |
+| `/workout_templates/{workout_template_id}` | [rules:359](firestore.rules#L359) |
+| `/workout_exercises/{exercise_id}` | [rules:370](firestore.rules#L370) |
+| `/workout_sets/{set_id}` | [rules:377](firestore.rules#L377) |
+| `/program_templates/{program_template_id}` | [rules:384](firestore.rules#L384) |
+| `/training_plans/{training_plan_id}` | [rules:391](firestore.rules#L391) |
+| `/training_programs/{training_program_id}` | [rules:399](firestore.rules#L399) |
+| `/reports/{report_id}` | [rules:409](firestore.rules#L409) |
+| `/moderation_queue/{target_id}` | [rules:429](firestore.rules#L429) |
+| `/workout_session_comments/{comment_id}` | [rules:435](firestore.rules#L435) |
+| `/usernames/{handle}` | [rules:475](firestore.rules#L475) |
+| `/shares/{share_id}` | [rules:487](firestore.rules#L487) |
+| `/challenges/{challenge_id}` | [rules:513](firestore.rules#L513) |
+| `/progress/{member_id}` | [rules:544](firestore.rules#L544) |
+| `/invites/{code}` | [rules:555](firestore.rules#L555) |
+| `/users/{user_id}/progress_photos/{photo_id}` | [rules:572](firestore.rules#L572) |
 
 ## Unit test suites
 
@@ -577,7 +580,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`DialedInUnitTests/Components`** (9): `AutoSelectNumberFieldTextTests`, `CalendarDayMarkerAccessibilityTests`, `CalendarDayMarkerRingStyleTests`, `CalendarHeaderPresenterTests`, `CustomPaywallViewTests`, `ExerciseImageViewTests`, `ListBuilderSelectionTests`, `MetricChartReadingsTests`, `SetDetailRowTests`
 
-**`DialedInUnitTests/Core`** (143): `AIFoodInputPresenterTests`, `ActiveMesocyclePresenterTests`, `AddMealPresenterTests`, `AmountPresenterTests`, `AnalyticsBodyMetricsPresenterTests`, `AnalyticsConsistencyPresenterTests`, `AnalyticsExercisePresenterTests`, `AnalyticsInsightsPresenterTests`, `AnalyticsNutritionPresenterTests`, `AnalyticsPresenterTests`, `AppShellPresenterTests`, `BarcodeScannerHandoffTests`, `BarcodeScannerPresenterTests`, `BodyMeasurementTests`, `ChallengesPresenterTests`, `CheckInPresenterTests`, `CircleGoalsPresenterTests`, `CircleWeekTests`, `CommentLikesTests`, `CommentMentionsTests`, `ContentDeletionPresenterTests`, `CreateExerciseEquipmentPresenterTests`, `CreateExerciseFlowPresenterTests`, `CreateFoodFlowPresenterTests`, `CreateMesocycleFlowPresenterTests`, `CreateWorkoutFlowPresenterTests`, `CreateWorkoutWrapperPresenterTests`, `DecimalWheelValueTests`, `DeleteAccountPresenterTests`, `DevToolsPresenterTests`, `EnergyBalancePresenterTests`, `ErrorAlertMessageTests`, `ExerciseModelDetailPresenterTests`, `FeedLoadingTests`, `FollowersListRemoveTests`, `FoodDefinitionPresenterTests`, `FoodItemQuickAddPresenterTests`, `FoodLibraryPresenterTests`, `FoodLogSettingsStaleSnapshotTests`, `GeneralSettingsPresenterTests`, `GymEquipmentAdderPresenterTests`, `GymEquipmentEditorPresenterTests`, `GymMachineEditorPresenterTests`, `GymProfilePresenterTests`, `GymProfilesListPresenterTests`, `HabitsPresenterTests`, `InviteTests`, `MacroHeaderRemainingTests`, `MealAccessoryPresenterTests`, `MealHourHeaderPresenterTests`, `MesocycleDesignPresenterTests`, `MesocycleSettingsFlowPresenterTests`, `MesocycleSharingTests`, `MetricDetailPresenterTests`, `MuscleBalanceTests`, `MuscleGroupDetailPresenterTests`, `NotificationGroupingTests`, `NotificationSettingsPresenterTests`, `NotificationTapThroughTests`, `NotificationsFollowRequestTests`, `NutritionOverviewPresenterTests`, `NutritionPresenterTests`, `NutritionSettingsPresenterTests`, `NutritionSettingsTilePresenterTests`, `NutritionTargetChartColourTests`, `OfflineDetectionTests`, `OnboardingAccountSetupPresenterTests`, `OnboardingAppleHealthFillTests`, `OnboardingAuthPresenterTests`, `OnboardingCompletedRetryTests`, `OnboardingDietChoicesPresenterTests`, `OnboardingDietPlanPresenterTests`, `OnboardingEntryPresenterTests`, `OnboardingExpenditurePresenterTests`, `OnboardingFinishPresenterTests`, `OnboardingGoalSettingPresenterTests`, `OnboardingGoalSummaryEstimateTests`, `OnboardingGoalSummaryPresenterTests`, `OnboardingHealthConsentPresenterTests`, `OnboardingHeightConversionTests`, `OnboardingLifestylePresenterTests`, `OnboardingSelectionHapticsTests`, `OnboardingStepRouterTests`, `OnboardingWeightRatePresenterTests`, `PaywallPresenterTests`, `PrevWORefSettingsPresenterTests`, `PreviousWorkoutReferenceResolverTests`, `ProfileAccountPresenterTests`, `ProfileAppInfoPresenterTests`, `ProfilePresenterTests`, `ProgressPhotosPresenterTests`, `RecipeFlowPresenterTests`, `RecipePreparationPresenterTests`, `RecipeScalingPresenterTests`, `ReminderOfferFlowTests`, `ReportReasonsTests`, `ReviewMomentTests`, `ReviewPromptPolicyTests`, `SaveFailureAlertTests`, `SessionVolumeUnitTests`, `SessionWebLinkTests`, `SetKeyboardPresenterTests`, `SetSideTrackingTests`, `SetTrackerPresenterTests`, `SettingsSnapshotRefreshTests`, `ShareCardTests`, `SignOutListenersTests`, `SocialCirclePresenterTests`, `SocialPresenterTests`, `SocialProfilePresenterTests`, `SocialSafetyTests`, `SocialWorkoutSessionRowTests`, `StravaOfferTests`, `StreakVisibilityTests`, `TimelineActionsPresenterTests`, `TimerDurationPresenterTests`, `TodayPresenterTests`, `TrainingHomePresenterTests`, `TrainingLibraryPresenterTests`, `TrainingSearchTests`, `TrainingSettingsPresenterTests`, `WeeklyReviewTests`, `WeightStepperTests`, `WeightTrendPresenterTests`, `WorkoutBuildUnsavedChangesTests`, `WorkoutNotesTests`, `WorkoutPausedTimeTests`, `WorkoutPresenterTests`, `WorkoutSessionAuthorTests`, `WorkoutSessionDeleteFailureTests`, `WorkoutSessionDetailPresenterTests`, `WorkoutSessionHighlightsTests`, `WorkoutSessionRowStatsTests`, `WorkoutSessionSaveAsTemplateTests`, `WorkoutSessionTemplateBuilderTests`, `WorkoutTrackerFinishTests`, `WorkoutTrackerPresenterProgressionTests`, `WorkoutTrackerPresenterTests`, `WorkoutTrackerQuickFinishTests`, `WorkoutTrackerRestFeedbackTests`, `WorkoutTrackerSupersetTests`, `WorkoutTrackingRowPresenterTests`, `WorkoutTrackingSheetPresenterTests`
+**`DialedInUnitTests/Core`** (144): `AIFoodInputPresenterTests`, `ActiveMesocyclePresenterTests`, `AddMealPresenterTests`, `AmountPresenterTests`, `AnalyticsBodyMetricsPresenterTests`, `AnalyticsConsistencyPresenterTests`, `AnalyticsExercisePresenterTests`, `AnalyticsInsightsPresenterTests`, `AnalyticsNutritionPresenterTests`, `AnalyticsPresenterTests`, `AppShellPresenterTests`, `BarcodeScannerHandoffTests`, `BarcodeScannerPresenterTests`, `BodyMeasurementTests`, `ChallengesPresenterTests`, `CheckInPresenterTests`, `CircleGoalsPresenterTests`, `CircleWeekTests`, `CommentLikesTests`, `CommentMentionsTests`, `ContentDeletionPresenterTests`, `CreateExerciseEquipmentPresenterTests`, `CreateExerciseFlowPresenterTests`, `CreateFoodFlowPresenterTests`, `CreateMesocycleFlowPresenterTests`, `CreateWorkoutFlowPresenterTests`, `CreateWorkoutWrapperPresenterTests`, `DecimalWheelValueTests`, `DeleteAccountPresenterTests`, `DevToolsPresenterTests`, `EnergyBalancePresenterTests`, `ErrorAlertMessageTests`, `ExerciseModelDetailPresenterTests`, `FeedLoadingTests`, `FollowersListRemoveTests`, `FoodDefinitionPresenterTests`, `FoodItemQuickAddPresenterTests`, `FoodLibraryPresenterTests`, `FoodLogSettingsStaleSnapshotTests`, `GeneralSettingsPresenterTests`, `GymEquipmentAdderPresenterTests`, `GymEquipmentEditorPresenterTests`, `GymMachineEditorPresenterTests`, `GymProfilePresenterTests`, `GymProfilesListPresenterTests`, `HabitsPresenterTests`, `InviteTests`, `MacroHeaderRemainingTests`, `MacrocycleDetailPresenterTests`, `MealAccessoryPresenterTests`, `MealHourHeaderPresenterTests`, `MesocycleDesignPresenterTests`, `MesocycleSettingsFlowPresenterTests`, `MesocycleSharingTests`, `MetricDetailPresenterTests`, `MuscleBalanceTests`, `MuscleGroupDetailPresenterTests`, `NotificationGroupingTests`, `NotificationSettingsPresenterTests`, `NotificationTapThroughTests`, `NotificationsFollowRequestTests`, `NutritionOverviewPresenterTests`, `NutritionPresenterTests`, `NutritionSettingsPresenterTests`, `NutritionSettingsTilePresenterTests`, `NutritionTargetChartColourTests`, `OfflineDetectionTests`, `OnboardingAccountSetupPresenterTests`, `OnboardingAppleHealthFillTests`, `OnboardingAuthPresenterTests`, `OnboardingCompletedRetryTests`, `OnboardingDietChoicesPresenterTests`, `OnboardingDietPlanPresenterTests`, `OnboardingEntryPresenterTests`, `OnboardingExpenditurePresenterTests`, `OnboardingFinishPresenterTests`, `OnboardingGoalSettingPresenterTests`, `OnboardingGoalSummaryEstimateTests`, `OnboardingGoalSummaryPresenterTests`, `OnboardingHealthConsentPresenterTests`, `OnboardingHeightConversionTests`, `OnboardingLifestylePresenterTests`, `OnboardingSelectionHapticsTests`, `OnboardingStepRouterTests`, `OnboardingWeightRatePresenterTests`, `PaywallPresenterTests`, `PrevWORefSettingsPresenterTests`, `PreviousWorkoutReferenceResolverTests`, `ProfileAccountPresenterTests`, `ProfileAppInfoPresenterTests`, `ProfilePresenterTests`, `ProgressPhotosPresenterTests`, `RecipeFlowPresenterTests`, `RecipePreparationPresenterTests`, `RecipeScalingPresenterTests`, `ReminderOfferFlowTests`, `ReportReasonsTests`, `ReviewMomentTests`, `ReviewPromptPolicyTests`, `SaveFailureAlertTests`, `SessionVolumeUnitTests`, `SessionWebLinkTests`, `SetKeyboardPresenterTests`, `SetSideTrackingTests`, `SetTrackerPresenterTests`, `SettingsSnapshotRefreshTests`, `ShareCardTests`, `SignOutListenersTests`, `SocialCirclePresenterTests`, `SocialPresenterTests`, `SocialProfilePresenterTests`, `SocialSafetyTests`, `SocialWorkoutSessionRowTests`, `StravaOfferTests`, `StreakVisibilityTests`, `TimelineActionsPresenterTests`, `TimerDurationPresenterTests`, `TodayPresenterTests`, `TrainingHomePresenterTests`, `TrainingLibraryPresenterTests`, `TrainingSearchTests`, `TrainingSettingsPresenterTests`, `WeeklyReviewTests`, `WeightStepperTests`, `WeightTrendPresenterTests`, `WorkoutBuildUnsavedChangesTests`, `WorkoutNotesTests`, `WorkoutPausedTimeTests`, `WorkoutPresenterTests`, `WorkoutSessionAuthorTests`, `WorkoutSessionDeleteFailureTests`, `WorkoutSessionDetailPresenterTests`, `WorkoutSessionHighlightsTests`, `WorkoutSessionRowStatsTests`, `WorkoutSessionSaveAsTemplateTests`, `WorkoutSessionTemplateBuilderTests`, `WorkoutTrackerFinishTests`, `WorkoutTrackerPresenterProgressionTests`, `WorkoutTrackerPresenterTests`, `WorkoutTrackerQuickFinishTests`, `WorkoutTrackerRestFeedbackTests`, `WorkoutTrackerSupersetTests`, `WorkoutTrackingRowPresenterTests`, `WorkoutTrackingSheetPresenterTests`
 
 **`DialedInUnitTests/DesignSystem`** (2): `FormatTests`, `OnboardingStepProgressTests`
 
@@ -697,5 +700,6 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [functions/index.js](functions/index.js) | 956 |
 | [functions/index.test.js](functions/index.test.js) | 737 |
 | [functions/lib.js](functions/lib.js) | 750 |
-| [functions/rules.test.js](functions/rules.test.js) | 397 |
+| [functions/rules.test.js](functions/rules.test.js) | 398 |
 | [functions/scripts/migrateEquipmentVariations.js](functions/scripts/migrateEquipmentVariations.js) | 177 |
+| [functions/scripts/migrateMesocycleNames.js](functions/scripts/migrateMesocycleNames.js) | 160 |

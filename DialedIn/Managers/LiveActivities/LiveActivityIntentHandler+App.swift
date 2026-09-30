@@ -162,7 +162,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
             gymProfiles: gymProfileManager,
             mesocycles: mesocycleManager,
             users: userManager,
-            plans: macrocycleManager,
+            macrocycles: macrocycleManager,
             streak: streakManager,
             strava: stravaManager,
             logger: logManager

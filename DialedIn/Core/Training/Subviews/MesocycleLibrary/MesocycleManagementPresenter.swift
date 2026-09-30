@@ -93,11 +93,6 @@ class MesocycleLibraryPresenter {
         router.showCreateMesocycleView(delegate: CreateMesocycleDelegate())
     }
 
-    /// A plan runs saved mesocycles as blocks, one after another.
-    func onCreateMacrocyclePressed() {
-        router.showCreateMacrocycleView()
-    }
-
 }
 
 extension MesocycleLibraryPresenter {

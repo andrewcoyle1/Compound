@@ -88,9 +88,13 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
         }
     }
 
-    /// Everything the user has built or done: mesocycles, workouts, exercises and the history.
+    /// Everything the user has built or done: macrocycles, mesocycles, workouts, exercises and the
+    /// history.
     private var librarySection: some View {
         Section("Library") {
+            ListRowButton(title: "Macrocycles", systemImage: Symbol.macrocycle) {
+                presenter.onMacrocyclesPressed()
+            }
             ListRowButton(title: "Mesocycles", systemImage: Symbol.library) {
                 presenter.onMesocycleLibraryView()
             }
@@ -154,6 +158,11 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
                     Label("Start Empty Workout", systemImage: Symbol.start)
                 }
                 Divider()
+                Button {
+                    presenter.onNewMacrocyclePressed()
+                } label: {
+                    Label("New Macrocycle", systemImage: Symbol.macrocycle)
+                }
                 Button {
                     presenter.onNewMesocyclePressed()
                 } label: {

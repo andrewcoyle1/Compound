@@ -13,6 +13,8 @@ protocol TrainingRouter: GlobalRouter {
 func showDevSettingsView()
 #endif
     func showMesocycleLibraryView()
+    func showMacrocyclesView()
+    func showMacrocycleDetailView(delegate: MacrocycleDetailDelegate)
     func showWorkoutsView(delegate: WorkoutsDelegate)
     func showWorkoutHistoryView()
     func showExercisesView()

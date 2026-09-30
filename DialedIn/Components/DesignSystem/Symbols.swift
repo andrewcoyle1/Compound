@@ -44,6 +44,8 @@ enum Symbol {
     static let superset = "link"
     static let personalRecord = "trophy.fill"
     static let mesocycle = "list.bullet.clipboard"
+    /// A macrocycle: mesocycles run one after another.
+    static let macrocycle = "square.3.layers.3d"
     static let history = "clock.arrow.circlepath"
     static let library = "books.vertical"
     static let template = "rectangle.stack"

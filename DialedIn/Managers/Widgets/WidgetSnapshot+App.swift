@@ -46,7 +46,7 @@ extension WidgetSnapshot {
 func refreshWidgetSnapshot(
     users: UserManager,
     mesocycles: MesocycleManager,
-    plans: MacrocycleManager?,
+    macrocycles: MacrocycleManager?,
     sessions: [WorkoutSessionModel],
     streak: Int?,
     weeklyGoal: Int? = nil
@@ -54,7 +54,7 @@ func refreshWidgetSnapshot(
     guard let user = users.currentUser else { return }
     WidgetSnapshotStore.write(.make(
         userId: user.userId,
-        run: plans?.run(for: mesocycles.activeMesocycle(for: user), sessions: sessions)
+        run: macrocycles?.run(for: mesocycles.activeMesocycle(for: user), sessions: sessions)
             ?? mesocycles.activeMesocycle(for: user).map { MesocycleSchedule.legacyRun(mesocycle: $0, sessions: sessions) },
         sessions: sessions,
         streak: streak,
@@ -72,7 +72,7 @@ extension CoreInteractor {
         DialedIn.refreshWidgetSnapshot(
             users: userManager,
             mesocycles: mesocycleManager,
-            plans: macrocycleManager,
+            macrocycles: macrocycleManager,
             sessions: workoutSessionManager.workoutSessions,
             streak: streakManager.currentStreakData.currentStreak,
             weeklyGoal: weeklyGoal

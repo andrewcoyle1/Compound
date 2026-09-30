@@ -57,7 +57,7 @@ struct WorkoutFinishManagers {
     let gymProfiles: GymProfileManager
     let mesocycles: MesocycleManager
     let users: UserManager
-    var plans: MacrocycleManager?
+    var macrocycles: MacrocycleManager?
     var streak: StreakManager?
     var strava: StravaManager?
     let logger: LogManager
@@ -114,7 +114,7 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
         refreshWidgetSnapshot(
             users: managers.users,
             mesocycles: managers.mesocycles,
-            plans: managers.plans,
+            macrocycles: managers.macrocycles,
             sessions: sessionsIncludingThis,
             streak: managers.streak?.currentStreakData.currentStreak
         )
@@ -133,9 +133,9 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
 /// session is saved either way, and the next finish or skip tries again.
 @MainActor
 private func advanceMacrocycle(using managers: WorkoutFinishManagers, sessions: [WorkoutSessionModel]) async {
-    guard let plans = managers.plans else { return }
+    guard let macrocycles = managers.macrocycles else { return }
     do {
-        try await advanceMacrocycleIfMesocycleComplete(plans: plans, mesocycles: managers.mesocycles, users: managers.users, sessions: sessions)
+        try await advanceMacrocycleIfMesocycleComplete(macrocycles: macrocycles, mesocycles: managers.mesocycles, users: managers.users, sessions: sessions)
     } catch {
         managers.logger.trackEvent(eventName: "finish_workout_plan_advance_error", parameters: ["error": error.localizedDescription], type: .warning)
     }

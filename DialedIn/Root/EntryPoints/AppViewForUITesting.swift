@@ -116,7 +116,10 @@ extension AppViewForUITesting {
                 ).any()
             }),
             ("STARTSCREEN_PROGRAM_LIBRARY", { builder.mesocycleLibraryView(router: $0).any() }),
-            ("STARTSCREEN_CREATE_PLAN", { builder.createMacrocycleView(router: $0).any() }),
+            ("STARTSCREEN_MACROCYCLES", { builder.macrocyclesView(router: $0).any() }),
+            ("STARTSCREEN_MACROCYCLE_DETAIL", {
+                builder.macrocycleDetailView(router: $0, delegate: MacrocycleDetailDelegate(macrocycle: .mock)).any()
+            }),
             ("STARTSCREEN_WORKOUTS", { builder.workoutsView(router: $0, delegate: WorkoutsDelegate()).any() }),
             // Two muscles already chosen, so both badges are in the shot.
             ("STARTSCREEN_MUSCLE_PICKER", { router in

@@ -198,6 +198,14 @@ class TrainingPresenter {
     func onMesocycleLibraryView() {
         router.showMesocycleLibraryView()
     }
+
+    func onMacrocyclesPressed() {
+        router.showMacrocyclesView()
+    }
+
+    func onNewMacrocyclePressed() {
+        router.showMacrocycleDetailView(delegate: MacrocycleDetailDelegate())
+    }
     
     func onChooseMesocyclePressed() {
         router.showMesocycleLibraryView()

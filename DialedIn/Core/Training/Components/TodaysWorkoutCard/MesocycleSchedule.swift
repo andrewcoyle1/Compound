@@ -22,12 +22,16 @@ enum MesocycleSchedule {
         let mesocycle: Mesocycle
         let startedAt: Date
         var skips: [CycleSkip] = []
+        /// Microcycles before this were done before the user joined; nothing is scheduled in them.
+        var firstMicrocycleIndex: Int = 0
     }
 
     enum SlotState: Equatable {
         case open
         case done(sessionId: String, completedAt: Date)
         case skipped
+        /// In a microcycle before the one the user joined at.
+        case beforeStart
     }
 
     struct Slot: Identifiable {
@@ -89,6 +93,12 @@ enum MesocycleSchedule {
         let cycleCount = max(run.mesocycle.numMicrocycles, 1)
         var cycles = (0..<cycleCount).map { cycle in
             dayPlans.enumerated().map { Slot(cycleIndex: cycle, position: $0.offset, dayPlan: $0.element, state: .open) }
+        }
+
+        for cycle in cycles.indices where cycle < run.firstMicrocycleIndex {
+            for position in cycles[cycle].indices where !cycles[cycle][position].isRest {
+                cycles[cycle][position].state = .beforeStart
+            }
         }
 
         for skip in run.skips where cycles.indices.contains(skip.cycleIndex) {

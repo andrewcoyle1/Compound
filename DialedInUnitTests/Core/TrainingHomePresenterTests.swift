@@ -145,6 +145,8 @@ struct TrainingHomePresenterTests {
 
         func showDevSettingsView() { shown.append("devSettings") }
         func showMesocycleLibraryView() { shown.append("programLibrary") }
+        func showMacrocyclesView() { shown.append("macrocycles") }
+        func showMacrocycleDetailView(delegate: MacrocycleDetailDelegate) { shown.append("macrocycleDetail") }
         func showWorkoutsView(delegate: WorkoutsDelegate) { shown.append("workouts") }
         func showWorkoutHistoryView() { shown.append("history") }
         func showExercisesView() { shown.append("exercises") }

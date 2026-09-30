@@ -210,4 +210,28 @@ struct MesocycleScheduleTests {
         #expect(MesocycleSchedule.progress(of: legacy, sessions: sessions).next?.dayPlan.id == "a")
         #expect(today(legacy, sessions, dayOffset: 6)?.dayPlan.id == "a")
     }
+
+    // MARK: - Joining part-way
+
+    @Test("Test Joining At A Later Microcycle Schedules From There")
+    func testJoiningAtALaterMicrocycleSchedulesFromThere() {
+        var joined = run()
+        joined.firstMicrocycleIndex = 2
+        let progress = MesocycleSchedule.progress(of: joined, sessions: [])
+
+        #expect(progress.currentCycleIndex == 2)
+        #expect(progress.cycles[1].filter { !$0.isRest }.allSatisfy { $0.state == .beforeStart })
+        #expect(progress.cycles[1].filter(\.isRest).allSatisfy { $0.state == .open })
+        #expect(today(joined, [])?.dayPlan.id == "a")
+    }
+
+    @Test("Test A Workout Done After Joining Fills The Joined Microcycle")
+    func testAWorkoutDoneAfterJoiningFillsTheJoinedMicrocycle() {
+        var joined = run()
+        joined.firstMicrocycleIndex = 3
+        let progress = MesocycleSchedule.progress(of: joined, sessions: [session("a", dayOffset: 0)])
+
+        #expect(progress.cycles[3][0].completedSessionId != nil)
+        #expect(progress.next?.dayPlan.id == "b")
+    }
 }

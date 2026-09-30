@@ -567,7 +567,7 @@ struct MesocycleManagementPresenterTests {
         ])
         // And reported to the user: the mesocycle is still in the list, so the confirmed delete
         // otherwise reads as having done nothing.
-        #expect(screen.router.alertTitles == ["Unable to Delete Program"])
+        #expect(screen.router.alertTitles == ["Unable to Delete Mesocycle"])
     }
 
     /// Swiping a saved mesocycle asks first, and the question does not talk about scheduled workouts
@@ -581,9 +581,9 @@ struct MesocycleManagementPresenterTests {
         screen.presenter.showDeleteAlert(mesocycle: upper)
         screen.presenter.showDeleteAlert(mesocycle: push)
 
-        #expect(screen.router.alertTitles == ["Delete Program", "Delete Program"])
+        #expect(screen.router.alertTitles == ["Delete Mesocycle", "Delete Mesocycle"])
         #expect(screen.router.alertSubtitles.first == "Delete 'Upper Lower'? This can't be undone.")
-        #expect(screen.router.alertSubtitles.last??.contains("active program") == true)
+        #expect(screen.router.alertSubtitles.last??.contains("active mesocycle") == true)
         #expect(screen.interactor.deletedMesocycleIds.isEmpty)
     }
 

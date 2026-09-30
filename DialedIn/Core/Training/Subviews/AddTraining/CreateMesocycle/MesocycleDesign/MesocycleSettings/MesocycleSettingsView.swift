@@ -17,7 +17,7 @@ struct MesocycleSettingsView: View {
             }
             .listSectionMargins(.top, 0)
         }
-        .navigationTitle("Program Settings")
+        .navigationTitle("Mesocycle Settings")
         .navigationSubtitle(mesocycle.name)
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
@@ -31,7 +31,7 @@ struct MesocycleSettingsView: View {
             CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onActivatePressed(mesocycle: mesocycle)
             } label: {
-                Text("Activate Program")
+                Text("Activate Mesocycle")
             }
             .disabled(presenter.isSaving)
         }
@@ -122,7 +122,7 @@ extension CoreRouter {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     let mesocycle = Binding.constant(
-        Mesocycle(authorId: "user123", name: "Preview Program", icon: "pencil", colour: Color.blue.asHex())
+        Mesocycle(authorId: "user123", name: "Preview Mesocycle", icon: "pencil", colour: Color.blue.asHex())
     )
     
     return RouterView { router in

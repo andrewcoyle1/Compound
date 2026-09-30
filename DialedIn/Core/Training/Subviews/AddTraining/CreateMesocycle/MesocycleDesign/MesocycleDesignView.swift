@@ -54,7 +54,7 @@ struct MesocycleDesignView<DefineWorkout: View>: View {
     
     var body: some View {
         workoutDefinitionSection(dayPlan: presenter.selectedWorkoutTemplateModel)
-            .navigationTitle(isEditing ? String(localized: "Edit Program") : String(localized: "Create Program"))
+            .navigationTitle(isEditing ? String(localized: "Edit Mesocycle") : String(localized: "Create Mesocycle"))
             .navigationBarTitleDisplayMode(.inline)
             .interactiveDismissDisabled(presenter.hasUnsavedChanges)
             .onAppear {
@@ -158,7 +158,7 @@ struct MesocycleDesignView<DefineWorkout: View>: View {
             CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onActivatePressed(delegate: delegate)
             } label: {
-                Text("Activate Program")
+                Text("Activate Mesocycle")
             }
             .accessibilityIdentifier("ProgramDesign.activate")
             .disabled(!presenter.canSave)
@@ -168,7 +168,7 @@ struct MesocycleDesignView<DefineWorkout: View>: View {
             CallToActionButton(isPrimaryAction: false, isLoading: presenter.isSaving) {
                 presenter.onSavePressed(delegate: delegate)
             } label: {
-                Text("Save Program")
+                Text("Save Mesocycle")
             }
             .accessibilityIdentifier("ProgramDesign.save")
             .disabled(!presenter.canSave)
@@ -221,7 +221,7 @@ struct MesocycleDesignView<DefineWorkout: View>: View {
             } label: {
                 Image(systemName: Symbol.settings)
             }
-            .accessibilityLabel("Program settings")
+            .accessibilityLabel("Mesocycle settings")
         }
 
         // A saved mesocycle's share and delete, as workout templates have them.
@@ -231,7 +231,7 @@ struct MesocycleDesignView<DefineWorkout: View>: View {
                     Button("Share with Friends", systemImage: Symbol.share) {
                         presenter.onSharePressed()
                     }
-                    Button("Delete Program", systemImage: Symbol.delete, role: .destructive) {
+                    Button("Delete Mesocycle", systemImage: Symbol.delete, role: .destructive) {
                         presenter.onDeletePressed()
                     }
                 } label: {
@@ -306,7 +306,7 @@ extension CoreRouter {
     let delegate = MesocycleDesignDelegate(
         id: UUID().uuidString,
         authorId: "user123",
-        name: "Preview Program",
+        name: "Preview Mesocycle",
         colour: .blue,
         icon: "pencil"
     )

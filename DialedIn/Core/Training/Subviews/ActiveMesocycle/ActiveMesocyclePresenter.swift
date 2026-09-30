@@ -130,7 +130,7 @@ class ActiveMesocyclePresenter {
         if let plan = interactor.currentMacrocycle, plan.mesocycleIds.count > 1, plan.currentMesocycleId == mesocycle.id {
             let blockNumber = plan.mesocycleIndex + 1
             let blockCount = plan.mesocycleIds.count
-            microcycleHeaderText = String(localized: "Block \(String(describing: blockNumber)) of \(String(describing: blockCount)) · \(microcycleText)")
+            microcycleHeaderText = String(localized: "Mesocycle \(String(describing: blockNumber)) of \(String(describing: blockCount)) · \(microcycleText)")
         } else {
             microcycleHeaderText = microcycleText
         }
@@ -254,8 +254,8 @@ class ActiveMesocyclePresenter {
 
     func onMesocycleDeletePressed(mesocycle: Mesocycle) {
         router.showAlert(
-            title: String(localized: "Delete Training Program"),
-            subtitle: String(localized: "Are you sure you want to delete your active training program? This cannot be undone."),
+            title: String(localized: "Delete Mesocycle"),
+            subtitle: String(localized: "Are you sure you want to delete your active mesocycle? This cannot be undone."),
             buttons: {
                 AnyView(
                     HStack {
@@ -274,7 +274,7 @@ class ActiveMesocyclePresenter {
             try await interactor.deleteMesocycle(mesocycleId: mesocycleId)
         } catch {
             interactor.trackEvent(event: Event.deleteMesocycleFail(error: error))
-            router.showSimpleAlert(title: String(localized: "Unable to Delete Program"), subtitle: String(localized: "Please try again."))
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Mesocycle"), subtitle: String(localized: "Please try again."))
         }
     }
 

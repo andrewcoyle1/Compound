@@ -34,7 +34,7 @@ struct DeleteAccountView: View {
         List {
             Section {
                 Label("Your profile, username and photos", systemImage: Symbol.profile)
-                Label("Workouts, programs, exercises and gym profiles", systemImage: Symbol.workout)
+                Label("Workouts, mesocycles, exercises and gym profiles", systemImage: Symbol.workout)
                 Label("Meals, foods and recipes", systemImage: Symbol.meal)
                 Label("Body measurements, goals and progress photos", systemImage: Symbol.measurement)
                 Label("Comments, likes and follows", systemImage: Symbol.friends)

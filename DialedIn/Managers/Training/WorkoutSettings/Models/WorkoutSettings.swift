@@ -115,7 +115,7 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
         case .sameWorkout:
             return String(localized: "This workout")
         case .workoutsInMesocycle:
-            return String(localized: "This workout within the current program")
+            return String(localized: "This workout within the current mesocycle")
         }
     }
 
@@ -124,9 +124,9 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
         case .anyExercise:
             return String(localized: "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all.")
         case .sameWorkout:
-            return String(localized: "Previous values come from the last time you completed this workout, in any program. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.")
+            return String(localized: "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.")
         case .workoutsInMesocycle:
-            return String(localized: "Previous values come from the last time you completed this workout within the current program. If there is none for an exercise, the last time you performed it anywhere is shown instead.")
+            return String(localized: "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead.")
         }
     }
 }

@@ -67,7 +67,7 @@ class MesocycleIconPresenter {
         // Reachable: the user document arrives on the sync engine's own task. Silently doing
         // nothing left the button looking broken.
         guard let userId = interactor.userId else {
-            router.showSimpleAlert(title: String(localized: "Unable to Create Program"), subtitle: String(localized: "Please try again."))
+            router.showSimpleAlert(title: String(localized: "Unable to Create Mesocycle"), subtitle: String(localized: "Please try again."))
             return
         }
         router.showMesocycleDesignView(

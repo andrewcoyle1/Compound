@@ -23,17 +23,17 @@ struct CreateMesocycleView: View {
             // The heading sits under the hero image: an inline bar title over the image was
             // unreadable. `navigationTitle` stays for VoiceOver and the back menu.
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Create Program")
+                Text("Create Mesocycle")
                     .font(.display)
                     .accessibilityAddTraits(.isHeader)
-                Text("It's time to create a custom workout program.")
+                Text("It's time to create a custom mesocycle.")
                     .font(.rowTitle)
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             Spacer()
         }
-        .navigationTitle("Create Program")
+        .navigationTitle("Create Mesocycle")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(removing: .title)
         .onAppear {

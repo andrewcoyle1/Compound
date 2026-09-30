@@ -80,7 +80,7 @@ struct DietPlanView: View {
         Section("Overview") {
             if let mesocycleName = presenter.mesocycleName,
                let daysPerWeek = presenter.trainingDaysPerWeek {
-                Text("Training program: \(mesocycleName), \(daysPerWeek) days/week")
+                Text("Mesocycle: \(mesocycleName), \(daysPerWeek) days/week")
             }
             Text("Estimated TDEE: \(Int(plan.tdeeEstimate)) kcal/day")
             Text("Preferred diet: \(plan.preferredDiet.capitalized)")

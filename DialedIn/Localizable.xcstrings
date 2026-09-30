@@ -14,6 +14,566 @@
         }
       }
     },
+    "Activate Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar mesociclo"
+          }
+        }
+      }
+    },
+    "Active Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo activo"
+          }
+        }
+      }
+    },
+    "Add a mesocycle to start compounding." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un mesociclo para empezar a progresar."
+          }
+        }
+      }
+    },
+    "Add mesocycles below. They run in this order." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade mesociclos abajo. Se hacen en este orden."
+          }
+        }
+      }
+    },
+    "Adds this mesocycle next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade este mesociclo a continuación"
+          }
+        }
+      }
+    },
+    "After the last mesocycle you can repeat the macrocycle from the first one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras el último mesociclo puedes repetir el macrociclo desde el primero."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your active mesocycle '%@'? This will remove all scheduled workouts and you'll need to create or select a new mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Seguro que quieres eliminar tu mesociclo activo «%@»? Se quitarán todos los entrenamientos programados y tendrás que crear o elegir un mesociclo nuevo."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your active mesocycle? This cannot be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Seguro que quieres eliminar tu mesociclo activo? Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "Choose an icon for this mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un icono para este mesociclo."
+          }
+        }
+      }
+    },
+    "Choose Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir mesociclo"
+          }
+        }
+      }
+    },
+    "Create mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear mesociclo"
+          }
+        }
+      }
+    },
+    "Create Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear mesociclo"
+          }
+        }
+      }
+    },
+    "Create or start a mesocycle first, then build a macrocycle from it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea o empieza un mesociclo primero y después arma un macrociclo con él."
+          }
+        }
+      }
+    },
+    "Create your first mesocycle to get started." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea tu primer mesociclo para empezar."
+          }
+        }
+      }
+    },
+    "Delete Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar mesociclo"
+          }
+        }
+      }
+    },
+    "Delete Mesocycle?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar mesociclo?"
+          }
+        }
+      }
+    },
+    "Edit Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar mesociclo"
+          }
+        }
+      }
+    },
+    "Enter mesocycle name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce el nombre del mesociclo"
+          }
+        }
+      }
+    },
+    "Every mesocycle is done. Run it again from the first one, or pick something new." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has terminado todos los mesociclos. Repítelo desde el primero o elige algo nuevo."
+          }
+        }
+      }
+    },
+    "It's time to create a custom mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es hora de crear un mesociclo personalizado."
+          }
+        }
+      }
+    },
+    "Macrocycle name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del macrociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle %@ of %@ · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo %1$@ de %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "Mesocycle %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo %lld"
+          }
+        }
+      }
+    },
+    "Mesocycle Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle: %@, %lld days/week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo: %1$@, %2$lld días/semana"
+          }
+        }
+      }
+    },
+    "Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclos"
+          }
+        }
+      }
+    },
+    "New Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo macrociclo"
+          }
+        }
+      }
+    },
+    "New Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo mesociclo"
+          }
+        }
+      }
+    },
+    "No Active Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay mesociclo activo"
+          }
+        }
+      }
+    },
+    "No active mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ningún mesociclo activo."
+          }
+        }
+      }
+    },
+    "No Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay mesociclos"
+          }
+        }
+      }
+    },
+    "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento dentro del mesociclo actual. Si no hay ninguno para un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
+          }
+        }
+      }
+    },
+    "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento, en cualquier mesociclo. Si este entrenamiento no tiene historial de un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
+          }
+        }
+      }
+    },
+    "Repeat Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir macrociclo"
+          }
+        }
+      }
+    },
+    "Reset Mesocycle Seeding" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer mesociclos iniciales"
+          }
+        }
+      }
+    },
+    "Save Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar mesociclo"
+          }
+        }
+      }
+    },
+    "Saved Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclos guardados"
+          }
+        }
+      }
+    },
+    "Start Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar macrociclo"
+          }
+        }
+      }
+    },
+    "Start Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar mesociclo"
+          }
+        }
+      }
+    },
+    "Starting a template saves your own copy and makes it your active mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al empezar una plantilla se guarda tu propia copia y se convierte en tu mesociclo activo."
+          }
+        }
+      }
+    },
+    "The workout your active mesocycle has for today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenamiento que tu mesociclo activo tiene para hoy."
+          }
+        }
+      }
+    },
+    "These are saved mesocycle designs. Start one from a template to generate a schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estos son diseños de mesociclo guardados. Empieza uno a partir de una plantilla para generar un calendario."
+          }
+        }
+      }
+    },
+    "This workout within the current mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este entrenamiento dentro del mesociclo actual"
+          }
+        }
+      }
+    },
+    "Unable to Activate Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo activar el mesociclo"
+          }
+        }
+      }
+    },
+    "Unable to Create Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo crear el mesociclo"
+          }
+        }
+      }
+    },
+    "Unable to Delete Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar el mesociclo"
+          }
+        }
+      }
+    },
+    "Unable to Repeat Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo repetir el macrociclo"
+          }
+        }
+      }
+    },
+    "Unable to Save Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el mesociclo"
+          }
+        }
+      }
+    },
+    "Unable to Start Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo empezar el macrociclo"
+          }
+        }
+      }
+    },
+    "Unable to Start Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el mesociclo"
+          }
+        }
+      }
+    },
+    "Use these options to reset and re-seed system exercises, workouts and mesocycles. Useful for testing or if seeding failed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa estas opciones para restablecer y volver a cargar los ejercicios, entrenamientos y mesociclos del sistema. Útil para pruebas o si falló la carga inicial."
+          }
+        }
+      }
+    },
+    "What would you like to name this mesocycle?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué nombre quieres darle a este mesociclo?"
+          }
+        }
+      }
+    },
+    "Workouts, mesocycles, exercises and gym profiles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos, mesociclos, ejercicios y perfiles de gimnasio"
+          }
+        }
+      }
+    },
+    "Your Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus mesociclos"
+          }
+        }
+      }
+    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -2730,16 +3290,6 @@
         }
       }
     },
-    "Activate Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activar programa"
-          }
-        }
-      }
-    },
     "Active" : {
       "localizations" : {
         "es" : {
@@ -2760,32 +3310,12 @@
         }
       }
     },
-    "Active Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Programa activo"
-          }
-        }
-      }
-    },
     "Active Session (Local)" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sesión activa (local)"
-          }
-        }
-      }
-    },
-    "Active Training Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Programa de entrenamiento activo"
           }
         }
       }
@@ -2938,16 +3468,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade una nota explicando qué está mal."
-          }
-        }
-      }
-    },
-    "Add a program to start compounding." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade un programa para empezar a progresar."
           }
         }
       }
@@ -3272,16 +3792,6 @@
         }
       }
     },
-    "Add programs below. Each one is a block, run in this order." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade programas abajo. Cada uno es un bloque y se hacen en este orden."
-          }
-        }
-      }
-    },
     "Add Range" : {
       "localizations" : {
         "es" : {
@@ -3534,16 +4044,6 @@
         }
       }
     },
-    "Adds this program as the next block" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade este programa como el siguiente bloque"
-          }
-        }
-      }
-    },
     "Adductors" : {
       "localizations" : {
         "es" : {
@@ -3650,16 +4150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tras el calentamiento"
-          }
-        }
-      }
-    },
-    "After the last block you can repeat the plan from the first one." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tras el último bloque puedes repetir el plan desde el primero."
           }
         }
       }
@@ -4153,26 +4643,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Seguro que quieres eliminar este entrenamiento? Esta acción no se puede deshacer."
-          }
-        }
-      }
-    },
-    "Are you sure you want to delete your active program '%@'? This will remove all scheduled workouts and you'll need to create or select a new program." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Seguro que quieres eliminar tu programa activo «%@»? Se quitarán todos los entrenamientos programados y tendrás que crear o elegir un programa nuevo."
-          }
-        }
-      }
-    },
-    "Are you sure you want to delete your active training program? This cannot be undone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Seguro que quieres eliminar tu programa de entrenamiento activo? Esta acción no se puede deshacer."
           }
         }
       }
@@ -4790,42 +5260,12 @@
         }
       }
     },
-    "Block %@ of %@ · %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bloque %1$@ de %2$@ · %3$@"
-          }
-        }
-      }
-    },
     "Block %@?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Bloquear a %@?"
-          }
-        }
-      }
-    },
-    "Block %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bloque %lld"
-          }
-        }
-      }
-    },
-    "Blocks" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bloques"
           }
         }
       }
@@ -5710,16 +6150,6 @@
         }
       }
     },
-    "Choose an icon for this program." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige un icono para este programa."
-          }
-        }
-      }
-    },
     "Choose Exercise" : {
       "localizations" : {
         "es" : {
@@ -5787,16 +6217,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elige uno"
-          }
-        }
-      }
-    },
-    "Choose Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elegir programa"
           }
         }
       }
@@ -6789,16 +7209,6 @@
         }
       }
     },
-    "Create or start a program first, then build a plan from it." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea o empieza un programa primero y después arma un plan con él."
-          }
-        }
-      }
-    },
     "Create a Food" : {
       "localizations" : {
         "es" : {
@@ -6891,26 +7301,6 @@
         }
       }
     },
-    "Create program or plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear programa o plan"
-          }
-        }
-      }
-    },
-    "Create Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear programa"
-          }
-        }
-      }
-    },
     "Create Recipe" : {
       "localizations" : {
         "es" : {
@@ -6938,16 +7328,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crea tu primer programa de entrenamiento para empezar"
-          }
-        }
-      }
-    },
-    "Create your first training program to get started." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea tu primer programa de entrenamiento para empezar."
           }
         }
       }
@@ -7685,26 +8065,6 @@
         }
       }
     },
-    "Delete Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar programa"
-          }
-        }
-      }
-    },
-    "Delete Program?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Eliminar programa?"
-          }
-        }
-      }
-    },
     "Delete Recipe" : {
       "localizations" : {
         "es" : {
@@ -7731,16 +8091,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Eliminar esta foto?"
-          }
-        }
-      }
-    },
-    "Delete Training Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar programa de entrenamiento"
           }
         }
       }
@@ -8677,16 +9027,6 @@
         }
       }
     },
-    "Edit Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar programa"
-          }
-        }
-      }
-    },
     "Edit Range" : {
       "localizations" : {
         "es" : {
@@ -9053,16 +9393,6 @@
         }
       }
     },
-    "Enter program name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce el nombre del programa"
-          }
-        }
-      }
-    },
     "Enter recipe name" : {
       "localizations" : {
         "es" : {
@@ -9311,16 +9641,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Uniforme o variada?"
-          }
-        }
-      }
-    },
-    "Every block is done. Run it again from the first block, or pick something new." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Has terminado todos los bloques. Repítelo desde el primero o elige algo nuevo."
           }
         }
       }
@@ -11732,16 +12052,6 @@
         }
       }
     },
-    "It's time to create a custom workout program." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es hora de crear un programa de entrenamiento personalizado."
-          }
-        }
-      }
-    },
     "Items" : {
       "localizations" : {
         "es" : {
@@ -13851,26 +14161,6 @@
         }
       }
     },
-    "New Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo plan"
-          }
-        }
-      }
-    },
-    "New Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo programa"
-          }
-        }
-      }
-    },
     "New Recipe" : {
       "localizations" : {
         "es" : {
@@ -14020,32 +14310,12 @@
         }
       }
     },
-    "No active program." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay ningún programa activo."
-          }
-        }
-      }
-    },
     "No active session in local storage" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay ninguna sesión activa en el almacenamiento local"
-          }
-        }
-      }
-    },
-    "No Active Training Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay programa de entrenamiento activo"
           }
         }
       }
@@ -14410,16 +14680,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La tienda no devolvió ningún producto."
-          }
-        }
-      }
-    },
-    "No Programs" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay programas"
           }
         }
       }
@@ -16123,16 +16383,6 @@
         }
       }
     },
-    "Plan name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre del plan"
-          }
-        }
-      }
-    },
     "Plate" : {
       "localizations" : {
         "es" : {
@@ -16567,26 +16817,6 @@
         }
       }
     },
-    "Previous values come from the last time you completed this workout within the current program. If there is none for an exercise, the last time you performed it anywhere is shown instead." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento dentro del programa actual. Si no hay ninguno para un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
-          }
-        }
-      }
-    },
-    "Previous values come from the last time you completed this workout, in any program. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento, en cualquier programa. Si este entrenamiento no tiene historial de un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
-          }
-        }
-      }
-    },
     "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all." : {
       "localizations" : {
         "es" : {
@@ -16741,36 +16971,6 @@
         }
       }
     },
-    "Program Name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre del programa"
-          }
-        }
-      }
-    },
-    "Program settings" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustes del programa"
-          }
-        }
-      }
-    },
-    "Program Settings" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustes del programa"
-          }
-        }
-      }
-    },
     "Program update" : {
       "localizations" : {
         "es" : {
@@ -16788,16 +16988,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualización del programa"
-          }
-        }
-      }
-    },
-    "Programs" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Programas"
           }
         }
       }
@@ -17428,16 +17618,6 @@
         }
       }
     },
-    "Repeat Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repetir plan"
-          }
-        }
-      }
-    },
     "Repeat last session" : {
       "localizations" : {
         "es" : {
@@ -17708,16 +17888,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer ejercicios iniciales"
-          }
-        }
-      }
-    },
-    "Reset Program Seeding" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restablecer programas iniciales"
           }
         }
       }
@@ -18327,16 +18497,6 @@
         }
       }
     },
-    "Save Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar programa"
-          }
-        }
-      }
-    },
     "Save Share Cards to Photos" : {
       "localizations" : {
         "es" : {
@@ -18394,16 +18554,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se guardó %@ en tus entrenamientos"
-          }
-        }
-      }
-    },
-    "Saved Programs" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Programas guardados"
           }
         }
       }
@@ -20060,32 +20210,12 @@
         }
       }
     },
-    "Start Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar plan"
-          }
-        }
-      }
-    },
     "Start one of your workouts and open the tracker." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empieza uno de tus entrenamientos y abre el registro."
-          }
-        }
-      }
-    },
-    "Start Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar programa"
           }
         }
       }
@@ -20137,16 +20267,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empezado a las"
-          }
-        }
-      }
-    },
-    "Starting a template saves your own copy and makes it your active program." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al empezar una plantilla se guarda tu propia copia y se convierte en tu programa activo."
           }
         }
       }
@@ -21060,16 +21180,6 @@
         }
       }
     },
-    "The workout your active program has for today." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El entrenamiento que tu programa activo tiene para hoy."
-          }
-        }
-      }
-    },
     "The workout your active programme has for today." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -21108,16 +21218,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aún no hay un sitio de ayuda. Mientras tanto, Soporte nos envía un correo directamente y te responderemos por ahí."
-          }
-        }
-      }
-    },
-    "These are saved program designs. Start a program from a template to generate a scheduled plan." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estos son diseños de programa guardados. Empieza un programa a partir de una plantilla para generar un plan con calendario."
           }
         }
       }
@@ -21373,16 +21473,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este entrenamiento"
-          }
-        }
-      }
-    },
-    "This workout within the current program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este entrenamiento dentro del programa actual"
           }
         }
       }
@@ -22034,16 +22124,6 @@
         }
       }
     },
-    "Training program: %@, %lld days/week" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Programa de entrenamiento: %1$@, %2$lld días/semana"
-          }
-        }
-      }
-    },
     "Training Settings" : {
       "localizations" : {
         "es" : {
@@ -22312,16 +22392,6 @@
         }
       }
     },
-    "Unable to Activate Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo activar el programa"
-          }
-        }
-      }
-    },
     "Unable to add" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -22559,16 +22629,6 @@
         }
       }
     },
-    "Unable to Create Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo crear el programa"
-          }
-        }
-      }
-    },
     "Unable to create the image" : {
       "localizations" : {
         "es" : {
@@ -22671,16 +22731,6 @@
     },
     "Unable to delete program" : {
       "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo eliminar el programa"
-          }
-        }
-      }
-    },
-    "Unable to Delete Program" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22933,16 +22983,6 @@
         }
       }
     },
-    "Unable to Repeat Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo repetir el plan"
-          }
-        }
-      }
-    },
     "Unable to Restore Purchases" : {
       "localizations" : {
         "es" : {
@@ -23039,16 +23079,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo guardar el perfil"
-          }
-        }
-      }
-    },
-    "Unable to Save Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo guardar el programa"
           }
         }
       }
@@ -23231,26 +23261,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo omitir el entrenamiento"
-          }
-        }
-      }
-    },
-    "Unable to Start Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo empezar el plan"
-          }
-        }
-      }
-    },
-    "Unable to Start Program" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo iniciar el programa"
           }
         }
       }
@@ -23729,16 +23739,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar temporizadores de descanso al pasar de un ejercicio a otro"
-          }
-        }
-      }
-    },
-    "Use these options to reset and re-seed system exercises, workouts and programs. Useful for testing or if seeding failed." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa estas opciones para restablecer y volver a cargar los ejercicios, entrenamientos y programas del sistema. Útil para pruebas o si falló la carga inicial."
           }
         }
       }
@@ -24793,16 +24793,6 @@
         }
       }
     },
-    "What would you like to name this program?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Qué nombre quieres darle a este programa?"
-          }
-        }
-      }
-    },
     "What's a warmup set?" : {
       "localizations" : {
         "es" : {
@@ -25274,16 +25264,6 @@
         }
       }
     },
-    "Workouts, programs, exercises and gym profiles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrenamientos, programas, ejercicios y perfiles de gimnasio"
-          }
-        }
-      }
-    },
     "Would you like to save the workout templates in the training program for use independently?" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -25746,16 +25726,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu plato"
-          }
-        }
-      }
-    },
-    "Your Programs" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus programas"
           }
         }
       }

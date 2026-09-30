@@ -78,7 +78,7 @@ class TodayPresenter {
                 interactor.playHaptic(option: .success)
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(title: String(localized: "Unable to Repeat Plan"), error: error)
+                router.showAlert(title: String(localized: "Unable to Repeat Macrocycle"), error: error)
             }
         }
     }

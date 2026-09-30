@@ -74,7 +74,7 @@ class CreateMacrocyclePresenter {
             } catch {
                 interactor.trackEvent(event: Event.startFail(error: error))
                 interactor.playHaptic(option: .error)
-                router.showAlert(title: String(localized: "Unable to Start Plan"), error: error)
+                router.showAlert(title: String(localized: "Unable to Start Macrocycle"), error: error)
             }
         }
     }

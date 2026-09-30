@@ -32,7 +32,7 @@ struct MesocycleDisclosureGroupView: View {
                         presenter.onSharePressed(delegate.mesocycle)
                     }
                     if let onDelete = delegate.onDelete {
-                        Button("Delete Program", systemImage: Symbol.delete, role: .destructive) {
+                        Button("Delete Mesocycle", systemImage: Symbol.delete, role: .destructive) {
                             onDelete(delegate.mesocycle)
                         }
                     }

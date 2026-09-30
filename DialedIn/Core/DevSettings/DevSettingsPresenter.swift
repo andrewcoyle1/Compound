@@ -161,7 +161,7 @@ class DevSettingsPresenter {
     
     func resetMesocycleSeeding() async {
         isReseeding = true
-        reseedingMessage = "Resetting programs..."
+        reseedingMessage = "Resetting mesocycles..."
 
         UserDefaults.standard.removeObject(forKey: MesocycleManager.hasSeededKey)
         UserDefaults.standard.removeObject(forKey: MesocycleManager.seedingVersionKey)

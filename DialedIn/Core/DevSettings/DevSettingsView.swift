@@ -356,7 +356,7 @@ struct DevSettingsView: View {
                     await presenter.resetMesocycleSeeding()
                 }
             } label: {
-                Label("Reset Program Seeding", systemImage: "arrow.clockwise")
+                Label("Reset Mesocycle Seeding", systemImage: "arrow.clockwise")
             }
             .disabled(presenter.isReseeding)
             
@@ -380,7 +380,7 @@ struct DevSettingsView: View {
         } header: {
             Text("Data Seeding")
         } footer: {
-            Text("Use these options to reset and re-seed system exercises, workouts and programs. Useful for testing or if seeding failed.")
+            Text("Use these options to reset and re-seed system exercises, workouts and mesocycles. Useful for testing or if seeding failed.")
         }
     }
     

@@ -49,9 +49,9 @@ class MesocycleLibraryPresenter {
 
     func showDeleteAlert(mesocycle: Mesocycle) {
         router.showAlert(
-            title: String(localized: "Delete Program"),
+            title: String(localized: "Delete Mesocycle"),
             subtitle: mesocycle.id == activeMesocycle?.id
-                ? String(localized: "Are you sure you want to delete your active program '\(mesocycle.name)'? This will remove all scheduled workouts and you'll need to create or select a new program.")
+                ? String(localized: "Are you sure you want to delete your active mesocycle '\(mesocycle.name)'? This will remove all scheduled workouts and you'll need to create or select a new mesocycle.")
                 : String(localized: "Delete '\(mesocycle.name)'? This can't be undone."),
             buttons: {
                 AnyView(
@@ -81,7 +81,7 @@ class MesocycleLibraryPresenter {
             interactor.trackEvent(event: Event.deleteMesocycleFail(error: error))
             // The mesocycle is still listed after a failed delete, so say so rather than leave the
             // confirmation looking like it did nothing.
-            router.showSimpleAlert(title: String(localized: "Unable to Delete Program"), subtitle: String(localized: "Please try again."))
+            router.showSimpleAlert(title: String(localized: "Unable to Delete Mesocycle"), subtitle: String(localized: "Please try again."))
         }
     }
         

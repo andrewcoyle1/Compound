@@ -173,8 +173,8 @@ enum DeloadType: String, Hashable, Codable, CaseIterable {
     var description: String {
         switch self {
         case .none: return "Train continuously without scheduled reductions in intensity or volume."
-        case .start: return "Start each training block with a lower-intensity cycle to ease into new workloads and reduce soreness."
-        case .end: return "Finish each training block with a lighter cycle to promote recovery and readiness for the next phase."
+        case .start: return "Start each mesocycle with a lower-intensity microcycle to ease into new workloads and reduce soreness."
+        case .end: return "Finish each mesocycle with a lighter microcycle to promote recovery and readiness for the next phase."
         }
     }
 }

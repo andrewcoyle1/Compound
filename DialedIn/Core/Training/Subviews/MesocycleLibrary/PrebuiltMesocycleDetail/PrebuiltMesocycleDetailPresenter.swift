@@ -46,7 +46,7 @@ class PrebuiltMesocycleDetailPresenter {
         } catch {
             interactor.trackEvent(event: Event.startFail(mesocycleId: mesocycle.id, error: error))
             interactor.playHaptic(option: .error)
-            router.showAlert(title: String(localized: "Unable to Start Program"), error: error)
+            router.showAlert(title: String(localized: "Unable to Start Mesocycle"), error: error)
         }
     }
 }

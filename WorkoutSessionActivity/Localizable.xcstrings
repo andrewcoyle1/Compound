@@ -408,12 +408,12 @@
         }
       }
     },
-    "See today's session from your program." : {
+    "See today's session from your mesocycle." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Consulta la sesión de hoy de tu programa."
+            "value" : "Consulta la sesión de hoy de tu mesociclo."
           }
         }
       }

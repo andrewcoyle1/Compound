@@ -16,15 +16,15 @@ struct NameMesocycleView: View {
     var body: some View {
         List {
             Section {
-                TextField("Enter program name", text: $presenter.mesocycleName)
+                TextField("Enter mesocycle name", text: $presenter.mesocycleName)
                     .accessibilityIdentifier("NameProgram.name")
             } header: {
-                Text("Program Name")
+                Text("Mesocycle Name")
             } footer: {
-                Text("What would you like to name this program?")
+                Text("What would you like to name this mesocycle?")
             }
         }
-        .navigationTitle("Create Program")
+        .navigationTitle("Create Mesocycle")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()

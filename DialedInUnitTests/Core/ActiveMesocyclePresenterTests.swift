@@ -558,7 +558,7 @@ struct ActiveMesocyclePresenterTests {
 
         await presenter.deleteMesocycle(mesocycleId: "program-1")
 
-        #expect(router.alertTitles == ["Unable to Delete Program"])
+        #expect(router.alertTitles == ["Unable to Delete Mesocycle"])
         #expect(interactor.trackedEventNames == ["ActiveTrainingProgramView_DeleteProgram_Fail"])
     }
 }

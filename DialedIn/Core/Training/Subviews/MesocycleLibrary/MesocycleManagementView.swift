@@ -29,7 +29,7 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
                 templatesSection
             }
         }
-        .navigationTitle("Programs")
+        .navigationTitle("Mesocycles")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent
@@ -46,7 +46,7 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
         Section {
             mesocycleDisclosueGroup(MesocycleDisclosureGroupDelegate(mesocycle: activeMesocycle))
         } header: {
-            Text("Active Training Program")
+            Text("Active Mesocycle")
         }
     }
 
@@ -59,9 +59,9 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
                 )
             )
         } header: {
-            Text("Saved Programs")
+            Text("Saved Mesocycles")
         } footer: {
-            Text("These are saved program designs. Start a program from a template to generate a scheduled plan.")
+            Text("These are saved mesocycle designs. Start one from a template to generate a schedule.")
         }
     }
     
@@ -83,20 +83,20 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
         } header: {
             Text("Templates")
         } footer: {
-            Text("Starting a template saves your own copy and makes it your active program.")
+            Text("Starting a template saves your own copy and makes it your active mesocycle.")
         }
     }
 
     private var emptyState: some View {
         ContentUnavailableView {
-            Label("No Programs", systemImage: Symbol.mesocycle)
+            Label("No Mesocycles", systemImage: Symbol.mesocycle)
         } description: {
-            Text("Create your first training program to get started.")
+            Text("Create your first mesocycle to get started.")
         } actions: {
             Button {
                 presenter.onCreateMesocyclePressed()
             } label: {
-                Text("Create Program")
+                Text("Create Mesocycle")
                     .foregroundStyle(.onAccent)
             }
             .buttonStyle(.borderedProminent)
@@ -107,16 +107,16 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Menu {
-                Button("New Program", systemImage: Symbol.mesocycle) {
+                Button("New Mesocycle", systemImage: Symbol.mesocycle) {
                     presenter.onCreateMesocyclePressed()
                 }
-                Button("New Plan", systemImage: Symbol.calendar) {
+                Button("New Macrocycle", systemImage: Symbol.calendar) {
                     presenter.onCreateMacrocyclePressed()
                 }
             } label: {
                 Image(systemName: Symbol.add)
             }
-            .accessibilityLabel("Create program or plan")
+            .accessibilityLabel("Create mesocycle")
         }
     }
 }

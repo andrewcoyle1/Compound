@@ -72,7 +72,7 @@ class MesocycleSettingsPresenter {
                 router.dismissScreen()
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(title: String(localized: "Unable to Activate Program"), error: error)
+                router.showAlert(title: String(localized: "Unable to Activate Mesocycle"), error: error)
             }
         }
     }

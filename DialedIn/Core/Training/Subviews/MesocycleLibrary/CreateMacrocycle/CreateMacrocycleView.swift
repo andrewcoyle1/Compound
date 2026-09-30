@@ -12,13 +12,13 @@ struct CreateMacrocycleView: View {
     var body: some View {
         List {
             Section("Name") {
-                TextField("Plan name", text: $presenter.name)
+                TextField("Macrocycle name", text: $presenter.name)
             }
             blocksSection
             mesocyclesSection
         }
         .environment(\.editMode, .constant(.active))
-        .navigationTitle("New Plan")
+        .navigationTitle("New Macrocycle")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -31,7 +31,7 @@ struct CreateMacrocycleView: View {
             CallToActionButton(isLoading: presenter.isSaving) {
                 presenter.onStartPressed()
             } label: {
-                Text("Start Plan")
+                Text("Start Macrocycle")
             }
             .disabled(!presenter.canStart)
         }
@@ -41,13 +41,13 @@ struct CreateMacrocycleView: View {
     private var blocksSection: some View {
         Section {
             if presenter.blocks.isEmpty {
-                Text("Add programs below. Each one is a block, run in this order.")
+                Text("Add mesocycles below. They run in this order.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
             ForEach(presenter.blocks, id: \.index) { block in
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text("Block \(block.index + 1)")
+                    Text("Mesocycle \(block.index + 1)")
                         .font(.label)
                         .foregroundStyle(.secondary)
                     MesocycleHeader(mesocycle: block.mesocycle)
@@ -56,16 +56,16 @@ struct CreateMacrocycleView: View {
             .onMove { presenter.onMoveBlocks(from: $0, to: $1) }
             .onDelete { presenter.onDeleteBlocks(at: $0) }
         } header: {
-            Text("Blocks")
+            Text("Mesocycles")
         } footer: {
-            Text("After the last block you can repeat the plan from the first one.")
+            Text("After the last mesocycle you can repeat the macrocycle from the first one.")
         }
     }
 
     private var mesocyclesSection: some View {
-        Section("Your Programs") {
+        Section("Your Mesocycles") {
             if presenter.mesocycles.isEmpty {
-                Text("Create or start a program first, then build a plan from it.")
+                Text("Create or start a mesocycle first, then build a macrocycle from it.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
@@ -81,7 +81,7 @@ struct CreateMacrocycleView: View {
                 .anyButton {
                     presenter.onMesocyclePressed(mesocycle)
                 }
-                .accessibilityHint("Adds this program as the next block")
+                .accessibilityHint("Adds this mesocycle next")
             }
         }
     }

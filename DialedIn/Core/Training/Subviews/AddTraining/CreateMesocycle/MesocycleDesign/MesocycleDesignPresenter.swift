@@ -214,7 +214,7 @@ class MesocycleDesignPresenter {
             }
         } catch {
             interactor.playHaptic(option: .error)
-            router.showAlert(title: String(localized: "Unable to Activate Program"), error: error)
+            router.showAlert(title: String(localized: "Unable to Activate Mesocycle"), error: error)
         }
     }
 
@@ -240,12 +240,12 @@ class MesocycleDesignPresenter {
 
     func onDeletePressed() {
         router.showConfirmationDialog(
-            title: String(localized: "Delete Program?"),
+            title: String(localized: "Delete Mesocycle?"),
             subtitle: String(localized: "“\(mesocycle.name)” will be deleted. This can't be undone.")
         ) {
             AnyView(
                 VStack {
-                    Button("Delete Program", role: .destructive) {
+                    Button("Delete Mesocycle", role: .destructive) {
                         Task { await self.deleteMesocycle() }
                     }
                     Button("Cancel", role: .cancel) { }
@@ -261,7 +261,7 @@ class MesocycleDesignPresenter {
             router.dismissEnvironment()
         } catch {
             interactor.playHaptic(option: .error)
-            router.showAlert(title: String(localized: "Unable to Delete Program"), error: error)
+            router.showAlert(title: String(localized: "Unable to Delete Mesocycle"), error: error)
         }
     }
 
@@ -276,7 +276,7 @@ class MesocycleDesignPresenter {
                 router.dismissEnvironment()
             } catch {
                 interactor.playHaptic(option: .error)
-                router.showAlert(title: String(localized: "Unable to Save Program"), error: error)
+                router.showAlert(title: String(localized: "Unable to Save Mesocycle"), error: error)
             }
         }
     }
@@ -321,7 +321,7 @@ class MesocycleDesignPresenter {
     private static var restDayName: String { String(localized: "Rest Day") }
 
     private static func workoutDayName(_ letter: String) -> String {
-        String(localized: "Workout \(letter)", comment: "A program day's default name; the letter counts the workout days A, B, C.")
+        String(localized: "Workout \(letter)", comment: "A mesocycle day's default name; the letter counts the workout days A, B, C.")
     }
     
     private func letterForWorkoutIndex(_ index: Int) -> String {

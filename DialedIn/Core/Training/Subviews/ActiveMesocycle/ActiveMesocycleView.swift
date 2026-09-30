@@ -38,7 +38,7 @@ struct ActiveMesocycleView: View {
             }
         } header: {
             HStack(spacing: Spacing.s) {
-                Text("Active Program")
+                Text("Active Mesocycle")
                 Spacer()
                 microcycleMenu
             }

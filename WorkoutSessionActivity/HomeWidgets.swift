@@ -39,7 +39,7 @@ struct TodaysWorkoutWidget: Widget {
                 .widgetURL(WidgetSnapshotStore.workoutURL)
         }
         .configurationDisplayName("Today's Workout")
-        .description("See today's session from your program.")
+        .description("See today's session from your mesocycle.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

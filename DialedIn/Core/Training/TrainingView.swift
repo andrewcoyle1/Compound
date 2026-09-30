@@ -73,14 +73,14 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
     private var noScheduleView: some View {
         Section {
             ContentUnavailableView {
-                Label("No Active Training Program", systemImage: Symbol.mesocycle)
+                Label("No Active Mesocycle", systemImage: Symbol.mesocycle)
             } description: {
-                Text("Add a program to start compounding.")
+                Text("Add a mesocycle to start compounding.")
             } actions: {
                 Button {
                     presenter.onChooseMesocyclePressed()
                 } label: {
-                    Text("Choose Program")
+                    Text("Choose Mesocycle")
                         .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.borderedProminent)
@@ -91,7 +91,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
     /// Everything the user has built or done: mesocycles, workouts, exercises and the history.
     private var librarySection: some View {
         Section("Library") {
-            ListRowButton(title: "Programs", systemImage: Symbol.library) {
+            ListRowButton(title: "Mesocycles", systemImage: Symbol.library) {
                 presenter.onMesocycleLibraryView()
             }
             ListRowButton(title: "Workouts", systemImage: Symbol.workout) {
@@ -157,7 +157,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
                 Button {
                     presenter.onNewMesocyclePressed()
                 } label: {
-                    Label("New Program", systemImage: Symbol.mesocycle)
+                    Label("New Mesocycle", systemImage: Symbol.mesocycle)
                 }
                 Button {
                     presenter.onNewWorkoutPressed()

@@ -25,7 +25,7 @@ struct PrebuiltMesocycleDetailView: View {
             CallToActionButton(isLoading: presenter.isStarting) {
                 Task { await presenter.onStartPressed() }
             } label: {
-                Text("Start Program")
+                Text("Start Mesocycle")
             }
             .disabled(presenter.isStarting)
         }

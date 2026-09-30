@@ -17,7 +17,7 @@ struct MesocycleIconView: View {
     
     var body: some View {
         VStack(spacing: Spacing.l) {
-            Text("Choose an icon for this program.")
+            Text("Choose an icon for this mesocycle.")
                 .font(.sectionTitle)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
@@ -34,7 +34,7 @@ struct MesocycleIconView: View {
         }
         .padding(.top)
         .background(Color.canvas)
-        .navigationTitle("Create Program")
+        .navigationTitle("Create Mesocycle")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
@@ -77,7 +77,7 @@ extension CoreRouter {
 #Preview {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    let delegate = MesocycleIconDelegate(name: "Preview Program")
+    let delegate = MesocycleIconDelegate(name: "Preview Mesocycle")
     
     return RouterView { router in
         builder.mesocycleIconView(router: router, delegate: delegate)

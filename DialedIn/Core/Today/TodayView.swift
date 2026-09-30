@@ -59,7 +59,7 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
             // Without a plan for today the card stays, so the first card is always the workout.
             Section("Today's Workout") {
                 VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(presenter.hasActiveMesocycle ? "Nothing scheduled today." : "No active program.")
+                    Text(presenter.hasActiveMesocycle ? "Nothing scheduled today." : "No active mesocycle.")
                         .font(.rowTitle)
                     Text("Start an empty workout and add exercises as you go.")
                         .font(.rowDetail)
@@ -76,7 +76,7 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                         Button {
                             presenter.onChooseMesocyclePressed()
                         } label: {
-                            Text("Choose Program")
+                            Text("Choose Mesocycle")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
@@ -91,13 +91,13 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text("\(presenter.completedMacrocycleName) complete")
                     .font(.rowTitle)
-                Text("Every block is done. Run it again from the first block, or pick something new.")
+                Text("Every mesocycle is done. Run it again from the first one, or pick something new.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
                 Button {
                     presenter.onRepeatMacrocyclePressed()
                 } label: {
-                    Label("Repeat Plan", systemImage: Symbol.repeatMacrocycle)
+                    Label("Repeat Macrocycle", systemImage: Symbol.repeatMacrocycle)
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(.onAccent)
                 }
@@ -105,7 +105,7 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                 Button {
                     presenter.onChooseMesocyclePressed()
                 } label: {
-                    Text("Choose Program")
+                    Text("Choose Mesocycle")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)

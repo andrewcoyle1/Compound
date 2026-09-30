@@ -29,6 +29,7 @@ struct AddMealView: View {
             ListRowToggle(title: String(localized: "Show all nutrients"), systemImage: Symbol.nutrition, isOn: $presenter.showAllNutrients)
         }
         .navigationTitle("Add Meal")
+//        .navigationSubtitle("\(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $presenter.isEditingMealTime) {
             mealTimeSheet
@@ -116,21 +117,7 @@ struct AddMealView: View {
         ListRow(
             title: mealItem.displayName,
             subtitle: mealItem.macroSummary,
-            accessory: .custom(AnyView(
-                HStack(spacing: Spacing.s) {
-                    Text(mealItem.formattedAmount)
-                        .font(.rowDetail)
-                        .foregroundStyle(.secondary)
-                    Button {
-                        presenter.onEditMealItem(mealItem)
-                    } label: {
-                        Image(systemName: Symbol.edit)
-                    }
-                    .accessibilityLabel("Edit \(mealItem.displayName)")
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.circle)
-                }
-            ))
+            accessory: .value(mealItem.formattedAmount)
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
@@ -138,9 +125,23 @@ struct AddMealView: View {
             } label: {
                 Label("Delete", systemImage: Symbol.delete)
             }
+            .accessibilityLabel("Delete \(mealItem.displayName)")
+            Button {
+                presenter.onEditMealItem(mealItem)
+            } label: {
+                Label("Edit", systemImage: Symbol.edit)
+            }
+            .accessibilityLabel("Edit \(mealItem.displayName)")
+
         }
         // The same action for anyone who cannot swipe.
         .contextMenu {
+            Button {
+                presenter.onEditMealItem(mealItem)
+            } label: {
+                Image(systemName: Symbol.edit)
+            }
+            .accessibilityLabel("Edit \(mealItem.displayName)")
             Button(role: .destructive) {
                 presenter.onDeleteMealItem(mealItem)
             } label: {
@@ -257,24 +258,21 @@ struct AddMealView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .cancellationAction) {
+        ToolbarItem(placement: .topBarLeading) {
             Button(role: .close) {
                 presenter.dismissScreen()
             }
         }
 
-        ToolbarSpacer(.flexible, placement: .topBarLeading)
-        ToolbarItem(placement: .topBarLeading) {
+//        ToolbarSpacer(.flexible, placement: .topBarLeading)
+        ToolbarItem(placement: .title) {
             Button {
                 presenter.onEditMealTimePressed()
             } label: {
-                VStack {
-                    Text(presenter.mealLog.date.formatted(date: .omitted, time: .shortened))
-                        .font(.rowDetail)
-                    Text(presenter.mealLog.date.formatted(date: .numeric, time: .omitted))
-                        .font(.label)
-                        .foregroundStyle(.secondary)
-                }
+                    Text(presenter.mealLog.date.formatted(date: .numeric, time: .shortened))
+                    .underline()
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
             .accessibilityLabel("Change meal time")
         }

@@ -9,7 +9,7 @@
 protocol TrainingInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var userImageUrl: String? { get }
-    var activeTrainingProgram: TrainingProgram? { get }
+    var activeMesocycle: Mesocycle? { get }
     var activeSession: WorkoutSessionModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var favouriteGymProfile: GymProfileModel? { get }
@@ -20,7 +20,7 @@ protocol TrainingInteractor: GlobalInteractor {
     func updateActiveSession(_ session: WorkoutSessionModel) throws
     func saveWorkoutSession(_ session: WorkoutSessionModel) async throws
     
-    func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws
     func startBlankWorkout() async throws
 
     func deleteActiveSession() throws

@@ -32,9 +32,9 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     /// What finishing needs beyond the session: see `WorkoutFinishManagers`. The streak and
     /// Strava are optional so a test can build the handler without them.
     private let gymProfileManager: GymProfileManager
-    private let trainingProgramManager: TrainingProgramManager
+    private let mesocycleManager: MesocycleManager
     private let userManager: UserManager
-    private let trainingPlanManager: TrainingPlanManager?
+    private let macrocycleManager: MacrocycleManager?
     private let streakManager: StreakManager?
     private let stravaManager: StravaManager?
     private let logManager: LogManager
@@ -47,9 +47,9 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         exerciseSettingsManager: ExerciseSettingsManager,
         exerciseModelManager: ExerciseModelManager,
         gymProfileManager: GymProfileManager,
-        trainingProgramManager: TrainingProgramManager,
+        mesocycleManager: MesocycleManager,
         userManager: UserManager,
-        trainingPlanManager: TrainingPlanManager? = nil,
+        macrocycleManager: MacrocycleManager? = nil,
         streakManager: StreakManager? = nil,
         stravaManager: StravaManager? = nil,
         logManager: LogManager = LogManager(services: [])
@@ -61,9 +61,9 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         self.exerciseSettingsManager = exerciseSettingsManager
         self.exerciseModelManager = exerciseModelManager
         self.gymProfileManager = gymProfileManager
-        self.trainingProgramManager = trainingProgramManager
+        self.mesocycleManager = mesocycleManager
         self.userManager = userManager
-        self.trainingPlanManager = trainingPlanManager
+        self.macrocycleManager = macrocycleManager
         self.streakManager = streakManager
         self.stravaManager = stravaManager
         self.logManager = logManager
@@ -160,9 +160,9 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
             hkWorkout: hkWorkoutManager,
             liveActivity: liveActivityUpdater,
             gymProfiles: gymProfileManager,
-            programs: trainingProgramManager,
+            mesocycles: mesocycleManager,
             users: userManager,
-            plans: trainingPlanManager,
+            plans: macrocycleManager,
             streak: streakManager,
             strava: stravaManager,
             logger: logManager

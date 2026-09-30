@@ -14,7 +14,7 @@ import Foundation
 /// `OnboardingDietPlanMathTests` covers the shape of the week — seven days, the floor, the varied
 /// split totalling the same as a flat one, and that no figure comes out non-finite. This file
 /// covers what that one does not: the exact macro split each diet produces, how the training
-/// context is derived from the active program, and the bookkeeping fields the settings screens
+/// context is derived from the active mesocycle, and the bookkeeping fields the settings screens
 /// read back.
 @MainActor
 struct NutritionManagerDietPlanTests {
@@ -66,13 +66,13 @@ struct NutritionManagerDietPlanTests {
         )
     }
 
-    /// A program of `trainingDays` days that carry exercises and `restDays` that do not. The
+    /// A mesocycle of `trainingDays` days that carry exercises and `restDays` that do not. The
     /// absence of exercises is the only thing that marks a rest day.
-    private func program(
+    private func mesocycle(
         name: String = "Upper/Lower",
         trainingDays: Int,
         restDays: Int = 0
-    ) -> TrainingProgram {
+    ) -> Mesocycle {
         let templates = (0..<(trainingDays + restDays)).map { index in
             WorkoutTemplateModel(
                 id: "day-\(index)",
@@ -83,7 +83,7 @@ struct NutritionManagerDietPlanTests {
                     : []
             )
         }
-        return TrainingProgram(
+        return Mesocycle(
             id: "program-1",
             authorId: "user-1",
             name: name,
@@ -234,41 +234,41 @@ struct NutritionManagerDietPlanTests {
 
     // MARK: - The training context
 
-    /// A program is only a reason to vary the week if it contains training. A program of nothing
-    /// but rest days is a program the user has not filled in yet, and varying around it would put
+    /// A mesocycle is only a reason to vary the week if it contains training. A mesocycle of nothing
+    /// but rest days is a mesocycle the user has not filled in yet, and varying around it would put
     /// three high days on a week with no sessions in it.
     @Test("Test A Program Of Rest Days Alone Leaves A Flat Week")
-    func testAProgramOfRestDaysAloneLeavesAFlatWeek() {
+    func testAMesocycleOfRestDaysAloneLeavesAFlatWeek() {
         let plan = manager().computeDietPlan(
             user: profile(),
             delegate: delegate(calorieDistribution: .varied),
-            trainingProgram: program(trainingDays: 0, restDays: 5)
+            mesocycle: mesocycle(trainingDays: 0, restDays: 5)
         )
 
         #expect(Set(plan.days.map(\.calories)).count == 1)
     }
 
     /// One training day is enough: the split is between high and low days, not proportional to how
-    /// many sessions the program holds.
+    /// many sessions the mesocycle holds.
     @Test("Test A Single Training Day Is Enough To Vary The Week")
     func testASingleTrainingDayIsEnoughToVaryTheWeek() {
         let plan = manager().computeDietPlan(
             user: profile(),
             delegate: delegate(calorieDistribution: .varied),
-            trainingProgram: program(trainingDays: 1, restDays: 4)
+            mesocycle: mesocycle(trainingDays: 1, restDays: 4)
         )
 
         #expect(Set(plan.days.map(\.calories)).count == 2)
     }
 
-    /// An even distribution ignores the program entirely — the user asked for the same target
-    /// every day and a program must not override that.
+    /// An even distribution ignores the mesocycle entirely — the user asked for the same target
+    /// every day and a mesocycle must not override that.
     @Test("Test An Even Distribution Ignores The Training Program")
-    func testAnEvenDistributionIgnoresTheTrainingProgram() {
+    func testAnEvenDistributionIgnoresTheMesocycle() {
         let plan = manager().computeDietPlan(
             user: profile(),
             delegate: delegate(calorieDistribution: .even),
-            trainingProgram: program(trainingDays: 5)
+            mesocycle: mesocycle(trainingDays: 5)
         )
 
         #expect(Set(plan.days.map(\.calories)).count == 1)
@@ -289,20 +289,20 @@ struct NutritionManagerDietPlanTests {
         let plan = manager().computeDietPlan(
             user: frail,
             delegate: delegate(calorieDistribution: .varied),
-            trainingProgram: program(trainingDays: 4)
+            mesocycle: mesocycle(trainingDays: 4)
         )
 
         #expect(plan.days.allSatisfy { $0.calories >= 1200 })
     }
 
-    /// With a program, the plan records the program's name, so the settings screen can say what
+    /// With a mesocycle, the plan records the mesocycle's name, so the settings screen can say what
     /// the week was built around.
     @Test("Test The Training Type Is The Program Name When There Is One")
-    func testTheTrainingTypeIsTheProgramNameWhenThereIsOne() {
+    func testTheTrainingTypeIsTheMesocycleNameWhenThereIsOne() {
         let plan = manager().computeDietPlan(
             user: profile(),
             delegate: delegate(),
-            trainingProgram: program(name: "Push Pull Legs", trainingDays: 3)
+            mesocycle: mesocycle(name: "Push Pull Legs", trainingDays: 3)
         )
 
         #expect(plan.trainingType == "Push Pull Legs")

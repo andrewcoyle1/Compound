@@ -17,7 +17,7 @@ struct OnboardingSelectionHapticsTests {
         OverarchingObjectiveInteractor, PreferredDietInteractor, CalorieFloorInteractor,
         CalorieDistributionInteractor, ProteinIntakeInteractor {
         var currentUser: UserModel?
-        var activeTrainingProgram: TrainingProgram?
+        var activeMesocycle: Mesocycle?
         func readSexFromAppleHealth() async -> Gender? { nil }
     }
 

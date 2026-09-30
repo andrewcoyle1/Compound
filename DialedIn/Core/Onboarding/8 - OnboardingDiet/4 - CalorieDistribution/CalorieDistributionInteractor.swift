@@ -6,7 +6,7 @@
 //
 
 protocol CalorieDistributionInteractor: GlobalInteractor {
-    var activeTrainingProgram: TrainingProgram? { get }
+    var activeMesocycle: Mesocycle? { get }
 }
 
 extension CoreInteractor: CalorieDistributionInteractor { }

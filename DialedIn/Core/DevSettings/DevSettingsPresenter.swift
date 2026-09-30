@@ -159,12 +159,12 @@ class DevSettingsPresenter {
         reseedingMessage = ""
     }
     
-    func resetProgramSeeding() async {
+    func resetMesocycleSeeding() async {
         isReseeding = true
         reseedingMessage = "Resetting programs..."
 
-        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.hasSeededKey)
-        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.seedingVersionKey)
+        UserDefaults.standard.removeObject(forKey: MesocycleManager.hasSeededKey)
+        UserDefaults.standard.removeObject(forKey: MesocycleManager.seedingVersionKey)
 
         reseedingMessage = "Complete! Restart app to reseed."
 
@@ -181,8 +181,8 @@ class DevSettingsPresenter {
         UserDefaults.standard.removeObject(forKey: "prebuiltExercisesSeedingVersionV2")
         UserDefaults.standard.removeObject(forKey: "hasSeededPrebuiltWorkouts")
         UserDefaults.standard.removeObject(forKey: "prebuiltWorkoutsSeedingVersion")
-        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.hasSeededKey)
-        UserDefaults.standard.removeObject(forKey: TrainingProgramManager.seedingVersionKey)
+        UserDefaults.standard.removeObject(forKey: MesocycleManager.hasSeededKey)
+        UserDefaults.standard.removeObject(forKey: MesocycleManager.seedingVersionKey)
         
         reseedingMessage = "Complete! Restart app to reseed."
         

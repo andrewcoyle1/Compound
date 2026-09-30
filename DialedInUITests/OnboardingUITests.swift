@@ -73,7 +73,7 @@ final class OnboardingUITests: XCTestCase {
     }
 
     /// A named gym profile (the equipment screen's Continue makes it the favourite), then a
-    /// program by the same path CreateProgramUITests takes.
+    /// mesocycle by the same path CreateMesocycleUITests takes.
     private func setUpTraining(_ app: XCUIApplication) {
         app.waitFor(app.staticTexts["What would you like to name this gym?"].firstMatch)
         app.textFields.firstMatch.tap()
@@ -90,7 +90,7 @@ final class OnboardingUITests: XCTestCase {
         app.tap("ExerciseList.Plank")
         app.tap("ExercisesPicker.confirm")
         app.tapWhenEnabled("ProgramDesign.activate")
-        // Activating offers to keep the program's days as standalone workout templates.
+        // Activating offers to keep the mesocycle's days as standalone workout templates.
         app.waitFor(app.buttons["No"].firstMatch).tap()
     }
 

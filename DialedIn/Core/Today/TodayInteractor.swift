@@ -10,10 +10,10 @@ protocol TodayInteractor: ReminderOfferInteractor {
     var userId: String? { get }
     var userImageUrl: String? { get }
     var currentUser: UserModel? { get }
-    var activeTrainingProgram: TrainingProgram? { get }
-    var activeProgramRun: ProgramSchedule.Run? { get }
-    var currentTrainingPlan: TrainingPlan? { get }
-    func repeatCurrentTrainingPlan() async throws
+    var activeMesocycle: Mesocycle? { get }
+    var activeMesocycleRun: MesocycleSchedule.Run? { get }
+    var currentMacrocycle: Macrocycle? { get }
+    func repeatCurrentMacrocycle() async throws
     var workoutSessions: [WorkoutSessionModel] { get }
     var activeSession: WorkoutSessionModel? { get }
     var draftMeal: MealLogModel? { get }

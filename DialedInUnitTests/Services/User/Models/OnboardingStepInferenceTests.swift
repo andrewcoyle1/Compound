@@ -33,7 +33,7 @@ struct OnboardingStepInferenceTests {
         disclaimerVersion: String? = UserModel.currentHealthDisclaimerVersion,
         goalId: String? = "goal-1",
         gymProfileId: String? = "gym-1",
-        programId: String? = "program-1",
+        mesocycleId: String? = "program-1",
         finished: Bool = true
     ) -> UserModel {
         UserModel(
@@ -46,7 +46,7 @@ struct OnboardingStepInferenceTests {
             submittedDailyActivityLevel: activityLevel,
             submittedCardioFitnessLevel: cardioFitness,
             submittedCurrentGoalId: goalId,
-            submittedActiveTrainingProgramId: programId,
+            submittedActiveMesocycleId: mesocycleId,
             submittedFavouriteGymProfileId: gymProfileId,
             didCompleteOnboarding: finished,
             acceptedHealthDisclaimerVersion: disclaimerVersion
@@ -96,7 +96,7 @@ struct OnboardingStepInferenceTests {
 
     @Test("Test No Programme Resumes At Training Programme Setup")
     func testNoProgrammeResumesAtTrainingProgrammeSetup() {
-        #expect(user(programId: nil).inferredOnboardingStep == .trainingProgramSetup)
+        #expect(user(mesocycleId: nil).inferredOnboardingStep == .mesocycleSetup)
     }
 
     @Test("Test An Unfinished Profile Resumes At Customise Programme")
@@ -151,7 +151,7 @@ struct OnboardingStepInferenceTests {
     @Test("Test A Later Step Does Not Skip An Earlier One")
     func testALaterStepDoesNotSkipAnEarlierOne() {
         // Everything done except the gym, including the programme that comes after it.
-        #expect(user(gymProfileId: nil, programId: "program-1").inferredOnboardingStep == .gymProfileSetup)
+        #expect(user(gymProfileId: nil, mesocycleId: "program-1").inferredOnboardingStep == .gymProfileSetup)
     }
 
     /// Account setup outranks everything: a profile complete in every other respect but missing a

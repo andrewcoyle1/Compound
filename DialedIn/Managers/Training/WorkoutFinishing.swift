@@ -55,9 +55,9 @@ struct WorkoutFinishManagers {
     let hkWorkout: HKWorkoutManager
     let liveActivity: any LiveActivityUpdating
     let gymProfiles: GymProfileManager
-    let programs: TrainingProgramManager
+    let mesocycles: MesocycleManager
     let users: UserManager
-    var plans: TrainingPlanManager?
+    var plans: MacrocycleManager?
     var streak: StreakManager?
     var strava: StravaManager?
     let logger: LogManager
@@ -98,7 +98,7 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
     }
     await preCompleteConsecutiveRestDays(
         after: session,
-        in: managers.programs.activeProgram(for: managers.users.currentUser),
+        in: managers.mesocycles.activeMesocycle(for: managers.users.currentUser),
         sessions: managers.sessions
     )
     if let strava = managers.strava, strava.isConnected {
@@ -110,10 +110,10 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
     }
     let sessionsIncludingThis = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
     if outcome == .saved {
-        await advancePlan(using: managers, sessions: sessionsIncludingThis)
+        await advanceMacrocycle(using: managers, sessions: sessionsIncludingThis)
         refreshWidgetSnapshot(
             users: managers.users,
-            programs: managers.programs,
+            mesocycles: managers.mesocycles,
             plans: managers.plans,
             sessions: sessionsIncludingThis,
             streak: managers.streak?.currentStreakData.currentStreak
@@ -132,10 +132,10 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
 /// A workout that finishes the block's last open slot moves the plan on. Best-effort: the
 /// session is saved either way, and the next finish or skip tries again.
 @MainActor
-private func advancePlan(using managers: WorkoutFinishManagers, sessions: [WorkoutSessionModel]) async {
+private func advanceMacrocycle(using managers: WorkoutFinishManagers, sessions: [WorkoutSessionModel]) async {
     guard let plans = managers.plans else { return }
     do {
-        try await advancePlanIfBlockComplete(plans: plans, programs: managers.programs, users: managers.users, sessions: sessions)
+        try await advanceMacrocycleIfMesocycleComplete(plans: plans, mesocycles: managers.mesocycles, users: managers.users, sessions: sessions)
     } catch {
         managers.logger.trackEvent(eventName: "finish_workout_plan_advance_error", parameters: ["error": error.localizedDescription], type: .warning)
     }
@@ -144,17 +144,17 @@ private func advancePlan(using managers: WorkoutFinishManagers, sessions: [Worko
 #endif
 
 /// Pre-creates a completed rest-day session for each rest day that follows the finished workout
-/// in its program, so the calendar shows them done rather than waiting on the user to tap through.
+/// in its mesocycle, so the calendar shows them done rather than waiting on the user to tap through.
 @MainActor
 func preCompleteConsecutiveRestDays(
     after session: WorkoutSessionModel,
-    in program: TrainingProgram?,
+    in mesocycle: Mesocycle?,
     sessions: WorkoutSessionManager
 ) async {
-    guard let program, program.id == session.trainingProgramId,
+    guard let mesocycle, mesocycle.id == session.mesocycleId,
           let templateId = session.workoutTemplateId else { return }
 
-    let restTemplates = consecutiveRestTemplates(after: templateId, in: program)
+    let restTemplates = consecutiveRestTemplates(after: templateId, in: mesocycle)
     guard !restTemplates.isEmpty else { return }
 
     let calendar = Calendar.current
@@ -176,7 +176,7 @@ func preCompleteConsecutiveRestDays(
             authorId: session.authorId,
             name: restTemplate.name,
             workoutTemplateId: restTemplate.id,
-            trainingProgramId: program.id,
+            mesocycleId: mesocycle.id,
             dateCreated: restDate,
             endedAt: restDate,
             exercises: [],
@@ -186,8 +186,8 @@ func preCompleteConsecutiveRestDays(
     }
 }
 
-private func consecutiveRestTemplates(after templateId: String, in program: TrainingProgram) -> [WorkoutTemplateModel] {
-    let templates = program.workoutTemplates
+private func consecutiveRestTemplates(after templateId: String, in mesocycle: Mesocycle) -> [WorkoutTemplateModel] {
+    let templates = mesocycle.workoutTemplates
     guard let idx = templates.firstIndex(where: { $0.id == templateId }) else { return [] }
     var rests: [WorkoutTemplateModel] = []
     var next = idx + 1

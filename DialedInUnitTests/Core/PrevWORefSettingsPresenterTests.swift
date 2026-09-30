@@ -66,10 +66,10 @@ struct PrevWORefSettingsStaleSnapshotTests {
         screen.interactor.workoutSettings = changedElsewhere
 
         screen.presenter.onViewAppear(delegate: screen.delegate)
-        screen.presenter.previousWorkoutReference = .workoutsInProgram
+        screen.presenter.previousWorkoutReference = .workoutsInMesocycle
 
         #expect(await TestManagers.eventually {
-            screen.interactor.saved.last?.previousWorkoutReference == .workoutsInProgram
+            screen.interactor.saved.last?.previousWorkoutReference == .workoutsInMesocycle
         })
         #expect(screen.interactor.saved.last?.defaultRestDurationSeconds == 150)
         #expect(screen.interactor.saved.last?.rirTracking == true)
@@ -83,7 +83,7 @@ struct PrevWORefSettingsStaleSnapshotTests {
     func testTheScreenListsAllThreeScopes() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.options == [.anyExercise, .sameWorkout, .workoutsInProgram])
+        #expect(screen.presenter.options == [.anyExercise, .sameWorkout, .workoutsInMesocycle])
         #expect(screen.presenter.options.allSatisfy { option in
             !option.title.isEmpty && !option.subtitle.isEmpty
         })
@@ -109,7 +109,7 @@ struct PrevWORefSettingsStaleSnapshotTests {
             [PreviousWorkoutReferenceOption].self,
             from: Data(#"["anyWorkout","anyExercise","workoutsInProgram"]"#.utf8)
         )
-        #expect(decoded == [.sameWorkout, .anyExercise, .workoutsInProgram])
+        #expect(decoded == [.sameWorkout, .anyExercise, .workoutsInMesocycle])
     }
 
     /// And the re-read must not undo the user's own choice when the screen appears again after
@@ -117,11 +117,11 @@ struct PrevWORefSettingsStaleSnapshotTests {
     @Test("Test A Saved Choice Survives The Screen Reappearing")
     func testASavedChoiceSurvivesTheScreenReappearing() async {
         let screen = makeScreen()
-        screen.presenter.previousWorkoutReference = .workoutsInProgram
+        screen.presenter.previousWorkoutReference = .workoutsInMesocycle
         #expect(await TestManagers.eventually { screen.interactor.saved.count == 1 })
 
         screen.presenter.onViewAppear(delegate: screen.delegate)
 
-        #expect(screen.presenter.previousWorkoutReference == .workoutsInProgram)
+        #expect(screen.presenter.previousWorkoutReference == .workoutsInMesocycle)
     }
 }

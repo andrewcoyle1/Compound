@@ -43,7 +43,7 @@ struct OnboardingGoalSummaryPresenterTests {
     /// screen has of its own.
     private final class Router: SpyOnboardingRouter, GoalSummaryRouter {
         private(set) var gymProfileDelegate: CreateGymProfileDelegate?
-        private(set) var programDelegate: CreateProgramDelegate?
+        private(set) var mesocycleDelegate: CreateMesocycleDelegate?
 
         func showDevSettingsView() { record("devSettings") }
 
@@ -52,9 +52,9 @@ struct OnboardingGoalSummaryPresenterTests {
             super.showCreateGymProfileView(delegate: delegate)
         }
 
-        override func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) {
-            programDelegate = delegate
-            super.showOnboardingTrainingProgramView(delegate: delegate)
+        override func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) {
+            mesocycleDelegate = delegate
+            super.showOnboardingMesocycleView(delegate: delegate)
         }
     }
 
@@ -309,9 +309,9 @@ struct OnboardingGoalSummaryPresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("Onboarding_Goal_Navigation"))
     }
 
-    /// A profile with a gym but no program goes one step further along.
+    /// A profile with a gym but no mesocycle goes one step further along.
     @Test("A profile with a gym already set goes on to the training program")
-    func testAProfileWithAGymGoesOnToTheProgram() {
+    func testAProfileWithAGymGoesOnToTheMesocycle() {
         let screen = makeScreen(user: summaryUser(goalId: "goal-1", gymProfileId: "gym-1"))
 
         screen.presenter.handleNavigation()
@@ -354,14 +354,14 @@ struct OnboardingGoalSummaryPresenterTests {
         #expect(screen.router.shown == ["gymProfileSetup", "gymProfileSetup"])
     }
 
-    /// The training-program callback is `@Sendable` and may fire off the main actor, so the router
+    /// The training-mesocycle callback is `@Sendable` and may fire off the main actor, so the router
     /// hops it — which means the re-ask lands on a later turn rather than immediately.
     @Test("Finishing the training program step asks where to go next again")
-    func testFinishingTheProgramStepAsksWhereToGoNextAgain() async {
+    func testFinishingTheMesocycleStepAsksWhereToGoNextAgain() async {
         let screen = makeScreen(user: summaryUser(goalId: "goal-1", gymProfileId: "gym-1"))
 
         screen.presenter.handleNavigation()
-        screen.router.programDelegate?.onComplete?()
+        screen.router.mesocycleDelegate?.onComplete?()
 
         await TestManagers.eventually { screen.router.shown.count == 2 }
         #expect(screen.router.shown == ["trainingProgramSetup", "trainingProgramSetup"])

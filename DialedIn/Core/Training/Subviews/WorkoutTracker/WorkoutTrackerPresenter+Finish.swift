@@ -105,7 +105,7 @@ extension WorkoutTrackerPresenter {
             parameters: [
                 "session_id": session.id,
                 "template_id": session.workoutTemplateId ?? "nil",
-                "plan_id": session.trainingProgramId ?? "nil"
+                "plan_id": session.mesocycleId ?? "nil"
             ],
             type: .info
         )

@@ -25,7 +25,7 @@ class WorkoutHistoryPresenter {
     ///
     /// `interactor.workoutSessions` is everything the sync engine holds, which includes the
     /// workout currently in progress (started sessions are saved straight away, with no
-    /// `endedAt`) and the rest days the program pre-creates for days that have not arrived yet.
+    /// `endedAt`) and the rest days the mesocycle pre-creates for days that have not arrived yet.
     /// Both were being listed and counted as history.
     var workoutSessions: [WorkoutSessionModel] {
         let now = Date()

@@ -214,12 +214,12 @@ class UserManager {
         try await userSyncEngine.updateDocument(data: data)
     }
         
-    // MARK: Update Active Training Program
+    // MARK: Update Active Training Mesocycle
     
-    func updateActiveTrainingProgramId(programId: String?) async throws {
-        guard let activeProgramId = programId else { return }
+    func updateActiveMesocycleId(mesocycleId: String?) async throws {
+        guard let activeMesocycleId = mesocycleId else { return }
         try await userSyncEngine.updateDocument(data: [
-            UserModel.CodingKeys.submittedActiveTrainingProgramId.rawValue: activeProgramId
+            UserModel.CodingKeys.submittedActiveMesocycleId.rawValue: activeMesocycleId
         ])
     }
 
@@ -505,10 +505,10 @@ extension CoreInteractor {
         try await userManager.updateProfileImage(image: image)
     }
     
-    // Active Training Program
+    // Active Training Mesocycle
     
-    func updateActiveTrainingProgramId(programId: String?) async throws {
-        try await userManager.updateActiveTrainingProgramId(programId: programId)
+    func updateActiveMesocycleId(mesocycleId: String?) async throws {
+        try await userManager.updateActiveMesocycleId(mesocycleId: mesocycleId)
     }
     
     // Favourite Gym Profile

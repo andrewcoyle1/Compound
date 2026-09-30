@@ -108,7 +108,7 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     }
     func updateLiveActivity(params: LiveActivityUpdateParams) { }
 
-    /// Records the program filter the presenter asked for, and honours it against
+    /// Records the mesocycle filter the presenter asked for, and honours it against
     /// `completedSessions` when that is set — so a test can assert both the request and the result.
     private(set) var lastCompletedSessionLookups: [String?] = []
     var completedSessions: [WorkoutSessionModel]?
@@ -116,13 +116,13 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func getLastCompletedSessionForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?
+        inMesocycleId: String?
     ) async throws -> WorkoutSessionModel? {
-        lastCompletedSessionLookups.append(inTrainingProgramId)
+        lastCompletedSessionLookups.append(inMesocycleId)
         guard let completedSessions else { return lastCompletedSession }
         return completedSessions
             .filter { $0.workoutTemplateId == templateId }
-            .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+            .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
             .max { ($0.endedAt ?? .distantPast) < ($1.endedAt ?? .distantPast) }
     }
 
@@ -131,14 +131,14 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func getLastCompletedSessionsForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async throws -> [WorkoutSessionModel] {
         let sessions = completedSessions ?? [lastCompletedSession].compactMap { $0 }
         return Array(
             sessions
                 .filter { $0.workoutTemplateId == templateId }
-                .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+                .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
                 .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
                 .prefix(max(limit, 0))
         )
@@ -153,22 +153,22 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         workoutSettings.previousWorkoutReference
     }
 
-    /// Every scope request the resolver made, as `(workoutTemplateId, programId)` for a template
-    /// lookup and `(nil, programId)` for an any-exercise one.
-    private(set) var previousSessionLookups: [(templateId: String?, programId: String?)] = []
+    /// Every scope request the resolver made, as `(workoutTemplateId, mesocycleId)` for a template
+    /// lookup and `(nil, mesocycleId)` for an any-exercise one.
+    private(set) var previousSessionLookups: [(templateId: String?, mesocycleId: String?)] = []
 
     func completedSessionsForWorkoutTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel] {
-        previousSessionLookups.append((templateId: templateId, programId: inTrainingProgramId))
-        lastCompletedSessionLookups.append(inTrainingProgramId)
+        previousSessionLookups.append((templateId: templateId, mesocycleId: inMesocycleId))
+        lastCompletedSessionLookups.append(inMesocycleId)
         return (try? await getLastCompletedSessionsForTemplate(
             templateId: templateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: limit
         )) ?? []
     }
@@ -176,16 +176,16 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func completedSessionsContainingExercise(
         exerciseTemplateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel] {
-        previousSessionLookups.append((templateId: nil, programId: inTrainingProgramId))
+        previousSessionLookups.append((templateId: nil, mesocycleId: inMesocycleId))
         let sessions = completedSessions ?? [lastCompletedSession].compactMap { $0 }
         return Array(
             sessions
                 .filter { $0.endedAt != nil }
                 .filter { $0.exercises.contains(where: { $0.templateId == exerciseTemplateId }) }
-                .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+                .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
                 .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
                 .prefix(max(limit, 0))
         )

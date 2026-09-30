@@ -14,7 +14,7 @@ class ProteinIntakePresenter {
     private let router: ProteinIntakeRouter
 
     var selectedProteinIntake: ProteinIntake?
-    var hasTrainingPlan: Bool = false
+    var hasMesocycle: Bool = false
 
     /// Picking an option row: record it and give the selection tick.
     func onProteinIntakeSelected(_ value: ProteinIntake) {

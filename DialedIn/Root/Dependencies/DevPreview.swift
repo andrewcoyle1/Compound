@@ -25,8 +25,8 @@ class DevPreview {
         container.register(ShortcutSettingsManager.self, service: shortcutSettingsManager)
         container.register(WorkoutTemplateManager.self, service: workoutTemplateManager)
         container.register(WorkoutSessionManager.self, service: workoutSessionManager)
-        container.register(TrainingProgramManager.self, service: trainingProgramManager)
-        container.register(TrainingPlanManager.self, service: trainingPlanManager)
+        container.register(MesocycleManager.self, service: mesocycleManager)
+        container.register(MacrocycleManager.self, service: macrocycleManager)
         container.register(GymProfileManager.self, service: gymProfileManager)
         container.register(FoodManager.self, service: foodManager)
         container.register(RecipeTemplateManager.self, service: recipeTemplateManager)
@@ -81,8 +81,8 @@ class DevPreview {
     let shortcutSettingsManager: ShortcutSettingsManager
     let workoutTemplateManager: WorkoutTemplateManager
     let workoutSessionManager: WorkoutSessionManager
-    let trainingProgramManager: TrainingProgramManager
-    let trainingPlanManager: TrainingPlanManager
+    let mesocycleManager: MesocycleManager
+    let macrocycleManager: MacrocycleManager
     let gymProfileManager: GymProfileManager
     let foodManager: FoodManager
     let recipeTemplateManager: RecipeTemplateManager
@@ -223,17 +223,17 @@ class DevPreview {
             userWorkoutSessionSyncEngine: userWorkoutSessionSyncEngine,
             followingWorkoutSessionSyncEngine: followingWorkoutSessionSyncEngine
         )
-        let trainingProgramSyncEngine = CollectionSyncEngine<TrainingProgram>(
-            remote: MockRemoteCollectionService(collection: TrainingProgram.mocks),
-            managerKey: Keys.trainingProgramManagerKey,
+        let mesocycleSyncEngine = CollectionSyncEngine<Mesocycle>(
+            remote: MockRemoteCollectionService(collection: Mesocycle.mocks),
+            managerKey: Keys.mesocycleManagerKey,
             enableLocalPersistence: false,
             logger: logManager
         )
-        self.trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.programs), logManager: logManager)
-        self.trainingPlanManager = TrainingPlanManager(
-            trainingPlanSyncEngine: CollectionSyncEngine<TrainingPlan>(
+        self.mesocycleManager = MesocycleManager(mesocycleSyncEngine: mesocycleSyncEngine, systemMesocyclePersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.mesocycles), logManager: logManager)
+        self.macrocycleManager = MacrocycleManager(
+            macrocycleSyncEngine: CollectionSyncEngine<Macrocycle>(
                 remote: MockRemoteCollectionService(collection: []),
-                managerKey: TrainingPlanManager.managerKey,
+                managerKey: MacrocycleManager.managerKey,
                 enableLocalPersistence: false,
                 logger: logManager
             ),
@@ -343,7 +343,7 @@ class DevPreview {
                 async let stepsSignIn: () = stepsManager.signIn()
                 async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
                 async let gymProfileSignIn: () = gymProfileManager.signIn()
-                async let trainingProgramSignIn: () = trainingProgramManager.signIn(userId: mockUser.uid)
+                async let mesocycleSignIn: () = mesocycleManager.signIn(userId: mockUser.uid)
                 async let workoutSessionSignIn: () = workoutSessionManager.signIn(userId: mockUser.uid)
                 async let exerciseSignIn: () = exerciseModelManager.signIn(userId: mockUser.uid)
                 async let recipeTemplatesSignIn: () = recipeTemplateManager.signIn()
@@ -361,7 +361,7 @@ class DevPreview {
                 await stepsSignIn
                 await workoutTemplatesSignIn
                 await gymProfileSignIn
-                await trainingProgramSignIn
+                await mesocycleSignIn
                 await workoutSessionSignIn
                 await exerciseSignIn
                 await recipeTemplatesSignIn

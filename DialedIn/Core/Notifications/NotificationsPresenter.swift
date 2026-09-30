@@ -143,7 +143,7 @@ class NotificationsPresenter {
 
     /// A like, comment or mention opens the session it is about — a comment or mention with its
     /// thread on top — a follow, an accepted request or a nudge opens the other person's profile, and
-    /// a share opens the shared template or program, and a finished challenge opens its standings.
+    /// a share opens the shared template or mesocycle, and a finished challenge opens its standings.
     func onNotificationPressed(_ notification: ActivityNotificationModel) {
         interactor.trackEvent(event: Event.notificationPressed(type: notification.type))
         loadingNotificationId = notification.id

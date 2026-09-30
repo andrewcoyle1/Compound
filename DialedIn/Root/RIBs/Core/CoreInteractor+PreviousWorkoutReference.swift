@@ -21,7 +21,7 @@ protocol PreviousWorkoutReferenceResolving {
     func completedSessionsForWorkoutTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel]
 
@@ -29,7 +29,7 @@ protocol PreviousWorkoutReferenceResolving {
     func completedSessionsContainingExercise(
         exerciseTemplateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel]
 }
@@ -38,27 +38,27 @@ extension PreviousWorkoutReferenceResolving {
 
     /// The sessions "last time" should be read from, for one exercise of one workout.
     ///
-    /// `.sameWorkout` and `.workoutsInProgram` look at this workout's own history and fall back to
+    /// `.sameWorkout` and `.workoutsInMesocycle` look at this workout's own history and fall back to
     /// the any-exercise lookup when it holds nothing for the exercise — a brand new template built
     /// from exercises the user has trained for months must still show that history rather than a
-    /// blank column. `.workoutsInProgram` applied to a workout logged outside any program has no
-    /// program to be within, so it keeps the unrestricted template lookup instead of filtering on
+    /// blank column. `.workoutsInMesocycle` applied to a workout logged outside any mesocycle has no
+    /// mesocycle to be within, so it keeps the unrestricted template lookup instead of filtering on
     /// nothing.
     func previousSessions(
         forExerciseTemplateId exerciseTemplateId: String,
         workoutTemplateId: String?,
         authorId: String,
-        trainingProgramId: String?,
+        mesocycleId: String?,
         limit: Int = 3
     ) async -> [WorkoutSessionModel] {
         let scope = previousWorkoutReferenceScope
 
         if scope != .anyExercise, let workoutTemplateId {
-            let programId: String? = scope == .workoutsInProgram ? trainingProgramId : nil
+            let mesocycleId: String? = scope == .workoutsInMesocycle ? mesocycleId : nil
             let fromTemplate = await completedSessionsForWorkoutTemplate(
                 templateId: workoutTemplateId,
                 authorId: authorId,
-                inTrainingProgramId: programId,
+                inMesocycleId: mesocycleId,
                 limit: limit
             )
             let containingExercise = fromTemplate.filter { session in
@@ -72,7 +72,7 @@ extension PreviousWorkoutReferenceResolving {
         return await completedSessionsContainingExercise(
             exerciseTemplateId: exerciseTemplateId,
             authorId: authorId,
-            inTrainingProgramId: nil,
+            inMesocycleId: nil,
             limit: limit
         )
     }
@@ -87,13 +87,13 @@ extension CoreInteractor: PreviousWorkoutReferenceResolving {
     func completedSessionsForWorkoutTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel] {
         (try? await getLastCompletedSessionsForTemplate(
             templateId: templateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: limit
         )) ?? []
     }
@@ -101,13 +101,13 @@ extension CoreInteractor: PreviousWorkoutReferenceResolving {
     func completedSessionsContainingExercise(
         exerciseTemplateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async -> [WorkoutSessionModel] {
         (try? await getLastCompletedSessionsContainingExercise(
             exerciseTemplateId: exerciseTemplateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: limit
         )) ?? []
     }

@@ -18,7 +18,7 @@ extension CoreInteractor {
     func sessionPrefill(
         for template: WorkoutTemplateModel,
         authorId: String,
-        trainingProgramId: String?,
+        mesocycleId: String?,
         unitPreferences: [String: ExerciseUnitPreference]
     ) async -> SessionPrefill {
         switch workoutSettings.smartProgressionInitialLogFill {
@@ -38,7 +38,7 @@ extension CoreInteractor {
                     for: contexts,
                     workoutTemplateId: template.id,
                     authorId: authorId,
-                    trainingProgramId: trainingProgramId,
+                    mesocycleId: mesocycleId,
                     gymProfile: workoutGymProfile
                 )
             )
@@ -65,7 +65,7 @@ extension CoreInteractor {
             for: contexts,
             workoutTemplateId: session.workoutTemplateId,
             authorId: authorId,
-            trainingProgramId: session.trainingProgramId,
+            mesocycleId: session.mesocycleId,
             gymProfile: gymProfile ?? workoutGymProfile
         )
     }
@@ -78,7 +78,7 @@ extension CoreInteractor {
         for contexts: [ProgressionPlanner.ExerciseContext],
         workoutTemplateId: String?,
         authorId: String,
-        trainingProgramId: String?,
+        mesocycleId: String?,
         gymProfile: GymProfileModel?
     ) async -> [String: ProgressionSuggestion] {
         var result: [String: ProgressionSuggestion] = [:]
@@ -88,7 +88,7 @@ extension CoreInteractor {
                 forExerciseTemplateId: context.templateId,
                 workoutTemplateId: workoutTemplateId,
                 authorId: authorId,
-                trainingProgramId: trainingProgramId,
+                mesocycleId: mesocycleId,
                 limit: 3
             )
             let suggestion = ProgressionPlanner.suggestions(

@@ -63,13 +63,13 @@ struct LiveActivityIntentHandlerTests {
         )
     }
 
-    private func session(exercises: [WorkoutExerciseModel], program: TrainingProgram? = nil) -> WorkoutSessionModel {
+    private func session(exercises: [WorkoutExerciseModel], mesocycle: Mesocycle? = nil) -> WorkoutSessionModel {
         WorkoutSessionModel(
             id: "session-1",
             authorId: "author-1",
             name: "Push Day",
-            workoutTemplateId: program?.workoutTemplates.first?.id,
-            trainingProgramId: program?.id,
+            workoutTemplateId: mesocycle?.workoutTemplates.first?.id,
+            mesocycleId: mesocycle?.id,
             dateCreated: Self.start,
             exercises: exercises
         )
@@ -82,11 +82,11 @@ struct LiveActivityIntentHandlerTests {
         try await makeRig(exercises: [exercise(sets: sets)], settings: settings)
     }
 
-    /// `program`, when given, is the user's active program and the session is its first workout;
-    /// the session and program managers are then signed in so what finishing writes can be read.
+    /// `mesocycle`, when given, is the user's active mesocycle and the session is its first workout;
+    /// the session and mesocycle managers are then signed in so what finishing writes can be read.
     private func makeRig(
         exercises: [WorkoutExerciseModel],
-        program: TrainingProgram? = nil,
+        mesocycle: Mesocycle? = nil,
         settings: (inout WorkoutSettings) -> Void = { _ in }
     ) async throws -> Rig {
         // A rest left behind by an earlier run would otherwise read back as one in progress.
@@ -96,13 +96,13 @@ struct LiveActivityIntentHandlerTests {
         workoutSettings.defaultRestDurationSeconds = 75
         settings(&workoutSettings)
 
-        let sessions = program == nil
+        let sessions = mesocycle == nil
             ? TestManagers.workoutSessionManager()
             : await TestManagers.signedInWorkoutSessionManager(sessions: [])
-        try sessions.updateActiveSession(session(exercises: exercises, program: program))
-        let programs = await TestManagers.signedInTrainingProgramManager(programs: [program].compactMap { $0 })
+        try sessions.updateActiveSession(session(exercises: exercises, mesocycle: mesocycle))
+        let mesocycles = await TestManagers.signedInMesocycleManager(mesocycles: [mesocycle].compactMap { $0 })
         let users = try await TestManagers.signedInUserManager(
-            UserModel(userId: "author-1", submittedActiveTrainingProgramId: program?.id)
+            UserModel(userId: "author-1", submittedActiveMesocycleId: mesocycle?.id)
         )
 
         let settingsManager = try await TestManagers.signedInWorkoutSettingsManager(workoutSettings)
@@ -117,7 +117,7 @@ struct LiveActivityIntentHandlerTests {
             exerciseSettingsManager: TestManagers.exerciseSettingsManager(),
             exerciseModelManager: TestManagers.exerciseModelManager(),
             gymProfileManager: TestManagers.gymProfileManager(),
-            trainingProgramManager: programs,
+            mesocycleManager: mesocycles,
             userManager: users
         )
 
@@ -368,11 +368,11 @@ struct LiveActivityIntentHandlerTests {
     }
 
     /// The finish here is the tracker's finish, side effects included. The rest days that follow
-    /// the workout in its program are pre-completed, which the handler's own copy of the finish
+    /// the workout in its mesocycle are pre-completed, which the handler's own copy of the finish
     /// used to skip.
     @Test("Test Completing The Workout Pre-Completes The Rest Days That Follow It")
     func testCompletingTheWorkoutPreCompletesTheRestDaysThatFollowIt() async throws {
-        let program = TrainingProgram(
+        let mesocycle = Mesocycle(
             id: "program-1",
             authorId: "author-1",
             name: "Push Pull",
@@ -384,7 +384,7 @@ struct LiveActivityIntentHandlerTests {
                 WorkoutTemplateModel(id: "template-rest-2", authorId: "author-1", name: "Rest")
             ]
         )
-        let rig = try await makeRig(exercises: [exercise(sets: [set("s1", index: 1, done: true)])], program: program)
+        let rig = try await makeRig(exercises: [exercise(sets: [set("s1", index: 1, done: true)])], mesocycle: mesocycle)
 
         await rig.handler.completeWorkout()
 

@@ -3,8 +3,8 @@
 //  DialedIn
 //
 //  Six presenters each carried a byte-identical `route(to step: OnboardingStep)` switch:
-//  Welcome, Auth, GoalSummary, Paywall, GymProfile and ProgramDesign. They had already
-//  drifted — AuthPresenter's copy sent `.trainingProgramSetup` to the gym-profile screen.
+//  Welcome, Auth, GoalSummary, Paywall, GymProfile and MesocycleDesign. They had already
+//  drifted — AuthPresenter's copy sent `.mesocycleSetup` to the gym-profile screen.
 //  The switch now lives here once so the copies cannot diverge again.
 //
 
@@ -17,7 +17,7 @@ protocol OnboardingStepRouter: GlobalRouter {
     func showHealthDisclaimerView()
     func showGoalSettingView()
     func showCreateGymProfileView(delegate: CreateGymProfileDelegate)
-    func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate)
+    func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate)
     func showCustomisingDietProgramView()
     func showOnboardingCompletedView()
 }
@@ -26,7 +26,7 @@ extension OnboardingStepRouter {
 
     /// Navigates to the screen that resumes onboarding at `step`.
     ///
-    /// `onComplete` is invoked by the gym-profile and training-program steps once the user
+    /// `onComplete` is invoked by the gym-profile and training-mesocycle steps once the user
     /// finishes them, so the caller can re-infer where to go next.
     ///
     /// `.auth` and `.subscription` land on complete-account setup: by the time any of these
@@ -49,11 +49,11 @@ extension OnboardingStepRouter {
         case .gymProfileSetup:
             showCreateGymProfileView(delegate: CreateGymProfileDelegate(onComplete: { onComplete() }))
 
-        case .trainingProgramSetup:
-            // `CreateProgramDelegate.onComplete` is `@Sendable` and may fire off the main
+        case .mesocycleSetup:
+            // `CreateMesocycleDelegate.onComplete` is `@Sendable` and may fire off the main
             // actor, so it is hopped explicitly — as each presenter's own copy did.
-            showOnboardingTrainingProgramView(
-                delegate: CreateProgramDelegate(onComplete: { Task { @MainActor in onComplete() } })
+            showOnboardingMesocycleView(
+                delegate: CreateMesocycleDelegate(onComplete: { Task { @MainActor in onComplete() } })
             )
 
         case .customiseProgram:

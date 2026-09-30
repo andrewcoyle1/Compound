@@ -32,7 +32,7 @@ struct AppViewForUITesting: View {
         } else if processInfoContains("STARTSCREEN_CREATE_WORKOUT") {
             startScreen { builder.createWorkoutView(router: $0, delegate: CreateWorkoutDelegate()) }
         } else if processInfoContains("STARTSCREEN_CREATE_PROGRAM") {
-            startScreen { builder.createProgramView(router: $0, delegate: CreateProgramDelegate()) }
+            startScreen { builder.createMesocycleView(router: $0, delegate: CreateMesocycleDelegate()) }
         } else if processInfoContains("STARTSCREEN_SOCIAL_PROFILE") {
             startScreen { builder.socialProfileView(router: $0, delegate: SocialProfileDelegate(user: UserModel.mocks[2])) }
         } else if processInfoContains("STARTSCREEN_COMMENTS") {
@@ -112,11 +112,11 @@ extension AppViewForUITesting {
             ("STARTSCREEN_TEMPLATE_DETAIL", {
                 builder.workoutTemplateDetailView(
                     router: $0,
-                    delegate: WorkoutTemplateDetailDelegate(workoutTemplate: .mock, trainingProgramId: nil, onStartWorkoutPressed: nil)
+                    delegate: WorkoutTemplateDetailDelegate(workoutTemplate: .mock, mesocycleId: nil, onStartWorkoutPressed: nil)
                 ).any()
             }),
-            ("STARTSCREEN_PROGRAM_LIBRARY", { builder.trainingProgramLibraryView(router: $0).any() }),
-            ("STARTSCREEN_CREATE_PLAN", { builder.createPlanView(router: $0).any() }),
+            ("STARTSCREEN_PROGRAM_LIBRARY", { builder.mesocycleLibraryView(router: $0).any() }),
+            ("STARTSCREEN_CREATE_PLAN", { builder.createMacrocycleView(router: $0).any() }),
             ("STARTSCREEN_WORKOUTS", { builder.workoutsView(router: $0, delegate: WorkoutsDelegate()).any() }),
             // Two muscles already chosen, so both badges are in the shot.
             ("STARTSCREEN_MUSCLE_PICKER", { router in
@@ -129,7 +129,7 @@ extension AppViewForUITesting {
             }),
             ("STARTSCREEN_ACTIVE_PROGRAM", { router in
                 // A List section, so it needs the List the Training tab gives it.
-                List { builder.activeTrainingProgramView(router: router, delegate: ActiveTrainingProgramDelegate(program: .mock)) }.any()
+                List { builder.activeMesocycleView(router: router, delegate: ActiveMesocycleDelegate(mesocycle: .mock)) }.any()
             }),
             ("STARTSCREEN_EXERCISE_DETAIL", {
                 builder.exerciseModelDetailView(router: $0, delegate: ExerciseModelDetailDelegate(exerciseModel: .mock)).any()

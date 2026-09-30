@@ -14,10 +14,10 @@ protocol AppIntentsInteractor {
     var currentUser: UserModel? { get }
     var activeSession: WorkoutSessionModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
-    var activeTrainingProgram: TrainingProgram? { get }
-    var activeProgramRun: ProgramSchedule.Run? { get }
+    var activeMesocycle: Mesocycle? { get }
+    var activeMesocycleRun: MesocycleSchedule.Run? { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
-    func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws
     func updateWeight(userId: String, weight: Double, weightUnitPreference: WeightUnitPreference) async throws
     func openWorkoutTracker()
@@ -61,8 +61,8 @@ extension AppIntentsInteractor {
     /// First id wins, so a library template is preferred over its programme copy.
     var startableWorkoutTemplates: [WorkoutTemplateModel] {
         var seen = Set<String>()
-        let program = activeTrainingProgram?.workoutTemplates.filter { !$0.exercises.isEmpty } ?? []
-        return (allWorkoutTemplates + program).filter { seen.insert($0.id).inserted }
+        let mesocycle = activeMesocycle?.workoutTemplates.filter { !$0.exercises.isEmpty } ?? []
+        return (allWorkoutTemplates + mesocycle).filter { seen.insert($0.id).inserted }
     }
 
     /// Starts `templateId` and asks for the tracker. An active session is kept, not replaced:
@@ -76,9 +76,9 @@ extension AppIntentsInteractor {
         guard let template = startableWorkoutTemplates.first(where: { $0.id == templateId }) else {
             throw AppIntentsError.workoutNotFound
         }
-        let program = activeTrainingProgram
-        let programId = program?.workoutTemplates.contains { $0.id == template.id } == true ? program?.id : nil
-        try await startWorkout(for: template, in: programId)
+        let mesocycle = activeMesocycle
+        let mesocycleId = mesocycle?.workoutTemplates.contains { $0.id == template.id } == true ? mesocycle?.id : nil
+        try await startWorkout(for: template, in: mesocycleId)
         openWorkoutTracker()
         return AppIntentsPhrasing.started(name: template.name)
     }
@@ -103,12 +103,12 @@ extension AppIntentsInteractor {
 
     func nextWorkout(now: Date = Date(), calendar: Calendar = .current) throws -> (template: WorkoutTemplateModel?, sentence: String) {
         guard currentUser != nil else { throw AppIntentsError.notSignedIn }
-        guard let program = activeTrainingProgram else { return (nil, AppIntentsPhrasing.noProgram) }
-        guard let item = ProgramSchedule.todayItem(run: activeProgramRun, sessions: workoutSessions, now: now, calendar: calendar) else {
-            return (nil, AppIntentsPhrasing.noProgram)
+        guard let mesocycle = activeMesocycle else { return (nil, AppIntentsPhrasing.noMesocycle) }
+        guard let item = MesocycleSchedule.todayItem(run: activeMesocycleRun, sessions: workoutSessions, now: now, calendar: calendar) else {
+            return (nil, AppIntentsPhrasing.noMesocycle)
         }
         if item.dayPlan.exercises.isEmpty {
-            return (nil, AppIntentsPhrasing.restDay(program: program.name))
+            return (nil, AppIntentsPhrasing.restDay(mesocycle: mesocycle.name))
         }
         if item.isCompleted {
             return (item.dayPlan, AppIntentsPhrasing.alreadyDone(name: item.dayPlan.name))
@@ -120,7 +120,7 @@ extension AppIntentsInteractor {
 // MARK: - Phrasing
 
 enum AppIntentsPhrasing {
-    static let noProgram = "You don't have an active program. Pick one in the Training tab."
+    static let noMesocycle = "You don't have an active program. Pick one in the Training tab."
 
     static func started(name: String) -> String { "Starting \(name)." }
 
@@ -140,7 +140,7 @@ enum AppIntentsPhrasing {
         return "You've done \(done) this week, \(remaining) to go to hit your goal of \(goal)."
     }
 
-    static func restDay(program: String) -> String { "Today is a rest day in \(program)." }
+    static func restDay(mesocycle: String) -> String { "Today is a rest day in \(mesocycle)." }
 
     static func alreadyDone(name: String) -> String { "You've already done today's workout, \(name)." }
 

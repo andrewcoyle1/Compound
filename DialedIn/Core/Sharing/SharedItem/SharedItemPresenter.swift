@@ -19,11 +19,11 @@ class SharedItemPresenter {
         status != .pending
     }
 
-    /// A template shows as itself; a program as its days.
+    /// A template shows as itself; a mesocycle as its days.
     var templates: [WorkoutTemplateModel] {
         switch delegate.share.payload {
         case .template(let template): [template]
-        case .program(let program): program.workoutTemplates
+        case .mesocycle(let mesocycle): mesocycle.workoutTemplates
         }
     }
 
@@ -53,8 +53,8 @@ class SharedItemPresenter {
                 switch copy.payload {
                 case .template(let template):
                     try await interactor.saveWorkoutTemplate(workoutTemplate: template, image: nil)
-                case .program(let program):
-                    try await interactor.saveTrainingProgram(trainingProgram: program)
+                case .mesocycle(let mesocycle):
+                    try await interactor.saveMesocycle(mesocycle: mesocycle)
                 }
                 try await interactor.updateShareStatus(.accepted, id: share.id)
                 status = .accepted

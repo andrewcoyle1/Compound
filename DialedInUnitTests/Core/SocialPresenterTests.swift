@@ -93,7 +93,7 @@ struct SocialFeedPresenterTests {
         var incomingFollowRequests: [FollowRequestModel] = []
         var followingWorkoutSessions: [WorkoutSessionModel] = []
         var followingUsers: [UserModel] = []
-        var activeTrainingProgram: TrainingProgram?
+        var activeMesocycle: Mesocycle?
         var totals: DailyMacroTarget?
         var target: DailyMacroTarget?
         var notificationsError: Error?
@@ -309,7 +309,7 @@ struct SocialFeedPresenterTests {
         #expect(screen.presenter.feedSessions.map(\.id) == ["done"])
     }
 
-    /// A rest day is a gap in the plan, not a workout. Programs pre-create them, so letting one
+    /// A rest day is a gap in the plan, not a workout. Mesocycles pre-create them, so letting one
     /// through would post "Rest Day" to the feed on the user's behalf.
     @Test("Test A Rest Day Of Your Own Is Not In The Feed")
     func testARestDayOfYourOwnIsNotInTheFeed() {
@@ -337,7 +337,7 @@ struct SocialFeedPresenterTests {
         #expect(screen.presenter.feedSessions.map(\.id) == ["theirs-done"])
     }
 
-    /// A program pre-creates its rest days, dated ahead of time and already marked finished. Those
+    /// A mesocycle pre-creates its rest days, dated ahead of time and already marked finished. Those
     /// are a plan, not something that happened — showing one posts "Rest Day" to the feed on a
     /// followed user's behalf, for a day that has not arrived.
     @Test("Test A Followed Users Future Rest Day Is Not In The Feed")

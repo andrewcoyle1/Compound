@@ -176,17 +176,17 @@ class WorkoutSessionManager {
         try await likeService.unlikeSession(sessionId: sessionId, authorId: authorId, userId: userId)
     }
 
-    /// `inTrainingProgramId` narrows the search to one program's sessions; `nil` searches them
+    /// `inMesocycleId` narrows the search to one mesocycle's sessions; `nil` searches them
     /// all, which is what every caller wanted before `previousWorkoutReference` was honoured.
     func getLastCompletedSessionForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil
+        inMesocycleId: String? = nil
     ) async throws -> WorkoutSessionModel? {
         try await getLastCompletedSessionsForTemplate(
             templateId: templateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: 1
         ).first
     }
@@ -198,13 +198,13 @@ class WorkoutSessionManager {
     func getLastCompletedSessionsForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil,
+        inMesocycleId: String? = nil,
         limit: Int = 3
     ) async throws -> [WorkoutSessionModel] {
         // Check the already-loaded collection first (current user's sessions)
         let cached = userWorkoutSessionSyncEngine.currentCollection
             .filter { $0.workoutTemplateId == templateId && $0.endedAt != nil }
-            .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+            .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
             .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
 
         return Array(cached.prefix(max(limit, 0)))
@@ -219,13 +219,13 @@ class WorkoutSessionManager {
     func getLastCompletedSessionsContainingExercise(
         exerciseTemplateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil,
+        inMesocycleId: String? = nil,
         limit: Int = 3
     ) async throws -> [WorkoutSessionModel] {
         let cached = userWorkoutSessionSyncEngine.currentCollection
             .filter { $0.endedAt != nil }
             .filter { $0.exercises.contains(where: { $0.templateId == exerciseTemplateId }) }
-            .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+            .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
             .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
 
         return Array(cached.prefix(max(limit, 0)))
@@ -312,25 +312,25 @@ extension CoreInteractor {
     func getLastCompletedSessionForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil
+        inMesocycleId: String? = nil
     ) async throws -> WorkoutSessionModel? {
         try await workoutSessionManager.getLastCompletedSessionForTemplate(
             templateId: templateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId
+            inMesocycleId: inMesocycleId
         )
     }
 
     func getLastCompletedSessionsForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil,
+        inMesocycleId: String? = nil,
         limit: Int = 3
     ) async throws -> [WorkoutSessionModel] {
         try await workoutSessionManager.getLastCompletedSessionsForTemplate(
             templateId: templateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: limit
         )
     }
@@ -338,13 +338,13 @@ extension CoreInteractor {
     func getLastCompletedSessionsContainingExercise(
         exerciseTemplateId: String,
         authorId: String,
-        inTrainingProgramId: String? = nil,
+        inMesocycleId: String? = nil,
         limit: Int = 3
     ) async throws -> [WorkoutSessionModel] {
         try await workoutSessionManager.getLastCompletedSessionsContainingExercise(
             exerciseTemplateId: exerciseTemplateId,
             authorId: authorId,
-            inTrainingProgramId: inTrainingProgramId,
+            inMesocycleId: inMesocycleId,
             limit: limit
         )
     }

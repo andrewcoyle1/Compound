@@ -178,7 +178,7 @@ struct DevSettingsView: View {
                     debugRow(label: "Session ID", value: session.id)
                     debugRow(label: "Name", value: session.name)
                     debugRow(label: "Template ID", value: session.workoutTemplateId ?? "nil")
-                    debugRow(label: "Plan ID", value: session.trainingProgramId ?? "nil")
+                    debugRow(label: "Plan ID", value: session.mesocycleId ?? "nil")
                     debugRow(label: "Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
                     if let endedAt = session.endedAt {
                         debugRow(label: "Ended", value: endedAt.formatted(date: .numeric, time: .shortened))
@@ -217,7 +217,7 @@ struct DevSettingsView: View {
                     VStack(alignment: .leading, spacing: Spacing.xxs) {
                         debugRow(label: "  Session ID", value: activeSession.id)
                         debugRow(label: "  Template ID", value: activeSession.workoutTemplateId ?? "nil")
-                        debugRow(label: "  Plan ID", value: activeSession.trainingProgramId ?? "nil")
+                        debugRow(label: "  Plan ID", value: activeSession.mesocycleId ?? "nil")
                     }
                     .padding(.vertical, Spacing.xxs)
                     .padding(.horizontal, Spacing.xs)
@@ -249,7 +249,7 @@ struct DevSettingsView: View {
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
                             debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
                             debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
-                            debugRow(label: "  Plan ID", value: session.trainingProgramId ?? "nil")
+                            debugRow(label: "  Plan ID", value: session.mesocycleId ?? "nil")
                             debugRow(label: "  Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
                             if let ended = session.endedAt {
                                 debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
@@ -314,7 +314,7 @@ struct DevSettingsView: View {
                         debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
                         debugRow(label: "  Name", value: session.name)
                         debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
-                        debugRow(label: "  Plan ID", value: session.trainingProgramId ?? "nil")
+                        debugRow(label: "  Plan ID", value: session.mesocycleId ?? "nil")
                         debugRow(label: "  Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
                         if let ended = session.endedAt {
                             debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
@@ -353,7 +353,7 @@ struct DevSettingsView: View {
 
             Button {
                 Task {
-                    await presenter.resetProgramSeeding()
+                    await presenter.resetMesocycleSeeding()
                 }
             } label: {
                 Label("Reset Program Seeding", systemImage: "arrow.clockwise")

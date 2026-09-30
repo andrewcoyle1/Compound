@@ -12,7 +12,7 @@ protocol TrainingRouter: GlobalRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif
-    func showTrainingProgramLibraryView()
+    func showMesocycleLibraryView()
     func showWorkoutsView(delegate: WorkoutsDelegate)
     func showWorkoutHistoryView()
     func showExercisesView()
@@ -20,11 +20,11 @@ func showDevSettingsView()
     func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate)
     func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate)
     func showWorkoutTrackerView()
-    func showCreateProgramView(delegate: CreateProgramDelegate)
+    func showCreateMesocycleView(delegate: CreateMesocycleDelegate)
     func showCreateWorkoutView(delegate: CreateWorkoutDelegate)
     func showCreateExerciseView()
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID)
-    func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate)
+    func showEditMesocycleView(delegate: EditMesocycleDelegate)
 }
 
 extension CoreRouter: TrainingRouter { }

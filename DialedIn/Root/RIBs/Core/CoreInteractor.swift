@@ -32,8 +32,8 @@ struct CoreInteractor: GlobalInteractor {
     let exerciseSettingsManager: ExerciseSettingsManager
     let workoutTemplateManager: WorkoutTemplateManager
     let workoutSessionManager: WorkoutSessionManager
-    let trainingProgramManager: TrainingProgramManager
-    let trainingPlanManager: TrainingPlanManager
+    let mesocycleManager: MesocycleManager
+    let macrocycleManager: MacrocycleManager
     let gymProfileManager: GymProfileManager
     let foodManager: FoodManager
     let recipeTemplateManager: RecipeTemplateManager
@@ -87,8 +87,8 @@ struct CoreInteractor: GlobalInteractor {
         self.exerciseSettingsManager = container.resolve(ExerciseSettingsManager.self)!
         self.workoutTemplateManager = container.resolve(WorkoutTemplateManager.self)!
         self.workoutSessionManager = container.resolve(WorkoutSessionManager.self)!
-        self.trainingProgramManager = container.resolve(TrainingProgramManager.self)!
-        self.trainingPlanManager = container.resolve(TrainingPlanManager.self)!
+        self.mesocycleManager = container.resolve(MesocycleManager.self)!
+        self.macrocycleManager = container.resolve(MacrocycleManager.self)!
         self.gymProfileManager = container.resolve(GymProfileManager.self)!
         self.foodManager = container.resolve(FoodManager.self)!
         self.recipeTemplateManager = container.resolve(RecipeTemplateManager.self)!
@@ -149,8 +149,8 @@ struct CoreInteractor: GlobalInteractor {
         async let stepsSignIn: () = stepsManager.signIn()
         async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
         async let gymProfileSignIn: () = gymProfileManager.signIn()
-        async let trainingProgramSignIn: () = trainingProgramManager.signIn(userId: user.uid)
-        async let trainingPlanSignIn: () = trainingPlanManager.signIn()
+        async let mesocycleSignIn: () = mesocycleManager.signIn(userId: user.uid)
+        async let macrocycleSignIn: () = macrocycleManager.signIn()
         // Not `currentUser` directly: on a fresh install the listener has not delivered the
         // profile yet, and an empty list here left the feed and the circle empty until relaunch.
         let followingIds = await userManager.currentUserOrFetched(userId: user.uid)?.followingIds ?? []
@@ -172,8 +172,8 @@ struct CoreInteractor: GlobalInteractor {
         try await analyticsSettingsSignIn
         try await shortcutSettingsSignIn
         await exerciseSettingsSignIn
-        await trainingProgramSignIn
-        await trainingPlanSignIn
+        await mesocycleSignIn
+        await macrocycleSignIn
         try await nutritionSignIn
         try await goalSignIn
         await stepsSignIn
@@ -193,8 +193,8 @@ struct CoreInteractor: GlobalInteractor {
         // workout templates try to resolve exercises by ID.
         try? exerciseModelManager.seedExercisesIfNeeded()
         try? workoutTemplateManager.seedWorkoutTemplatesIfNeeded(exercises: exerciseModelManager.allExercises)
-        try? trainingProgramManager.seedProgramsIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
-        await migrateActiveProgramToPlanIfNeeded()
+        try? mesocycleManager.seedMesocyclesIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
+        await migrateActiveMesocycleToMacrocycleIfNeeded()
 
         // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
         routePendingDeepLinkAfterLogIn()
@@ -254,7 +254,7 @@ struct CoreInteractor: GlobalInteractor {
         logManager.deleteUserProfile()
     }
     
-    func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws {
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
         guard let userId = self.userId else { throw CoreError.noCurrentUser }
         var unitPreferences: [String: ExerciseUnitPreference] = [:]
         for exerciseModel in template.exercises {
@@ -265,7 +265,7 @@ struct CoreInteractor: GlobalInteractor {
         let prefill = await sessionPrefill(
             for: template,
             authorId: userId,
-            trainingProgramId: trainingProgramId,
+            mesocycleId: mesocycleId,
             unitPreferences: unitPreferences
         )
 
@@ -273,7 +273,7 @@ struct CoreInteractor: GlobalInteractor {
             authorId: userId,
             template: template,
             notes: nil,
-            trainingProgramId: trainingProgramId,
+            mesocycleId: mesocycleId,
             previousWorkoutSession: previousSession,
             unitPreferences: unitPreferences,
             prefill: prefill

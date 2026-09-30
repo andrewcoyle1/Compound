@@ -12,7 +12,7 @@ protocol TodayRouter: GlobalRouter {
     #endif
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID)
     func showWorkoutTrackerView()
-    func showTrainingProgramLibraryView()
+    func showMesocycleLibraryView()
     func showAddMealView(delegate: AddMealDelegate)
     func showLogWeightView()
     func showCheckInView(delegate: CheckInDelegate)

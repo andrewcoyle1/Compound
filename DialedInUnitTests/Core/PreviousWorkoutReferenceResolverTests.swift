@@ -21,7 +21,7 @@ struct PreviousWorkoutReferenceResolverTests {
     private final class Resolver: PreviousWorkoutReferenceResolving {
         var previousWorkoutReferenceScope: PreviousWorkoutReferenceOption
         var sessions: [WorkoutSessionModel]
-        private(set) var templateLookups: [(templateId: String, programId: String?)] = []
+        private(set) var templateLookups: [(templateId: String, mesocycleId: String?)] = []
         private(set) var exerciseLookups: [String] = []
 
         init(scope: PreviousWorkoutReferenceOption, sessions: [WorkoutSessionModel]) {
@@ -32,14 +32,14 @@ struct PreviousWorkoutReferenceResolverTests {
         func completedSessionsForWorkoutTemplate(
             templateId: String,
             authorId: String,
-            inTrainingProgramId: String?,
+            inMesocycleId: String?,
             limit: Int
         ) async -> [WorkoutSessionModel] {
-            templateLookups.append((templateId: templateId, programId: inTrainingProgramId))
+            templateLookups.append((templateId: templateId, mesocycleId: inMesocycleId))
             return Array(
                 sessions
                     .filter { $0.workoutTemplateId == templateId }
-                    .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+                    .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
                     .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
                     .prefix(max(limit, 0))
             )
@@ -48,14 +48,14 @@ struct PreviousWorkoutReferenceResolverTests {
         func completedSessionsContainingExercise(
             exerciseTemplateId: String,
             authorId: String,
-            inTrainingProgramId: String?,
+            inMesocycleId: String?,
             limit: Int
         ) async -> [WorkoutSessionModel] {
             exerciseLookups.append(exerciseTemplateId)
             return Array(
                 sessions
                     .filter { $0.exercises.contains(where: { $0.templateId == exerciseTemplateId }) }
-                    .filter { inTrainingProgramId == nil || $0.trainingProgramId == inTrainingProgramId }
+                    .filter { inMesocycleId == nil || $0.mesocycleId == inMesocycleId }
                     .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }
                     .prefix(max(limit, 0))
             )
@@ -65,7 +65,7 @@ struct PreviousWorkoutReferenceResolverTests {
     private func session(
         id: String,
         templateId: String?,
-        programId: String? = nil,
+        mesocycleId: String? = nil,
         minutesAgo: Int,
         exerciseTemplateIds: [String]
     ) -> WorkoutSessionModel {
@@ -75,7 +75,7 @@ struct PreviousWorkoutReferenceResolverTests {
             authorId: "author-1",
             name: id,
             workoutTemplateId: templateId,
-            trainingProgramId: programId,
+            mesocycleId: mesocycleId,
             dateCreated: date,
             endedAt: date.addingTimeInterval(60),
             exercises: exerciseTemplateIds.map { templateId in
@@ -96,14 +96,14 @@ struct PreviousWorkoutReferenceResolverTests {
         _ resolver: Resolver,
         exercise: String = "bench",
         workoutTemplateId: String? = "push",
-        programId: String? = "program-1",
+        mesocycleId: String? = "program-1",
         limit: Int = 3
     ) async -> [String] {
         await resolver.previousSessions(
             forExerciseTemplateId: exercise,
             workoutTemplateId: workoutTemplateId,
             authorId: "author-1",
-            trainingProgramId: programId,
+            mesocycleId: mesocycleId,
             limit: limit
         ).map(\.id)
     }
@@ -120,7 +120,7 @@ struct PreviousWorkoutReferenceResolverTests {
         ])
 
         #expect(await resolve(resolver) == ["push-old"])
-        #expect(resolver.templateLookups.map(\.programId) == [nil])
+        #expect(resolver.templateLookups.map(\.mesocycleId) == [nil])
         #expect(resolver.exerciseLookups.isEmpty)
     }
 
@@ -149,40 +149,40 @@ struct PreviousWorkoutReferenceResolverTests {
         #expect(resolver.templateLookups.isEmpty)
     }
 
-    // MARK: - Within the current program
+    // MARK: - Within the current mesocycle
 
     @Test("Test Program Scope Restricts To This Workouts Program")
-    func testProgramScopeRestrictsToThisWorkoutsProgram() async {
-        let resolver = Resolver(scope: .workoutsInProgram, sessions: [
-            session(id: "in-program", templateId: "push", programId: "program-1", minutesAgo: 100, exerciseTemplateIds: ["bench"]),
-            session(id: "other-program", templateId: "push", programId: "program-2", minutesAgo: 1, exerciseTemplateIds: ["bench"])
+    func testMesocycleScopeRestrictsToThisWorkoutsMesocycle() async {
+        let resolver = Resolver(scope: .workoutsInMesocycle, sessions: [
+            session(id: "in-program", templateId: "push", mesocycleId: "program-1", minutesAgo: 100, exerciseTemplateIds: ["bench"]),
+            session(id: "other-program", templateId: "push", mesocycleId: "program-2", minutesAgo: 1, exerciseTemplateIds: ["bench"])
         ])
 
         #expect(await resolve(resolver) == ["in-program"])
-        #expect(resolver.templateLookups.map(\.programId) == ["program-1"])
+        #expect(resolver.templateLookups.map(\.mesocycleId) == ["program-1"])
     }
 
-    /// Restricting to the program can leave nothing, and nothing is worse than a figure from
+    /// Restricting to the mesocycle can leave nothing, and nothing is worse than a figure from
     /// outside it — so the fallback applies here too.
     @Test("Test Program Scope Falls Back When The Program Holds No History")
-    func testProgramScopeFallsBackWhenTheProgramHoldsNoHistory() async {
-        let resolver = Resolver(scope: .workoutsInProgram, sessions: [
-            session(id: "other-program", templateId: "push", programId: "program-2", minutesAgo: 1, exerciseTemplateIds: ["bench"])
+    func testMesocycleScopeFallsBackWhenTheMesocycleHoldsNoHistory() async {
+        let resolver = Resolver(scope: .workoutsInMesocycle, sessions: [
+            session(id: "other-program", templateId: "push", mesocycleId: "program-2", minutesAgo: 1, exerciseTemplateIds: ["bench"])
         ])
 
         #expect(await resolve(resolver) == ["other-program"])
         #expect(resolver.exerciseLookups == ["bench"])
     }
 
-    /// A one-off workout is in no program, so there is no program for it to be "within".
+    /// A one-off workout is in no mesocycle, so there is no mesocycle for it to be "within".
     @Test("Test Program Scope Does Not Filter A Workout Outside Any Program")
-    func testProgramScopeDoesNotFilterAWorkoutOutsideAnyProgram() async {
-        let resolver = Resolver(scope: .workoutsInProgram, sessions: [
-            session(id: "in-program", templateId: "push", programId: "program-9", minutesAgo: 1, exerciseTemplateIds: ["bench"])
+    func testMesocycleScopeDoesNotFilterAWorkoutOutsideAnyMesocycle() async {
+        let resolver = Resolver(scope: .workoutsInMesocycle, sessions: [
+            session(id: "in-program", templateId: "push", mesocycleId: "program-9", minutesAgo: 1, exerciseTemplateIds: ["bench"])
         ])
 
-        #expect(await resolve(resolver, programId: nil) == ["in-program"])
-        #expect(resolver.templateLookups.map(\.programId) == [nil])
+        #expect(await resolve(resolver, mesocycleId: nil) == ["in-program"])
+        #expect(resolver.templateLookups.map(\.mesocycleId) == [nil])
     }
 
     // MARK: - Any exercise

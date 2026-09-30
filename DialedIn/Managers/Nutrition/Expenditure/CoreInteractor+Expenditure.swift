@@ -85,7 +85,7 @@ extension CoreInteractor {
         let updated = nutritionManager.computeDietPlan(
             user: currentUser,
             delegate: DietPlanDelegate(plan: plan),
-            trainingProgram: activeTrainingProgram,
+            mesocycle: activeMesocycle,
             expenditureKcal: proposal.expenditureKcal,
             targetKcal: proposal.proposedTargetKcal
         )

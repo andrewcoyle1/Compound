@@ -39,9 +39,9 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
-    /// Reached from the gym profile's router once the training program is activated, several
+    /// Reached from the gym profile's router once the training mesocycle is activated, several
     /// screens below the top. `.append` puts it on top; the default `.insert` slotted it in
-    /// behind the program screens and rebuilt them with a blank program instead.
+    /// behind the mesocycle screens and rebuilt them with a blank mesocycle instead.
     func showCustomisingDietProgramView() {
         router.showScreen(.push, location: .append) { router in
             builder.customisingDietProgramView(router: router)

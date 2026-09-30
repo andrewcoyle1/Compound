@@ -101,12 +101,12 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
     /// The last time this exercise was performed at all, whatever workout it was part of.
     case anyExercise
 
-    /// The last completed session of this workout template, in any program. The default, and what
+    /// The last completed session of this workout template, in any mesocycle. The default, and what
     /// `"anyWorkout"` has always done.
     case sameWorkout = "anyWorkout"
 
-    /// As `.sameWorkout`, restricted to the program this workout is being done in.
-    case workoutsInProgram
+    /// As `.sameWorkout`, restricted to the mesocycle this workout is being done in.
+    case workoutsInMesocycle = "workoutsInProgram"
 
     var title: String {
         switch self {
@@ -114,7 +114,7 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
             return String(localized: "Any workout")
         case .sameWorkout:
             return String(localized: "This workout")
-        case .workoutsInProgram:
+        case .workoutsInMesocycle:
             return String(localized: "This workout within the current program")
         }
     }
@@ -125,7 +125,7 @@ enum PreviousWorkoutReferenceOption: String, DataSyncModelProtocol, CaseIterable
             return String(localized: "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all.")
         case .sameWorkout:
             return String(localized: "Previous values come from the last time you completed this workout, in any program. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead.")
-        case .workoutsInProgram:
+        case .workoutsInMesocycle:
             return String(localized: "Previous values come from the last time you completed this workout within the current program. If there is none for an exercise, the last time you performed it anywhere is shown instead.")
         }
     }

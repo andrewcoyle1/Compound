@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// `shares/{id}`: a workout template or program one user sent another, carried whole so the
+/// `shares/{id}`: a workout template or mesocycle one user sent another, carried whole so the
 /// recipient can read it without access to the sender's library. The recipient answers by writing
 /// `status`; accepting also copies the payload into their own library.
 struct ShareModel: Codable, Identifiable, Sendable {
@@ -18,19 +18,19 @@ struct ShareModel: Codable, Identifiable, Sendable {
 
     enum Payload: Sendable {
         case template(WorkoutTemplateModel)
-        case program(TrainingProgram)
+        case mesocycle(Mesocycle)
 
         var kind: String {
             switch self {
             case .template: "template"
-            case .program: "program"
+            case .mesocycle: "program"
             }
         }
 
         var name: String {
             switch self {
             case .template(let template): template.name
-            case .program(let program): program.name
+            case .mesocycle(let mesocycle): mesocycle.name
             }
         }
     }
@@ -76,7 +76,7 @@ struct ShareModel: Codable, Identifiable, Sendable {
         dateCreated = try container.decode(Date.self, forKey: .dateCreated)
         status = try container.decode(Status.self, forKey: .status)
         switch try container.decode(String.self, forKey: .kind) {
-        case "program": payload = .program(try container.decode(TrainingProgram.self, forKey: .payload))
+        case "program": payload = .mesocycle(try container.decode(Mesocycle.self, forKey: .payload))
         default: payload = .template(try container.decode(WorkoutTemplateModel.self, forKey: .payload))
         }
     }
@@ -91,13 +91,13 @@ struct ShareModel: Codable, Identifiable, Sendable {
         try container.encode(status, forKey: .status)
         switch payload {
         case .template(let template): try container.encode(template, forKey: .payload)
-        case .program(let program): try container.encode(program, forKey: .payload)
+        case .mesocycle(let mesocycle): try container.encode(mesocycle, forKey: .payload)
         }
     }
 }
 
 extension ShareModel {
-    /// Two pending shares to the mock user: a template from Alice and a program from Charlie.
+    /// Two pending shares to the mock user: a template from Alice and a mesocycle from Charlie.
     static var mocks: [ShareModel] {
         [
             ShareModel(
@@ -111,7 +111,7 @@ extension ShareModel {
                 id: "mock_share_program",
                 fromUserId: "user3",
                 toUserId: "mock_user_123",
-                payload: .program(.mock),
+                payload: .mesocycle(.mock),
                 dateCreated: Date(timeIntervalSinceNow: -7200)
             )
         ]
@@ -166,16 +166,16 @@ enum SharedItemCopier {
         switch payload {
         case .template(let template):
             result = .template(copyTemplate(template))
-        case .program(let program):
-            result = .program(TrainingProgram(
+        case .mesocycle(let mesocycle):
+            result = .mesocycle(Mesocycle(
                 authorId: recipientId,
-                name: program.name,
-                icon: program.icon,
-                colour: program.colour,
-                numMicrocycles: program.numMicrocycles,
-                deload: program.deload,
-                periodisation: program.periodisation,
-                workoutTemplates: program.workoutTemplates.map(copyTemplate)
+                name: mesocycle.name,
+                icon: mesocycle.icon,
+                colour: mesocycle.colour,
+                numMicrocycles: mesocycle.numMicrocycles,
+                deload: mesocycle.deload,
+                periodisation: mesocycle.periodisation,
+                workoutTemplates: mesocycle.workoutTemplates.map(copyTemplate)
             ))
         }
         return Result(payload: result, newExercises: Array(copied.values))

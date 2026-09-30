@@ -20,11 +20,11 @@ class TodaysWorkoutCardPresenter {
     
     func onTodaysWorkoutPressed() {
         guard let template = todaysWorkoutTemplate, !isTodayRestDay else { return }
-        let programId = interactor.activeTrainingProgram?.id
+        let mesocycleId = interactor.activeMesocycle?.id
         router.showWorkoutTemplateDetailView(
             delegate: WorkoutTemplateDetailDelegate(
                 workoutTemplate: template,
-                trainingProgramId: programId,
+                mesocycleId: mesocycleId,
                 onStartWorkoutPressed: { [weak self] in
                     Task { @MainActor in
                         self?.router.showWorkoutTrackerView()
@@ -70,7 +70,7 @@ class TodaysWorkoutCardPresenter {
         )
     }
 
-    private func skip(_ slot: ProgramSchedule.Slot) async {
+    private func skip(_ slot: MesocycleSchedule.Slot) async {
         do {
             try await interactor.skipScheduledWorkout(slot)
             interactor.playHaptic(option: .success)
@@ -81,16 +81,16 @@ class TodaysWorkoutCardPresenter {
         }
     }
 
-    private var skippableSlot: ProgramSchedule.Slot? {
+    private var skippableSlot: MesocycleSchedule.Slot? {
         guard let item = todaysScheduledItem, !item.isCompleted, !isTodayRestDay,
-              let run = interactor.activeProgramRun,
-              let next = ProgramSchedule.progress(of: run, sessions: interactor.workoutSessions).next,
+              let run = interactor.activeMesocycleRun,
+              let next = MesocycleSchedule.progress(of: run, sessions: interactor.workoutSessions).next,
               next.dayPlan.id == item.dayPlan.id else { return nil }
         return next
     }
 
     private var todaysScheduledItem: MicrocycleWorkoutTemplateModelItem? {
-        ProgramSchedule.todayItem(run: interactor.activeProgramRun, sessions: interactor.workoutSessions)
+        MesocycleSchedule.todayItem(run: interactor.activeMesocycleRun, sessions: interactor.workoutSessions)
     }
 
 }

@@ -18,7 +18,7 @@ class InsightsAndAnalyticsPresenter {
     private(set) var macrosLast7Days: [DailyMacroTarget] = []
     var workoutLast7Sessions: [WorkoutSessionModel] {
         let completed = workoutSessions
-            // A rest day is written ahead of time by the training program, already ended and dated
+            // A rest day is written ahead of time by the training mesocycle, already ended and dated
             // into the future, so counting it as a workout filled this card with sessions that had
             // not happened and had no sets in them.
             .filter { $0.endedAt != nil && !$0.isRestDay }

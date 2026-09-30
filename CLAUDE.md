@@ -355,8 +355,8 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `WorkoutTemplateManager` | Workout template CRUD + prebuilt seeding |
 | `ExerciseModelManager` | Exercise library (local SwiftData + Firestore) + prebuilt seeding |
 | `ExerciseUnitPreferenceManager` | Per-exercise weight/distance unit preferences |
-| `TrainingProgramManager` | Training programs with local/remote sync |
-| `TrainingPlanManager` | Plans: ordered blocks of programs, the current block's start and skips. `ProgramSchedule` derives today's workout and microcycle progress from it (a queue, not a calendar) |
+| `MesocycleManager` | Mesocycles (a program of day plans run for N microcycles) with local/remote sync |
+| `MacrocycleManager` | Macrocycles: ordered mesocycles, the current mesocycle's start and skips. `MesocycleSchedule` derives today's workout and microcycle progress from it (a queue, not a calendar) |
 | `GymProfileManager` | Available equipment per gym |
 | `NutritionManager` / `MealLogManager` | Food logging and nutrition targets |
 | `FoodManager` / `RecipeTemplateManager` | Food and recipe library |

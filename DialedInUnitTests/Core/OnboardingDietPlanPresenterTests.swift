@@ -71,8 +71,8 @@ struct OnboardingDietPlanMathTests {
         NutritionManager(dietPlanSyncEngine: TestManagers.documentEngine(nil as DietPlan?, key: "diet-plan"))
     }
 
-    private func trainingProgram(trainingDays: Int) -> TrainingProgram {
-        TrainingProgram(
+    private func mesocycle(trainingDays: Int) -> Mesocycle {
+        Mesocycle(
             id: "program-1",
             authorId: "user-1",
             name: "Upper/Lower",
@@ -103,7 +103,7 @@ struct OnboardingDietPlanMathTests {
         let plan = manager().computeDietPlan(
             user: dietPlanUser(),
             delegate: dietPlanDelegate(calorieDistribution: .varied),
-            trainingProgram: trainingProgram(trainingDays: 4)
+            mesocycle: mesocycle(trainingDays: 4)
         )
 
         #expect(plan.days.count == 7)
@@ -129,7 +129,7 @@ struct OnboardingDietPlanMathTests {
         let varied = manager().computeDietPlan(
             user: user,
             delegate: dietPlanDelegate(calorieDistribution: .varied),
-            trainingProgram: trainingProgram(trainingDays: 4)
+            mesocycle: mesocycle(trainingDays: 4)
         )
 
         let flatTotal = flat.days.reduce(0) { $0 + $1.calories }
@@ -144,7 +144,7 @@ struct OnboardingDietPlanMathTests {
         let plan = manager().computeDietPlan(
             user: dietPlanUser(),
             delegate: dietPlanDelegate(calorieDistribution: .varied),
-            trainingProgram: trainingProgram(trainingDays: 4)
+            mesocycle: mesocycle(trainingDays: 4)
         )
 
         let highest = plan.days.map(\.calories).max() ?? 0
@@ -152,10 +152,10 @@ struct OnboardingDietPlanMathTests {
         #expect(highest > plan.tdeeEstimate)
     }
 
-    /// Asking to vary the week with no training program to vary it around leaves a flat week
+    /// Asking to vary the week with no training mesocycle to vary it around leaves a flat week
     /// rather than inventing training days that are not in anyone's calendar.
     @Test("Test Varying Without A Training Program Leaves A Flat Week")
-    func testVaryingWithoutATrainingProgramLeavesAFlatWeek() {
+    func testVaryingWithoutAMesocycleLeavesAFlatWeek() {
         let plan = manager().computeDietPlan(
             user: dietPlanUser(),
             delegate: dietPlanDelegate(calorieDistribution: .varied)
@@ -252,7 +252,7 @@ struct OnboardingDietPlanMathTests {
             let plan = manager().computeDietPlan(
                 user: dietPlanUser(),
                 delegate: dietPlanDelegate(preferredDiet: diet, calorieDistribution: .varied),
-                trainingProgram: trainingProgram(trainingDays: 5)
+                mesocycle: mesocycle(trainingDays: 5)
             )
 
             for day in plan.days {
@@ -378,7 +378,7 @@ struct OnboardingDietPlanMathTests {
                 calorieDistribution: .varied,
                 proteinIntake: .high
             ),
-            trainingProgram: trainingProgram(trainingDays: 4)
+            mesocycle: mesocycle(trainingDays: 4)
         )
 
         #expect(plan.preferredDiet == PreferredDiet.keto.rawValue)

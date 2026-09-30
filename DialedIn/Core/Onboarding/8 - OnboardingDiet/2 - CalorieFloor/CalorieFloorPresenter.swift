@@ -32,7 +32,7 @@ class CalorieFloorPresenter {
 
     /// `loadTrainingContext()` used to be called here and was empty, so `prefillCalorieFloor` — which
     /// it was the only caller of — never ran and the screen opened with nothing selected. Its two
-    /// properties, `trainingDaysPerWeek` and `hasTrainingPlan`, were written by nothing and read by
+    /// properties, `trainingDaysPerWeek` and `hasMesocycle`, were written by nothing and read by
     /// nothing, and its own comment recorded that every training volume mapped to `.standard` anyway.
     /// So this is what it did, minus the parameter that changed nothing.
     private func prefillCalorieFloor() {

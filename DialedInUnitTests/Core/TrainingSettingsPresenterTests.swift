@@ -435,11 +435,11 @@ struct PrevWORefSettingsPresenterTests {
     func testChoosingAReferenceIsSaved() async {
         let screen = makeScreen()
 
-        screen.presenter.previousWorkoutReference = .workoutsInProgram
+        screen.presenter.previousWorkoutReference = .workoutsInMesocycle
         await settleSettings()
 
-        #expect(screen.presenter.previousWorkoutReference == .workoutsInProgram)
-        #expect(screen.interactor.savedSettings.last?.previousWorkoutReference == .workoutsInProgram)
+        #expect(screen.presenter.previousWorkoutReference == .workoutsInMesocycle)
+        #expect(screen.interactor.savedSettings.last?.previousWorkoutReference == .workoutsInMesocycle)
     }
 
     @Test("Test Choosing A Reference Leaves The Other Settings Alone")
@@ -449,7 +449,7 @@ struct PrevWORefSettingsPresenterTests {
         settings.defaultRestDurationSeconds = 120
         let screen = makeScreen(settings)
 
-        screen.presenter.previousWorkoutReference = .workoutsInProgram
+        screen.presenter.previousWorkoutReference = .workoutsInMesocycle
         await settleSettings()
 
         let saved = screen.interactor.savedSettings.last

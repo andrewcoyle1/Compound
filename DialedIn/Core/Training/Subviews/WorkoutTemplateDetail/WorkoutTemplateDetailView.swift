@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WorkoutTemplateDetailDelegate {
     let workoutTemplate: WorkoutTemplateModel
-    let trainingProgramId: String?
+    let mesocycleId: String?
     let onStartWorkoutPressed: (@Sendable () -> Void)?
     var isDeloadCycle: Bool = false
     var periodisationPhase: PeriodisationPhase?
@@ -45,7 +45,7 @@ struct WorkoutTemplateDetailView: View {
                     presenter.onStartWorkoutPressed(
                         onStartWorkout: delegate.onStartWorkoutPressed,
                         workoutTemplate: delegate.workoutTemplate,
-                        trainingProgramId: delegate.trainingProgramId,
+                        mesocycleId: delegate.mesocycleId,
                         isDeloadCycle: delegate.isDeloadCycle
                     )
                 } label: {
@@ -139,7 +139,7 @@ extension CoreRouter {
             router: router,
             delegate: WorkoutTemplateDetailDelegate(
                 workoutTemplate: WorkoutTemplateModel.mock,
-                trainingProgramId: nil,
+                mesocycleId: nil,
                 onStartWorkoutPressed: {
                     
                 }

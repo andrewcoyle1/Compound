@@ -20,18 +20,18 @@ struct AppIntentsTests {
 
         #expect(sentence == "Starting Push Day.")
         #expect(stub.startedTemplateIds == [template.id])
-        #expect(stub.startedProgramIds == [nil])
+        #expect(stub.startedMesocycleIds == [nil])
         #expect(stub.trackerOpenCount == 1)
     }
 
     @Test func startWorkoutPassesTheProgrammeForAProgrammeDay() async throws {
         let template = Self.template(name: "Legs")
-        let program = Self.program([template])
-        let stub = StubAppIntentsInteractor(user: Self.user(), program: program)
+        let mesocycle = Self.mesocycle([template])
+        let stub = StubAppIntentsInteractor(user: Self.user(), mesocycle: mesocycle)
 
         _ = try await stub.startWorkoutFromIntent(templateId: template.id)
 
-        #expect(stub.startedProgramIds == [program.id])
+        #expect(stub.startedMesocycleIds == [mesocycle.id])
     }
 
     @Test func startWorkoutKeepsAnActiveSession() async throws {
@@ -116,12 +116,12 @@ struct AppIntentsTests {
     @Test func nextWorkoutWithoutAProgramme() throws {
         let answer = try StubAppIntentsInteractor(user: Self.user()).nextWorkout()
         #expect(answer.template == nil)
-        #expect(answer.sentence == AppIntentsPhrasing.noProgram)
+        #expect(answer.sentence == AppIntentsPhrasing.noMesocycle)
     }
 
     @Test func nextWorkoutNamesTodaysPlan() throws {
         let template = Self.template(name: "Upper", exerciseCount: 2)
-        let stub = StubAppIntentsInteractor(user: Self.user(), program: Self.program([template]))
+        let stub = StubAppIntentsInteractor(user: Self.user(), mesocycle: Self.mesocycle([template]))
 
         let answer = try stub.nextWorkout()
 
@@ -129,17 +129,17 @@ struct AppIntentsTests {
         #expect(answer.sentence == "Today's workout is Upper, 2 exercises.")
     }
 
-    /// A rest day is one the program pre-completed for today after the workout before it.
+    /// A rest day is one the mesocycle pre-completed for today after the workout before it.
     @Test func nextWorkoutOnARestDay() throws {
         let upper = Self.template(name: "Upper")
         let rest = Self.template(name: "Rest", exerciseCount: 0)
-        let program = Self.program([upper, rest], name: "Block 1")
+        let mesocycle = Self.mesocycle([upper, rest], name: "Block 1")
         let now = Date()
         let restSession = WorkoutSessionModel(
-            authorId: "me", name: "Rest", workoutTemplateId: rest.id, trainingProgramId: program.id,
+            authorId: "me", name: "Rest", workoutTemplateId: rest.id, mesocycleId: mesocycle.id,
             dateCreated: now, endedAt: now, exercises: [], isRestDay: true
         )
-        let stub = StubAppIntentsInteractor(user: Self.user(), program: program, sessions: [restSession])
+        let stub = StubAppIntentsInteractor(user: Self.user(), mesocycle: mesocycle, sessions: [restSession])
 
         let answer = try stub.nextWorkout(now: now)
 
@@ -149,13 +149,13 @@ struct AppIntentsTests {
 
     @Test func nextWorkoutAlreadyDoneToday() throws {
         let template = Self.template(name: "Upper")
-        let program = Self.program([template])
+        let mesocycle = Self.mesocycle([template])
         let now = Date()
         let done = WorkoutSessionModel(
-            authorId: "me", name: "Upper", workoutTemplateId: template.id, trainingProgramId: program.id,
+            authorId: "me", name: "Upper", workoutTemplateId: template.id, mesocycleId: mesocycle.id,
             dateCreated: now, endedAt: now, exercises: []
         )
-        let stub = StubAppIntentsInteractor(user: Self.user(), program: program, sessions: [done])
+        let stub = StubAppIntentsInteractor(user: Self.user(), mesocycle: mesocycle, sessions: [done])
 
         let answer = try stub.nextWorkout(now: now)
 
@@ -173,8 +173,8 @@ struct AppIntentsTests {
         return WorkoutTemplateModel(id: "template-\(name)", authorId: "me", name: name, exercises: exercises)
     }
 
-    private static func program(_ templates: [WorkoutTemplateModel], name: String = "Block") -> TrainingProgram {
-        TrainingProgram(id: "program-1", authorId: "me", name: name, icon: "dumbbell", colour: "#FF0000", workoutTemplates: templates)
+    private static func mesocycle(_ templates: [WorkoutTemplateModel], name: String = "Block") -> Mesocycle {
+        Mesocycle(id: "program-1", authorId: "me", name: name, icon: "dumbbell", colour: "#FF0000", workoutTemplates: templates)
     }
 }
 
@@ -183,35 +183,35 @@ private final class StubAppIntentsInteractor: AppIntentsInteractor {
     var currentUser: UserModel?
     var activeSession: WorkoutSessionModel?
     var workoutSessions: [WorkoutSessionModel]
-    var activeTrainingProgram: TrainingProgram?
+    var activeMesocycle: Mesocycle?
     var allWorkoutTemplates: [WorkoutTemplateModel]
 
-    /// The program followed from the start of time, so every fixture session counts.
-    var activeProgramRun: ProgramSchedule.Run? {
-        activeTrainingProgram.map { ProgramSchedule.Run(program: $0, startedAt: .distantPast) }
+    /// The mesocycle followed from the start of time, so every fixture session counts.
+    var activeMesocycleRun: MesocycleSchedule.Run? {
+        activeMesocycle.map { MesocycleSchedule.Run(mesocycle: $0, startedAt: .distantPast) }
     }
 
     private(set) var trackerOpenCount = 0
     private(set) var startedTemplateIds: [String] = []
-    private(set) var startedProgramIds: [String?] = []
+    private(set) var startedMesocycleIds: [String?] = []
     private(set) var savedMeasurements: [BodyMeasurementEntry] = []
     private(set) var updatedWeights: [(kilograms: Double, unit: WeightUnitPreference)] = []
 
     init(
         user: UserModel?,
         templates: [WorkoutTemplateModel] = [],
-        program: TrainingProgram? = nil,
+        mesocycle: Mesocycle? = nil,
         sessions: [WorkoutSessionModel] = []
     ) {
         currentUser = user
         allWorkoutTemplates = templates
-        activeTrainingProgram = program
+        activeMesocycle = mesocycle
         workoutSessions = sessions
     }
 
-    func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws {
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
         startedTemplateIds.append(template.id)
-        startedProgramIds.append(trainingProgramId)
+        startedMesocycleIds.append(mesocycleId)
     }
 
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {

@@ -312,7 +312,7 @@ struct AnalyticsWorkoutConsistencyTests {
         #expect(screen.presenter.entries.map(\.id) == ["done"])
     }
 
-    /// Rest days are written ahead of time by the training program, already marked as ended and
+    /// Rest days are written ahead of time by the training mesocycle, already marked as ended and
     /// dated into the future. Counted as workouts they put tomorrow at the top of the history as a
     /// zero-set session and shade squares for days that have not happened.
     @Test("Test A Rest Day Is Not A Workout")

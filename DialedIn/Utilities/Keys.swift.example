@@ -32,7 +32,7 @@ struct Keys {
     static let userWorkoutSessionManagerKey = "user_workout_session"
     static let followingWorkoutSessionsManagerKey = "following_workout_sessions"
     static let activeWorkoutSessionManagerKey = "active_workout_session"
-    static let trainingProgramManagerKey = "training_program"
+    static let mesocycleManagerKey = "training_program"
     static let gymProfileManagerKey = "gym_profile"
 
     // Nutrition

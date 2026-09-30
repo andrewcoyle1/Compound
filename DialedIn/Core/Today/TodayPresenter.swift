@@ -55,26 +55,26 @@ class TodayPresenter {
 
     // MARK: - Workout
 
-    /// Today's day plan in the active program, or nil when there is no program or it schedules
+    /// Today's day plan in the active mesocycle, or nil when there is no mesocycle or it schedules
     /// nothing. The card is always shown: without a plan it offers an empty workout instead.
     var todaysWorkoutTemplate: WorkoutTemplateModel? {
-        ProgramSchedule.todayItem(run: interactor.activeProgramRun, sessions: interactor.workoutSessions)?.dayPlan
+        MesocycleSchedule.todayItem(run: interactor.activeMesocycleRun, sessions: interactor.workoutSessions)?.dayPlan
     }
 
     /// Every block of the plan is done; the card offers a repeat instead of a workout.
-    var isPlanComplete: Bool {
-        interactor.currentTrainingPlan?.status == .completed
+    var isMacrocycleComplete: Bool {
+        interactor.currentMacrocycle?.status == .completed
     }
 
-    var completedPlanName: String {
-        interactor.currentTrainingPlan?.name ?? ""
+    var completedMacrocycleName: String {
+        interactor.currentMacrocycle?.name ?? ""
     }
 
-    func onRepeatPlanPressed() {
-        interactor.trackEvent(event: Event.repeatPlanPressed)
+    func onRepeatMacrocyclePressed() {
+        interactor.trackEvent(event: Event.repeatMacrocyclePressed)
         Task {
             do {
-                try await interactor.repeatCurrentTrainingPlan()
+                try await interactor.repeatCurrentMacrocycle()
                 interactor.playHaptic(option: .success)
             } catch {
                 interactor.playHaptic(option: .error)
@@ -83,13 +83,13 @@ class TodayPresenter {
         }
     }
 
-    var hasActiveProgram: Bool {
-        interactor.activeTrainingProgram != nil
+    var hasActiveMesocycle: Bool {
+        interactor.activeMesocycle != nil
     }
 
-    func onChooseProgramPressed() {
-        interactor.trackEvent(event: Event.chooseProgramPressed)
-        router.showTrainingProgramLibraryView()
+    func onChooseMesocyclePressed() {
+        interactor.trackEvent(event: Event.chooseMesocyclePressed)
+        router.showMesocycleLibraryView()
     }
 
     func onStartEmptyWorkoutPressed() {
@@ -234,8 +234,8 @@ extension TodayPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: TodayDelegate)
         case onDisappear(delegate: TodayDelegate)
-        case chooseProgramPressed
-        case repeatPlanPressed
+        case chooseMesocyclePressed
+        case repeatMacrocyclePressed
         case startEmptyWorkoutPressed
         case logMealPressed
         case logWeightPressed
@@ -247,8 +247,8 @@ extension TodayPresenter {
             switch self {
             case .onAppear:                 return "TodayView_Appear"
             case .onDisappear:              return "TodayView_Disappear"
-            case .chooseProgramPressed:     return "TodayView_ChooseProgram_Press"
-            case .repeatPlanPressed:        return "TodayView_RepeatPlan_Press"
+            case .chooseMesocyclePressed:     return "TodayView_ChooseProgram_Press"
+            case .repeatMacrocyclePressed:        return "TodayView_RepeatPlan_Press"
             case .startEmptyWorkoutPressed: return "TodayView_StartEmptyWorkout_Press"
             case .logMealPressed:           return "TodayView_LogMeal_Press"
             case .logWeightPressed:         return "TodayView_LogWeight_Press"

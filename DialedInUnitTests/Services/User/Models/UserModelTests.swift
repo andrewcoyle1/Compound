@@ -129,7 +129,7 @@ struct UserModelTests {
             submittedLengthUnitPreference: .centimeters,
             submittedWeightUnitPreference: .kilograms,
             submittedCurrentGoalId: data.goalId,
-            submittedActiveTrainingProgramId: String.random,
+            submittedActiveMesocycleId: String.random,
             submittedFavouriteGymProfileId: String.random,
             blockedUserIds: [data.user1],
             fcmToken: String.random,

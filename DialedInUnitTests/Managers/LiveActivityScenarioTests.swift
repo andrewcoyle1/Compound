@@ -147,7 +147,7 @@ struct LiveActivityScenarioTests {
             exerciseSettingsManager: TestManagers.exerciseSettingsManager(),
             exerciseModelManager: TestManagers.exerciseModelManager(),
             gymProfileManager: TestManagers.gymProfileManager(),
-            trainingProgramManager: TestManagers.trainingProgramManager(),
+            mesocycleManager: TestManagers.mesocycleManager(),
             userManager: TestManagers.userManager(user: nil)
         )
         return Rig(

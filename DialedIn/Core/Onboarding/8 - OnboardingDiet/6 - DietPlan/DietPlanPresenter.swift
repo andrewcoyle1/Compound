@@ -14,7 +14,7 @@ class DietPlanPresenter {
     private let router: DietPlanRouter
 
     private(set) var plan: DietPlan?
-    var trainingProgramName: String?
+    var mesocycleName: String?
     var trainingDaysPerWeek: Int?
     private var isFromSettings: Bool = false
     

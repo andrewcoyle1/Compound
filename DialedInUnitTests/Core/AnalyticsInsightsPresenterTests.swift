@@ -276,7 +276,7 @@ struct AnalyticsInsightsPresenterTests {
 
     // MARK: - Workouts
 
-    /// Rest days are written ahead of time by the training program, already marked ended and dated
+    /// Rest days are written ahead of time by the training mesocycle, already marked ended and dated
     /// into the future. Counted as workouts they fill the "Last 7 Workouts" card with sessions that
     /// have not happened and no sets in them.
     @Test("Test A Rest Day Is Not One Of The Last Seven Workouts")

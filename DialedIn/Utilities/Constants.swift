@@ -61,7 +61,7 @@ struct Constants {
     // App Group identifier for sharing data between app and widget extension
     static let appGroupIdentifier = "group.com.dialedin.app"
     
-    /// Posted when remote data sync completes (e.g. on app foreground). Listen to refresh active training program.
+    /// Posted when remote data sync completes (e.g. on app foreground). Listen to refresh active training mesocycle.
     static let remoteDataSyncDidComplete = Notification.Name("DialedIn.RemoteDataSyncDidComplete")
 
     /// Posted when a rest timer runs out of its own accord. Cancelling a rest does not post it —

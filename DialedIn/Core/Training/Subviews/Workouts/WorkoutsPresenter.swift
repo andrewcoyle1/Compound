@@ -26,7 +26,7 @@ class WorkoutsPresenter {
         router.showWorkoutTemplateDetailView(
             delegate: WorkoutTemplateDetailDelegate(
                 workoutTemplate: workout,
-                trainingProgramId: nil,
+                mesocycleId: nil,
                 onStartWorkoutPressed: { [weak self] in
                     Task { @MainActor in
                         self?.router.showWorkoutTrackerView()

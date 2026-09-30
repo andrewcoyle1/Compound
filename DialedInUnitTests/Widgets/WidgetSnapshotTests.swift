@@ -103,8 +103,8 @@ struct WidgetSnapshotTests {
 
     // MARK: - Built from the app's data
 
-    private func program(template: WorkoutTemplateModel) -> TrainingProgram {
-        TrainingProgram(id: "program-1", authorId: "user-1", name: "Block", icon: "dumbbell", colour: "#FF0000", workoutTemplates: [template])
+    private func mesocycle(template: WorkoutTemplateModel) -> Mesocycle {
+        Mesocycle(id: "program-1", authorId: "user-1", name: "Block", icon: "dumbbell", colour: "#FF0000", workoutTemplates: [template])
     }
 
     @Test("Test The App Builds Today's Workout And The Week From Its Sessions")
@@ -115,7 +115,7 @@ struct WidgetSnapshotTests {
             authorId: "user-1",
             name: template.name,
             workoutTemplateId: template.id,
-            trainingProgramId: "program-1",
+            mesocycleId: "program-1",
             dateCreated: Self.wednesday,
             endedAt: Self.wednesday,
             exercises: []
@@ -124,7 +124,7 @@ struct WidgetSnapshotTests {
 
         let built = WidgetSnapshot.make(
             userId: "user-1",
-            run: ProgramSchedule.Run(program: program(template: template), startedAt: .distantPast),
+            run: MesocycleSchedule.Run(mesocycle: mesocycle(template: template), startedAt: .distantPast),
             sessions: [finished, someoneElse],
             streak: 9,
             weeklyGoal: 4,
@@ -140,7 +140,7 @@ struct WidgetSnapshotTests {
     }
 
     @Test("Test No Program Means No Workout Today")
-    func testNoProgramMeansNoWorkoutToday() {
+    func testNoMesocycleMeansNoWorkoutToday() {
         let built = WidgetSnapshot.make(userId: "user-1", run: nil, sessions: [], streak: nil, weeklyGoal: 3, now: Self.wednesday, calendar: Self.calendar)
         #expect(built.todaysWorkout == nil)
         #expect(built.currentStreak == 0)

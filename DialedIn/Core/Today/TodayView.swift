@@ -53,13 +53,13 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     private var workoutCard: some View {
         if let template = presenter.todaysWorkoutTemplate {
             todaysWorkoutCard(TodaysWorkoutCardDelegate(todaysWorkoutTemplate: template))
-        } else if presenter.isPlanComplete {
-            planCompleteCard
+        } else if presenter.isMacrocycleComplete {
+            macrocycleCompleteCard
         } else {
             // Without a plan for today the card stays, so the first card is always the workout.
             Section("Today's Workout") {
                 VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(presenter.hasActiveProgram ? "Nothing scheduled today." : "No active program.")
+                    Text(presenter.hasActiveMesocycle ? "Nothing scheduled today." : "No active program.")
                         .font(.rowTitle)
                     Text("Start an empty workout and add exercises as you go.")
                         .font(.rowDetail)
@@ -72,9 +72,9 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                             .foregroundStyle(.onAccent)
                     }
                     .buttonStyle(.borderedProminent)
-                    if !presenter.hasActiveProgram {
+                    if !presenter.hasActiveMesocycle {
                         Button {
-                            presenter.onChooseProgramPressed()
+                            presenter.onChooseMesocyclePressed()
                         } label: {
                             Text("Choose Program")
                                 .frame(maxWidth: .infinity)
@@ -86,24 +86,24 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         }
     }
 
-    private var planCompleteCard: some View {
+    private var macrocycleCompleteCard: some View {
         Section("Today's Workout") {
             VStack(alignment: .leading, spacing: Spacing.m) {
-                Text("\(presenter.completedPlanName) complete")
+                Text("\(presenter.completedMacrocycleName) complete")
                     .font(.rowTitle)
                 Text("Every block is done. Run it again from the first block, or pick something new.")
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
                 Button {
-                    presenter.onRepeatPlanPressed()
+                    presenter.onRepeatMacrocyclePressed()
                 } label: {
-                    Label("Repeat Plan", systemImage: Symbol.repeatPlan)
+                    Label("Repeat Plan", systemImage: Symbol.repeatMacrocycle)
                         .frame(maxWidth: .infinity)
                         .foregroundStyle(.onAccent)
                 }
                 .buttonStyle(.borderedProminent)
                 Button {
-                    presenter.onChooseProgramPressed()
+                    presenter.onChooseMesocyclePressed()
                 } label: {
                     Text("Choose Program")
                         .frame(maxWidth: .infinity)

@@ -71,7 +71,7 @@ class WorkoutTemplateDetailPresenter {
         }
     }
 
-    func onStartWorkoutPressed(onStartWorkout: (@Sendable () -> Void)?, workoutTemplate: WorkoutTemplateModel, trainingProgramId: String?, isDeloadCycle: Bool = false) {
+    func onStartWorkoutPressed(onStartWorkout: (@Sendable () -> Void)?, workoutTemplate: WorkoutTemplateModel, mesocycleId: String?, isDeloadCycle: Bool = false) {
         let shouldProceed = checkForActiveWorkout(
             onResumeWorkout: { [weak self] in
                 Task { @MainActor in
@@ -80,13 +80,13 @@ class WorkoutTemplateDetailPresenter {
             },
             onStartNewWorkout: { [weak self] in
                 Task { @MainActor in
-                    self?.performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, trainingProgramId: trainingProgramId, isDeloadCycle: isDeloadCycle)
+                    self?.performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, mesocycleId: mesocycleId, isDeloadCycle: isDeloadCycle)
                 }
             }
         )
 
         if shouldProceed {
-            performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, trainingProgramId: trainingProgramId, isDeloadCycle: isDeloadCycle)
+            performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, mesocycleId: mesocycleId, isDeloadCycle: isDeloadCycle)
         }
     }
     
@@ -117,13 +117,13 @@ class WorkoutTemplateDetailPresenter {
         router.showWorkoutTrackerView()
     }
     
-    private func performStartWorkout(onStartWorkout: (() -> Void)?, workoutTemplate: WorkoutTemplateModel, trainingProgramId: String?, isDeloadCycle: Bool = false) {
+    private func performStartWorkout(onStartWorkout: (() -> Void)?, workoutTemplate: WorkoutTemplateModel, mesocycleId: String?, isDeloadCycle: Bool = false) {
         guard !isStarting else { return }
         isStarting = true
         Task {
             defer { isStarting = false }
             do {
-                try await self.interactor.startWorkout(for: workoutTemplate, in: trainingProgramId)
+                try await self.interactor.startWorkout(for: workoutTemplate, in: mesocycleId)
                 if isDeloadCycle, var session = self.activeSession {
                     session.applyDeloadWeightReduction()
                     try? self.interactor.updateActiveSession(session)

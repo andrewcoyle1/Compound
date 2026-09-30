@@ -25,7 +25,7 @@ import SwiftUI
 /// | `list.bullet` | workout history, exercises, new exercise, nutrition overview | retired. History is `clock.arrow.circlepath`, nutrition `leaf` |
 /// | `flame` / `.fill` | calories, expenditure, streak | `calories` only. Expenditure is `bolt.heart`, streak `calendar.badge.checkmark` |
 /// | `target` | goal, warmup | `goal` only. Warmup is `thermometer.sun` |
-/// | `calendar` | program schedule, date picker, weekly count | `calendar` (a date or schedule). Program is `list.bullet.clipboard` |
+/// | `calendar` | mesocycle schedule, date picker, weekly count | `calendar` (a date or schedule). Mesocycle is `list.bullet.clipboard` |
 /// | `clock` / `timer` | duration, rest timer, meal times | `duration` and `rest` respectively |
 enum Symbol {
     // Training
@@ -43,7 +43,7 @@ enum Symbol {
     static let warmup = "thermometer.sun"
     static let superset = "link"
     static let personalRecord = "trophy.fill"
-    static let program = "list.bullet.clipboard"
+    static let mesocycle = "list.bullet.clipboard"
     static let history = "clock.arrow.circlepath"
     static let library = "books.vertical"
     static let template = "rectangle.stack"
@@ -99,9 +99,9 @@ enum Symbol {
     static let more = "ellipsis"
     /// Skipping a planned workout so the next one moves up.
     static let skip = "forward.end"
-    /// A menu that picks one of several, such as which microcycle of a program to show.
+    /// A menu that picks one of several, such as which microcycle of a mesocycle to show.
     static let choose = "chevron.up.chevron.down"
-    static let repeatPlan = "arrow.counterclockwise"
+    static let repeatMacrocycle = "arrow.counterclockwise"
 
     // Status
     static let info = "info.circle"

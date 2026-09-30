@@ -87,8 +87,8 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                                 .fontWeight(.medium)
                                 .foregroundStyle(Color.Metric.workouts)
                         }
-                        if let programName = presenter.programName {
-                            Text("Following \(programName)")
+                        if let mesocycleName = presenter.mesocycleName {
+                            Text("Following \(mesocycleName)")
                                 .font(.label)
                                 .foregroundStyle(.secondary)
                         }

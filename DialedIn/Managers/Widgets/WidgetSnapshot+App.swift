@@ -15,14 +15,14 @@ extension WidgetSnapshot {
     /// have come back through the listener yet.
     static func make(
         userId: String,
-        run: ProgramSchedule.Run?,
+        run: MesocycleSchedule.Run?,
         sessions: [WorkoutSessionModel],
         streak: Int?,
         weeklyGoal: Int,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> WidgetSnapshot {
-        let item = ProgramSchedule.todayItem(run: run, sessions: sessions, now: now, calendar: calendar)
+        let item = MesocycleSchedule.todayItem(run: run, sessions: sessions, now: now, calendar: calendar)
         return WidgetSnapshot(
             todaysWorkout: item.map {
                 TodaysWorkout(
@@ -45,8 +45,8 @@ extension WidgetSnapshot {
 @MainActor
 func refreshWidgetSnapshot(
     users: UserManager,
-    programs: TrainingProgramManager,
-    plans: TrainingPlanManager?,
+    mesocycles: MesocycleManager,
+    plans: MacrocycleManager?,
     sessions: [WorkoutSessionModel],
     streak: Int?,
     weeklyGoal: Int? = nil
@@ -54,8 +54,8 @@ func refreshWidgetSnapshot(
     guard let user = users.currentUser else { return }
     WidgetSnapshotStore.write(.make(
         userId: user.userId,
-        run: plans?.run(for: programs.activeProgram(for: user), sessions: sessions)
-            ?? programs.activeProgram(for: user).map { ProgramSchedule.legacyRun(program: $0, sessions: sessions) },
+        run: plans?.run(for: mesocycles.activeMesocycle(for: user), sessions: sessions)
+            ?? mesocycles.activeMesocycle(for: user).map { MesocycleSchedule.legacyRun(mesocycle: $0, sessions: sessions) },
         sessions: sessions,
         streak: streak,
         weeklyGoal: weeklyGoal ?? CircleWeek.goal(for: user)
@@ -71,8 +71,8 @@ extension CoreInteractor {
     func refreshWidgetSnapshot(weeklyGoal: Int? = nil) {
         DialedIn.refreshWidgetSnapshot(
             users: userManager,
-            programs: trainingProgramManager,
-            plans: trainingPlanManager,
+            mesocycles: mesocycleManager,
+            plans: macrocycleManager,
             sessions: workoutSessionManager.workoutSessions,
             streak: streakManager.currentStreakData.currentStreak,
             weeklyGoal: weeklyGoal

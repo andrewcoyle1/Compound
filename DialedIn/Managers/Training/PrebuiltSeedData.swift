@@ -29,11 +29,11 @@ enum PrebuiltSeedData {
         return container?.workouts.compactMap { $0.toModel(exercises: exercises) } ?? []
     }()
 
-    /// The program templates from `PrebuiltPrograms.json`, resolved against `workoutTemplates`
-    /// the same way `TrainingProgramManager` seeds them.
-    static let programs: [TrainingProgram] = {
-        let container = decode("PrebuiltPrograms", as: PrebuiltProgramsContainer.self)
-        return container?.programs.compactMap { $0.toModel(workouts: workoutTemplates) } ?? []
+    /// The mesocycle templates from `PrebuiltMesocycles.json`, resolved against `workoutTemplates`
+    /// the same way `MesocycleManager` seeds them.
+    static let mesocycles: [Mesocycle] = {
+        let container = decode("PrebuiltMesocycles", as: PrebuiltMesocyclesContainer.self)
+        return container?.mesocycles.compactMap { $0.toModel(workouts: workoutTemplates) } ?? []
     }()
 
     /// Looks up an exercise by its seeded id, for hand-written mocks that need a specific one.

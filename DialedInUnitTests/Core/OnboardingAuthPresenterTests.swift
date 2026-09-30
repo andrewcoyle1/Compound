@@ -354,7 +354,7 @@ struct OnboardingAuthPresenterTests {
         #expect(screen.presenter.currentAuthTask == nil)
     }
 
-    /// The gym and training-program steps hand `handleNavigation` back as their completion
+    /// The gym and training-mesocycle steps hand `handleNavigation` back as their completion
     /// callback, so it is called again after the user has moved on and must cope with there being
     /// nobody signed in.
     @Test("Re-navigating without a signed-in user does nothing")

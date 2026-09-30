@@ -38,7 +38,7 @@ class WorkoutPresenter {
 
     private func rebuildCaches() {
             let completed = workoutSessions
-                // A rest day is written ahead of time by the training program, already ended and
+                // A rest day is written ahead of time by the training mesocycle, already ended and
                 // dated into the future, so it listed tomorrow above every workout actually done.
                 .filter { $0.endedAt != nil && !$0.isRestDay }
                 .sorted { ($0.endedAt ?? .distantPast) > ($1.endedAt ?? .distantPast) }

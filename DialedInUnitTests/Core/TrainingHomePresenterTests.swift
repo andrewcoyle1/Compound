@@ -43,8 +43,8 @@ enum TrainingTabFixture {
         WorkoutTemplateModel(id: name.lowercased(), authorId: "author-1", name: name)
     }
 
-    static func program(_ name: String, id: String) -> TrainingProgram {
-        TrainingProgram(id: id, authorId: "author-1", name: name, icon: "dumbbell", colour: "#FF0000")
+    static func mesocycle(_ name: String, id: String) -> Mesocycle {
+        Mesocycle(id: id, authorId: "author-1", name: name, icon: "dumbbell", colour: "#FF0000")
     }
 
     /// A finished session unless `endedAt` is cleared — most screens here only count finished work.
@@ -70,10 +70,10 @@ enum TrainingTabFixture {
 // MARK: - Training tab root
 
 /// The Training tab's root: the calendar strip of what has been logged, the shortcut into an empty
-/// workout, and the doors to the program, workout and history libraries.
+/// workout, and the doors to the mesocycle, workout and history libraries.
 ///
 /// The risk is the calendar. Markers are built in one pass keyed by day, so anything keyed on the
-/// raw logged timestamp would give every session its own cell, and the program pre-creates rest
+/// raw logged timestamp would give every session its own cell, and the mesocycle pre-creates rest
 /// days for dates that have not arrived — those must not appear as already done.
 ///
 /// `showAlert(...)`, `showSimpleAlert(...)` and `dismissScreen()` come from a `GlobalRouter`
@@ -86,7 +86,7 @@ struct TrainingHomePresenterTests {
     final class Interactor: SpyGlobalInteractor, TrainingInteractor {
         var currentUser: UserModel?
         var userImageUrl: String?
-        var activeTrainingProgram: TrainingProgram?
+        var activeMesocycle: Mesocycle?
         var activeSession: WorkoutSessionModel?
         var workoutSessions: [WorkoutSessionModel] = []
         var favouriteGymProfile: GymProfileModel?
@@ -107,7 +107,7 @@ struct TrainingHomePresenterTests {
 
         func saveWorkoutSession(_ session: WorkoutSessionModel) async throws { }
 
-        func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws {
+        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
             if let startWorkoutError { throw startWorkoutError }
             startedTemplateNames.append(template.name)
         }
@@ -144,7 +144,7 @@ struct TrainingHomePresenterTests {
         private(set) var createWorkoutDelegates: [CreateWorkoutDelegate] = []
 
         func showDevSettingsView() { shown.append("devSettings") }
-        func showTrainingProgramLibraryView() { shown.append("programLibrary") }
+        func showMesocycleLibraryView() { shown.append("programLibrary") }
         func showWorkoutsView(delegate: WorkoutsDelegate) { shown.append("workouts") }
         func showWorkoutHistoryView() { shown.append("history") }
         func showExercisesView() { shown.append("exercises") }
@@ -155,14 +155,14 @@ struct TrainingHomePresenterTests {
         func showWorkoutTrackerView() { shown.append("tracker") }
         func showCreateExerciseView() { shown.append("createExercise") }
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
-        func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate) { shown.append("editProgram") }
+        func showEditMesocycleView(delegate: EditMesocycleDelegate) { shown.append("editProgram") }
 
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
             shown.append("sessionDetail")
             sessionDetailDelegates.append(delegate)
         }
 
-        func showCreateProgramView(delegate: CreateProgramDelegate) { shown.append("createProgram") }
+        func showCreateMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("createProgram") }
 
         func showCreateWorkoutView(delegate: CreateWorkoutDelegate) {
             shown.append("createWorkout")
@@ -233,7 +233,7 @@ struct TrainingHomePresenterTests {
         #expect(screen.presenter.loggedWorkoutMarkersByDay().isEmpty)
     }
 
-    /// A program pre-creates its rest days for dates ahead of today. Marking them would tell the
+    /// A mesocycle pre-creates its rest days for dates ahead of today. Marking them would tell the
     /// user they had already rested on a day that has not happened.
     @Test("Test A Rest Day Yet To Come Is Not Marked")
     func testARestDayYetToComeIsNotMarked() {
@@ -362,10 +362,10 @@ struct TrainingHomePresenterTests {
     /// The + button is a menu now, not a sheet: each item opens its builder straight away. It used
     /// to open an Add Training sheet first, which this test asserted as a leading "addTraining".
     @Test("Test The Add Menu Offers A Program A Workout And An Exercise")
-    func testTheAddMenuOffersAProgramAWorkoutAndAnExercise() {
+    func testTheAddMenuOffersAMesocycleAWorkoutAndAnExercise() {
         let screen = makeScreen()
 
-        screen.presenter.onNewProgramPressed()
+        screen.presenter.onNewMesocyclePressed()
         screen.presenter.onNewWorkoutPressed()
         screen.presenter.onNewExercisePressed()
 
@@ -376,8 +376,8 @@ struct TrainingHomePresenterTests {
     func testEachLibraryDoorOpensItsOwnScreen() {
         let screen = makeScreen()
 
-        screen.presenter.onTrainingProgramLibraryView()
-        screen.presenter.onChooseProgramPressed()
+        screen.presenter.onMesocycleLibraryView()
+        screen.presenter.onChooseMesocyclePressed()
         screen.presenter.onWorkoutLibraryPressed()
         screen.presenter.onWorkoutHistoryPressed()
         screen.presenter.onExerciseLibraryPressed()
@@ -418,9 +418,9 @@ struct TrainingTemplateDetailPresenterTests {
         private(set) var deletedTemplateIds: [String] = []
         private(set) var didDeleteActiveSession = false
 
-        func startWorkout(for template: WorkoutTemplateModel, in trainingProgramId: String?) async throws {
+        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
             if let startWorkoutError { throw startWorkoutError }
-            startedIn.append(trainingProgramId)
+            startedIn.append(mesocycleId)
             activeSession = sessionAfterStart
         }
 
@@ -578,13 +578,13 @@ struct TrainingTemplateDetailPresenterTests {
     // MARK: - Starting the workout
 
     @Test("Test Starting The Workout Runs It Against Its Program")
-    func testStartingTheWorkoutRunsItAgainstItsProgram() async {
+    func testStartingTheWorkoutRunsItAgainstItsMesocycle() async {
         let screen = makeScreen()
 
         screen.presenter.onStartWorkoutPressed(
             onStartWorkout: nil,
             workoutTemplate: TrainingTabFixture.template("Push"),
-            trainingProgramId: "program-1"
+            mesocycleId: "program-1"
         )
         await TestManagers.eventually { !screen.interactor.startedIn.isEmpty }
 
@@ -605,7 +605,7 @@ struct TrainingTemplateDetailPresenterTests {
         screen.presenter.onStartWorkoutPressed(
             onStartWorkout: nil,
             workoutTemplate: TrainingTabFixture.template("Push"),
-            trainingProgramId: "program-1",
+            mesocycleId: "program-1",
             isDeloadCycle: true
         )
         await TestManagers.eventually { !screen.interactor.updatedSessions.isEmpty }
@@ -625,7 +625,7 @@ struct TrainingTemplateDetailPresenterTests {
         screen.presenter.onStartWorkoutPressed(
             onStartWorkout: nil,
             workoutTemplate: TrainingTabFixture.template("Push"),
-            trainingProgramId: nil
+            mesocycleId: nil
         )
         await TestManagers.eventually { !screen.interactor.startedIn.isEmpty }
         try? await Task.sleep(for: .milliseconds(100))
@@ -643,7 +643,7 @@ struct TrainingTemplateDetailPresenterTests {
         screen.presenter.onStartWorkoutPressed(
             onStartWorkout: nil,
             workoutTemplate: TrainingTabFixture.template("Push"),
-            trainingProgramId: nil
+            mesocycleId: nil
         )
         try? await Task.sleep(for: .milliseconds(150))
 

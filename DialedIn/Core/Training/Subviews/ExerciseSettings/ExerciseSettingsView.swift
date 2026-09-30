@@ -58,7 +58,7 @@ struct ExerciseSettingsView: View {
                 }
                 // Two rows removed rather than left inert:
                 // - "Do Not Recommend" was a disabled toggle bound to .constant(false), and there
-                //   is no program-suggestion engine for it to exclude an exercise from.
+                //   is no mesocycle-suggestion engine for it to exclude an exercise from.
                 // - "Edit Duplicate" needs CreateExercise to accept a prefill; showCreateExerciseView
                 //   takes no delegate today, so routing there would open an empty form, not a copy.
             } header: {

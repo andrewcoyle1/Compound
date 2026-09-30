@@ -30,7 +30,7 @@ class SocialPresenter {
     ///
     /// The same rule has to apply to both halves. Only the user's own sessions used to be filtered,
     /// so a followed athlete's workout appeared the moment they started it, and the rest days a
-    /// program pre-creates for the days ahead were posted to the feed as if they had already
+    /// mesocycle pre-creates for the days ahead were posted to the feed as if they had already
     /// happened. A session with no resolvable author is dropped here rather than in the view, so an
     /// empty feed is recognised as empty instead of drawing a header over nothing.
     ///

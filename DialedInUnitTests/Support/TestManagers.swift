@@ -272,39 +272,39 @@ enum TestManagers {
         UserDefaults(suiteName: key(name)) ?? .standard
     }
 
-    static func trainingProgramManager(
-        programs: [TrainingProgram] = [],
-        prebuilt: [TrainingProgram] = [],
+    static func mesocycleManager(
+        mesocycles: [Mesocycle] = [],
+        prebuilt: [Mesocycle] = [],
         logManager: LogManager? = nil,
         userDefaults: UserDefaults = .standard
-    ) -> TrainingProgramManager {
-        TrainingProgramManager(
-            trainingProgramSyncEngine: collectionEngine(programs, key: "training-programs"),
-            systemProgramPersistence: MockLocalCollectionPersistence(collection: prebuilt),
+    ) -> MesocycleManager {
+        MesocycleManager(
+            mesocycleSyncEngine: collectionEngine(mesocycles, key: "training-programs"),
+            systemMesocyclePersistence: MockLocalCollectionPersistence(collection: prebuilt),
             logManager: logManager ?? LogManager(services: []),
             userDefaults: userDefaults
         )
     }
 
-    /// A training program manager already listening, so `trainingPrograms` holds `programs`.
-    static func signedInTrainingProgramManager(
-        programs: [TrainingProgram] = [],
+    /// A training mesocycle manager already listening, so `mesocycles` holds `mesocycles`.
+    static func signedInMesocycleManager(
+        mesocycles: [Mesocycle] = [],
         logManager: LogManager? = nil
-    ) async -> TrainingProgramManager {
-        let manager = trainingProgramManager(programs: programs, logManager: logManager)
+    ) async -> MesocycleManager {
+        let manager = mesocycleManager(mesocycles: mesocycles, logManager: logManager)
         await manager.signIn(userId: "author-1")
-        await eventually { manager.trainingPrograms.count == programs.count }
+        await eventually { manager.mesocycles.count == mesocycles.count }
         return manager
     }
 
-    /// A training plan manager already listening, so `trainingPlans` holds `plans`.
-    static func signedInTrainingPlanManager(plans: [TrainingPlan] = []) async -> TrainingPlanManager {
-        let manager = TrainingPlanManager(
-            trainingPlanSyncEngine: collectionEngine(plans, key: "training-plans"),
+    /// A training plan manager already listening, so `macrocycles` holds `plans`.
+    static func signedInMacrocycleManager(plans: [Macrocycle] = []) async -> MacrocycleManager {
+        let manager = MacrocycleManager(
+            macrocycleSyncEngine: collectionEngine(plans, key: "training-plans"),
             logManager: LogManager(services: [])
         )
         await manager.signIn()
-        await eventually { manager.trainingPlans.count == plans.count }
+        await eventually { manager.macrocycles.count == plans.count }
         return manager
     }
 

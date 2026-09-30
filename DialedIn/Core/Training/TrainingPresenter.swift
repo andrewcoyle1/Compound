@@ -43,8 +43,8 @@ class TrainingPresenter {
         interactor.workoutSessions
     }
 
-    var activeTrainingProgram: TrainingProgram? {
-        interactor.activeTrainingProgram
+    var activeMesocycle: Mesocycle? {
+        interactor.activeMesocycle
     }
     
     var favouriteGymProfile: GymProfileModel? {
@@ -69,8 +69,8 @@ class TrainingPresenter {
     
     // MARK: - Add Menu
 
-    func onNewProgramPressed() {
-        router.showCreateProgramView(delegate: CreateProgramDelegate())
+    func onNewMesocyclePressed() {
+        router.showCreateMesocycleView(delegate: CreateMesocycleDelegate())
     }
 
     func onNewWorkoutPressed() {
@@ -195,12 +195,12 @@ class TrainingPresenter {
         
     // MARK: - Library Navigation
     
-    func onTrainingProgramLibraryView() {
-        router.showTrainingProgramLibraryView()
+    func onMesocycleLibraryView() {
+        router.showMesocycleLibraryView()
     }
     
-    func onChooseProgramPressed() {
-        router.showTrainingProgramLibraryView()
+    func onChooseMesocyclePressed() {
+        router.showMesocycleLibraryView()
     }
     
     func onWorkoutLibraryPressed() {
@@ -217,7 +217,7 @@ class TrainingPresenter {
 
     // MARK: - Search
 
-    /// Training's search field: exercises and workouts. Programs are few enough to browse.
+    /// Training's search field: exercises and workouts. Mesocycles are few enough to browse.
     var searchString: String = ""
 
     var isSearching: Bool {
@@ -248,7 +248,7 @@ class TrainingPresenter {
         router.showWorkoutTemplateDetailView(
             delegate: WorkoutTemplateDetailDelegate(
                 workoutTemplate: workout,
-                trainingProgramId: nil,
+                mesocycleId: nil,
                 onStartWorkoutPressed: { [weak self] in
                     Task { @MainActor in self?.router.showWorkoutTrackerView() }
                 }

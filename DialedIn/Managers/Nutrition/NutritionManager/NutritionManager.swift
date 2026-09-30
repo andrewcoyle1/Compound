@@ -85,7 +85,7 @@ class NutritionManager {
     func computeDietPlan(
         user: UserModel?,
         delegate: DietPlanDelegate,
-        trainingProgram: TrainingProgram? = nil,
+        mesocycle: Mesocycle? = nil,
         expenditureKcal: Double? = nil,
         targetKcal: Double? = nil
     ) -> DietPlan {
@@ -104,9 +104,9 @@ class NutritionManager {
             proteinGrams: proteinGrams
         )
 
-        // Derive training context from the user's active training program.
+        // Derive training context from the user's active training mesocycle.
         // A day plan with at least one exercise counts as a training day.
-        let trainingDaysPerWeek = trainingProgram?.workoutTemplates.filter { !$0.exercises.isEmpty }.count ?? 0
+        let trainingDaysPerWeek = mesocycle?.workoutTemplates.filter { !$0.exercises.isEmpty }.count ?? 0
         let hasTraining = trainingDaysPerWeek > 0
 
         let dailyCalories = calculateDailyCalories(
@@ -122,7 +122,7 @@ class NutritionManager {
             macroPercentages: macroPercentages
         )
 
-        let trainingTypeDescription = trainingProgram?.name ?? trainingFocusDescription(
+        let trainingTypeDescription = mesocycle?.name ?? trainingFocusDescription(
             exerciseFrequency: user?.submittedExerciseFrequency
         )
 
@@ -385,7 +385,7 @@ extension CoreInteractor {
     }
 
     func computeDietPlan(user: UserModel?, delegate: DietPlanDelegate) -> DietPlan {
-        nutritionManager.computeDietPlan(user: user, delegate: delegate, trainingProgram: activeTrainingProgram)
+        nutritionManager.computeDietPlan(user: user, delegate: delegate, mesocycle: activeMesocycle)
     }
 
     /// The same plan built on a supplied expenditure and target rather than the formula estimate.
@@ -398,7 +398,7 @@ extension CoreInteractor {
         nutritionManager.computeDietPlan(
             user: user,
             delegate: delegate,
-            trainingProgram: activeTrainingProgram,
+            mesocycle: activeMesocycle,
             expenditureKcal: expenditureKcal,
             targetKcal: targetKcal
         )

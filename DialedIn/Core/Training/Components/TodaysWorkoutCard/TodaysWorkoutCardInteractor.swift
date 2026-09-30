@@ -7,10 +7,10 @@
 
 @MainActor
 protocol TodaysWorkoutCardInteractor: GlobalInteractor {
-    var activeTrainingProgram: TrainingProgram? { get }
-    var activeProgramRun: ProgramSchedule.Run? { get }
+    var activeMesocycle: Mesocycle? { get }
+    var activeMesocycleRun: MesocycleSchedule.Run? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
-    func skipScheduledWorkout(_ slot: ProgramSchedule.Slot) async throws
+    func skipScheduledWorkout(_ slot: MesocycleSchedule.Slot) async throws
 }
 
 extension CoreInteractor: TodaysWorkoutCardInteractor { }

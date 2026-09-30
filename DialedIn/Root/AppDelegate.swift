@@ -81,9 +81,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             exerciseSettingsManager: container.resolve(ExerciseSettingsManager.self)!,
             exerciseModelManager: container.resolve(ExerciseModelManager.self)!,
             gymProfileManager: container.resolve(GymProfileManager.self)!,
-            trainingProgramManager: container.resolve(TrainingProgramManager.self)!,
+            mesocycleManager: container.resolve(MesocycleManager.self)!,
             userManager: container.resolve(UserManager.self)!,
-            trainingPlanManager: container.resolve(TrainingPlanManager.self),
+            macrocycleManager: container.resolve(MacrocycleManager.self),
             streakManager: container.resolve(StreakManager.self),
             stravaManager: container.resolve(StravaManager.self),
             logManager: container.resolve(LogManager.self)!

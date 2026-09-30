@@ -208,15 +208,15 @@ struct OnboardingCalorieFloorPresenterTests {
 // MARK: - Flat week or varied week
 
 /// Whether calories are spread evenly or pushed towards training days. The screen prefills its
-/// answer from the training program the user built two steps earlier.
+/// answer from the training mesocycle the user built two steps earlier.
 @MainActor
 struct OnboardingCalorieDistributionTests {
 
     private final class Interactor: SpyGlobalInteractor, CalorieDistributionInteractor {
-        var activeTrainingProgram: TrainingProgram?
+        var activeMesocycle: Mesocycle?
 
-        init(activeTrainingProgram: TrainingProgram? = nil) {
-            self.activeTrainingProgram = activeTrainingProgram
+        init(activeMesocycle: Mesocycle? = nil) {
+            self.activeMesocycle = activeMesocycle
         }
     }
 
@@ -228,8 +228,8 @@ struct OnboardingCalorieDistributionTests {
         func showProteinIntakeView(delegate: ProteinIntakeDelegate) { delegates.append(delegate) }
     }
 
-    /// A program's weekly cycle is its templates; a template with no exercises is a rest day.
-    private func program(trainingDays: Int, restDays: Int = 0) -> TrainingProgram {
+    /// A mesocycle's weekly cycle is its templates; a template with no exercises is a rest day.
+    private func mesocycle(trainingDays: Int, restDays: Int = 0) -> Mesocycle {
         let days = (0..<trainingDays).map { index in
             WorkoutTemplateModel(
                 id: "training-\(index)",
@@ -241,7 +241,7 @@ struct OnboardingCalorieDistributionTests {
         let rests = (0..<restDays).map { index in
             WorkoutTemplateModel(id: "rest-\(index)", authorId: "user-1", name: "Rest \(index)", exercises: [])
         }
-        return TrainingProgram(
+        return Mesocycle(
             id: "program-1",
             authorId: "user-1",
             name: "Block",
@@ -255,19 +255,19 @@ struct OnboardingCalorieDistributionTests {
     /// is offered.
     @Test("Test A Light Training Week Prefills An Even Split")
     func testALightTrainingWeekPrefillsAnEvenSplit() {
-        let interactor = Interactor(activeTrainingProgram: program(trainingDays: 3, restDays: 4))
+        let interactor = Interactor(activeMesocycle: mesocycle(trainingDays: 3, restDays: 4))
         let presenter = CalorieDistributionPresenter(interactor: interactor, router: Router())
 
         #expect(presenter.selectedCalorieDistribution == .even)
         #expect(presenter.trainingDaysPerWeek == 3)
-        #expect(presenter.hasTrainingPlan)
+        #expect(presenter.hasMesocycle)
     }
 
     /// Four or more and the suggestion flips, so the extra calories land on the days they are
     /// used.
     @Test("Test A Heavy Training Week Prefills A Varied Split")
     func testAHeavyTrainingWeekPrefillsAVariedSplit() {
-        let interactor = Interactor(activeTrainingProgram: program(trainingDays: 5, restDays: 2))
+        let interactor = Interactor(activeMesocycle: mesocycle(trainingDays: 5, restDays: 2))
         let presenter = CalorieDistributionPresenter(interactor: interactor, router: Router())
 
         #expect(presenter.selectedCalorieDistribution == .varied)
@@ -278,36 +278,36 @@ struct OnboardingCalorieDistributionTests {
     /// four-day threshold and suggest carb-cycling a week that has nothing to cycle around.
     @Test("Test Rest Days Are Not Counted As Training Days")
     func testRestDaysAreNotCountedAsTrainingDays() {
-        let interactor = Interactor(activeTrainingProgram: program(trainingDays: 2, restDays: 5))
+        let interactor = Interactor(activeMesocycle: mesocycle(trainingDays: 2, restDays: 5))
         let presenter = CalorieDistributionPresenter(interactor: interactor, router: Router())
 
         #expect(presenter.trainingDaysPerWeek == 2)
         #expect(presenter.selectedCalorieDistribution == .even)
     }
 
-    /// A program of nothing but rest days is a real shape — a user can build one and activate it.
+    /// A mesocycle of nothing but rest days is a real shape — a user can build one and activate it.
     /// Zero training days must fall on the flat week rather than suggesting the user cycle carbs
     /// around sessions they do not have.
     @Test("Test A Program With No Training Days Prefills An Even Split")
-    func testAProgramWithNoTrainingDaysPrefillsAnEvenSplit() {
-        let interactor = Interactor(activeTrainingProgram: program(trainingDays: 0, restDays: 7))
+    func testAMesocycleWithNoTrainingDaysPrefillsAnEvenSplit() {
+        let interactor = Interactor(activeMesocycle: mesocycle(trainingDays: 0, restDays: 7))
         let presenter = CalorieDistributionPresenter(interactor: interactor, router: Router())
 
         #expect(presenter.trainingDaysPerWeek == 0)
         #expect(presenter.selectedCalorieDistribution == .even)
-        // The program exists, so the screen may still say it read one.
-        #expect(presenter.hasTrainingPlan)
+        // The mesocycle exists, so the screen may still say it read one.
+        #expect(presenter.hasMesocycle)
     }
 
-    /// Without a program there is nothing to base a suggestion on, so the user is left to choose
+    /// Without a mesocycle there is nothing to base a suggestion on, so the user is left to choose
     /// rather than shown a guess dressed up as a recommendation.
     @Test("Test With No Program Nothing Is Prefilled")
-    func testWithNoProgramNothingIsPrefilled() {
+    func testWithNoMesocycleNothingIsPrefilled() {
         let presenter = CalorieDistributionPresenter(interactor: Interactor(), router: Router())
 
         #expect(presenter.selectedCalorieDistribution == nil)
         #expect(presenter.trainingDaysPerWeek == nil)
-        #expect(!presenter.hasTrainingPlan)
+        #expect(!presenter.hasMesocycle)
     }
 
     @Test("Test Nothing Chosen Does Not Move On")

@@ -44,7 +44,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
     let submittedDistanceUnitPreference: DistanceUnitPreference?
     let submittedCurrentGoalId: String?
     let submittedFavouriteGymProfileId: String?
-    let submittedActiveTrainingProgramId: String?
+    let submittedActiveMesocycleId: String?
     /// Legacy: the token now lives in `PrivateUserSettings`. Still written for one release so the
     /// deployed Cloud Function keeps finding it; kept decodable so old documents parse.
     let fcmToken: String?
@@ -108,7 +108,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         submittedWeightUnitPreference: WeightUnitPreference? = nil,
         submittedDistanceUnitPreference: DistanceUnitPreference? = nil,
         submittedCurrentGoalId: String? = nil,
-        submittedActiveTrainingProgramId: String? = nil,
+        submittedActiveMesocycleId: String? = nil,
         submittedFavouriteGymProfileId: String? = nil,
         blockedUserIds: [String]? = nil,
         followingIds: [String]? = nil,
@@ -153,7 +153,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         self.submittedWeightUnitPreference = submittedWeightUnitPreference
         self.submittedDistanceUnitPreference = submittedDistanceUnitPreference
         self.submittedCurrentGoalId = submittedCurrentGoalId
-        self.submittedActiveTrainingProgramId = submittedActiveTrainingProgramId
+        self.submittedActiveMesocycleId = submittedActiveMesocycleId
         self.submittedFavouriteGymProfileId = submittedFavouriteGymProfileId
         self.blockedUserIds = blockedUserIds
         self.followingIds = followingIds
@@ -217,7 +217,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         case submittedWeightUnitPreference = "submitted_weight_unit_preference"
         case submittedDistanceUnitPreference = "submitted_distance_unit_preference"
         case submittedCurrentGoalId = "submitted_current_goal_id"
-        case submittedActiveTrainingProgramId = "submitted_active_training_program_id"
+        case submittedActiveMesocycleId = "submitted_active_training_program_id"
         case submittedFavouriteGymProfileId = "submitted_favourite_gym_profile_id"
         case didCompleteOnboarding = "did_complete_onboarding"
         case blockedUserIds = "blocked_user_ids"
@@ -269,7 +269,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
             "user_\(CodingKeys.submittedWeightUnitPreference.rawValue)": submittedWeightUnitPreference?.rawValue,
             "user_\(CodingKeys.submittedDistanceUnitPreference.rawValue)": submittedDistanceUnitPreference?.rawValue,
             "user_\(CodingKeys.submittedCurrentGoalId.rawValue)": submittedCurrentGoalId,
-            "user_\(CodingKeys.submittedActiveTrainingProgramId.rawValue)": submittedActiveTrainingProgramId,
+            "user_\(CodingKeys.submittedActiveMesocycleId.rawValue)": submittedActiveMesocycleId,
             "user_\(CodingKeys.submittedFavouriteGymProfileId.rawValue)": submittedFavouriteGymProfileId,
             "user_\(CodingKeys.blockedUserIds.rawValue)": blockedUserIds,
             "user_has_\(CodingKeys.fcmToken.rawValue)": (fcmToken?.count ?? 0) > 0,
@@ -385,7 +385,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         }
         guard submittedCurrentGoalId != nil else { return .goalSetting }
         guard submittedFavouriteGymProfileId != nil else { return .gymProfileSetup }
-        guard submittedActiveTrainingProgramId != nil else { return .trainingProgramSetup }
+        guard submittedActiveMesocycleId != nil else { return .mesocycleSetup }
         guard didCompleteOnboarding else { return .customiseProgram }
         return .complete
     }
@@ -533,7 +533,8 @@ enum OnboardingStep: String, Codable, Sendable {
     case healthDisclaimer
     case goalSetting
     case gymProfileSetup
-    case trainingProgramSetup
+    // The raw value keeps the name this step was stored and logged under before the rename.
+    case mesocycleSetup = "trainingProgramSetup"
     case customiseProgram
     case complete
     
@@ -556,7 +557,7 @@ extension OnboardingStep {
         case .healthData: return 4
         case .healthDisclaimer: return 5
         case .goalSetting: return 6
-        case .trainingProgramSetup: return 7
+        case .mesocycleSetup: return 7
         case .gymProfileSetup: return 8
         case .customiseProgram: return 9
         case .complete: return 10

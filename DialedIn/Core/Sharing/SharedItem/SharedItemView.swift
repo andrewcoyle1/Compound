@@ -13,7 +13,7 @@ struct SharedItemDelegate {
     var isPushed: Bool = false
 }
 
-/// A shared template or program, read-only, with the choice to copy it into the library.
+/// A shared template or mesocycle, read-only, with the choice to copy it into the library.
 struct SharedItemView: View {
 
     @State var presenter: SharedItemPresenter
@@ -24,9 +24,9 @@ struct SharedItemView: View {
                 Text("\(presenter.delegate.senderName) shared this with you.")
                     .foregroundStyle(.secondary)
             }
-            if case .program(let program) = presenter.delegate.share.payload {
+            if case .mesocycle(let mesocycle) = presenter.delegate.share.payload {
                 Section {
-                    TrainingProgramHeader(program: program)
+                    MesocycleHeader(mesocycle: mesocycle)
                 }
             }
             ForEach(presenter.templates) { template in

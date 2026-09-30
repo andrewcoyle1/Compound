@@ -106,11 +106,11 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     // MARK: - Workout History
 
     /// Lookup the last completed session for a given template and author, if present.
-    /// `inTrainingProgramId` narrows the search to that one program; `nil` searches every session.
+    /// `inMesocycleId` narrows the search to that one mesocycle; `nil` searches every session.
     func getLastCompletedSessionForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?
+        inMesocycleId: String?
     ) async throws -> WorkoutSessionModel?
 
     /// The same lookup, several sessions deep and most recent first — what smart progression
@@ -118,7 +118,7 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     func getLastCompletedSessionsForTemplate(
         templateId: String,
         authorId: String,
-        inTrainingProgramId: String?,
+        inMesocycleId: String?,
         limit: Int
     ) async throws -> [WorkoutSessionModel]
 
@@ -164,9 +164,9 @@ extension CoreInteractor: WorkoutTrackerInteractor {
             hkWorkout: hkWorkoutManager,
             liveActivity: liveActivityManager,
             gymProfiles: gymProfileManager,
-            programs: trainingProgramManager,
+            mesocycles: mesocycleManager,
             users: userManager,
-            plans: trainingPlanManager,
+            plans: macrocycleManager,
             streak: streakManager,
             strava: stravaManager,
             logger: logManager

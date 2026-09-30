@@ -78,9 +78,9 @@ struct DietPlanView: View {
 
     private func overviewSection(_ plan: DietPlan) -> some View {
         Section("Overview") {
-            if let programName = presenter.trainingProgramName,
+            if let mesocycleName = presenter.mesocycleName,
                let daysPerWeek = presenter.trainingDaysPerWeek {
-                Text("Training program: \(programName), \(daysPerWeek) days/week")
+                Text("Training program: \(mesocycleName), \(daysPerWeek) days/week")
             }
             Text("Estimated TDEE: \(Int(plan.tdeeEstimate)) kcal/day")
             Text("Preferred diet: \(plan.preferredDiet.capitalized)")

@@ -23,7 +23,7 @@ struct ActivityNotificationModel: Identifiable {
         /// `onFollowRequestUpdated` Cloud Function, with the accepting user as the actor.
         case followAccepted
         // MARK: - Sharing
-        /// Someone shared a workout template or program with the user. `shareId` is the
+        /// Someone shared a workout template or mesocycle with the user. `shareId` is the
         /// `shares/{id}` document, `commentText` the shared item's name, and `sessionId` is empty.
         case share
         // MARK: - Challenges

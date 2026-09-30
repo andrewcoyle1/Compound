@@ -41,8 +41,8 @@ struct Dependencies {
         let exerciseSettingsManager: ExerciseSettingsManager
         let workoutTemplateManager: WorkoutTemplateManager
         let workoutSessionManager: WorkoutSessionManager
-        let trainingProgramManager: TrainingProgramManager
-        let trainingPlanManager: TrainingPlanManager
+        let mesocycleManager: MesocycleManager
+        let macrocycleManager: MacrocycleManager
         let gymProfileManager: GymProfileManager
         let foodManager: FoodManager
         let recipeTemplateManager: RecipeTemplateManager
@@ -233,17 +233,17 @@ struct Dependencies {
                 userWorkoutSessionSyncEngine: userWorkoutSessionSyncEngine,
                 followingWorkoutSessionSyncEngine: followingWorkoutSessionSyncEngine
             )
-            let trainingProgramSyncEngine = CollectionSyncEngine<TrainingProgram>(
-                remote: MockRemoteCollectionService(collection: TrainingProgram.mocks),
-                managerKey: Keys.trainingProgramManagerKey,
+            let mesocycleSyncEngine = CollectionSyncEngine<Mesocycle>(
+                remote: MockRemoteCollectionService(collection: Mesocycle.mocks),
+                managerKey: Keys.mesocycleManagerKey,
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.programs), logManager: logManager)
-            trainingPlanManager = TrainingPlanManager(
-                trainingPlanSyncEngine: CollectionSyncEngine<TrainingPlan>(
+            mesocycleManager = MesocycleManager(mesocycleSyncEngine: mesocycleSyncEngine, systemMesocyclePersistence: MockLocalCollectionPersistence(collection: PrebuiltSeedData.mesocycles), logManager: logManager)
+            macrocycleManager = MacrocycleManager(
+                macrocycleSyncEngine: CollectionSyncEngine<Macrocycle>(
                     remote: MockRemoteCollectionService(collection: []),
-                    managerKey: TrainingPlanManager.managerKey,
+                    managerKey: MacrocycleManager.managerKey,
                     enableLocalPersistence: true,
                     logger: logManager
                 ),
@@ -537,27 +537,27 @@ struct Dependencies {
                 userWorkoutSessionSyncEngine: userWorkoutSessionSyncEngine,
                 followingWorkoutSessionSyncEngine: followingWorkoutSessionsSyncEngine
             )
-            let trainingProgramSyncEngine = CollectionSyncEngine<TrainingProgram>(
+            let mesocycleSyncEngine = CollectionSyncEngine<Mesocycle>(
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [weak authManager] in
                         guard let uid = authManager?.auth?.uid else { return nil }
                         return "users/\(uid)/training_programs"
                     }
                 ),
-                managerKey: Keys.trainingProgramManagerKey,
+                managerKey: Keys.mesocycleManagerKey,
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: SwiftDataCollectionPersistence<TrainingProgram>(managerKey: TrainingProgramManager.systemManagerKey), logManager: logManager)
-            trainingPlanManager = TrainingPlanManager(
-                trainingPlanSyncEngine: CollectionSyncEngine<TrainingPlan>(
+            mesocycleManager = MesocycleManager(mesocycleSyncEngine: mesocycleSyncEngine, systemMesocyclePersistence: SwiftDataCollectionPersistence<Mesocycle>(managerKey: MesocycleManager.systemManagerKey), logManager: logManager)
+            macrocycleManager = MacrocycleManager(
+                macrocycleSyncEngine: CollectionSyncEngine<Macrocycle>(
                     remote: FirebaseRemoteCollectionService(
                         collectionPath: { [weak authManager] in
                             guard let uid = authManager?.auth?.uid else { return nil }
                             return "users/\(uid)/training_plans"
                         }
                     ),
-                    managerKey: TrainingPlanManager.managerKey,
+                    managerKey: MacrocycleManager.managerKey,
                     enableLocalPersistence: true,
                     logger: logManager
                 ),
@@ -880,27 +880,27 @@ struct Dependencies {
                 userWorkoutSessionSyncEngine: userWorkoutSessionSyncEngine,
                 followingWorkoutSessionSyncEngine: followingWorkoutSessionsSyncEngine
             )
-            let trainingProgramSyncEngine = CollectionSyncEngine<TrainingProgram>(
+            let mesocycleSyncEngine = CollectionSyncEngine<Mesocycle>(
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [weak authManager] in
                         guard let uid = authManager?.auth?.uid else { return nil }
                         return "users/\(uid)/training_programs"
                     }
                 ),
-                managerKey: Keys.trainingProgramManagerKey,
+                managerKey: Keys.mesocycleManagerKey,
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            trainingProgramManager = TrainingProgramManager(trainingProgramSyncEngine: trainingProgramSyncEngine, systemProgramPersistence: SwiftDataCollectionPersistence<TrainingProgram>(managerKey: TrainingProgramManager.systemManagerKey), logManager: logManager)
-            trainingPlanManager = TrainingPlanManager(
-                trainingPlanSyncEngine: CollectionSyncEngine<TrainingPlan>(
+            mesocycleManager = MesocycleManager(mesocycleSyncEngine: mesocycleSyncEngine, systemMesocyclePersistence: SwiftDataCollectionPersistence<Mesocycle>(managerKey: MesocycleManager.systemManagerKey), logManager: logManager)
+            macrocycleManager = MacrocycleManager(
+                macrocycleSyncEngine: CollectionSyncEngine<Macrocycle>(
                     remote: FirebaseRemoteCollectionService(
                         collectionPath: { [weak authManager] in
                             guard let uid = authManager?.auth?.uid else { return nil }
                             return "users/\(uid)/training_plans"
                         }
                     ),
-                    managerKey: TrainingPlanManager.managerKey,
+                    managerKey: MacrocycleManager.managerKey,
                     enableLocalPersistence: true,
                     logger: logManager
                 ),
@@ -1052,8 +1052,8 @@ struct Dependencies {
         container.register(ExerciseSettingsManager.self, service: exerciseSettingsManager)
         container.register(WorkoutTemplateManager.self, service: workoutTemplateManager)
         container.register(WorkoutSessionManager.self, service: workoutSessionManager)
-        container.register(TrainingProgramManager.self, service: trainingProgramManager)
-        container.register(TrainingPlanManager.self, service: trainingPlanManager)
+        container.register(MesocycleManager.self, service: mesocycleManager)
+        container.register(MacrocycleManager.self, service: macrocycleManager)
         container.register(GymProfileManager.self, service: gymProfileManager)
         container.register(FoodManager.self, service: foodManager)
         container.register(RecipeTemplateManager.self, service: recipeTemplateManager)

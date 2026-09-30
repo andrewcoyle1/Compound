@@ -34,7 +34,7 @@ extension UserModel {
             submittedDailyActivityLevel: .active,
             submittedCardioFitnessLevel: .intermediate,
             submittedCurrentGoalId: "goal1",
-            submittedActiveTrainingProgramId: TrainingProgram.mock.id,
+            submittedActiveMesocycleId: Mesocycle.mock.id,
             submittedFavouriteGymProfileId: GymProfileModel.mock.id,
             // The same circle as `mocks[0]`, so the signed-in mock scenario has a feed and a strip.
             followingIds: ["user1", "user3", "user4", "user5"],
@@ -113,7 +113,7 @@ extension UserModel {
                 submittedLengthUnitPreference: .centimeters,
                 submittedWeightUnitPreference: .kilograms,
                 submittedCurrentGoalId: WeightGoal.mocks.first!.id,
-                submittedActiveTrainingProgramId: TrainingProgram.mock.id,
+                submittedActiveMesocycleId: Mesocycle.mock.id,
                 submittedFavouriteGymProfileId: GymProfileModel.mock.id,
                 blockedUserIds: ["user6"],
                 // Bob is private and not followed, so his profile shows the request flow.

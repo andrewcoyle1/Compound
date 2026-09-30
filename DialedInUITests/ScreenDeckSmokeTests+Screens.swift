@@ -13,7 +13,7 @@ extension ScreenDeckSmokeTests {
 
     func testCreateWorkout() { smoke("STARTSCREEN_CREATE_WORKOUT") }
 
-    func testCreateProgram() { smoke("STARTSCREEN_CREATE_PROGRAM") }
+    func testCreateMesocycle() { smoke("STARTSCREEN_CREATE_PROGRAM") }
 
     func testSocialProfile() { smoke("STARTSCREEN_SOCIAL_PROFILE") }
 
@@ -41,13 +41,13 @@ extension ScreenDeckSmokeTests {
 
     func testTemplateDetail() { smoke("STARTSCREEN_TEMPLATE_DETAIL") }
 
-    func testProgramLibrary() { smoke("STARTSCREEN_PROGRAM_LIBRARY") }
+    func testMesocycleLibrary() { smoke("STARTSCREEN_PROGRAM_LIBRARY") }
 
     func testWorkouts() { smoke("STARTSCREEN_WORKOUTS") }
 
     func testMusclePicker() { smoke("STARTSCREEN_MUSCLE_PICKER") }
 
-    func testActiveProgram() { smoke("STARTSCREEN_ACTIVE_PROGRAM") }
+    func testActiveMesocycle() { smoke("STARTSCREEN_ACTIVE_PROGRAM") }
 
     func testExerciseDetail() { smoke("STARTSCREEN_EXERCISE_DETAIL") }
 

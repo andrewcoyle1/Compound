@@ -32,7 +32,7 @@ struct OnboardingGoalSummaryEstimateTests {
         func showOnboardingCompletedView() { }
         func showDevSettingsView() { }
         func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { }
-        func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) { }
+        func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { }
     }
 
     private func presenter(currentWeightKg: Double? = 80) -> GoalSummaryPresenter {

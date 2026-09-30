@@ -105,10 +105,10 @@ class SocialProfilePresenter {
         )
     }
 
-    /// Only the reader's own program resolves without fetching someone else's programs, which
+    /// Only the reader's own mesocycle resolves without fetching someone else's mesocycles, which
     /// live under their own user document.
-    var programName: String? {
-        isOwnProfile ? interactor.activeTrainingProgram?.name : nil
+    var mesocycleName: String? {
+        isOwnProfile ? interactor.activeMesocycle?.name : nil
     }
 
     init(interactor: SocialProfileInteractor, router: SocialProfileRouter) {

@@ -40,7 +40,7 @@ extension WorkoutTrackerPresenter {
         }
 
         let workoutTemplateId = workoutSession.workoutTemplateId
-        let trainingProgramId = workoutSession.trainingProgramId
+        let mesocycleId = workoutSession.mesocycleId
         let exerciseTemplateIds = Array(Set(workoutSession.exercises.map(\.templateId)))
 
         Task {
@@ -51,7 +51,7 @@ extension WorkoutTrackerPresenter {
                     forExerciseTemplateId: exerciseTemplateId,
                     workoutTemplateId: workoutTemplateId,
                     authorId: authorId,
-                    trainingProgramId: trainingProgramId,
+                    mesocycleId: mesocycleId,
                     limit: 1
                 )
                 let match = sessions

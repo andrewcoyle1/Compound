@@ -12,7 +12,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     let authorId: String
     var name: String
     let workoutTemplateId: String?
-    let trainingProgramId: String?
+    let mesocycleId: String?
     private(set) var dateCreated: Date
     private(set) var dateModified: Date
     private(set) var endedAt: Date?
@@ -34,7 +34,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         authorId: String,
         name: String,
         workoutTemplateId: String? = nil,
-        trainingProgramId: String? = nil,
+        mesocycleId: String? = nil,
         dateCreated: Date,
         dateModified: Date? = nil,
         endedAt: Date? = nil,
@@ -49,7 +49,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.authorId = authorId
         self.name = name
         self.workoutTemplateId = workoutTemplateId
-        self.trainingProgramId = trainingProgramId
+        self.mesocycleId = mesocycleId
         self.dateCreated = dateCreated
         self.dateModified = dateModified ?? dateCreated
         self.endedAt = endedAt
@@ -66,7 +66,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case authorId = "author_id"
         case name = "name"
         case workoutTemplateId = "workout_template_id"
-        case trainingProgramId = "training_program_id"
+        case mesocycleId = "training_program_id"
         case dateCreated = "date_created"
         case dateModified = "date_modified"
         case endedAt = "ended_at"
@@ -87,7 +87,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         authorId: String,
         template: WorkoutTemplateModel,
         notes: String? = nil,
-        trainingProgramId: String? = nil,
+        mesocycleId: String? = nil,
         previousWorkoutSession: WorkoutSessionModel? = nil,
         gymProfile: GymProfileModel? = nil,
         unitPreferences: [String: ExerciseUnitPreference]? = nil,
@@ -98,7 +98,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.authorId = authorId
         self.name = template.name
         self.workoutTemplateId = template.id
-        self.trainingProgramId = trainingProgramId
+        self.mesocycleId = mesocycleId
         self.dateCreated = dateCreated
         self.dateModified = dateCreated
         self.endedAt = nil
@@ -540,7 +540,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                     id: "session-\(counter + 1)",
                     authorId: uid,
                     template: template,
-                    trainingProgramId: nil,
+                    mesocycleId: nil,
                     dateCreated: startedAt
                 )
                 session.fillMockSets(progression: progression, completedAt: startedAt)

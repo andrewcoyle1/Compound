@@ -88,7 +88,7 @@ struct PaywallPurchasePresenterTests {
         func showHealthDisclaimerView() { shown.append("healthDisclaimer") }
         func showGoalSettingView() { shown.append("goalSetting") }
         func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { shown.append("gymProfileSetup") }
-        func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) { shown.append("trainingProgramSetup") }
+        func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("trainingProgramSetup") }
         func showCustomisingDietProgramView() { shown.append("customisingDietProgram") }
         func showOnboardingCompletedView() { shown.append("onboardingCompleted") }
         func showAccountView(delegate: AccountDelegate) { shown.append("account") }
@@ -455,7 +455,7 @@ struct PaywallPurchasePresenterTests {
                 submittedDailyActivityLevel: .moderate,
                 submittedCardioFitnessLevel: .intermediate,
                 submittedCurrentGoalId: "goal-1",
-                submittedActiveTrainingProgramId: "program-1",
+                submittedActiveMesocycleId: "program-1",
                 submittedFavouriteGymProfileId: "gym-1",
                 didCompleteOnboarding: true,
                 acceptedHealthDisclaimerVersion: UserModel.currentHealthDisclaimerVersion

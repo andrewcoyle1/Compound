@@ -15,7 +15,7 @@ class CalorieDistributionPresenter {
 
     var selectedCalorieDistribution: CalorieDistribution?
     var trainingDaysPerWeek: Int?
-    var hasTrainingPlan: Bool = false
+    var hasMesocycle: Bool = false
 
     /// Picking an option row: record it and give the selection tick.
     func onDistributionSelected(_ value: CalorieDistribution) {
@@ -33,17 +33,17 @@ class CalorieDistributionPresenter {
     }
     
     /// The body of this was commented out against a `plan.weeks.first.scheduledWorkouts` shape that
-    /// `TrainingProgram` no longer has, so it did nothing: `hasTrainingPlan` stayed false,
+    /// `Mesocycle` no longer has, so it did nothing: `hasMesocycle` stayed false,
     /// `trainingDaysPerWeek` stayed nil, and `prefillCalorieDistribution` was never reached.
     ///
-    /// `workoutTemplates` is the program's weekly cycle — `SocialPresenter.todaysScheduledItem`
+    /// `workoutTemplates` is the mesocycle's weekly cycle — `SocialPresenter.todaysScheduledItem`
     /// indexes it by weekday, and a template with no exercises is a rest day — so the training days
     /// are the templates that have exercises.
     private func loadTrainingContext() {
-        guard let program = interactor.activeTrainingProgram else { return }
+        guard let mesocycle = interactor.activeMesocycle else { return }
 
-        hasTrainingPlan = true
-        let trainingDays = program.workoutTemplates.filter { !$0.exercises.isEmpty }.count
+        hasMesocycle = true
+        let trainingDays = mesocycle.workoutTemplates.filter { !$0.exercises.isEmpty }.count
         trainingDaysPerWeek = trainingDays
         prefillCalorieDistribution(daysPerWeek: trainingDays)
         interactor.trackEvent(event: Event.trainingContextLoaded(daysPerWeek: trainingDays))

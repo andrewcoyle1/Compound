@@ -285,7 +285,7 @@ struct TrainingExerciseSettingsPresenterTests {
 /// Every workout the user has finished, newest first.
 ///
 /// The list is headed "Completed Workouts" and counted in that header, so what it holds has to be
-/// finished work: not the session running right now, and not the rest days the active program
+/// finished work: not the session running right now, and not the rest days the active mesocycle
 /// pre-creates for dates that have not arrived.
 @MainActor
 struct TrainingWorkoutHistoryPresenterTests {
@@ -352,7 +352,7 @@ struct TrainingWorkoutHistoryPresenterTests {
         #expect(screen.presenter.workoutSessions.map(\.id) == ["done"])
     }
 
-    /// Rest days for days still to come are written ahead of time by the program. Listing one puts
+    /// Rest days for days still to come are written ahead of time by the mesocycle. Listing one puts
     /// tomorrow at the top of the user's history.
     @Test("Test A Rest Day Yet To Come Is Not In The History")
     func testARestDayYetToComeIsNotInTheHistory() {
@@ -432,35 +432,35 @@ struct TrainingWorkoutHistoryPresenterTests {
     }
 }
 
-// MARK: - Program library
+// MARK: - Mesocycle library
 
-/// The training program library: the one program in use, and the ones saved for later.
+/// The training mesocycle library: the one mesocycle in use, and the ones saved for later.
 ///
-/// The saved list has to exclude whichever program is active, or the active program appears twice —
+/// The saved list has to exclude whichever mesocycle is active, or the active mesocycle appears twice —
 /// once at the top of the screen and once among the alternatives.
 @MainActor
-struct TrainingProgramManagementPresenterTests {
+struct MesocycleManagementPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, TrainingProgramLibraryInteractor {
-        var activeTrainingProgram: TrainingProgram?
-        var trainingPrograms: [TrainingProgram] = []
-        var prebuiltPrograms: [TrainingProgram] = []
+    private final class Interactor: SpyGlobalInteractor, MesocycleLibraryInteractor {
+        var activeMesocycle: Mesocycle?
+        var mesocycles: [Mesocycle] = []
+        var prebuiltMesocycles: [Mesocycle] = []
         var deleteError: Error?
-        private(set) var activatedProgramIds: [String] = []
-        private(set) var deletedProgramIds: [String] = []
+        private(set) var activatedMesocycleIds: [String] = []
+        private(set) var deletedMesocycleIds: [String] = []
 
-        func setActiveTrainingProgram(programId: String) async throws { activatedProgramIds.append(programId) }
+        func setActiveMesocycle(mesocycleId: String) async throws { activatedMesocycleIds.append(mesocycleId) }
 
-        func deleteTrainingProgram(programId: String) async throws {
+        func deleteMesocycle(mesocycleId: String) async throws {
             if let deleteError { throw deleteError }
-            deletedProgramIds.append(programId)
+            deletedMesocycleIds.append(mesocycleId)
         }
     }
 
-    private final class Router: TrainingProgramLibraryRouter {
+    private final class Router: MesocycleLibraryRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
-        private(set) var editDelegates: [EditTrainingProgramDelegate] = []
+        private(set) var editDelegates: [EditMesocycleDelegate] = []
 
         /// Bound on the class declaring the conformance, or the protocol's default implementation
         /// runs and the alert escapes to the real router unseen.
@@ -476,53 +476,53 @@ struct TrainingProgramManagementPresenterTests {
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
         func showDevSettingsView() { shown.append("devSettings") }
-        func showProgramSettingsView(program: Binding<TrainingProgram>) { shown.append("programSettings") }
-        func showCreateProgramView(delegate: CreateProgramDelegate) { shown.append("createProgram") }
-        func showCreatePlanView() { shown.append("createPlan") }
-        func showPrebuiltProgramDetailView(program: TrainingProgram) { shown.append("prebuilt:\(program.id)") }
+        func showMesocycleSettingsView(mesocycle: Binding<Mesocycle>) { shown.append("programSettings") }
+        func showCreateMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("createProgram") }
+        func showCreateMacrocycleView() { shown.append("createPlan") }
+        func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle) { shown.append("prebuilt:\(mesocycle.id)") }
 
-        func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate) {
+        func showEditMesocycleView(delegate: EditMesocycleDelegate) {
             shown.append("editProgram")
             editDelegates.append(delegate)
         }
     }
 
     private struct Screen {
-        let presenter: TrainingProgramLibraryPresenter
+        let presenter: MesocycleLibraryPresenter
         let interactor: Interactor
         let router: Router
     }
 
-    private func makeScreen(programs: [TrainingProgram] = [], active: TrainingProgram? = nil) -> Screen {
+    private func makeScreen(mesocycles: [Mesocycle] = [], active: Mesocycle? = nil) -> Screen {
         let interactor = Interactor()
-        interactor.trainingPrograms = programs
-        interactor.activeTrainingProgram = active
+        interactor.mesocycles = mesocycles
+        interactor.activeMesocycle = active
         let router = Router()
         return Screen(
-            presenter: TrainingProgramLibraryPresenter(interactor: interactor, router: router),
+            presenter: MesocycleLibraryPresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )
     }
 
     @Test("Test The Active Program Is Left Out Of The Saved List")
-    func testTheActiveProgramIsLeftOutOfTheSavedList() {
-        let push = TrainingTabFixture.program("Push Pull Legs", id: "ppl")
-        let upper = TrainingTabFixture.program("Upper Lower", id: "ul")
-        let screen = makeScreen(programs: [push, upper], active: push)
+    func testTheActiveMesocycleIsLeftOutOfTheSavedList() {
+        let push = TrainingTabFixture.mesocycle("Push Pull Legs", id: "ppl")
+        let upper = TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
+        let screen = makeScreen(mesocycles: [push, upper], active: push)
 
-        #expect(screen.presenter.nonActiveTrainingPrograms.map(\.id) == ["ul"])
-        #expect(screen.presenter.savedPrograms.count == 2)
+        #expect(screen.presenter.nonActiveMesocycles.map(\.id) == ["ul"])
+        #expect(screen.presenter.savedMesocycles.count == 2)
     }
 
     @Test("Test With No Program In Use Every Saved Program Is Offered")
-    func testWithNoProgramInUseEverySavedProgramIsOffered() {
-        let screen = makeScreen(programs: [
-            TrainingTabFixture.program("Push Pull Legs", id: "ppl"),
-            TrainingTabFixture.program("Upper Lower", id: "ul")
+    func testWithNoMesocycleInUseEverySavedMesocycleIsOffered() {
+        let screen = makeScreen(mesocycles: [
+            TrainingTabFixture.mesocycle("Push Pull Legs", id: "ppl"),
+            TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
         ])
 
-        #expect(screen.presenter.nonActiveTrainingPrograms.map(\.id) == ["ppl", "ul"])
+        #expect(screen.presenter.nonActiveMesocycles.map(\.id) == ["ppl", "ul"])
     }
 
     /// The `onAppear`/`onDisappear` cases were declared with the screen but it had no hooks to
@@ -539,74 +539,74 @@ struct TrainingProgramManagementPresenterTests {
     }
 
     @Test("Test Deleting A Program Removes It And Is Reported")
-    func testDeletingAProgramRemovesItAndIsReported() async {
+    func testDeletingAMesocycleRemovesItAndIsReported() async {
         let screen = makeScreen()
 
-        await screen.presenter.deleteProgram(TrainingTabFixture.program("Upper Lower", id: "ul"))
+        await screen.presenter.deleteMesocycle(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
-        #expect(screen.interactor.deletedProgramIds == ["ul"])
+        #expect(screen.interactor.deletedMesocycleIds == ["ul"])
         #expect(screen.interactor.trackedEventNames == [
             "TrainingProgramLibraryView_DeleteProgram_Start",
             "TrainingProgramLibraryView_DeleteProgram_Success"
         ])
     }
 
-    /// A delete that fails is logged as a failure rather than a success, so a program that is still
+    /// A delete that fails is logged as a failure rather than a success, so a mesocycle that is still
     /// there is not reported as gone.
     @Test("Test A Failed Delete Is Reported As A Failure")
     func testAFailedDeleteIsReportedAsAFailure() async {
         let screen = makeScreen()
         screen.interactor.deleteError = TrainingTabTestError.failed
 
-        await screen.presenter.deleteProgram(TrainingTabFixture.program("Upper Lower", id: "ul"))
+        await screen.presenter.deleteMesocycle(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
-        #expect(screen.interactor.deletedProgramIds.isEmpty)
+        #expect(screen.interactor.deletedMesocycleIds.isEmpty)
         #expect(screen.interactor.trackedEventNames == [
             "TrainingProgramLibraryView_DeleteProgram_Start",
             "TrainingProgramLibraryView_DeleteProgram_Fail"
         ])
-        // And reported to the user: the program is still in the list, so the confirmed delete
+        // And reported to the user: the mesocycle is still in the list, so the confirmed delete
         // otherwise reads as having done nothing.
         #expect(screen.router.alertTitles == ["Unable to Delete Program"])
     }
 
-    /// Swiping a saved program asks first, and the question does not talk about scheduled workouts
-    /// that only the active program has.
+    /// Swiping a saved mesocycle asks first, and the question does not talk about scheduled workouts
+    /// that only the active mesocycle has.
     @Test("Test Deleting A Saved Program Asks With Saved Program Copy")
-    func testDeletingASavedProgramAsksWithSavedProgramCopy() {
-        let push = TrainingTabFixture.program("Push Pull Legs", id: "ppl")
-        let upper = TrainingTabFixture.program("Upper Lower", id: "ul")
-        let screen = makeScreen(programs: [push, upper], active: push)
+    func testDeletingASavedMesocycleAsksWithSavedMesocycleCopy() {
+        let push = TrainingTabFixture.mesocycle("Push Pull Legs", id: "ppl")
+        let upper = TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
+        let screen = makeScreen(mesocycles: [push, upper], active: push)
 
-        screen.presenter.showDeleteAlert(program: upper)
-        screen.presenter.showDeleteAlert(program: push)
+        screen.presenter.showDeleteAlert(mesocycle: upper)
+        screen.presenter.showDeleteAlert(mesocycle: push)
 
         #expect(screen.router.alertTitles == ["Delete Program", "Delete Program"])
         #expect(screen.router.alertSubtitles.first == "Delete 'Upper Lower'? This can't be undone.")
         #expect(screen.router.alertSubtitles.last??.contains("active program") == true)
-        #expect(screen.interactor.deletedProgramIds.isEmpty)
+        #expect(screen.interactor.deletedMesocycleIds.isEmpty)
     }
 
     @Test("Test Pressing A Saved Program Opens That Program For Editing")
-    func testPressingASavedProgramOpensThatProgramForEditing() {
+    func testPressingASavedMesocycleOpensThatMesocycleForEditing() {
         let screen = makeScreen()
 
-        screen.presenter.onSavedProgramPressed(TrainingTabFixture.program("Upper Lower", id: "ul"))
+        screen.presenter.onSavedMesocyclePressed(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
-        #expect(screen.router.editDelegates.first?.program.id == "ul")
+        #expect(screen.router.editDelegates.first?.mesocycle.id == "ul")
     }
 
     @Test("Test Creating A Program Opens The Builder")
-    func testCreatingAProgramOpensTheBuilder() {
+    func testCreatingAMesocycleOpensTheBuilder() {
         let screen = makeScreen()
 
-        screen.presenter.onCreateProgramPressed()
+        screen.presenter.onCreateMesocyclePressed()
 
         #expect(screen.router.shown == ["createProgram"])
     }
 }
 
-// MARK: - Workout library and the program rows
+// MARK: - Workout library and the mesocycle rows
 
 /// The workout library list, which is only a door: pressing a workout opens its detail, and the
 /// detail is handed a callback that opens the tracker once the workout is actually started.
@@ -628,17 +628,17 @@ struct TrainingWorkoutsLibraryPresenterTests {
         }
     }
 
-    /// A workout opened from the library belongs to no program, so it must not be attributed to
-    /// one — that would credit it to whatever program the user happens to be running.
+    /// A workout opened from the library belongs to no mesocycle, so it must not be attributed to
+    /// one — that would credit it to whatever mesocycle the user happens to be running.
     @Test("Test A Library Workout Opens Detached From Any Program")
-    func testALibraryWorkoutOpensDetachedFromAnyProgram() {
+    func testALibraryWorkoutOpensDetachedFromAnyMesocycle() {
         let router = Router()
         let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
 
         presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"))
 
         #expect(router.detailDelegates.first?.workoutTemplate.name == "Push")
-        #expect(router.detailDelegates.first?.trainingProgramId == nil)
+        #expect(router.detailDelegates.first?.mesocycleId == nil)
         #expect(router.detailDelegates.first?.isDeloadCycle == false)
     }
 
@@ -655,38 +655,38 @@ struct TrainingWorkoutsLibraryPresenterTests {
     }
 }
 
-/// A row in the list of programs the user is not currently running.
+/// A row in the list of mesocycles the user is not currently running.
 @MainActor
-struct TrainingProgramGroupPresenterTests {
+struct MesocycleGroupPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, TrainingProgramDisclosureGroupInteractor { }
+    private final class Interactor: SpyGlobalInteractor, MesocycleDisclosureGroupInteractor { }
 
-    private final class Router: TrainingProgramDisclosureGroupRouter {
+    private final class Router: MesocycleDisclosureGroupRouter {
         func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var editDelegates: [EditTrainingProgramDelegate] = []
+        private(set) var editDelegates: [EditMesocycleDelegate] = []
 
-        func showEditTrainingProgramView(delegate: EditTrainingProgramDelegate) { editDelegates.append(delegate) }
+        func showEditMesocycleView(delegate: EditMesocycleDelegate) { editDelegates.append(delegate) }
     }
 
-    /// The row expands to show a program's days, and pressing it opens that same program — not
+    /// The row expands to show a mesocycle's days, and pressing it opens that same mesocycle — not
     /// whichever one the list last handled.
     @Test("Test Pressing The Row Opens Its Own Program")
-    func testPressingTheRowOpensItsOwnProgram() {
+    func testPressingTheRowOpensItsOwnMesocycle() {
         let router = Router()
-        let presenter = TrainingProgramDisclosureGroupPresenter(interactor: Interactor(), router: router)
+        let presenter = MesocycleDisclosureGroupPresenter(interactor: Interactor(), router: router)
 
-        presenter.onSavedProgramPressed(TrainingTabFixture.program("Upper Lower", id: "ul"))
+        presenter.onSavedMesocyclePressed(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
-        #expect(router.editDelegates.first?.program.id == "ul")
+        #expect(router.editDelegates.first?.mesocycle.id == "ul")
     }
 
     @Test("Test Appearing And Leaving Are Both Tracked")
     func testAppearingAndLeavingAreBothTracked() {
         let interactor = Interactor()
-        let presenter = TrainingProgramDisclosureGroupPresenter(interactor: interactor, router: Router())
-        let delegate = TrainingProgramDisclosureGroupDelegate(
-            trainingProgram: TrainingTabFixture.program("Upper Lower", id: "ul")
+        let presenter = MesocycleDisclosureGroupPresenter(interactor: interactor, router: Router())
+        let delegate = MesocycleDisclosureGroupDelegate(
+            mesocycle: TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
         )
 
         presenter.onViewAppear(delegate: delegate)
@@ -697,23 +697,23 @@ struct TrainingProgramGroupPresenterTests {
     }
 }
 
-/// The section listing programs the user is not running. It owns no data of its own — the rows do —
+/// The section listing mesocycles the user is not running. It owns no data of its own — the rows do —
 /// so all it is answerable for is reporting that it was seen.
 @MainActor
-struct TrainingInactiveProgramPresenterTests {
+struct TrainingInactiveMesocyclePresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, InactiveTrainingProgramInteractor { }
+    private final class Interactor: SpyGlobalInteractor, InactiveMesocycleInteractor { }
 
-    private final class Router: InactiveTrainingProgramRouter {
+    private final class Router: InactiveMesocycleRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
 
     @Test("Test Appearing And Leaving Are Both Tracked")
     func testAppearingAndLeavingAreBothTracked() {
         let interactor = Interactor()
-        let presenter = InactiveTrainingProgramPresenter(interactor: interactor, router: Router())
-        let delegate = InactiveTrainingProgramDelegate(inactivePrograms: [
-            TrainingTabFixture.program("Upper Lower", id: "ul")
+        let presenter = InactiveMesocyclePresenter(interactor: interactor, router: Router())
+        let delegate = InactiveMesocycleDelegate(inactiveMesocycles: [
+            TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
         ])
 
         presenter.onViewAppear(delegate: delegate)

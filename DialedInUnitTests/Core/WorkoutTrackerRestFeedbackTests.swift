@@ -82,14 +82,14 @@ struct WorkoutTrackerRestFeedbackTests {
     private func session(
         exercises: [WorkoutExerciseModel],
         templateId: String? = nil,
-        programId: String? = nil
+        mesocycleId: String? = nil
     ) -> WorkoutSessionModel {
         WorkoutSessionModel(
             id: "session-1",
             authorId: "author-1",
             name: "Push Day",
             workoutTemplateId: templateId,
-            trainingProgramId: programId,
+            mesocycleId: mesocycleId,
             dateCreated: start,
             exercises: exercises
         )
@@ -100,7 +100,7 @@ struct WorkoutTrackerRestFeedbackTests {
     private func completed(
         id: String,
         templateId: String?,
-        programId: String?,
+        mesocycleId: String?,
         endedAt: Date,
         exerciseTemplateIds: [String] = ["template-e1"]
     ) -> WorkoutSessionModel {
@@ -109,7 +109,7 @@ struct WorkoutTrackerRestFeedbackTests {
             authorId: "author-1",
             name: "Push Day",
             workoutTemplateId: templateId,
-            trainingProgramId: programId,
+            mesocycleId: mesocycleId,
             dateCreated: start,
             endedAt: endedAt,
             exercises: exerciseTemplateIds.map { exerciseTemplateId in
@@ -132,10 +132,10 @@ struct WorkoutTrackerRestFeedbackTests {
         exercises: [WorkoutExerciseModel],
         settings: (inout WorkoutSettings) -> Void = { _ in },
         templateId: String? = nil,
-        programId: String? = nil
+        mesocycleId: String? = nil
     ) throws -> Screen {
         let interactor = WorkoutTrackerInteractorDouble()
-        interactor.activeSession = session(exercises: exercises, templateId: templateId, programId: programId)
+        interactor.activeSession = session(exercises: exercises, templateId: templateId, mesocycleId: mesocycleId)
         settings(&interactor.workoutSettings)
         let router = WorkoutTrackerRouterDouble()
         return Screen(
@@ -153,7 +153,7 @@ struct WorkoutTrackerRestFeedbackTests {
     func testAWorkoutWithoutATemplateFallsBackToTheExercisesOwnHistory() async throws {
         let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])])
         screen.interactor.completedSessions = [
-            completed(id: "elsewhere", templateId: "other-template", programId: nil, endedAt: start)
+            completed(id: "elsewhere", templateId: "other-template", mesocycleId: nil, endedAt: start)
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -169,7 +169,7 @@ struct WorkoutTrackerRestFeedbackTests {
             templateId: "template-1"
         )
         screen.interactor.completedSessions = [
-            completed(id: "last-time", templateId: "template-1", programId: nil, endedAt: start)
+            completed(id: "last-time", templateId: "template-1", mesocycleId: nil, endedAt: start)
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -179,18 +179,18 @@ struct WorkoutTrackerRestFeedbackTests {
     }
 
     /// The default, stored as `"anyWorkout"` for every existing user. This workout's own history,
-    /// unfiltered by program — so the more recent freehand run of the same template wins.
+    /// unfiltered by mesocycle — so the more recent freehand run of the same template wins.
     @Test("Test Same-Workout Reference Searches Every Program")
-    func testSameWorkoutReferenceSearchesEveryProgram() async throws {
+    func testSameWorkoutReferenceSearchesEveryMesocycle() async throws {
         let screen = try makeScreen(
             exercises: [exercise(id: "e1", index: 1, sets: [set(1)])],
             templateId: "template-1",
-            programId: "program-1"
+            mesocycleId: "program-1"
         )
         #expect(screen.interactor.workoutSettings.previousWorkoutReference == .sameWorkout)
         screen.interactor.completedSessions = [
-            completed(id: "old-in-program", templateId: "template-1", programId: "program-1", endedAt: start),
-            completed(id: "recent-freehand", templateId: "template-1", programId: nil, endedAt: start.addingTimeInterval(60))
+            completed(id: "old-in-program", templateId: "template-1", mesocycleId: "program-1", endedAt: start),
+            completed(id: "recent-freehand", templateId: "template-1", mesocycleId: nil, endedAt: start.addingTimeInterval(60))
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -200,20 +200,20 @@ struct WorkoutTrackerRestFeedbackTests {
         #expect(screen.presenter.previousExercises["template-e1"]?.id == "recent-freehand-template-e1")
     }
 
-    /// Turned on, the same lookup skips the more recent session logged outside the program and
+    /// Turned on, the same lookup skips the more recent session logged outside the mesocycle and
     /// reaches back to the last one done within it.
     @Test("Test In-Program Reference Skips Sessions From Outside The Program")
-    func testInProgramReferenceSkipsSessionsFromOutsideTheProgram() async throws {
+    func testInMesocycleReferenceSkipsSessionsFromOutsideTheMesocycle() async throws {
         let screen = try makeScreen(
             exercises: [exercise(id: "e1", index: 1, sets: [set(1)])],
-            settings: { $0.previousWorkoutReference = .workoutsInProgram },
+            settings: { $0.previousWorkoutReference = .workoutsInMesocycle },
             templateId: "template-1",
-            programId: "program-1"
+            mesocycleId: "program-1"
         )
         screen.interactor.completedSessions = [
-            completed(id: "old-in-program", templateId: "template-1", programId: "program-1", endedAt: start),
-            completed(id: "recent-freehand", templateId: "template-1", programId: nil, endedAt: start.addingTimeInterval(60)),
-            completed(id: "other-program", templateId: "template-1", programId: "program-2", endedAt: start.addingTimeInterval(120))
+            completed(id: "old-in-program", templateId: "template-1", mesocycleId: "program-1", endedAt: start),
+            completed(id: "recent-freehand", templateId: "template-1", mesocycleId: nil, endedAt: start.addingTimeInterval(60)),
+            completed(id: "other-program", templateId: "template-1", mesocycleId: "program-2", endedAt: start.addingTimeInterval(120))
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -223,17 +223,17 @@ struct WorkoutTrackerRestFeedbackTests {
         #expect(screen.presenter.previousExercises["template-e1"]?.id == "old-in-program-template-e1")
     }
 
-    /// A one-off workout is in no program, so there is no program for it to be "within". Filtering
+    /// A one-off workout is in no mesocycle, so there is no mesocycle for it to be "within". Filtering
     /// on nothing would blank the previous column instead of narrowing it.
     @Test("Test In-Program Reference Does Not Filter A Workout Outside Any Program")
-    func testInProgramReferenceDoesNotFilterAWorkoutOutsideAnyProgram() async throws {
+    func testInMesocycleReferenceDoesNotFilterAWorkoutOutsideAnyMesocycle() async throws {
         let screen = try makeScreen(
             exercises: [exercise(id: "e1", index: 1, sets: [set(1)])],
-            settings: { $0.previousWorkoutReference = .workoutsInProgram },
+            settings: { $0.previousWorkoutReference = .workoutsInMesocycle },
             templateId: "template-1"
         )
         screen.interactor.completedSessions = [
-            completed(id: "in-program", templateId: "template-1", programId: "program-1", endedAt: start)
+            completed(id: "in-program", templateId: "template-1", mesocycleId: "program-1", endedAt: start)
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -255,11 +255,11 @@ struct WorkoutTrackerRestFeedbackTests {
             completed(
                 id: "this-workout",
                 templateId: "template-1",
-                programId: nil,
+                mesocycleId: nil,
                 endedAt: start.addingTimeInterval(60),
                 exerciseTemplateIds: ["template-e2"]
             ),
-            completed(id: "elsewhere", templateId: "other-template", programId: nil, endedAt: start)
+            completed(id: "elsewhere", templateId: "other-template", mesocycleId: nil, endedAt: start)
         ]
 
         screen.presenter.loadPreviousWorkoutSession()
@@ -278,8 +278,8 @@ struct WorkoutTrackerRestFeedbackTests {
             templateId: "template-1"
         )
         screen.interactor.completedSessions = [
-            completed(id: "this-workout", templateId: "template-1", programId: nil, endedAt: start),
-            completed(id: "elsewhere", templateId: "other-template", programId: nil, endedAt: start.addingTimeInterval(60))
+            completed(id: "this-workout", templateId: "template-1", mesocycleId: nil, endedAt: start),
+            completed(id: "elsewhere", templateId: "other-template", mesocycleId: nil, endedAt: start.addingTimeInterval(60))
         ]
 
         screen.presenter.loadPreviousWorkoutSession()

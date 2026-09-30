@@ -26,7 +26,7 @@ struct SocialProfilePresenterTests {
         var fetchError: Error?
         var followError: Error?
         var workoutSessions: [WorkoutSessionModel] = []
-        var activeTrainingProgram: TrainingProgram?
+        var activeMesocycle: Mesocycle?
         var remoteSessions: [WorkoutSessionModel] = []
         private(set) var fetchedFollowerIds: [String] = []
         private(set) var fetchedSessionAuthorIds: [String] = []
@@ -475,17 +475,17 @@ struct SocialProfilePresenterTests {
         ])
     }
 
-    /// The program line names the reader's own program, and nobody else's without a fetch.
+    /// The mesocycle line names the reader's own mesocycle, and nobody else's without a fetch.
     @Test("Test The Program Line Shows Only On The Readers Own Profile")
-    func testTheProgramLineShowsOnlyOnTheReadersOwnProfile() {
+    func testTheMesocycleLineShowsOnlyOnTheReadersOwnProfile() {
         let screen = makeScreen()
-        screen.interactor.activeTrainingProgram = TrainingProgram(authorId: "me", name: "5/3/1", icon: "dumbbell", colour: "blue")
+        screen.interactor.activeMesocycle = Mesocycle(authorId: "me", name: "5/3/1", icon: "dumbbell", colour: "blue")
 
         screen.presenter.onViewAppear(delegate: profile("me", following: []))
-        #expect(screen.presenter.programName == "5/3/1")
+        #expect(screen.presenter.mesocycleName == "5/3/1")
 
         screen.presenter.onViewAppear(delegate: profile("friend", following: []))
-        #expect(screen.presenter.programName == nil)
+        #expect(screen.presenter.mesocycleName == nil)
     }
 
     @Test("Test Leaving The Profile Is Tracked")

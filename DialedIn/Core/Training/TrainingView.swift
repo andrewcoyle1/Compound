@@ -13,7 +13,7 @@ struct TrainingDelegate {
     }
 }
 
-struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
+struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
 
     @State var presenter: TrainingPresenter
     let delegate: TrainingDelegate
@@ -21,7 +21,7 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
     let profileTransitionId: String = "profile_button_transition"
     
     @ViewBuilder var calendarHeader: (CalendarHeaderDelegate, Binding<Bool>) -> CalendarHeaderView
-    @ViewBuilder var activeProgramContent: (TrainingProgram) -> ActiveProgramView
+    @ViewBuilder var activeMesocycleContent: (Mesocycle) -> ActiveMesocycleView
 
     @Namespace private var namespace
 
@@ -32,8 +32,8 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
             if presenter.isSearching {
                 searchResults
             } else {
-                if let program = presenter.activeTrainingProgram {
-                    activeProgramContent(program)
+                if let mesocycle = presenter.activeMesocycle {
+                    activeMesocycleContent(mesocycle)
                 } else {
                     noScheduleView
                 }
@@ -73,12 +73,12 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
     private var noScheduleView: some View {
         Section {
             ContentUnavailableView {
-                Label("No Active Training Program", systemImage: Symbol.program)
+                Label("No Active Training Program", systemImage: Symbol.mesocycle)
             } description: {
                 Text("Add a program to start compounding.")
             } actions: {
                 Button {
-                    presenter.onChooseProgramPressed()
+                    presenter.onChooseMesocyclePressed()
                 } label: {
                     Text("Choose Program")
                         .foregroundStyle(.onAccent)
@@ -88,11 +88,11 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
         }
     }
 
-    /// Everything the user has built or done: programs, workouts, exercises and the history.
+    /// Everything the user has built or done: mesocycles, workouts, exercises and the history.
     private var librarySection: some View {
         Section("Library") {
             ListRowButton(title: "Programs", systemImage: Symbol.library) {
-                presenter.onTrainingProgramLibraryView()
+                presenter.onMesocycleLibraryView()
             }
             ListRowButton(title: "Workouts", systemImage: Symbol.workout) {
                 presenter.onWorkoutLibraryPressed()
@@ -155,9 +155,9 @@ struct TrainingView<CalendarHeaderView: View, ActiveProgramView: View>: View {
                 }
                 Divider()
                 Button {
-                    presenter.onNewProgramPressed()
+                    presenter.onNewMesocyclePressed()
                 } label: {
-                    Label("New Program", systemImage: Symbol.program)
+                    Label("New Program", systemImage: Symbol.mesocycle)
                 }
                 Button {
                     presenter.onNewWorkoutPressed()
@@ -213,10 +213,10 @@ extension CoreBuilder {
                     isCalendarExpanded: isCalendarExpanded
                 )
             },
-            activeProgramContent: { program in
-                self.activeTrainingProgramView(
+            activeMesocycleContent: { mesocycle in
+                self.activeMesocycleView(
                     router: router,
-                    delegate: ActiveTrainingProgramDelegate(program: program)
+                    delegate: ActiveMesocycleDelegate(mesocycle: mesocycle)
                 )
             }
         )

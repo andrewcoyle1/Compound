@@ -114,9 +114,9 @@ struct DevToolsSettingsPresenterTests {
         static let exercisesVersion = "prebuiltExercisesSeedingVersionV2"
         static let workoutsSeeded = "hasSeededPrebuiltWorkouts"
         static let workoutsVersion = "prebuiltWorkoutsSeedingVersion"
-        static let programsSeeded = "hasSeededPrebuiltPrograms"
-        static let programsVersion = "prebuiltProgramsSeedingVersion"
-        static let all = [exercisesSeeded, exercisesVersion, workoutsSeeded, workoutsVersion, programsSeeded, programsVersion]
+        static let mesocyclesSeeded = "hasSeededPrebuiltPrograms"
+        static let mesocyclesVersion = "prebuiltProgramsSeedingVersion"
+        static let all = [exercisesSeeded, exercisesVersion, workoutsSeeded, workoutsVersion, mesocyclesSeeded, mesocyclesVersion]
     }
 
     /// Marks every seeding flag as already done, and hands back a closure that puts the defaults
@@ -127,8 +127,8 @@ struct DevToolsSettingsPresenterTests {
         UserDefaults.standard.set(9, forKey: SeedingKey.exercisesVersion)
         UserDefaults.standard.set(true, forKey: SeedingKey.workoutsSeeded)
         UserDefaults.standard.set(9, forKey: SeedingKey.workoutsVersion)
-        UserDefaults.standard.set(true, forKey: SeedingKey.programsSeeded)
-        UserDefaults.standard.set(9, forKey: SeedingKey.programsVersion)
+        UserDefaults.standard.set(true, forKey: SeedingKey.mesocyclesSeeded)
+        UserDefaults.standard.set(9, forKey: SeedingKey.mesocyclesVersion)
         return {
             for (key, value) in previous {
                 if let value {
@@ -180,17 +180,17 @@ struct DevToolsSettingsPresenterTests {
         #expect(isSeeded(SeedingKey.exercisesVersion))
     }
 
-    /// The same for programs: these are the keys `TrainingProgramManager` reads.
+    /// The same for mesocycles: these are the keys `MesocycleManager` reads.
     @Test("Test Resetting Programs Clears Only The Program Keys")
-    func testResettingProgramsClearsOnlyTheProgramKeys() async {
+    func testResettingMesocyclesClearsOnlyTheMesocycleKeys() async {
         let restore = markEverythingSeeded()
         defer { restore() }
         let screen = makeScreen()
 
-        await screen.presenter.resetProgramSeeding()
+        await screen.presenter.resetMesocycleSeeding()
 
-        #expect(!isSeeded(SeedingKey.programsSeeded))
-        #expect(!isSeeded(SeedingKey.programsVersion))
+        #expect(!isSeeded(SeedingKey.mesocyclesSeeded))
+        #expect(!isSeeded(SeedingKey.mesocyclesVersion))
         #expect(isSeeded(SeedingKey.workoutsSeeded))
         #expect(isSeeded(SeedingKey.exercisesSeeded))
     }

@@ -27,10 +27,10 @@ func onboardingStageUser(
 ) -> UserModel {
     let dateOfBirth = Calendar.current.date(from: DateComponents(year: 1990, month: 4, day: 12))
     // The order `inferredOnboardingStep` checks its fields in. Gym profile really does come before
-    // the training program there, even though `OnboardingStep.orderIndex` lists them the other way.
+    // the training mesocycle there, even though `OnboardingStep.orderIndex` lists them the other way.
     let order: [OnboardingStep] = [
         .completeAccountSetup, .healthDisclaimer, .goalSetting,
-        .gymProfileSetup, .trainingProgramSetup, .customiseProgram, .complete
+        .gymProfileSetup, .mesocycleSetup, .customiseProgram, .complete
     ]
     // Every step strictly before `step` has been answered; `step` itself has not, so the fields
     // that step fills in are the first ones left empty.
@@ -53,7 +53,7 @@ func onboardingStageUser(
         submittedDailyActivityLevel: setupDone ? .moderate : nil,
         submittedCardioFitnessLevel: setupDone ? .intermediate : nil,
         submittedCurrentGoalId: answered(.goalSetting) ? "goal-1" : nil,
-        submittedActiveTrainingProgramId: answered(.trainingProgramSetup) ? "program-1" : nil,
+        submittedActiveMesocycleId: answered(.mesocycleSetup) ? "program-1" : nil,
         submittedFavouriteGymProfileId: answered(.gymProfileSetup) ? "gym-1" : nil,
         didCompleteOnboarding: step == .complete,
         acceptedHealthDisclaimerVersion: answered(.healthDisclaimer) ? UserModel.currentHealthDisclaimerVersion : nil
@@ -205,7 +205,7 @@ struct OnboardingWelcomePresenterTests {
         #expect(screen.router.shown == ["customisingDietProgram"])
     }
 
-    /// `handleNavigation` is the callback the gym and program steps fire when they finish, so it
+    /// `handleNavigation` is the callback the gym and mesocycle steps fire when they finish, so it
     /// has to be safe to call when the session has gone away underneath it.
     @Test("Re-navigating without a signed-in user does nothing")
     func testReNavigatingWithoutAUserDoesNothing() {
@@ -217,7 +217,7 @@ struct OnboardingWelcomePresenterTests {
         #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 
-    /// The gym and program steps call back into this, so it routes on the profile as it stands
+    /// The gym and mesocycle steps call back into this, so it routes on the profile as it stands
     /// *now* — after the step that just finished wrote to it.
     @Test("Re-navigating routes on the profile as it now stands")
     func testReNavigatingRoutesOnTheProfileAsItNowStands() {
@@ -226,7 +226,7 @@ struct OnboardingWelcomePresenterTests {
         screen.presenter.handleNavigation()
         // The gym step has finished and written its id, so the next call must move on rather than
         // sending the user back to the gym screen a second time.
-        screen.interactor.currentUser = onboardingStageUser(upTo: .trainingProgramSetup)
+        screen.interactor.currentUser = onboardingStageUser(upTo: .mesocycleSetup)
         screen.presenter.handleNavigation()
 
         #expect(screen.router.shown == ["gymProfileSetup", "trainingProgramSetup"])

@@ -34,7 +34,7 @@ struct WorkoutSessionManagerTests {
     private func session(
         id: String,
         templateId: String? = nil,
-        programId: String? = nil,
+        mesocycleId: String? = nil,
         daysAgo: Int = 0,
         ended: Bool = true,
         exerciseTemplateIds: [String] = []
@@ -45,7 +45,7 @@ struct WorkoutSessionManagerTests {
             authorId: "author-1",
             name: "Push Day",
             workoutTemplateId: templateId,
-            trainingProgramId: programId,
+            mesocycleId: mesocycleId,
             dateCreated: date,
             endedAt: ended ? date.addingTimeInterval(3600) : nil,
             exercises: exerciseTemplateIds.map { exercise(templateId: $0) }
@@ -142,12 +142,12 @@ struct WorkoutSessionManagerTests {
         #expect(try await manager.getLastWorkoutSessionForTemplate(templateId: "legs") == nil)
     }
 
-    /// The same lookup, narrowed to one program. Passing no program searches everything, which is
+    /// The same lookup, narrowed to one mesocycle. Passing no mesocycle searches everything, which is
     /// what every caller did before `previousWorkoutReference` was honoured.
     @Test("Test The Last Session Can Be Narrowed To One Program")
-    func testTheLastSessionCanBeNarrowedToOneProgram() async throws {
+    func testTheLastSessionCanBeNarrowedToOneMesocycle() async throws {
         let manager = await TestManagers.signedInWorkoutSessionManager(sessions: [
-            session(id: "in-program", templateId: "push", programId: "program-1", daysAgo: 10),
+            session(id: "in-program", templateId: "push", mesocycleId: "program-1", daysAgo: 10),
             session(id: "freehand", templateId: "push", daysAgo: 1)
         ])
 
@@ -160,15 +160,15 @@ struct WorkoutSessionManagerTests {
         let narrowed = try await manager.getLastCompletedSessionForTemplate(
             templateId: "push",
             authorId: "author-1",
-            inTrainingProgramId: "program-1"
+            inMesocycleId: "program-1"
         )
         #expect(narrowed?.id == "in-program")
     }
 
-    /// A program with nothing logged in it yet has no previous session, rather than borrowing one
+    /// A mesocycle with nothing logged in it yet has no previous session, rather than borrowing one
     /// from outside it.
     @Test("Test A Program With No History Has No Last Session")
-    func testAProgramWithNoHistoryHasNoLastSession() async throws {
+    func testAMesocycleWithNoHistoryHasNoLastSession() async throws {
         let manager = await TestManagers.signedInWorkoutSessionManager(sessions: [
             session(id: "freehand", templateId: "push", daysAgo: 1)
         ])
@@ -176,7 +176,7 @@ struct WorkoutSessionManagerTests {
         let narrowed = try await manager.getLastCompletedSessionForTemplate(
             templateId: "push",
             authorId: "author-1",
-            inTrainingProgramId: "program-1"
+            inMesocycleId: "program-1"
         )
 
         #expect(narrowed == nil)
@@ -219,17 +219,17 @@ struct WorkoutSessionManagerTests {
     }
 
     @Test("Test The Exercise Lookup Can Be Narrowed To One Program And Limited")
-    func testTheExerciseLookupCanBeNarrowedToOneProgramAndLimited() async throws {
+    func testTheExerciseLookupCanBeNarrowedToOneMesocycleAndLimited() async throws {
         let manager = await TestManagers.signedInWorkoutSessionManager(sessions: [
-            session(id: "in-program-old", templateId: "push", programId: "program-1", daysAgo: 10, exerciseTemplateIds: ["bench"]),
-            session(id: "in-program-new", templateId: "chest", programId: "program-1", daysAgo: 2, exerciseTemplateIds: ["bench"]),
+            session(id: "in-program-old", templateId: "push", mesocycleId: "program-1", daysAgo: 10, exerciseTemplateIds: ["bench"]),
+            session(id: "in-program-new", templateId: "chest", mesocycleId: "program-1", daysAgo: 2, exerciseTemplateIds: ["bench"]),
             session(id: "freehand", templateId: "push", daysAgo: 1, exerciseTemplateIds: ["bench"])
         ])
 
         let narrowed = try await manager.getLastCompletedSessionsContainingExercise(
             exerciseTemplateId: "bench",
             authorId: "author-1",
-            inTrainingProgramId: "program-1"
+            inMesocycleId: "program-1"
         )
         #expect(narrowed.map(\.id) == ["in-program-new", "in-program-old"])
 

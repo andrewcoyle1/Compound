@@ -107,7 +107,7 @@ class SpyOnboardingRouter: OnboardingStepRouter {
     func showHealthDisclaimerView() { record("healthDisclaimer") }
     func showGoalSettingView() { record("goalSetting") }
     func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { record("gymProfileSetup") }
-    func showOnboardingTrainingProgramView(delegate: CreateProgramDelegate) { record("trainingProgramSetup") }
+    func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { record("trainingProgramSetup") }
     func showCustomisingDietProgramView() { record("customisingDietProgram") }
     func showOnboardingCompletedView() { record("onboardingCompleted") }
 }

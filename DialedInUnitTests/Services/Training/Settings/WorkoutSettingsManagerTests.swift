@@ -22,7 +22,7 @@ struct WorkoutSettingsManagerTests {
         settings.rirTracking = true
         settings.defaultRestDurationSeconds = 150
         settings.useRestTimers = false
-        settings.previousWorkoutReference = .workoutsInProgram
+        settings.previousWorkoutReference = .workoutsInMesocycle
         return settings
     }
 
@@ -66,7 +66,7 @@ struct WorkoutSettingsManagerTests {
         #expect(loaded)
         #expect(manager.workoutSettings.defaultRestDurationSeconds == 150)
         #expect(manager.workoutSettings.useRestTimers == false)
-        #expect(manager.workoutSettings.previousWorkoutReference == .workoutsInProgram)
+        #expect(manager.workoutSettings.previousWorkoutReference == .workoutsInMesocycle)
     }
 
     // MARK: - Saving

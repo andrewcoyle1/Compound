@@ -17,16 +17,16 @@ struct TodayPresenterTests {
         var userId: String? = "me"
         var userImageUrl: String?
         var currentUser: UserModel? = DashboardFixture.user("me")
-        var activeTrainingProgram: TrainingProgram?
-        var currentTrainingPlan: TrainingPlan?
+        var activeMesocycle: Mesocycle?
+        var currentMacrocycle: Macrocycle?
         var workoutSessions: [WorkoutSessionModel] = []
         private(set) var repeatPlanCount = 0
 
-        /// The program followed from the start of time, so every fixture session counts.
-        var activeProgramRun: ProgramSchedule.Run? {
-            activeTrainingProgram.map { ProgramSchedule.Run(program: $0, startedAt: .distantPast) }
+        /// The mesocycle followed from the start of time, so every fixture session counts.
+        var activeMesocycleRun: MesocycleSchedule.Run? {
+            activeMesocycle.map { MesocycleSchedule.Run(mesocycle: $0, startedAt: .distantPast) }
         }
-        func repeatCurrentTrainingPlan() async throws { repeatPlanCount += 1 }
+        func repeatCurrentMacrocycle() async throws { repeatPlanCount += 1 }
         var activeSession: WorkoutSessionModel?
         var draftMeal: MealLogModel?
         var bodyMeasurements: [BodyMeasurementEntry] = []
@@ -75,7 +75,7 @@ struct TodayPresenterTests {
         func showDevSettingsView() { shown.append("devSettings") }
         func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
         func showWorkoutTrackerView() { shown.append("workoutTracker") }
-        func showTrainingProgramLibraryView() { shown.append("programs") }
+        func showMesocycleLibraryView() { shown.append("programs") }
         func showLogWeightView() { shown.append("logWeight") }
         func showCheckInView(delegate: CheckInDelegate) { shown.append("checkIn") }
         func showWeeklyReviewView() { shown.append("weeklyReview") }
@@ -104,16 +104,16 @@ struct TodayPresenterTests {
     // MARK: Workout
 
     @Test("Test There Is No Todays Workout Without A Program")
-    func testThereIsNoTodaysWorkoutWithoutAProgram() {
+    func testThereIsNoTodaysWorkoutWithoutAMesocycle() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.hasActiveProgram == false)
+        #expect(screen.presenter.hasActiveMesocycle == false)
         #expect(screen.presenter.todaysWorkoutTemplate == nil)
     }
 
-    /// With a program running, the card offers the next day plan in the rotation.
+    /// With a mesocycle running, the card offers the next day plan in the rotation.
     @Test("Test An Active Program Offers Todays Workout")
-    func testAnActiveProgramOffersTodaysWorkout() {
+    func testAnActiveMesocycleOffersTodaysWorkout() {
         let screen = makeScreen()
         let template = WorkoutTemplateModel(
             id: "push",
@@ -121,11 +121,11 @@ struct TodayPresenterTests {
             name: "Push",
             exercises: [WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)]
         )
-        screen.interactor.activeTrainingProgram = TrainingProgram(
+        screen.interactor.activeMesocycle = Mesocycle(
             id: "program-1", authorId: "me", name: "Base", icon: "dumbbell", colour: "#FF0000", workoutTemplates: [template]
         )
 
-        #expect(screen.presenter.hasActiveProgram)
+        #expect(screen.presenter.hasActiveMesocycle)
         #expect(screen.presenter.todaysWorkoutTemplate?.id == "push")
     }
 

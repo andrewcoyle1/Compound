@@ -6,9 +6,9 @@ enum DefineWorkoutTopSectionStyle: Hashable {
     /// Always shows the target-muscles summary section.
     case standaloneWorkout
     
-    /// Program design flow. If the day has no exercises, show the "Rest Day" header section.
+    /// Mesocycle design flow. If the day has no exercises, show the "Rest Day" header section.
     /// Otherwise, show target-muscles summary.
-    case programDay
+    case mesocycleDay
 }
 
 struct DefineWorkoutDelegate {
@@ -48,7 +48,7 @@ struct DefineWorkoutView: View {
     
     @ViewBuilder
     private var topSection: some View {
-        if delegate.topSectionStyle == .programDay, presenter.exercises.isEmpty {
+        if delegate.topSectionStyle == .mesocycleDay, presenter.exercises.isEmpty {
             restDaySection
         } else {
             targetMusclesSection

@@ -21,6 +21,10 @@ protocol NutritionRouter: GlobalRouter {
     func showTimelineActionsView(delegate: TimelineActionsDelegate)
     func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate)
     func showNutritionOverviewView(delegate: NutritionOverviewDelegate)
+    func showFoodsView()
+    func showRecipesView()
+    func showFoodDetailView(delegate: FoodDetailDelegate)
+    func showRecipeDetailView(delegate: RecipeDetailDelegate)
 }
 
 extension CoreRouter: NutritionRouter { }

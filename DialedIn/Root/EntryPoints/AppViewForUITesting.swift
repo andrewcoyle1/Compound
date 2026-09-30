@@ -103,7 +103,8 @@ extension AppViewForUITesting {
         let builder = builder
         let interactor = interactor
         return [
-            ("STARTSCREEN_DASHBOARD", { builder.dashboardView(router: $0, delegate: DashboardDelegate()).any() }),
+            ("STARTSCREEN_TODAY", { builder.todayView(router: $0, delegate: TodayDelegate()).any() }),
+            ("STARTSCREEN_SOCIAL", { builder.socialView(router: $0, delegate: SocialDelegate()).any() }),
             ("STARTSCREEN_TRAINING", { builder.trainingView(delegate: TrainingDelegate(), router: $0).any() }),
             ("STARTSCREEN_WORKOUT_TRACKER", { router in
                 ActiveSessionScreen(interactor: interactor) { try? builder.workoutTrackerView(router: router) }.any()
@@ -171,14 +172,13 @@ extension AppViewForUITesting {
             ("STARTSCREEN_SIRI", { builder.siriView(router: $0, delegate: SiriDelegate()).any() }),
             ("STARTSCREEN_WHY_SUBSCRIBE", { builder.subscriptionView(router: $0).any() }),
             ("STARTSCREEN_PAYWALL", { builder.paywallView(router: $0, isOnboarding: true).any() }),
-            ("STARTSCREEN_SEARCH", { builder.searchView(router: $0).any() }),
             ("STARTSCREEN_FOLLOWERS", {
                 builder.followersListView(router: $0, delegate: FollowersListDelegate(followers: UserModel.mocks)).any()
             }),
             // MARK: - Invites
-            // The Dashboard receiving the mock invite link, as a tapped `compound://join/` would.
+            // Social receiving the mock invite link, as a tapped `compound://join/` would.
             ("STARTSCREEN_INVITE", { router in
-                builder.dashboardView(router: router, delegate: DashboardDelegate())
+                builder.socialView(router: router, delegate: SocialDelegate())
                     .task {
                         try? await Task.sleep(for: .seconds(1))
                         DeepLink.join(code: MockInviteService.sampleCode).post()

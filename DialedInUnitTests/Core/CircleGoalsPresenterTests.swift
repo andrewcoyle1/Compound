@@ -82,13 +82,13 @@ struct WeeklyGoalPresenterTests {
 @MainActor
 struct DashboardCircleGoalsPresenterTests {
 
-    private typealias Interactor = DashboardFeedPresenterTests.Interactor
-    private typealias Router = DashboardFeedPresenterTests.Router
+    private typealias Interactor = SocialFeedPresenterTests.Interactor
+    private typealias Router = SocialFeedPresenterTests.Router
 
     private var earlyToday: Date { Calendar.current.startOfDay(for: .now).addingTimeInterval(3600) }
 
     private struct Screen {
-        let presenter: DashboardPresenter
+        let presenter: SocialPresenter
         let interactor: Interactor
         let router: Router
     }
@@ -97,7 +97,7 @@ struct DashboardCircleGoalsPresenterTests {
         let interactor = Interactor()
         interactor.followingUsers = following
         let router = Router()
-        return Screen(presenter: DashboardPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
+        return Screen(presenter: SocialPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
     }
 
     @Test("Test Each Face Carries Its Weeks Sessions And Goal")

@@ -29,6 +29,8 @@ struct NutritionPresenterTests {
         var currentDietPlan: DietPlan?
         var userImageUrl: String?
         var foodLogSettings = FoodLogSettings(authorId: "user-1")
+        var foods: [FoodModel] = []
+        var userRecipeTemplates: [RecipeTemplateModel] = []
 
         /// Keyed by day, the way `MealLogManager` serves the screen.
         var mealsByDayKey: [String: [MealLogModel]] = [:]
@@ -80,7 +82,6 @@ struct NutritionPresenterTests {
         // module compiled in.
         func showDevSettingsView() { shown.append("devSettings") }
 
-        func showAddMealView(delegate: AddMealDelegate) { shown.append("addMeal") }
         func showMealDetailView(delegate: MealDetailDelegate) { shown.append("mealDetail") }
         func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) {
             shown.append("mealItemAmount")
@@ -90,6 +91,15 @@ struct NutritionPresenterTests {
         func showTimelineActionsView(delegate: TimelineActionsDelegate) { shown.append("timelineActions") }
         func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate) { shown.append("foodLogSettings") }
         func showNutritionOverviewView(delegate: NutritionOverviewDelegate) { shown.append("nutritionOverview") }
+        func showFoodsView() { shown.append("foods") }
+        func showRecipesView() { shown.append("recipes") }
+        func showFoodDetailView(delegate: FoodDetailDelegate) { shown.append("foodDetail") }
+        func showRecipeDetailView(delegate: RecipeDetailDelegate) { shown.append("recipeDetail") }
+        private(set) var addMealDelegates: [AddMealDelegate] = []
+        func showAddMealView(delegate: AddMealDelegate) {
+            shown.append("addMeal")
+            addMealDelegates.append(delegate)
+        }
     }
 
     private struct Screen {
@@ -623,5 +633,56 @@ struct NutritionPresenterTests {
         screen.presenter.onViewMealPressed(meal(id: "m1", hour: 9))
 
         #expect(screen.router.shown == ["nutritionOverview", "timelineActions", "foodLogSettings", "mealDetail"])
+    }
+
+    // MARK: - Log meal, library and search
+
+    /// The toolbar's Log Meal opens a meal on the day being looked at: now on today, midday on
+    /// another day.
+    @Test("Test Log Meal Opens A Meal On The Selected Day")
+    func testLogMealOpensAMealOnTheSelectedDay() {
+        let screen = makeScreen()
+        screen.presenter.selectedDate = monday
+
+        screen.presenter.onLogMealPressed()
+
+        #expect(screen.router.shown == ["addMeal"])
+        #expect(screen.router.addMealDelegates.first?.mealLog.dayKey == monday.dayKey)
+        #expect(Calendar.current.component(.hour, from: screen.router.addMealDelegates.first?.mealLog.date ?? .distantPast) == 12)
+
+        screen.presenter.selectedDate = Date()
+        screen.presenter.onLogMealPressed()
+        #expect(screen.router.addMealDelegates.last?.mealLog.dayKey == Date().dayKey)
+    }
+
+    @Test("Test The Library Rows Open Foods And Recipes")
+    func testTheLibraryRowsOpenFoodsAndRecipes() {
+        let screen = makeScreen()
+
+        screen.presenter.onFoodsPressed()
+        screen.presenter.onRecipesPressed()
+
+        #expect(screen.router.shown == ["foods", "recipes"])
+    }
+
+    /// Foods and recipes match on name ignoring case and punctuation; recipes also on ingredients.
+    @Test("Test Search Matches Foods And Recipes")
+    func testSearchMatchesFoodsAndRecipes() {
+        let screen = makeScreen()
+        let oats = FoodModel(ingredientId: "oats", name: "Rolled Oats")
+        screen.interactor.foods = [oats, FoodModel(ingredientId: "egg", name: "Egg")]
+        screen.interactor.userRecipeTemplates = [
+            RecipeTemplateModel(id: "porridge", authorId: "user-1", name: "Porridge", dateCreated: .now, dateModified: .now)
+        ]
+
+        #expect(screen.presenter.isSearching == false)
+        screen.presenter.searchString = "  OATS! "
+
+        #expect(screen.presenter.isSearching)
+        #expect(screen.presenter.filteredFoods.map(\.id) == ["oats"])
+        #expect(screen.presenter.filteredRecipes.isEmpty)
+
+        screen.presenter.onFoodResultPressed(oats)
+        #expect(screen.router.shown == ["foodDetail"])
     }
 }

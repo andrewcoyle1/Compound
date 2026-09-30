@@ -88,6 +88,8 @@ enum Symbol {
 
     // Actions
     static let add = "plus"
+    /// Starting a workout now, as opposed to building one.
+    static let start = "play"
     static let edit = "pencil"
     static let delete = "trash"
     static let close = "xmark"

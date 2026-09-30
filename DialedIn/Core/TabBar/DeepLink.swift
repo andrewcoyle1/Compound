@@ -16,35 +16,42 @@ enum DeepLink: Equatable {
 
     case tab(Tab)
 
-    /// One workout session, from a like, comment or mention push. Lands on the Dashboard, which
-    /// then opens it — with its comments on top when `openComments` is set.
+    /// One workout session, from a like, comment or mention push. Lands on Social, which then
+    /// opens it — with its comments on top when `openComments` is set.
     case session(id: String, authorId: String, openComments: Bool)
 
-    /// The notifications screen, from a follow-request push. Lands on the Dashboard, which opens it
-    /// from its bell.
+    /// The notifications screen, from a follow-request push. Lands on Social, which opens it from
+    /// its bell.
     case notifications
 
-    /// `compound://join/<code>`, an invite a friend sent. Lands on the Dashboard, which accepts it
-    /// and opens the inviter's profile. The code is already normalised by `InviteCode`.
+    /// `compound://join/<code>`, an invite a friend sent. Lands on Social, which accepts it and
+    /// opens the inviter's profile. The code is already normalised by `InviteCode`.
     case join(code: String)
 
     /// `compound://workout`, from the Today's Workout widget. Opens the tracker when a session is
-    /// under way, otherwise the Dashboard, whose today card starts one.
+    /// under way, otherwise Today, whose workout card starts one.
     case workout
 
-    /// The tab bar's roots, and the `TabView`'s selection. `search` is SwiftUI's own tab, owned
-    /// through `Tab(role: .search)`.
+    /// The tab bar's roots, and the `TabView`'s selection. One job each: Today is what to do now,
+    /// Training and Nutrition are the plan and the library for each, Progress is the trends, and
+    /// Social is everyone else.
     enum Tab: String, CaseIterable, Identifiable {
-        case dashboard
+        case today
         case training
         case nutrition
-        case analytics
-        case search
+        case progress
+        case social
 
-        /// The search tab was labelled "Add" until it settled on being search. Links and push
-        /// payloads written against the old name still land on it.
+        /// Names from before the tabs were split by job still land somewhere sensible: links,
+        /// push payloads and a restored scene can all carry them. "dashboard" held both Today and
+        /// Social, and Today is the default; "search" (once "add") was a launcher for what Today
+        /// now holds.
         init?(name: String) {
-            self.init(rawValue: name == "add" ? "search" : name)
+            switch name {
+            case "dashboard", "search", "add": self = .today
+            case "analytics": self = .progress
+            default: self.init(rawValue: name)
+            }
         }
 
         var id: String { rawValue }
@@ -83,7 +90,7 @@ enum DeepLink: Equatable {
     }
 
     /// Asks the tab bar to show this destination from inside the app — the Dashboard's empty feed
-    /// sending you to the Add tab's people search, for one. Goes through `NotificationCenter` rather
+    /// sending you to Social's people search, for one. Goes through `NotificationCenter` rather
     /// than the `compound://` scheme so iOS does not prompt to open the app from itself.
     func post() {
         switch self {

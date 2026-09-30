@@ -277,8 +277,8 @@ struct ChallengesPresenterTests {
     // MARK: Dashboard card
 
     @Test("Test The Dashboard Card Shows My Sessions And The Top Three")
-    func testDashboardCard() async {
-        let interactor = DashboardFeedPresenterTests.Interactor()
+    func testTodayCard() async {
+        let interactor = SocialFeedPresenterTests.Interactor()
         interactor.followingUsers = [DashboardFixture.user("amy"), DashboardFixture.user("zed")]
         let running = challenge()
         let ended = ChallengeModel(
@@ -287,8 +287,8 @@ struct ChallengesPresenterTests {
         )
         interactor.challenges = [running, ended]
         interactor.challengeProgressById = ["c1": ["amy": 4, "me": 2, "zed": 3, "stranger": 1]]
-        let router = DashboardFeedPresenterTests.Router()
-        let presenter = DashboardPresenter(interactor: interactor, router: router)
+        let router = SocialFeedPresenterTests.Router()
+        let presenter = SocialPresenter(interactor: interactor, router: router)
 
         #expect(presenter.challengeCards.map(\.id) == ["c1"], "ended challenges drop off the Dashboard")
         let card = presenter.challengeCards.first
@@ -306,7 +306,7 @@ struct ChallengesPresenterTests {
 
     @Test("Test The Section Hides With No Circle And No Challenges")
     func testSectionHidesWhenEmpty() {
-        let presenter = DashboardPresenter(interactor: DashboardFeedPresenterTests.Interactor(), router: DashboardFeedPresenterTests.Router())
+        let presenter = SocialPresenter(interactor: SocialFeedPresenterTests.Interactor(), router: SocialFeedPresenterTests.Router())
         #expect(!presenter.showsChallengesSection)
     }
 }

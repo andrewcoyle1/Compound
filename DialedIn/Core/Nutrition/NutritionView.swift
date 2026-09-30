@@ -30,11 +30,21 @@ struct NutritionView<
 
     var body: some View {
         List {
-            mealLogSection
-            moreSection
+            if presenter.isSearching {
+                searchResults
+            } else {
+                if presenter.timelineHours.isEmpty {
+                    emptyDaySection
+                } else {
+                    mealLogSection
+                }
+                librarySection
+                moreSection
+            }
         }
         .scrollIndicators(.hidden)
         .navigationTitle("Nutrition")
+        .searchable(text: $presenter.searchString, placement: .toolbar, prompt: Text("Foods and recipes"))
         .minimizingLargeTitleBar()
         .onAppear { presenter.onViewAppear(delegate: delegate) }
         .onDisappear { presenter.onViewDisappear(delegate: delegate) }
@@ -157,6 +167,41 @@ struct NutritionView<
         }
     }
 
+    /// With Hide Empty Hours on and nothing logged, the timeline has no hours and so no add
+    /// buttons; this keeps the day's one job reachable.
+    private var emptyDaySection: some View {
+        Section {
+            ContentUnavailableView {
+                Label("Nothing Logged", systemImage: Symbol.meal)
+            } description: {
+                Text("Meals you log for this day appear here.")
+            } actions: {
+                Button {
+                    presenter.onLogMealPressed()
+                } label: {
+                    Text("Log Meal")
+                        .foregroundStyle(.onAccent)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    // MARK: - Library
+
+    /// The foods and recipes the user has made, which were otherwise reachable only from inside
+    /// Add Meal.
+    private var librarySection: some View {
+        Section("Library") {
+            ListRowButton(title: String(localized: "Foods"), systemImage: Symbol.food) {
+                presenter.onFoodsPressed()
+            }
+            ListRowButton(title: String(localized: "Recipes"), systemImage: Symbol.recipe) {
+                presenter.onRecipesPressed()
+            }
+        }
+    }
+
     // MARK: - More
 
     private var moreSection: some View {
@@ -167,11 +212,26 @@ struct NutritionView<
             ListRowButton(title: String(localized: "Customize Food Log"), systemImage: Symbol.settings) {
                 presenter.onCustomiseFoodLogPressed()
             }
-        } header: {
-            Text("More")
         }
     }
-    
+
+    // MARK: - Search
+
+    @ViewBuilder
+    private var searchResults: some View {
+        if presenter.filteredFoods.isEmpty && presenter.filteredRecipes.isEmpty {
+            ContentUnavailableView.search(text: presenter.searchString)
+                .removeListRowFormatting()
+        } else {
+            SearchResultSection(title: String(localized: "Recipes"), items: presenter.filteredRecipes) {
+                presenter.onRecipeResultPressed($0)
+            }
+            SearchResultSection(title: String(localized: "Foods"), items: presenter.filteredFoods) {
+                presenter.onFoodResultPressed($0)
+            }
+        }
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         
@@ -187,6 +247,15 @@ struct NutritionView<
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         #endif
         
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                presenter.onLogMealPressed()
+            } label: {
+                Image(systemName: Symbol.add)
+            }
+            .accessibilityLabel("Log meal")
+        }
+
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 isCalendarExpanded = true

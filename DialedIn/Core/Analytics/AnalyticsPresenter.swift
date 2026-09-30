@@ -539,6 +539,15 @@ class AnalyticsPresenter {
         router.showWeeklyReviewView()
     }
 
+    func onLogWeightPressed() {
+        router.showLogWeightView()
+    }
+
+    /// Body Metrics is where each measurement is logged from.
+    func onLogMeasurementPressed() {
+        router.showBodyMetricsView(delegate: BodyMetricsDelegate(isPushed: true))
+    }
+
     enum Event: LoggableEvent {
         case onAppear(delegate: AnalyticsDelegate)
         case onDisappear(delegate: AnalyticsDelegate)

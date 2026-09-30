@@ -18,21 +18,20 @@ struct TabBarScreen: Identifiable {
     @ViewBuilder var screen: () -> AnyView
 }
 
-struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: View>: View {
+struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View>: View {
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State var presenter: TabBarPresenter
 
-    /// The selected tab, by `DeepLink.Tab.rawValue`, so the app reopens where it was left.
-    @SceneStorage("selectedTab") private var storedTab: String = DeepLink.Tab.dashboard.rawValue
+    /// The selected tab, by `DeepLink.Tab.rawValue`, so the app reopens where it was left. Read back
+    /// through `Tab(name:)`, so a scene saved on a tab that has since been renamed still restores.
+    @SceneStorage("selectedTab") private var storedTab: String = DeepLink.Tab.today.rawValue
 
     var tabs: [TabBarScreen]
     
     @ViewBuilder var trainingAccessoryView: (TrainingAccessoryDelegate) -> TrainingTabAccessory
     @ViewBuilder var mealAccessoryView: (MealAccessoryDelegate) -> MealTabAccessory
-    
-    @ViewBuilder var searchView: () -> Search
 
     var body: some View {
         TabView(selection: $presenter.selectedTab) {
@@ -42,14 +41,7 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
                 } label: {
                     Label(tab.title, systemImage: tab.systemImage)
                 }
-                .badge(tab.tab == .dashboard ? presenter.unreadActivityCount : 0)
-            }
-
-            // The search tab is SwiftUI's own, so it has no `TabBarScreen` to take a title from.
-            Tab(value: DeepLink.Tab.search, role: .search) {
-                searchView()
-            } label: {
-                Label("Search", systemImage: "magnifyingglass")
+                .badge(tab.tab == .social ? presenter.unreadActivityCount : 0)
             }
         }
         // `compound://tab/nutrition` and the equivalent push payload land here. This is the only
@@ -62,7 +54,7 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
             presenter.onPushNotificationReceived()
         }
         .onAppear {
-            presenter.onViewAppear(restoredTab: DeepLink.Tab(rawValue: storedTab))
+            presenter.onViewAppear(restoredTab: DeepLink.Tab(name: storedTab))
         }
         .onChange(of: presenter.selectedTab) { _, tab in
             storedTab = tab.rawValue
@@ -72,7 +64,7 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View, Search: Vi
             presenter.onSelectTabNotificationReceived(notification)
         }
         .tabViewStyle(.sidebarAdaptable)
-        // Screens that lay out wider on iPad and Mac (Dashboard, Analytics) read this. Regular width
+        // Screens that lay out wider on iPad and Mac (Today, Social, Progress) read this. Regular width
         // is where `.sidebarAdaptable` shows the sidebar.
         .layoutMode(horizontalSizeClass == .compact ? .tabBar : .splitView)
         .tabBarMinimizeBehavior(.onScrollDown)
@@ -100,64 +92,40 @@ extension CoreBuilder {
             },
             mealAccessoryView: { delegate in
                 self.mealAccessoryView(router: router, delegate: delegate)
-            },
-            searchView: {
-                RouterView { router in
-                    self.searchView(router: router)
-                }
             }
         )
     }
 
-    /// The four root tabs. Extracted from `tabBarView` so that function stays inside the
-    /// body-length limit.
+    /// The five root tabs, one job each. Search is not a tab: each tab searches its own content.
     private var tabBarScreens: [TabBarScreen] {
         [
-            TabBarScreen(
-                tab: .dashboard,
-                title: String(localized: "Dashboard"),
-                systemImage: "house",
-                screen: {
-                    RouterView { router in
-                        self.dashboardView(router: router, delegate: DashboardDelegate())
-                    }
-                    .any()
-                }
-            ),
-            TabBarScreen(
-                tab: .training,
-                title: String(localized: "Training"),
-                systemImage: "dumbbell",
-                screen: {
-                    RouterView { router in
-                        self.trainingView(delegate: TrainingDelegate(), router: router)
-                    }
-                    .any()
-                }
-            ),
-            TabBarScreen(
-                tab: .nutrition,
-                title: String(localized: "Nutrition"),
-                systemImage: "carrot",
-                screen: {
-                    RouterView { router in
-                        self.nutritionView(delegate: NutritionDelegate(), router: router)
-                    }
-                    .any()
-                }
-            ),
-            TabBarScreen(
-                tab: .analytics,
-                title: String(localized: "Analytics"),
-                systemImage: "chart.bar.xaxis",
-                screen: {
-                    RouterView { router in
-                        self.analyticsView(delegate: AnalyticsDelegate(), router: router)
-                    }
-                    .any()
-                }
-            )
+            tabBarScreen(.today, title: String(localized: "Today"), systemImage: "house") { router in
+                self.todayView(router: router, delegate: TodayDelegate()).any()
+            },
+            tabBarScreen(.training, title: String(localized: "Training"), systemImage: "dumbbell") { router in
+                self.trainingView(delegate: TrainingDelegate(), router: router).any()
+            },
+            tabBarScreen(.nutrition, title: String(localized: "Nutrition"), systemImage: "carrot") { router in
+                self.nutritionView(delegate: NutritionDelegate(), router: router).any()
+            },
+            tabBarScreen(.progress, title: String(localized: "Progress"), systemImage: "chart.line.uptrend.xyaxis") { router in
+                self.analyticsView(delegate: AnalyticsDelegate(), router: router).any()
+            },
+            tabBarScreen(.social, title: String(localized: "Social"), systemImage: "person.2") { router in
+                self.socialView(router: router, delegate: SocialDelegate()).any()
+            }
         ]
+    }
+
+    private func tabBarScreen(
+        _ tab: DeepLink.Tab,
+        title: String,
+        systemImage: String,
+        root: @escaping (AnyRouter) -> AnyView
+    ) -> TabBarScreen {
+        TabBarScreen(tab: tab, title: title, systemImage: systemImage) {
+            RouterView { router in root(router) }.any()
+        }
     }
 
 }

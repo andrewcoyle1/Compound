@@ -413,10 +413,10 @@ struct AppShellTabBarPresenterTests {
         MealLogModel(authorId: "user-1", dayKey: "2026-03-04", date: Date(timeIntervalSince1970: 0), items: [])
     }
 
-    /// The Dashboard tab's badge is for something to answer: unread comments and mentions. A read
+    /// The Social tab's badge is for something to answer: unread comments and mentions. A read
     /// one, or a like or follow, must not keep the badge up.
-    @Test("Test The Dashboard Badge Counts Only Unread Comments And Mentions")
-    func testTheDashboardBadgeCountsOnlyUnreadCommentsAndMentions() {
+    @Test("Test The Social Badge Counts Only Unread Comments And Mentions")
+    func testTheSocialBadgeCountsOnlyUnreadCommentsAndMentions() {
         let screen = makeScreen()
         #expect(screen.presenter.unreadActivityCount == 0)
 
@@ -438,14 +438,14 @@ struct AppShellTabBarPresenterTests {
         screen.presenter.onViewAppear(restoredTab: .nutrition)
         #expect(screen.presenter.selectedTab == .nutrition)
 
-        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/analytics"])
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/progress"])
         screen.presenter.onViewAppear(restoredTab: .nutrition)
-        #expect(screen.presenter.selectedTab == .analytics)
+        #expect(screen.presenter.selectedTab == .progress)
     }
 
     /// A follow request waiting on an answer is something to act on, so it counts like unread activity.
-    @Test("Test The Dashboard Badge Includes Pending Follow Requests")
-    func testTheDashboardBadgeIncludesPendingFollowRequests() {
+    @Test("Test The Social Badge Includes Pending Follow Requests")
+    func testTheSocialBadgeIncludesPendingFollowRequests() {
         let screen = makeScreen()
         screen.interactor.activityNotifications = [activity(id: "1", type: .comment, isRead: false)]
         screen.interactor.incomingFollowRequests = [
@@ -469,12 +469,12 @@ struct AppShellTabBarPresenterTests {
 
     // MARK: - Where the app starts
 
-    /// The tab bar opens on the Dashboard. Anyone who has not been sent anywhere lands here.
-    @Test("Test The Tab Bar Opens On The Dashboard")
-    func testTheTabBarOpensOnTheDashboard() {
+    /// The tab bar opens on Today. Anyone who has not been sent anywhere lands here.
+    @Test("Test The Tab Bar Opens On Today")
+    func testTheTabBarOpensOnToday() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.selectedTab == .dashboard)
+        #expect(screen.presenter.selectedTab == .today)
     }
 
     // MARK: - Deep links
@@ -526,39 +526,46 @@ struct AppShellTabBarPresenterTests {
     func testAPushPayloadSelectsTheSameTabAsALink() {
         let screen = makeScreen()
 
-        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/analytics"])
+        screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: ["deep_link": "compound://tab/progress"])
         screen.presenter.onPushNotificationReceived()
 
-        #expect(screen.presenter.selectedTab == .analytics)
+        #expect(screen.presenter.selectedTab == .progress)
     }
 
-    /// The in-app route: the Dashboard's empty feed sending the user to the Search tab's people
-    /// search, without iOS prompting to open the app from itself.
+    /// The in-app route: a screen asking for another tab, without iOS prompting to open the app
+    /// from itself.
     @Test("Test An In App Request Selects The Tab")
     func testAnInAppRequestSelectsTheTab() {
         let screen = makeScreen()
 
         screen.presenter.onSelectTabNotificationReceived(
-            Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": "search"])
+            Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": "social"])
         )
 
-        #expect(screen.presenter.selectedTab == .search)
+        #expect(screen.presenter.selectedTab == .social)
     }
 
-    /// The search tab was called "Add" until it settled on being search. Links and pushes written
-    /// against the old name still land on it rather than doing nothing.
-    @Test("Test The Old Add Name Still Reaches The Search Tab")
-    func testTheOldAddNameStillReachesTheSearchTab() throws {
+    /// Tab names from before the split still land somewhere: links, push payloads and a saved scene
+    /// can all carry them. "dashboard", "search" and "add" go to Today; "analytics" to Progress.
+    @Test("Test Retired Tab Names Still Land", arguments: [
+        ("dashboard", DeepLink.Tab.today),
+        ("search", .today),
+        ("add", .today),
+        ("analytics", .progress)
+    ])
+    func testRetiredTabNamesStillLand(name: String, tab: DeepLink.Tab) throws {
         let screen = makeScreen()
+        screen.presenter.selectedTab = .training
 
-        screen.presenter.onOpenURL(try #require(URL(string: "compound://tab/add")))
-        #expect(screen.presenter.selectedTab == .search)
+        screen.presenter.onOpenURL(try #require(URL(string: "compound://tab/\(name)")))
+        #expect(screen.presenter.selectedTab == tab)
 
         screen.presenter.selectedTab = .training
         screen.presenter.onSelectTabNotificationReceived(
-            Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": "add"])
+            Notification(name: Constants.selectTab, object: nil, userInfo: ["tab": name])
         )
-        #expect(screen.presenter.selectedTab == .search)
+        #expect(screen.presenter.selectedTab == tab)
+        #expect(DeepLink.Tab(name: name) == tab)
     }
 
     /// A push with no destination in it is dropped silently. It is not an error — plenty of
@@ -573,33 +580,33 @@ struct AppShellTabBarPresenterTests {
             Notification(name: Constants.selectTab, object: nil, userInfo: nil)
         )
 
-        #expect(screen.presenter.selectedTab == .dashboard)
+        #expect(screen.presenter.selectedTab == .today)
         #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 
     /// A like, comment or mention push carries the session and its author; the tab bar lands on
-    /// the Dashboard, which opens it. A comment or mention also opens the thread.
-    @Test("Test A Session Push Parses Its Fields And Selects The Dashboard")
-    func testASessionPushParsesItsFieldsAndSelectsTheDashboard() {
+    /// Social, which opens it. A comment or mention also opens the thread.
+    @Test("Test A Session Push Parses Its Fields And Selects Social")
+    func testASessionPushParsesItsFieldsAndSelectsSocial() {
         let payload: [AnyHashable: Any] = ["tab": "dashboard", "type": "mention", "session_id": "s1", "session_author_id": "u1", "actor_id": "a1"]
         #expect(DeepLink(pushUserInfo: payload) == .session(id: "s1", authorId: "u1", openComments: true))
         #expect(DeepLink(pushUserInfo: ["type": "like", "session_id": "s1", "session_author_id": "u1"]) == .session(id: "s1", authorId: "u1", openComments: false))
-        // A follow has no session, so it is just the Dashboard tab.
-        #expect(DeepLink(pushUserInfo: ["tab": "dashboard", "type": "follow", "session_id": "", "session_author_id": ""]) == .tab(.dashboard))
+        // A follow has no session, so it is just the tab it names.
+        #expect(DeepLink(pushUserInfo: ["tab": "social", "type": "follow", "session_id": "", "session_author_id": ""]) == .tab(.social))
 
         let screen = makeScreen()
         screen.presenter.selectedTab = .training
         screen.interactor.pendingDeepLink = DeepLink(pushUserInfo: payload)
         screen.presenter.onPushNotificationReceived()
 
-        #expect(screen.presenter.selectedTab == .dashboard)
+        #expect(screen.presenter.selectedTab == .social)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Session"])
     }
 
-    /// A follow-request push lands on the Dashboard and asks it to open the notifications screen,
-    /// even if it also carries a tab.
-    @Test("Test A Follow Request Push Opens Notifications From The Dashboard")
-    func testAFollowRequestPushOpensNotificationsFromTheDashboard() async {
+    /// A follow-request push lands on Social and asks it to open the notifications screen, even if
+    /// it also carries a tab.
+    @Test("Test A Follow Request Push Opens Notifications From Social")
+    func testAFollowRequestPushOpensNotificationsFromSocial() async {
         let payload: [AnyHashable: Any] = ["tab": "dashboard", "type": "follow_request", "session_id": "", "session_author_id": "", "actor_id": "a1"]
         #expect(DeepLink(pushUserInfo: payload) == .notifications)
 
@@ -615,7 +622,7 @@ struct AppShellTabBarPresenterTests {
         screen.presenter.onPushNotificationReceived()
 
         #expect(await TestManagers.eventually { opened })
-        #expect(screen.presenter.selectedTab == .dashboard)
+        #expect(screen.presenter.selectedTab == .social)
         #expect(screen.interactor.trackedEventNames == ["TabBarView_DeepLink_Notifications"])
     }
 

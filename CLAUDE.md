@@ -465,7 +465,7 @@ Eight `custom_rules` in `.swiftlint.yml` enforce this at **error** severity, and
 `swiftlint --strict`: `no_corner_radius_modifier`, `no_foreground_color`, `no_fixed_font_size`,
 `no_rgb_color_literal`, `no_bare_with_animation`, `accent_spelling`, `no_color_scheme_surfaces`
 and `no_drawn_close_button`. They skip comments. Share cards
-(`Core/Dashboard/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
+(`Core/Social/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
 the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
 cannot apply. If a rule fires, use the token; do not suppress it.
 

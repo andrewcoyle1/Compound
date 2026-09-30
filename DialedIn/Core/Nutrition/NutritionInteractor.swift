@@ -15,6 +15,8 @@ protocol NutritionInteractor: ReminderOfferInteractor {
     var currentDietPlan: DietPlan? { get }
     var userImageUrl: String? { get }
     var foodLogSettings: FoodLogSettings { get }
+    var foods: [FoodModel] { get }
+    var userRecipeTemplates: [RecipeTemplateModel] { get }
     func getMeals(for dayKey: String) throws -> [MealLogModel]
     func getDailyTotals(dayKey: String) throws -> DailyMacroTarget
     func getDailyTarget(for date: Date, userId: String) async throws -> DailyMacroTarget?

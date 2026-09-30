@@ -129,7 +129,7 @@ class AppPresenter {
     /// The banner opens Notifications, where the activity it announced is.
     func onActivityBannerPressed() {
         activityBanner = nil
-        DeepLink.tab(.dashboard).post()
+        DeepLink.tab(.social).post()
         DeepLink.notifications.post()
     }
 

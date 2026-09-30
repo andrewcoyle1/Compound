@@ -169,8 +169,8 @@ struct WidgetSnapshotTests {
         #expect(interactor.trackedEventNames == ["TabBarView_DeepLink_Workout"])
     }
 
-    @Test("Test The Workout Link Lands On The Dashboard With Nothing Under Way")
-    func testTheWorkoutLinkLandsOnTheDashboardWithNothingUnderWay() {
+    @Test("Test The Workout Link Lands On Today With Nothing Under Way")
+    func testTheWorkoutLinkLandsOnTodayWithNothingUnderWay() {
         let router = TabBarRouterDouble()
         let presenter = TabBarPresenter(interactor: TabBarInteractorDouble(), router: router)
         presenter.selectedTab = .nutrition
@@ -178,7 +178,7 @@ struct WidgetSnapshotTests {
         presenter.onOpenURL(WidgetSnapshotStore.workoutURL)
 
         #expect(router.trackerShown == 0)
-        #expect(presenter.selectedTab == .dashboard)
+        #expect(presenter.selectedTab == .today)
     }
 
     private final class TabBarInteractorDouble: SpyGlobalInteractor, TabBarInteractor {

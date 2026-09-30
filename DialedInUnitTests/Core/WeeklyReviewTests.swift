@@ -276,10 +276,10 @@ struct WeeklyReviewTests {
         #expect(interactor.trackedEventNames.contains("WeeklyReviewView_Share_Pressed"))
     }
 
-    @Test("Test The Dashboard Card Opens The Weekly Review")
-    func testDashboardCardRoutes() {
-        let router = DashboardFeedPresenterTests.Router()
-        let presenter = DashboardPresenter(interactor: DashboardFeedPresenterTests.Interactor(), router: router)
+    @Test("Test The Today Card Opens The Weekly Review")
+    func testTodayCardRoutes() {
+        let router = TodayPresenterTests.Router()
+        let presenter = TodayPresenter(interactor: TodayPresenterTests.Interactor(), router: router)
         presenter.onWeeklyReviewPressed()
         #expect(router.shown == ["weeklyReview"])
     }

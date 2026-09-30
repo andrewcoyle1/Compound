@@ -280,6 +280,71 @@ final class NutritionPresenter {
         router.showNutritionOverviewView(delegate: NutritionOverviewDelegate(dayKey: dayKey))
     }
 
+    func onFoodsPressed() {
+        router.showFoodsView()
+    }
+
+    func onRecipesPressed() {
+        router.showRecipesView()
+    }
+
+    // MARK: - Log meal
+
+    /// The toolbar's Log Meal. Now on today; on a past or future day, midday, so the meal lands on
+    /// the day being looked at. The hour headers' own buttons log at their hour.
+    func onLogMealPressed() {
+        guard let userId = interactor.currentUser?.userId else { return }
+        let calendar = Calendar.current
+        let date = calendar.isDateInToday(selectedDate)
+            ? Date()
+            : calendar.date(bySettingHour: 12, minute: 0, second: 0, of: selectedDate) ?? selectedDate
+        let newMeal = MealLogModel(authorId: userId, dayKey: date.dayKey, date: date, items: [])
+        guard let draft = interactor.draftMeal else {
+            router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
+            return
+        }
+        router.showDraftMealDialog(
+            onContinue: { [weak self] in
+                Task { @MainActor in self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: draft)) }
+            },
+            onStartNew: { [weak self] in
+                Task { @MainActor in
+                    try? self?.interactor.deleteDraftMeal()
+                    self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
+                }
+            }
+        )
+    }
+
+    // MARK: - Search
+
+    /// Nutrition's search field: the user's foods and recipes.
+    var searchString: String = ""
+
+    var isSearching: Bool {
+        SearchMatch.isSearching(searchString)
+    }
+
+    var filteredFoods: [FoodModel] {
+        interactor.foods
+            .filter { SearchMatch.matches(searchString, [$0.name, $0.description]) }
+            .sortedByKeyPath(keyPath: \.name, ascending: true)
+    }
+
+    var filteredRecipes: [RecipeTemplateModel] {
+        interactor.userRecipeTemplates
+            .filter { SearchMatch.matches(searchString, [$0.name, $0.description] + $0.ingredients.map(\.name)) }
+            .sortedByKeyPath(keyPath: \.name, ascending: true)
+    }
+
+    func onFoodResultPressed(_ food: FoodModel) {
+        router.showFoodDetailView(delegate: FoodDetailDelegate(food: food))
+    }
+
+    func onRecipeResultPressed(_ recipe: RecipeTemplateModel) {
+        router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
+    }
+
     /// Going over the day's calorie goal by a little is not worth flagging, so the ring only
     /// reads as over once this allowance on top of the goal is used up too.
     static let calorieGrace: Double = 100

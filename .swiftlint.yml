@@ -46,8 +46,8 @@ custom_rules:
     excluded:
       # .iconSize(_:) is built on a @ScaledMetric point size.
       - "DialedIn/Components/DesignSystem/Typography.swift"
-      - "DialedIn/Core/Dashboard/ShareCard/"
-      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "DialedIn/Core/Social/ShareCard/"
+      - "DialedIn/Core/Today/WeeklyReview/WeeklyReviewShareCardView.swift"
       - "WorkoutSessionActivity/"
   no_rgb_color_literal:
     name: "No RGB colour literal"
@@ -57,8 +57,8 @@ custom_rules:
     excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
     excluded:
       - "DialedIn/Components/DesignSystem/"
-      - "DialedIn/Core/Dashboard/ShareCard/"
-      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "DialedIn/Core/Social/ShareCard/"
+      - "DialedIn/Core/Today/WeeklyReview/WeeklyReviewShareCardView.swift"
       - "WorkoutSessionActivity/"
   no_bare_with_animation:
     name: "No bare withAnimation"

@@ -16,6 +16,9 @@ struct MicrocycleItemRow: View {
             // Full contrast: a finished day still opens its session, and the checkmark says it is done.
             WorkoutTemplateRow(workoutTemplate: item.workoutTemplate)
             Spacer()
+            if item.isToday {
+                Chip("Today")
+            }
             // A checkmark when done. Otherwise a chevron, because the row opens the workout: the empty
             // circle it used to show is `ListRow`'s unchecked option.
             Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "chevron.forward")

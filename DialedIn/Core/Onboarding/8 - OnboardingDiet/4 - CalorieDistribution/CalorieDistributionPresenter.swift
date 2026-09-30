@@ -36,7 +36,7 @@ class CalorieDistributionPresenter {
     /// `TrainingProgram` no longer has, so it did nothing: `hasTrainingPlan` stayed false,
     /// `trainingDaysPerWeek` stayed nil, and `prefillCalorieDistribution` was never reached.
     ///
-    /// `workoutTemplates` is the program's weekly cycle — `DashboardPresenter.todaysScheduledItem`
+    /// `workoutTemplates` is the program's weekly cycle — `SocialPresenter.todaysScheduledItem`
     /// indexes it by weekday, and a template with no exercises is a rest day — so the training days
     /// are the templates that have exercises.
     private func loadTrainingContext() {

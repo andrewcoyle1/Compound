@@ -97,15 +97,15 @@ struct ReviewPromptPolicyTests {
 
     @MainActor
     private struct Screen {
-        let interactor = DashboardFeedPresenterTests.Interactor()
-        let router = DashboardFeedPresenterTests.Router()
-        let presenter: DashboardPresenter
+        let interactor = SocialFeedPresenterTests.Interactor()
+        let router = SocialFeedPresenterTests.Router()
+        let presenter: SocialPresenter
 
-        init() { presenter = DashboardPresenter(interactor: interactor, router: router) }
+        init() { presenter = SocialPresenter(interactor: interactor, router: router) }
     }
 
     @Test("Test The Dashboard Card Waits For The Fifth Session")
-    func testTheDashboardCardWaitsForTheFifthSession() async {
+    func testTheTodayCardWaitsForTheFifthSession() async {
         await withStandardDefaults(sessions: 4, dismissed: false) {
             #expect(!Screen().presenter.showsInviteCard)
         }

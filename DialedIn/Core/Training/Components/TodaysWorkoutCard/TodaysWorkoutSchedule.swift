@@ -4,7 +4,7 @@
 //
 //  Which day plan of the active program falls on today, and whether it is done. Lifted out of
 //  `TodaysWorkoutCardPresenter` so the home-screen widget snapshot reads the same answer as the
-//  card. `DashboardPresenter` still holds its own copy of this body.
+//  card. `SocialPresenter` still holds its own copy of this body.
 //
 
 import Foundation

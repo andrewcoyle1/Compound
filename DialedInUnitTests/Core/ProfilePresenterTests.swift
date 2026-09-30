@@ -40,7 +40,6 @@ struct ProfilePresenterTests {
         func showAccountView(delegate: AccountDelegate) { shown.append("account") }
         func showNotificationsView() { shown.append("notifications") }
         func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { shown.append("notificationSettings") }
-        func showExercisesView() { shown.append("exercises") }
         func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
         func showGymProfilesView() { shown.append("gymProfiles") }
         func showTutorialsView(delegate: TutorialsDelegate) { shown.append("tutorials") }
@@ -51,7 +50,6 @@ struct ProfilePresenterTests {
         func showSiriView(delegate: SiriDelegate) { shown.append("siri") }
         func showLegalView(delegate: LegalDelegate) { shown.append("legal") }
         func showPaywall() { shown.append("paywall") }
-        func showShortcutsView(delegate: ShortcutsDelegate) { shown.append("shortcuts") }
         func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate) { shown.append("customiseAnalytics") }
         func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate) { shown.append("foodLogSettings") }
         func showExpenditureSettingsView(delegate: ExpenditureSettingsDelegate) { shown.append("expenditureSettings") }
@@ -160,10 +158,9 @@ struct ProfilePresenterTests {
         let screen = makeScreen()
 
         screen.presenter.onGymProfilesPressed()
-        screen.presenter.onExerciseLibraryPressed()
         screen.presenter.onWorkoutSettingsPressed()
 
-        #expect(screen.router.shown == ["gymProfiles", "exercises", "workoutSettings"])
+        #expect(screen.router.shown == ["gymProfiles", "workoutSettings"])
     }
 
     /// Notification Settings was reachable only from the gear on Notifications.

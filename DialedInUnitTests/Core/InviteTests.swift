@@ -115,9 +115,9 @@ struct InviteDeepLinkTests {
         #expect(DeepLink(url: try #require(URL(string: "compound://join/PUSH2340"))) == nil)
     }
 
-    /// The tab bar lands on the Dashboard and asks it to accept.
-    @Test("Test A Join Link Selects The Dashboard And Asks It To Accept")
-    func testAJoinLinkSelectsTheDashboardAndAsksItToAccept() async throws {
+    /// The tab bar lands on Social and asks it to accept.
+    @Test("Test A Join Link Selects Social And Asks It To Accept")
+    func testAJoinLinkSelectsSocialAndAsksItToAccept() async throws {
         let interactor = TabBarInteractorDouble()
         let presenter = TabBarPresenter(interactor: interactor, router: TabBarRouterDouble())
         presenter.selectedTab = .training
@@ -130,7 +130,7 @@ struct InviteDeepLinkTests {
         presenter.onOpenURL(try #require(URL(string: "compound://join/push2345")))
 
         #expect(await TestManagers.eventually { received == "PUSH2345" })
-        #expect(presenter.selectedTab == .dashboard)
+        #expect(presenter.selectedTab == .social)
         #expect(interactor.trackedEventNames == ["TabBarView_DeepLink_Join"])
     }
 
@@ -151,7 +151,7 @@ struct InviteDeepLinkTests {
     }
 }
 
-/// Accepting, shared by the Dashboard (links) and Search (typed codes).
+/// Accepting, shared by links and typed codes, both on Social.
 @MainActor
 struct InviteAcceptFlowTests {
 
@@ -231,16 +231,16 @@ struct InviteAcceptFlowTests {
         #expect(interactor.shownToasts.isEmpty)
     }
 
-    /// The Dashboard answers the tab bar's notification with the same flow.
-    @Test("Test The Dashboard Accepts A Relayed Invite")
-    func testTheDashboardAcceptsARelayedInvite() async {
-        let interactor = DashboardFeedPresenterTests.Interactor()
-        let router = DashboardFeedPresenterTests.Router()
-        let presenter = DashboardPresenter(interactor: interactor, router: router)
+    /// Social answers the tab bar's notification with the same flow.
+    @Test("Test Social Accepts A Relayed Invite")
+    func testSocialAcceptsARelayedInvite() async {
+        let interactor = SocialFeedPresenterTests.Interactor()
+        let router = SocialFeedPresenterTests.Router()
+        let presenter = SocialPresenter(interactor: interactor, router: router)
 
         presenter.onAcceptInviteNotificationReceived(Notification(name: Constants.acceptInvite, object: nil, userInfo: ["code": "PUSH2345"]))
 
-        // The double refuses every code, so the Dashboard shows why.
+        // The double refuses every code, so Social shows why.
         #expect(await TestManagers.eventually { interactor.trackedEventNames.contains("Invite_Accept_Fail") })
     }
 }

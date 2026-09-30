@@ -1,5 +1,5 @@
 //
-//  DashboardPresenterTests.swift
+//  SocialPresenterTests.swift
 //  DialedInUnitTests
 //
 //  Created by Andrew Coyle on 21/09/2026.
@@ -12,7 +12,7 @@ import SwiftUI
 
 enum DashboardTestError: Error { case failed }
 
-/// Fixtures for the Dashboard and the social screens behind it.
+/// Fixtures for the Social tab and the screens behind it.
 ///
 /// Dates are fixed and deliberately not today, so anything reaching for the current date instead of
 /// the one it was handed fails rather than passing by coincidence.
@@ -52,9 +52,9 @@ enum DashboardFixture {
     }
 }
 
-// MARK: - Dashboard
+// MARK: - Social
 
-/// The Dashboard: the carousel of cards and, below it, the workout feed.
+/// The Social tab: the workout feed, and finding people.
 ///
 /// The feed is the risk. It mixes the signed-in user's own sessions with those of everyone they
 /// follow, and every row is attributed to a person — so the two things that must never go wrong are
@@ -64,14 +64,21 @@ enum DashboardFixture {
 /// statically, so a double can never see them; the alert methods are requirements and this double
 /// really does intercept them.
 @MainActor
-struct DashboardFeedPresenterTests {
+struct SocialFeedPresenterTests {
 
-    /// Internal rather than private so `DashboardCirclePresenterTests` can share the doubles.
-    final class Interactor: SpyGlobalInteractor, DashboardInteractor {
+    /// Internal rather than private so `SocialCirclePresenterTests` can share the doubles.
+    final class Interactor: SpyGlobalInteractor, SocialInteractor {
         var userId: String? = "me"
+        /// Nil makes every code unknown; set it to accept a code as coming from that person.
+        var acceptedInviter: UserModel?
+        private(set) var acceptedInviteCodes: [String] = []
         func acceptInvite(code: String) async throws -> (inviter: UserModel, acceptance: InviteAcceptance) {
-            throw InviteError.notFound
+            guard let acceptedInviter else { throw InviteError.notFound }
+            acceptedInviteCodes.append(code)
+            return (acceptedInviter, InviteAcceptance(inviterId: acceptedInviter.userId, youFollow: .following, theyFollow: .following))
         }
+        var remoteUsers: [UserModel] = []
+        func searchUsers(query: String) async throws -> [UserModel] { remoteUsers }
         var inviteFails = false
         func myInvite() async throws -> InviteModel {
             if inviteFails { throw InviteError.unavailable }
@@ -81,18 +88,6 @@ struct DashboardFeedPresenterTests {
         var currentUser: UserModel? = DashboardFixture.user("me")
         var draftMeal: MealLogModel?
 
-        // MARK: - ReminderOfferInteractor
-        var privateUserSettings = PrivateUserSettings()
-        var currentStreakData = CurrentStreakData(streakKey: "workout")
-        var canRequestAuthorisation = false
-        private(set) var streakReminderWrites: [Bool] = []
-        func canRequestNotificationAuthorisation() async -> Bool { canRequestAuthorisation }
-        func requestPushAuthorisation() async throws -> Bool { true }
-        func setMealReminders(isEnabled: Bool) async throws { privateUserSettings.pushMealReminders = isEnabled }
-        func setStreakReminder(isEnabled: Bool) async throws {
-            privateUserSettings.socialPushStreakReminder = isEnabled
-            streakReminderWrites.append(isEnabled)
-        }
         var workoutSessions: [WorkoutSessionModel] = []
         var activityNotifications: [ActivityNotificationModel] = []
         var incomingFollowRequests: [FollowRequestModel] = []
@@ -172,7 +167,7 @@ struct DashboardFeedPresenterTests {
 
     /// `showDevSettingsView()` is declared unguarded: the protocol wraps it in `#if DEV || MOCK` but
     /// the test target builds without those flags.
-    final class Router: DashboardRouter {
+    final class Router: SocialRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []
@@ -213,17 +208,17 @@ struct DashboardFeedPresenterTests {
     }
 
     private struct Screen {
-        let presenter: DashboardPresenter
+        let presenter: SocialPresenter
         let interactor: Interactor
         let router: Router
-        let delegate = DashboardDelegate()
+        let delegate = SocialDelegate()
     }
 
     private func makeScreen() -> Screen {
         let interactor = Interactor()
         let router = Router()
         return Screen(
-            presenter: DashboardPresenter(interactor: interactor, router: router),
+            presenter: SocialPresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )
@@ -459,120 +454,6 @@ struct DashboardFeedPresenterTests {
         #expect(screen.presenter.author(for: session) == nil)
     }
 
-    // MARK: Cards
-
-    @Test("Test There Is No Todays Workout Without A Program")
-    func testThereIsNoTodaysWorkoutWithoutAProgram() {
-        let screen = makeScreen()
-
-        #expect(screen.presenter.hasActiveProgram == false)
-        #expect(screen.presenter.todaysWorkoutTemplate == nil)
-        #expect(screen.presenter.isTodayCompleted == false)
-    }
-
-    /// With a program running, the card offers the next day plan in the rotation, and nothing is
-    /// marked done until a session says so.
-    @Test("Test An Active Program Offers Todays Workout")
-    func testAnActiveProgramOffersTodaysWorkout() {
-        let screen = makeScreen()
-        let template = WorkoutTemplateModel(
-            id: "push",
-            authorId: "me",
-            name: "Push",
-            exercises: [WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)]
-        )
-        screen.interactor.activeTrainingProgram = TrainingProgram(
-            id: "program-1",
-            authorId: "me",
-            name: "Base",
-            icon: "dumbbell",
-            colour: "#FF0000",
-            workoutTemplates: [template]
-        )
-
-        #expect(screen.presenter.hasActiveProgram)
-        #expect(screen.presenter.todaysWorkoutTemplate?.id == "push")
-        #expect(screen.presenter.isTodayCompleted == false)
-    }
-
-    // MARK: Nutrition card
-
-    /// The card is filled on appear rather than on a refresh, so opening the tab after logging
-    /// breakfast shows breakfast.
-    @Test("Test Appearing Loads Todays Nutrition Totals And Target")
-    func testAppearingLoadsTodaysNutritionTotalsAndTarget() async {
-        let screen = makeScreen()
-        screen.interactor.totals = DailyMacroTarget(calories: 900, proteinGrams: 50, carbGrams: 80, fatGrams: 30)
-        screen.interactor.target = DailyMacroTarget.mock
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-        await TestManagers.eventually { screen.presenter.nutritionTarget != nil }
-
-        #expect(screen.presenter.nutritionTotals?.calories == 900)
-        #expect(screen.presenter.nutritionTarget?.calories == DailyMacroTarget.mock.calories)
-        // Today's key, not a stored one: the card is always about the day the user is looking at.
-        #expect(screen.interactor.totalsDayKeys == [Date().dayKey])
-    }
-
-    /// A day with nothing logged throws rather than returning zeroes, and the card falls back to its
-    /// own defaults — it must not take the screen down with it.
-    @Test("Test A Failed Totals Read Leaves The Card Empty")
-    func testAFailedTotalsReadLeavesTheCardEmpty() {
-        let screen = makeScreen()
-        screen.interactor.totals = nil
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.presenter.nutritionTotals == nil)
-    }
-
-    // MARK: Logging a meal
-
-    /// The common case: a tap opens a fresh meal, authored by the signed-in user and dated today.
-    @Test("Test Logging A Meal Opens A New Meal For Today")
-    func testLoggingAMealOpensANewMealForToday() {
-        let screen = makeScreen()
-
-        screen.presenter.onLogMealPressed()
-
-        #expect(screen.router.shown == ["addMeal"])
-        #expect(screen.router.addMealDelegates.first?.mealLog.authorId == "me")
-        #expect(screen.router.addMealDelegates.first?.mealLog.dayKey == Date().dayKey)
-        #expect(screen.router.alertTitles.isEmpty)
-    }
-
-    /// A half-finished meal is unsaved work. Rather than silently starting a second one, the user is
-    /// asked what to do with the one they already have.
-    @Test("Test A Draft Meal Asks Before Starting Another")
-    func testADraftMealAsksBeforeStartingAnother() {
-        let screen = makeScreen()
-        screen.interactor.draftMeal = MealLogModel(
-            authorId: "me",
-            dayKey: Date().dayKey,
-            date: Date(),
-            items: []
-        )
-
-        screen.presenter.onLogMealPressed()
-
-        #expect(screen.router.alertTitles == ["Draft Meal"])
-        #expect(screen.router.shown.isEmpty)
-        #expect(screen.interactor.deletedDraftCount == 0)
-    }
-
-    /// Signed out there is nobody to author the meal, so nothing happens rather than a meal logged
-    /// against an empty user id.
-    @Test("Test Logging A Meal Does Nothing Without A Signed In User")
-    func testLoggingAMealDoesNothingWithoutASignedInUser() {
-        let screen = makeScreen()
-        screen.interactor.currentUser = nil
-
-        screen.presenter.onLogMealPressed()
-
-        #expect(screen.router.shown.isEmpty)
-        #expect(screen.router.alertTitles.isEmpty)
-    }
-
     // MARK: Notifications and navigation
 
     @Test("Test Activity Notifications Come Straight From The Interactor")
@@ -625,27 +506,76 @@ struct DashboardFeedPresenterTests {
         #expect(screen.router.shown == ["notifications"])
     }
 
-    /// People search lives on the Search tab and only the tab bar can select a tab, so the empty
-    /// feed's call to action asks for it through `NotificationCenter` rather than navigating itself.
-    @Test("Test Find People Asks The Tab Bar For The Search Tab")
-    func testFindPeopleAsksTheTabBarForTheSearchTab() async {
+    /// People search is this screen's own field, so the feed's call to action opens it.
+    @Test("Test Find People Opens The Search Field")
+    func testFindPeopleOpensTheSearchField() {
         let screen = makeScreen()
-        var receivedTab: String?
-        let observer = NotificationCenter.default.addObserver(
-            forName: Constants.selectTab,
-            object: nil,
-            queue: .main
-        ) { notification in
-            receivedTab = notification.userInfo?["tab"] as? String
-        }
-        defer { NotificationCenter.default.removeObserver(observer) }
 
         screen.presenter.onFindPeoplePressed()
-        await TestManagers.eventually { receivedTab != nil }
 
-        #expect(receivedTab == DeepLink.Tab.search.rawValue)
-        #expect(screen.interactor.trackedEventNames.contains("DashboardView_FindPeople_Press"))
+        #expect(screen.presenter.isSearchPresented)
+        #expect(screen.interactor.trackedEventNames.contains("SocialView_FindPeople_Press"))
         #expect(screen.router.shown.isEmpty)
+    }
+
+    // MARK: People search
+
+    @Test("Test Tapping A Person Opens Their Profile")
+    func testTappingAPersonOpensTheirProfile() {
+        let screen = makeScreen()
+
+        screen.presenter.onPersonPressed(user: DashboardFixture.user("friend"))
+
+        #expect(screen.router.shown == ["socialProfile:friend"])
+    }
+
+    /// A blocked account is left out of search, as it is out of the feed and the circle.
+    @Test("Test Search Leaves Out Blocked Followed Accounts")
+    func testSearchLeavesOutBlockedFollowedAccounts() {
+        let screen = makeScreen()
+        screen.interactor.currentUser = UserModel(userId: "me", blockedUserIds: ["blocked"])
+        screen.interactor.followingUsers = [DashboardFixture.user("friend", firstName: "Ben"), DashboardFixture.user("blocked", firstName: "Benny")]
+
+        screen.presenter.peopleSearch.query = "ben"
+
+        #expect(screen.presenter.peopleSearch.results.map(\.userId) == ["friend"])
+    }
+
+    // MARK: Invite code
+
+    /// A typed code is accepted the same way as a link, and lands on the inviter.
+    @Test("Test An Entered Invite Code Is Accepted And Opens The Inviter")
+    func testAnEnteredInviteCodeIsAcceptedAndOpensTheInviter() async {
+        let screen = makeScreen()
+        screen.interactor.acceptedInviter = DashboardFixture.user("inviter")
+        screen.presenter.inviteCodeInput = "stale"
+
+        screen.presenter.onEnterInviteCodePressed()
+        #expect(screen.presenter.isEnteringInviteCode)
+        #expect(screen.presenter.inviteCodeInput.isEmpty)
+
+        screen.presenter.inviteCodeInput = "push-2345"
+        await screen.presenter.onInviteCodeSubmitted()
+
+        #expect(screen.interactor.acceptedInviteCodes == ["push-2345"])
+        #expect(screen.router.shown == ["socialProfile:inviter"])
+    }
+
+    /// Join closes the sheet before accepting, and does nothing with an empty code.
+    @Test("Test Join Closes The Invite Sheet And Needs A Code")
+    func testJoinClosesTheInviteSheetAndNeedsACode() async {
+        let screen = makeScreen()
+        screen.interactor.acceptedInviter = DashboardFixture.user("inviter")
+        screen.presenter.onEnterInviteCodePressed()
+
+        screen.presenter.onInviteCodeJoinPressed()
+        #expect(screen.presenter.isEnteringInviteCode)
+
+        screen.presenter.inviteCodeInput = "push-2345"
+        screen.presenter.onInviteCodeJoinPressed()
+
+        #expect(screen.presenter.isEnteringInviteCode == false)
+        #expect(await TestManagers.eventually { screen.interactor.acceptedInviteCodes == ["push-2345"] })
     }
 
     @Test("Test Appearing And Disappearing Are Tracked")
@@ -655,44 +585,7 @@ struct DashboardFeedPresenterTests {
         screen.presenter.onViewAppear(delegate: screen.delegate)
         screen.presenter.onViewDisappear(delegate: screen.delegate)
 
-        #expect(screen.interactor.trackedScreenEventNames == ["DashboardView_Appear"])
-        #expect(screen.interactor.trackedEventNames == ["DashboardView_Disappear"])
-    }
-
-    // MARK: Streak reminder offer
-
-    /// `ReminderOfferFlow.offerStreakReminderIfNeeded()` had no caller before this — decision 7c
-    /// wires it to Dashboard's appear, which is where the streak is seen to have grown.
-    @Test("Test Reaching A Three Day Streak Offers The Reminder On Appear")
-    func testReachingAThreeDayStreakOffersTheReminderOnAppear() {
-        let key = ReminderOfferFlow.Offer.streakReminder.shownKey
-        UserDefaults.standard.removeObject(forKey: key)
-        defer { UserDefaults.standard.removeObject(forKey: key) }
-
-        let screen = makeScreen()
-        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 3)
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.router.alertTitles == [String(localized: "Streak Reminder")])
-    }
-
-    /// Below the 3-day threshold, or already answered, nothing is offered.
-    @Test("Test Below Threshold Or Already Answered Offers Nothing")
-    func testBelowThresholdOrAlreadyAnsweredOffersNothing() {
-        let key = ReminderOfferFlow.Offer.streakReminder.shownKey
-        UserDefaults.standard.removeObject(forKey: key)
-        defer { UserDefaults.standard.removeObject(forKey: key) }
-
-        let screen = makeScreen()
-        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 2)
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-        #expect(screen.router.alertTitles.isEmpty)
-
-        let answeredScreen = makeScreen()
-        answeredScreen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 5)
-        answeredScreen.interactor.privateUserSettings.socialPushStreakReminder = false
-        answeredScreen.presenter.onViewAppear(delegate: answeredScreen.delegate)
-        #expect(answeredScreen.router.alertTitles.isEmpty)
+        #expect(screen.interactor.trackedScreenEventNames == ["SocialView_Appear"])
+        #expect(screen.interactor.trackedEventNames == ["SocialView_Disappear"])
     }
 }

@@ -1,5 +1,5 @@
 //
-//  DashboardCard.swift
+//  TodayCard.swift
 //  DialedIn
 //
 //  The frame the Dashboard's carousel cards share. Today's Workout, Workout Streak and Nutrition
@@ -10,7 +10,7 @@
 
 import SwiftUI
 
-struct DashboardCard<Content: View>: View {
+struct TodayCard<Content: View>: View {
 
     let title: String
     /// Cards whose content brings its own surface (the Today's Workout label styles itself) opt out
@@ -70,7 +70,7 @@ struct DashboardCard<Content: View>: View {
 }
 
 @MainActor private var dashboardCardSample: some View {
-    DashboardCard(title: "Workout Streak") {
+    TodayCard(title: "Workout Streak") {
         VStack(alignment: .leading) {
             Text("12 days")
                 .font(.display)

@@ -1,5 +1,5 @@
 //
-//  DashboardCirclePresenterTests.swift
+//  SocialCirclePresenterTests.swift
 //  DialedInUnitTests
 //
 
@@ -14,13 +14,13 @@ import Foundation
 /// "Today" is the device's local day, so these sessions are dated relative to now — anchored an
 /// hour after midnight so a run at 23:59 does not push a session's end into tomorrow.
 @MainActor
-struct DashboardCirclePresenterTests {
+struct SocialCirclePresenterTests {
 
-    private typealias Interactor = DashboardFeedPresenterTests.Interactor
-    private typealias Router = DashboardFeedPresenterTests.Router
+    private typealias Interactor = SocialFeedPresenterTests.Interactor
+    private typealias Router = SocialFeedPresenterTests.Router
 
     private struct Screen {
-        let presenter: DashboardPresenter
+        let presenter: SocialPresenter
         let interactor: Interactor
         let router: Router
     }
@@ -29,7 +29,7 @@ struct DashboardCirclePresenterTests {
         let interactor = Interactor()
         interactor.followingUsers = following
         let router = Router()
-        return Screen(presenter: DashboardPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
+        return Screen(presenter: SocialPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
     }
 
     private var earlyToday: Date { Calendar.current.startOfDay(for: .now).addingTimeInterval(3600) }
@@ -131,7 +131,7 @@ struct DashboardCirclePresenterTests {
 
         #expect(await TestManagers.eventually { screen.interactor.nudgeWrites == ["bob"] })
         #expect(screen.presenter.circleMembers.first { $0.user.userId == "bob" }?.canNudge == false)
-        #expect(screen.interactor.trackedEventNames.contains("DashboardView_Nudge_Press"))
+        #expect(screen.interactor.trackedEventNames.contains("SocialView_Nudge_Press"))
     }
 
     /// The day's log is read on appearance, so a nudge sent earlier today is not offered again.
@@ -140,7 +140,7 @@ struct DashboardCirclePresenterTests {
         let screen = makeScreen(following: [DashboardFixture.user("bob")])
         screen.interactor.nudgedUserIdsToday = ["bob"]
 
-        screen.presenter.onViewAppear(delegate: DashboardDelegate())
+        screen.presenter.onViewAppear(delegate: SocialDelegate())
 
         #expect(screen.presenter.circleMembers.first { $0.user.userId == "bob" }?.canNudge == false)
     }

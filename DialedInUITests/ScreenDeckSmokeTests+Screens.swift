@@ -23,13 +23,17 @@ extension ScreenDeckSmokeTests {
 
     func testNotifications() { smoke("STARTSCREEN_NOTIFICATIONS") }
 
+    func testNotificationSettings() { smoke("STARTSCREEN_NOTIFICATION_SETTINGS") }
+
     func testUsername() { smoke("STARTSCREEN_USERNAME") }
 
     func testSharedItem() { smoke("STARTSCREEN_SHARED_ITEM") }
 
     func testShareCard() { smoke("STARTSCREEN_SHARE_CARD") }
 
-    func testDashboard() { smoke("STARTSCREEN_DASHBOARD") }
+    func testToday() { smoke("STARTSCREEN_TODAY") }
+
+    func testSocial() { smoke("STARTSCREEN_SOCIAL") }
 
     func testTraining() { smoke("STARTSCREEN_TRAINING") }
 
@@ -38,6 +42,10 @@ extension ScreenDeckSmokeTests {
     func testTemplateDetail() { smoke("STARTSCREEN_TEMPLATE_DETAIL") }
 
     func testProgramLibrary() { smoke("STARTSCREEN_PROGRAM_LIBRARY") }
+
+    func testWorkouts() { smoke("STARTSCREEN_WORKOUTS") }
+
+    func testMusclePicker() { smoke("STARTSCREEN_MUSCLE_PICKER") }
 
     func testActiveProgram() { smoke("STARTSCREEN_ACTIVE_PROGRAM") }
 
@@ -63,6 +71,12 @@ extension ScreenDeckSmokeTests {
 
     func testFoodDetail() { smoke("STARTSCREEN_FOOD_DETAIL") }
 
+    func testCreateFood() { smoke("STARTSCREEN_CREATE_FOOD") }
+
+    func testMealDescribe() { smoke("STARTSCREEN_MEAL_DESCRIBE") }
+
+    func testNutritionLibraryPicker() { smoke("STARTSCREEN_NUTRITION_LIBRARY_PICKER") }
+
     func testAnalytics() { smoke("STARTSCREEN_ANALYTICS") }
 
     func testBodyMetrics() { smoke("STARTSCREEN_BODY_METRICS") }
@@ -71,11 +85,23 @@ extension ScreenDeckSmokeTests {
 
     func testMeasurementDetail() { smoke("STARTSCREEN_MEASUREMENT_DETAIL") }
 
+    func testLogWeight() { smoke("STARTSCREEN_LOG_WEIGHT") }
+
+    func testLogMeasurement() { smoke("STARTSCREEN_LOG_MEASUREMENT") }
+
+    func testNutritionAnalytics() { smoke("STARTSCREEN_NUTRITION_ANALYTICS") }
+
     func testProfile() { smoke("STARTSCREEN_PROFILE") }
 
     func testAccount() { smoke("STARTSCREEN_ACCOUNT") }
 
-    func testSearch() { smoke("STARTSCREEN_SEARCH") }
+    func testDeleteAccount() { smoke("STARTSCREEN_DELETE_ACCOUNT") }
+
+    func testSiri() { smoke("STARTSCREEN_SIRI") }
+
+    func testWhySubscribe() { smoke("STARTSCREEN_WHY_SUBSCRIBE") }
+
+    func testPaywall() { smoke("STARTSCREEN_PAYWALL") }
 
     func testFollowers() { smoke("STARTSCREEN_FOLLOWERS") }
 
@@ -85,7 +111,11 @@ extension ScreenDeckSmokeTests {
 
     func testWeeklyReview() { smoke("STARTSCREEN_WEEKLY_REVIEW") }
 
+    func testMuscleBalance() { smoke("STARTSCREEN_MUSCLE_BALANCE") }
+
     func testChallengeDetail() { smoke("STARTSCREEN_CHALLENGE_DETAIL") }
 
     func testChallenges() { smoke("STARTSCREEN_CHALLENGES") }
+
+    func testProgressPhotos() { smoke("STARTSCREEN_PROGRESS_PHOTOS") }
 }

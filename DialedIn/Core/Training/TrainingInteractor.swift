@@ -13,6 +13,8 @@ protocol TrainingInteractor: GlobalInteractor {
     var activeSession: WorkoutSessionModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var favouriteGymProfile: GymProfileModel? { get }
+    var allExercises: [ExerciseModel] { get }
+    var allWorkoutTemplates: [WorkoutTemplateModel] { get }
     func getAuthId() throws -> String
     func getWorkoutTemplate(id: String) async throws -> WorkoutTemplateModel
     func updateActiveSession(_ session: WorkoutSessionModel) throws

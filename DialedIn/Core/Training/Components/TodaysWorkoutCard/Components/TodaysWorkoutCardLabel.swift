@@ -138,7 +138,7 @@ private extension View {
     List {
         Section {
             TodaysWorkoutCardLabel(template: .mock)
-                .frame(height: DashboardCard<EmptyView>.contentHeight)
+                .frame(height: TodayCard<EmptyView>.contentHeight)
         }
         .frame(height: 240)
         .removeListRowFormatting()

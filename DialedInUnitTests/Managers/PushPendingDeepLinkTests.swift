@@ -54,7 +54,7 @@ struct PushPendingDeepLinkTests {
     @Test("Test Sign Out Drops The Pending Link")
     func testSignOutDropsThePendingLink() {
         let manager = PushManager()
-        manager.storePendingDeepLink(.tab(.analytics))
+        manager.storePendingDeepLink(.tab(.progress))
 
         manager.setReadyForDeepLinks(false)
         manager.setReadyForDeepLinks(true)

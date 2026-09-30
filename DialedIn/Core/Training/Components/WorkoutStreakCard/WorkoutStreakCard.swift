@@ -17,7 +17,7 @@ struct WorkoutStreakCard: View {
     let delegate: WorkoutStreakDelegate
     
     var body: some View {
-        DashboardCard(title: String(localized: "Workout Streak")) {
+        TodayCard(title: String(localized: "Workout Streak")) {
             VStack(alignment: .leading, spacing: Spacing.l) {
                 streakHeader
                 weeklyDotsRow

@@ -2,15 +2,20 @@ import SwiftUI
 
 @Observable
 @MainActor
-class DashboardPresenter {
+class SocialPresenter {
     
-    private let interactor: DashboardInteractor
-    private let router: DashboardRouter
+    private let interactor: SocialInteractor
+    private let router: SocialRouter
     private let followFlow: FollowFlow
-    private let reminderOfferFlow: ReminderOfferFlow
-    
-    private(set) var nutritionTotals: DailyMacroTarget?
-    private(set) var nutritionTarget: DailyMacroTarget?
+
+    /// The search field in the toolbar. Finding people is the one search Social has.
+    var peopleSearch: PeopleSearch
+
+    /// Whether the search field is active. "Find People" raises it rather than switching tabs.
+    var isSearchPresented = false
+
+    var isEnteringInviteCode = false
+    var inviteCodeInput = ""
 
     var activityNotifications: [ActivityNotificationModel] {
         interactor.activityNotifications
@@ -148,94 +153,8 @@ class DashboardPresenter {
     }
 
     func onFollowButtonPressed(user: UserModel) {
-        interactor.trackEvent(eventName: "DashboardView_SuggestedFollow_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_SuggestedFollow_Press", parameters: nil, type: .analytic)
         followFlow.onButtonPressed(user: user)
-    }
-
-    var hasActiveProgram: Bool {
-        interactor.activeTrainingProgram != nil
-    }
-
-    var todaysWorkoutTemplate: WorkoutTemplateModel? {
-        todaysScheduledItem?.dayPlan
-    }
-
-    var isTodayCompleted: Bool {
-        todaysScheduledItem?.completedSessionId != nil
-    }
-
-    private var todaysScheduledItem: MicrocycleWorkoutTemplateModelItem? {
-        guard let program = interactor.activeTrainingProgram,
-              !program.workoutTemplates.isEmpty else { return nil }
-
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let weekdayIndex = calendar.component(.weekday, from: today) - 1
-        let weekStart = calendar.date(byAdding: .day, value: -weekdayIndex, to: today) ?? today
-
-        let dayPlans = program.workoutTemplates
-        let workoutIds = Set(dayPlans.filter { !$0.exercises.isEmpty }.map { $0.id })
-        let dayPlanNames = Set(dayPlans.map { $0.name })
-        let dayPlanById = Dictionary(uniqueKeysWithValues: dayPlans.map { ($0.id, $0) })
-
-        let completedSessions: [(WorkoutSessionModel, WorkoutTemplateModel)] = interactor.workoutSessions
-            .compactMap { session -> (WorkoutSessionModel, WorkoutTemplateModel)? in
-                guard session.endedAt != nil else { return nil }
-                let shouldInclude = session.trainingProgramId == program.id
-                    || (session.trainingProgramId == nil && dayPlanNames.contains(session.name))
-                guard shouldInclude else { return nil }
-                if let id = session.workoutTemplateId, let plan = dayPlanById[id] { return (session, plan) }
-                if let plan = dayPlans.first(where: { $0.name == session.name }) { return (session, plan) }
-                return nil
-            }
-            .sorted { ($0.0.endedAt ?? .distantPast) < ($1.0.endedAt ?? .distantPast) }
-
-        var completedInCurrentCycle = Set<String>()
-        for (_, dayPlan) in completedSessions {
-            guard workoutIds.contains(dayPlan.id) else { continue }
-            completedInCurrentCycle.insert(dayPlan.id)
-            if completedInCurrentCycle == workoutIds { completedInCurrentCycle.removeAll() }
-        }
-
-        let startIndex: Int
-        if workoutIds.isEmpty {
-            startIndex = 0
-        } else if let first = dayPlans.firstIndex(where: { !$0.exercises.isEmpty && !completedInCurrentCycle.contains($0.id) }) {
-            startIndex = first
-        } else {
-            startIndex = 0
-        }
-
-        let weekDates = (0..<7)
-            .compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
-            .map { calendar.startOfDay(for: $0) }
-        let weekDateSet = Set(weekDates)
-
-        var itemsByDay: [Date: MicrocycleWorkoutTemplateModelItem] = [:]
-        for (session, dayPlan) in completedSessions {
-            guard let endedAt = session.endedAt else { continue }
-            if session.isRestDay, session.dateCreated > Date() { continue }
-            let day = calendar.startOfDay(for: endedAt)
-            guard weekDateSet.contains(day), itemsByDay[day] == nil else { continue }
-            itemsByDay[day] = MicrocycleWorkoutTemplateModelItem(
-                id: "\(day.timeIntervalSince1970)-\(dayPlan.id)",
-                date: day,
-                dayPlan: dayPlan,
-                completedSessionId: session.id
-            )
-        }
-        var nextIndex = startIndex % dayPlans.count
-        for day in weekDates where itemsByDay[day] == nil {
-            let dayPlan = dayPlans[nextIndex]
-            itemsByDay[day] = MicrocycleWorkoutTemplateModelItem(
-                id: "\(day.timeIntervalSince1970)-\(dayPlan.id)",
-                date: day,
-                dayPlan: dayPlan,
-                completedSessionId: nil
-            )
-            nextIndex = (nextIndex + 1) % dayPlans.count
-        }
-        return itemsByDay[today]
     }
 
     func author(for session: WorkoutSessionModel) -> UserModel? {
@@ -245,33 +164,36 @@ class DashboardPresenter {
         return interactor.followingUsers.first { $0.userId == session.authorId }
     }
 
-    init(interactor: DashboardInteractor, router: DashboardRouter) {
+    init(interactor: SocialInteractor, router: SocialRouter) {
         self.interactor = interactor
         self.router = router
         self.followFlow = FollowFlow(interactor: interactor, router: router)
-        self.reminderOfferFlow = ReminderOfferFlow(interactor: interactor, router: router)
+        self.peopleSearch = PeopleSearch(
+            followingUsers: { [interactor] in
+                let reader = interactor.currentUser
+                return interactor.followingUsers.filter { !(reader?.hasBlocked($0.userId) ?? false) }
+            },
+            searchUsers: { [interactor] query in try await interactor.searchUsers(query: query) }
+        )
     }
 
-    func onViewAppear(delegate: DashboardDelegate) {
+    func onViewAppear(delegate: SocialDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         nudgedUserIds = interactor.nudgedUserIdsToday
-        loadNutrition()
-        reminderOfferFlow.offerStreakReminderIfNeeded()
     }
     
-    func onViewDisappear(delegate: DashboardDelegate) {
+    func onViewDisappear(delegate: SocialDelegate) {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
     
-    /// The empty feed's call to action. People search lives on the Add tab, and only the tab bar can
-    /// select a tab, so this asks it to — see `DeepLink.post()`.
+    /// The feed's call to action: opens this screen's own search field.
     func onFindPeoplePressed() {
         interactor.trackEvent(
-            eventName: "DashboardView_FindPeople_Press",
+            eventName: "SocialView_FindPeople_Press",
             parameters: nil,
             type: .analytic
         )
-        DeepLink.tab(.search).post()
+        isSearchPresented = true
     }
 
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {
@@ -293,56 +215,6 @@ class DashboardPresenter {
         try? await interactor.fetchActivityNotifications()
     }
 
-    func onLogMealPressed() {
-        guard let userId = interactor.currentUser?.userId else { return }
-        if let meal = interactor.draftMeal {
-            router.showDraftMealDialog(
-                onContinue: { [weak self] in
-                    Task { @MainActor in
-                        self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: meal))
-                    }
-                },
-                onStartNew: { [weak self] in
-                    Task { @MainActor in
-                        try? self?.interactor.deleteDraftMeal()
-                        self?.router.showAddMealView(
-                            delegate: AddMealDelegate(
-                                mealLog: MealLogModel(
-                                    authorId: userId,
-                                    dayKey: Date().dayKey,
-                                    date: Date(),
-                                    items: []
-                                )
-                            )
-                        )
-                    }
-                }
-            )
-        } else {
-            self.router.showAddMealView(
-                delegate: AddMealDelegate(
-                    mealLog: MealLogModel(
-                        authorId: userId,
-                        dayKey: Date().dayKey,
-                        date: Date(),
-                        items: []
-                    )
-                )
-            )
-        }
-    }
-
-    private func loadNutrition() {
-        let dayKey = Date().dayKey
-        // Silent: local read; a missing total shows as no data on the card.
-        nutritionTotals = try? interactor.getDailyTotals(dayKey: dayKey)
-        guard let userId = interactor.userId else { return }
-        Task {
-            // Silent: background read; the card shows no target until one loads.
-            nutritionTarget = try? await interactor.getDailyTarget(for: Date(), userId: userId)
-        }
-    }
-
     // MARK: - CircleGoals
 
     /// The week whose Monday recap the user closed. Held here so closing it redraws at once.
@@ -354,20 +226,20 @@ class DashboardPresenter {
     var inviteCardDismissed: Bool = ReviewPromptStore().inviteCardDismissed
 }
 
-extension DashboardPresenter {
+extension SocialPresenter {
     
     enum Event: LoggableEvent {
-        case onAppear(delegate: DashboardDelegate)
-        case onDisappear(delegate: DashboardDelegate)
+        case onAppear(delegate: SocialDelegate)
+        case onDisappear(delegate: SocialDelegate)
         case circleMemberPressed
         case nudgePressed
 
         var eventName: String {
             switch self {
-            case .onAppear:                 return "DashboardView_Appear"
-            case .onDisappear:              return "DashboardView_Disappear"
-            case .circleMemberPressed:      return "DashboardView_CircleMember_Press"
-            case .nudgePressed:             return "DashboardView_Nudge_Press"
+            case .onAppear:                 return "SocialView_Appear"
+            case .onDisappear:              return "SocialView_Disappear"
+            case .circleMemberPressed:      return "SocialView_CircleMember_Press"
+            case .nudgePressed:             return "SocialView_Nudge_Press"
             }
         }
         
@@ -392,7 +264,7 @@ extension DashboardPresenter {
 
 // MARK: - Usernames
 
-extension DashboardPresenter {
+extension SocialPresenter {
 
     /// Drives the "pick a username" banner. The banner itself remembers being dismissed.
     var needsUsername: Bool {
@@ -401,14 +273,14 @@ extension DashboardPresenter {
     }
 
     func onPickUsernamePressed() {
-        interactor.trackEvent(eventName: "DashboardView_PickUsername_Press", parameters: [:], type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_PickUsername_Press", parameters: [:], type: .analytic)
         router.showEditUsernameView()
     }
 }
 
 // MARK: - CircleGoals
 
-extension DashboardPresenter {
+extension SocialPresenter {
 
     private var circleSessions: [WorkoutSessionModel] {
         interactor.workoutSessions + interactor.followingWorkoutSessions
@@ -454,18 +326,18 @@ extension DashboardPresenter {
     }
 
     func onSetWeeklyGoalPressed() {
-        interactor.trackEvent(eventName: "DashboardView_SetWeeklyGoal_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_SetWeeklyGoal_Press", parameters: nil, type: .analytic)
         router.showWeeklyGoalView()
     }
 
     func onLeaderboardRowPressed(_ standing: CircleWeek.Standing) {
-        interactor.trackEvent(eventName: "DashboardView_LeaderboardRow_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_LeaderboardRow_Press", parameters: nil, type: .analytic)
         router.showSocialProfileView(delegate: SocialProfileDelegate(user: standing.user))
     }
 
     func onWeeklySummaryDismissed() {
         guard let weekId = weeklySummary?.weekId else { return }
-        interactor.trackEvent(eventName: "DashboardView_WeeklySummary_Dismiss", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_WeeklySummary_Dismiss", parameters: nil, type: .analytic)
         dismissedSummaryWeekId = weekId
         UserDefaults.standard.set(weekId, forKey: CircleWeek.summaryDismissedWeekKey)
     }
@@ -473,7 +345,7 @@ extension DashboardPresenter {
 
 // MARK: - Challenges
 
-extension DashboardPresenter {
+extension SocialPresenter {
 
     struct ChallengeCard: Identifiable {
         let challenge: ChallengeModel
@@ -516,19 +388,19 @@ extension DashboardPresenter {
     }
 
     func onChallengePressed(_ card: ChallengeCard) {
-        interactor.trackEvent(eventName: "DashboardView_Challenge_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_Challenge_Press", parameters: nil, type: .analytic)
         router.showChallengeDetailView(delegate: ChallengeDetailDelegate(challenge: card.challenge))
     }
 
     func onCreateChallengePressed() {
-        interactor.trackEvent(eventName: "DashboardView_CreateChallenge_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_CreateChallenge_Press", parameters: nil, type: .analytic)
         router.showCreateChallengeView()
     }
 }
 
 // MARK: - Invites
 
-extension DashboardPresenter {
+extension SocialPresenter {
     /// A `compound://join/<code>` link, relayed by the tab bar once it has selected this tab.
     func onAcceptInviteNotificationReceived(_ notification: Notification) {
         guard let code = notification.userInfo?["code"] as? String else { return }
@@ -537,23 +409,9 @@ extension DashboardPresenter {
     }
 }
 
-// MARK: - WeeklyReview
-
-extension DashboardPresenter {
-    /// The way in to last week's review, on the first day of the week only.
-    var showsWeeklyReviewCard: Bool {
-        interactor.currentUser != nil && CircleWeek.isFirstDayOfWeek(.now)
-    }
-
-    func onWeeklyReviewPressed() {
-        interactor.trackEvent(eventName: "DashboardView_WeeklyReview_Press", parameters: nil, type: .analytic)
-        router.showWeeklyReviewView()
-    }
-}
-
 // MARK: - RatingReferral
 
-extension DashboardPresenter {
+extension SocialPresenter {
     /// The one-time invite card, from the fifth finished workout until it is tapped or dismissed.
     var showsInviteCard: Bool {
         interactor.currentUser != nil && ReviewPromptPolicy.showsInviteCard(
@@ -563,13 +421,13 @@ extension DashboardPresenter {
     }
 
     func onInviteCardPressed() {
-        interactor.trackEvent(eventName: "DashboardView_InviteCard_Press", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_InviteCard_Press", parameters: nil, type: .analytic)
         dismissInviteCard()
         Task { await InviteShareFlow(interactor: interactor, router: router).share() }
     }
 
     func onInviteCardDismissed() {
-        interactor.trackEvent(eventName: "DashboardView_InviteCard_Dismiss", parameters: nil, type: .analytic)
+        interactor.trackEvent(eventName: "SocialView_InviteCard_Dismiss", parameters: nil, type: .analytic)
         dismissInviteCard()
     }
 
@@ -581,10 +439,52 @@ extension DashboardPresenter {
 
 // MARK: - FeedLoading
 
-extension DashboardPresenter {
+extension SocialPresenter {
     /// A spinner rather than "No Activity Yet" until the following feed has answered once: the
     /// user's own sessions arrive first, so an empty feed before then only means "not loaded".
     var isFeedLoading: Bool {
         feedSessions.isEmpty && !interactor.hasLoadedFollowingSessions
+    }
+}
+
+// MARK: - People search and invite codes
+
+extension SocialPresenter {
+
+    func onPersonPressed(user: UserModel) {
+        interactor.trackEvent(eventName: "SocialView_SearchResult_Press", parameters: nil, type: .analytic)
+        router.showSocialProfileView(delegate: SocialProfileDelegate(user: user))
+    }
+
+    func onInviteFriendPressed() {
+        guard interactor.ensureOnline(or: router) else { return }
+        interactor.trackEvent(eventName: "SocialView_InviteFriend_Press", parameters: nil, type: .analytic)
+        Task { await InviteShareFlow(interactor: interactor, router: router).share() }
+    }
+
+    /// For an invite link opened on another device than the one with the app: the code is typed in.
+    func onEnterInviteCodePressed() {
+        inviteCodeInput = ""
+        isEnteringInviteCode = true
+    }
+
+    var canJoinWithInviteCode: Bool {
+        !inviteCodeInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func onInviteCodeClosePressed() {
+        isEnteringInviteCode = false
+    }
+
+    /// Closes the sheet first, so whatever the invite opens (the inviter's profile, or an alert
+    /// saying the code is wrong) is not stacked on top of it.
+    func onInviteCodeJoinPressed() {
+        guard canJoinWithInviteCode else { return }
+        isEnteringInviteCode = false
+        Task { await onInviteCodeSubmitted() }
+    }
+
+    func onInviteCodeSubmitted() async {
+        await InviteAcceptFlow(interactor: interactor, router: router).accept(code: inviteCodeInput)
     }
 }

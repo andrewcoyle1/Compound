@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// One person in the strip, derived by `DashboardPresenter.circleMembers`.
+/// One person in the strip, derived by `SocialPresenter.circleMembers`.
 struct CircleMember: Identifiable {
     let user: UserModel
     /// Finished a non-rest session today, by the device's calendar.

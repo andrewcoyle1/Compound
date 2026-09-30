@@ -49,7 +49,7 @@ struct AnalyticsView<NutritionChart: View>: View {
         // As QuickCharts' `ChartScreen` does for its chart: the header's colour carries on up behind
         // the navigation bar, even when the list is pulled down.
         .topFill(Color.surface)
-        .navigationTitle("Analytics")
+        .navigationTitle("Progress")
         .minimizingLargeTitleBar()
         .scrollIndicators(.hidden)
         .toolbar {
@@ -150,6 +150,24 @@ struct AnalyticsView<NutritionChart: View>: View {
             .accessibilityLabel("Developer settings")
         }
         #endif
+
+        ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button {
+                    presenter.onLogWeightPressed()
+                } label: {
+                    Label("Log Weight", systemImage: Symbol.scaleWeight)
+                }
+                Button {
+                    presenter.onLogMeasurementPressed()
+                } label: {
+                    Label("Log Measurement", systemImage: "ruler")
+                }
+            } label: {
+                Image(systemName: Symbol.add)
+            }
+            .accessibilityLabel("Log body metrics")
+        }
 
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         ToolbarItem(placement: .topBarTrailing) {

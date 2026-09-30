@@ -82,13 +82,16 @@ enum TrainingTabFixture {
 @MainActor
 struct TrainingHomePresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, TrainingInteractor {
+    /// Internal rather than private so `TrainingSearchTests` can share the doubles.
+    final class Interactor: SpyGlobalInteractor, TrainingInteractor {
         var currentUser: UserModel?
         var userImageUrl: String?
         var activeTrainingProgram: TrainingProgram?
         var activeSession: WorkoutSessionModel?
         var workoutSessions: [WorkoutSessionModel] = []
         var favouriteGymProfile: GymProfileModel?
+        var allExercises: [ExerciseModel] = []
+        var allWorkoutTemplates: [WorkoutTemplateModel] = []
         var startWorkoutError: Error?
         private(set) var startedTemplateNames: [String] = []
         private(set) var blankWorkoutStarts = 0
@@ -126,7 +129,7 @@ struct TrainingHomePresenterTests {
 
     /// `showDevSettingsView()` is declared unguarded: the protocol wraps it in `#if DEV || MOCK`
     /// but the test target builds without those flags.
-    private final class Router: TrainingRouter {
+    final class Router: TrainingRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []
@@ -144,6 +147,10 @@ struct TrainingHomePresenterTests {
         func showTrainingProgramLibraryView() { shown.append("programLibrary") }
         func showWorkoutsView(delegate: WorkoutsDelegate) { shown.append("workouts") }
         func showWorkoutHistoryView() { shown.append("history") }
+        func showExercisesView() { shown.append("exercises") }
+        func showExerciseDetailView(templateId: String, name: String, delegate: ExerciseDetailDelegate, themeColor: Color?) {
+            shown.append("exerciseDetail:\(templateId)")
+        }
         func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { shown.append("templateDetail") }
         func showWorkoutTrackerView() { shown.append("tracker") }
         func showCreateExerciseView() { shown.append("createExercise") }
@@ -373,8 +380,9 @@ struct TrainingHomePresenterTests {
         screen.presenter.onChooseProgramPressed()
         screen.presenter.onWorkoutLibraryPressed()
         screen.presenter.onWorkoutHistoryPressed()
+        screen.presenter.onExerciseLibraryPressed()
 
-        #expect(screen.router.shown == ["programLibrary", "programLibrary", "workouts", "history"])
+        #expect(screen.router.shown == ["programLibrary", "programLibrary", "workouts", "history", "exercises"])
     }
 
     @Test("Test Appearing And Leaving Are Both Tracked")

@@ -138,8 +138,8 @@ struct ReportHiddenFeedTests {
 
     @Test("Test A Hidden Session Is Left Out Of Everyone's Feed But Its Author's")
     func testAHiddenSessionIsLeftOutOfEveryonesFeedButItsAuthors() {
-        let interactor = DashboardFeedPresenterTests.Interactor()
-        let presenter = DashboardPresenter(interactor: interactor, router: DashboardFeedPresenterTests.Router())
+        let interactor = SocialFeedPresenterTests.Interactor()
+        let presenter = SocialPresenter(interactor: interactor, router: SocialFeedPresenterTests.Router())
         interactor.followingUsers = [DashboardFixture.user("friend")]
         interactor.workoutSessions = [
             hidden(DashboardFixture.session(id: "mine-hidden", on: DashboardFixture.date(day: 1)))

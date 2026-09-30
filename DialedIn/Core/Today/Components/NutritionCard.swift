@@ -13,7 +13,7 @@ struct NutritionCard: View {
     let onLogMealTapped: () -> Void
     
     var body: some View {
-        DashboardCard(title: String(localized: "Today's Nutrition")) {
+        TodayCard(title: String(localized: "Today's Nutrition")) {
             cardItem
         }
     }

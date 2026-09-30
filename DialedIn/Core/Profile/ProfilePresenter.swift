@@ -100,10 +100,6 @@ class ProfilePresenter {
         }
     }
 
-    func onExerciseLibraryPressed() {
-        router.showExercisesView()
-    }
-
     // MARK: - Community & Support
 
     /// Support was an empty closure, and email is support that exists today — no hosted help desk
@@ -148,10 +144,6 @@ class ProfilePresenter {
         await InviteShareFlow(interactor: interactor, router: router).share()
     }
 
-    func onShortcutsPressed() {
-        router.showShortcutsView(delegate: ShortcutsDelegate())
-    }
-    
     func onCustomiseAnalyticsPressed() {
         router.showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate())
     }

@@ -104,6 +104,13 @@ class TrainingPresenter {
     }
         
     func onStartEmptyWorkoutPressed() {
+        startAfterActiveSessionCheck { [weak self] in
+            try await self?.interactor.startBlankWorkout()
+        }
+    }
+
+    /// With a workout already running, asks whether to resume it or replace it.
+    private func startAfterActiveSessionCheck(_ start: @escaping @MainActor () async throws -> Void) {
         if activeSession != nil {
             router.showActiveWorkoutAlert(
                 onResume: { [weak self] in
@@ -112,24 +119,24 @@ class TrainingPresenter {
                 onReplace: { [weak self] in
                     Task { @MainActor in
                         try? self?.interactor.deleteActiveSession()
-                        await self?.startBlankWorkout()
+                        await self?.startThenShowTracker(start)
                     }
                 }
             )
         } else {
-            Task { await startBlankWorkout() }
+            Task { await startThenShowTracker(start) }
         }
     }
 
-    private func startBlankWorkout() async {
+    private func startThenShowTracker(_ start: @MainActor () async throws -> Void) async {
         do {
-            try await interactor.startBlankWorkout()
+            try await start()
             router.showWorkoutTrackerView()
         } catch {
             router.showSimpleAlert(title: String(localized: "Could Not Start Workout"), subtitle: String(localized: "Please try again."))
         }
     }
-    
+
     func onDatePressed(date: Date) {
         let sessions = sessionsForDate(date)
         switch sessions.count {
@@ -208,6 +215,58 @@ class TrainingPresenter {
     
     func onWorkoutHistoryPressed() {
         router.showWorkoutHistoryView()
+    }
+
+    func onExerciseLibraryPressed() {
+        router.showExercisesView()
+    }
+
+    // MARK: - Search
+
+    /// Training's search field: exercises and workouts. Programs are few enough to browse.
+    var searchString: String = ""
+
+    var isSearching: Bool {
+        SearchMatch.isSearching(searchString)
+    }
+
+    var filteredExercises: [ExerciseModel] {
+        interactor.allExercises
+            .filter { SearchMatch.matches(searchString, [$0.name, $0.description] + $0.muscleGroups.keys.map(\.rawValue) + $0.alternateNames) }
+            .sortedByKeyPath(keyPath: \.name, ascending: true)
+    }
+
+    var filteredWorkoutTemplates: [WorkoutTemplateModel] {
+        interactor.allWorkoutTemplates
+            .filter { SearchMatch.matches(searchString, [$0.name, $0.description] + $0.exercises.map(\.exercise.name)) }
+            .sortedByKeyPath(keyPath: \.name, ascending: true)
+    }
+
+    var hasSearchResults: Bool {
+        !filteredExercises.isEmpty || !filteredWorkoutTemplates.isEmpty
+    }
+
+    func onExerciseResultPressed(_ exercise: ExerciseModel) {
+        router.showExerciseDetailView(templateId: exercise.id, name: exercise.name, delegate: ExerciseDetailDelegate(), themeColor: nil)
+    }
+
+    func onWorkoutResultPressed(_ workout: WorkoutTemplateModel) {
+        router.showWorkoutTemplateDetailView(
+            delegate: WorkoutTemplateDetailDelegate(
+                workoutTemplate: workout,
+                trainingProgramId: nil,
+                onStartWorkoutPressed: { [weak self] in
+                    Task { @MainActor in self?.router.showWorkoutTrackerView() }
+                }
+            )
+        )
+    }
+
+    /// The row's Start button: the workout starts here rather than after its detail screen.
+    func onStartWorkoutResultPressed(_ workout: WorkoutTemplateModel) {
+        startAfterActiveSessionCheck { [weak self] in
+            try await self?.interactor.startWorkout(for: workout, in: nil)
+        }
     }
     
     #if DEV || MOCK

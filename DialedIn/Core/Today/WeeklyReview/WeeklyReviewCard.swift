@@ -2,7 +2,7 @@
 //  WeeklyReviewCard.swift
 //  DialedIn
 //
-//  The Dashboard's way in to the Weekly Review, shown on the first day of the week.
+//  Today's way in to the Weekly Review, shown on the first day of the week.
 //
 
 import SwiftUI
@@ -33,8 +33,6 @@ struct WeeklyReviewCard: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal)
-        .padding(.bottom, Spacing.s)
     }
 }
 

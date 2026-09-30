@@ -5,6 +5,8 @@ struct MicrocycleItem: Identifiable {
     let workoutTemplate: WorkoutTemplateModel
     let completedSessionId: String?
     let trainingProgramId: String
+    /// The day plan the schedule puts on today — the same answer Today's workout card gives.
+    var isToday: Bool = false
 
     var isCompleted: Bool {
         completedSessionId != nil
@@ -116,13 +118,9 @@ class ActiveTrainingProgramPresenter {
         periodisationPhase = currentPeriodisationPhase(cycleIndex: cycleIndex, program: program)
         microcycleHeaderText = String(localized: "Microcycle \(String(describing: cycleIndex)) of \(String(describing: cyclesTotal))")
 
+        let todaysPlanId = TodaysWorkoutSchedule.item(program: program, sessions: workoutSessions)?.dayPlan.id
         return dayPlans.map { plan in
-            MicrocycleItem(
-                id: plan.id,
-                workoutTemplate: plan,
-                completedSessionId: sessionByPlanId[plan.id],
-                trainingProgramId: program.id
-            )
+            MicrocycleItem(id: plan.id, workoutTemplate: plan, completedSessionId: sessionByPlanId[plan.id], trainingProgramId: program.id, isToday: plan.id == todaysPlanId)
         }
     }
 

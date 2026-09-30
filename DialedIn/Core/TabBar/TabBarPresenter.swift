@@ -23,7 +23,7 @@ class TabBarPresenter {
     }
     
     /// Unread comments and mentions (a grouped row counts once), plus follow requests waiting on an
-    /// answer, shown on the Dashboard tab since that is where the bell lives. Zero hides the badge.
+    /// answer, shown on the Social tab since that is where the bell lives. Zero hides the badge.
     /// Likes, follows and the rest wait in Notifications: a badge is for something to answer.
     var unreadActivityCount: Int {
         let needsAnswer = interactor.activityNotifications.filter { $0.type == .comment || $0.type == .mention }
@@ -37,7 +37,7 @@ class TabBarPresenter {
     /// Which tab is showing. Held here so a `compound://` link or a push notification can change
     /// it. Keyed by the tab itself, not its title: the titles are translated, so in Spanish a
     /// title key never matched "Dashboard" and links selected nothing.
-    var selectedTab: DeepLink.Tab = .dashboard
+    var selectedTab: DeepLink.Tab = .today
 
     /// Applies a destination arriving from outside the app.
     func handle(_ deepLink: DeepLink) {
@@ -55,8 +55,8 @@ class TabBarPresenter {
                 parameters: nil,
                 type: .analytic
             )
-            // The Dashboard is where a session opens from; it hears the request and fetches it.
-            selectedTab = .dashboard
+            // Social is where a session opens from; it hears the request and fetches it.
+            selectedTab = .social
             deepLink.post()
         case .notifications:
             interactor.trackEvent(
@@ -64,8 +64,8 @@ class TabBarPresenter {
                 parameters: nil,
                 type: .analytic
             )
-            // The bell lives on the Dashboard, so it opens the screen.
-            selectedTab = .dashboard
+            // The bell lives on Social, so it opens the screen.
+            selectedTab = .social
             deepLink.post()
         case .join:
             interactor.trackEvent(
@@ -73,8 +73,8 @@ class TabBarPresenter {
                 parameters: nil,
                 type: .analytic
             )
-            // The Dashboard accepts the invite and opens the inviter's profile.
-            selectedTab = .dashboard
+            // Social accepts the invite and opens the inviter's profile.
+            selectedTab = .social
             deepLink.post()
         case .workout:
             interactor.trackEvent(
@@ -85,7 +85,7 @@ class TabBarPresenter {
             if activeSession != nil {
                 router.showWorkoutTrackerView()
             } else {
-                selectedTab = .dashboard
+                selectedTab = .today
             }
         }
     }

@@ -1,5 +1,5 @@
 //
-//  DashboardSocialPresenterTests.swift
+//  SocialWorkoutSessionRowTests.swift
 //  DialedInUnitTests
 //
 //  Created by Andrew Coyle on 21/09/2026.

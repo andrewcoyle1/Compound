@@ -406,9 +406,9 @@ struct UsernameEntryPointTests {
 
     @Test("Test The Dashboard Asks Only A Signed In User Without A Handle")
     func testTheDashboardAsksOnlyASignedInUserWithoutAHandle() {
-        let interactor = DashboardFeedPresenterTests.Interactor()
-        let router = DashboardFeedPresenterTests.Router()
-        let presenter = DashboardPresenter(interactor: interactor, router: router)
+        let interactor = SocialFeedPresenterTests.Interactor()
+        let router = SocialFeedPresenterTests.Router()
+        let presenter = SocialPresenter(interactor: interactor, router: router)
 
         interactor.currentUser = UserModel(userId: "me")
         #expect(presenter.needsUsername)

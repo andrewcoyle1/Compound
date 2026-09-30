@@ -12,13 +12,13 @@ import Foundation
 @MainActor
 struct FeedLoadingTests {
 
-    private func presenter(_ interactor: DashboardFeedPresenterTests.Interactor) -> DashboardPresenter {
-        DashboardPresenter(interactor: interactor, router: DashboardFeedPresenterTests.Router())
+    private func presenter(_ interactor: SocialFeedPresenterTests.Interactor) -> SocialPresenter {
+        SocialPresenter(interactor: interactor, router: SocialFeedPresenterTests.Router())
     }
 
     @Test("An empty feed is loading until the following feed has answered")
     func emptyFeedIsLoadingUntilAnswered() {
-        let interactor = DashboardFeedPresenterTests.Interactor()
+        let interactor = SocialFeedPresenterTests.Interactor()
         interactor.hasLoadedFollowingSessions = false
         let presenter = presenter(interactor)
         #expect(presenter.isFeedLoading)
@@ -29,7 +29,7 @@ struct FeedLoadingTests {
 
     @Test("Sessions already in hand are shown rather than a spinner")
     func sessionsInHandAreNotLoading() {
-        let interactor = DashboardFeedPresenterTests.Interactor()
+        let interactor = SocialFeedPresenterTests.Interactor()
         interactor.hasLoadedFollowingSessions = false
         interactor.workoutSessions = [DashboardFixture.session(id: "mine", on: DashboardFixture.date(day: 2))]
         #expect(!presenter(interactor).isFeedLoading)

@@ -10,9 +10,9 @@ import SwiftUI
 
 struct ChallengesDashboardSection: View {
 
-    let cards: [DashboardPresenter.ChallengeCard]
+    let cards: [SocialPresenter.ChallengeCard]
     let currentUserId: String?
-    let onCardPressed: (DashboardPresenter.ChallengeCard) -> Void
+    let onCardPressed: (SocialPresenter.ChallengeCard) -> Void
     let onCreatePressed: () -> Void
 
     var body: some View {
@@ -43,7 +43,7 @@ struct ChallengesDashboardSection: View {
         .padding(.vertical, Spacing.s)
     }
 
-    private func cardView(_ card: DashboardPresenter.ChallengeCard) -> some View {
+    private func cardView(_ card: SocialPresenter.ChallengeCard) -> some View {
         Button {
             onCardPressed(card)
         } label: {
@@ -73,7 +73,7 @@ struct ChallengesDashboardSection: View {
         .accessibilityHint("Opens the standings")
     }
 
-    private func topThree(_ card: DashboardPresenter.ChallengeCard) -> some View {
+    private func topThree(_ card: SocialPresenter.ChallengeCard) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             ForEach(Array(card.topThree.enumerated()), id: \.element.id) { index, entry in
                 HStack(spacing: Spacing.xs) {
@@ -90,7 +90,7 @@ struct ChallengesDashboardSection: View {
 #Preview {
     ChallengesDashboardSection(
         cards: [
-            DashboardPresenter.ChallengeCard(
+            SocialPresenter.ChallengeCard(
                 challenge: .mock,
                 daysLeft: 12,
                 mySessions: 5,

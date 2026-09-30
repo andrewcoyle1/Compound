@@ -101,9 +101,6 @@ struct ProfileView: View {
             ListRowButton(title: String(localized: "Siri"), systemImage: "siri") {
                 presenter.onSiriPressed()
             }
-            ListRowButton(title: String(localized: "Shortcuts"), systemImage: "square.2.layers.3d") {
-                presenter.onShortcutsPressed()
-            }
         } header: {
             Text("General")
         }
@@ -132,9 +129,6 @@ struct ProfileView: View {
         Section {
             ListRowButton(title: String(localized: "Gym Profiles"), systemImage: Symbol.gym) {
                 presenter.onGymProfilesPressed()
-            }
-            ListRowButton(title: String(localized: "Exercises"), systemImage: Symbol.exercise) {
-                presenter.onExerciseLibraryPressed()
             }
             ListRowButton(title: String(localized: "Workout Settings"), systemImage: Symbol.workout) {
                 presenter.onWorkoutSettingsPressed()

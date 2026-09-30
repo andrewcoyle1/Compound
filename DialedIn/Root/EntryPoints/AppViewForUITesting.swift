@@ -190,6 +190,26 @@ extension AppViewForUITesting {
             ("STARTSCREEN_SET_KEYBOARD", { router in
                 ActiveSessionScreen(interactor: interactor) { try? builder.workoutTrackerView(router: router) }.any()
             }),
+            // MARK: - Tab bar accessory
+            // The whole tab bar, so the accessory above it is in the shot: a workout, a workout
+            // resting, and a draft meal.
+            ("STARTSCREEN_TAB_ACCESSORY_WORKOUT", { router in
+                ActiveSessionScreen(interactor: interactor) { builder.tabBarView(router: router) }.any()
+            }),
+            ("STARTSCREEN_TAB_ACCESSORY_REST", { router in
+                ActiveSessionScreen(interactor: interactor) { builder.tabBarView(router: router) }
+                    .task {
+                        try? await Task.sleep(for: .seconds(1))
+                        guard let session = interactor.activeSession else { return }
+                        interactor.startRest(durationSeconds: 90, session: session, currentExerciseIndex: 0)
+                    }
+                    .any()
+            }),
+            ("STARTSCREEN_TAB_ACCESSORY_MEAL", { router in
+                builder.tabBarView(router: router)
+                    .task { try? interactor.updateDraftMeal(.mock) }
+                    .any()
+            }),
             // MARK: - WeeklyReview
             ("STARTSCREEN_WEEKLY_REVIEW", { builder.weeklyReviewView(router: $0).any() }),
             // MARK: - Muscle Balance

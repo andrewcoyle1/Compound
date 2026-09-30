@@ -63,3 +63,24 @@ extension Array where Element == MealItemModel {
         filter { $0.sourceType == .recipe && $0.sourceId == recipeId }.count
     }
 }
+
+extension FoodModel {
+
+    /// A food's nutrients are stored per 100 g or ml, but its row names its portion, so the row
+    /// scales them to the portion Quick Add logs. It printed the per-100 g figures beside the
+    /// portion: olive oil read "884 kcal · 1 tbsp".
+    var rowNutrientScale: Double {
+        defaultPortionAmount / 100
+    }
+
+    /// The portion's own name when it has a declared weight or volume, else the amount itself.
+    var rowPortionText: String? {
+        let declared = measurementMethod == .weight ? portionGramsCalculated : portionMillilitersCalculated
+        let hasDeclaredAmount = declared.map { $0.isFinite && $0 > 0 } ?? false
+        if hasDeclaredAmount, let quantity = portionQuantityCalculated, let name = portionNameCalculated {
+            return "\(quantity.formatted()) \(name)"
+        }
+        let unit = measurementMethod == .weight ? "g" : "ml"
+        return "\(defaultPortionAmount.formatted(.number.precision(.fractionLength(0...1)))) \(unit)"
+    }
+}

@@ -14,10 +14,24 @@ struct FoodItemSearchView: View {
 
     var body: some View {
         List {
-            if !presenter.historyFoods.isEmpty && presenter.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
-                historySection
+            if trimmedQuery.isEmpty {
+                if presenter.historyFoods.isEmpty {
+                    ContentUnavailableView {
+                        Label("Search Foods", systemImage: Symbol.search)
+                    } description: {
+                        Text("Find foods you've saved and packaged foods from Open Food Facts.")
+                    }
+                } else {
+                    historySection
+                }
+            } else {
+                librarySection
+                if presenter.searchesOnline {
+                    openFoodFactsSection
+                } else if presenter.libraryResults.isEmpty {
+                    ContentUnavailableView.search(text: trimmedQuery)
+                }
             }
-            openFoodFactsSection
         }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search foods"))
         .onChange(of: presenter.searchText) { _, newValue in
@@ -31,52 +45,70 @@ struct FoodItemSearchView: View {
         }
     }
 
+    private var trimmedQuery: String {
+        presenter.searchText.trimmingCharacters(in: .whitespaces)
+    }
+
+    @ViewBuilder
+    private var librarySection: some View {
+        if !presenter.libraryResults.isEmpty {
+            Section {
+                ForEach(presenter.libraryResults) { food in
+                    foodRow(food)
+                }
+            } header: {
+                Text("My Foods")
+            }
+        }
+    }
+
     private var historySection: some View {
         Section {
             ForEach(presenter.historyFoods) { food in
                 foodRow(food)
             }
-            .removeListRowFormatting()
         } header: {
             Text("Recent")
         }
     }
 
-    @ViewBuilder
     private var openFoodFactsSection: some View {
-        let trimmed = presenter.searchText.trimmingCharacters(in: .whitespaces)
-        if !trimmed.isEmpty || !presenter.openFoodFactsFoods.isEmpty {
-            Section {
-                if presenter.isSearching {
-                    HStack(spacing: Spacing.s) {
-                        ProgressView()
-                        Text("Searching…")
-                            .font(.rowDetail)
-                            .foregroundStyle(.secondary)
-                    }
-                } else if presenter.searchFailedOffline {
-                    InlineMessage(.warning, "You're offline. Showing your library only.")
-                } else if presenter.searchFailed {
-                    InlineMessage(.error, "Couldn't search right now")
-                } else if presenter.openFoodFactsFoods.isEmpty && !trimmed.isEmpty {
-                    ContentUnavailableView.search(text: trimmed)
-                } else {
-                    ForEach(presenter.openFoodFactsFoods) { food in
-                        foodRow(food)
-                    }
-                    .removeListRowFormatting()
+        Section {
+            if presenter.isSearching {
+                HStack(spacing: Spacing.s) {
+                    ProgressView()
+                    Text("Searching…")
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
                 }
-            } header: {
-                Text("Open Food Facts")
+            } else if presenter.searchFailedOffline {
+                InlineMessage(.warning, "You're offline. Showing your library only.")
+            } else if presenter.searchFailed {
+                InlineMessage(.error, "Couldn't search right now")
+            } else if presenter.onlineResults.isEmpty {
+                if presenter.libraryResults.isEmpty {
+                    ContentUnavailableView.search(text: trimmedQuery)
+                }
+            } else {
+                ForEach(presenter.onlineResults) { food in
+                    foodRow(food)
+                }
             }
+        } header: {
+            Text("Open Food Facts")
         }
     }
 
     private func foodRow(_ food: FoodModel) -> some View {
-        FoodLibraryPickerRowView(delegate: FoodLibraryPickerRowDelegate(
+        let settings = presenter.tileSettings
+        return FoodLibraryPickerRowView(delegate: FoodLibraryPickerRowDelegate(
             item: food,
             onAdd: { delegate.onFoodSelected?(food) },
             onQuickAdd: { delegate.onFoodSelected?(food) },
+            showImage: settings.showFoodImageInLogger,
+            showCalories: settings.showCaloriesInLogger,
+            showMacros: settings.showMacrosInLogger,
+            showPortion: settings.showPortionInLogger,
             addedCount: delegate.mealItems?.wrappedValue.addedCount(forIngredientId: food.ingredientId) ?? 0
         ))
     }

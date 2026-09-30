@@ -10,6 +10,21 @@ protocol FoodItem {
     var fats: Double? { get }
     var portionQuantityCalculated: Double? { get }
     var portionNameCalculated: String? { get }
+    /// What the row's calories and macros are multiplied by, so they describe `rowPortionText`.
+    var rowNutrientScale: Double { get }
+    /// The amount the row's figures are for, e.g. "0.5 cup" or "100 g".
+    var rowPortionText: String? { get }
+}
+
+extension FoodItem {
+
+    /// A recipe's figures are already per serving.
+    var rowNutrientScale: Double { 1 }
+
+    var rowPortionText: String? {
+        guard let quantity = portionQuantityCalculated, let name = portionNameCalculated else { return nil }
+        return "\(quantity.formatted()) \(name)"
+    }
 }
 
 struct FoodLibraryPickerRowDelegate<T: FoodItem> {
@@ -53,16 +68,17 @@ struct FoodLibraryPickerRowDelegate<T: FoodItem> {
     /// separated by middle dots. Nil when all three are off.
     var detail: String? {
         var parts: [String] = []
+        let scale = item.rowNutrientScale
         if showCalories {
-            parts.append(Format.kcal(item.calories ?? 0))
+            parts.append(Format.kcal((item.calories ?? 0) * scale))
         }
         if showMacros {
-            parts.append(String(localized: "\(Format.grams(item.protein ?? 0)) P"))
-            parts.append(String(localized: "\(Format.grams(item.fats ?? 0)) F"))
-            parts.append(String(localized: "\(Format.grams(item.carbs ?? 0)) C"))
+            parts.append(String(localized: "\(Format.grams((item.protein ?? 0) * scale)) P"))
+            parts.append(String(localized: "\(Format.grams((item.fats ?? 0) * scale)) F"))
+            parts.append(String(localized: "\(Format.grams((item.carbs ?? 0) * scale)) C"))
         }
-        if showPortion, let quantity = item.portionQuantityCalculated, let name = item.portionNameCalculated {
-            parts.append("\(quantity.formatted()) \(name)")
+        if showPortion, let portion = item.rowPortionText {
+            parts.append(portion)
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }

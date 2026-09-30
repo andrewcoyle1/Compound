@@ -126,3 +126,31 @@ struct NutritionScalingTests {
         #expect(item.nutrients[.calories] == 200)
     }
 }
+
+/// The picker row's second line describes the portion it names.
+@MainActor
+struct FoodPickerRowDetailTests {
+
+    @Test("Test A Food Row Scales Its Figures To The Named Portion")
+    func testAFoodRowScalesItsFiguresToTheNamedPortion() {
+        var nutrients = NutrientMap()
+        nutrients[.calories] = 884
+        nutrients[.fatTotal] = 100
+        let oil = FoodModel(name: "Olive Oil", nutrients: nutrients, servingWeight: 13.5, portionSize: 1, portionName: "tbsp")
+
+        let detail = FoodLibraryPickerRowDelegate(item: oil, showMacros: false).detail
+
+        #expect(detail == "\(Format.kcal(884 * 0.135)) · 1 tbsp")
+    }
+
+    @Test("Test A Food With No Portion Says Its Figures Are Per 100 g")
+    func testAFoodWithNoPortionSaysItsFiguresArePer100g() {
+        var nutrients = NutrientMap()
+        nutrients[.calories] = 389
+        let oats = FoodModel(name: "Oats", nutrients: nutrients, portionSize: 0.5, portionName: "cup")
+
+        let detail = FoodLibraryPickerRowDelegate(item: oats, showMacros: false).detail
+
+        #expect(detail == "\(Format.kcal(389)) · 100 g")
+    }
+}

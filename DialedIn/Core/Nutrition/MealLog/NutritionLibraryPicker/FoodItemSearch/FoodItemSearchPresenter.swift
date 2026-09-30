@@ -19,6 +19,37 @@ class FoodItemSearchPresenter {
 
     var searchText: String = ""
 
+    private var trimmedQuery: String {
+        searchText.trimmingCharacters(in: .whitespaces)
+    }
+
+    /// The user's own foods matching the query, by name or brand. They come first and need no
+    /// connection, which is what the offline message promises; the screen used to search only
+    /// Open Food Facts, so offline it showed nothing at all.
+    var libraryResults: [FoodModel] {
+        let query = trimmedQuery
+        guard !query.isEmpty else { return [] }
+        return Array(interactor.foods.filter {
+            $0.name.localizedStandardContains(query) || ($0.brandName?.localizedStandardContains(query) ?? false)
+        }.prefix(20))
+    }
+
+    /// The Logger Food Tiles settings, which the library's rows already honoured and these ignored.
+    var tileSettings: FoodLogSettings {
+        interactor.foodLogSettings
+    }
+
+    /// Whether the Open Food Facts section appears at all; the Food Log settings can turn it off.
+    var searchesOnline: Bool {
+        interactor.foodLogSettings.showOpenFoodFactsFoods
+    }
+
+    /// Open Food Facts results less the ones already in the library, which are listed above them.
+    var onlineResults: [FoodModel] {
+        let saved = Set(libraryResults.map(\.ingredientId))
+        return openFoodFactsFoods.filter { !saved.contains($0.ingredientId) }
+    }
+
     private var searchTask: Task<Void, Never>?
 
     /// How long typing has to stop before the query is sent. Long enough that a word typed at

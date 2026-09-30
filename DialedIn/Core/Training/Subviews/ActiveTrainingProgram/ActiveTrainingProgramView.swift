@@ -40,21 +40,34 @@ struct ActiveTrainingProgramView: View {
             HStack(spacing: Spacing.s) {
                 Text("Active Program")
                 Spacer()
-                Button("Previous Microcycle", systemImage: Symbol.previous) {
-                    presenter.onPreviousCyclePressed()
-                }
-                .disabled(!presenter.canShowPreviousCycle)
-                Text(presenter.microcycleHeaderText)
-                    .monospacedDigit()
-                Button("Next Microcycle", systemImage: Symbol.next) {
-                    presenter.onNextCyclePressed()
-                }
-                .disabled(!presenter.canShowNextCycle)
+                microcycleMenu
             }
-            .labelStyle(.iconOnly)
-            .buttonStyle(.borderless)
         }
         .listSectionMargins(.top, 0)
+    }
+
+    private var microcycleMenu: some View {
+        Menu {
+            Picker("Microcycle", selection: Binding(
+                get: { presenter.displayedCycleIndex },
+                set: { presenter.onCycleSelected($0) }
+            )) {
+                ForEach(0..<presenter.cycleCount, id: \.self) { index in
+                    Text(presenter.cycleMenuTitle(index)).tag(index)
+                }
+            }
+        } label: {
+            HStack(spacing: Spacing.xxs) {
+                Text(presenter.microcycleHeaderText)
+                    .monospacedDigit()
+                Image(systemName: Symbol.choose)
+                    .iconSize(.small)
+            }
+        }
+        .menuStyle(.button)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Choose microcycle")
+        .accessibilityValue(presenter.microcycleHeaderText)
     }
 
     @ViewBuilder

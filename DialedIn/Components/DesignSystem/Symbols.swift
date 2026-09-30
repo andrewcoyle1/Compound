@@ -99,9 +99,8 @@ enum Symbol {
     static let more = "ellipsis"
     /// Skipping a planned workout so the next one moves up.
     static let skip = "forward.end"
-    /// Stepping between pages, such as the microcycles of a program.
-    static let previous = "chevron.left"
-    static let next = "chevron.right"
+    /// A menu that picks one of several, such as which microcycle of a program to show.
+    static let choose = "chevron.up.chevron.down"
     static let repeatPlan = "arrow.counterclockwise"
 
     // Status

@@ -47,11 +47,8 @@ class ActiveTrainingProgramPresenter {
     private(set) var viewedCycleIndex: Int?
     private(set) var displayedCycleIndex: Int = 0
     private(set) var cycleCount: Int = 1
-
-    /// Read from the request, not only the last render, so two taps before a redraw both count.
-    private var shownCycleIndex: Int { viewedCycleIndex ?? displayedCycleIndex }
-    var canShowPreviousCycle: Bool { shownCycleIndex > 0 }
-    var canShowNextCycle: Bool { shownCycleIndex < cycleCount - 1 }
+    /// The microcycle the user is on, 0-based, marked in the menu.
+    private(set) var currentCycleIndex: Int = 0
 
     var activeSession: WorkoutSessionModel? {
         interactor.activeSession
@@ -78,14 +75,17 @@ class ActiveTrainingProgramPresenter {
         router.showEditTrainingProgramView(delegate: EditTrainingProgramDelegate(program: program))
     }
 
-    func onPreviousCyclePressed() {
-        guard canShowPreviousCycle else { return }
-        viewedCycleIndex = shownCycleIndex - 1
+    /// Picking the microcycle the user is on goes back to following it as the block moves on.
+    func onCycleSelected(_ index: Int) {
+        guard (0..<cycleCount).contains(index) else { return }
+        viewedCycleIndex = index == currentCycleIndex ? nil : index
     }
 
-    func onNextCyclePressed() {
-        guard canShowNextCycle else { return }
-        viewedCycleIndex = shownCycleIndex + 1
+    func cycleMenuTitle(_ index: Int) -> String {
+        let number = index + 1
+        return index == currentCycleIndex
+            ? String(localized: "Microcycle \(number) (Current)")
+            : String(localized: "Microcycle \(number)")
     }
 
     /// `cycleIndex` is 1-based, as the header shows it.
@@ -120,6 +120,7 @@ class ActiveTrainingProgramPresenter {
         let currentCycle = progress.currentCycleIndex
         let shown = min(viewedCycleIndex ?? currentCycle, progress.cycles.count - 1)
         cycleCount = progress.cycles.count
+        currentCycleIndex = currentCycle
         displayedCycleIndex = shown
 
         let cycleNumber = shown + 1

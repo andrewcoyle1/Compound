@@ -300,8 +300,8 @@ struct ActiveTrainingProgramPresenterTests {
 
     // MARK: - Browsing microcycles
 
-    @Test("Test Paging Shows Past And Future Microcycles")
-    func testPagingShowsPastAndFutureMicrocycles() throws {
+    @Test("Test Picking A Microcycle Shows Past And Future Ones")
+    func testPickingAMicrocycleShowsPastAndFutureOnes() throws {
         let days = [day("Upper"), day("Lower")]
         let screen = makeScreen(sessions: [
             session(id: "s1", day: days[0], order: 1),
@@ -310,21 +310,34 @@ struct ActiveTrainingProgramPresenterTests {
         let followed = program(days: days, cycles: 3)
 
         _ = screen.presenter.microcycleItems(program: followed)
-        #expect(screen.presenter.canShowPreviousCycle)
-        #expect(screen.presenter.canShowNextCycle)
+        #expect(screen.presenter.cycleCount == 3)
+        #expect(screen.presenter.displayedCycleIndex == 1)
+        #expect(screen.presenter.cycleMenuTitle(1) == "Microcycle 2 (Current)")
+        #expect(screen.presenter.cycleMenuTitle(0) == "Microcycle 1")
 
-        screen.presenter.onPreviousCyclePressed()
+        screen.presenter.onCycleSelected(0)
         let past = screen.presenter.microcycleItems(program: followed)
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 1 of 3")
         #expect(past.allSatisfy { $0.timing == .past && $0.isCompleted })
-        #expect(!screen.presenter.canShowPreviousCycle)
 
-        screen.presenter.onNextCyclePressed()
-        screen.presenter.onNextCyclePressed()
+        screen.presenter.onCycleSelected(2)
         let future = screen.presenter.microcycleItems(program: followed)
         #expect(screen.presenter.microcycleHeaderText == "Microcycle 3 of 3")
         #expect(future.allSatisfy { $0.timing == .future && !$0.canSkip })
-        #expect(!screen.presenter.canShowNextCycle)
+
+        screen.presenter.onCycleSelected(1)
+        _ = screen.presenter.microcycleItems(program: followed)
+        #expect(screen.presenter.viewedCycleIndex == nil)
+    }
+
+    @Test("Test Picking A Microcycle Out Of Range Is Ignored")
+    func testPickingAMicrocycleOutOfRangeIsIgnored() {
+        let screen = makeScreen()
+        _ = screen.presenter.microcycleItems(program: program(days: [day("Upper")], cycles: 2))
+
+        screen.presenter.onCycleSelected(5)
+
+        #expect(screen.presenter.viewedCycleIndex == nil)
     }
 
     /// A day in a later microcycle is a preview: it opens the template without a start button.
@@ -333,7 +346,7 @@ struct ActiveTrainingProgramPresenterTests {
         let screen = makeScreen()
         let followed = program(days: [day("Upper")], cycles: 2)
         _ = screen.presenter.microcycleItems(program: followed)
-        screen.presenter.onNextCyclePressed()
+        screen.presenter.onCycleSelected(1)
 
         let item = try #require(screen.presenter.microcycleItems(program: followed).first)
         screen.presenter.onItemPressed(item)

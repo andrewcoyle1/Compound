@@ -5750,6 +5750,16 @@
         }
       }
     },
+    "Choose microcycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir microciclo"
+          }
+        }
+      }
+    },
     "Choose Gym Profile" : {
       "localizations" : {
         "es" : {
@@ -13335,12 +13345,42 @@
     "Metrics" : {
       "shouldTranslate" : false
     },
+    "Microcycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microciclo"
+          }
+        }
+      }
+    },
     "Microcycle %@ of %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Microciclo %1$@ de %2$@"
+          }
+        }
+      }
+    },
+    "Microcycle %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microciclo %lld"
+          }
+        }
+      }
+    },
+    "Microcycle %lld (Current)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Microciclo %lld (actual)"
           }
         }
       }
@@ -13867,16 +13907,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siguiente"
-          }
-        }
-      }
-    },
-    "Next Microcycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Microciclo siguiente"
           }
         }
       }
@@ -16523,16 +16553,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anterior"
-          }
-        }
-      }
-    },
-    "Previous Microcycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Microciclo anterior"
           }
         }
       }

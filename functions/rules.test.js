@@ -68,6 +68,7 @@ t("users/private: owner only", async () => {
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],
     ["gym_profiles", "author_id"], ["training_programs", "author_id"], ["workout_templates", "author_id"],
+    ["mesocycles", "author_id"], ["macrocycles", "author_id"], ["training_plans", "author_id"],
     ["nutrition_day_annotations", "author_id"], ["logging_break", "author_id"],
     ["check_in_record", "author_id"], ["recipe_templates", "author_id"], ["foods", "author_id"],
 ]) {

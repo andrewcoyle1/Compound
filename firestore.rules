@@ -97,14 +97,28 @@ service cloud.firestore {
         allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
       }
 
-      // Training Programs subcollection
+      // Mesocycles subcollection
+      match /mesocycles/{mesocycle_id} {
+        allow read: if isAuthed() && request.auth.uid == user_id;
+        allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;
+        allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
+      }
+
+      // Macrocycles subcollection: the mesocycles being followed and progress through them
+      match /macrocycles/{macrocycle_id} {
+        allow read: if isAuthed() && request.auth.uid == user_id;
+        allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;
+        allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
+      }
+
+      // Pre-rename copies of mesocycles and macrocycles, kept until
+      // functions/scripts/migrateMesocycleNames.js --delete-old has run.
       match /training_programs/{training_program_id} {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;
         allow update, delete: if isAuthed() && request.auth.uid == user_id && resource.data.author_id == user_id;
       }
 
-      // Training Plans subcollection: the blocks being followed and progress through them
       match /training_plans/{training_plan_id} {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.author_id == user_id;

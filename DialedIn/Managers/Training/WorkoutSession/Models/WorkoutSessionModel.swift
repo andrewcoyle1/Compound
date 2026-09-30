@@ -66,7 +66,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case authorId = "author_id"
         case name = "name"
         case workoutTemplateId = "workout_template_id"
-        case mesocycleId = "training_program_id"
+        case mesocycleId = "mesocycle_id"
         case dateCreated = "date_created"
         case dateModified = "date_modified"
         case endedAt = "ended_at"

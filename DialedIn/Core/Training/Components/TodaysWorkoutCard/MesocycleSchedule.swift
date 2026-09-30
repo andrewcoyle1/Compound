@@ -187,7 +187,7 @@ struct CycleSkip: Codable, Sendable, Hashable {
     let date: Date
 
     enum CodingKeys: String, CodingKey {
-        case mesocycleIndex = "block_index"
+        case mesocycleIndex = "mesocycle_index"
         case cycleIndex = "cycle_index"
         case position
         case templateId = "template_id"

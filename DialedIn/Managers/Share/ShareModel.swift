@@ -23,7 +23,7 @@ struct ShareModel: Codable, Identifiable, Sendable {
         var kind: String {
             switch self {
             case .template: "template"
-            case .mesocycle: "program"
+            case .mesocycle: "mesocycle"
             }
         }
 
@@ -76,7 +76,8 @@ struct ShareModel: Codable, Identifiable, Sendable {
         dateCreated = try container.decode(Date.self, forKey: .dateCreated)
         status = try container.decode(Status.self, forKey: .status)
         switch try container.decode(String.self, forKey: .kind) {
-        case "program": payload = .mesocycle(try container.decode(Mesocycle.self, forKey: .payload))
+        // "program" is what shares sent before the rename said.
+        case "mesocycle", "program": payload = .mesocycle(try container.decode(Mesocycle.self, forKey: .payload))
         default: payload = .template(try container.decode(WorkoutTemplateModel.self, forKey: .payload))
         }
     }

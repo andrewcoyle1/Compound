@@ -541,7 +541,7 @@ struct Dependencies {
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [weak authManager] in
                         guard let uid = authManager?.auth?.uid else { return nil }
-                        return "users/\(uid)/training_programs"
+                        return "users/\(uid)/mesocycles"
                     }
                 ),
                 managerKey: Keys.mesocycleManagerKey,
@@ -554,7 +554,7 @@ struct Dependencies {
                     remote: FirebaseRemoteCollectionService(
                         collectionPath: { [weak authManager] in
                             guard let uid = authManager?.auth?.uid else { return nil }
-                            return "users/\(uid)/training_plans"
+                            return "users/\(uid)/macrocycles"
                         }
                     ),
                     managerKey: MacrocycleManager.managerKey,
@@ -884,7 +884,7 @@ struct Dependencies {
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: { [weak authManager] in
                         guard let uid = authManager?.auth?.uid else { return nil }
-                        return "users/\(uid)/training_programs"
+                        return "users/\(uid)/mesocycles"
                     }
                 ),
                 managerKey: Keys.mesocycleManagerKey,
@@ -897,7 +897,7 @@ struct Dependencies {
                     remote: FirebaseRemoteCollectionService(
                         collectionPath: { [weak authManager] in
                             guard let uid = authManager?.auth?.uid else { return nil }
-                            return "users/\(uid)/training_plans"
+                            return "users/\(uid)/macrocycles"
                         }
                     ),
                     managerKey: MacrocycleManager.managerKey,

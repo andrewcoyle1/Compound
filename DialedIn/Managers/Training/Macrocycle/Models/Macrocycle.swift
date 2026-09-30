@@ -65,10 +65,10 @@ struct Macrocycle: DataSyncModelProtocol, Hashable {
         case id
         case authorId = "author_id"
         case name
-        case mesocycleIds = "program_ids"
+        case mesocycleIds = "mesocycle_ids"
         case status
-        case mesocycleIndex = "block_index"
-        case mesocycleStartedAt = "block_started_at"
+        case mesocycleIndex = "mesocycle_index"
+        case mesocycleStartedAt = "mesocycle_started_at"
         case skips
         case iteration
         case dateCreated = "date_created"

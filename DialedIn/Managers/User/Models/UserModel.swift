@@ -217,7 +217,7 @@ struct UserModel: DataSyncModelProtocol, Equatable {
         case submittedWeightUnitPreference = "submitted_weight_unit_preference"
         case submittedDistanceUnitPreference = "submitted_distance_unit_preference"
         case submittedCurrentGoalId = "submitted_current_goal_id"
-        case submittedActiveMesocycleId = "submitted_active_training_program_id"
+        case submittedActiveMesocycleId = "submitted_active_mesocycle_id"
         case submittedFavouriteGymProfileId = "submitted_favourite_gym_profile_id"
         case didCompleteOnboarding = "did_complete_onboarding"
         case blockedUserIds = "blocked_user_ids"

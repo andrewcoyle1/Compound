@@ -2,7 +2,7 @@
 //  MacrocycleManager.swift
 //  DialedIn
 //
-//  The user's plans, synced at `users/{uid}/training_plans`. Holds which block the user is on,
+//  The user's plans, synced at `users/{uid}/macrocycles`. Holds which block the user is on,
 //  when it started and what they skipped; `MesocycleSchedule` works out the rest from sessions.
 //
 

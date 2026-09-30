@@ -273,11 +273,27 @@ struct MesocycleSharingTests {
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let decoded = try JSONDecoder().decode(ShareModel.self, from: data)
 
-        #expect(json?["kind"] as? String == "program")
+        #expect(json?["kind"] as? String == "mesocycle")
         #expect(json?["from_user_id"] as? String == "a")
         #expect(decoded.payload.name == Mesocycle.mock.name)
         #expect(decoded.status == .pending)
         #expect(PrivateUserSettings.socialPushKey(for: .share).rawValue == "social_push_shares")
         #expect(PrivateUserSettings().isSocialPushEnabled(for: .share))
+    }
+
+    /// Shares written before mesocycles were renamed say "program"; they still open as one.
+    @Test("Test A Share Sent Before The Rename Still Opens As A Mesocycle")
+    func testAShareSentBeforeTheRenameStillOpens() throws {
+        let share = ShareModel(id: "s", fromUserId: "a", toUserId: "b", payload: .mesocycle(.mock), dateCreated: Date(timeIntervalSince1970: 0))
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(share)) as? [String: Any])
+        json["kind"] = "program"
+
+        let decoded = try JSONDecoder().decode(ShareModel.self, from: JSONSerialization.data(withJSONObject: json))
+
+        guard case .mesocycle(let mesocycle) = decoded.payload else {
+            Issue.record("Expected a mesocycle payload")
+            return
+        }
+        #expect(mesocycle.name == Mesocycle.mock.name)
     }
 }

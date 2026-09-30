@@ -57,7 +57,7 @@ struct PrebuiltMesocycleTests {
     @Test("Test Rest Entries Become Empty Days And Workout Ids Resolve")
     func testRestEntriesBecomeEmptyDays() throws {
         let dto = try decode("""
-        {"programId":"p","name":"P","icon":"flag","colour":"#FF0000","numMicrocycles":6,
+        {"mesocycleId":"p","name":"P","icon":"flag","colour":"#FF0000","numMicrocycles":6,
          "deload":"start","periodisation":false,"days":["workout-push-1","rest"]}
         """)
         let mesocycle = try #require(dto.toModel(workouts: PrebuiltSeedData.workoutTemplates))
@@ -71,7 +71,7 @@ struct PrebuiltMesocycleTests {
     @Test("Test A Program Naming A Missing Workout Is Dropped Whole")
     func testAMesocycleNamingAMissingWorkoutIsDropped() throws {
         let dto = try decode("""
-        {"programId":"p","name":"P","icon":"flag","colour":"#FF0000","numMicrocycles":6,
+        {"mesocycleId":"p","name":"P","icon":"flag","colour":"#FF0000","numMicrocycles":6,
          "deload":"none","periodisation":false,"days":["workout-push-1","workout-nope"]}
         """)
         #expect(dto.toModel(workouts: PrebuiltSeedData.workoutTemplates) == nil)

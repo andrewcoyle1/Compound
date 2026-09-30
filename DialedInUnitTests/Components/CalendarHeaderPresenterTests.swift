@@ -90,4 +90,39 @@ struct CalendarHeaderPresenterTests {
 
         #expect(screen.interactor.trackedEventNames == ["CalendarHeader_ReturnedToToday"])
     }
+
+    @Test("Test The Strip Reaches A Year Back And Today")
+    func testTheStripReachesAYearBackAndToday() throws {
+        let presenter = makeScreen().presenter
+        let calendar = presenter.calendar
+        let yearAgo = try #require(calendar.date(byAdding: .day, value: -365, to: presenter.today))
+
+        let first = try #require(presenter.days.first)
+        let last = try #require(presenter.days.last)
+        #expect(first <= yearAgo)
+        #expect(last > presenter.today)
+    }
+
+    @Test("Test A Day Beyond The Strip Rebuilds It Around That Day, Still Reaching Today")
+    func testADayBeyondTheStripRebuildsItAroundThatDay() throws {
+        let presenter = makeScreen().presenter
+        let calendar = presenter.calendar
+        let farBack = try #require(calendar.date(byAdding: .year, value: -3, to: presenter.today))
+
+        presenter.rebuildDaysIfOutside(farBack)
+
+        #expect(presenter.days.contains(farBack))
+        #expect(try #require(presenter.days.first) < farBack)
+        #expect(presenter.days.contains(presenter.today))
+    }
+
+    @Test("Test A Day Already In The Strip Leaves It Alone")
+    func testADayAlreadyInTheStripLeavesItAlone() {
+        let presenter = makeScreen().presenter
+        let before = presenter.days
+
+        presenter.rebuildDaysIfOutside(presenter.today)
+
+        #expect(presenter.days == before)
+    }
 }

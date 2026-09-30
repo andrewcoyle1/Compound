@@ -22,9 +22,11 @@ class CalendarHeaderPresenter {
     /// dismissal, when the host screen's action can safely run.
     private var dateAwaitingHostAction: Date?
 
-    private let startDate: Date
-    private let endDate: Date
-    private let daysPerLoad: Int = 100
+    /// How far the strip reaches either side of the day it is built around. Fixed rather than
+    /// loaded as the user scrolls: inserting days ahead of the visible ones shifts every cell
+    /// mid-fling. A date picked beyond it in the expanded calendar rebuilds the range instead.
+    private static let daysBack = 365
+    private static let daysAhead = 100
 
     /// How many cells are on screen at once. The strip pages one day at a time, so the leading
     /// cell and the visible window are no longer the same thing.
@@ -42,12 +44,8 @@ class CalendarHeaderPresenter {
         self.router = router
         self.delegate = delegate
 
-        // Initialize with a large range centered on today
         let today = calendar.startOfDay(for: Date())
-        self.startDate = calendar.date(byAdding: .day, value: -daysPerLoad, to: today) ?? today
-        self.endDate = calendar.date(byAdding: .day, value: daysPerLoad, to: today) ?? today
-        
-        self.days = computedDays
+        self.days = Self.days(around: today, today: today, calendar: calendar)
     }
 
     /// The week containing today, for the view's initial scroll position.
@@ -64,7 +62,13 @@ class CalendarHeaderPresenter {
         today = calendar.startOfDay(for: .now)
     }
 
-    private var computedDays: [Date] {
+    /// A year back from `anchor` to `daysAhead` past whichever is later of it and today, so the
+    /// "today" button always has today to scroll to, however far back the anchor is.
+    static func days(around anchor: Date, today: Date, calendar: Calendar) -> [Date] {
+        let anchor = calendar.startOfDay(for: anchor)
+        let startDate = calendar.date(byAdding: .day, value: -daysBack, to: anchor) ?? anchor
+        let endDate = calendar.date(byAdding: .day, value: daysAhead, to: max(anchor, today)) ?? anchor
+
         // Starts on a week boundary so that scrolling to a week start always has that week's
         // seven days ahead of it, which is what the "today" button relies on.
         guard let firstDay = calendar.dateInterval(of: .weekOfYear, for: startDate)?.start else {
@@ -146,6 +150,7 @@ class CalendarHeaderPresenter {
                 onDateSelected: { [weak self] date, _ in
                     guard let self else { return }
                     self.interactor.trackEvent(event: Event.datePickedFromCalendar)
+                    self.rebuildDaysIfOutside(date)
                     self.focusedDate = date
                     self.dateAwaitingHostAction = date
                 },
@@ -160,6 +165,15 @@ class CalendarHeaderPresenter {
             transitionId: transitionId,
             namespace: namespace
         )
+    }
+
+    /// Rebuilds the strip around `date` when it is beyond either end, before `focusedDate`
+    /// moves, so the day the view scrolls to exists. This runs behind the dismissing sheet, so
+    /// swapping the data out does not show.
+    func rebuildDaysIfOutside(_ date: Date) {
+        let day = calendar.startOfDay(for: date)
+        guard let first = days.first, let last = days.last, day < first || day > last else { return }
+        days = Self.days(around: day, today: today, calendar: calendar)
     }
 
     /// One map for the whole header rather than a lookup per cell. Each `getForDate` call used

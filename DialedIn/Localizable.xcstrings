@@ -14,576 +14,6 @@
         }
       }
     },
-    "Activate Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activar mesociclo"
-          }
-        }
-      }
-    },
-    "Active Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclo activo"
-          }
-        }
-      }
-    },
-    "Add a mesocycle to start compounding." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade un mesociclo para empezar a progresar."
-          }
-        }
-      }
-    },
-    "Add mesocycles below. They run in this order." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade mesociclos abajo. Se hacen en este orden."
-          }
-        }
-      }
-    },
-    "Adds this mesocycle next" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade este mesociclo a continuación"
-          }
-        }
-      }
-    },
-    "After the last mesocycle you can repeat the macrocycle from the first one." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tras el último mesociclo puedes repetir el macrociclo desde el primero."
-          }
-        }
-      }
-    },
-    "Are you sure you want to delete your active mesocycle '%@'? This will remove all scheduled workouts and you'll need to create or select a new mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Seguro que quieres eliminar tu mesociclo activo «%@»? Se quitarán todos los entrenamientos programados y tendrás que crear o elegir un mesociclo nuevo."
-          }
-        }
-      }
-    },
-    "Are you sure you want to delete your active mesocycle? This cannot be undone." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Seguro que quieres eliminar tu mesociclo activo? Esta acción no se puede deshacer."
-          }
-        }
-      }
-    },
-    "Choose an icon for this mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige un icono para este mesociclo."
-          }
-        }
-      }
-    },
-    "Choose Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elegir mesociclo"
-          }
-        }
-      }
-    },
-    "Create mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear mesociclo"
-          }
-        }
-      }
-    },
-    "Create Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear mesociclo"
-          }
-        }
-      }
-    },
-    "Create or start a mesocycle first, then build a macrocycle from it." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea o empieza un mesociclo primero y después arma un macrociclo con él."
-          }
-        }
-      }
-    },
-    "Create your first mesocycle to get started." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crea tu primer mesociclo para empezar."
-          }
-        }
-      }
-    },
-    "Delete Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar mesociclo"
-          }
-        }
-      }
-    },
-    "Delete Mesocycle?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Eliminar mesociclo?"
-          }
-        }
-      }
-    },
-    "Edit Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar mesociclo"
-          }
-        }
-      }
-    },
-    "Enter mesocycle name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce el nombre del mesociclo"
-          }
-        }
-      }
-    },
-    "Every mesocycle is done. Run it again from the first one, or pick something new." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Has terminado todos los mesociclos. Repítelo desde el primero o elige algo nuevo."
-          }
-        }
-      }
-    },
-    "It's time to create a custom mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es hora de crear un mesociclo personalizado."
-          }
-        }
-      }
-    },
-    "Macrocycle name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre del macrociclo"
-          }
-        }
-      }
-    },
-    "Macrocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Macrociclos"
-          }
-        }
-      }
-    },
-    "Mesocycle %@ of %@ · %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclo %1$@ de %2$@ · %3$@"
-          }
-        }
-      }
-    },
-    "Mesocycle %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclo %lld"
-          }
-        }
-      }
-    },
-    "Mesocycle %lld of %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclo %1$lld de %2$lld"
-          }
-        }
-      }
-    },
-    "Mesocycle Name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre del mesociclo"
-          }
-        }
-      }
-    },
-    "Mesocycle settings" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustes del mesociclo"
-          }
-        }
-      }
-    },
-    "Mesocycle Settings" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajustes del mesociclo"
-          }
-        }
-      }
-    },
-    "Mesocycle: %@, %lld days/week" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclo: %1$@, %2$lld días/semana"
-          }
-        }
-      }
-    },
-    "Mesocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclos"
-          }
-        }
-      }
-    },
-    "New Macrocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo macrociclo"
-          }
-        }
-      }
-    },
-    "New Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo mesociclo"
-          }
-        }
-      }
-    },
-    "No Active Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay mesociclo activo"
-          }
-        }
-      }
-    },
-    "No active mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay ningún mesociclo activo."
-          }
-        }
-      }
-    },
-    "No Mesocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay mesociclos"
-          }
-        }
-      }
-    },
-    "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento dentro del mesociclo actual. Si no hay ninguno para un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
-          }
-        }
-      }
-    },
-    "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento, en cualquier mesociclo. Si este entrenamiento no tiene historial de un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
-          }
-        }
-      }
-    },
-    "Repeat Macrocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Repetir macrociclo"
-          }
-        }
-      }
-    },
-    "Reset Mesocycle Seeding" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restablecer mesociclos iniciales"
-          }
-        }
-      }
-    },
-    "Save Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar mesociclo"
-          }
-        }
-      }
-    },
-    "Saved Mesocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesociclos guardados"
-          }
-        }
-      }
-    },
-    "Start Macrocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar macrociclo"
-          }
-        }
-      }
-    },
-    "Start Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar mesociclo"
-          }
-        }
-      }
-    },
-    "Starting a template saves your own copy and makes it your active mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Al empezar una plantilla se guarda tu propia copia y se convierte en tu mesociclo activo."
-          }
-        }
-      }
-    },
-    "The workout your active mesocycle has for today." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El entrenamiento que tu mesociclo activo tiene para hoy."
-          }
-        }
-      }
-    },
-    "These are saved mesocycle designs. Start one from a template to generate a schedule." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estos son diseños de mesociclo guardados. Empieza uno a partir de una plantilla para generar un calendario."
-          }
-        }
-      }
-    },
-    "This workout within the current mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este entrenamiento dentro del mesociclo actual"
-          }
-        }
-      }
-    },
-    "Unable to Activate Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo activar el mesociclo"
-          }
-        }
-      }
-    },
-    "Unable to Create Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo crear el mesociclo"
-          }
-        }
-      }
-    },
-    "Unable to Delete Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo eliminar el mesociclo"
-          }
-        }
-      }
-    },
-    "Unable to Repeat Macrocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo repetir el macrociclo"
-          }
-        }
-      }
-    },
-    "Unable to Save Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo guardar el mesociclo"
-          }
-        }
-      }
-    },
-    "Unable to Start Mesocycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo iniciar el mesociclo"
-          }
-        }
-      }
-    },
-    "Use these options to reset and re-seed system exercises, workouts and mesocycles. Useful for testing or if seeding failed." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa estas opciones para restablecer y volver a cargar los ejercicios, entrenamientos y mesociclos del sistema. Útil para pruebas o si falló la carga inicial."
-          }
-        }
-      }
-    },
-    "What would you like to name this mesocycle?" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Qué nombre quieres darle a este mesociclo?"
-          }
-        }
-      }
-    },
-    "Workouts, mesocycles, exercises and gym profiles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrenamientos, mesociclos, ejercicios y perfiles de gimnasio"
-          }
-        }
-      }
-    },
-    "Your Mesocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tus mesociclos"
-          }
-        }
-      }
-    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -2515,16 +1945,6 @@
         }
       }
     },
-    "%lld. %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld. %2$@"
-          }
-        }
-      }
-    },
     "%lld:%@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2532,6 +1952,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld:%2$@"
+          }
+        }
+      }
+    },
+    "%lld. %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld. %2$@"
           }
         }
       }
@@ -3360,6 +2790,16 @@
         }
       }
     },
+    "Activate Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar mesociclo"
+          }
+        }
+      }
+    },
     "Active" : {
       "localizations" : {
         "es" : {
@@ -3376,6 +2816,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estilo de vida activo, movimiento frecuente, trabajo manual"
+          }
+        }
+      }
+    },
+    "Active Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo activo"
           }
         }
       }
@@ -3517,6 +2967,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir un perfil de gimnasio"
+          }
+        }
+      }
+    },
+    "Add a mesocycle to start compounding." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade un mesociclo para empezar a progresar."
           }
         }
       }
@@ -3758,6 +3218,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir comida"
+          }
+        }
+      }
+    },
+    "Add mesocycles below. They run in this order." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade mesociclos abajo. Se hacen en este orden."
           }
         }
       }
@@ -4114,6 +3584,16 @@
         }
       }
     },
+    "Adds this mesocycle next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade este mesociclo a continuación"
+          }
+        }
+      }
+    },
     "Adductors" : {
       "localizations" : {
         "es" : {
@@ -4210,6 +3690,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Después"
+          }
+        }
+      }
+    },
+    "After the last mesocycle you can repeat the macrocycle from the first one." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras el último mesociclo puedes repetir el macrociclo desde el primero."
           }
         }
       }
@@ -4713,6 +4203,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Seguro que quieres eliminar este entrenamiento? Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your active mesocycle '%@'? This will remove all scheduled workouts and you'll need to create or select a new mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Seguro que quieres eliminar tu mesociclo activo «%@»? Se quitarán todos los entrenamientos programados y tendrás que crear o elegir un mesociclo nuevo."
+          }
+        }
+      }
+    },
+    "Are you sure you want to delete your active mesocycle? This cannot be undone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Seguro que quieres eliminar tu mesociclo activo? Esta acción no se puede deshacer."
           }
         }
       }
@@ -6220,6 +5730,16 @@
         }
       }
     },
+    "Choose an icon for this mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un icono para este mesociclo."
+          }
+        }
+      }
+    },
     "Choose Exercise" : {
       "localizations" : {
         "es" : {
@@ -6250,22 +5770,32 @@
         }
       }
     },
-    "Choose microcycle" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elegir microciclo"
-          }
-        }
-      }
-    },
     "Choose Gym Profile" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elegir perfil de gimnasio"
+          }
+        }
+      }
+    },
+    "Choose Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir mesociclo"
+          }
+        }
+      }
+    },
+    "Choose microcycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir microciclo"
           }
         }
       }
@@ -7349,6 +6879,36 @@
         }
       }
     },
+    "Create mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear mesociclo"
+          }
+        }
+      }
+    },
+    "Create Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear mesociclo"
+          }
+        }
+      }
+    },
+    "Create or start a mesocycle first, then build a macrocycle from it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea o empieza un mesociclo primero y después arma un macrociclo con él."
+          }
+        }
+      }
+    },
     "Create Profile" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7387,6 +6947,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crear entrenamiento"
+          }
+        }
+      }
+    },
+    "Create your first mesocycle to get started." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea tu primer mesociclo para empezar."
           }
         }
       }
@@ -8151,6 +7721,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar comida"
+          }
+        }
+      }
+    },
+    "Delete Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar mesociclo"
+          }
+        }
+      }
+    },
+    "Delete Mesocycle?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar mesociclo?"
           }
         }
       }
@@ -9097,6 +8687,16 @@
         }
       }
     },
+    "Edit Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar mesociclo"
+          }
+        }
+      }
+    },
     "Edit note" : {
       "localizations" : {
         "es" : {
@@ -9473,6 +9073,16 @@
         }
       }
     },
+    "Enter mesocycle name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce el nombre del mesociclo"
+          }
+        }
+      }
+    },
     "Enter preparation time" : {
       "localizations" : {
         "es" : {
@@ -9741,6 +9351,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada tipo de ejercicio vuelve a su descanso predeterminado. Los temporizadores de ejercicios se conservan."
+          }
+        }
+      }
+    },
+    "Every mesocycle is done. Run it again from the first one, or pick something new." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has terminado todos los mesociclos. Repítelo desde el primero o elige algo nuevo."
           }
         }
       }
@@ -12142,6 +11762,16 @@
         }
       }
     },
+    "It's time to create a custom mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es hora de crear un mesociclo personalizado."
+          }
+        }
+      }
+    },
     "Items" : {
       "localizations" : {
         "es" : {
@@ -13429,6 +13059,26 @@
         }
       }
     },
+    "Macrocycle name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del macrociclo"
+          }
+        }
+      }
+    },
+    "Macrocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Macrociclos"
+          }
+        }
+      }
+    },
     "Macros" : {
       "localizations" : {
         "es" : {
@@ -13672,12 +13322,105 @@
         }
       }
     },
+    "Meso %@/%@ · %@" : {
+      "comment" : "The text for the header of the microcycle view. The first argument is the number of the microcycle within the mesocycle. The second argument is the number of the mesocycle. The third argument is the string “Micro %1$arg/%2$arg”.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Meso %1$@/%2$@ · %3$@"
+          }
+        }
+      }
+    },
     "Mesocycle" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle %@ of %@ · %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo %1$@ de %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "Mesocycle %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo %lld"
+          }
+        }
+      }
+    },
+    "Mesocycle %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Mesocycle Name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes del mesociclo"
+          }
+        }
+      }
+    },
+    "Mesocycle: %@, %lld days/week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclo: %1$@, %2$lld días/semana"
+          }
+        }
+      }
+    },
+    "Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclos"
           }
         }
       }
@@ -13765,6 +13508,18 @@
     "Metrics" : {
       "shouldTranslate" : false
     },
+    "Micro %@/%@" : {
+      "comment" : "The header for a microcycle. The first argument is the cycle number. The second argument is the total number of cycles.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Micro %1$@/%2$@"
+          }
+        }
+      }
+    },
     "Microcycle" : {
       "localizations" : {
         "es" : {
@@ -13776,6 +13531,7 @@
       }
     },
     "Microcycle %@ of %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14271,6 +14027,26 @@
         }
       }
     },
+    "New Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo macrociclo"
+          }
+        }
+      }
+    },
+    "New Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo mesociclo"
+          }
+        }
+      }
+    },
     "New Recipe" : {
       "localizations" : {
         "es" : {
@@ -14416,6 +14192,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin pesos %@"
+          }
+        }
+      }
+    },
+    "No Active Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay mesociclo activo"
+          }
+        }
+      }
+    },
+    "No active mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ningún mesociclo activo."
           }
         }
       }
@@ -14703,16 +14499,6 @@
         }
       }
     },
-    "No Macrocycles" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay macrociclos"
-          }
-        }
-      }
-    },
     "No local active workout available" : {
       "localizations" : {
         "es" : {
@@ -14733,12 +14519,32 @@
         }
       }
     },
+    "No Macrocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay macrociclos"
+          }
+        }
+      }
+    },
     "No Matching Exercises" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay ejercicios que coincidan"
+          }
+        }
+      }
+    },
+    "No Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay mesociclos"
           }
         }
       }
@@ -16947,6 +16753,26 @@
         }
       }
     },
+    "Previous values come from the last time you completed this workout within the current mesocycle. If there is none for an exercise, the last time you performed it anywhere is shown instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento dentro del mesociclo actual. Si no hay ninguno para un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
+          }
+        }
+      }
+    },
+    "Previous values come from the last time you completed this workout, in any mesocycle. If this workout has no history for an exercise, the last time you performed it anywhere is shown instead." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores anteriores proceden de la última vez que completaste este entrenamiento, en cualquier mesociclo. Si este entrenamiento no tiene historial de un ejercicio, se muestra la última vez que lo hiciste en cualquier lugar."
+          }
+        }
+      }
+    },
     "Previous values show the weight, reps, and RIR from the last time you performed this exercise, in any workout at all." : {
       "localizations" : {
         "es" : {
@@ -17132,22 +16958,22 @@
         }
       }
     },
-    "Progress Photos" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos de progreso"
-          }
-        }
-      }
-    },
     "Progress in the macrocycle you're following stops counting. Your workout history is kept." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "El progreso del macrociclo que sigues deja de contar. Tu historial de entrenamientos se conserva."
+          }
+        }
+      }
+    },
+    "Progress Photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos de progreso"
           }
         }
       }
@@ -17768,6 +17594,16 @@
         }
       }
     },
+    "Repeat Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetir macrociclo"
+          }
+        }
+      }
+    },
     "Replace %@?" : {
       "localizations" : {
         "es" : {
@@ -18038,6 +17874,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer ejercicios iniciales"
+          }
+        }
+      }
+    },
+    "Reset Mesocycle Seeding" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer mesociclos iniciales"
           }
         }
       }
@@ -18667,6 +18513,16 @@
         }
       }
     },
+    "Save Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar mesociclo"
+          }
+        }
+      }
+    },
     "Save Share Cards to Photos" : {
       "localizations" : {
         "es" : {
@@ -18697,16 +18553,6 @@
         }
       }
     },
-    "Saved" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardados"
-          }
-        }
-      }
-    },
     "Save Workout Templates" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18728,12 +18574,32 @@
         }
       }
     },
+    "Saved" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardados"
+          }
+        }
+      }
+    },
     "Saved %@ to your workouts" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se guardó %@ en tus entrenamientos"
+          }
+        }
+      }
+    },
+    "Saved Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesociclos guardados"
           }
         }
       }
@@ -20038,16 +19904,6 @@
         }
       }
     },
-    "Skipped" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Omitido"
-          }
-        }
-      }
-    },
     "Skip This Week" : {
       "localizations" : {
         "es" : {
@@ -20064,6 +19920,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Omitir entrenamiento"
+          }
+        }
+      }
+    },
+    "Skipped" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitido"
           }
         }
       }
@@ -20299,16 +20165,6 @@
         }
       }
     },
-    "Start At" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar en"
-          }
-        }
-      }
-    },
     "Start a break" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -20350,6 +20206,16 @@
         }
       }
     },
+    "Start At" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar en"
+          }
+        }
+      }
+    },
     "Start date" : {
       "localizations" : {
         "es" : {
@@ -20386,6 +20252,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hora de inicio"
+          }
+        }
+      }
+    },
+    "Start Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar macrociclo"
+          }
+        }
+      }
+    },
+    "Start Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar mesociclo"
           }
         }
       }
@@ -20457,6 +20343,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empezado a las"
+          }
+        }
+      }
+    },
+    "Starting a template saves your own copy and makes it your active mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al empezar una plantilla se guarda tu propia copia y se convierte en tu mesociclo activo."
           }
         }
       }
@@ -21380,6 +21276,16 @@
         }
       }
     },
+    "The workout your active mesocycle has for today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenamiento que tu mesociclo activo tiene para hoy."
+          }
+        }
+      }
+    },
     "The workout your active programme has for today." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -21418,6 +21324,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aún no hay un sitio de ayuda. Mientras tanto, Soporte nos envía un correo directamente y te responderemos por ahí."
+          }
+        }
+      }
+    },
+    "These are saved mesocycle designs. Start one from a template to generate a schedule." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estos son diseños de mesociclo guardados. Empieza uno a partir de una plantilla para generar un calendario."
           }
         }
       }
@@ -21673,6 +21589,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este entrenamiento"
+          }
+        }
+      }
+    },
+    "This workout within the current mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este entrenamiento dentro del mesociclo actual"
           }
         }
       }
@@ -22592,6 +22518,16 @@
         }
       }
     },
+    "Unable to Activate Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo activar el mesociclo"
+          }
+        }
+      }
+    },
     "Unable to add" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -22829,6 +22765,16 @@
         }
       }
     },
+    "Unable to Create Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo crear el mesociclo"
+          }
+        }
+      }
+    },
     "Unable to create the image" : {
       "localizations" : {
         "es" : {
@@ -22905,6 +22851,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo eliminar la comida"
+          }
+        }
+      }
+    },
+    "Unable to Delete Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar el mesociclo"
           }
         }
       }
@@ -23183,6 +23139,16 @@
         }
       }
     },
+    "Unable to Repeat Macrocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo repetir el macrociclo"
+          }
+        }
+      }
+    },
     "Unable to Restore Purchases" : {
       "localizations" : {
         "es" : {
@@ -23269,6 +23235,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo guardar la medida"
+          }
+        }
+      }
+    },
+    "Unable to Save Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el mesociclo"
           }
         }
       }
@@ -23461,6 +23437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo omitir el entrenamiento"
+          }
+        }
+      }
+    },
+    "Unable to Start Mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el mesociclo"
           }
         }
       }
@@ -23939,6 +23925,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar temporizadores de descanso al pasar de un ejercicio a otro"
+          }
+        }
+      }
+    },
+    "Use these options to reset and re-seed system exercises, workouts and mesocycles. Useful for testing or if seeding failed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa estas opciones para restablecer y volver a cargar los ejercicios, entrenamientos y mesociclos del sistema. Útil para pruebas o si falló la carga inicial."
           }
         }
       }
@@ -24993,6 +24989,16 @@
         }
       }
     },
+    "What would you like to name this mesocycle?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué nombre quieres darle a este mesociclo?"
+          }
+        }
+      }
+    },
     "What's a warmup set?" : {
       "localizations" : {
         "es" : {
@@ -25210,7 +25216,7 @@
       }
     },
     "Workout %@" : {
-      "comment" : "A program day's default name; the letter counts the workout days A, B, C.",
+      "comment" : "A mesocycle day's default name; the letter counts the workout days A, B, C.",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25460,6 +25466,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los entrenamientos dejarán de subirse a Strava."
+          }
+        }
+      }
+    },
+    "Workouts, mesocycles, exercises and gym profiles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos, mesociclos, ejercicios y perfiles de gimnasio"
           }
         }
       }
@@ -25906,6 +25922,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu altura se usa para calcular las calorías. Puedes cambiarla más tarde en Perfil."
+          }
+        }
+      }
+    },
+    "Your Mesocycles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus mesociclos"
           }
         }
       }

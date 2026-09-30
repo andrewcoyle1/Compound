@@ -128,11 +128,11 @@ class ActiveMesocyclePresenter {
         let cycleNumber = shown + 1
         isDeloadCycle = isCurrentCycleDeload(cycleIndex: cycleNumber, mesocycle: mesocycle)
         periodisationPhase = currentPeriodisationPhase(cycleIndex: cycleNumber, mesocycle: mesocycle)
-        let microcycleText = String(localized: "Microcycle \(String(describing: cycleNumber)) of \(String(describing: cycleCount))")
+        let microcycleText = String(localized: "Micro \(String(describing: cycleNumber))/\(String(describing: cycleCount))")
         if let plan = interactor.currentMacrocycle, plan.mesocycleIds.count > 1, plan.currentMesocycleId == mesocycle.id {
             let blockNumber = plan.mesocycleIndex + 1
             let blockCount = plan.mesocycleIds.count
-            microcycleHeaderText = String(localized: "Mesocycle \(String(describing: blockNumber)) of \(String(describing: blockCount)) · \(microcycleText)")
+            microcycleHeaderText = String(localized: "Meso \(String(describing: blockNumber))/\(String(describing: blockCount)) · \(microcycleText)")
         } else {
             microcycleHeaderText = microcycleText
         }

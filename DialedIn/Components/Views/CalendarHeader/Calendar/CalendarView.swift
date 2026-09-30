@@ -30,31 +30,12 @@ struct CalendarView: View {
     @State private var scrollProxy: ScrollViewProxy?
 
     var body: some View {
-        // A safe-area bar rather than a row painted with `.bar`: the months scroll under it and the
-        // system's scroll edge effect separates the two.
         monthsScrollView
-            .safeAreaBar(edge: .top) {
-                daysOfWeekHeader
-            }
             .navigationTitle("Calendar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 toolbarContent
             }
-    }
-
-    private var daysOfWeekHeader: some View {
-        HStack(spacing: 0) {
-            ForEach(presenter.daysOfWeek.indices, id: \.self) { index in
-                Text(presenter.daysOfWeek[index])
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-            }
-        }
-        .monospaced()
-        .padding(.horizontal)
-        .padding(.bottom, Spacing.s)
     }
 
     private var monthsScrollView: some View {
@@ -112,11 +93,14 @@ struct CalendarView: View {
                 }
             }
         }
-        .padding(.horizontal)
+        // The strip's margin, not the default 16 pt, so the columns are the same width as its
+        // cells.
+        .padding(.horizontal, CalendarHeaderView.sideMargin)
     }
 
-    /// The same cell the week strip draws, so the sheet reads as the expanded form of the
-    /// header rather than a second calendar.
+    /// The same cell the week strip draws, at the same size and with its weekday letter, so the
+    /// sheet reads as the expanded form of the header rather than a second calendar. The letter
+    /// in every cell is why there is no weekday row above the grid.
     private func dayCell(_ day: Date) -> some View {
         CalendarDayCell(
             day: day,
@@ -168,9 +152,10 @@ extension CoreBuilder {
 
 extension CoreRouter {
 
-    /// Tall enough for six week rows, the weekday header and the toolbar. The previous
-    /// 0.45 fraction cut the last row off on shorter devices.
-    static let calendarSheetHeight: CGFloat = 420
+    /// Tall enough for a month title, six week rows and the toolbar. The previous 0.45 fraction
+    /// cut the last row off on shorter devices, and the rows grew when they took on the week
+    /// strip's weekday letter.
+    static let calendarSheetHeight: CGFloat = 520
 
     func showCalendarView(delegate: CalendarDelegate) {
         router.showScreen(.sheetConfig(config: ResizableSheetConfig(detents: [.height(Self.calendarSheetHeight), .large], dragIndicator: .visible))) { router in

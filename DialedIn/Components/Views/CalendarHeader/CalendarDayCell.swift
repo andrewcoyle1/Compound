@@ -19,16 +19,11 @@ struct CalendarDayCell: View {
     let isToday: Bool
     let isSelected: Bool
 
-    /// The week strip labels each column; the month grid has its own weekday header row.
-    var showsWeekday: Bool = false
-
     var body: some View {
         VStack(spacing: Spacing.xxs) {
-            if showsWeekday {
-                Text(day.formatted(.dateTime.weekday(.narrow)))
-                    .font(.caption2)
-                    .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
-            }
+            Text(day.formatted(.dateTime.weekday(.narrow)))
+                .font(.caption2)
+                .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
             Text(day.formatted(.dateTime.day()))
                 .font(.subheadline)
                 .foregroundStyle(dayNumberStyle)
@@ -184,20 +179,20 @@ struct CalendarDayCell: View {
     return VStack(spacing: Spacing.xl) {
         // Training: today · today+selected · one session · several · nothing
         HStack(spacing: 0) {
-            CalendarDayCell(day: today, marker: nil, isToday: true, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .count(1), isToday: true, isSelected: true, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .count(1), isToday: false, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .count(3), isToday: false, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: nil, isToday: false, isSelected: false, showsWeekday: true)
+            CalendarDayCell(day: today, marker: nil, isToday: true, isSelected: false)
+            CalendarDayCell(day: today, marker: .count(1), isToday: true, isSelected: true)
+            CalendarDayCell(day: today, marker: .count(1), isToday: false, isSelected: false)
+            CalendarDayCell(day: today, marker: .count(3), isToday: false, isSelected: false)
+            CalendarDayCell(day: today, marker: nil, isToday: false, isSelected: false)
         }
 
         // Nutrition: quarter · half · on target · within the 100kcal grace · over it
         HStack(spacing: 0) {
-            CalendarDayCell(day: today, marker: .goalProgress(value: 550, goal: 2200, grace: 100), isToday: false, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .goalProgress(value: 1100, goal: 2200, grace: 100), isToday: true, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .goalProgress(value: 2200, goal: 2200, grace: 100), isToday: false, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .goalProgress(value: 2290, goal: 2200, grace: 100), isToday: false, isSelected: false, showsWeekday: true)
-            CalendarDayCell(day: today, marker: .goalProgress(value: 2650, goal: 2200, grace: 100), isToday: false, isSelected: false, showsWeekday: true)
+            CalendarDayCell(day: today, marker: .goalProgress(value: 550, goal: 2200, grace: 100), isToday: false, isSelected: false)
+            CalendarDayCell(day: today, marker: .goalProgress(value: 1100, goal: 2200, grace: 100), isToday: true, isSelected: false)
+            CalendarDayCell(day: today, marker: .goalProgress(value: 2200, goal: 2200, grace: 100), isToday: false, isSelected: false)
+            CalendarDayCell(day: today, marker: .goalProgress(value: 2290, goal: 2200, grace: 100), isToday: false, isSelected: false)
+            CalendarDayCell(day: today, marker: .goalProgress(value: 2650, goal: 2200, grace: 100), isToday: false, isSelected: false)
         }
 
         // The same five, selected, where the capsule is already tint-filled

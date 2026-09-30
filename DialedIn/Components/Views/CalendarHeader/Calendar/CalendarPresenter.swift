@@ -27,7 +27,6 @@ class CalendarPresenter {
     private static let monthsForward = 6
 
     let calendar = Calendar.current
-    let daysOfWeek = Date.capitalizedFirstLettersOfWeekdays
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
     private(set) var months: [Month] = []

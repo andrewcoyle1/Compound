@@ -35,8 +35,9 @@ struct CalendarHeaderView: View {
     @ScaledMetric(relativeTo: .subheadline) private var rowHeight: CGFloat = 70
 
     /// Puts the outermost capsules on the list's section margin (16 pt), less the capsule's own
-    /// inset inside its cell.
-    private static let sideMargin = Spacing.l - CalendarDayCell.capsuleInset
+    /// inset inside its cell. The expanded calendar's month grid uses it too, so its cells come
+    /// out the same width as the strip's.
+    static let sideMargin = Spacing.l - CalendarDayCell.capsuleInset
 
     var body: some View {
         // Built once per body pass and looked up per cell.
@@ -163,8 +164,7 @@ struct CalendarHeaderView: View {
             day: day,
             marker: marker,
             isToday: presenter.calendar.isDate(day, inSameDayAs: presenter.today),
-            isSelected: presenter.isSelected(day),
-            showsWeekday: true
+            isSelected: presenter.isSelected(day)
         )
         // A plain tap rather than a zero-distance DragGesture: the scroll view cancels this
         // cleanly, where the drag gesture left `isPressing` stuck true when the scroll took

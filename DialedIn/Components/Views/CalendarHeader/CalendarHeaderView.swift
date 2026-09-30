@@ -32,7 +32,7 @@ struct CalendarHeaderView: View {
 
     /// The strip's height, grown with the text in its cells. A fixed 70 pt cropped the weekday
     /// and date at the larger sizes, which need about twice that.
-    @ScaledMetric(relativeTo: .subheadline) private var rowHeight: CGFloat = 70
+    @ScaledMetric(relativeTo: .subheadline) private var rowHeight: CGFloat = 84
 
     /// Puts the outermost capsules on the list's section margin (16 pt), less the capsule's own
     /// inset inside its cell. The expanded calendar's month grid uses it too, so its cells come
@@ -122,20 +122,17 @@ struct CalendarHeaderView: View {
         // Forward and backward, not right and left, so the arrow flips with the layout direction
         // along with the edge the button sits on.
         Image(systemName: pointsForward ? "chevron.forward" : "chevron.backward")
-            .font(.caption)
+            .font(.title3)
             .fontWeight(.semibold)
-            .foregroundStyle(.tint)
+            .foregroundStyle(.background)
             .padding(.vertical, Spacing.s)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            ZStack {
-                Capsule()
-                    .fill(.surface)
-                Capsule()
-                    .inset(by: 1)
-                    .stroke(.tint, lineWidth: 2)
-            }
-            .padding(.horizontal, CalendarDayCell.capsuleInset)
+            // Solid and inverted — black in light mode, white in dark — so it reads as a control
+            // rather than another day, and hides the day underneath it.
+            Capsule()
+                .fill(.primary)
+                .padding(.horizontal, CalendarDayCell.capsuleInset)
         }
         // Outside the scroll content, so the container here is the full width: take the strip's
         // margins off by hand to match the cells.

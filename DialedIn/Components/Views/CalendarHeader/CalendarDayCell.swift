@@ -21,18 +21,18 @@ struct CalendarDayCell: View {
 
     var body: some View {
         VStack(spacing: Spacing.xxs) {
-            Text(day.formatted(.dateTime.weekday(.narrow)))
-                .font(.caption2)
-                .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
             Text(day.formatted(.dateTime.day()))
-                .font(.subheadline)
+                .font(.body)
                 .foregroundStyle(dayNumberStyle)
+            Text(day.formatted(.dateTime.weekday(.short)))
+                .font(.subheadline)
+                .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
 
             todayDot
         }
-        .monospaced()
+        .monospacedDigit()
         .fontWeight(isSelected || isToday ? .semibold : .regular)
-        .padding(.vertical, Spacing.s)
+        .padding(.vertical, Spacing.m)
         .frame(maxWidth: .infinity)
         .background {
             outline
@@ -92,8 +92,7 @@ struct CalendarDayCell: View {
     @ViewBuilder
     private var outline: some View {
         ZStack {
-            Capsule()
-                .fill(.surface)
+            // No fill: the centre shows the header's own background through the ring.
 
             // The selection sits *inside* the ring rather than under it, with a hairline of the
             // cell surface between them. Filling the whole capsule put the ring on the boundary
@@ -119,7 +118,7 @@ struct CalendarDayCell: View {
         }
     }
 
-    private static let ringWidth: CGFloat = 2
+    private static let ringWidth: CGFloat = 3
 
     /// How far the capsule is inset from the cell's own width. The cell keeps its full seventh of
     /// the strip as a tap target; only the capsule narrows. Not private, because the header's
@@ -131,7 +130,7 @@ struct CalendarDayCell: View {
     /// The unfilled remainder, and the whole stroke on a day with nothing logged. One colour in
     /// every state now that the ring never overlaps the selection.
     private var trackStyle: AnyShapeStyle {
-        AnyShapeStyle(.secondary.opacity(0.3))
+        AnyShapeStyle(.secondary)
     }
 
     /// The ring carries the status, in three steps: neutral while the day is still in progress,
@@ -146,6 +145,10 @@ struct CalendarDayCell: View {
         }
         if marker.isGoalMet {
             return AnyShapeStyle(Color.success.opacity(0.5))
+        }
+        // Calories wear their own colour, matching the calorie bar in the macro header below.
+        if case .goalProgress = marker {
+            return AnyShapeStyle(Color.calories)
         }
         return AnyShapeStyle(.tint)
     }

@@ -236,30 +236,13 @@ struct ExerciseListBuilderView: View {
         }
     }
 
-    /// An active filter is filled with the accent, not just tinted, and counts its picks from one:
-    /// a single pick used to change nothing but a colour that matched the inactive one.
     private func chipLabel(
         _ title: String,
         systemImage: String,
         isActive: Bool,
         count: Int = 0
     ) -> some View {
-        HStack(spacing: Spacing.xs) {
-            Image(systemName: systemImage)
-            Text(title)
-            if count > 0 {
-                Text("\(count)")
-                    .font(.label)
-                    .padding(.horizontal, Spacing.xs)
-                    .background(Color.tintedSurface(.onAccent), in: .capsule)
-            }
-        }
-        .lineLimit(1)
-        .padding(.horizontal, Spacing.m)
-        .frame(minHeight: ControlSize.row)
-        .foregroundStyle(isActive ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
-        .glassEffect(isActive ? .regular.tint(.accentColor).interactive() : .regular.interactive())
-        .accessibilityAddTraits(isActive ? .isSelected : [])
+        BarChip(title: title, systemImage: systemImage, isActive: isActive, count: count)
     }
 
     private var userExercisesSection: some View {

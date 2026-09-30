@@ -64,6 +64,8 @@ struct NutritionLibraryPickerView<
             }
         }
         .navigationTitle("Add Item")
+        // A count, not a control: as a toolbar item it drew as a greyed-out button.
+        .navigationSubtitle(Text("\(delegate.items.wrappedValue.count) on plate"))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaBar(edge: .top) {
             modeChips
@@ -76,31 +78,37 @@ struct NutritionLibraryPickerView<
                     presenter.dismissScreen()
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Text("\(delegate.items.wrappedValue.count) on plate")
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 
-    /// One chip per mode. Each is a plain button around a `Chip`, which carries the selected look
-    /// and the `.isSelected` trait.
+    /// One chip per mode, in the pinned bar's `BarChip` style that the exercise picker's filter
+    /// bar uses. They were content `Chip`s, a third the height of every other chip bar's.
     private var modeChips: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: Spacing.s) {
-                ForEach(NutritionPickerMode.allCases) { mode in
-                    Button {
-                        presenter.onModePressed(mode)
-                    } label: {
-                        Chip(mode.title, systemImage: mode.systemName, isSelected: mode == presenter.mode)
-                            .chipTapTarget()
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                GlassEffectContainer(spacing: Spacing.s) {
+                    HStack(spacing: Spacing.s) {
+                        ForEach(NutritionPickerMode.allCases) { mode in
+                            Button {
+                                presenter.onModePressed(mode)
+                            } label: {
+                                BarChip(title: mode.title, systemImage: mode.systemName, isActive: mode == presenter.mode)
+                            }
+                            .buttonStyle(.plain)
+                            .id(mode)
+                        }
                     }
-                    .buttonStyle(.plain)
+                    .padding(.horizontal)
                 }
             }
-            .padding(.horizontal)
+            .scrollIndicators(.hidden)
+            // The bar is rebuilt with each mode's content and starts from the leading edge again,
+            // which left a chosen mode past the edge (Library, Describe) scrolled out of sight.
+            .onAppear { proxy.scrollTo(presenter.mode, anchor: .center) }
+            .onChange(of: presenter.mode) { _, mode in
+                withReducedMotionAnimation(.standard) { proxy.scrollTo(mode, anchor: .center) }
+            }
         }
-        .scrollIndicators(.hidden)
     }
 
 }

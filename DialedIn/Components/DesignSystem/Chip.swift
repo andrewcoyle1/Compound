@@ -58,6 +58,40 @@ extension View {
     }
 }
 
+/// A chip in a bar pinned over a list, such as a filter or mode bar: 44 pt tall on glass, and
+/// filled with the accent when active. `Chip` is the small tinted capsule for content; this is its
+/// counterpart for the control layer, where glass belongs. Put a row of them in a
+/// `GlassEffectContainer`, and use it as the label of a `Button` or `Menu`.
+///
+/// An active chip is filled, not just tinted, and counts its picks from one: a single pick used to
+/// change nothing but a colour that matched the inactive one.
+struct BarChip: View {
+
+    let title: String
+    let systemImage: String
+    var isActive = false
+    var count = 0
+
+    var body: some View {
+        HStack(spacing: Spacing.xs) {
+            Image(systemName: systemImage)
+            Text(title)
+            if count > 0 {
+                Text("\(count)")
+                    .font(.label)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.onAccent), in: .capsule)
+            }
+        }
+        .lineLimit(1)
+        .padding(.horizontal, Spacing.m)
+        .frame(minHeight: ControlSize.row)
+        .foregroundStyle(isActive ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+        .glassEffect(isActive ? .regular.tint(.accentColor).interactive() : .regular.interactive())
+        .accessibilityAddTraits(isActive ? .isSelected : [])
+    }
+}
+
 extension View {
     /// Pads a small button label's hit area out to the 44 x 44 pt minimum without changing how it
     /// looks or how much room it takes. Apply it to the label, inside the `Button`: outside, the

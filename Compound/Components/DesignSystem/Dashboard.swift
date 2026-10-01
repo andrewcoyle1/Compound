@@ -12,7 +12,9 @@ struct Dashboard<Content: View>: View {
 
     @ViewBuilder var content: Content
 
-    /// The width inside the safe area, which is what the columns have to share.
+    /// The width the columns have to share. The frame is already inside the router's centring
+    /// padding, so it is not reduced by the safe area again: doing so halved it on a wide Mac
+    /// window and dropped the screen back to one column.
     @State private var width: CGFloat = 0
 
     var body: some View {
@@ -29,9 +31,7 @@ struct Dashboard<Content: View>: View {
             }
         }
         .preferredReadableContentWidth(ContentWidth.dashboard)
-        .onGeometryChange(for: CGFloat.self) { proxy in
-            proxy.size.width - proxy.safeAreaInsets.leading - proxy.safeAreaInsets.trailing
-        } action: { width = $0 }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 
     /// Sections alternate left and right, so reading order runs across then down.

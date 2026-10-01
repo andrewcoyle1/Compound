@@ -190,17 +190,15 @@ struct GoalProgressPresenterTests {
         #expect(screen.presenter.currentWeightKg == 74)
     }
 
-    /// `rebuildCaches()` used to have no reachable caller, so the screen came up empty however much
-    /// history existed. It is driven from `onAppear` now, and nothing before it.
-    @Test("Test The Screen Has Nothing Until It Appears")
-    func testTheScreenHasNothingUntilItAppears() async {
+    /// The screen reads the weigh-ins live rather than caching them on appear, which once had no
+    /// reachable caller and left it empty however much history existed. A goal set from its empty
+    /// state, or a weigh-in imported while it is open, shows without it appearing again.
+    @Test("Test The Screen Shows History Without Waiting To Appear")
+    func testTheScreenShowsHistoryWithoutWaitingToAppear() {
         let screen = makeScreen(
             goal: goal(from: 80, target: 70),
             weighIns: [weighIn(id: "w1", weight: 75, daysAgo: 1)]
         )
-        #expect(screen.presenter.entries.isEmpty)
-
-        await screen.presenter.onAppear()
 
         #expect(screen.presenter.entries.count == 1)
     }

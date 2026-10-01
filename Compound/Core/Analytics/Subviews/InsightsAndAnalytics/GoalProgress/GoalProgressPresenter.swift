@@ -73,7 +73,8 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
     }
 
     var timeSeries: [TimeSeries] {
-        [TimeSeries(name: "Progress", data: entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.progressPercent) })]
+        guard activeGoal != nil else { return [] }
+        return [TimeSeries(name: "Progress", data: entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.progressPercent) })]
     }
 
     var customChartView: AnyView? {

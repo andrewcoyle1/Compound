@@ -17,7 +17,7 @@ struct CreateGymProfileView: View {
     let delegate: CreateGymProfileDelegate
     
     var body: some View {
-        List {
+        Form {
             Section {
                 TextField("Name", text: $presenter.gymProfileName)
             } header: {

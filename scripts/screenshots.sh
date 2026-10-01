@@ -8,15 +8,16 @@
 #   SKIP_BUILD=1 reuses the last build in $DERIVED.
 #   DERIVED=<path> overrides the DerivedData folder (default $HOME/.dd-screenshots), so
 #   several worktrees can capture in parallel.
+#   OUT=<path> writes the deck elsewhere (e.g. an iPad deck), leaving the committed one alone.
 #   --diff runs scripts/screenshots-diff.py against the committed deck after capture and exits
 #   with its status (non-zero when any screen changed).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DERIVED="${DERIVED:-$HOME/.dd-screenshots}"
-BUNDLE_ID="com.andrewcoyle.DialedIn.mock"
-OUT="$ROOT/Screenshots"
-SOURCE="$ROOT/DialedIn/Root/EntryPoints/AppViewForUITesting.swift"
+BUNDLE_ID="com.andrewcoyle.compound.mock"
+OUT="${OUT:-$ROOT/Screenshots}"
+SOURCE="$ROOT/Compound/Root/EntryPoints/AppViewForUITesting.swift"
 START=$(date +%s)
 
 DIFF=0
@@ -41,7 +42,7 @@ while IFS= read -r arg; do ARGS+=("$arg"); done < <(grep -o '"STARTSCREEN_[A-Z0-
 echo "${#ARGS[@]} screens"
 
 if [[ "${SKIP_BUILD:-0}" != 1 ]]; then
-    xcodebuild build -project "$ROOT/DialedIn.xcodeproj" -scheme 'DialedIn - Mock' \
+    xcodebuild build -project "$ROOT/Compound.xcodeproj" -scheme 'Compound - Mock' \
         -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath "$DERIVED" -quiet
 fi
 APP=$(ls -d "$DERIVED"/Build/Products/Mock-iphonesimulator/*.app | grep -v WorkoutSessionActivity | head -1)

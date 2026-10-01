@@ -15,7 +15,7 @@ struct FoodItemQuickAddView: View {
     let delegate: FoodItemQuickAddDelegate
 
     var body: some View {
-        List {
+        Form {
             Section("Name") {
                 TextField("Name", text: $presenter.quickAddName)
             }

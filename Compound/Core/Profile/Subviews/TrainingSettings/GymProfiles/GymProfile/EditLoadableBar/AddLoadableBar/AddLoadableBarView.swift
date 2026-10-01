@@ -10,7 +10,7 @@ struct AddLoadableBarView: View {
     @State var presenter: AddLoadableBarPresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 weightSection
             }

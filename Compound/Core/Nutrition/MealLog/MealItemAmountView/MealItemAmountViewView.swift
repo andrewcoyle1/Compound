@@ -63,7 +63,7 @@ struct MealItemAmountViewView: View {
     let delegate: MealItemAmountViewDelegate
 
     var body: some View {
-        List {
+        Form {
             headerSection
             amountSection
             ForEach(Macros.allCases, id: \.self) { macro in

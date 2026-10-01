@@ -10,7 +10,7 @@ struct AddBandView: View {
     @State var presenter: AddBandPresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 colourSection
                 labelSection

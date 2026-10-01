@@ -11,7 +11,7 @@ struct EditWeightRangeView<Range: WeightRange>: View {
     let delegate: EditWeightRangeDelegate<Range>
     
     var body: some View {
-        List {
+        Form {
             Section {
                     VStack(alignment: .leading) {
                         Text("Range Start")

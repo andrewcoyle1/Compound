@@ -12,7 +12,7 @@ struct LogWeightView: View {
     @State var presenter: LogWeightPresenter
     
     var body: some View {
-        List {
+        Form {
             dateSection
                 .removeListRowFormatting()
             WeightPickerInput(

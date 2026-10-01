@@ -59,6 +59,12 @@ enum ChartHeight {
     static let regular: CGFloat = 200
 }
 
+/// The widest a screen's scroll content grows on iPad and Mac. Wider screens centre it, so rows,
+/// cards and charts keep phone-like proportions. Set once at the root; see `readableContentWidth`.
+enum ContentWidth {
+    static let readable: CGFloat = 700
+}
+
 #Preview("Spacing and radius") {
     let spacings: [(String, CGFloat)] = [("xxs", Spacing.xxs), ("xs", Spacing.xs), ("s", Spacing.s), ("m", Spacing.m), ("l", Spacing.l), ("xl", Spacing.xl), ("xxl", Spacing.xxl)]
     let radii: [(String, CGFloat)] = [("s", Radius.s), ("m", Radius.m), ("l", Radius.l), ("xl", Radius.xl)]

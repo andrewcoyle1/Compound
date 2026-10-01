@@ -40,6 +40,11 @@ struct CustomPaywallView: View {
         .safeAreaBar(edge: .bottom) {
             subscriptionButtonSection
                 .padding(.bottom, Spacing.s)
+                #if targetEnvironment(macCatalyst)
+                // Catalyst draws no scroll-edge effect here (`.hard` included), so the rows read
+                // straight through the renewal line and buttons.
+                .background(Color.canvas)
+                #endif
         }
     }
     

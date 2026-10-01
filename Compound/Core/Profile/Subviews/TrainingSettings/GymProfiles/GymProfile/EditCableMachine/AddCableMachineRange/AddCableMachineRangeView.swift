@@ -10,7 +10,7 @@ struct AddCableMachineRangeView: View {
     @State var presenter: AddCableMachineRangePresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 nameSection
                 rangeStartSection

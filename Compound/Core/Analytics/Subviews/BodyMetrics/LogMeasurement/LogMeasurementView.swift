@@ -14,7 +14,7 @@ struct LogMeasurementView: View {
     @ScaledMetric(relativeTo: .body) private var wheelHeight: CGFloat = 150
 
     var body: some View {
-        List {
+        Form {
             dateSection
                 .removeListRowFormatting()
             unitPickerSection

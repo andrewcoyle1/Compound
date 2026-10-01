@@ -10,7 +10,7 @@ struct AddFixedWeightBarView: View {
     @State var presenter: AddFixedWeightBarPresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 weightSection
             }

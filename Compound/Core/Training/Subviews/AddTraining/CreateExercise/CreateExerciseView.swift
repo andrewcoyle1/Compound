@@ -13,7 +13,7 @@ struct CreateExerciseView: View {
 
     var body: some View {
         
-        List {
+        Form {
             nameSection
             trackableMetricSection
             detailsSection

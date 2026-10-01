@@ -39,7 +39,7 @@ struct PortionDefinitionView: View {
     let delegate: PortionDefinitionDelegate
     
     var body: some View {
-        List {
+        Form {
 //            Section {
 //                Picker("", selection: $presenter.nutritionDefinitionOption) {
 //                    ForEach(NutritionDefinitionOption.allCases, id: \.self) { option in

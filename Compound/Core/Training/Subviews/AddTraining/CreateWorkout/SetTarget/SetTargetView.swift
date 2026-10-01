@@ -12,7 +12,7 @@ struct SetTargetView: View {
     @ScaledMetric(relativeTo: .body) private var numberColumnWidth: CGFloat = 44
 
     var body: some View {
-        List {
+        Form {
             Section {
                 HStack {
                     Text("Set")

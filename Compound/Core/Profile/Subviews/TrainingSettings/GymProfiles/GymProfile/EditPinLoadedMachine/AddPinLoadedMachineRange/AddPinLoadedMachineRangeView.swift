@@ -10,7 +10,7 @@ struct AddPinLoadedMachineRangeView: View {
     @State var presenter: AddPinLoadedMachineRangePresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 nameSection
                 rangeStartSection

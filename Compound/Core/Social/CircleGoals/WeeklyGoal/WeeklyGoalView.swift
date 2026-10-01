@@ -7,7 +7,7 @@ struct WeeklyGoalView: View {
     @State var presenter: WeeklyGoalPresenter
 
     var body: some View {
-        List {
+        Form {
             Section {
                 Stepper(value: $presenter.goal, in: CircleWeek.goalRange) {
                     Text("^[\(presenter.goal) session](inflect: true) a week")

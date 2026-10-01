@@ -5,7 +5,7 @@ struct EditUsernameView: View {
     @State var presenter: EditUsernamePresenter
 
     var body: some View {
-        List {
+        Form {
             Section {
                 HStack(spacing: Spacing.xxs) {
                     Text(verbatim: "@")

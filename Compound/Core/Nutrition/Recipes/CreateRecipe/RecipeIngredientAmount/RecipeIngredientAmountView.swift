@@ -10,7 +10,7 @@ struct RecipeIngredientAmountView: View {
     let delegate: RecipeIngredientAmountDelegate
 
     var body: some View {
-        List {
+        Form {
             Section("Amount") {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)

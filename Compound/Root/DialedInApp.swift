@@ -32,6 +32,8 @@ struct CompoundApp: App {
                 delegate.builder.build()
             }
         }
+        // Every routed screen centres its scroll content at this width when it is wider.
+        .environment(\.readableContentWidth, ContentWidth.readable)
         .commands {
             tabCommands
         }

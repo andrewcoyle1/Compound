@@ -443,7 +443,7 @@ the values now in the table.
 
 | File | Provides |
 |---|---|
-| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight` |
+| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight`, `ContentWidth.readable` (the 700 pt column every routed screen centres on iPad and Mac, via the SwiftfulRouting fork's `readableContentWidth`, set once in `CompoundApp`) |
 | `Palette.swift` | `surface`, `canvas`, `tintedSurface(_:)`, the macro colours, `success/warning/danger`, `warmup/superset/personalRecord`, `Color.Metric.*`. `onAccent` is generated from the `OnAccent` asset. |
 | `Typography.swift` | `Font.display/metricLarge/metric/metricSmall/sectionTitle/rowTitle/rowDetail/label`, and `.iconSize(_:)` for symbols. All Dynamic Type. |
 | `Motion.swift` | `Animation.quick/standard/emphasis/progress`, applied only through `withReducedMotionAnimation` / `reducedMotionAnimation` |

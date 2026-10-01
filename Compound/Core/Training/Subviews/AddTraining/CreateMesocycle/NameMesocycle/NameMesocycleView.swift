@@ -14,7 +14,7 @@ struct NameMesocycleView: View {
     let delegate: NameMesocycleDelegate
     
     var body: some View {
-        List {
+        Form {
             Section {
                 TextField("Enter mesocycle name", text: $presenter.mesocycleName)
                     .accessibilityIdentifier("NameProgram.name")

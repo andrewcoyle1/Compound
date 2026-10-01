@@ -74,7 +74,7 @@ struct FoodDefinitionView: View {
     let delegate: FoodDefinitionDelegate
 
     var body: some View {
-        List {
+        Form {
             foodDetailSections
         }
         .navigationTitle("Create Food")

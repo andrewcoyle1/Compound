@@ -22,7 +22,7 @@ struct IngredientAmountView: View {
     var delegate: IngredientAmountDelegate
 
     var body: some View {
-        List {
+        Form {
             Section("Amount") {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)

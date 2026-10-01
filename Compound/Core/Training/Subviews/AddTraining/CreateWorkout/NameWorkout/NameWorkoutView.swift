@@ -19,7 +19,7 @@ struct NameWorkoutView: View {
     var delegate: NameWorkoutDelegate
 
     var body: some View {
-        List {
+        Form {
             Section {
                 TextField("Enter workout name", text: $presenter.workoutName)
                     .accessibilityIdentifier("NameWorkout.name")

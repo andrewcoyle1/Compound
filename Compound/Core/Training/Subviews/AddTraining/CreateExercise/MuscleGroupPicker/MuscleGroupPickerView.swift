@@ -100,8 +100,11 @@ struct MuscleGroupPickerView: View {
             ZStack(alignment: .bottom) {
                 
                 // TODO: Every tile shows the same placeholder image. Replace it with each muscle's own artwork once that exists (artwork is planned).
-                ImageLoaderView()
-                    .aspectRatio(contentMode: .fill)
+                // A fixed square, so a tile's height follows its width alone: sized by the loaded
+                // image instead, the list's cells never settled at iPad widths and UIKit crashed.
+                Color.clear
+                    .aspectRatio(1, contentMode: .fit)
+                    .overlay { ImageLoaderView() }
                 if let selected {
                     // A thicker ring for Primary, and the badge names which, so the two never
                     // differ by colour alone.

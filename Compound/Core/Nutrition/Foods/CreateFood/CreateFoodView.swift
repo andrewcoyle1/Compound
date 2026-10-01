@@ -26,7 +26,7 @@ struct CreateFoodView: View {
     @ScaledMetric(relativeTo: .body) private var imageSide: CGFloat = 120
     
     var body: some View {
-        List {
+        Form {
             imageSection
             foodNameSection
             brandNameSection

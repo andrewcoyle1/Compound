@@ -22,7 +22,7 @@ struct FinalExerciseDetailsView: View {
     let delegate: FinalExerciseDetailsDelegate
 
     var body: some View {
-        List {
+        Form {
             rangeOfMotionSection
                 .listSectionMargins(.top, 0)
             stabilitySection

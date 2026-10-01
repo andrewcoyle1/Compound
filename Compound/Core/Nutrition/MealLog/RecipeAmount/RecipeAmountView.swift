@@ -18,7 +18,7 @@ struct RecipeAmountView: View {
     let delegate: RecipeAmountDelegate
 
     var body: some View {
-        List {
+        Form {
             Section("Servings") {
                 TextField("Servings", text: $presenter.servingsText)
                     .keyboardType(.decimalPad)

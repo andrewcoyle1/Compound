@@ -10,7 +10,7 @@ struct AddFreeWeightView: View {
     @State var presenter: AddFreeWeightPresenter
     
     var body: some View {
-        List {
+        Form {
             Section {
                 if presenter.freeWeight.wrappedValue.needsColour {
                     colourSection

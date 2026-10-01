@@ -81,20 +81,22 @@ extension AnalyticsPresenter {
             calendar: calendar
         )
         
+        // The cards say "Last 7 Days" and chart those days, so they count and rank by them. The
+        // aggregate's `total` is every workout ever logged, which both used to show and sort by.
+        func weekSets(_ muscle: Muscles) -> Double {
+            aggregated[muscle]?.last7Days.reduce(0, +) ?? 0
+        }
         let musclesWithData = Muscles.allCases
-            .filter { (aggregated[$0]?.total ?? 0) > 0 }
-            .sorted { (aggregated[$0]?.total ?? 0) > (aggregated[$1]?.total ?? 0) }
-        
-        if musclesWithData.isEmpty {
-            muscleGroupCards = [Muscles.upperBack, Muscles.rearDelts].map { muscle in
-                let data = aggregated[muscle] ?? (Array(repeating: 0.0, count: 7), 0.0)
-                return MuscleGroupCardItem(muscle: muscle, last7DaysData: data.last7Days, totalSets: data.total)
-            }
-        } else {
-            muscleGroupCards = Array(musclesWithData.prefix(2)).map { muscle in
-                let data = aggregated[muscle] ?? (Array(repeating: 0.0, count: 7), 0.0)
-                return MuscleGroupCardItem(muscle: muscle, last7DaysData: data.last7Days, totalSets: data.total)
-            }
+            .filter { weekSets($0) > 0 }
+            .sorted { weekSets($0) > weekSets($1) }
+
+        let shown = musclesWithData.isEmpty ? [Muscles.upperBack, Muscles.rearDelts] : Array(musclesWithData.prefix(2))
+        muscleGroupCards = shown.map { muscle in
+            MuscleGroupCardItem(
+                muscle: muscle,
+                last7DaysData: aggregated[muscle]?.last7Days ?? Array(repeating: 0.0, count: 7),
+                totalSets: weekSets(muscle)
+            )
         }
     }
     

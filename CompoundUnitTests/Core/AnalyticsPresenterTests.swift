@@ -562,3 +562,67 @@ struct AnalyticsPresenterTests {
         #expect(screen.interactor.trackedEventNames == ["AnalyticsView_Disappear"])
     }
 }
+
+// MARK: - Muscle groups
+
+extension AnalyticsPresenterTests {
+
+    private func trainedSession(id: String, daysAgo: Int, templateId: String, sets: Int) -> WorkoutSessionModel {
+        let day = date(daysAgo)
+        let completed = (0..<sets).map { index in
+            WorkoutSetModel(id: "\(id)-s\(index)", authorId: "author-1", index: index + 1, reps: 8, weightKg: 80, isWarmup: false, completedAt: day, dateCreated: day)
+        }
+        return WorkoutSessionModel(
+            id: id,
+            authorId: "author-1",
+            name: "Workout",
+            dateCreated: day,
+            endedAt: day,
+            exercises: [
+                WorkoutExerciseModel(
+                    id: "\(id)-e1",
+                    authorId: "author-1",
+                    templateId: templateId,
+                    name: templateId,
+                    trackingMode: .weightReps,
+                    index: 1,
+                    sets: completed
+                )
+            ]
+        )
+    }
+
+    private func template(_ id: String, muscle: Muscles) -> ExerciseModel {
+        ExerciseModel(
+            id: id,
+            authorId: "author-1",
+            name: id,
+            trackableMetrics: [.weight, .reps],
+            type: .compoundUpper,
+            laterality: .bilateral,
+            muscleGroups: [muscle: .primary],
+            isBodyweight: false,
+            rangeOfMotion: 1,
+            stability: 1,
+            bodyWeightContribution: 0,
+            alternateNames: []
+        )
+    }
+
+    /// The cards say "Last 7 Days", so a muscle trained heavily a month ago neither counts toward
+    /// them nor outranks one trained this week. They used to show and rank by every set ever logged.
+    @Test("Test Muscle Cards Count And Rank Only The Last Seven Days")
+    func testMuscleCardsCountOnlyTheLastSevenDays() {
+        let screen = makeScreen(sessions: [
+            trainedSession(id: "old-chest", daysAgo: 30, templateId: "bench", sets: 10),
+            trainedSession(id: "chest", daysAgo: 2, templateId: "bench", sets: 1),
+            trainedSession(id: "back", daysAgo: 1, templateId: "row", sets: 3)
+        ])
+        screen.interactor.allExercises = [template("bench", muscle: .chest), template("row", muscle: .upperBack)]
+
+        screen.presenter.loadMuscleGroupsData()
+
+        #expect(screen.presenter.muscleGroupCards.map(\.muscle) == [.upperBack, .chest])
+        #expect(screen.presenter.muscleGroupCards.map(\.totalSets) == [3, 1])
+    }
+}

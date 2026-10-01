@@ -81,7 +81,8 @@ struct MuscleGroupsView: View {
         return AnalyticsCard(
             title: muscle.name,
             subtitle: String(localized: "Last 7 Days"),
-            value: data.total.formatted(.number.precision(.fractionLength(0...1))),
+            // The week the chart draws, not `total`, which counts every workout ever logged.
+            value: data.last7Days.reduce(0, +).formatted(.number.precision(.fractionLength(0...1))),
             unit: String(localized: "sets"),
             themeColor: muscleGroupColor,
             chartConfiguration: .compact

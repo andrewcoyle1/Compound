@@ -76,7 +76,6 @@ class WorkoutTrackerPresenter {
     /// of the same workout can resolve to different past sessions when one of them is new to the
     /// template. See `loadPreviousWorkoutSession()`.
     var previousExercises: [String: WorkoutExerciseModel] = [:]
-    var exerciseUnitPreferences: [String: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)] = [:]
 
     /// What smart progression decided for each exercise, keyed by `templateId`. Drives the hint
     /// in the exercise header. See `WorkoutTrackerPresenter+Progression`.
@@ -125,7 +124,6 @@ class WorkoutTrackerPresenter {
         }
         
         self.workoutSession = session
-        loadUnitPreferences()
         // Before anything the user does, so an edited set can be told from a filled-in one.
         captureProgressionBaseline()
         
@@ -157,17 +155,6 @@ class WorkoutTrackerPresenter {
         let profile = try? await interactor.getGymProfile(gymProfileId: gymProfileId)
         self.gymProfile = profile
         interactor.setActiveWorkoutGymProfile(profile)
-    }
-    
-    func loadUnitPreferences() {
-        exerciseUnitPreferences.removeAll(keepingCapacity: true)
-        for exercise in workoutSession.exercises {
-            let preference = interactor.getPreference(templateId: exercise.templateId)
-            exerciseUnitPreferences[exercise.templateId] = (
-                weightUnit: preference.weightUnit,
-                distanceUnit: preference.distanceUnit
-            )
-        }
     }
     
     // MARK: - Computed Properties

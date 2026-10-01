@@ -7,7 +7,6 @@ class SetTrackerRowPresenter {
     private let interactor: SetTrackerRowInteractor
     private let router: SetTrackerRowRouter
     
-    var exerciseUnitPreferences: [String: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)] = [:]
     var restPickerTargetSetId: String?
     var restPickerMinutesSelection: Int = 0
     var restPickerSecondsSelection: Int = 0
@@ -146,15 +145,12 @@ class SetTrackerRowPresenter {
         router.showWarmupSetInfoModal { }
     }
 
+    /// Read from `ExerciseUnitPreferenceManager` every time. Each presenter used to keep its own
+    /// copy, and a row's copy outlived a switch to pounds: the header said lb while the keypad
+    /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
-        let templateId: String = exercise.templateId
-        if let cached = exerciseUnitPreferences[templateId] {
-            return cached
-        }
-        let preference = interactor.getPreference(templateId: templateId)
-        let result = (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
-        exerciseUnitPreferences[templateId] = result
-        return result
+        let preference = interactor.getPreference(templateId: exercise.templateId)
+        return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
 
     func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {

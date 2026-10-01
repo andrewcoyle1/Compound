@@ -19,7 +19,6 @@ class WorkoutSessionDetailPresenter {
     /// so every session — including a stranger's from the feed — was shown as written by a
     /// fictional user, whose profile it opened on a tap.
     private(set) var author: UserModel?
-    private(set) var exerciseUnitPreferences: [String: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)] = [:]
         
     var isSaving: Bool = false
     var isLoading: Bool {
@@ -99,15 +98,14 @@ class WorkoutSessionDetailPresenter {
         return volume > 0 ? Format.weight(kg: volume, unit: unit) : Format.placeholder
     }
     
-    /// The weight unit this exercise is shown in. Reads the cache `loadUnitPreferences` fills
-    /// without writing to it, so it is safe to call while the view draws.
+    /// The weight unit this exercise is shown in.
     func weightUnit(for templateId: String) -> ExerciseWeightUnit {
-        exerciseUnitPreferences[templateId]?.weightUnit ?? interactor.getPreference(templateId: templateId).weightUnit
+        interactor.getPreference(templateId: templateId).weightUnit
     }
 
     /// The distance unit this exercise is shown in. Read-only, like `weightUnit(for:)`.
     func distanceUnit(for templateId: String) -> ExerciseDistanceUnit {
-        exerciseUnitPreferences[templateId]?.distanceUnit ?? interactor.getPreference(templateId: templateId).distanceUnit
+        interactor.getPreference(templateId: templateId).distanceUnit
     }
 
     /// The line under each exercise: its own working sets and volume, in the exercise's unit.
@@ -131,7 +129,6 @@ class WorkoutSessionDetailPresenter {
     func enterEditMode(session: WorkoutSessionModel) {
         guard isAuthor(sessionAuthorId: session.authorId) else { return }
         isEditMode = true
-        loadUnitPreferences(for: session)
     }
         
     /// Done on the workout summary: the workout is over, so the tracker goes with it.
@@ -388,40 +385,17 @@ class WorkoutSessionDetailPresenter {
     
     // MARK: - Unit Preferences
     
-    func loadUnitPreferences(for session: WorkoutSessionModel) {
-        exerciseUnitPreferences.removeAll(keepingCapacity: true)
-        
-        for exercise in session.exercises {
-            let preference = interactor.getPreference(templateId: exercise.templateId)
-            exerciseUnitPreferences[exercise.templateId] = (
-                weightUnit: preference.weightUnit,
-                distanceUnit: preference.distanceUnit
-            )
-        }
-    }
-    
     func getUnitPreference(for templateId: String) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
-        if let cached = exerciseUnitPreferences[templateId] {
-            return cached
-        }
         let preference = interactor.getPreference(templateId: templateId)
-        let result = (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
-        exerciseUnitPreferences[templateId] = result
-        return result
+        return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
-    
+
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) {
-        var current = getUnitPreference(for: templateId)
-        current.weightUnit = unit
-        exerciseUnitPreferences[templateId] = current
-        interactor.setPreference(weightUnit: unit, distanceUnit: current.distanceUnit, for: templateId)
+        interactor.setPreference(weightUnit: unit, distanceUnit: getUnitPreference(for: templateId).distanceUnit, for: templateId)
     }
-    
+
     func updateDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) {
-        var current = getUnitPreference(for: templateId)
-        current.distanceUnit = unit
-        exerciseUnitPreferences[templateId] = current
-        interactor.setPreference(weightUnit: current.weightUnit, distanceUnit: unit, for: templateId)
+        interactor.setPreference(weightUnit: getUnitPreference(for: templateId).weightUnit, distanceUnit: unit, for: templateId)
     }
     
     // MARK: - Delete Session

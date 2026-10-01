@@ -15,8 +15,11 @@ class ExerciseUnitPreferenceManager {
     private let userDefaults: UserDefaults
     private let userManager: UserManager
     
-    // Cache for preferences to avoid repeated UserDefaults reads
-    private var preferencesCache: [String: ExerciseUnitPreference] = [:]
+    /// Avoids repeated UserDefaults reads. Not observed: `getPreference` fills it on a miss, and
+    /// screens call that while drawing, where a change to observed state would draw them again.
+    /// `revision` is what tells them a preference changed.
+    @ObservationIgnored private var preferencesCache: [String: ExerciseUnitPreference] = [:]
+    private var revision = 0
     
     init(userDefaults: UserDefaults = .standard, userManager: UserManager) {
         self.userDefaults = userDefaults
@@ -27,6 +30,7 @@ class ExerciseUnitPreferenceManager {
     
     /// Get the unit preference for a specific exercise template
     func getPreference(for templateId: String) -> ExerciseUnitPreference {
+        _ = revision
         // Check cache first
         if let cached = preferencesCache[templateId] {
             return cached
@@ -76,6 +80,7 @@ class ExerciseUnitPreferenceManager {
     /// Clear all cached preferences (useful when user signs out)
     func clearCache() {
         preferencesCache.removeAll()
+        revision += 1
     }
     
     // MARK: - Private Methods
@@ -89,6 +94,7 @@ class ExerciseUnitPreferenceManager {
         
         userDefaults.set(data, forKey: key)
         preferencesCache[preference.exerciseModelId] = preference
+        revision += 1
     }
     
     private func preferenceKey(userId: String, templateId: String) -> String? {

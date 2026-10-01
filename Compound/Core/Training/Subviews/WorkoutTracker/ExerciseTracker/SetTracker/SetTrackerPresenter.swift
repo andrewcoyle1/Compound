@@ -15,7 +15,6 @@ class SetTrackerPresenter {
 
     var showAutoRanges: Bool = true
     
-    var exerciseUnitPreferences: [String: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)] = [:]
     /// What the user last did for each exercise, keyed by the exercise's `templateId`.
     var previousExercises: [String: WorkoutExerciseModel] = [:]
     var previousLookup: [PreviousSetKey: WorkoutSetModel] = [:]
@@ -163,15 +162,12 @@ class SetTrackerPresenter {
         }
     }
 
+    /// Read from `ExerciseUnitPreferenceManager` every time. Each presenter used to keep its own
+    /// copy, and a row's copy outlived a switch to pounds: the header said lb while the keypad
+    /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
-        let templateId: String = exercise.templateId
-        if let cached = exerciseUnitPreferences[templateId] {
-            return cached
-        }
-        let preference = interactor.getPreference(templateId: templateId)
-        let result = (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
-        exerciseUnitPreferences[templateId] = result
-        return result
+        let preference = interactor.getPreference(templateId: exercise.templateId)
+        return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
 
     /// Deleting half of a left/right pair would leave the other half standing alone, numbering and
@@ -225,16 +221,10 @@ class SetTrackerPresenter {
 
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
-        var current = getUnitPreference(for: exercise.wrappedValue)
-        current.weightUnit = unit
-        exerciseUnitPreferences[templateId] = current
         interactor.setWeightUnit(unit, for: templateId)
     }
 
     func convertAndRoundWeights(to newUnit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
-        let existingUnit = getUnitPreference(for: exercise.wrappedValue)
-//        let currentUnit = existingUnit.weightUnit
-        
         for set in exercise.sets {
             guard let weightKg = set.wrappedValue.weightKg else { continue }
             let weightInNewUnit = UnitConversion.convertWeight(weightKg, to: newUnit)
@@ -264,7 +254,6 @@ class SetTrackerPresenter {
 
             set.wrappedValue.weightKg = roundedWeightKgFinal
         }
-        exerciseUnitPreferences[exercise.wrappedValue.templateId] = (newUnit, existingUnit.distanceUnit)
         interactor.setWeightUnit(newUnit, for: exercise.wrappedValue.templateId)
 
     }
@@ -336,9 +325,6 @@ class SetTrackerPresenter {
 
     func updateDistanceUnit(_ unit: ExerciseDistanceUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
-        var current = getUnitPreference(for: exercise.wrappedValue)
-        current.distanceUnit = unit
-        exerciseUnitPreferences[templateId] = current
         interactor.setDistanceUnit(unit, for: templateId)
     }
 

@@ -39,12 +39,15 @@ struct SetTrackerPresenterTests {
             preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
         }
 
+        /// Stores the unit as the manager does, as well as recording the call.
         func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) {
             savedWeightUnits.append((templateId, unit))
+            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].weightUnit = unit
         }
 
         func setDistanceUnit(_ unit: ExerciseDistanceUnit, for templateId: String) {
             savedDistanceUnits.append((templateId, unit))
+            preferences[templateId, default: ExerciseUnitPreference(exerciseModelId: templateId)].distanceUnit = unit
         }
     }
 
@@ -357,10 +360,10 @@ struct SetTrackerPresenterTests {
 
     // MARK: - Units
 
-    /// The preference is read once and cached, so a row redrawing does not go back to the store
-    /// for every set on screen.
-    @Test("Test A Unit Preference Is Read Once And Cached")
-    func testAUnitPreferenceIsReadOnceAndCached() {
+    /// The presenter reads the preference manager rather than a copy of its own. A copy went stale
+    /// when the unit changed elsewhere, and the keypad converted typed pounds from kilograms.
+    @Test("Test A Unit Changed Elsewhere Is Read Straight Away")
+    func testAUnitChangedElsewhereIsReadStraightAway() {
         let screen = makeScreen()
         screen.interactor.preferences["template-1"] = ExerciseUnitPreference(
             exerciseModelId: "template-1",
@@ -376,7 +379,7 @@ struct SetTrackerPresenterTests {
         let second = screen.presenter.getUnitPreference(for: model)
 
         #expect(first.weightUnit == .pounds)
-        #expect(second.weightUnit == .pounds)
+        #expect(second.weightUnit == .kilograms)
     }
 
     /// Changing the display unit is per exercise and persisted, so it survives leaving the screen.

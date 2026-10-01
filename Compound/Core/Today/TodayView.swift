@@ -26,7 +26,7 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     @Namespace private var namespace
 
     var body: some View {
-        List {
+        Dashboard {
             if presenter.dueCheckInWeekStart != nil {
                 Section { checkInCard }
             }

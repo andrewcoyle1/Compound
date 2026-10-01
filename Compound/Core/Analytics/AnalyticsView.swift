@@ -49,6 +49,8 @@ struct AnalyticsView<NutritionChart: View>: View {
         // As QuickCharts' `ChartScreen` does for its chart: the header's colour carries on up behind
         // the navigation bar, even when the list is pulled down.
         .topFill(Color.surface)
+        // The card grids add columns with width, so this tab takes more of a wide window.
+        .preferredReadableContentWidth(ContentWidth.dashboard)
         .navigationTitle("Progress")
         .minimizingLargeTitleBar()
         .scrollIndicators(.hidden)
@@ -86,6 +88,7 @@ struct AnalyticsView<NutritionChart: View>: View {
                 nutritionTargetSection
             }
             .padding(.horizontal, headerCardSpacing)
+            .frame(maxWidth: .infinity)
             .topFillEdge()
             // Edge to edge and up to the navigation bar, on the colour `topFill` carries above it.
             .listRowInsets(EdgeInsets())
@@ -107,6 +110,8 @@ struct AnalyticsView<NutritionChart: View>: View {
     private func headerCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
             .frame(maxWidth: .infinity, minHeight: 300)
+            // The week's target chart reads as bars, not a wall of tiles, at reading width.
+            .frame(maxWidth: ContentWidth.readable)
     }
 
     private var nutritionTargetSection: some View {

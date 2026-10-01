@@ -63,6 +63,10 @@ enum ChartHeight {
 /// cards and charts keep phone-like proportions. Set once at the root; see `readableContentWidth`.
 enum ContentWidth {
     static let readable: CGFloat = 700
+    /// A `Dashboard`'s column pair, wider than `readable` because each column is phone-width.
+    static let dashboard: CGFloat = 1100
+    /// The narrowest a `Dashboard` goes to two columns: two phone-width cards side by side.
+    static let twoColumns: CGFloat = 740
 }
 
 #Preview("Spacing and radius") {

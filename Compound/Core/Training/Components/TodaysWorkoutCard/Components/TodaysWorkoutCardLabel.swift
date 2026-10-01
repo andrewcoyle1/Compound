@@ -18,7 +18,6 @@ struct TodaysWorkoutCardLabel: View {
                     exerciseCircle(exercise: exercise.exercise)
                 }
             }
-            .frame(maxHeight: .infinity)
             Divider()
             TodaysWorkoutCardFooter(
                 systemImage: Symbol.workout,
@@ -42,7 +41,7 @@ struct TodaysWorkoutCardLabel: View {
                 clipShape: AnyShape(Circle())
             )
         }
-        // Up to 100 pt, and smaller when the footer's text grows and leaves less of the card.
+        // Up to 100 pt, and smaller when four no longer fit across the card.
         .aspectRatio(1, contentMode: .fit)
         .frame(maxWidth: 100, maxHeight: 100)
         .overlay(Circle().stroke(.surface, lineWidth: 2))

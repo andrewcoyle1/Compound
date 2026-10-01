@@ -26,17 +26,27 @@ extension View {
     }
 }
 
-/// The two-column grid and list-row treatment every Analytics section shares. One column at the
+/// The grid and list-row treatment every Analytics section shares. Two columns on a phone and up to
+/// four as the screen widens, so a tile stays tile-sized on iPad and Mac. One column at the
 /// accessibility sizes, where two tiles side by side truncate their titles and values.
 struct AnalyticsCardGrid<Content: View>: View {
 
+    /// The narrowest a tile gets before the grid drops a column.
+    private static var tileWidth: CGFloat { 220 }
+
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ViewBuilder var content: () -> Content
+    @State private var width: CGFloat = 0
+
+    private var columnCount: Int {
+        dynamicTypeSize.isAccessibilitySize ? 1 : min(4, max(2, Int(width / Self.tileWidth)))
+    }
 
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(), count: dynamicTypeSize.isAccessibilitySize ? 1 : 2)) {
+        LazyVGrid(columns: Array(repeating: GridItem(), count: columnCount)) {
             content()
         }
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .padding(.horizontal)
         .removeListRowFormatting()
     }

@@ -450,6 +450,7 @@ the values now in the table.
 | `Symbols.swift` | `Symbol.*`: one SF Symbol per concept |
 | `Format.swift` | `Format.kcal/grams/weight/reps/sets/repRange/duration/distance/percent/placeholder` for every displayed quantity |
 | `Presentation.swift` | Sheet presets `.compact/.half/.full` |
+| `Dashboard.swift` | `Dashboard { Section… }`: a tab root's sections as a `List` on a phone and two card columns from `ContentWidth.twoColumns` up. Today uses it; Progress instead widens via `preferredReadableContentWidth` and lets `AnalyticsCardGrid` add columns (2–4). |
 | `Card.swift`, `Stat.swift`, `Chip.swift`, `ListRow.swift`, `NumberField.swift`, `BottomCTA.swift`, `InlineMessage.swift`, `OnboardingStepScaffold.swift` | The primitives: `.cardSurface`, `Stat`, `Chip` (+ `.chipTapTarget()`), `ListRow`/`ListRowButton`/`ListRowToggle`/`SelectableRow`, `NumberField`, `.bottomCTA`, `InlineMessage`, `OnboardingStepScaffold` |
 
 `docs/specs/ui-framework/CONTRACT.md` is the contract: every name above, the accent rules

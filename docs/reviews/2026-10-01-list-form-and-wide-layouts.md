@@ -54,10 +54,20 @@ through the `apple-hig` skill, iPadOS).
 - The large navigation title stays at the leading edge while content is centred. That is the
   system's behaviour (Settings on iPad does the same).
 - The custom set keyboard (`SET_KEYBOARD`) spans the full width, as the system keyboard does.
-- Dashboards (Today, Progress) are now a single 700 pt column. A two-column layout at regular
-  width would use the space better; that is a design change, not a fix.
 - Mac: the create-flow covers' close button sits against the window's leading edge, with the
   traffic lights drawn over the full-bleed hero. Unchanged by this pass.
 - The Mac window title reads "Compound - Dev" in the Mock build.
 - The deck harness: the mock scenario's rest timer asks for notification permission, and its
   alert lands on some captures.
+
+## Wide-window design (follow-up, same day)
+
+- **Today** lays its sections out as cards in two columns once the screen has 740 pt
+  (`Dashboard`), up to 1100 pt wide. Phone layout is unchanged.
+- **Progress** takes the same 1100 pt, and every `AnalyticsCardGrid` adds a column per 220 pt
+  (two on a phone, four on iPad and Mac). The weekly targets chart stays at reading width,
+  centred in its band. Its sub-screens (Body Metrics and the rest) get three columns at 700 pt.
+- **Social** and the other feeds and settings stay one readable column: a feed reads down.
+- A screen raises its own cap with `.preferredReadableContentWidth(_:)` (SwiftfulRouting fork).
+- `TodaysWorkoutCardLabel` lost a `maxHeight: .infinity` that a `List` row ignored but a card
+  column filled with empty space.

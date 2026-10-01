@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
    LastUpgradeVersion = "2700"
-   version = "1.3">
+   version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
@@ -17,17 +17,18 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
                BuildableName = "Compound.app"
-               BlueprintName = "DialedIn"
+               BlueprintName = "Compound"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
       <Testables>
          <TestableReference
             skipped = "NO"
@@ -36,7 +37,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D012F0192EACD46C0014C602"
                BuildableName = "CompoundUnitTests.xctest"
-               BlueprintName = "DialedInUnitTests"
+               BlueprintName = "CompoundUnitTests"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -47,16 +48,16 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D012F0742EAD20760014C602"
                BuildableName = "CompoundUITests.xctest"
-               BlueprintName = "DialedInUITests"
+               BlueprintName = "CompoundUITests"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -69,16 +70,15 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
             BuildableName = "Compound.app"
-            BlueprintName = "DialedIn"
             ReferencedContainer = "container:Compound.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../DialedIn/Managers/Purchases/StoreKit/DialedInPurchaseConfiguration.storekit">
+         identifier = "../../Compound/Managers/Purchases/StoreKit/CompoundStorekitConfiguration-Dev.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -89,16 +89,16 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
             BuildableName = "Compound.app"
-            BlueprintName = "DialedIn"
+            BlueprintName = "Compound"
             ReferencedContainer = "container:Compound.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Release">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

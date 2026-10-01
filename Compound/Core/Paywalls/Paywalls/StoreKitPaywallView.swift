@@ -31,6 +31,7 @@ struct StoreKitPaywallView: View {
             .multilineTextAlignment(.center)
             .containerBackground(Color.accentColor.gradient, for: .subscriptionStore)
         }
+        .storeButton(.hidden, for: .cancellation)
         .storeButton(.visible, for: .restorePurchases)
         // Terms and Privacy, which the purchase page has to link.
         .storeButton(.visible, for: .policies)

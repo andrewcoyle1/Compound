@@ -63,6 +63,9 @@ struct PaywallPurchasePresenterTests {
             return purchaseResult
         }
 
+        var ownedProductIds: Set<String> = []
+        func ownsProduct(productId: String) async -> Bool { ownedProductIds.contains(productId) }
+
         private(set) var didSignOut = false
         func signOut() async throws { didSignOut = true }
     }
@@ -290,6 +293,45 @@ struct PaywallPurchasePresenterTests {
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Fail"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
         #expect(screen.router.shown.isEmpty)
+    }
+
+    /// StoreKit will not sell a plan the Apple Account already has, and the error it gives is a
+    /// generic "problem with the App Store". The user wants what they already own, so it is restored.
+    @Test("Test Buying A Plan Already Owned Restores It Instead Of Failing")
+    func testBuyingAPlanAlreadyOwnedRestoresItInsteadOfFailing() async {
+        let screen = makeScreen(isOnboarding: true)
+        screen.interactor.purchaseError = PaywallTestError.failed
+        screen.interactor.ownedProductIds = ["monthly"]
+        screen.interactor.restoreResult = [entitlement(active: true)]
+
+        screen.presenter.onPurchaseProductPressed(product: product())
+
+        #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(screen.interactor.restoreCount == 1)
+        #expect(screen.router.alertedErrors.isEmpty)
+        #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_AlreadyOwned"))
+    }
+
+    /// RevenueCat's paywall used to dismiss itself after a purchase, popping onboarding back a step
+    /// with nothing moving the user on.
+    @Test("Test A RevenueCat Paywall Purchase Moves The User On")
+    func testARevenueCatPaywallPurchaseMovesTheUserOn() {
+        let screen = makeScreen(isOnboarding: true)
+
+        screen.presenter.onRevenueCatPurchaseCompleted(hasActiveEntitlement: true)
+
+        #expect(screen.router.shown == ["completeAccountSetup"])
+    }
+
+    /// RevenueCat's paywall explains an empty restore itself, so the presenter adds no second alert.
+    @Test("Test An Empty RevenueCat Restore Neither Lets Through Nor Alerts Twice")
+    func testAnEmptyRevenueCatRestoreNeitherLetsThroughNorAlertsTwice() {
+        let screen = makeScreen(isOnboarding: true)
+
+        screen.presenter.onRevenueCatRestoreCompleted(hasActiveEntitlement: false)
+
+        #expect(screen.router.shown.isEmpty)
+        #expect(screen.router.alertTitles.isEmpty)
     }
 
     /// Closing Apple's purchase sheet is a choice, not a failure: no alert titled "Error", no

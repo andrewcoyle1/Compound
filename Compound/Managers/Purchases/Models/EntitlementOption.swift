@@ -12,9 +12,17 @@ enum EntitlementOption: Codable, CaseIterable {
     var productId: String {
         switch self {
         case .yearly:
-            return "andrewcoyle.Compound.yearlySubscription"
+            #if DEBUG
+            return "com.andrewcoyle.compound.dev.yearly"
+            #else
+            return "com.andrewcoyle.compound.yearly"
+            #endif
         case .monthly:
-            return "andrewcoyle.Compound.monthlySubscription"
+            #if DEBUG
+            return "com.andrewcoyle.compound.dev.monthly"
+            #else
+            return "com.andrewcoyle.compound.monthly"
+            #endif
         }
     }
     

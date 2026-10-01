@@ -17,14 +17,14 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
                BuildableName = "Compound.app"
-               BlueprintName = "DialedIn"
+               BlueprintName = "Compound"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Mock"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
@@ -37,7 +37,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D012F0192EACD46C0014C602"
                BuildableName = "CompoundUnitTests.xctest"
-               BlueprintName = "DialedInUnitTests"
+               BlueprintName = "CompoundUnitTests"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -48,14 +48,14 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D012F0742EAD20760014C602"
                BuildableName = "CompoundUITests.xctest"
-               BlueprintName = "DialedInUITests"
+               BlueprintName = "CompoundUITests"
                ReferencedContainer = "container:Compound.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Mock"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -70,16 +70,13 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
             BuildableName = "Compound.app"
-            BlueprintName = "DialedIn"
+            BlueprintName = "Compound"
             ReferencedContainer = "container:Compound.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference
-         identifier = "../../DialedIn/Managers/Purchases/StoreKit/DialedInPurchaseConfiguration.storekit">
-      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Mock"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -90,16 +87,16 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D0A2993C2E54AEA700DA64F7"
             BuildableName = "Compound.app"
-            BlueprintName = "DialedIn"
+            BlueprintName = "Compound"
             ReferencedContainer = "container:Compound.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Debug">
+      buildConfiguration = "Mock">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Mock"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

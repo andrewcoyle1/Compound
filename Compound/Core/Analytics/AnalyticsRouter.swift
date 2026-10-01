@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 protocol AnalyticsRouter: GlobalRouter {
-    func showPaywall()
+    func showPaywall(isOnboarding: Bool)
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID)
     func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?)
     func showWeighInConsistencyView(delegate: WeighInConsistencyDelegate, themeColor: Color?)

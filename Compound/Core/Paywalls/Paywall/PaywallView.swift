@@ -46,8 +46,12 @@ struct PaywallView: View {
                     )
                 }
             case .revenueCat:
-                // Outside onboarding the toolbar already has a close button.
-                RevenueCatPaywallView(displayCloseButton: presenter.isOnboarding)
+                // The toolbar owns the way out: close outside onboarding, back inside it.
+                RevenueCatPaywallView(
+                    displayCloseButton: false,
+                    onPurchaseCompleted: presenter.onRevenueCatPurchaseCompleted,
+                    onRestoreCompleted: presenter.onRevenueCatRestoreCompleted
+                )
             case .storeKit:
                 StoreKitPaywallView(
                     productIds: presenter.productIds,
@@ -91,6 +95,8 @@ struct PaywallView: View {
                     .accessibilityIdentifier("PaywallAccountMenu")
                 }
             } else {
+                // A full-screen cover has no back button, and each paywall variant has its own
+                // close hidden so there is exactly one.
                 ToolbarItem(placement: .cancellationAction) {
                     Button(role: .close) {
                         presenter.onBackButtonPressed()
@@ -115,14 +121,8 @@ extension CoreBuilder {
 
 extension CoreRouter {
 
-    func showPaywall() {
-        router.showScreen(.fullScreenCover) { router in
-            builder.paywallView(router: router, isOnboarding: false)
-        }
-    }
-
     func showPaywall(isOnboarding: Bool = false) {
-        router.showScreen(.push) { router in
+        router.showScreen(isOnboarding ? .push : .fullScreenCover) { router in
             builder.paywallView(router: router, isOnboarding: isOnboarding)
         }
     }
@@ -138,16 +138,30 @@ extension CoreRouter {
     }
     
 }
+
 #Preview("StoreKit") {
     let container = DevPreview.shared.container()
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
-    return RouterView { router in
-        builder.paywallView(router: router)
-    }
-    
+    return Color.blue
+        .sheet(isPresented: Binding.constant(true)) {
+            RouterView { router in
+                builder.paywallView(router: router)
+            }
+        }
 }
+
+#Preview("StoreKit - Onboarding") {
+    let container = DevPreview.shared.container()
+    container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        builder.paywallView(router: router, isOnboarding: true)
+    }
+}
+
 #Preview("RevenueCat") {
     let container = DevPreview.shared.container()
     container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .revenueCat)))

@@ -10,39 +10,39 @@ and test suite with a link. It is generated; after adding or moving files run
 ## Build & Development
 
 **Package manager**: Swift Package Manager only — there is no Podfile and no `.xcworkspace`. Open
-`DialedIn.xcodeproj` directly; Xcode resolves packages on open.
+`Compound.xcodeproj` directly; Xcode resolves packages on open.
 
-**Schemes** (there is no scheme called plain `DialedIn`):
+**Schemes** (Production is the plain `Compound` scheme):
 
 | Scheme | Configuration | Backend |
 |---|---|---|
-| `DialedIn - Development` | Debug | Firebase dev project |
-| `DialedIn - Mock` | Mock | All mock services, no Firebase |
-| `DialedIn - Production` | Release | Firebase prod project |
+| `Compound - Development` | Debug | Firebase dev project |
+| `Compound - Mock` | Mock | All mock services, no Firebase |
+| `Compound` | Release | Firebase prod project |
 
 **Build from the command line**:
 ```bash
-xcodebuild -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
 **Run tests**:
 ```bash
-xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-The tests compile and pass (3,542 tests in `DialedInUnitTests`). Treat a `TEST FAILED` as a
+The tests compile and pass (3,542 tests in `CompoundUnitTests`). Treat a `TEST FAILED` as a
 regression from your change unless it is only the UI-test flake described below.
 
 `-only-testing` works, but only under the scheme's own name for the target. The productName is
 `DialedInTests`, and `-only-testing:DialedInTests` is rejected; the BlueprintName is
-`DialedInUnitTests`, so a single suite runs with:
+`CompoundUnitTests`, so a single suite runs with:
 
 ```bash
-xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:DialedInUnitTests/OnboardingHeightConversionTests
+  -only-testing:CompoundUnitTests/OnboardingHeightConversionTests
 ```
 
 **Run the full suite only when pushing.** Not between steps, and not to confirm something a
@@ -50,7 +50,7 @@ narrower run has already shown. Measured on this machine: the whole suite is abo
 with the UI bundle and **2.7 minutes without it** (3,542 unit tests as of the UI framework merge), one suite through
 `-only-testing` is about forty-five seconds, and the package's own `swift test` is under two.
 Nearly all of the fifteen minutes is the UI runner and its simulator clones, so
-`-skip-testing:DialedInUITests` is the single biggest saving available. Pick the narrowest run
+`-skip-testing:CompoundUITests` is the single biggest saving available. Pick the narrowest run
 that could actually fail:
 
 | Change | Run |
@@ -63,7 +63,7 @@ that could actually fail:
 Repeat runs belong in **one** invocation with `-test-iterations`, never N invocations — the build
 and simulator boot dominate, so five separate calls cost five times the setup for the same tests.
 
-Add `-skip-testing:DialedInUITests` to anything routine. It is three tests, one of them
+Add `-skip-testing:CompoundUITests` to anything routine. It is three tests, one of them
 chronically flaky, and it needs its own simulator clone; it is also what makes a run report
 `** TEST FAILED **` when every unit test passed.
 
@@ -84,7 +84,7 @@ Read the counts from the result bundle:
 
 ```bash
 xcrun xcresulttool get test-results summary \
-  --path "$(ls -td ~/Library/Developer/Xcode/DerivedData/DialedIn-*/Logs/Test/*.xcresult | head -1)"
+  --path "$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
 ```
 
 The UI-test runner is flaky in the simulator: it either fails to launch
@@ -94,7 +94,7 @@ invocation prints `** TEST FAILED **` on the strength of one UI test — so `** 
 is not a reliable signal on its own. Check the unit bundle's own result instead:
 
 ```bash
-B="$(ls -td ~/Library/Developer/Xcode/DerivedData/DialedIn-*/Logs/Test/*.xcresult | head -1)"
+B="$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
 xcrun xcresulttool get test-results tests --path "$B" | python3 -c '
 import json,sys
 d=json.load(sys.stdin)
@@ -106,11 +106,11 @@ def walk(n):
 walk(d.get("testNodes", []))'
 ```
 
-`Unit test bundle | DialedInUnitTests | Passed` is what matters. The summary's top-level
+`Unit test bundle | CompoundUnitTests | Passed` is what matters. The summary's top-level
 `failedTests` counts both bundles together, so it reads 1 on a clean unit run that hit the flake.
 
 Managers take sync engines rather than a services struct, so tests build them through
-**`DialedInUnitTests/Support/TestManagers.swift`**, which wires them the way `Dependencies` does
+**`CompoundUnitTests/Support/TestManagers.swift`**, which wires them the way `Dependencies` does
 for `.mock` but with `enableLocalPersistence: false` — otherwise each engine opens SwiftData
 storage under its `managerKey`, shared between tests and left behind after them.
 
@@ -145,10 +145,10 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
    `Info.plist`, and both `GoogleService-Info-{Dev,Prod}.plist` (all copied from
    `GoogleService-Info-Example.plist`). The examples are enough because only the Crashlytics
    run-script phase reads the plists and it exits early on simulator builds. The `Keys.swift`
-   example defines all 30 constants the app references, so it compiles unchanged.
+   example defines all 31 constants the app references, so it compiles unchanged.
 2. Runs `swiftlint --strict`, before the build so a style failure fails fast. `main` is at zero
    violations, so any warning fails the job. SwiftLint is **pinned** — see below.
-3. Runs `xcodebuild test` for `DialedIn - Development` with `-skip-testing:DialedInUITests`,
+3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
    writing `TestResults.xcresult`, which is uploaded as an artifact only when the job fails.
 
 The simulator destination is **discovered, not hardcoded**: a step picks the newest installed iOS
@@ -210,25 +210,25 @@ when it is merged: compare what each side has that the other lacks
 Copy example files and fill in credentials. All three destinations are gitignored, and the app
 will not build or sign in without them:
 
-- `DialedIn/Utilities/Keys.swift.example` → `DialedIn/Utilities/Keys.swift` — 33 constants:
-  OpenAI, Mixpanel, RevenueCat, the two Strava values, and 28 `*ManagerKey` strings used as
+- `Compound/Utilities/Keys.swift.example` → `Compound/Utilities/Keys.swift` — 34 constants:
+  OpenAI, Mixpanel, the RevenueCat dev and prod SDK keys, the two Strava values, and 28 `*ManagerKey` strings used as
   local-persistence path names. The manager keys are arbitrary but must stay stable: changing
   one orphans data already persisted under the old name.
-- `DialedIn/Info.plist.example` → `DialedIn/Info.plist` — already contains the real reversed
+- `Compound/Info.plist.example` → `Compound/Info.plist` — already contains the real reversed
   client IDs for both Firebase projects and the `compound` deep-link scheme, so this is a
   straight copy. Google Sign-In fails at runtime without it.
-- `DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` →
+- `Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` →
   `GoogleService-Info-Dev.plist` and `GoogleService-Info-Prod.plist` (same folder)
 
 ## Repository Layout
 
 ```
-DialedIn/                    # the app target (Core, Components, Managers, Root, Extensions,
+Compound/                    # the app target (Core, Components, Managers, Root, Extensions,
                              #   Utilities, SupportingFiles)
 WorkoutSessionActivity/      # Live Activity / Dynamic Island widget extension
 Shared/                      # code shared between the app and the widget extension
-DialedInUnitTests/           # unit tests (target productName is DialedInTests)
-DialedInUITests/             # UI tests
+CompoundUnitTests/           # unit tests (target productName is DialedInTests)
+CompoundUITests/             # UI tests
 functions/                   # Firebase Cloud Functions (Node, Genkit/Vertex AI)
 ```
 
@@ -283,7 +283,7 @@ Declares navigation methods. The actual implementation uses `SwiftfulRouting`'s 
 ### Dependency Flow
 
 ```
-DialedInApp
+CompoundApp
   └── Dependencies(config:)        ← creates all managers based on BuildConfiguration
         └── DependencyContainer    ← service locator, registered by type
               └── CoreInteractor   ← resolves all managers from container
@@ -293,7 +293,7 @@ DialedInApp
 **Build configurations** (`BuildConfiguration` enum):
 - `.mock(isSignedIn:)` — all mock services, no Firebase. Used for unit tests and previews.
 - `.dev` — Firebase dev project, `LocalABTestService`, RevenueCat
-- `.prod` — Firebase prod project, `FirebaseABTestService`, StoreKit
+- `.prod` — Firebase prod project, `FirebaseABTestService`, RevenueCat
 
 ### SwiftUI Previews
 
@@ -344,7 +344,7 @@ reports a conflicting-identity warning for that package.
 
 ## Key Managers
 
-App-owned managers live in `DialedIn/Managers/` and are accessed through `CoreInteractor`.
+App-owned managers live in `Compound/Managers/` and are accessed through `CoreInteractor`.
 Those marked *(package)* are aliases from the section above, not code in this repo:
 
 | Manager | Purpose |
@@ -367,7 +367,7 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |
 | `LiveActivityManager` | Dynamic Island / Lock Screen workout tracking |
 | `StravaManager` | Strava OAuth and activity import |
-| `PurchaseManager` *(package)* | RevenueCat (dev) / StoreKit (prod) |
+| `PurchaseManager` *(package)* | RevenueCat in dev and prod, each with its own SDK key; StoreKit config files for local testing |
 | `LogManager` *(package)* | Multi-service analytics (Console, Firebase, Mixpanel, Crashlytics) |
 | `ABTestManager` | A/B tests via Firebase Remote Config (prod) or local (dev) |
 | `AIManager` | Google AI / OpenAI integration via Cloud Functions |
@@ -439,7 +439,7 @@ the values now in the table.
 ## Design System
 
 **Use a token or primitive, never a literal.** Everything lives in
-`DialedIn/Components/DesignSystem/`, one file per concern, app target only:
+`Compound/Components/DesignSystem/`, one file per concern, app target only:
 
 | File | Provides |
 |---|---|
@@ -519,7 +519,7 @@ All six share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` and
 on any new callable — they are the only thing stopping an arbitrary rebuilt client from calling
 the backend, since the API keys in the bundled plists are public by design.
 
-App Check on the client is wired in `DialedIn/Utilities/AppCheckProviderFactory.swift`:
+App Check on the client is wired in `Compound/Utilities/AppCheckProviderFactory.swift`:
 App Attest where available, DeviceCheck as fallback, and a debug provider for simulators. A
 simulator debug token must be registered in the **dev** Firebase project only, never prod.
 
@@ -569,7 +569,7 @@ compile at `-Onone`, where it is harmless.
 Treat any new warning as something to
 fix rather than accumulate.
 
-Building a scheme does not compile the test target, so a warning in `DialedInUnitTests` shows up
+Building a scheme does not compile the test target, so a warning in `CompoundUnitTests` shows up
 only under `xcodebuild test`. Check the test run's log for `warning:` as well as the three builds
 before claiming the baseline holds.
 

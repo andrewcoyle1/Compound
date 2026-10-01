@@ -375,7 +375,7 @@ struct Dependencies {
                 privateSettingsSyncEngine: privateSettingsSyncEngine
             )
             abTestManager = ABTestManager(service: LocalABTestService(), logger: logManager)
-            purchaseManager = PurchaseManager(service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey), logger: logManager)
+            purchaseManager = PurchaseManager(service: RevenueCatPurchaseService(apiKey: Keys.revenueCatDevAPIKey), logger: logManager)
             let userExerciseSyncEngine = CollectionSyncEngine<ExerciseModel>(
                 remote: FirebaseRemoteCollectionService(
                     collectionPath: {
@@ -723,7 +723,7 @@ struct Dependencies {
                 privateSettingsSyncEngine: privateSettingsSyncEngine
             )
             abTestManager = ABTestManager(service: FirebaseABTestService(), logger: logManager)
-            purchaseManager = PurchaseManager(service: StoreKitPurchaseService())
+            purchaseManager = PurchaseManager(service: RevenueCatPurchaseService(apiKey: Keys.revenueCatProdAPIKey), logger: logManager)
             let userExerciseSyncEngine = CollectionSyncEngine<ExerciseModel>(
                 remote: FirebaseRemoteCollectionService(collectionPath: { "exercise_templates" }),
                 managerKey: Keys.userExerciseManagerKey,

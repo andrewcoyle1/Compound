@@ -72,7 +72,7 @@ final class AnalyticsRouterDouble: AnalyticsRouter {
     // target stopped compiling. An extra method in a configuration that does not require it is
     // harmless; a missing one is not.
     func showDevSettingsView() { shown.append("devSettings") }
-    func showPaywall() { shown.append("paywall") }
+    func showPaywall(isOnboarding: Bool) { shown.append("paywall") }
     func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) { shown.append("profile") }
     func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?) { shown.append("scaleWeight") }
     func showWeighInConsistencyView(delegate: WeighInConsistencyDelegate, themeColor: Color?) { shown.append("weighInConsistency") }

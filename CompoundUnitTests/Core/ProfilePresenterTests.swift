@@ -49,7 +49,7 @@ struct ProfilePresenterTests {
         func showIntegrationsView(delegate: IntegrationsDelegate) { shown.append("integrations") }
         func showSiriView(delegate: SiriDelegate) { shown.append("siri") }
         func showLegalView(delegate: LegalDelegate) { shown.append("legal") }
-        func showPaywall() { shown.append("paywall") }
+        func showPaywall(isOnboarding: Bool) { shown.append("paywall") }
         func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate) { shown.append("customiseAnalytics") }
         func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate) { shown.append("foodLogSettings") }
         func showExpenditureSettingsView(delegate: ExpenditureSettingsDelegate) { shown.append("expenditureSettings") }

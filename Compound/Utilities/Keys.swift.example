@@ -11,7 +11,8 @@ struct Keys {
 
     static let openAI = ""  // Add your OpenAI API key here
     static let mixpanelToken = ""  // Add your Mixpanel token here
-    static let revenueCatAPIKey = ""  // Add your RevenueCat API key here
+    static let revenueCatDevAPIKey = ""  // RevenueCat public SDK key (appl_…) for com.andrewcoyle.compound.dev
+    static let revenueCatProdAPIKey = ""  // RevenueCat public SDK key (appl_…) for com.andrewcoyle.compound
     static let stravaClientId = ""       // Strava application Client ID
     static let stravaClientSecret = ""   // Strava application Client Secret
 

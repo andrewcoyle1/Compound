@@ -19,7 +19,7 @@ protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showIntegrationsView(delegate: IntegrationsDelegate)
     func showSiriView(delegate: SiriDelegate)
     func showLegalView(delegate: LegalDelegate)
-    func showPaywall()
+    func showPaywall(isOnboarding: Bool)
     func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate)
     func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate)
     func showExpenditureSettingsView(delegate: ExpenditureSettingsDelegate)

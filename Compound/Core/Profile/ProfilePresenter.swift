@@ -96,7 +96,7 @@ class ProfilePresenter {
         if interactor.isPremium {
             isManageSubscriptionsPresented = true
         } else {
-            router.showPaywall()
+            router.showPaywall(isOnboarding: false)
         }
     }
 

@@ -124,29 +124,47 @@ class PaywallPresenter {
 
     func onRestorePurchasePressed() {
         interactor.trackEvent(event: Event.restorePurchaseStart)
+        Task { await restorePurchase() }
+    }
 
-        Task {
-            do {
-                let entitlements = try await interactor.restorePurchase()
-                
-                if entitlements.hasActiveEntitlement {
-                    onPurchaseSuccess()
-                } else {
-                    // A restore that finds nothing does not throw, so this branch raised nothing
-                    // at all and the button read as dead. It is the commonest restore outcome —
-                    // wrong Apple Account, or a subscription that has lapsed — and it happens on
-                    // the one screen a paying customer has to get past.
-                    interactor.trackEvent(event: Event.restorePurchaseEmpty)
-                    router.showAlert(
-                        title: String(localized: "Nothing to Restore"),
-                        subtitle: String(localized: "We couldn't find an active subscription on this Apple Account. Check that you are signed in with the account you subscribed with."),
-                        buttons: nil
-                    )
-                }
-            } catch {
-                interactor.playHaptic(option: .error)
-                router.showAlert(title: String(localized: "Unable to Restore Purchases"), error: error)
+    private func restorePurchase() async {
+        do {
+            let entitlements = try await interactor.restorePurchase()
+
+            if entitlements.hasActiveEntitlement {
+                onPurchaseSuccess()
+            } else {
+                // A restore that finds nothing does not throw, so this branch raised nothing
+                // at all and the button read as dead. It is the commonest restore outcome —
+                // wrong Apple Account, or a subscription that has lapsed — and it happens on
+                // the one screen a paying customer has to get past.
+                interactor.trackEvent(event: Event.restorePurchaseEmpty)
+                router.showAlert(
+                    title: String(localized: "Nothing to Restore"),
+                    subtitle: String(localized: "We couldn't find an active subscription on this Apple Account. Check that you are signed in with the account you subscribed with."),
+                    buttons: nil
+                )
             }
+        } catch {
+            interactor.playHaptic(option: .error)
+            router.showAlert(title: String(localized: "Unable to Restore Purchases"), error: error)
+        }
+    }
+
+    /// The RevenueCat paywall buys and restores by itself and reports back here.
+    func onRevenueCatPurchaseCompleted(hasActiveEntitlement: Bool) {
+        interactor.trackEvent(event: Event.revenueCatPurchaseComplete(hasActiveEntitlement: hasActiveEntitlement))
+        if hasActiveEntitlement {
+            onPurchaseSuccess()
+        }
+    }
+
+    /// RevenueCat's paywall tells the user itself when a restore finds nothing, so only a
+    /// successful one is handled here.
+    func onRevenueCatRestoreCompleted(hasActiveEntitlement: Bool) {
+        interactor.trackEvent(event: Event.revenueCatRestoreComplete(hasActiveEntitlement: hasActiveEntitlement))
+        if hasActiveEntitlement {
+            onPurchaseSuccess()
         }
     }
 
@@ -180,6 +198,13 @@ class PaywallPresenter {
                     interactor.trackEvent(event: Event.purchasePending(product: product))
                     isPurchasePending = true
                 case .failed:
+                    // StoreKit will not sell a plan the Apple Account already has, and the error
+                    // says only "a problem with the App Store". Restoring it is what the user wants.
+                    if await interactor.ownsProduct(productId: product.id) {
+                        interactor.trackEvent(event: Event.purchaseAlreadyOwned(product: product))
+                        await restorePurchase()
+                        return
+                    }
                     interactor.trackEvent(event: Event.purchaseFail(error: error))
                     interactor.playHaptic(option: .error)
                     router.showAlert(title: String(localized: "Unable to Complete Purchase"), error: error)
@@ -248,6 +273,9 @@ class PaywallPresenter {
         case purchasePending(product: AnyProduct)
         case purchaseCancelled(product: AnyProduct)
         case purchaseUnknown(product: AnyProduct)
+        case purchaseAlreadyOwned(product: AnyProduct)
+        case revenueCatPurchaseComplete(hasActiveEntitlement: Bool)
+        case revenueCatRestoreComplete(hasActiveEntitlement: Bool)
         case purchaseFail(error: Error)
         case loadProductsStart(variant: PaywallTestOption)
         case loadProductsSuccess(count: Int, variant: PaywallTestOption)
@@ -265,6 +293,9 @@ class PaywallPresenter {
             case .purchasePending:      return "PaywallView_Purchase_Pending"
             case .purchaseCancelled:    return "PaywallView_Purchase_Cancelled"
             case .purchaseUnknown:      return "PaywallView_Purchase_Unknown"
+            case .purchaseAlreadyOwned: return "PaywallView_Purchase_AlreadyOwned"
+            case .revenueCatPurchaseComplete: return "PaywallView_RevenueCat_Purchase_Complete"
+            case .revenueCatRestoreComplete:  return "PaywallView_RevenueCat_Restore_Complete"
             case .purchaseFail:         return "PaywallView_Purchase_Fail"
             case .loadProductsStart:    return "PaywallView_Load_Start"
             case .loadProductsSuccess:  return "PaywallView_Load_Success"
@@ -277,8 +308,10 @@ class PaywallPresenter {
         
         var parameters: [String: Any]? {
             switch self {
-            case .purchaseStart(product: let product), .purchaseSuccess(product: let product), .purchasePending(product: let product), .purchaseCancelled(product: let product), .purchaseUnknown(product: let product):
+            case .purchaseStart(product: let product), .purchaseSuccess(product: let product), .purchasePending(product: let product), .purchaseCancelled(product: let product), .purchaseUnknown(product: let product), .purchaseAlreadyOwned(product: let product):
                 return product.eventParameters
+            case .revenueCatPurchaseComplete(hasActiveEntitlement: let isActive), .revenueCatRestoreComplete(hasActiveEntitlement: let isActive):
+                return ["hasActiveEntitlement": isActive]
             case .purchaseFail(error: let error):
                 return error.eventParameters
             case .loadProductsStart(variant: let variant):

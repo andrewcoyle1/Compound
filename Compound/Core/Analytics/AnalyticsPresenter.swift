@@ -110,7 +110,7 @@ class AnalyticsPresenter {
     // in the app that can actually change what is on screen; see `DeepLink`.
 
     func onSubscribePressed() {
-        router.showPaywall()
+        router.showPaywall(isOnboarding: false)
     }
 
     func onProfilePressed(transitionId: String, namespace: Namespace.ID) {

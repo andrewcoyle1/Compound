@@ -357,8 +357,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/andrewcoyle1/SwiftfulRouting.git",
       "state" : {
-        "revision" : "99a96ae22900e0668380b15ca17b48f2f149a7b7",
-        "version" : "0.2.2"
+        "revision" : "b156f9cde1d7195c6287f6e1fa51d9a830417732",
+        "version" : "0.2.3"
       }
     },
     {

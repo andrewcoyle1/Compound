@@ -1,6 +1,6 @@
 //
 //  LiveActivityIntentHandling.swift
-//  DialedIn
+//  Compound
 //
 //  The seam a `LiveActivityIntent` reaches the app through
 //  (spec: docs/specs/live-activity.md §7.1).

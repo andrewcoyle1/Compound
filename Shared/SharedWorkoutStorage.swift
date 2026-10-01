@@ -1,6 +1,6 @@
 //
 //  SharedWorkoutStorage.swift
-//  DialedIn
+//  Compound
 //
 //  Created by Andrew Coyle on 17/10/2025.
 //

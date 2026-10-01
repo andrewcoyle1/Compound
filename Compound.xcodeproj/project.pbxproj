@@ -1,0 +1,1944 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D00087042F51D3FA00E51645 /* SwiftfulDataManagersFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D00087032F51D3FA00E51645 /* SwiftfulDataManagersFirebase */; };
+		D0136D522F48EE9100729550 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = D0136D512F48EE9100729550 /* FirebaseMessaging */; };
+		D04CF16D2F492A0F002876A8 /* SwiftfulUI in Frameworks */ = {isa = PBXBuildFile; productRef = D04CF16C2F492A0F002876A8 /* SwiftfulUI */; };
+		D05D0BAA2E8EA15E0027C662 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */; };
+		D05D0BAC2E8EA15E0027C662 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BAB2E8EA15E0027C662 /* FirebaseAppCheck */; };
+		D05D0BAE2E8EA15E0027C662 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BAD2E8EA15E0027C662 /* FirebaseAuth */; };
+		D05D0BB02E8EA15E0027C662 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BAF2E8EA15E0027C662 /* FirebaseCore */; };
+		D05D0BB22E8EA15E0027C662 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BB12E8EA15E0027C662 /* FirebaseFirestore */; };
+		D05D0BB42E8EA15E0027C662 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BB32E8EA15E0027C662 /* FirebaseFunctions */; };
+		D05D0BB62E8EA15E0027C662 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BB52E8EA15E0027C662 /* FirebaseStorage */; };
+		D05D0BB92E8EA1710027C662 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BB82E8EA1710027C662 /* SDWebImageSwiftUI */; };
+		D05D0BBB2E8EA1C00027C662 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BBA2E8EA1C00027C662 /* FirebaseCrashlytics */; };
+		D05D0BBE2E8EA22E0027C662 /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D05D0BBD2E8EA22E0027C662 /* SwiftfulUtilities */; };
+		D06AE7782F51BC450030A100 /* SwiftfulDataManagers in Frameworks */ = {isa = PBXBuildFile; productRef = D06AE7772F51BC450030A100 /* SwiftfulDataManagers */; };
+		D06E0A8D2F282F8400746BD6 /* SwiftfulRouting in Frameworks */ = {isa = PBXBuildFile; productRef = D06E0A8C2F282F8400746BD6 /* SwiftfulRouting */; };
+		D08F584A2E8BF61B001D3980 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D08F58492E8BF61B001D3980 /* WidgetKit.framework */; };
+		D08F584C2E8BF61B001D3980 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D08F584B2E8BF61B001D3980 /* SwiftUI.framework */; };
+		D08F58572E8BF61D001D3980 /* WorkoutSessionActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = D08F58482E8BF61B001D3980 /* WorkoutSessionActivityExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D08F58622E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08F58612E8BF65F001D3980 /* WorkoutActivityAttributes.swift */; };
+		D08F58632E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08F58612E8BF65F001D3980 /* WorkoutActivityAttributes.swift */; };
+		D0AB1C992EA1907100682653 /* SharedWorkoutStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */; };
+		D0AB1C9A2EA1907200682653 /* SharedWorkoutStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */; };
+		D0BF744D2F4CADF300DE875A /* SwiftfulAuthUI in Frameworks */ = {isa = PBXBuildFile; productRef = D0BF744C2F4CADF300DE875A /* SwiftfulAuthUI */; };
+		D0BF744F2F4CADF300DE875A /* SwiftfulAuthenticating in Frameworks */ = {isa = PBXBuildFile; productRef = D0BF744E2F4CADF300DE875A /* SwiftfulAuthenticating */; };
+		D0C4A7032F6D0001009C0A01 /* QuickCharts in Frameworks */ = {isa = PBXBuildFile; productRef = D0C4A7022F6D0001009C0A01 /* QuickCharts */; };
+		D0D44BAB2F54D5BE00D5BD92 /* SwiftfulGamification in Frameworks */ = {isa = PBXBuildFile; productRef = D0D44BAA2F54D5BE00D5BD92 /* SwiftfulGamification */; };
+		D0D44BAE2F54D63200D5BD92 /* SwiftfulGamificationFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D0D44BAD2F54D63200D5BD92 /* SwiftfulGamificationFirebase */; };
+		D0E5DE362F4E5BE10030B12E /* SwiftfulUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D02A76F02EB2469300D080ED /* SwiftfulUtilities */; };
+		D0E7A8A42EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7A8A32EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase */; };
+		D0E7AA692EE2DB6100BEE79F /* SwiftfulLogging in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7AA682EE2DB6100BEE79F /* SwiftfulLogging */; };
+		D0E7AA6C2EE2DB7600BEE79F /* SwiftfulLoggingMixpanel in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7AA6B2EE2DB7600BEE79F /* SwiftfulLoggingMixpanel */; };
+		D0E7AA6F2EE2DB8F00BEE79F /* SwiftfulLoggingFirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7AA6E2EE2DB8F00BEE79F /* SwiftfulLoggingFirebaseAnalytics */; };
+		D0E7AA722EE2DBA800BEE79F /* SwiftfulLoggingFirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7AA712EE2DBA800BEE79F /* SwiftfulLoggingFirebaseCrashlytics */; };
+		D0E7D5A32EE3139400BEE79F /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5A22EE3139400BEE79F /* FirebaseRemoteConfig */; };
+		D0E7D5A72EE31E7F00BEE79F /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0E7D5A62EE31E7F00BEE79F /* StoreKit.framework */; };
+		D0E7D5AA2EE31EDD00BEE79F /* SwiftfulPurchasing in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5A92EE31EDD00BEE79F /* SwiftfulPurchasing */; };
+		D0E7D5AD2EE31EF800BEE79F /* SwiftfulPurchasingRevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5AC2EE31EF800BEE79F /* SwiftfulPurchasingRevenueCat */; };
+		D0E7D5E92EE34B6B00BEE79F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5E82EE34B6B00BEE79F /* RevenueCat */; };
+		D0E7D5EB2EE34B6B00BEE79F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5EA2EE34B6B00BEE79F /* RevenueCatUI */; };
+		D0E7D5EF2EE372A600BEE79F /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D0E7D5EE2EE372A600BEE79F /* SwiftfulFirestore */; };
+		D0EC89962F2BACF000845CB6 /* SwiftfulHaptics in Frameworks */ = {isa = PBXBuildFile; productRef = D0EC89952F2BACF000845CB6 /* SwiftfulHaptics */; };
+		D0EC899E2F2BAD7000845CB6 /* SwiftfulSoundEffects in Frameworks */ = {isa = PBXBuildFile; productRef = D0EC899D2F2BAD7000845CB6 /* SwiftfulSoundEffects */; };
+		D0F1D6E12F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */; };
+		D0F1D6E22F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */; };
+		D0FA1E112EB0A11100682653 /* LiveActivityPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */; };
+		D0FA1E122EB0A11200682653 /* LiveActivityPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */; };
+		D0FA1E212EB0A12100682653 /* LiveActivityIntentHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */; };
+		D0FA1E222EB0A12200682653 /* LiveActivityIntentHandling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D012F01E2EACD46C0014C602 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D0A299352E54AEA700DA64F7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0A2993C2E54AEA700DA64F7;
+			remoteInfo = DialedIn;
+		};
+		D0136D5F2F48F7A700729550 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D0A299352E54AEA700DA64F7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0A2993C2E54AEA700DA64F7;
+			remoteInfo = DialedIn;
+		};
+		D08F58552E8BF61D001D3980 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D0A299352E54AEA700DA64F7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D08F58472E8BF61B001D3980;
+			remoteInfo = WorkoutSessionActivityExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D08F58582E8BF61D001D3980 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D08F58572E8BF61D001D3980 /* WorkoutSessionActivityExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0CE84722EAAC4EC00C3CCBE /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		D012F01A2EACD46C0014C602 /* CompoundUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CompoundUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D012F0752EAD20760014C602 /* CompoundUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CompoundUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D08F58482E8BF61B001D3980 /* WorkoutSessionActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorkoutSessionActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D08F58492E8BF61B001D3980 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		D08F584B2E8BF61B001D3980 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		D08F58612E8BF65F001D3980 /* WorkoutActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityAttributes.swift; sourceTree = "<group>"; };
+		D0A2993D2E54AEA700DA64F7 /* Compound.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Compound.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedWorkoutStorage.swift; sourceTree = "<group>"; };
+		D0BC0E4D2EA29936008A1E22 /* WorkoutSessionActivityExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WorkoutSessionActivityExtension.entitlements; sourceTree = "<group>"; };
+		D0E7D5A62EE31E7F00BEE79F /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
+		D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityPhase.swift; sourceTree = "<group>"; };
+		D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityIntentHandling.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D04537422F2FDFD80081B3E1 /* Exceptions for "Compound" folder in "Compound" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D0A2993C2E54AEA700DA64F7 /* Compound */;
+		};
+		D08F585C2E8BF61D001D3980 /* Exceptions for "WorkoutSessionActivity" folder in "WorkoutSessionActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D08F58472E8BF61B001D3980 /* WorkoutSessionActivityExtension */;
+		};
+		D0BC0E372EA28EB5008A1E22 /* Exceptions for "Compound" folder in "WorkoutSessionActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Extensions/ColorScheme+EXT.swift",
+				"Extensions/String+EXT.swift",
+				Managers/Training/WorkoutRestTimerIntents.swift,
+			);
+			target = D08F58472E8BF61B001D3980 /* WorkoutSessionActivityExtension */;
+		};
+		D0CE88D32EB2339D00EED3B5 /* Exceptions for "Compound" folder in "CompoundUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Root/LaunchScreen.storyboard,
+				SupportingFiles/Assets.xcassets,
+				SupportingFiles/Resources/PrebuiltExercises.json,
+				SupportingFiles/Resources/PrebuiltWorkouts.json,
+			);
+			target = D012F0742EAD20760014C602 /* CompoundUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D012F01B2EACD46C0014C602 /* CompoundUnitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CompoundUnitTests;
+			sourceTree = "<group>";
+		};
+		D012F0762EAD20760014C602 /* CompoundUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CompoundUITests;
+			sourceTree = "<group>";
+		};
+		D08F584D2E8BF61B001D3980 /* WorkoutSessionActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D08F585C2E8BF61D001D3980 /* Exceptions for "WorkoutSessionActivity" folder in "WorkoutSessionActivityExtension" target */,
+			);
+			path = WorkoutSessionActivity;
+			sourceTree = "<group>";
+		};
+		D0A2993F2E54AEA700DA64F7 /* Compound */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D04537422F2FDFD80081B3E1 /* Exceptions for "Compound" folder in "Compound" target */,
+				D0CE88D32EB2339D00EED3B5 /* Exceptions for "Compound" folder in "CompoundUITests" target */,
+				D0BC0E372EA28EB5008A1E22 /* Exceptions for "Compound" folder in "WorkoutSessionActivityExtension" target */,
+			);
+			path = Compound;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D012F0172EACD46C0014C602 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0E5DE362F4E5BE10030B12E /* SwiftfulUtilities in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D012F0722EAD20760014C602 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D08F58452E8BF61B001D3980 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D08F584C2E8BF61B001D3980 /* SwiftUI.framework in Frameworks */,
+				D08F584A2E8BF61B001D3980 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0A2993A2E54AEA700DA64F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D04CF16D2F492A0F002876A8 /* SwiftfulUI in Frameworks */,
+				D05D0BB92E8EA1710027C662 /* SDWebImageSwiftUI in Frameworks */,
+				D0E7AA692EE2DB6100BEE79F /* SwiftfulLogging in Frameworks */,
+				D0D44BAE2F54D63200D5BD92 /* SwiftfulGamificationFirebase in Frameworks */,
+				D0E7D5A32EE3139400BEE79F /* FirebaseRemoteConfig in Frameworks */,
+				D0BF744F2F4CADF300DE875A /* SwiftfulAuthenticating in Frameworks */,
+				D06E0A8D2F282F8400746BD6 /* SwiftfulRouting in Frameworks */,
+				D0C4A7032F6D0001009C0A01 /* QuickCharts in Frameworks */,
+				D0E7AA722EE2DBA800BEE79F /* SwiftfulLoggingFirebaseCrashlytics in Frameworks */,
+				D05D0BBE2E8EA22E0027C662 /* SwiftfulUtilities in Frameworks */,
+				D0BF744D2F4CADF300DE875A /* SwiftfulAuthUI in Frameworks */,
+				D0E7D5E92EE34B6B00BEE79F /* RevenueCat in Frameworks */,
+				D05D0BAA2E8EA15E0027C662 /* FirebaseAnalytics in Frameworks */,
+				D0D44BAB2F54D5BE00D5BD92 /* SwiftfulGamification in Frameworks */,
+				D0EC89962F2BACF000845CB6 /* SwiftfulHaptics in Frameworks */,
+				D0136D522F48EE9100729550 /* FirebaseMessaging in Frameworks */,
+				D05D0BAC2E8EA15E0027C662 /* FirebaseAppCheck in Frameworks */,
+				D0E7D5EF2EE372A600BEE79F /* SwiftfulFirestore in Frameworks */,
+				D05D0BB22E8EA15E0027C662 /* FirebaseFirestore in Frameworks */,
+				D05D0BAE2E8EA15E0027C662 /* FirebaseAuth in Frameworks */,
+				D05D0BB42E8EA15E0027C662 /* FirebaseFunctions in Frameworks */,
+				D00087042F51D3FA00E51645 /* SwiftfulDataManagersFirebase in Frameworks */,
+				D0E7D5EB2EE34B6B00BEE79F /* RevenueCatUI in Frameworks */,
+				D0E7D5AA2EE31EDD00BEE79F /* SwiftfulPurchasing in Frameworks */,
+				D0EC899E2F2BAD7000845CB6 /* SwiftfulSoundEffects in Frameworks */,
+				D0E7D5AD2EE31EF800BEE79F /* SwiftfulPurchasingRevenueCat in Frameworks */,
+				D0E7AA6C2EE2DB7600BEE79F /* SwiftfulLoggingMixpanel in Frameworks */,
+				D0E7A8A42EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase in Frameworks */,
+				D05D0BBB2E8EA1C00027C662 /* FirebaseCrashlytics in Frameworks */,
+				D0E7AA6F2EE2DB8F00BEE79F /* SwiftfulLoggingFirebaseAnalytics in Frameworks */,
+				D05D0BB62E8EA15E0027C662 /* FirebaseStorage in Frameworks */,
+				D05D0BB02E8EA15E0027C662 /* FirebaseCore in Frameworks */,
+				D0E7D5A72EE31E7F00BEE79F /* StoreKit.framework in Frameworks */,
+				D06AE7782F51BC450030A100 /* SwiftfulDataManagers in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D08F58602E8BF652001D3980 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D0FA1E202EB0A12000682653 /* LiveActivityIntentHandling.swift */,
+				D0FA1E102EB0A11000682653 /* LiveActivityPhase.swift */,
+				D0AB1C982EA1907000682653 /* SharedWorkoutStorage.swift */,
+				D0F1D6E02F90000100A1B2C3 /* WidgetSnapshot.swift */,
+				D08F58612E8BF65F001D3980 /* WorkoutActivityAttributes.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		D0A299342E54AEA700DA64F7 = {
+			isa = PBXGroup;
+			children = (
+				D0BC0E4D2EA29936008A1E22 /* WorkoutSessionActivityExtension.entitlements */,
+				D08F58602E8BF652001D3980 /* Shared */,
+				D0A2993F2E54AEA700DA64F7 /* Compound */,
+				D08F584D2E8BF61B001D3980 /* WorkoutSessionActivity */,
+				D012F01B2EACD46C0014C602 /* CompoundUnitTests */,
+				D012F0762EAD20760014C602 /* CompoundUITests */,
+				D0A29B792E54B07C00DA64F7 /* Frameworks */,
+				D0A2993E2E54AEA700DA64F7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D0A2993E2E54AEA700DA64F7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D0A2993D2E54AEA700DA64F7 /* Compound.app */,
+				D08F58482E8BF61B001D3980 /* WorkoutSessionActivityExtension.appex */,
+				D012F01A2EACD46C0014C602 /* CompoundUnitTests.xctest */,
+				D012F0752EAD20760014C602 /* CompoundUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D0A29B792E54B07C00DA64F7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D0E7D5A62EE31E7F00BEE79F /* StoreKit.framework */,
+				D08F58492E8BF61B001D3980 /* WidgetKit.framework */,
+				D08F584B2E8BF61B001D3980 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D012F0192EACD46C0014C602 /* CompoundUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D012F0202EACD46C0014C602 /* Build configuration list for PBXNativeTarget "CompoundUnitTests" */;
+			buildPhases = (
+				D012F0162EACD46C0014C602 /* Sources */,
+				D012F0172EACD46C0014C602 /* Frameworks */,
+				D012F0182EACD46C0014C602 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D012F01F2EACD46C0014C602 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D012F01B2EACD46C0014C602 /* CompoundUnitTests */,
+			);
+			name = CompoundUnitTests;
+			packageProductDependencies = (
+				D02A76F02EB2469300D080ED /* SwiftfulUtilities */,
+			);
+			productName = DialedInTests;
+			productReference = D012F01A2EACD46C0014C602 /* CompoundUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D012F0742EAD20760014C602 /* CompoundUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D012F07D2EAD20760014C602 /* Build configuration list for PBXNativeTarget "CompoundUITests" */;
+			buildPhases = (
+				D012F0712EAD20760014C602 /* Sources */,
+				D012F0722EAD20760014C602 /* Frameworks */,
+				D012F0732EAD20760014C602 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D0136D602F48F7A700729550 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D012F0762EAD20760014C602 /* CompoundUITests */,
+			);
+			name = CompoundUITests;
+			packageProductDependencies = (
+			);
+			productName = DialedInUITests;
+			productReference = D012F0752EAD20760014C602 /* CompoundUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		D08F58472E8BF61B001D3980 /* WorkoutSessionActivityExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D08F585D2E8BF61D001D3980 /* Build configuration list for PBXNativeTarget "WorkoutSessionActivityExtension" */;
+			buildPhases = (
+				D08F58442E8BF61B001D3980 /* Sources */,
+				D08F58452E8BF61B001D3980 /* Frameworks */,
+				D08F58462E8BF61B001D3980 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D08F584D2E8BF61B001D3980 /* WorkoutSessionActivity */,
+			);
+			name = WorkoutSessionActivityExtension;
+			packageProductDependencies = (
+			);
+			productName = WorkoutSessionActivityExtension;
+			productReference = D08F58482E8BF61B001D3980 /* WorkoutSessionActivityExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		D0A2993C2E54AEA700DA64F7 /* Compound */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D0A2995E2E54AEA800DA64F7 /* Build configuration list for PBXNativeTarget "Compound" */;
+			buildPhases = (
+				D0A299392E54AEA700DA64F7 /* Sources */,
+				D0A2993A2E54AEA700DA64F7 /* Frameworks */,
+				D0A2993B2E54AEA700DA64F7 /* Resources */,
+				D01433B92E54BCA10053AD15 /* ShellScript */,
+				D08F58582E8BF61D001D3980 /* Embed Foundation Extensions */,
+				D0CE84722EAAC4EC00C3CCBE /* Embed Watch Content */,
+				D01433BA2E54BCB50053AD15 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D08F58562E8BF61D001D3980 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D0A2993F2E54AEA700DA64F7 /* Compound */,
+			);
+			name = Compound;
+			packageProductDependencies = (
+				D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */,
+				D05D0BAB2E8EA15E0027C662 /* FirebaseAppCheck */,
+				D05D0BAD2E8EA15E0027C662 /* FirebaseAuth */,
+				D05D0BAF2E8EA15E0027C662 /* FirebaseCore */,
+				D05D0BB12E8EA15E0027C662 /* FirebaseFirestore */,
+				D05D0BB32E8EA15E0027C662 /* FirebaseFunctions */,
+				D05D0BB52E8EA15E0027C662 /* FirebaseStorage */,
+				D05D0BB82E8EA1710027C662 /* SDWebImageSwiftUI */,
+				D05D0BBA2E8EA1C00027C662 /* FirebaseCrashlytics */,
+				D05D0BBD2E8EA22E0027C662 /* SwiftfulUtilities */,
+				D0E7A8A32EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase */,
+				D0E7AA682EE2DB6100BEE79F /* SwiftfulLogging */,
+				D0E7AA6B2EE2DB7600BEE79F /* SwiftfulLoggingMixpanel */,
+				D0E7AA6E2EE2DB8F00BEE79F /* SwiftfulLoggingFirebaseAnalytics */,
+				D0E7AA712EE2DBA800BEE79F /* SwiftfulLoggingFirebaseCrashlytics */,
+				D0E7D5A22EE3139400BEE79F /* FirebaseRemoteConfig */,
+				D0E7D5A92EE31EDD00BEE79F /* SwiftfulPurchasing */,
+				D0E7D5AC2EE31EF800BEE79F /* SwiftfulPurchasingRevenueCat */,
+				D0E7D5E82EE34B6B00BEE79F /* RevenueCat */,
+				D0E7D5EA2EE34B6B00BEE79F /* RevenueCatUI */,
+				D0E7D5EE2EE372A600BEE79F /* SwiftfulFirestore */,
+				D06E0A8C2F282F8400746BD6 /* SwiftfulRouting */,
+				D0C4A7022F6D0001009C0A01 /* QuickCharts */,
+				D0EC89952F2BACF000845CB6 /* SwiftfulHaptics */,
+				D0EC899D2F2BAD7000845CB6 /* SwiftfulSoundEffects */,
+				D0136D512F48EE9100729550 /* FirebaseMessaging */,
+				D04CF16C2F492A0F002876A8 /* SwiftfulUI */,
+				D0BF744C2F4CADF300DE875A /* SwiftfulAuthUI */,
+				D0BF744E2F4CADF300DE875A /* SwiftfulAuthenticating */,
+				D06AE7772F51BC450030A100 /* SwiftfulDataManagers */,
+				D00087032F51D3FA00E51645 /* SwiftfulDataManagersFirebase */,
+				D0D44BAA2F54D5BE00D5BD92 /* SwiftfulGamification */,
+				D0D44BAD2F54D63200D5BD92 /* SwiftfulGamificationFirebase */,
+			);
+			productName = DialedIn;
+			productReference = D0A2993D2E54AEA700DA64F7 /* Compound.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D0A299352E54AEA700DA64F7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					D012F0192EACD46C0014C602 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = D0A2993C2E54AEA700DA64F7;
+					};
+					D012F0742EAD20760014C602 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = D0A2993C2E54AEA700DA64F7;
+					};
+					D08F58472E8BF61B001D3980 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					D0A2993C2E54AEA700DA64F7 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+				};
+			};
+			buildConfigurationList = D0A299382E54AEA700DA64F7 /* Build configuration list for PBXProject "Compound" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				es,
+			);
+			mainGroup = D0A299342E54AEA700DA64F7;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D05D0BB72E8EA1710027C662 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
+				D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */,
+				D0E7A8A22EE2D90700BEE79F /* XCRemoteSwiftPackageReference "SwiftfulAuthenticatingFirebase" */,
+				D0E7AA672EE2DB6100BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLogging" */,
+				D0E7AA6A2EE2DB7600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingMixpanel" */,
+				D0E7AA6D2EE2DB8F00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseAnalytics" */,
+				D0E7AA702EE2DBA800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseCrashlytics" */,
+				D0E7D5A82EE31EDD00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasing" */,
+				D0E7D5AB2EE31EF800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasingRevenueCat" */,
+				D0E7D5E72EE34B6B00BEE79F /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				D0E7D5ED2EE372A600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */,
+				D06E0A8B2F282F8400746BD6 /* XCRemoteSwiftPackageReference "SwiftfulRouting" */,
+				D0C4A7012F6D0001009C0A01 /* XCRemoteSwiftPackageReference "QuickCharts" */,
+				D0EC89942F2BACF000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */,
+				D0EC899C2F2BAD7000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulSoundEffects" */,
+				D04CF16B2F492A0F002876A8 /* XCRemoteSwiftPackageReference "SwiftfulUI" */,
+				D0BF744B2F4CADF300DE875A /* XCRemoteSwiftPackageReference "SwiftfulAuthenticating" */,
+				D06AE7762F51BC450030A100 /* XCRemoteSwiftPackageReference "SwiftfulDataManagers" */,
+				D00087022F51D3FA00E51645 /* XCRemoteSwiftPackageReference "SwiftfulDataManagersFirebase" */,
+				D0D44BA92F54D5BE00D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamification" */,
+				D0D44BAC2F54D63200D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamificationFirebase" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D0A2993E2E54AEA700DA64F7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D0A2993C2E54AEA700DA64F7 /* Compound */,
+				D012F0742EAD20760014C602 /* CompoundUITests */,
+				D012F0192EACD46C0014C602 /* CompoundUnitTests */,
+				D08F58472E8BF61B001D3980 /* WorkoutSessionActivityExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D012F0182EACD46C0014C602 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D012F0732EAD20760014C602 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D08F58462E8BF61B001D3980 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0A2993B2E54AEA700DA64F7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D01433B92E54BCA10053AD15 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\n# Check if running in a SwiftUI preview\nif [ \"$XCODE_RUNNING_FOR_PREVIEWS\" != \"1\" ]; then\n    if which swiftlint > /dev/null; then\n        swiftlint # Uncomment if you want to auto-fix: swiftlint --fix &&\n    else\n        echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\n    fi\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		D01433BA2E54BCB50053AD15 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${EFFECTIVE_PLATFORM_NAME}\" == \"-iphonesimulator\" ]; then\n  echo \"Skipping Crashlytics upload for a simulator build.\"\n  exit 0\nfi\n\nif [ \"${CONFIGURATION}\" == \"Debug\" ]; then\n  GOOGLE_SERVICE_INFO_PLIST=\"${PROJECT_DIR}/Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Dev.plist\"\nelif [ \"${CONFIGURATION}\" == \"Mock\" ]; then\n  echo \"Skipping Crashlytics upload for Mock configuration.\"\n  exit 0  # Use `exit 0` if `return` does not work in your environment\nelif [ \"${CONFIGURATION}\" == \"Release\" ]; then\n  GOOGLE_SERVICE_INFO_PLIST=\"${PROJECT_DIR}/Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Prod.plist\"\nelse\n  echo \"No matching build configuration found for GoogleService-Info.plist!\"\n  exit 1\nfi\n\n# Run the Crashlytics script with the selected plist file\n\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\" -gsp \"${GOOGLE_SERVICE_INFO_PLIST}\"\n\n\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D012F0162EACD46C0014C602 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D012F0712EAD20760014C602 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D08F58442E8BF61B001D3980 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D08F58632E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */,
+				D0AB1C992EA1907100682653 /* SharedWorkoutStorage.swift in Sources */,
+				D0F1D6E12F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */,
+				D0FA1E112EB0A11100682653 /* LiveActivityPhase.swift in Sources */,
+				D0FA1E212EB0A12100682653 /* LiveActivityIntentHandling.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0A299392E54AEA700DA64F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D08F58622E8BF677001D3980 /* WorkoutActivityAttributes.swift in Sources */,
+				D0AB1C9A2EA1907200682653 /* SharedWorkoutStorage.swift in Sources */,
+				D0F1D6E22F90000100A1B2C3 /* WidgetSnapshot.swift in Sources */,
+				D0FA1E122EB0A11200682653 /* LiveActivityPhase.swift in Sources */,
+				D0FA1E222EB0A12200682653 /* LiveActivityIntentHandling.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D012F01F2EACD46C0014C602 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0A2993C2E54AEA700DA64F7 /* Compound */;
+			targetProxy = D012F01E2EACD46C0014C602 /* PBXContainerItemProxy */;
+		};
+		D0136D602F48F7A700729550 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0A2993C2E54AEA700DA64F7 /* Compound */;
+			targetProxy = D0136D5F2F48F7A700729550 /* PBXContainerItemProxy */;
+		};
+		D08F58562E8BF61D001D3980 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D08F58472E8BF61B001D3980 /* WorkoutSessionActivityExtension */;
+			targetProxy = D08F58552E8BF61D001D3980 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D012F0212EACD46C0014C602 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Compound.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Compound";
+			};
+			name = Debug;
+		};
+		D012F0222EACD46C0014C602 /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Compound.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Compound";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Mock;
+		};
+		D012F0232EACD46C0014C602 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Compound.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Compound";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D012F07E2EAD20760014C602 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(TESTING_FRAMEWORK_MODULE_ALIAS_FLAGS)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DialedIn;
+			};
+			name = Debug;
+		};
+		D012F07F2EAD20760014C602 /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(TESTING_FRAMEWORK_MODULE_ALIAS_FLAGS)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DialedIn;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Mock;
+		};
+		D012F0802EAD20760014C602 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_ONLY_ACTIVE_RESOURCES = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				OTHER_SWIFT_FLAGS = "$(TESTING_FRAMEWORK_MODULE_ALIAS_FLAGS)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedInUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = DialedIn;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D014316D2E54B47D0053AD15 /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "MOCK $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Mock;
+		};
+		D014316E2E54B47D0053AD15 /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Compound/SupportingFiles/Compound.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "\"Compound/SupportingFiles/PreviewContent/Preview\\ Assets.xcassets\"";
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
+				INFOPLIST_FILE = Compound/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat to track your training, and your date of birth, sex, height or weight when you tap Fill from Apple Health.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				OTHER_SWIFT_FLAGS = "-DMOCK";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn.mock;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = MOCK;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = YES;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = YES;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = YES;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = YES;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = YES;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Mock;
+		};
+		D08F58592E8BF61D001D3980 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorkoutSessionActivityExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorkoutSessionActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorkoutSessionActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn.dev.WorkoutSessionActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D08F585A2E8BF61D001D3980 /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorkoutSessionActivityExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorkoutSessionActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorkoutSessionActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn.mock.WorkoutSessionActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Mock;
+		};
+		D08F585B2E8BF61D001D3980 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WorkoutSessionActivityExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WorkoutSessionActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WorkoutSessionActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn.WorkoutSessionActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D0A2995C2E54AEA800DA64F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D0A2995D2E54AEA800DA64F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = NO;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = NO;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = NO;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = NO;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = NO;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = NO;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = NO;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		D0A2995F2E54AEA800DA64F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Compound/SupportingFiles/Compound-Debug.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "\"Compound/SupportingFiles/PreviewContent/Preview\\ Assets.xcassets\"";
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
+				INFOPLIST_FILE = Compound/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat to track your training, and your date of birth, sex, height or weight when you tap Fill from Apple Health.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				OTHER_SWIFT_FLAGS = "-DDEV";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = YES;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = YES;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = YES;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = YES;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = YES;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		D0A299602E54AEA800DA64F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Compound/SupportingFiles/Compound.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "\"Compound/SupportingFiles/PreviewContent/Preview\\ Assets.xcassets\"";
+				DEVELOPMENT_TEAM = VRNWC32C76;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				GID_CLIENT_ID = "94958324260-bj1v2mbkjr92u8emp7li2i2157osija7.apps.googleusercontent.com";
+				INFOPLIST_FILE = Compound/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Compound reads your workouts, heart rate, active energy, steps, weight and body fat to track your training, and your date of birth, sex, height or weight when you tap Fill from Apple Health.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Compound saves your workouts and the weight you log to Apple Health.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Workout images you choose to save are added to your photo library.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Your data will be used to deliver personalised ads and experiences";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewcoyle.DialedIn;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_CONCISE_MAGIC_FILE = YES;
+				SWIFT_UPCOMING_FEATURE_DEPRECATE_APPLICATION_MAIN = YES;
+				SWIFT_UPCOMING_FEATURE_DISABLE_OUTWARD_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_DYNAMIC_ACTOR_ISOLATION = YES;
+				SWIFT_UPCOMING_FEATURE_FORWARD_TRAILING_CLOSURES = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_ACTOR_ISOLATED_TYPES_USABILITY = YES;
+				SWIFT_UPCOMING_FEATURE_GLOBAL_CONCURRENCY = YES;
+				SWIFT_UPCOMING_FEATURE_IMPLICIT_OPEN_EXISTENTIALS = YES;
+				SWIFT_UPCOMING_FEATURE_IMPORT_OBJC_FORWARD_DECLS = YES;
+				SWIFT_UPCOMING_FEATURE_INFER_ISOLATED_CONFORMANCES = NO;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_UPCOMING_FEATURE_ISOLATED_DEFAULT_VALUES = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = NO;
+				SWIFT_UPCOMING_FEATURE_NONFROZEN_ENUM_EXHAUSTIVITY = YES;
+				SWIFT_UPCOMING_FEATURE_NONISOLATED_NONSENDING_BY_DEFAULT = NO;
+				SWIFT_UPCOMING_FEATURE_REGION_BASED_ISOLATION = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D012F0202EACD46C0014C602 /* Build configuration list for PBXNativeTarget "CompoundUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D012F0212EACD46C0014C602 /* Debug */,
+				D012F0222EACD46C0014C602 /* Mock */,
+				D012F0232EACD46C0014C602 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D012F07D2EAD20760014C602 /* Build configuration list for PBXNativeTarget "CompoundUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D012F07E2EAD20760014C602 /* Debug */,
+				D012F07F2EAD20760014C602 /* Mock */,
+				D012F0802EAD20760014C602 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D08F585D2E8BF61D001D3980 /* Build configuration list for PBXNativeTarget "WorkoutSessionActivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D08F58592E8BF61D001D3980 /* Debug */,
+				D08F585A2E8BF61D001D3980 /* Mock */,
+				D08F585B2E8BF61D001D3980 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0A299382E54AEA700DA64F7 /* Build configuration list for PBXProject "Compound" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0A2995C2E54AEA800DA64F7 /* Debug */,
+				D014316D2E54B47D0053AD15 /* Mock */,
+				D0A2995D2E54AEA800DA64F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D0A2995E2E54AEA800DA64F7 /* Build configuration list for PBXNativeTarget "Compound" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0A2995F2E54AEA800DA64F7 /* Debug */,
+				D014316E2E54B47D0053AD15 /* Mock */,
+				D0A299602E54AEA800DA64F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D00087022F51D3FA00E51645 /* XCRemoteSwiftPackageReference "SwiftfulDataManagersFirebase" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulDataManagersFirebase.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		D04CF16B2F492A0F002876A8 /* XCRemoteSwiftPackageReference "SwiftfulUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.4;
+			};
+		};
+		D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.19.2;
+			};
+		};
+		D05D0BB72E8EA1710027C662 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.3;
+			};
+		};
+		D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulUtilities";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.6;
+			};
+		};
+		D06AE7762F51BC450030A100 /* XCRemoteSwiftPackageReference "SwiftfulDataManagers" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulDataManagers.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		D06E0A8B2F282F8400746BD6 /* XCRemoteSwiftPackageReference "SwiftfulRouting" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulRouting.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.0;
+			};
+		};
+		D0BF744B2F4CADF300DE875A /* XCRemoteSwiftPackageReference "SwiftfulAuthenticating" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulAuthenticating.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.16;
+			};
+		};
+		D0C4A7012F6D0001009C0A01 /* XCRemoteSwiftPackageReference "QuickCharts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/QuickCharts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.7.0;
+			};
+		};
+		D0D44BA92F54D5BE00D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamification" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulGamification.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		D0D44BAC2F54D63200D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamificationFirebase" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulGamificationFirebase.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		D0E7A8A22EE2D90700BEE79F /* XCRemoteSwiftPackageReference "SwiftfulAuthenticatingFirebase" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/andrewcoyle1/SwiftfulAuthenticatingFirebase.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.14;
+			};
+		};
+		D0E7AA672EE2DB6100BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLogging" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulLogging.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
+		D0E7AA6A2EE2DB7600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingMixpanel" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulLoggingMixpanel.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.2;
+			};
+		};
+		D0E7AA6D2EE2DB8F00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseAnalytics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulLoggingFirebaseAnalytics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.5;
+			};
+		};
+		D0E7AA702EE2DBA800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseCrashlytics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulLoggingFirebaseCrashlytics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
+		D0E7D5A82EE31EDD00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulPurchasing.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.1;
+			};
+		};
+		D0E7D5AB2EE31EF800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasingRevenueCat" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulPurchasingRevenueCat.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.3;
+			};
+		};
+		D0E7D5E72EE34B6B00BEE79F /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.78.0;
+			};
+		};
+		D0E7D5ED2EE372A600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulFirestore";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.4;
+			};
+		};
+		D0EC89942F2BACF000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulHaptics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.3;
+			};
+		};
+		D0EC899C2F2BAD7000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulSoundEffects" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulSoundEffects.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D00087032F51D3FA00E51645 /* SwiftfulDataManagersFirebase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D00087022F51D3FA00E51645 /* XCRemoteSwiftPackageReference "SwiftfulDataManagersFirebase" */;
+			productName = SwiftfulDataManagersFirebase;
+		};
+		D0136D512F48EE9100729550 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		D02A76F02EB2469300D080ED /* SwiftfulUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
+			productName = SwiftfulUtilities;
+		};
+		D04CF16C2F492A0F002876A8 /* SwiftfulUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D04CF16B2F492A0F002876A8 /* XCRemoteSwiftPackageReference "SwiftfulUI" */;
+			productName = SwiftfulUI;
+		};
+		D05D0BA92E8EA15E0027C662 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		D05D0BAB2E8EA15E0027C662 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		D05D0BAD2E8EA15E0027C662 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		D05D0BAF2E8EA15E0027C662 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		D05D0BB12E8EA15E0027C662 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		D05D0BB32E8EA15E0027C662 /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+		D05D0BB52E8EA15E0027C662 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		D05D0BB82E8EA1710027C662 /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BB72E8EA1710027C662 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
+		};
+		D05D0BBA2E8EA1C00027C662 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		D05D0BBD2E8EA22E0027C662 /* SwiftfulUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BBC2E8EA22E0027C662 /* XCRemoteSwiftPackageReference "SwiftfulUtilities" */;
+			productName = SwiftfulUtilities;
+		};
+		D06AE7772F51BC450030A100 /* SwiftfulDataManagers */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D06AE7762F51BC450030A100 /* XCRemoteSwiftPackageReference "SwiftfulDataManagers" */;
+			productName = SwiftfulDataManagers;
+		};
+		D06E0A8C2F282F8400746BD6 /* SwiftfulRouting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D06E0A8B2F282F8400746BD6 /* XCRemoteSwiftPackageReference "SwiftfulRouting" */;
+			productName = SwiftfulRouting;
+		};
+		D0BF744C2F4CADF300DE875A /* SwiftfulAuthUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0BF744B2F4CADF300DE875A /* XCRemoteSwiftPackageReference "SwiftfulAuthenticating" */;
+			productName = SwiftfulAuthUI;
+		};
+		D0BF744E2F4CADF300DE875A /* SwiftfulAuthenticating */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0BF744B2F4CADF300DE875A /* XCRemoteSwiftPackageReference "SwiftfulAuthenticating" */;
+			productName = SwiftfulAuthenticating;
+		};
+		D0C4A7022F6D0001009C0A01 /* QuickCharts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0C4A7012F6D0001009C0A01 /* XCRemoteSwiftPackageReference "QuickCharts" */;
+			productName = QuickCharts;
+		};
+		D0D44BAA2F54D5BE00D5BD92 /* SwiftfulGamification */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0D44BA92F54D5BE00D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamification" */;
+			productName = SwiftfulGamification;
+		};
+		D0D44BAD2F54D63200D5BD92 /* SwiftfulGamificationFirebase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0D44BAC2F54D63200D5BD92 /* XCRemoteSwiftPackageReference "SwiftfulGamificationFirebase" */;
+			productName = SwiftfulGamificationFirebase;
+		};
+		D0E7A8A32EE2D90700BEE79F /* SwiftfulAuthenticatingFirebase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7A8A22EE2D90700BEE79F /* XCRemoteSwiftPackageReference "SwiftfulAuthenticatingFirebase" */;
+			productName = SwiftfulAuthenticatingFirebase;
+		};
+		D0E7AA682EE2DB6100BEE79F /* SwiftfulLogging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7AA672EE2DB6100BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLogging" */;
+			productName = SwiftfulLogging;
+		};
+		D0E7AA6B2EE2DB7600BEE79F /* SwiftfulLoggingMixpanel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7AA6A2EE2DB7600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingMixpanel" */;
+			productName = SwiftfulLoggingMixpanel;
+		};
+		D0E7AA6E2EE2DB8F00BEE79F /* SwiftfulLoggingFirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7AA6D2EE2DB8F00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseAnalytics" */;
+			productName = SwiftfulLoggingFirebaseAnalytics;
+		};
+		D0E7AA712EE2DBA800BEE79F /* SwiftfulLoggingFirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7AA702EE2DBA800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulLoggingFirebaseCrashlytics" */;
+			productName = SwiftfulLoggingFirebaseCrashlytics;
+		};
+		D0E7D5A22EE3139400BEE79F /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D05D0BA82E8EA15E0027C662 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
+		};
+		D0E7D5A92EE31EDD00BEE79F /* SwiftfulPurchasing */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7D5A82EE31EDD00BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasing" */;
+			productName = SwiftfulPurchasing;
+		};
+		D0E7D5AC2EE31EF800BEE79F /* SwiftfulPurchasingRevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7D5AB2EE31EF800BEE79F /* XCRemoteSwiftPackageReference "SwiftfulPurchasingRevenueCat" */;
+			productName = SwiftfulPurchasingRevenueCat;
+		};
+		D0E7D5E82EE34B6B00BEE79F /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7D5E72EE34B6B00BEE79F /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		D0E7D5EA2EE34B6B00BEE79F /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7D5E72EE34B6B00BEE79F /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
+		};
+		D0E7D5EE2EE372A600BEE79F /* SwiftfulFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0E7D5ED2EE372A600BEE79F /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */;
+			productName = SwiftfulFirestore;
+		};
+		D0EC89952F2BACF000845CB6 /* SwiftfulHaptics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0EC89942F2BACF000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulHaptics" */;
+			productName = SwiftfulHaptics;
+		};
+		D0EC899D2F2BAD7000845CB6 /* SwiftfulSoundEffects */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D0EC899C2F2BAD7000845CB6 /* XCRemoteSwiftPackageReference "SwiftfulSoundEffects" */;
+			productName = SwiftfulSoundEffects;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D0A299352E54AEA700DA64F7 /* Project object */;
+}

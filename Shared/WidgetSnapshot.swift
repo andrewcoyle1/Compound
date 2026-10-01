@@ -1,6 +1,6 @@
 //
 //  WidgetSnapshot.swift
-//  DialedIn
+//  Compound
 //
 //  What the home-screen widgets show, written by the app into the App Group's UserDefaults on
 //  every session end and goal change, and read by the widget extension's timeline provider.

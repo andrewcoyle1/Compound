@@ -1,6 +1,6 @@
 //
 //  LiveActivityView.swift
-//  DialedIn
+//  Compound
 //
 //  The lock-screen banner (spec: docs/specs/live-activity.md §3).
 //

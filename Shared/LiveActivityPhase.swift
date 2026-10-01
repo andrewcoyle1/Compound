@@ -1,6 +1,6 @@
 //
 //  LiveActivityPhase.swift
-//  DialedIn
+//  Compound
 //
 //  The phase model for the workout Live Activity (spec: docs/specs/live-activity.md §2).
 //

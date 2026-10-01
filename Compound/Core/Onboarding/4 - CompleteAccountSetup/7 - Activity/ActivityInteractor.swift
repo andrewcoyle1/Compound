@@ -1,0 +1,11 @@
+//
+//  ActivityInteractor.swift
+//  Compound
+//
+//  Created by Andrew Coyle on 27/11/2025.
+//
+
+@MainActor
+protocol ActivityInteractor: GlobalInteractor { }
+
+extension CoreInteractor: ActivityInteractor { }

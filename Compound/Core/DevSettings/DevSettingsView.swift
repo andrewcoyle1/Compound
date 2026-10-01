@@ -1,0 +1,472 @@
+//
+//  DevSettingsView.swift
+//  Compound
+//
+//  Created by Andrew Coyle on 10/22/24.
+//
+
+#if DEV || MOCK
+import SwiftUI
+
+struct DevSettingsView: View {
+    
+    @State var presenter: DevSettingsPresenter
+
+    var body: some View {
+        List {
+            premiumSection
+            abTestSection
+            debugActionsSection
+            authSection
+            userSection
+            deviceSection
+            activeWorkoutSessionSection
+            localStorageDebugSection
+            firebaseTestSection
+            exerciseModelSection
+            workoutTemplateSection
+            seedingSection
+            shareCardSection
+        }
+        .navigationTitle("Developer Settings")
+        .onAppear {
+            presenter.onViewAppear()
+        }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
+        .scrollIndicators(.hidden)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onDismissPressed()
+                }
+            }
+        }
+        .onFirstAppear {
+            presenter.loadABTests()
+            presenter.loadPremiumOverride()
+        }
+    }
+
+    private var authSection: some View {
+        Section {
+            let array = presenter.authParams()
+            ForEach(array, id: \.key) { item in
+                itemRow(item: item)
+            }
+        } header: {
+            Text("Auth Info")
+        }
+    }
+    
+    private var userSection: some View {
+        Section {
+            let array = presenter.userParams()
+            ForEach(array, id: \.key) { item in
+                itemRow(item: item)
+            }
+        } header: {
+            Text("User Info")
+        }
+    }
+    
+    private var premiumSection: some View {
+        Section {
+            Toggle("Simulate Premium", isOn: $presenter.simulatePremium)
+                .onChange(of: presenter.simulatePremium, presenter.handleSimulatePremiumChange)
+                .font(.label)
+        } header: {
+            Text("Subscription")
+        } footer: {
+            Text("Treats this device as a subscriber without a purchase. Debug and Mock builds only — it does not exist in a release build.")
+                .font(.label)
+        }
+    }
+
+    private var abTestSection: some View {
+        Section {
+            Group {
+                Toggle("Notifications Test", isOn: $presenter.isInNotificationsABTest)
+                    .onChange(of: presenter.isInNotificationsABTest, presenter.handleNotificationTestChange)
+                
+                Picker("Paywall Test", selection: $presenter.paywallTest) {
+                    ForEach(PaywallTestOption.allCases, id: \.self) { option in
+                        Text(option.rawValue)
+                            .id(option)
+                    }
+                }
+                .onChange(of: presenter.paywallTest, presenter.handlePaywallOptionChange)
+            }
+            .font(.label)
+        } header: {
+            Text("AB Tests")
+        }
+    }
+    
+    private var deviceSection: some View {
+        Section {
+            let array = presenter.deviceParams()
+            ForEach(array, id: \.key) { item in
+                itemRow(item: item)
+            }
+        } header: {
+            Text("Device Info")
+        }
+    }
+    
+    private var exerciseModelSection: some View {
+        Group {
+            Section {
+                ForEach(presenter.allExercises, id: \.id) { item in
+                    ListRow(title: item.name, subtitle: item.description, imageName: item.imageURL)
+                }
+            } header: {
+                HStack {
+                    Text("Exercises")
+                    Spacer()
+                    Text("\(presenter.allExercises.count)")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var workoutTemplateSection: some View {
+        Group {
+            Section {
+                ForEach(presenter.allWorkoutTemplates, id: \.workoutId) { workout in
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        HStack {
+                            Text(workout.name)
+                                .font(.rowDetail)
+                                .fontWeight(.medium)
+                            Spacer()
+                        }
+                        
+                        if let description = workout.description {
+                            Text(description)
+                                .font(.label)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "figure.strengthtraining.traditional")
+                                .font(.label)
+                            Text("\(workout.exercises.count) exercises")
+                                .font(.label)
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, Spacing.xs)
+                }
+            } header: {
+                HStack {
+                    Text("Workout Templates")
+                    Spacer()
+                    Text("\(presenter.allWorkoutTemplates.count)")
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var activeWorkoutSessionSection: some View {
+        Section {
+            if let session = presenter.activeSession {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    debugRow(label: "Session ID", value: session.id)
+                    debugRow(label: "Name", value: session.name)
+                    debugRow(label: "Template ID", value: session.workoutTemplateId ?? "nil")
+                    debugRow(label: "Plan ID", value: session.mesocycleId ?? "nil")
+                    debugRow(label: "Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
+                    if let endedAt = session.endedAt {
+                        debugRow(label: "Ended", value: endedAt.formatted(date: .numeric, time: .shortened))
+                    } else {
+                        debugRow(label: "Ended", value: "nil (in progress)")
+                    }
+                    debugRow(label: "Exercises", value: "\(session.exercises.count)")
+                    
+                    let completedSets = session.exercises.flatMap { $0.sets }.filter { $0.completedAt != nil }.count
+                    let totalSets = session.exercises.flatMap { $0.sets }.count
+                    debugRow(label: "Sets", value: "\(completedSets)/\(totalSets)")
+                }
+                .padding(.vertical, Spacing.xs)
+            } else {
+                Text("No active workout session")
+                    .font(.label)
+                    .foregroundStyle(.secondary)
+            }
+        } header: {
+            Text("Active Workout Session")
+        } footer: {
+            Text("Shows the currently active workout session if one is in progress.")
+        }
+    }
+    
+    private var localStorageDebugSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                // Active session from local storage
+                if let activeSession = presenter.activeSession {
+                    Text("Active Session (Local)")
+                        .font(.label)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                    
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        debugRow(label: "  Session ID", value: activeSession.id)
+                        debugRow(label: "  Template ID", value: activeSession.workoutTemplateId ?? "nil")
+                        debugRow(label: "  Plan ID", value: activeSession.mesocycleId ?? "nil")
+                    }
+                    .padding(.vertical, Spacing.xxs)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
+                } else {
+                    Text("No active session in local storage")
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                }
+                
+                Divider()
+                
+                // Recent sessions
+                let recentSessions = presenter.workoutSessions
+                let last3 = Array(recentSessions.sorted(by: { $0.dateCreated > $1.dateCreated }).prefix(3))
+                
+                Text("Recent Sessions (Last 3)")
+                    .font(.label)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, Spacing.xs)
+                
+                if last3.isEmpty {
+                    Text("No recent sessions")
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(last3, id: \.id) { session in
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
+                            debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
+                            debugRow(label: "  Plan ID", value: session.mesocycleId ?? "nil")
+                            debugRow(label: "  Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
+                            if let ended = session.endedAt {
+                                debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
+                            }
+                        }
+                        .padding(.vertical, Spacing.xxs)
+                        .padding(.horizontal, Spacing.xs)
+                        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
+                    }
+                }
+            }
+            .padding(.vertical, Spacing.xs)
+            
+        } header: {
+            Text("Local Storage Debug")
+        }
+    }
+    
+    private var firebaseTestSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text("Fetch Session from Firebase")
+                    .font(.label)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                
+                TextField("Session ID", text: $presenter.testSessionId)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.label)
+                
+                Button {
+                    Task {
+                        await presenter.fetchSessionFromFirebase()
+                    }
+                } label: {
+                    if presenter.isFetchingSession {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("Fetch Session", systemImage: "arrow.down.circle")
+                            .font(.label)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(presenter.testSessionId.isEmpty || presenter.isFetchingSession)
+                
+                if let error = presenter.fetchError {
+                    InlineMessage(.error, error)
+                        .padding(.top, Spacing.xs)
+                }
+                
+                if let session = presenter.fetchedSession {
+                    Divider()
+                    
+                    Text("Fetched Session")
+                        .font(.label)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, Spacing.xs)
+                    
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        debugRow(label: "  Session ID", value: String(session.id.prefix(8)) + "...")
+                        debugRow(label: "  Name", value: session.name)
+                        debugRow(label: "  Template ID", value: session.workoutTemplateId ?? "nil")
+                        debugRow(label: "  Plan ID", value: session.mesocycleId ?? "nil")
+                        debugRow(label: "  Created", value: session.dateCreated.formatted(date: .numeric, time: .shortened))
+                        if let ended = session.endedAt {
+                            debugRow(label: "  Ended", value: ended.formatted(date: .numeric, time: .shortened))
+                        }
+                    }
+                    .padding(.vertical, Spacing.xxs)
+                    .padding(.horizontal, Spacing.xs)
+                    .background(Color.tintedSurface(.success), in: .rect(cornerRadius: Radius.s, style: .continuous))
+                }
+            }
+            .padding(.vertical, Spacing.xs)
+        } header: {
+            Text("Firebase Test")
+        }
+    }
+    
+    private var seedingSection: some View {
+        Section {
+            Button {
+                Task {
+                    await presenter.resetExerciseSeeding()
+                }
+            } label: {
+                Label("Reset Exercise Seeding", systemImage: "arrow.clockwise")
+            }
+            .disabled(presenter.isReseeding)
+            
+            Button {
+                Task {
+                    await presenter.resetWorkoutSeeding()
+                }
+            } label: {
+                Label("Reset Workout Seeding", systemImage: "arrow.clockwise")
+            }
+            .disabled(presenter.isReseeding)
+
+            Button {
+                Task {
+                    await presenter.resetMesocycleSeeding()
+                }
+            } label: {
+                Label("Reset Mesocycle Seeding", systemImage: "arrow.clockwise")
+            }
+            .disabled(presenter.isReseeding)
+            
+            Button {
+                Task {
+                    await presenter.resetAllSeeding()
+                }
+            } label: {
+                Label("Reset All Seeding", systemImage: "arrow.clockwise.circle.fill")
+            }
+            .disabled(presenter.isReseeding)
+            
+            if presenter.isReseeding {
+                HStack {
+                    ProgressView()
+                    Text(presenter.reseedingMessage)
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("Data Seeding")
+        } footer: {
+            Text("Use these options to reset and re-seed system exercises, workouts and mesocycles. Useful for testing or if seeding failed.")
+        }
+    }
+    
+    private var shareCardSection: some View {
+        Section {
+            Button("Save Share Cards to Photos") {
+                presenter.onSaveShareCardsPressed()
+            }
+        } header: {
+            Text("Share Card")
+        } footer: {
+            Text("Renders the Story and Square cards for the first mock session and saves both to the photo library.")
+        }
+    }
+
+    @ViewBuilder
+    private var debugActionsSection: some View {
+        Section {
+            Button(role: .destructive) {
+                presenter.onForceFreshAnonUser()
+            } label: {
+                Text("Clear local data & sign out")
+            }
+            .tint(.danger)
+            .font(.label)
+
+        } header: {
+            Text("Debug Actions")
+        } footer: {
+            Text("Clears all local data and signs out. Your Firebase account remains intact.")
+        }
+    }
+    
+    private func itemRow(item: (key: String, value: Any)) -> some View {
+        HStack {
+            Text(item.key)
+            Spacer(minLength: 4)
+            
+            if let value = String.convertToString(item.value) {
+                Text(value)
+            } else {
+                Text("Unknown")
+            }
+        }
+        .font(.label)
+        .lineLimit(1)
+        .minimumScaleFactor(0.3)
+    }
+    
+    private func debugRow(label: String, value: String) -> some View {
+        HStack(alignment: .top) {
+            Text(label)
+                .font(.label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.label)
+                .foregroundStyle(.primary)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+extension CoreBuilder {
+    func devSettingsView(router: AnyRouter) -> AnyView {
+        DevSettingsView(
+            presenter: DevSettingsPresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
+        )
+        .any()
+    }
+}
+
+extension CoreRouter {
+    func showDevSettingsView() {
+        router.showScreen(.fullScreenCover) { router in
+            builder.devSettingsView(router: router)
+        }
+    }
+}
+
+#Preview {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    RouterView { router in
+        builder.devSettingsView(router: router)
+    }
+    
+}
+#endif

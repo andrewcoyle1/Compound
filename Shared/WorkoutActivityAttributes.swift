@@ -1,6 +1,6 @@
 //
 //  WorkoutActivityAttributes.swift
-//  DialedIn
+//  Compound
 //
 //  Created by Andrew Coyle on 30/09/2025.
 //

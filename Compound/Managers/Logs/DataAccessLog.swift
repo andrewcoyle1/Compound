@@ -9,11 +9,12 @@
 //  `FirebaseUserQueryService`, notifications, comments — bypass the engines and are not counted.
 //
 //  How the engines' events map to cost:
-//  - A collection or collection-group engine logs `_bulkLoad_start` once per `startListening`, then
-//    `_bulkLoad_success` with the documents the bulk get read, then `_listener_success` with the
-//    collection's size when its snapshot listener first delivers. Firestore bills that initial
-//    snapshot as well, so a start reads the matching documents twice.
-//  - A document engine logs `_listener_start` (with a `document_id`) and one read per delivery,
+//  - Every engine logs `_listener_start` each time it attaches a snapshot listener, retries
+//    included.
+//  - A collection or collection-group engine then logs `_listener_success` with the collection's
+//    size when that listener first delivers, which is the read Firestore bills. There is no
+//    separate bulk get any more: the first snapshot is the load.
+//  - A document engine (its events carry a `document_id`) logs one read per delivery,
 //    `_listener_success` or, for a missing document, `_listener_empty`.
 //  - One-off reads log `_getDocumentsQuery_success` / `_getCollection_success` with a count, and
 //    `_getDocument_success` for one document.
@@ -117,9 +118,7 @@ final class DataAccessLog: LogService, @unchecked Sendable {
         let count = parameters?["count"] as? Int ?? 0
         let isDocumentEngine = parameters?["document_id"] != nil
         let rules: [(suffix: String, tally: Tally?)] = [
-            ("_bulkLoad_start", Tally(listenersStarted: 1)),
-            ("_bulkLoad_success", Tally(documentsRead: count)),
-            ("_listener_start", isDocumentEngine ? Tally(listenersStarted: 1) : nil),
+            ("_listener_start", Tally(listenersStarted: 1)),
             ("_listener_success", Tally(documentsRead: isDocumentEngine ? 1 : count)),
             ("_listener_empty", Tally(documentsRead: 1)),
             ("_getDocumentsQuery_success", Tally(documentsRead: count)),

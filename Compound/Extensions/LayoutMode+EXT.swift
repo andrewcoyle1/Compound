@@ -31,19 +31,3 @@ extension View {
         environment(\.layoutMode, mode)
     }
 }
-
-// MARK: - Goal Flow Dismiss Action
-
-/// Environment key for dismissing the standalone goal setting flow
-@MainActor
-private struct GoalFlowDismissKey: @MainActor EnvironmentKey {
-    static let defaultValue: (() -> Void)? = nil
-}
-
-@MainActor
-extension EnvironmentValues {
-    var goalFlowDismissAction: (() -> Void)? {
-        get { self[GoalFlowDismissKey.self] }
-        set { self[GoalFlowDismissKey.self] = newValue }
-    }
-}

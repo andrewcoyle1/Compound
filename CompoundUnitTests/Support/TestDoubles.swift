@@ -97,6 +97,11 @@ class SpyOnboardingRouter: OnboardingStepRouter {
 
     func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
+    /// Sheets closed, recorded here for the same witness reason as the alerts.
+    private(set) var environmentDismissals = 0
+
+    func dismissEnvironment() { environmentDismissals += 1 }
+
     /// Records a destination. Subclasses call this from their own navigation methods so every
     /// screen a test drives through lands in one list, in order.
     func record(_ destination: String) {

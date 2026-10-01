@@ -81,7 +81,7 @@ class WeightRatePresenter {
 
     func onAppear(delegate: WeightRateDelegate) {
         let user = interactor.currentUser
-        currentWeight = user?.submittedWeightKilograms ?? 70
+        currentWeight = interactor.currentWeightKilograms ?? 70
         weightUnit = user?.submittedWeightUnitPreference ?? .kilograms
 
         let objective = delegate.overarchingObjective

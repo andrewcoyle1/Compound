@@ -6,6 +6,8 @@
 import SwiftUI
 
 @MainActor
-protocol GoalProgressRouter: ScaleWeightRouter { }
+protocol GoalProgressRouter: ScaleWeightRouter {
+    func showWeightGoalFlow()
+}
 
 extension CoreRouter: GoalProgressRouter { }

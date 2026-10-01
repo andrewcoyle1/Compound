@@ -8,6 +8,7 @@
 @MainActor
 protocol WeightRateInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var currentWeightKilograms: Double? { get }
     func estimateTDEE(user: UserModel?) -> Double
 }
 

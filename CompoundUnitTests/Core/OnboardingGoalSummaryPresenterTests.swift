@@ -18,6 +18,7 @@ struct OnboardingGoalSummaryPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, GoalSummaryInteractor {
         var currentUser: UserModel?
+        var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
         var saveGoalError: Error?
         var updateGoalIdError: Error?
         private(set) var savedGoals: [WeightGoal] = []
@@ -56,12 +57,6 @@ struct OnboardingGoalSummaryPresenterTests {
             mesocycleDelegate = delegate
             super.showOnboardingMesocycleView(delegate: delegate)
         }
-    }
-
-    /// Counts the dismissals of the flow this screen was pushed into. A box rather than a captured
-    /// local, because `onDismiss` is stored on the presenter and outlives the statement that set it.
-    private final class DismissCounter {
-        var count = 0
     }
 
     private struct Screen {
@@ -382,15 +377,13 @@ struct OnboardingGoalSummaryPresenterTests {
     @Test("Completing standalone saves the goal and dismisses the flow")
     func testCompletingDismissesTheFlowItWasOpenedFrom() async {
         let screen = makeScreen(user: summaryUser(goalId: "goal-1"), isStandaloneMode: true)
-        let dismissals = DismissCounter()
-        screen.presenter.onDismiss = { dismissals.count += 1 }
 
         screen.presenter.onCompletePressed(delegate: delegate())
-        await TestManagers.eventually { dismissals.count == 1 }
+        await TestManagers.eventually { screen.router.environmentDismissals == 1 }
 
         #expect(screen.interactor.savedGoals.count == 1)
         #expect(screen.interactor.savedGoalIds.count == 1)
-        #expect(dismissals.count == 1)
+        #expect(screen.router.environmentDismissals == 1)
         // Standalone is its own flow, so it closes rather than pushing on into onboarding.
         #expect(screen.router.shown.isEmpty)
     }
@@ -401,13 +394,11 @@ struct OnboardingGoalSummaryPresenterTests {
     func testAFailedCompleteDoesNotDismissTheFlow() async {
         let screen = makeScreen(user: summaryUser(goalId: "goal-1"), isStandaloneMode: true)
         screen.interactor.saveGoalError = URLError(.notConnectedToInternet)
-        let dismissals = DismissCounter()
-        screen.presenter.onDismiss = { dismissals.count += 1 }
 
         screen.presenter.onCompletePressed(delegate: delegate())
         await TestManagers.eventually { !screen.router.alertTitles.isEmpty }
 
-        #expect(dismissals.count == 0)
+        #expect(screen.router.environmentDismissals == 0)
         #expect(screen.router.alertTitles == ["Unable to save your Goal"])
     }
 

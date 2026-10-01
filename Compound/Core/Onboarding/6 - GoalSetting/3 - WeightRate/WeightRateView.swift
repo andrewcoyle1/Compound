@@ -10,10 +10,12 @@ import SwiftUI
 struct WeightRateDelegate {
     let overarchingObjective: OverarchingObjective
     let targetWeight: Double
+    let isStandaloneMode: Bool
     
     init(delegate: TargetWeightDelegate, targetWeight: Double) {
         self.overarchingObjective = delegate.overarchingObjective
         self.targetWeight = targetWeight
+        self.isStandaloneMode = delegate.isStandaloneMode
     }
     
     static func mock(overarchingObjective: OverarchingObjective) -> Self {
@@ -117,7 +119,11 @@ struct WeightRateView: View {
 extension CoreBuilder {
     func weightRateView(router: AnyRouter, delegate: WeightRateDelegate) -> some View {
         WeightRateView(
-            presenter: WeightRatePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self)),
+            presenter: WeightRatePresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isStandaloneMode: delegate.isStandaloneMode
+            ),
             delegate: delegate
         )
     }

@@ -37,6 +37,8 @@ struct ProfilePresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 
+        func showWeightGoalFlow() { shown.append("weightGoal") }
+
         func showAccountView(delegate: AccountDelegate) { shown.append("account") }
         func showNotificationsView() { shown.append("notifications") }
         func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { shown.append("notificationSettings") }

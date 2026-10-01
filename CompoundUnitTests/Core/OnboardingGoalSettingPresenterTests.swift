@@ -75,6 +75,7 @@ struct OnboardingObjectivePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, OverarchingObjectiveInteractor {
         var currentUser: UserModel?
+        var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
 
         init(currentUser: UserModel? = nil) {
             self.currentUser = currentUser
@@ -184,6 +185,7 @@ struct OnboardingTargetWeightPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, TargetWeightInteractor {
         var currentUser: UserModel?
+        var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
 
         init(currentUser: UserModel?) {
             self.currentUser = currentUser

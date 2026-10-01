@@ -8,6 +8,7 @@
 @MainActor
 protocol TargetWeightInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var currentWeightKilograms: Double? { get }
 }
 
 extension CoreInteractor: TargetWeightInteractor { }

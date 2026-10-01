@@ -107,6 +107,9 @@ struct ProfileView: View {
 
     private var nutritionSettingsSection: some View {
         Section {
+            ListRowButton(title: String(localized: "Weight Goal"), systemImage: Symbol.goal, accessory: .value(presenter.weightGoalStatus)) {
+                presenter.onWeightGoalPressed()
+            }
             ListRowButton(title: String(localized: "Food Log"), systemImage: Symbol.food) {
                 presenter.onFoodLogSettingsPressed()
             }

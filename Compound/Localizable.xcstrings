@@ -14,6 +14,56 @@
         }
       }
     },
+    "Not Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin definir"
+          }
+        }
+      }
+    },
+    "Set a weight goal to track your progress toward your target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso hacia él."
+          }
+        }
+      }
+    },
+    "Set a weight goal to track your progress." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso."
+          }
+        }
+      }
+    },
+    "Set Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fijar objetivo"
+          }
+        }
+      }
+    },
+    "Weight Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de peso"
+          }
+        }
+      }
+    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -19309,16 +19359,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Establece un objetivo semanal"
-          }
-        }
-      }
-    },
-    "Set a weight goal in Profile to track your progress toward your target." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fija un objetivo de peso en Perfil para seguir tu progreso hacia él."
           }
         }
       }

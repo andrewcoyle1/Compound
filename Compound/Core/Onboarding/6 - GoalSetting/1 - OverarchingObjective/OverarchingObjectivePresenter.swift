@@ -18,7 +18,7 @@ class OverarchingObjectivePresenter {
     var selectedObjective: OverarchingObjective?
         
     var userWeight: Double? {
-        interactor.currentUser?.submittedWeightKilograms
+        interactor.currentWeightKilograms
     }
     
     var canContinue: Bool { selectedObjective != nil && userWeight != nil }
@@ -39,15 +39,24 @@ class OverarchingObjectivePresenter {
         self.isStandaloneMode = isStandaloneMode
     }
     
+    func onDismissPressed() {
+        router.dismissEnvironment()
+    }
+
     func onContinuePressed() {
         guard let objective = selectedObjective else { return }
         guard let currentWeight = userWeight else { return }
         if objective == .maintain {
-            let delegate = GoalSummaryDelegate(overarchingObjective: objective, targetWeight: currentWeight, weightChangeRate: 0)
+            let delegate = GoalSummaryDelegate(
+                overarchingObjective: objective,
+                targetWeight: currentWeight,
+                weightChangeRate: 0,
+                isStandaloneMode: isStandaloneMode
+            )
             interactor.trackEvent(event: Event.navigate)
             router.showGoalSummaryView(delegate: delegate)
         } else {
-            let delegate = TargetWeightDelegate(overarchingObjective: objective)
+            let delegate = TargetWeightDelegate(overarchingObjective: objective, isStandaloneMode: isStandaloneMode)
             interactor.trackEvent(event: Event.navigate)
             router.showTargetWeightView(delegate: delegate)
         }

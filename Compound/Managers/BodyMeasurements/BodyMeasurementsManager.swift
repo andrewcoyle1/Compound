@@ -221,6 +221,15 @@ extension CoreInteractor {
         bodyMeasurementsManager.bodyMeasurements
     }
 
+    /// The latest weigh-in, or the weight given in onboarding when none has been logged. A goal
+    /// set months after onboarding has to start from where the person is now.
+    var currentWeightKilograms: Double? {
+        bodyMeasurements
+            .filter { $0.deletedAt == nil && $0.weightKg != nil }
+            .max { $0.date < $1.date }?.weightKg
+            ?? currentUser?.submittedWeightKilograms
+    }
+
     /// CREATE
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {
         if bodyMeasurement.weightKg != nil {

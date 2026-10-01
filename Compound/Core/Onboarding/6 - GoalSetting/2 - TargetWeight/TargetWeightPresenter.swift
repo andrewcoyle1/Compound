@@ -77,7 +77,7 @@ class TargetWeightPresenter {
     /// would fire as the screen drew. A missing weight already reads as zero here, and every
     /// branch below has a fallback for that, so zero is the honest answer for an unusable one too.
     private var currentWeightKilograms: Double {
-        (interactor.currentUser?.submittedWeightKilograms ?? 0)
+        (interactor.currentWeightKilograms ?? 0)
             .clamped(to: 0...Self.heaviestPlausibleKilograms, whenNotFinite: 0)
     }
 
@@ -153,7 +153,7 @@ class TargetWeightPresenter {
         let weight = currentWeightKilograms
         let currentKg = max(1, Int(weight))
 
-        currentWeight = user?.submittedWeightKilograms.flatMap { $0.isFinite ? $0 : nil } ?? Double(fallbackKg)
+        currentWeight = interactor.currentWeightKilograms.flatMap { $0.isFinite ? $0 : nil } ?? Double(fallbackKg)
         weightUnit = user?.submittedWeightUnitPreference ?? .kilograms
 
         // Initialize ranges and selections respecting objective

@@ -56,7 +56,7 @@ final class AnalyticsInteractorDouble: SpyGlobalInteractor, AnalyticsInteractor 
         tdee
     }
 
-    func backfillStepsFromHealthKit() async {
+    func syncStepsFromHealthKit(fromScratch: Bool) async {
         didBackfillSteps = true
     }
 }

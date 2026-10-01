@@ -93,6 +93,8 @@ struct AnalyticsWeighInConsistencyTests {
             if let saveError { throw saveError }
             saved.append(bodyMeasurement)
         }
+
+        func syncWeightFromHealthKit() async { }
     }
 
     private final class Router: ScaleWeightRouter {

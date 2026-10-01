@@ -146,7 +146,7 @@ struct CoreInteractor: GlobalInteractor {
         async let analyticsSettingsSignIn: () = analyticsSettingsManager.signIn(userId: user.uid, isNewUser: isNewUser)
         async let shortcutSettingsSignIn: () = shortcutSettingsManager.signIn(userId: user.uid, isNewUser: isNewUser)
         async let exerciseSettingsSignIn: () = exerciseSettingsManager.signIn(userId: user.uid)
-        async let stepsSignIn: () = stepsManager.signIn()
+        async let stepsSignIn: () = stepsManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
         async let gymProfileSignIn: () = gymProfileManager.signIn()
         async let mesocycleSignIn: () = mesocycleManager.signIn(userId: user.uid)

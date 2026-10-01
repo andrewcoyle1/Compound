@@ -14,10 +14,9 @@ class BodyMeasurementsManager {
     private let bodyMeasurementsSyncEngine: CollectionSyncEngine<BodyMeasurementEntry>
     #if canImport(HealthKit)
         private let healthKitService: HealthKitWeightService?
-        private var lastUserIdForSync: String?
-        private var isHealthKitSyncInProgress = false
-        private let healthKitLastSyncKey = "healthkit.weight.lastSyncDate"
-        private let healthKitBodyFatLastSyncKey = "healthkit.bodyfat.lastSyncDate"
+        private var healthKitTask: Task<Void, Never>?
+        private var isHealthKitImportRunning = false
+        private var isHealthKitImportRequested = false
     #endif
 
     var bodyMeasurements: [BodyMeasurementEntry] {
@@ -40,18 +39,25 @@ class BodyMeasurementsManager {
         await bodyMeasurementsSyncEngine.startListening { query in
             query.where("author_id", isEqualTo: userId)
         }
+#if canImport(HealthKit)
+        startHealthKitImport(userId: userId)
+#endif
     }
 
     func signOut() {
+#if canImport(HealthKit)
+        healthKitTask?.cancel()
+        healthKitTask = nil
+#endif
         bodyMeasurementsSyncEngine.stopListening()
     }
 
     // MARK: CREATE
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {
-        try await bodyMeasurementsSyncEngine.saveDocument(bodyMeasurement)
 #if canImport(HealthKit)
-        lastUserIdForSync = bodyMeasurement.authorId
-        await exportToHealthKitIfNeeded(entry: bodyMeasurement)
+        try await bodyMeasurementsSyncEngine.saveDocument(await exportedToHealthKit(bodyMeasurement))
+#else
+        try await bodyMeasurementsSyncEngine.saveDocument(bodyMeasurement)
 #endif
     }
 
@@ -61,265 +67,149 @@ class BodyMeasurementsManager {
     }
 
 #if canImport(HealthKit)
-    // MARK: HealthKit Sync
-    func syncWithHealthKit(userId: String) async {
-        guard healthKitService != nil else { return }
-        guard !isHealthKitSyncInProgress else { return }
-        isHealthKitSyncInProgress = true
-        defer { isHealthKitSyncInProgress = false }
+    // MARK: HealthKit Import
 
-        do {
-            try await importFromHealthKit(userId: userId)
-        } catch {
+    /// Imports what changed in Apple Health now, then again whenever Health reports a change,
+    /// until sign-out. Call again after access is granted: queries started without it see nothing.
+    /// `fromScratch` drops the anchor, re-reading all of Health, which is the only way to pick up
+    /// history for a type whose access was granted after the anchor had moved on. Only entries
+    /// that differ are written, so a re-read costs Firestore nothing when nothing changed.
+    func startHealthKitImport(userId: String, fromScratch: Bool = false) {
+        guard let healthKitService else { return }
+        if fromScratch { UserDefaults.standard.removeObject(forKey: Self.anchorKey(userId)) }
+        healthKitTask?.cancel()
+        healthKitTask = Task { [weak self] in
+            await self?.importHealthKitChanges(userId: userId)
+            for await _ in healthKitService.changeNotifications() {
+                await self?.importHealthKitChanges(userId: userId)
+            }
+        }
+    }
+
+    /// One run at a time: a second would read the collection before the first's writes land.
+    /// A request during a run is folded into one more run after it.
+    func importHealthKitChanges(userId: String) async {
+        guard !isHealthKitImportRunning else {
+            isHealthKitImportRequested = true
             return
         }
+        isHealthKitImportRunning = true
+        defer { isHealthKitImportRunning = false }
+        repeat {
+            isHealthKitImportRequested = false
+            // A task of its own, so that it runs to the end. Each screen that shows this data
+            // restarts the import as it opens, cancelling the loop that called this; a pass
+            // cancelled with it stopped mid-read without storing its anchor, so the catch-up
+            // began again from nothing on every launch.
+            await Task { try? await self.importChanges(userId: userId) }.value
+        } while isHealthKitImportRequested
     }
 
-    func backfillBodyFatFromHealthKit(userId: String) async {
-        guard healthKitService != nil else { return }
-        guard !isHealthKitSyncInProgress else { return }
-        isHealthKitSyncInProgress = true
-        defer { isHealthKitSyncInProgress = false }
-
-        do {
-            try await importBodyFatFromHealthKit(userId: userId, existingEntries: self.bodyMeasurements, forceFullSync: true)
-        } catch {
-            return
-        }
+    private static func anchorKey(_ userId: String) -> String {
+        "healthkit.bodyMeasurements.anchor.\(userId)"
     }
 
-    private func importFromHealthKit(userId: String) async throws {
+    /// Fetches only what changed since the stored anchor, then rebuilds the one Health entry for
+    /// each day it touched: that day's lowest weigh-in with its latest body fat reading. The anchor
+    /// is stored only once every write has succeeded, so a failure is retried next time.
+    private func importChanges(userId: String) async throws {
         guard let healthKitService else { return }
+        let anchorKey = Self.anchorKey(userId)
+        let storedAnchor = UserDefaults.standard.data(forKey: anchorKey)
+        let changes = try await healthKitService.changes(after: storedAnchor)
 
-        let lastSync = lastHealthKitSyncDate()
-        let samples = try await healthKitService.readWeightSamples(since: lastSync)
-        guard !samples.isEmpty else { return }
+        let calendar = Calendar.current
+        let entriesByDay = Dictionary(
+            grouping: bodyMeasurements.filter { $0.authorId == userId && $0.deletedAt == nil }
+        ) { calendar.startOfDay(for: $0.date) }
+        let deletedDays = bodyMeasurements
+            .filter { $0.source == .healthkit && $0.healthKitUUID.map(changes.deletedUUIDs.contains) == true }
+            .map { calendar.startOfDay(for: $0.date) }
+        let days = Set(changes.addedDates.map { calendar.startOfDay(for: $0) } + deletedDays)
 
-        let consolidatedSamples = consolidateWeightSamplesByDay(samples)
-        let existingEntries = self.bodyMeasurements
-        let existingUUIDs = Set(existingEntries.compactMap(\.healthKitUUID))
-        let existingDayMins = existingDayMinWeights(userId: userId, entries: existingEntries)
+        if let first = days.min(), let last = days.max(),
+           let end = calendar.date(byAdding: .day, value: 1, to: last) {
+            let lowestWeight = Dictionary(grouping: try await healthKitService.readWeightSamples(from: first, to: end)) {
+                calendar.startOfDay(for: $0.date)
+            }.compactMapValues { $0.min { $0.weightKg < $1.weightKg } }
+            let latestBodyFat = Dictionary(grouping: try await healthKitService.readBodyFatSamples(from: first, to: end)) {
+                calendar.startOfDay(for: $0.date)
+            }.compactMapValues { $0.max { $0.date < $1.date } }
 
-        let newestDate = await processImportedWeightSamples(
-            consolidatedSamples: consolidatedSamples,
-            existingUUIDs: existingUUIDs,
-            existingDayMins: existingDayMins,
-            userId: userId,
-            lastSync: lastSync
-        )
-
-        if let newestDate {
-            setLastHealthKitSyncDate(newestDate)
-        }
-
-        let refreshedEntries = self.bodyMeasurements
-        try await importBodyFatFromHealthKit(
-            userId: userId,
-            existingEntries: refreshedEntries,
-            forceFullSync: refreshedEntries.contains { $0.source == .healthkit && $0.deletedAt == nil && $0.bodyFatPercentage == nil }
-        )
-    }
-
-    private func consolidateWeightSamplesByDay(_ samples: [HealthKitWeightSample]) -> [HealthKitWeightSample] {
-        let samplesByDay = Dictionary(grouping: samples) { Calendar.current.startOfDay(for: $0.date) }
-        return samplesByDay.compactMap { (_, daySamples) in daySamples.min { $0.weightKg < $1.weightKg } }
-    }
-
-    private func existingDayMinWeights(userId: String, entries: [BodyMeasurementEntry]) -> [Date: Double] {
-        Dictionary(grouping: entries) { Calendar.current.startOfDay(for: $0.date) }
-            .compactMapValues { dayEntries in
-                dayEntries
-                    .filter { $0.authorId == userId && $0.deletedAt == nil && $0.weightKg != nil }
-                    .min { lhs, rhs in
-                        guard let lhsWeight = lhs.weightKg, let rhsWeight = rhs.weightKg else { return false }
-                        return lhsWeight < rhsWeight
-                    }?.weightKg
+            for day in days.sorted() {
+                let dayEntries = entriesByDay[day] ?? []
+                if let entry = healthKitEntry(
+                    userId: userId, day: day, dayEntries: dayEntries,
+                    weight: lowestWeight[day], bodyFat: latestBodyFat[day]
+                ) {
+                    try await bodyMeasurementsSyncEngine.saveDocument(entry)
+                }
             }
-    }
-
-    private func processImportedWeightSamples(
-        consolidatedSamples: [HealthKitWeightSample],
-        existingUUIDs: Set<UUID>,
-        existingDayMins: [Date: Double],
-        userId: String,
-        lastSync: Date?
-    ) async -> Date? {
-        var newestDate = lastSync
-        for sample in consolidatedSamples {
-            // Safe: `newestDate == nil ||` short-circuits before the unwrap.
-            if newestDate == nil || sample.date > newestDate! {
-                newestDate = sample.date
-            }
-            if existingUUIDs.contains(sample.uuid) { continue }
-            let sampleDay = Calendar.current.startOfDay(for: sample.date)
-            if let existingDayMin = existingDayMins[sampleDay], existingDayMin <= sample.weightKg { continue }
-
-            let entry = BodyMeasurementEntry(
-                authorId: userId,
-                weightKg: sample.weightKg,
-                date: sample.date,
-                source: .healthkit,
-                notes: nil,
-                dateCreated: sample.date,
-                deletedAt: nil,
-                healthKitUUID: sample.uuid
-            )
-            try? await self.saveBodyMeasurement(bodyMeasurement: entry)
         }
-        return newestDate
+
+        // Without read access HealthKit returns nothing rather than an error, and an anchor
+        // stored then would skip the history once access is granted. So the first anchor is
+        // kept only once Health has handed over something.
+        if storedAnchor != nil || !changes.addedDates.isEmpty {
+            UserDefaults.standard.set(changes.anchor, forKey: anchorKey)
+        }
     }
 
-    private func importBodyFatFromHealthKit(
+    /// The day's Health entry as it should now read, or nil when nothing needs writing.
+    private func healthKitEntry(
         userId: String,
-        existingEntries: [BodyMeasurementEntry],
-        forceFullSync: Bool
-    ) async throws {
-        guard let healthKitService else { return }
-
-        let since = forceFullSync ? nil : lastHealthKitBodyFatSyncDate()
-        let samples = try await healthKitService.readBodyFatSamples(since: since)
-        guard !samples.isEmpty else { return }
-
-        let consolidatedSamples = consolidateBodyFatSamplesByDay(samples)
-        let entriesByDay = Dictionary(grouping: existingEntries) { Calendar.current.startOfDay(for: $0.date) }
-
-        let newestDate = await processBodyFatSamples(
-            consolidatedSamples: consolidatedSamples,
-            entriesByDay: entriesByDay,
-            userId: userId,
-            since: since
+        day: Date,
+        dayEntries: [BodyMeasurementEntry],
+        weight: HealthKitWeightSample?,
+        bodyFat: HealthKitBodyFatSample?
+    ) -> BodyMeasurementEntry? {
+        let existing = dayEntries.first { $0.source == .healthkit }
+        guard let weight else {
+            // Every weigh-in that day was deleted from Health: clear it here too, keeping any
+            // measurements added to the entry in the app.
+            guard var entry = existing, entry.weightKg != nil else { return nil }
+            entry.weightKg = nil
+            entry.bodyFatPercentage = nil
+            entry.healthKitUUID = nil
+            return entry
+        }
+        // A weigh-in logged here that day already reads as low or lower.
+        if existing == nil, dayEntries.contains(where: { ($0.weightKg ?? .infinity) <= weight.weightKg }) {
+            return nil
+        }
+        // The id is derived from the day, so a run that cannot yet see the previous run's write,
+        // or another device importing the same day, overwrites rather than duplicates.
+        var entry = existing ?? BodyMeasurementEntry(
+            id: "healthkit-\(userId)-\(Int(day.timeIntervalSince1970))",
+            authorId: userId,
+            date: weight.date,
+            source: .healthkit,
+            dateCreated: weight.date
         )
-
-        if let newestDate {
-            setLastHealthKitBodyFatSyncDate(newestDate)
+        // Same reading as last time: leave the weight alone, which keeps a weight the person
+        // cleared here from coming back.
+        if entry.healthKitUUID != weight.uuid {
+            entry.weightKg = weight.weightKg
+            entry.date = weight.date
+            entry.healthKitUUID = weight.uuid
         }
-    }
-
-    private func consolidateBodyFatSamplesByDay(_ samples: [HealthKitBodyFatSample]) -> [HealthKitBodyFatSample] {
-        let samplesByDay = Dictionary(grouping: samples) { Calendar.current.startOfDay(for: $0.date) }
-        return samplesByDay.compactMap { (_, daySamples) in daySamples.max { $0.date < $1.date } }
-    }
-
-    private func processBodyFatSamples(
-        consolidatedSamples: [HealthKitBodyFatSample],
-        entriesByDay: [Date: [BodyMeasurementEntry]],
-        userId: String,
-        since: Date?
-    ) async -> Date? {
-        var newestDate = since
-        for sample in consolidatedSamples {
-            // Safe: `newestDate == nil ||` short-circuits before the unwrap.
-            if newestDate == nil || sample.date > newestDate! {
-                newestDate = sample.date
-            }
-            let sampleDay = Calendar.current.startOfDay(for: sample.date)
-            guard let dayEntries = entriesByDay[sampleDay],
-                  let entryToUpdate = dayEntries.first(where: {
-                      $0.authorId == userId && $0.deletedAt == nil && $0.source == .healthkit
-                  }),
-                  entryToUpdate.bodyFatPercentage == nil
-            else { continue }
-
-            let updatedEntry = entryWithBodyFat(entryToUpdate, bodyFatPercentage: sample.bodyFatPercentage)
-            
-            try? await self.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+        if let bodyFat {
+            entry.bodyFatPercentage = bodyFat.bodyFatPercentage
         }
-        return newestDate
+        return entry == existing ? nil : entry
     }
 
-    private func entryWithBodyFat(_ entry: BodyMeasurementEntry, bodyFatPercentage: Double?) -> BodyMeasurementEntry {
-        BodyMeasurementEntry(
-            id: entry.id,
-            authorId: entry.authorId,
-            weightKg: entry.weightKg,
-            bodyFatPercentage: bodyFatPercentage,
-            neckCircumference: entry.neckCircumference,
-            shoulderCircumference: entry.shoulderCircumference,
-            bustCircumference: entry.bustCircumference,
-            chestCircumference: entry.chestCircumference,
-            waistCircumference: entry.waistCircumference,
-            hipCircumference: entry.hipCircumference,
-            leftBicepCircumference: entry.leftBicepCircumference,
-            rightBicepCircumference: entry.rightBicepCircumference,
-            leftForearmCircumference: entry.leftForearmCircumference,
-            rightForearmCircumference: entry.rightForearmCircumference,
-            leftWristCircumference: entry.leftWristCircumference,
-            rightWristCircumference: entry.rightWristCircumference,
-            leftThighCircumference: entry.leftThighCircumference,
-            rightThighCircumference: entry.rightThighCircumference,
-            leftCalfCircumference: entry.leftCalfCircumference,
-            rightCalfCircumference: entry.rightCalfCircumference,
-            leftAnkleCircumference: entry.leftAnkleCircumference,
-            rightAnkleCircumference: entry.rightAnkleCircumference,
-            progressPhotoURLs: entry.progressPhotoURLs,
-            date: entry.date,
-            source: entry.source,
-            notes: entry.notes,
-            dateCreated: entry.dateCreated,
-            deletedAt: entry.deletedAt,
-            healthKitUUID: entry.healthKitUUID
-        )
-    }
-
-    private func exportToHealthKitIfNeeded(entry: BodyMeasurementEntry) async {
-        guard let healthKitService else { return }
-        guard entry.source != .healthkit, entry.healthKitUUID == nil else { return }
-        guard let weightKg = entry.weightKg else { return }
-
-        do {
-            let uuid = try await healthKitService.saveWeightSample(weightKg: weightKg, date: entry.date)
-            let updatedEntry = BodyMeasurementEntry(
-                id: entry.id,
-                authorId: entry.authorId,
-                weightKg: weightKg,
-                bodyFatPercentage: entry.bodyFatPercentage,
-                neckCircumference: entry.neckCircumference,
-                shoulderCircumference: entry.shoulderCircumference,
-                bustCircumference: entry.bustCircumference,
-                chestCircumference: entry.chestCircumference,
-                waistCircumference: entry.waistCircumference,
-                hipCircumference: entry.hipCircumference,
-                leftBicepCircumference: entry.leftBicepCircumference,
-                rightBicepCircumference: entry.rightBicepCircumference,
-                leftForearmCircumference: entry.leftForearmCircumference,
-                rightForearmCircumference: entry.rightForearmCircumference,
-                leftWristCircumference: entry.leftWristCircumference,
-                rightWristCircumference: entry.rightWristCircumference,
-                leftThighCircumference: entry.leftThighCircumference,
-                rightThighCircumference: entry.rightThighCircumference,
-                leftCalfCircumference: entry.leftCalfCircumference,
-                rightCalfCircumference: entry.rightCalfCircumference,
-                leftAnkleCircumference: entry.leftAnkleCircumference,
-                rightAnkleCircumference: entry.rightAnkleCircumference,
-                progressPhotoURLs: entry.progressPhotoURLs,
-                date: entry.date,
-                source: entry.source,
-                notes: entry.notes,
-                dateCreated: entry.dateCreated,
-                deletedAt: entry.deletedAt,
-                healthKitUUID: uuid
-            )
-
-            try? await self.saveBodyMeasurement(bodyMeasurement: updatedEntry)
-        } catch {
-            return
-        }
-    }
-
-    private func lastHealthKitSyncDate() -> Date? {
-        UserDefaults.standard.object(forKey: healthKitLastSyncKey) as? Date
-    }
-
-    private func setLastHealthKitSyncDate(_ date: Date) {
-        UserDefaults.standard.set(date, forKey: healthKitLastSyncKey)
-    }
-
-    private func lastHealthKitBodyFatSyncDate() -> Date? {
-        UserDefaults.standard.object(forKey: healthKitBodyFatLastSyncKey) as? Date
-    }
-
-    private func setLastHealthKitBodyFatSyncDate(_ date: Date) {
-        UserDefaults.standard.set(date, forKey: healthKitBodyFatLastSyncKey)
+    /// A weigh-in logged here goes to Apple Health first, so the entry is written once with the
+    /// sample's UUID rather than twice.
+    private func exportedToHealthKit(_ entry: BodyMeasurementEntry) async -> BodyMeasurementEntry {
+        guard let healthKitService,
+              entry.source != .healthkit, entry.healthKitUUID == nil,
+              let weightKg = entry.weightKg,
+              let uuid = try? await healthKitService.saveWeightSample(weightKg: weightKg, date: entry.date)
+        else { return entry }
+        var exported = entry
+        exported.healthKitUUID = uuid
+        return exported
     }
 #endif
 }
@@ -354,10 +244,23 @@ extension CoreInteractor {
         try await bodyMeasurementsManager.deleteWeightEntry(entryId: entryId)
     }
 
-    func backfillBodyFatFromHealthKit() async {
+    /// Asks for access if not yet asked, then restarts the import so it runs with that access.
+    func syncWeightFromHealthKit() async {
+        #if canImport(HealthKit)
         guard let userId else { return }
         await requestBodyMeasurementHealthAccess()
-        await bodyMeasurementsManager.backfillBodyFatFromHealthKit(userId: userId)
+        bodyMeasurementsManager.startHealthKitImport(userId: userId)
+        #endif
+    }
+
+    /// As `syncWeightFromHealthKit`, re-reading all of Health: body fat access can be granted
+    /// after weight's, and the anchor will already have passed that history.
+    func backfillBodyFatFromHealthKit() async {
+        #if canImport(HealthKit)
+        guard let userId else { return }
+        await requestBodyMeasurementHealthAccess()
+        bodyMeasurementsManager.startHealthKitImport(userId: userId, fromScratch: true)
+        #endif
     }
 
 }

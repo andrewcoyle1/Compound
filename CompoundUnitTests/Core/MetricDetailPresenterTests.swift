@@ -27,6 +27,9 @@ struct GoalProgressPresenterTests {
     private final class Router: GoalProgressRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var didShowLogWeight = false
+        private(set) var didShowWeightGoalFlow = false
+
+        func showWeightGoalFlow() { didShowWeightGoalFlow = true }
 
         func showLogWeightView() {
             didShowLogWeight = true
@@ -382,7 +385,7 @@ struct StepsPresenterTests {
         private(set) var didBackfill = false
         private(set) var didRequestAuthorisation = false
 
-        func backfillStepsFromHealthKit() async {
+        func syncStepsFromHealthKit(fromScratch: Bool) async {
             didBackfill = true
         }
 

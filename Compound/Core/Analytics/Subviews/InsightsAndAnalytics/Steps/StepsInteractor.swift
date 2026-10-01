@@ -11,7 +11,7 @@ import SwiftUI
 protocol StepsInteractor {
     var userId: String? { get }
     var stepsHistory: [StepsModel] { get }
-    func backfillStepsFromHealthKit() async
+    func syncStepsFromHealthKit(fromScratch: Bool) async
     func canRequestHealthDataAuthorisation() -> Bool
     func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws
 }

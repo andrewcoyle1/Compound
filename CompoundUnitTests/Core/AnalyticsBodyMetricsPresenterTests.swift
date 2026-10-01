@@ -22,6 +22,7 @@ struct AnalyticsBodyMetricsPresenterTests {
         var bodyMeasurements: [BodyMeasurementEntry] = []
 
         func backfillBodyFatFromHealthKit() async { }
+        func syncWeightFromHealthKit() async { }
         func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws { }
         func uploadImage(image: PlatformImage, path: String) async throws -> URL {
             URL(string: "https://example.invalid/\(path)")!
@@ -329,6 +330,8 @@ struct AnalyticsScaleWeightPresenterTests {
             if let saveError { throw saveError }
             saved.append(bodyMeasurement)
         }
+
+        func syncWeightFromHealthKit() async { }
     }
 
     private final class Router: ScaleWeightRouter {

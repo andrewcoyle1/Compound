@@ -340,7 +340,7 @@ class DevPreview {
                 )
                 async let analyticsSettingsSignIn: () = analyticsSettingsManager.signIn(userId: mockUser.uid, isNewUser: false)
                 async let shortcutSettingsSignIn: () = shortcutSettingsManager.signIn(userId: mockUser.uid, isNewUser: false)
-                async let stepsSignIn: () = stepsManager.signIn()
+                async let stepsSignIn: () = stepsManager.signIn(userId: mockUser.uid, importSince: nil)
                 async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
                 async let gymProfileSignIn: () = gymProfileManager.signIn()
                 async let mesocycleSignIn: () = mesocycleManager.signIn(userId: mockUser.uid)

@@ -184,11 +184,12 @@ enum TestManagers {
     }
 
     static func bodyMeasurementsManager(
-        entries: [BodyMeasurementEntry] = []
+        entries: [BodyMeasurementEntry] = [],
+        healthKitService: HealthKitWeightService? = nil
     ) -> BodyMeasurementsManager {
         BodyMeasurementsManager(
             bodyMeasurementsSyncEngine: collectionEngine(entries, key: "body-measurements"),
-            healthKitService: MockHealthKitWeightService()
+            healthKitService: healthKitService ?? MockHealthKitWeightService()
         )
     }
 
@@ -234,7 +235,7 @@ enum TestManagers {
         healthKitService: HealthKitStepsService? = nil
     ) async -> StepsManager {
         let manager = stepsManager(entries: entries, healthKitService: healthKitService)
-        await manager.signIn()
+        await manager.signIn(userId: "author-1", importSince: nil)
         await eventually { manager.stepsHistory.count == entries.count }
         return manager
     }

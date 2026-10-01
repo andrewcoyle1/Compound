@@ -203,23 +203,24 @@ extension AnalyticsPresenter {
     }
     
     func loadStepsData() async {
-        await interactor.backfillStepsFromHealthKit()
-        
-        let history = interactor.stepsHistory
+        await interactor.syncStepsFromHealthKit(fromScratch: false)
+    }
+
+    /// Read live, so steps imported from Apple Health appear while the tab is open.
+    var stepsLast7: [StepsModel] {
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: startOfToday),
               let endOfToday = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
-            stepsLast7 = []
-            return
+            return []
         }
         let userId = interactor.userId
         // Bounded by the end of today, not its start: a reading is dated when it was taken, so
         // `<= startOfToday` kept only a reading timed exactly at midnight and dropped today's.
-        let last7 = history
+        let last7 = interactor.stepsHistory
             .filter { $0.deletedAt == nil && $0.date >= startDate && $0.date < endOfToday && (userId == nil || $0.authorId == userId) }
             .sorted { $0.date < $1.date }
-        stepsLast7 = Array(Self.consolidateStepsByDay(Array(last7)).suffix(7))
+        return Array(Self.consolidateStepsByDay(Array(last7)).suffix(7))
     }
     
     static func consolidateStepsByDay(_ entries: [StepsModel]) -> [StepsModel] {

@@ -45,16 +45,16 @@ ui-debug.log
 functions/*.log
 
 # Sensitive configuration files
-DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Dev.plist
-DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Prod.plist
-!DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist
+Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Dev.plist
+Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Prod.plist
+!Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist
 
-DialedIn/Info.plist
-!DialedIn/Info.plist.example
+Compound/Info.plist
+!Compound/Info.plist.example
 
 # API Keys - exclude actual Keys.swift but allow example
-DialedIn/Utilities/Keys.swift
-!DialedIn/Utilities/Keys.swift.example
+Compound/Utilities/Keys.swift
+!Compound/Utilities/Keys.swift.example
 
 # Agent worktrees created by Claude Code — scratch checkouts, never part of a commit
 .claude/worktrees/

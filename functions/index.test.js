@@ -2,11 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-    buildActivityPush, buildFollowAcceptedNotification, cleanJson, followAcceptedMessage, newlyBlockedIds, normaliseName,
+    buildActivityPush, buildFollowAcceptedNotification, cleanJson, newlyBlockedIds, normaliseName,
     planFollowAccepted, pushRecipientSettings, requireAuth, userDisplayName,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
-    isStreakReminderDue, isWeeklyDigestDue, localTime,
+    isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
+    SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
 } from "./lib.js";
 
 test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", () => {
@@ -46,18 +47,26 @@ test("each deployed callable rejects an unauthenticated request before doing any
     }
 });
 
-test("buildActivityPush titles each social type and routes the tap to the Dashboard tab", () => {
+// Changed: pushes used to carry generic English titles ("New like"). They now have no title (the
+// system shows the app's name) and a body the device localizes from the app's string catalog.
+test("buildActivityPush sends each social type as a catalog key and routes the tap to the Dashboard tab", () => {
     const recipient = { fcm_token: "tok" };
     const like = buildActivityPush({ type: "like", actor_name: "Jane", session_id: "s1", session_author_id: "u1", actor_id: "a1" }, recipient);
     assert.equal(like.token, "tok");
-    assert.deepEqual(like.notification, { title: "New like", body: "Jane liked your workout" });
+    assert.deepEqual(like.notification, { body: "Jane liked your workout" });
+    assert.deepEqual(like.apns.payload.aps.alert, { body: "Jane liked your workout", locKey: "%@ liked your workout", locArgs: ["Jane"] });
     assert.deepEqual(like.data, { tab: "dashboard", type: "like", session_id: "s1", session_author_id: "u1", actor_id: "a1" });
 
     const comment = buildActivityPush({ type: "comment", actor_name: "Jane", comment_text: "Nice!" }, recipient);
-    assert.deepEqual(comment.notification, { title: "New comment", body: "Jane commented: Nice!" });
+    assert.deepEqual(comment.notification, { body: 'Jane commented: "Nice!"' });
+    assert.equal(comment.apns.payload.aps.alert.locKey, '%@ commented: "%@"');
+    assert.deepEqual(comment.apns.payload.aps.alert.locArgs, ["Jane", "Nice!"]);
+    assert.equal(buildActivityPush({ type: "comment", actor_name: "Jane" }, recipient).notification.body, "Jane commented");
+    const reply = buildActivityPush({ type: "comment", actor_name: "Jane", comment_text: "Yes", is_reply: true }, recipient);
+    assert.equal(reply.notification.body, 'Jane replied to your comment: "Yes"');
 
     const follow = buildActivityPush({ type: "follow", actor_name: "Jane" }, recipient);
-    assert.deepEqual(follow.notification, { title: "New follower", body: "Jane started following you" });
+    assert.deepEqual(follow.notification, { body: "Jane started following you" });
     assert.equal(follow.data.session_id, "");
     assert.equal(follow.data.session_author_id, "");
 
@@ -69,20 +78,20 @@ test("buildActivityPush tells a mentioned user who tagged them, with the comment
         { type: "mention", actor_name: "Jane", comment_text: " Nice one @Sam ", session_id: "s1", session_author_id: "u1" },
         { fcm_token: "tok" }
     );
-    assert.deepEqual(mention.notification, { title: "Mention", body: "Jane mentioned you: Nice one @Sam" });
+    assert.deepEqual(mention.notification, { body: 'Jane mentioned you: "Nice one @Sam"' });
     assert.equal(mention.data.type, "mention");
     assert.equal(mention.data.session_id, "s1");
     assert.equal(mention.data.session_author_id, "u1");
     const long = buildActivityPush({ type: "mention", actor_name: "Jane", comment_text: "z".repeat(100) }, { fcm_token: "tok" });
-    assert.equal(long.notification.body, `Jane mentioned you: ${"z".repeat(59)}…`);
+    assert.equal(long.notification.body, `Jane mentioned you: "${"z".repeat(59)}…"`);
 });
 
 test("buildActivityPush truncates a long comment to a 60-character preview", () => {
     const long = "x".repeat(100);
     const { body } = buildActivityPush({ type: "comment", actor_name: "Jane", comment_text: long }, { fcm_token: "tok" }).notification;
-    assert.equal(body, `Jane commented: ${"x".repeat(59)}…`);
+    assert.equal(body, `Jane commented: "${"x".repeat(59)}…"`);
     const exact = buildActivityPush({ type: "comment", actor_name: "Jane", comment_text: "y".repeat(60) }, { fcm_token: "tok" });
-    assert.equal(exact.notification.body, `Jane commented: ${"y".repeat(60)}`);
+    assert.equal(exact.notification.body, `Jane commented: "${"y".repeat(60)}"`);
 });
 
 test("buildActivityPush sends nothing without a token, for an unknown type, or when opted out", () => {
@@ -134,7 +143,7 @@ test("pushRecipientSettings reads the private doc first and falls back to the us
 
 test("buildActivityPush turns a nudge into a push with no session behind it", () => {
     const nudge = buildActivityPush({ type: "nudge", actor_name: "Jane", actor_id: "a1" }, { fcm_token: "tok" });
-    assert.deepEqual(nudge.notification, { title: "Nudge", body: "Jane nudged you to train" });
+    assert.deepEqual(nudge.notification, { body: "Jane nudged you to train" });
     assert.deepEqual(nudge.data, { tab: "dashboard", type: "nudge", session_id: "", session_author_id: "", actor_id: "a1" });
 });
 
@@ -181,12 +190,11 @@ test("userDisplayName prefers the submitted name and falls back to Someone", () 
     assert.equal(userDisplayName({ submitted_first_name: "Sam", first_name: "Samuel" }), "Sam");
     assert.equal(userDisplayName({ first_name: "Al", last_name: "Bo" }), "Al Bo");
     assert.equal(userDisplayName({}), "Someone");
-    assert.equal(followAcceptedMessage("Jane"), "Jane accepted your follow request");
 });
 
 test("buildActivityPush sends a followAccepted push under the follows preference", () => {
     const push = buildActivityPush({ type: "followAccepted", actor_name: "Jane", actor_id: "t1" }, { fcm_token: "tok" });
-    assert.deepEqual(push.notification, { title: "Request accepted", body: "Jane accepted your follow request" });
+    assert.deepEqual(push.notification, { body: "Jane accepted your follow request" });
     assert.equal(buildActivityPush({ type: "followAccepted" }, { fcm_token: "tok", social_push_follows: false }), null);
 });
 
@@ -194,7 +202,9 @@ test("buildFollowRequestPush asks the target, routes to notifications and respec
     const request = { requester_id: "r1", requester_name: "Jane", status: "pending" };
     const push = buildFollowRequestPush(request, { fcm_token: "tok" }, {});
     assert.equal(push.token, "tok");
-    assert.deepEqual(push.notification, { title: "Follow request", body: "Jane wants to follow you" });
+    assert.deepEqual(push.notification, { body: "Jane wants to follow you" });
+    assert.equal(push.apns.payload.aps.badge, 1);
+    assert.equal(buildFollowRequestPush(request, { fcm_token: "tok" }, {}, 4).apns.payload.aps.badge, 4);
     assert.deepEqual(push.data, { tab: "dashboard", type: "follow_request", session_id: "", session_author_id: "", actor_id: "r1" });
     assert.equal(buildFollowRequestPush({ ...request, requester_name: undefined }, { fcm_token: "tok" }).notification.body, "Someone wants to follow you");
 
@@ -262,7 +272,7 @@ test("shouldReleaseReservation leaves a handle someone else now holds", () => {
 
 test("buildActivityPush sends a share push under the shares preference", () => {
     const push = buildActivityPush({ type: "share", actor_name: "Jane" }, { fcm_token: "tok" });
-    assert.deepEqual(push.notification, { title: "Shared with you", body: "Jane shared a workout with you" });
+    assert.deepEqual(push.notification, { body: "Jane shared a workout" });
     assert.equal(buildActivityPush({ type: "share" }, { fcm_token: "tok", social_push_shares: false }), null);
 });
 
@@ -282,22 +292,26 @@ test("localTime reads the user's wall clock across time zones and DST, and rejec
 });
 
 test("the streak reminder is due only in the user's reminder hour, defaulting to 19", () => {
-    const settings = { fcm_token: "tok", timezone: "America/New_York", reminder_hour: 20 };
+    const settings = { fcm_token: "tok", timezone: "America/New_York", reminder_hour: 20, social_push_streak_reminder: true };
     // 20:00 EST in winter is 01:00Z; after the change 20:00 EDT is 00:00Z.
     assert.equal(isStreakReminderDue(settings, new Date("2026-01-15T01:00:00Z")), true);
     assert.equal(isStreakReminderDue(settings, new Date("2026-01-15T00:00:00Z")), false);
     assert.equal(isStreakReminderDue(settings, new Date("2026-07-15T00:00:00Z")), true);
-    assert.equal(isStreakReminderDue({ fcm_token: "tok", timezone: "Europe/London" }, new Date("2026-01-15T19:00:00Z")), true);
+    // Changed: absent used to mean on. The reminder is now off until the person says yes.
+    assert.equal(isStreakReminderDue({ fcm_token: "tok", timezone: "Europe/London" }, new Date("2026-01-15T19:00:00Z")), false);
+    assert.equal(isStreakReminderDue({ fcm_token: "tok", timezone: "Europe/London", social_push_streak_reminder: true }, new Date("2026-01-15T19:00:00Z")), true);
     assert.equal(isStreakReminderDue({ ...settings, social_push_streak_reminder: false }, new Date("2026-01-15T01:00:00Z")), false);
     assert.equal(isStreakReminderDue({ timezone: "Europe/London", reminder_hour: 19 }, new Date("2026-01-15T19:00:00Z")), false);
     assert.equal(isStreakReminderDue(null, new Date()), false);
 });
 
 test("buildStreakReminderPush fires when the last workout was yesterday on the user's clock", () => {
-    const settings = { fcm_token: "tok", timezone: "Australia/Sydney", reminder_hour: 19 };
+    const settings = { fcm_token: "tok", timezone: "Australia/Sydney", reminder_hour: 19, social_push_streak_reminder: true };
     const now = new Date("2026-01-15T08:00:00Z"); // 19:00 AEDT on the 15th
     const push = buildStreakReminderPush(settings, { current_streak: 5, date_last_event: new Date("2026-01-14T09:00:00Z") }, now);
-    assert.deepEqual(push.notification, { title: "Streak at risk", body: "Your 5-day streak ends at midnight" });
+    assert.deepEqual(push.notification, { title: "Streak at Risk", body: "Your 5-day streak ends at midnight." });
+    assert.equal(push.apns.payload.aps.alert.titleLocKey, "Streak at Risk");
+    assert.equal(push.apns.payload.aps.alert.locKey, "Your %@-day streak ends at midnight.");
     assert.deepEqual(push.data, { tab: "training", type: "streakReminder" });
     assert.equal(push.token, "tok");
     // A Firestore Timestamp is read through toDate().
@@ -327,10 +341,11 @@ test("the digest counts real sessions and needs someone followed", () => {
     assert.equal(digestWindowStart(new Date("2026-01-18T18:00:00Z")).toISOString(), "2026-01-11T18:00:00.000Z");
 
     const push = buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 3, circle: 11, followingCount: 2 });
-    assert.equal(push.notification.body, "This week: you trained 3 times, your circle 11");
+    assert.equal(push.notification.body, "Workouts this week: you 3, your circle 11.");
+    assert.equal(push.notification.title, "Your Week");
     assert.deepEqual(push.data, { tab: "dashboard", type: "weeklyDigest" });
     assert.equal(buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 1, circle: 0, followingCount: 1 }).notification.body,
-        "This week: you trained 1 time, your circle 0");
+        "Workouts this week: you 1, your circle 0.");
     assert.equal(buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 3, circle: 0, followingCount: 0 }), null);
     assert.equal(buildWeeklyDigestPush({}, { mine: 3, circle: 1, followingCount: 1 }), null);
 });
@@ -397,10 +412,10 @@ test("planUserDeletion chunks its writes into batches of 400", () => {
 test("buildActivityPush words a reply to the recipient's comment as a reply", () => {
     const recipient = { fcm_token: "tok" };
     const reply = buildActivityPush({ type: "comment", is_reply: true, actor_name: "Jane", comment_text: "Agreed" }, recipient);
-    assert.deepEqual(reply.notification, { title: "New reply", body: "Jane replied to your comment: Agreed" });
+    assert.deepEqual(reply.notification, { body: 'Jane replied to your comment: "Agreed"' });
     assert.equal(reply.data.type, "comment");
     const plain = buildActivityPush({ type: "comment", is_reply: false, actor_name: "Jane", comment_text: "Agreed" }, recipient);
-    assert.equal(plain.notification.body, "Jane commented: Agreed");
+    assert.equal(plain.notification.body, 'Jane commented: "Agreed"');
     assert.equal(buildActivityPush({ type: "comment", is_reply: true }, { fcm_token: "tok", social_push_comments: false }), null);
 });
 
@@ -455,7 +470,7 @@ test("planReportModeration hides a comment at the top level and never hides a pr
 // ---------------------------------------------------------------------------
 
 import {
-    activeChallengesFor, challengeCompleteMessage, planChallengeProgress, sessionJustEnded,
+    activeChallengesFor, planChallengeProgress, sessionJustEnded,
     SOCIAL_PUSH_PREFERENCE_KEYS as CHALLENGE_PUSH_KEYS, buildActivityPush as buildChallengePush,
 } from "./lib.js";
 
@@ -516,7 +531,6 @@ test("planChallengeProgress counts a session once and notifies on reaching the t
 
 test("a challenge_complete notification pushes 'You finished <title>' unless opted out", () => {
     assert.equal(CHALLENGE_PUSH_KEYS.challenge_complete, "social_push_challenges");
-    assert.equal(challengeCompleteMessage("October Grind"), "You finished October Grind");
     const notification = { type: "challenge_complete", comment_text: "October Grind", actor_id: "me" };
     const push = buildChallengePush(notification, { fcm_token: "t" });
     assert.equal(push.notification.body, "You finished October Grind");
@@ -672,4 +686,80 @@ test("sessionPage: user text is escaped and non-https avatars are dropped", asyn
     assert.doesNotMatch(html, /<script>|<img src=x|javascript:/);
     assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
     assert.match(notFoundPageHtml(), /Workout not found/);
+});
+
+// ---------------------------------------------------------------------------
+// Interruption levels, badge and localization (HIG decision 12e)
+// ---------------------------------------------------------------------------
+
+test("likes and the weekly digest are passive; comments, mentions, follows, nudges and shares are active", () => {
+    const level = (type) => buildActivityPush({ type, actor_name: "Jane" }, { fcm_token: "tok" }).apns.payload.aps["interruption-level"];
+    assert.equal(level("like"), "passive");
+    for (const type of ["comment", "mention", "follow", "followAccepted", "follow_request", "nudge", "share"]) {
+        assert.equal(level(type), "active", type);
+    }
+    // Every type that can push states a level.
+    for (const type of Object.keys(SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS)) assert.ok(INTERRUPTION_LEVELS[type], type);
+    const digest = buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 1, circle: 1, followingCount: 1 });
+    assert.equal(digest.apns.payload.aps["interruption-level"], "passive");
+    const streak = buildStreakReminderPush(
+        { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 19, social_push_streak_reminder: true },
+        { current_streak: 3, date_last_event: new Date("2026-01-14T09:00:00Z") },
+        new Date("2026-01-15T19:00:00Z")
+    );
+    assert.equal(streak.apns.payload.aps["interruption-level"], "active");
+});
+
+test("the badge is the recipient's unread count, never below 1", () => {
+    const badge = (count) => buildActivityPush({ type: "like" }, { fcm_token: "tok" }, count).apns.payload.aps.badge;
+    assert.equal(badge(5), 5);
+    assert.equal(badge(0), 1);
+    assert.equal(buildActivityPush({ type: "like" }, { fcm_token: "tok" }).apns.payload.aps.badge, 1);
+});
+
+test("formatLocKey fills %@ in order, as the device does with loc-args", () => {
+    assert.equal(formatLocKey('%@ commented: "%@"', ["Jane", "Hi"]), 'Jane commented: "Hi"');
+    assert.equal(formatLocKey("You finished a challenge", []), "You finished a challenge");
+});
+
+test("the unread badge counts unread notifications and pending follow requests", () => {
+    const source = readFileSync(new URL("./index.js", import.meta.url), "utf8");
+    assert.match(source, /collection\("notifications"\)\.where\("is_read", "==", false\)\.count\(\)/);
+    assert.match(source, /collection\("follow_requests"\)\.where\("status", "==", "pending"\)\.count\(\)/);
+    assert.match(source, /buildActivityPush\(notification, recipient, await unreadBadgeCount\(userRef\)\)/);
+});
+
+test("sessionPageContent leaves paused time out of the duration", () => {
+    const session = { date_created: new Date("2026-09-29T10:00:00Z"), ended_at: new Date("2026-09-29T11:00:00Z") };
+    assert.equal(sessionPageContent(session, {}).durationText, "1h 0m");
+    assert.equal(sessionPageContent({ ...session, paused_seconds: 600.7 }, {}).durationText, "50m");
+    assert.equal(sessionPageContent({ ...session, paused_seconds: 99999 }, {}).durationText, "0m");
+});
+
+test("offProductToFood converts OFF's grams into the app's mg and mcg and joins brand arrays", () => {
+    const food = offProductToFood({
+        product_name: " Weetabix Original ",
+        brands: ["Weetabix", "Weetabix Ltd"],
+        serving_quantity: 37.5,
+        nutriments: {
+            "energy-kcal_100g": 362, proteins_100g: 12, sodium_100g: 0.112,
+            iron_100g: 0.012, "vitamin-b1_100g": 0.0012, "vitamin-pp_100g": 0.014, "vitamin-d_100g": 0.0000025,
+        },
+    });
+    assert.equal(food.name, "Weetabix Original");
+    assert.equal(food.brandName, "Weetabix, Weetabix Ltd");
+    assert.equal(food.calories, 362);
+    assert.equal(food.protein, 12);
+    assert.ok(Math.abs(food.sodiumMg - 112) < 1e-9);
+    assert.ok(Math.abs(food.ironMg - 12) < 1e-9);
+    assert.ok(Math.abs(food.thiaminMg - 1.2) < 1e-9);
+    assert.ok(Math.abs(food.niacinMg - 14) < 1e-9);
+    assert.ok(Math.abs(food.vitaminDMcg - 2.5) < 1e-9);
+    assert.equal(food.calciumMg, null);
+});
+
+test("offProductToFood falls back to kilojoules and drops nameless hits", () => {
+    assert.ok(Math.abs(offProductToFood({ product_name: "Oats", brands: "Tesco", nutriments: { "energy-kj_100g": 1569 } }).calories - 375) < 0.1);
+    assert.equal(offProductToFood({ product_name: "Oats", brands: "Tesco" }).brandName, "Tesco");
+    assert.equal(offProductToFood({ product_name: "  " }), null);
 });

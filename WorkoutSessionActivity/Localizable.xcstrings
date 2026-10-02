@@ -26,6 +26,46 @@
         }
       }
     },
+    "%lld exercises" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld exercise"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld exercises"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ejercicio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ejercicios"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld of %lld sessions this week" : {
       "localizations" : {
         "en" : {
@@ -38,6 +78,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld de %2$lld sesiones esta semana"
+          }
+        }
+      }
+    },
+    "%lld of %lld sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld series"
           }
         }
       }
@@ -64,6 +114,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "+15 s"
+          }
+        }
+      }
+    },
+    "Add 15 seconds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir 15 segundos"
           }
         }
       }
@@ -128,6 +188,26 @@
         }
       }
     },
+    "All sets complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las series completadas"
+          }
+        }
+      }
+    },
+    "Check this week's sessions against your goal." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compara las sesiones de esta semana con tu objetivo."
+          }
+        }
+      }
+    },
     "Complete" : {
       "localizations" : {
         "es" : {
@@ -174,6 +254,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Listo"
+          }
+        }
+      }
+    },
+    "Duration" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duración"
           }
         }
       }
@@ -238,12 +328,72 @@
         }
       }
     },
+    "No workout planned" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún entrenamiento planificado"
+          }
+        }
+      }
+    },
+    "Open to pick one" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la app para elegir uno"
+          }
+        }
+      }
+    },
+    "Paused" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa"
+          }
+        }
+      }
+    },
     "Remove a rep" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitar una repetición"
+          }
+        }
+      }
+    },
+    "Rest day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día de descanso"
+          }
+        }
+      }
+    },
+    "Rest over" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso terminado"
+          }
+        }
+      }
+    },
+    "Resting" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descansando"
           }
         }
       }
@@ -258,12 +408,32 @@
         }
       }
     },
-    "Sessions this week against your goal." : {
+    "See today's session from your mesocycle." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sesiones de esta semana frente a tu objetivo."
+            "value" : "Consulta la sesión de hoy de tu mesociclo."
+          }
+        }
+      }
+    },
+    "Set %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series"
           }
         }
       }
@@ -328,12 +498,32 @@
         }
       }
     },
-    "Today's session from your program." : {
+    "Track your training streak." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La sesión de hoy de tu programa."
+            "value" : "Sigue tu racha de entrenamiento."
+          }
+        }
+      }
+    },
+    "Volume" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volumen"
+          }
+        }
+      }
+    },
+    "Warmup %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calentamiento %1$lld de %2$lld"
           }
         }
       }
@@ -348,12 +538,22 @@
         }
       }
     },
-    "Your current training streak." : {
+    "Workout" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tu racha de entrenamiento actual."
+            "value" : "Entrenamiento"
+          }
+        }
+      }
+    },
+    "Workout progress" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progreso del entrenamiento"
           }
         }
       }
@@ -370,10 +570,26 @@
     },
     "days streak" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "day streak"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "días de racha"
+          }
+        }
+      }
+    },
+    "set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serie"
           }
         }
       }

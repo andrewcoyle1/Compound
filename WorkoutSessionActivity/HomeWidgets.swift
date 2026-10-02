@@ -39,7 +39,7 @@ struct TodaysWorkoutWidget: Widget {
                 .widgetURL(WidgetSnapshotStore.workoutURL)
         }
         .configurationDisplayName("Today's Workout")
-        .description("Today's session from your program.")
+        .description("See today's session from your mesocycle.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -58,8 +58,9 @@ struct TodaysWorkoutWidgetView: View {
                 Label("Today", systemImage: "dumbbell.fill")
                     .font(.caption.bold())
                     .foregroundStyle(.tint)
+                    .widgetAccentable()
                 Spacer(minLength: 0)
-                Text(workout?.name ?? "No workout planned")
+                (workout.map { Text(verbatim: $0.name) } ?? Text("No workout planned"))
                     .font(.headline)
                     .lineLimit(2)
                 Text(detail)
@@ -69,8 +70,10 @@ struct TodaysWorkoutWidgetView: View {
             if family == .systemMedium {
                 Spacer()
                 Image(systemName: workout?.isCompleted == true ? "checkmark.circle.fill" : "play.circle.fill")
-                    .font(.system(size: 44))
+                    .font(.largeTitle)
+                    .imageScale(.large)
                     .foregroundStyle(.tint)
+                    .widgetAccentable()
                     .accessibilityHidden(true)
             }
         }
@@ -78,10 +81,10 @@ struct TodaysWorkoutWidgetView: View {
     }
 
     private var detail: String {
-        guard let workout else { return "Open to pick one" }
-        if workout.isRestDay { return "Rest day" }
-        if workout.isCompleted { return "Done" }
-        return workout.exerciseCount == 1 ? "1 exercise" : "\(workout.exerciseCount) exercises"
+        guard let workout else { return String(localized: "Open to pick one") }
+        if workout.isRestDay { return String(localized: "Rest day") }
+        if workout.isCompleted { return String(localized: "Done") }
+        return String(localized: "\(workout.exerciseCount) exercises")
     }
 }
 
@@ -92,9 +95,10 @@ struct StreakWidget: Widget {
         StaticConfiguration(kind: "StreakWidget", provider: WidgetSnapshotProvider()) { entry in
             StreakWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .widgetURL(WidgetSnapshotStore.trainingURL)
         }
         .configurationDisplayName("Streak")
-        .description("Your current training streak.")
+        .description("Track your training streak.")
         .supportedFamilies([.systemSmall, .accessoryCircular])
     }
 }
@@ -110,6 +114,7 @@ struct StreakWidgetView: View {
                 VStack(spacing: 0) {
                     Image(systemName: "flame.fill")
                         .font(.caption)
+                        .widgetAccentable()
                     Text("\(entry.snapshot.currentStreak)")
                         .font(.title3.bold())
                         .minimumScaleFactor(0.5)
@@ -122,10 +127,13 @@ struct StreakWidgetView: View {
                 Image(systemName: "flame.fill")
                     .font(.title2)
                     .foregroundStyle(.orange)
+                    .widgetAccentable()
                 Spacer(minLength: 0)
                 Text("\(entry.snapshot.currentStreak)")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
                     .minimumScaleFactor(0.5)
+                // Two keys so Spanish can agree with the count ("día" / "días"). English reads
+                // "day streak" for both: the catalog gives "days streak" that English value.
                 Text(entry.snapshot.currentStreak == 1 ? "day streak" : "days streak")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -142,9 +150,10 @@ struct WeeklyRingWidget: Widget {
         StaticConfiguration(kind: "WeeklyRingWidget", provider: WidgetSnapshotProvider()) { entry in
             WeeklyRingWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .widgetURL(WidgetSnapshotStore.trainingURL)
         }
         .configurationDisplayName("Weekly Goal")
-        .description("Sessions this week against your goal.")
+        .description("Check this week's sessions against your goal.")
         .supportedFamilies([.systemSmall])
     }
 }
@@ -162,6 +171,7 @@ struct WeeklyRingWidgetView: View {
                 .trim(from: 0, to: entry.snapshot.weeklyProgress(on: entry.date))
                 .stroke(.tint, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+                .widgetAccentable()
             VStack(spacing: 0) {
                 Text("\(sessions)/\(goal)")
                     .font(.title2.bold())

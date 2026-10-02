@@ -9,7 +9,7 @@ import {
     planFollowAccepted, buildFollowAcceptedNotification,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
-    isNudgeOnCooldown, toDate,
+    isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
 } from "./lib.js";
 import { genkit } from "genkit";
 import { vertexAI, gemini20Flash, imagen3Fast } from "@genkit-ai/vertexai";
@@ -293,7 +293,8 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
 
     const trimmed = query.trim();
     const db = getFirestore();
-    const cacheKey = trimmed.toLowerCase().replace(/\s+/g, "_");
+    // "v2:" skips rows cached from the old endpoint, which are empty or in the wrong units.
+    const cacheKey = `v2:${trimmed.toLowerCase().replace(/\s+/g, "_")}`;
     const cacheRef = db.collection("food_search_cache").doc(cacheKey);
 
     // Check cache
@@ -308,11 +309,10 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
         }
     }
 
-    const url = new URL("https://world.openfoodfacts.org/api/v2/search");
-    url.searchParams.set("search_terms", trimmed);
-    url.searchParams.set("fields", "product_name,brands,nutriments,serving_size,serving_quantity,image_front_small_url");
-    url.searchParams.set("page_size", "50");
-    url.searchParams.set("sort_by", "unique_scans_n");
+    const url = new URL(OFF_SEARCH_URL);
+    url.searchParams.set("q", trimmed);
+    url.searchParams.set("fields", OFF_SEARCH_FIELDS);
+    url.searchParams.set("page_size", "20");
 
     let response;
     try {
@@ -327,61 +327,8 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
         throw new HttpsError("unavailable", `Open Food Facts returned HTTP ${response.status}`);
     }
 
-    const queryWords = trimmed.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
-    const isRelevant = (name) => {
-        if (queryWords.length === 0) return true;
-        const lower = name.toLowerCase();
-        return queryWords.some((w) => lower.includes(w));
-    };
-
     const json = await response.json();
-    const products = (json.products ?? [])
-        .filter((p) => p.product_name && p.product_name.trim().length > 0)
-        .filter((p) => isRelevant(p.product_name))
-        .slice(0, 20)
-        .map((p) => ({
-            name: p.product_name.trim(),
-            brandName: p.brands ?? null,
-            imageURL: p.image_front_small_url ?? null,
-            servingWeight: p.serving_quantity ?? null,
-            servingSize: p.serving_size ?? null,
-            calories: p.nutriments?.["energy-kcal_100g"] ?? null,
-            protein: p.nutriments?.["proteins_100g"] ?? null,
-            carbs: p.nutriments?.["carbohydrates_100g"] ?? null,
-            fatTotal: p.nutriments?.["fat_100g"] ?? null,
-            fatSaturated: p.nutriments?.["saturated-fat_100g"] ?? null,
-            fiber: p.nutriments?.["fiber_100g"] ?? null,
-            sugar: p.nutriments?.["sugars_100g"] ?? null,
-            sodiumMg: p.nutriments?.["sodium_100g"] != null
-                ? p.nutriments["sodium_100g"] * 1000
-                : null,
-            potassiumMg: p.nutriments?.["potassium_100g"] ?? null,
-            calciumMg: p.nutriments?.["calcium_100g"] ?? null,
-            ironMg: p.nutriments?.["iron_100g"] ?? null,
-            vitaminAMcg: p.nutriments?.["vitamin-a_100g"] ?? null,
-            vitaminB6Mg: p.nutriments?.["vitamin-b6_100g"] ?? null,
-            vitaminB12Mcg: p.nutriments?.["vitamin-b12_100g"] ?? null,
-            vitaminCMg: p.nutriments?.["vitamin-c_100g"] ?? null,
-            vitaminDMcg: p.nutriments?.["vitamin-d_100g"] ?? null,
-            vitaminEMg: p.nutriments?.["vitamin-e_100g"] ?? null,
-            vitaminKMcg: p.nutriments?.["vitamin-k_100g"] ?? null,
-            magnesiumMg: p.nutriments?.["magnesium_100g"] ?? null,
-            zincMg: p.nutriments?.["zinc_100g"] ?? null,
-            phosphorusMg: p.nutriments?.["phosphorus_100g"] ?? null,
-            cholesterolMg: p.nutriments?.["cholesterol_100g"] ?? null,
-            caffeineMg: p.nutriments?.["caffeine_100g"] ?? null,
-            riboflavinMg: p.nutriments?.["riboflavin_100g"] ?? null,
-            thiaminMg: p.nutriments?.["thiamin_100g"] ?? null,
-            niacinMg: p.nutriments?.["niacin_100g"] ?? null,
-            biotinMcg: p.nutriments?.["biotin_100g"] ?? null,
-            folateMcg: p.nutriments?.["folates_100g"] ?? null,
-            iodineMcg: p.nutriments?.["iodine_100g"] ?? null,
-            seleniumMcg: p.nutriments?.["selenium_100g"] ?? null,
-            manganeseMg: p.nutriments?.["manganese_100g"] ?? null,
-            copperMg: p.nutriments?.["copper_100g"] ?? null,
-            chlorideMg: p.nutriments?.["chloride_100g"] ?? null,
-            pantothenicAcidMg: p.nutriments?.["pantothenic-acid_100g"] ?? null,
-        }));
+    const products = (json.hits ?? []).map(offProductToFood).filter(Boolean);
 
     cacheRef.set({
         query: trimmed,
@@ -397,6 +344,22 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
 // ---------------------------------------------------------------------------
 // FCM push for social activity (likes / comments / mentions / follows / nudges)
 // ---------------------------------------------------------------------------
+
+// The app icon's badge: the recipient's unread notifications plus the follow requests waiting on
+// them, as the bell counts them. The new notification or request is already written, so it counts.
+// ponytail: the bell counts grouped rows (three likes on one session are one), this counts documents.
+async function unreadBadgeCount(userRef) {
+    try {
+        const [unread, requests] = await Promise.all([
+            userRef.collection("notifications").where("is_read", "==", false).count().get(),
+            userRef.collection("follow_requests").where("status", "==", "pending").count().get(),
+        ]);
+        return unread.data().count + requests.data().count;
+    } catch (error) {
+        console.error(`Unread count failed for ${userRef.id}: ${error.message}`);
+        return 1;
+    }
+}
 
 // The app writes users/{uid}/notifications for the in-app bell; this turns each new doc into a
 // push so it still arrives when the app is closed. The token and opt-outs are private to the owner,
@@ -420,7 +383,7 @@ export const onActivityNotificationCreated = onDocumentCreated(
             userRef.collection("private").doc("settings").get(),
         ]);
         const recipient = pushRecipientSettings(privateDoc.data(), userDoc.data());
-        const message = buildActivityPush(notification, recipient);
+        const message = buildActivityPush(notification, recipient, await unreadBadgeCount(userRef));
         if (!message) {
             console.log(`No push for user ${userId} (${notification.type}): no token or opted out.`);
             return;
@@ -513,7 +476,7 @@ export const onFollowRequestCreated = onDocumentCreated(
             userRef.get(),
             userRef.collection("private").doc("settings").get(),
         ]);
-        const message = buildFollowRequestPush(request, pushRecipientSettings(privateDoc.data(), userDoc.data()), userDoc.data());
+        const message = buildFollowRequestPush(request, pushRecipientSettings(privateDoc.data(), userDoc.data()), userDoc.data(), await unreadBadgeCount(userRef));
         if (!message) return;
 
         try {

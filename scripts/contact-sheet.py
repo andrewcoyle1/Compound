@@ -23,7 +23,7 @@ for screen in screens:
 (out / "index.html").write_text(f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DialedIn Screenshots</title>
+<title>Compound Screenshots</title>
 <style>
 :root {{ color-scheme: light dark; --bg: #f4f4f5; --fg: #18181b; --card: #fff; }}
 @media (prefers-color-scheme: dark) {{ :root {{ --bg: #111113; --fg: #e4e4e7; --card: #1c1c1f; }} }}
@@ -35,7 +35,7 @@ h1 {{ font-size: 20px; }} h2 {{ font-size: 13px; margin: 0 0 8px; font-family: u
 figure {{ margin: 0; }} img {{ width: 100%; border-radius: 8px; display: block; }}
 figcaption {{ text-align: center; opacity: .6; font-size: 12px; margin-top: 4px; }}
 </style></head><body>
-<h1>DialedIn screenshots ({len(screens)} screens)</h1>
+<h1>Compound screenshots ({len(screens)} screens)</h1>
 <main>{"".join(cards)}</main>
 </body></html>
 """)

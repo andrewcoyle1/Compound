@@ -1,11 +1,12 @@
 //
 //  LiveActivityView.swift
-//  DialedIn
+//  Compound
 //
 //  The lock-screen banner (spec: docs/specs/live-activity.md §3).
 //
 //  One switch, in `LiveActivityPhaseContent`, over the phase derived from the content state.
-//  Fixed height across phases so the banner does not jump when a set completes, two rows, and
+//  Fixed height across phases at the default text size so the banner does not jump when a set
+//  completes (it grows only at larger sizes), two rows, and
 //  a 1-pt whole-workout progress line along the bottom edge. No header: no app icon, no workout
 //  name outside `.ended`, no elapsed timer, no total volume, no status message.
 //
@@ -34,12 +35,16 @@ struct LiveActivityView: View {
                 // The widget's accent is `labelColor`, so a prominent label needs the inverse.
                 prominentLabelColor: colorScheme.inverseLabel
             )
-            .frame(height: LiveActivityLayout.contentHeight, alignment: .center)
-            .padding(.horizontal, 16)
+            .liveActivityContentHeight()
+            // The system's standard Lock Screen margin for Live Activities.
+            .padding(.horizontal, 14)
             .padding(.vertical, 12)
 
             progressLine
         }
+        .dynamicTypeSize(...LiveActivityLayout.maxDynamicTypeSize)
+        // A tap opens the tracker, as the Today widget's does.
+        .widgetURL(WidgetSnapshotStore.workoutURL)
     }
 
     /// The only whole-workout indicator: a 1-pt line along the bottom edge.
@@ -54,6 +59,9 @@ struct LiveActivityView: View {
             }
         }
         .frame(height: 1)
+        .accessibilityElement()
+        .accessibilityLabel("Workout progress")
+        .accessibilityValue("\(context.state.completedSetsCount) of \(context.state.totalSetsCount) sets")
     }
 
     private var progressFraction: CGFloat {

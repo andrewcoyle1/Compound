@@ -1,6 +1,6 @@
 //
 //  WorkoutActivityAttributes.swift
-//  DialedIn
+//  Compound
 //
 //  Created by Andrew Coyle on 30/09/2025.
 //
@@ -56,6 +56,9 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         // True when the set just logged was the last of its exercise, so the rest leads into a
         // different exercise from the one the set belonged to
         var restLeadsToNewExercise: Bool = false
+        // The unit the current exercise's distances are shown in. Optional so a state encoded
+        // before it existed still decodes; nil reads as metres.
+        var distanceUnit: LiveActivityDistanceUnit?
     }
 
     // Immutable attributes for this workout Live Activity instance

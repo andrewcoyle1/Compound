@@ -1,0 +1,174 @@
+import SwiftUI
+
+struct PaywallView: View {
+    
+    @State var presenter: PaywallPresenter
+
+    var body: some View {
+        ZStack {
+            switch presenter.paywallTest {
+            case .custom:
+                if presenter.isLoadingProducts {
+                    ProgressView()
+                } else if let errorMessage = presenter.loadErrorMessage {
+                    ContentUnavailableView {
+                        Label("Unable to load subscription options", systemImage: Symbol.error)
+                    } description: {
+                        Text(errorMessage)
+                    } actions: {
+                        CallToActionButton {
+                            Task { await presenter.onLoadProducts() }
+                        } label: {
+                            Text("Try Again")
+                        }
+                    }
+                } else if presenter.products.isEmpty {
+                    ContentUnavailableView {
+                        Label("No subscription options available right now.", systemImage: Symbol.info)
+                    } actions: {
+                        Button("Refresh") {
+                            Task { await presenter.onLoadProducts() }
+                        }
+                    }
+                } else {
+                    CustomPaywallView(
+                        products: presenter.products,
+                        selectedProduct: presenter.selectedProduct,
+                        onRestorePurchasePressed: {
+                            presenter.onRestorePurchasePressed()
+                        },
+                        onProductSelected: { product in
+                            presenter.onProductSelected(product)
+                        },
+                        onSubscribePressed: {
+                            presenter.onSubscribePressed()
+                        }
+                    )
+                }
+            case .revenueCat:
+                // The toolbar owns the way out: close outside onboarding, back inside it.
+                RevenueCatPaywallView(
+                    displayCloseButton: false,
+                    onPurchaseCompleted: presenter.onRevenueCatPurchaseCompleted,
+                    onRestoreCompleted: presenter.onRevenueCatRestoreCompleted
+                )
+            case .storeKit:
+                StoreKitPaywallView(
+                    productIds: presenter.productIds,
+                    onInAppPurchaseStart: presenter.onPurchaseStart,
+                    onInAppPurchaseCompletion: { (product, result) in
+                        presenter.onPurchaseComplete(product: product, result: result)
+                    }
+                )
+            }
+        }
+        .onAppear {
+            presenter.onViewAppear()
+        }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
+        .safeAreaInset(edge: .top) {
+            if presenter.isPurchasePending {
+                InlineMessage(.info, "Waiting for approval. Your subscription starts once the purchase is approved.")
+                    .padding(.horizontal)
+            }
+        }
+        .task {
+            await presenter.onViewTask()
+        }
+        .toolbar {
+            if presenter.isOnboarding {
+                // The way out for someone who will not subscribe; "Why Subscribe?", one step back,
+                // shows the same two as a row and a button.
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button("Account", systemImage: Symbol.profile) {
+                            presenter.onAccountPressed()
+                        }
+                        Button("Sign Out", systemImage: "rectangle.portrait.and.arrow.right") {
+                            presenter.onSignOutPressed()
+                        }
+                    } label: {
+                        Label("Account", systemImage: Symbol.profile)
+                    }
+                    .accessibilityIdentifier("PaywallAccountMenu")
+                }
+            } else {
+                // A full-screen cover has no back button, and each paywall variant has its own
+                // close hidden so there is exactly one.
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
+                        presenter.onBackButtonPressed()
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension CoreBuilder {
+    func paywallView(router: AnyRouter, isOnboarding: Bool = false) -> some View {
+        PaywallView(
+            presenter: PaywallPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isOnboarding: isOnboarding
+            )
+        )
+    }
+}
+
+extension CoreRouter {
+
+    func showPaywall(isOnboarding: Bool = false) {
+        router.showScreen(isOnboarding ? .push : .fullScreenCover) { router in
+            builder.paywallView(router: router, isOnboarding: isOnboarding)
+        }
+    }
+}
+
+#Preview("Custom") {
+    let container = DevPreview.shared.container()
+    container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .custom)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        builder.paywallView(router: router)
+    }
+    
+}
+
+#Preview("StoreKit") {
+    let container = DevPreview.shared.container()
+    container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return Color.blue
+        .sheet(isPresented: Binding.constant(true)) {
+            RouterView { router in
+                builder.paywallView(router: router)
+            }
+        }
+}
+
+#Preview("StoreKit - Onboarding") {
+    let container = DevPreview.shared.container()
+    container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .storeKit)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        builder.paywallView(router: router, isOnboarding: true)
+    }
+}
+
+#Preview("RevenueCat") {
+    let container = DevPreview.shared.container()
+    container.register(ABTestManager.self, service: ABTestManager(service: MockABTestService(paywallTest: .revenueCat)))
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        builder.paywallView(router: router)
+    }
+    
+}

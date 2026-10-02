@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SCHEME: DialedIn - Development
+  SCHEME: Compound - Development
   XCODE_APP: /Applications/Xcode_26.6.app
   # Pinned deliberately. `brew install swiftlint` tracks latest, and a newer
   # SwiftLint can add rules that fail --strict on code that lints clean
@@ -54,9 +54,9 @@ jobs:
       - name: Materialise gitignored config from examples
         run: |
           set -euo pipefail
-          cp DialedIn/Utilities/Keys.swift.example DialedIn/Utilities/Keys.swift
-          cp DialedIn/Info.plist.example DialedIn/Info.plist
-          plists=DialedIn/SupportingFiles/GoogleServicePLists
+          cp Compound/Utilities/Keys.swift.example Compound/Utilities/Keys.swift
+          cp Compound/Info.plist.example Compound/Info.plist
+          plists=Compound/SupportingFiles/GoogleServicePLists
           cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Dev.plist"
           cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Prod.plist"
 
@@ -104,7 +104,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('DialedIn.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          key: ${{ runner.os }}-spm-${{ hashFiles('Compound.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
           restore-keys: |
             ${{ runner.os }}-spm-
 
@@ -119,7 +119,7 @@ jobs:
       - name: Resolve Swift package dependencies
         run: |
           xcodebuild -resolvePackageDependencies \
-            -project DialedIn.xcodeproj \
+            -project Compound.xcodeproj \
             -scheme "$SCHEME" \
             -clonedSourcePackagesDirPath "$HOME/SourcePackages"
 
@@ -182,10 +182,10 @@ jobs:
       - name: Build and run unit tests
         run: |
           xcodebuild test \
-            -project DialedIn.xcodeproj \
+            -project Compound.xcodeproj \
             -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }},OS=${{ steps.sim.outputs.os }}" \
-            -skip-testing:DialedInUITests \
+            -skip-testing:CompoundUITests \
             -clonedSourcePackagesDirPath "$HOME/SourcePackages" \
             -resultBundlePath TestResults.xcresult
 

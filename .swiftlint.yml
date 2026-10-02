@@ -22,7 +22,7 @@ excluded:
   - Carthage
 
 # Design system rules (docs/specs/ui-framework/CONTRACT.md). Use a token or primitive from
-# DialedIn/Components/DesignSystem/, never a literal. Share cards render to images at a fixed
+# Compound/Components/DesignSystem/, never a literal. Share cards render to images at a fixed
 # size and the widget has no design system, so both are exempt where noted.
 custom_rules:
   no_corner_radius_modifier:
@@ -45,9 +45,9 @@ custom_rules:
     excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
     excluded:
       # .iconSize(_:) is built on a @ScaledMetric point size.
-      - "DialedIn/Components/DesignSystem/Typography.swift"
-      - "DialedIn/Core/Dashboard/ShareCard/"
-      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "Compound/Components/DesignSystem/Typography.swift"
+      - "Compound/Core/Social/ShareCard/"
+      - "Compound/Core/Today/WeeklyReview/WeeklyReviewShareCardView.swift"
       - "WorkoutSessionActivity/"
   no_rgb_color_literal:
     name: "No RGB colour literal"
@@ -56,9 +56,9 @@ custom_rules:
     severity: error
     excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
     excluded:
-      - "DialedIn/Components/DesignSystem/"
-      - "DialedIn/Core/Dashboard/ShareCard/"
-      - "DialedIn/Core/Dashboard/WeeklyReview/WeeklyReviewShareCardView.swift"
+      - "Compound/Components/DesignSystem/"
+      - "Compound/Core/Social/ShareCard/"
+      - "Compound/Core/Today/WeeklyReview/WeeklyReviewShareCardView.swift"
       - "WorkoutSessionActivity/"
   no_bare_with_animation:
     name: "No bare withAnimation"
@@ -67,7 +67,7 @@ custom_rules:
     severity: error
     excluded_match_kinds: [comment, comment.mark, comment.url, doccomment, doccomment.field]
     excluded:
-      - "DialedIn/Components/ViewModifiers/ReducedMotionViewModifier.swift"
+      - "Compound/Components/ViewModifiers/ReducedMotionViewModifier.swift"
       - "WorkoutSessionActivity/"
   accent_spelling:
     name: "Accent spelling"

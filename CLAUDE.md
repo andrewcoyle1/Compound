@@ -10,39 +10,39 @@ and test suite with a link. It is generated; after adding or moving files run
 ## Build & Development
 
 **Package manager**: Swift Package Manager only — there is no Podfile and no `.xcworkspace`. Open
-`DialedIn.xcodeproj` directly; Xcode resolves packages on open.
+`Compound.xcodeproj` directly; Xcode resolves packages on open.
 
-**Schemes** (there is no scheme called plain `DialedIn`):
+**Schemes** (Production is the plain `Compound` scheme):
 
 | Scheme | Configuration | Backend |
 |---|---|---|
-| `DialedIn - Development` | Debug | Firebase dev project |
-| `DialedIn - Mock` | Mock | All mock services, no Firebase |
-| `DialedIn - Production` | Release | Firebase prod project |
+| `Compound - Development` | Debug | Firebase dev project |
+| `Compound - Mock` | Mock | All mock services, no Firebase |
+| `Compound` | Release | Firebase prod project |
 
 **Build from the command line**:
 ```bash
-xcodebuild -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
 **Run tests**:
 ```bash
-xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-The tests compile and pass (3,542 tests in `DialedInUnitTests`). Treat a `TEST FAILED` as a
+The tests compile and pass (3,542 tests in `CompoundUnitTests`). Treat a `TEST FAILED` as a
 regression from your change unless it is only the UI-test flake described below.
 
 `-only-testing` works, but only under the scheme's own name for the target. The productName is
 `DialedInTests`, and `-only-testing:DialedInTests` is rejected; the BlueprintName is
-`DialedInUnitTests`, so a single suite runs with:
+`CompoundUnitTests`, so a single suite runs with:
 
 ```bash
-xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
+xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:DialedInUnitTests/OnboardingHeightConversionTests
+  -only-testing:CompoundUnitTests/OnboardingHeightConversionTests
 ```
 
 **Run the full suite only when pushing.** Not between steps, and not to confirm something a
@@ -50,7 +50,7 @@ narrower run has already shown. Measured on this machine: the whole suite is abo
 with the UI bundle and **2.7 minutes without it** (3,542 unit tests as of the UI framework merge), one suite through
 `-only-testing` is about forty-five seconds, and the package's own `swift test` is under two.
 Nearly all of the fifteen minutes is the UI runner and its simulator clones, so
-`-skip-testing:DialedInUITests` is the single biggest saving available. Pick the narrowest run
+`-skip-testing:CompoundUITests` is the single biggest saving available. Pick the narrowest run
 that could actually fail:
 
 | Change | Run |
@@ -63,15 +63,28 @@ that could actually fail:
 Repeat runs belong in **one** invocation with `-test-iterations`, never N invocations — the build
 and simulator boot dominate, so five separate calls cost five times the setup for the same tests.
 
-Add `-skip-testing:DialedInUITests` to anything routine. It is three tests, one of them
+Add `-skip-testing:CompoundUITests` to anything routine. It is three tests, one of them
 chronically flaky, and it needs its own simulator clone; it is also what makes a run report
 `** TEST FAILED **` when every unit test passed.
+
+**Simulator clones.** A parallel test run clones the destination simulator several times into
+`~/Library/Developer/XCTestDevices` and never removes the clones. On 29 Sep 2026 that had grown
+to 109 clones and about 250 GB, which macOS reports as "System Data".
+
+- Run `scripts/clean-simulators.sh` after a full-suite run, and before starting any fan-out. It
+  refuses to run while a test is in progress.
+- When several agents may be testing at once, each passes `-parallel-testing-enabled NO`, so it
+  creates no clones and cannot lose them to another agent's clean-up. A single suite is quick
+  enough serially.
+- `du` counts a clone's shared data once per clone, so its totals can exceed the size of the
+  disk. Judge by free space (`df -h /System/Volumes/Data`), and allow for deletion finishing in
+  the background.
 
 Read the counts from the result bundle:
 
 ```bash
 xcrun xcresulttool get test-results summary \
-  --path "$(ls -td ~/Library/Developer/Xcode/DerivedData/DialedIn-*/Logs/Test/*.xcresult | head -1)"
+  --path "$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
 ```
 
 The UI-test runner is flaky in the simulator: it either fails to launch
@@ -81,7 +94,7 @@ invocation prints `** TEST FAILED **` on the strength of one UI test — so `** 
 is not a reliable signal on its own. Check the unit bundle's own result instead:
 
 ```bash
-B="$(ls -td ~/Library/Developer/Xcode/DerivedData/DialedIn-*/Logs/Test/*.xcresult | head -1)"
+B="$(ls -td ~/Library/Developer/Xcode/DerivedData/Compound-*/Logs/Test/*.xcresult | head -1)"
 xcrun xcresulttool get test-results tests --path "$B" | python3 -c '
 import json,sys
 d=json.load(sys.stdin)
@@ -93,11 +106,11 @@ def walk(n):
 walk(d.get("testNodes", []))'
 ```
 
-`Unit test bundle | DialedInUnitTests | Passed` is what matters. The summary's top-level
+`Unit test bundle | CompoundUnitTests | Passed` is what matters. The summary's top-level
 `failedTests` counts both bundles together, so it reads 1 on a clean unit run that hit the flake.
 
 Managers take sync engines rather than a services struct, so tests build them through
-**`DialedInUnitTests/Support/TestManagers.swift`**, which wires them the way `Dependencies` does
+**`CompoundUnitTests/Support/TestManagers.swift`**, which wires them the way `Dependencies` does
 for `.mock` but with `enableLocalPersistence: false` — otherwise each engine opens SwiftData
 storage under its `managerKey`, shared between tests and left behind after them.
 
@@ -132,10 +145,10 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
    `Info.plist`, and both `GoogleService-Info-{Dev,Prod}.plist` (all copied from
    `GoogleService-Info-Example.plist`). The examples are enough because only the Crashlytics
    run-script phase reads the plists and it exits early on simulator builds. The `Keys.swift`
-   example defines all 30 constants the app references, so it compiles unchanged.
+   example defines all 31 constants the app references, so it compiles unchanged.
 2. Runs `swiftlint --strict`, before the build so a style failure fails fast. `main` is at zero
    violations, so any warning fails the job. SwiftLint is **pinned** — see below.
-3. Runs `xcodebuild test` for `DialedIn - Development` with `-skip-testing:DialedInUITests`,
+3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
    writing `TestResults.xcresult`, which is uploaded as an artifact only when the job fails.
 
 The simulator destination is **discovered, not hardcoded**: a step picks the newest installed iOS
@@ -175,30 +188,47 @@ your local SwiftLint, bump `SWIFTLINT_VERSION` too, and the reverse holds: bumpi
 fixing whatever the new rules report, as its own change rather than folded into an unrelated PR. If
 CI reports violations you cannot reproduce, compare `swiftlint version` first.
 
+## Branching
+
+Two long-lived branches, `main` and `development`.
+
+- **`development`** is the stable development build. Cut every feature, fix and agent branch from
+  it and merge back into it. Delete the branch, its worktree and its DerivedData on merge.
+- **`main`** is the release branch. Merges into it are periodic, by pull request from
+  `development`, and the repository owner decides when. Do not merge or push to `main` unprompted.
+
+CI runs on pull requests and on pushes to `main`, so a direct push to `development` is not checked
+by CI: compile and run the unit suite locally first.
+
+Before reviewing or changing code, `git fetch` and confirm the checkout is level with
+`origin/development`. Do not order branches by commit date, because a merge commit is stamped
+when it is merged: compare what each side has that the other lacks
+(`git rev-list --count --no-merges A..B`).
+
 ## First-Time Setup
 
 Copy example files and fill in credentials. All three destinations are gitignored, and the app
 will not build or sign in without them:
 
-- `DialedIn/Utilities/Keys.swift.example` → `DialedIn/Utilities/Keys.swift` — 33 constants:
-  OpenAI, Mixpanel, RevenueCat, the two Strava values, and 28 `*ManagerKey` strings used as
+- `Compound/Utilities/Keys.swift.example` → `Compound/Utilities/Keys.swift` — 34 constants:
+  OpenAI, Mixpanel, the RevenueCat dev and prod SDK keys, the two Strava values, and 28 `*ManagerKey` strings used as
   local-persistence path names. The manager keys are arbitrary but must stay stable: changing
   one orphans data already persisted under the old name.
-- `DialedIn/Info.plist.example` → `DialedIn/Info.plist` — already contains the real reversed
+- `Compound/Info.plist.example` → `Compound/Info.plist` — already contains the real reversed
   client IDs for both Firebase projects and the `compound` deep-link scheme, so this is a
   straight copy. Google Sign-In fails at runtime without it.
-- `DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` →
+- `Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` →
   `GoogleService-Info-Dev.plist` and `GoogleService-Info-Prod.plist` (same folder)
 
 ## Repository Layout
 
 ```
-DialedIn/                    # the app target (Core, Components, Managers, Root, Extensions,
+Compound/                    # the app target (Core, Components, Managers, Root, Extensions,
                              #   Utilities, SupportingFiles)
 WorkoutSessionActivity/      # Live Activity / Dynamic Island widget extension
 Shared/                      # code shared between the app and the widget extension
-DialedInUnitTests/           # unit tests (target productName is DialedInTests)
-DialedInUITests/             # UI tests
+CompoundUnitTests/           # unit tests (target productName is DialedInTests)
+CompoundUITests/             # UI tests
 functions/                   # Firebase Cloud Functions (Node, Genkit/Vertex AI)
 ```
 
@@ -253,7 +283,7 @@ Declares navigation methods. The actual implementation uses `SwiftfulRouting`'s 
 ### Dependency Flow
 
 ```
-DialedInApp
+CompoundApp
   └── Dependencies(config:)        ← creates all managers based on BuildConfiguration
         └── DependencyContainer    ← service locator, registered by type
               └── CoreInteractor   ← resolves all managers from container
@@ -263,7 +293,7 @@ DialedInApp
 **Build configurations** (`BuildConfiguration` enum):
 - `.mock(isSignedIn:)` — all mock services, no Firebase. Used for unit tests and previews.
 - `.dev` — Firebase dev project, `LocalABTestService`, RevenueCat
-- `.prod` — Firebase prod project, `FirebaseABTestService`, StoreKit
+- `.prod` — Firebase prod project, `FirebaseABTestService`, RevenueCat
 
 ### SwiftUI Previews
 
@@ -314,7 +344,7 @@ reports a conflicting-identity warning for that package.
 
 ## Key Managers
 
-App-owned managers live in `DialedIn/Managers/` and are accessed through `CoreInteractor`.
+App-owned managers live in `Compound/Managers/` and are accessed through `CoreInteractor`.
 Those marked *(package)* are aliases from the section above, not code in this repo:
 
 | Manager | Purpose |
@@ -325,7 +355,8 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `WorkoutTemplateManager` | Workout template CRUD + prebuilt seeding |
 | `ExerciseModelManager` | Exercise library (local SwiftData + Firestore) + prebuilt seeding |
 | `ExerciseUnitPreferenceManager` | Per-exercise weight/distance unit preferences |
-| `TrainingProgramManager` | Training programs with local/remote sync |
+| `MesocycleManager` | Mesocycles (a program of day plans run for N microcycles) with local/remote sync |
+| `MacrocycleManager` | Macrocycles: ordered mesocycles, the current mesocycle's start and skips. `MesocycleSchedule` derives today's workout and microcycle progress from it (a queue, not a calendar) |
 | `GymProfileManager` | Available equipment per gym |
 | `NutritionManager` / `MealLogManager` | Food logging and nutrition targets |
 | `FoodManager` / `RecipeTemplateManager` | Food and recipe library |
@@ -336,7 +367,7 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |
 | `LiveActivityManager` | Dynamic Island / Lock Screen workout tracking |
 | `StravaManager` | Strava OAuth and activity import |
-| `PurchaseManager` *(package)* | RevenueCat (dev) / StoreKit (prod) |
+| `PurchaseManager` *(package)* | RevenueCat in dev and prod, each with its own SDK key; StoreKit config files for local testing |
 | `LogManager` *(package)* | Multi-service analytics (Console, Firebase, Mixpanel, Crashlytics) |
 | `ABTestManager` | A/B tests via Firebase Remote Config (prod) or local (dev) |
 | `AIManager` | Google AI / OpenAI integration via Cloud Functions |
@@ -367,8 +398,9 @@ to re-read", not "go fetch".
 ## Onboarding Flow
 
 Onboarding lives under `Core/Onboarding/`, in folders numbered by step: `0 - WelcomeView`
-through `9 - OnboardingCompleted` (there is no `7 -`, and both `9 - StravaConnect` and
-`9 - OnboardingCompleted` share the 9 prefix). Each step is its own VIPER module. Progress is
+through `9 - OnboardingCompleted` (there is no `7 -`). Each step is its own VIPER module.
+Notifications, Apple Health and Strava are not onboarding steps: each is offered where it is
+first used. Progress is
 persisted to Firestore. After completion, `AppState.startingModuleId` is updated to
 `Constants.tabBarModuleId`.
 
@@ -407,17 +439,18 @@ the values now in the table.
 ## Design System
 
 **Use a token or primitive, never a literal.** Everything lives in
-`DialedIn/Components/DesignSystem/`, one file per concern, app target only:
+`Compound/Components/DesignSystem/`, one file per concern, app target only:
 
 | File | Provides |
 |---|---|
-| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight` |
+| `Spacing.swift` | `Spacing.xxs…xxl`, `Radius.s…xl` (always `style: .continuous`), `ControlSize`, `ChartHeight`, `ContentWidth.readable` (the 700 pt column every routed screen centres on iPad and Mac, via the SwiftfulRouting fork's `readableContentWidth`, set once in `CompoundApp`) |
 | `Palette.swift` | `surface`, `canvas`, `tintedSurface(_:)`, the macro colours, `success/warning/danger`, `warmup/superset/personalRecord`, `Color.Metric.*`. `onAccent` is generated from the `OnAccent` asset. |
 | `Typography.swift` | `Font.display/metricLarge/metric/metricSmall/sectionTitle/rowTitle/rowDetail/label`, and `.iconSize(_:)` for symbols. All Dynamic Type. |
 | `Motion.swift` | `Animation.quick/standard/emphasis/progress`, applied only through `withReducedMotionAnimation` / `reducedMotionAnimation` |
 | `Symbols.swift` | `Symbol.*`: one SF Symbol per concept |
 | `Format.swift` | `Format.kcal/grams/weight/reps/sets/repRange/duration/distance/percent/placeholder` for every displayed quantity |
 | `Presentation.swift` | Sheet presets `.compact/.half/.full` |
+| `Dashboard.swift` | `Dashboard { Section… }`: a tab root's sections as a `List` on a phone and two card columns from `ContentWidth.twoColumns` up. Today uses it; Progress instead widens via `preferredReadableContentWidth` and lets `AnalyticsCardGrid` add columns (2–4). |
 | `Card.swift`, `Stat.swift`, `Chip.swift`, `ListRow.swift`, `NumberField.swift`, `BottomCTA.swift`, `InlineMessage.swift`, `OnboardingStepScaffold.swift` | The primitives: `.cardSurface`, `Stat`, `Chip` (+ `.chipTapTarget()`), `ListRow`/`ListRowButton`/`ListRowToggle`/`SelectableRow`, `NumberField`, `.bottomCTA`, `InlineMessage`, `OnboardingStepScaffold` |
 
 `docs/specs/ui-framework/CONTRACT.md` is the contract: every name above, the accent rules
@@ -434,9 +467,47 @@ Eight `custom_rules` in `.swiftlint.yml` enforce this at **error** severity, and
 `swiftlint --strict`: `no_corner_radius_modifier`, `no_foreground_color`, `no_fixed_font_size`,
 `no_rgb_color_literal`, `no_bare_with_animation`, `accent_spelling`, `no_color_scheme_surfaces`
 and `no_drawn_close_button`. They skip comments. Share cards
-(`Core/Dashboard/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
+(`Core/Social/ShareCard/`, `WeeklyReviewShareCardView.swift`) render to fixed-size images and
 the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
 cannot apply. If a rule fires, use the token; do not suppress it.
+
+## UI and the HIG
+
+Check UI work against Apple's live Human Interface Guidelines with the **`apple-hig` skill**
+(user-level, `~/.claude/skills/apple-hig`), not from memory — the guidance for bars, buttons,
+materials and colour was rewritten for Liquid Glass and is still changing. If the skill is not
+installed, say so and mark HIG claims as unverified.
+
+```bash
+python3 ~/.claude/skills/apple-hig/scripts/hig.py get tab-bars toolbars --platform ios
+```
+
+**Platforms.** The app ships to iPhone and iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), iOS 26.0+,
+with Mac Catalyst enabled on the app and the widget extension. Pass `--platform ios` by default
+and `--platform ipados` when the change affects layout or navigation at regular width. Read
+`designing-for-ios` once per session.
+
+**Precedence.** Where this project has already decided, the decision wins and the HIG fills in the
+rest: the Design System section above, `docs/specs/ui-framework/CONTRACT.md` and the Decisions
+list in that folder's `README.md`. If a HIG page contradicts one of those, report it with the
+source URL — do not change the contract from inside a feature.
+
+**Pages by area:**
+
+| Area | Read |
+|---|---|
+| Tab shell, navigation | `tab-bars`, `toolbars`, `searching`, `sheets`, `modality` |
+| Onboarding (`Core/Onboarding/`) | `onboarding`, `privacy`, `healthkit`, `managing-notifications`, `sign-in-with-apple`, `managing-accounts` |
+| Paywalls | `apple-in-app-purchase` |
+| Active workout, Live Activity (`WorkoutSessionActivity/`) | `workouts`, `live-activities`, `playing-haptics` |
+| Analytics and charts | `charting-data`, `charts` |
+| Logging forms (food, sets, measurements) | `entering-data`, `pickers`, `text-fields`, `virtual-keyboards` |
+| Lists and rows | `lists-and-tables`, `buttons`, `menus`, `context-menus` |
+| Everything | `accessibility`, `typography`, `color`, `materials` |
+
+**Reviews** go in `docs/reviews/`, one file per review, in the skill's finding format (severity,
+`file:line`, quoted guideline with source URL, fix). State which appearances and text sizes were
+actually checked.
 
 ## Backend (Cloud Functions)
 
@@ -449,7 +520,7 @@ All six share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` and
 on any new callable — they are the only thing stopping an arbitrary rebuilt client from calling
 the backend, since the API keys in the bundled plists are public by design.
 
-App Check on the client is wired in `DialedIn/Utilities/AppCheckProviderFactory.swift`:
+App Check on the client is wired in `Compound/Utilities/AppCheckProviderFactory.swift`:
 App Attest where available, DeviceCheck as fallback, and a debug provider for simulators. A
 simulator debug token must be registered in the **dev** Firebase project only, never prod.
 
@@ -475,15 +546,31 @@ As of the UI framework merge, the Development and Mock schemes and the
 `WorkoutSessionActivityExtension` scheme build with **zero warnings**, and `swiftlint --strict`
 reports **zero violations** across 1,520 files, including the design-system custom rules.
 
-Under **Xcode 27.0** the Production (Release, whole-module-optimised) build crashes the compiler:
-an LLVM verifier failure, "Instruction does not dominate all uses", in the `DialedIn` module. Before
-the UI framework merge it already failed, one step earlier, on an optimizer crash that
-`WeeklyReviewPresenter`'s `now:` default now avoids, so this is the toolchain rather than the
-swarm's code. CI pins Xcode 26.6; check
-Production there, or with 26.6 installed, before treating it as a regression. Treat any new warning as something to
+The Production scheme builds at the default `-O`. Its test action has
+`shouldAutocreateTestPlan = "NO"`, and that is load-bearing under **Xcode 27.0**:
+
+- Xcode 27's auto-created test plan turns code coverage on, and the scheme applies that to every
+  build through it, not only to tests. Production was being compiled with `-profile-generate
+  -profile-coverage-mapping`.
+- Coverage instrumentation plus `-O` crashes the Swift 6.4 compiler: an LLVM verifier failure,
+  "Instruction does not dominate all uses", which Xcode shows as "Command SwiftCompile failed
+  with a nonzero exit code". The function is the optimiser's specialised copy of
+  `WeeklyReviewPresenter.init`, where `self.week` is assigned from a ternary. Without coverage
+  the same source compiles.
+- The crash is reported against whichever file is first in the target, because specialised code
+  is emitted into the first file's unit. Do not chase the named file.
+- A target-level `CLANG_COVERAGE_MAPPING = NO` does not help; the scheme overrides it. Check what
+  a scheme resolves to with `xcodebuild -showBuildSettings -scheme … | grep CLANG_COVERAGE_MAPPING`.
+- Editing the scheme in Xcode may write `shouldAutocreateTestPlan` back to `YES`. If Production
+  stops compiling, look there first.
+
+The Development and Mock schemes still auto-create a plan, so their builds are instrumented. They
+compile at `-Onone`, where it is harmless.
+
+Treat any new warning as something to
 fix rather than accumulate.
 
-Building a scheme does not compile the test target, so a warning in `DialedInUnitTests` shows up
+Building a scheme does not compile the test target, so a warning in `CompoundUnitTests` shows up
 only under `xcodebuild test`. Check the test run's log for `warning:` as well as the three builds
 before claiming the baseline holds.
 

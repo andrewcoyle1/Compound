@@ -19,7 +19,7 @@ OUT = ROOT / "docs" / "codebase-map.md"
 TEXT_SUFFIXES = {".swift", ".js", ".py", ".sh", ".md", ".html", ".json", ".yml", ".rules"}
 SKIP_DIRS = {"graphify-out", "node_modules", ".build", "DerivedData", "SourcePackages"}
 
-PROLOGUE = """# DialedIn codebase map
+PROLOGUE = """# Compound codebase map
 
 Read this before searching. The tree is regular enough that most paths can be **predicted**
 from a name, and the tables below list every screen, manager, model, Cloud Function,
@@ -57,8 +57,8 @@ in `Root/RIBs/Core` are tiny (they only hold a few shared modals). Reusable VIPE
 `PurchaseManager`, `StreakManager`, `HapticManager`, `SoundEffectManager`, the sync engines)
 have only an alias file here; see the table in CLAUDE.md.
 
-**A test for `Foo`** is `DialedInUnitTests/**/FooTests.swift` or `FooPresenterTests.swift`, run with
-`-only-testing:DialedInUnitTests/FooPresenterTests`. Shared doubles are in `DialedInUnitTests/Support`
+**A test for `Foo`** is `CompoundUnitTests/**/FooTests.swift` or `FooPresenterTests.swift`, run with
+`-only-testing:CompoundUnitTests/FooPresenterTests`. Shared doubles are in `CompoundUnitTests/Support`
 (`TestManagers.swift` builds real managers on mock engines; `TestDoubles.swift` has `SpyGlobalInteractor` and
 `SpyOnboardingRouter`).
 
@@ -68,7 +68,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 
 ## Cross-cutting flows
 
-- **Launch**: `DialedInApp` → `AppDelegate.application(_:didFinishLaunchingWithOptions:)` picks
+- **Launch**: `CompoundApp` → `AppDelegate.application(_:didFinishLaunchingWithOptions:)` picks
   `BuildConfiguration` from `MOCK`/`DEBUG` flags (or `Utilities.isUITesting`), calls
   `config.configure()` (Firebase, App Check, Google Sign-In's own App Check), builds
   `Dependencies(config:)` → `CoreInteractor` → `CoreBuilder.build()` → `AppView`.
@@ -104,32 +104,32 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 """
 
 AREA_PURPOSE = {
-    "DialedIn/Core/AdaptiveMain": "iPad/Mac split-vs-tab root chooser",
-    "DialedIn/Core/Analytics": "Analytics tab: body metrics, exercise/nutrition analytics, insights, consistency",
-    "DialedIn/Core/AppView": "Root view: onboarding-or-tabbar switch, toasts, notification banner",
-    "DialedIn/Core/Challenges": "Group challenges (create, detail)",
-    "DialedIn/Core/Dashboard": "Home tab: social feed, circle goals, weekly review, share card, profile",
-    "DialedIn/Core/DevSettings": "DEV/MOCK-only developer tools screen",
-    "DialedIn/Core/Notifications": "Activity notifications inbox",
-    "DialedIn/Core/Nutrition": "Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners",
-    "DialedIn/Core/Onboarding": "Numbered onboarding steps 0–9 (see OnboardingStepRouter)",
-    "DialedIn/Core/Paywalls": "Paywall screens",
-    "DialedIn/Core/Profile": "Profile tab and every settings screen (training, nutrition, general, account, legal)",
-    "DialedIn/Core/Search": "User search",
-    "DialedIn/Core/Sharing": "Share-to-follower and shared-item viewer",
-    "DialedIn/Core/SplitViewContainer": "iPad sidebar container",
-    "DialedIn/Core/TabBar": "Tab bar, DeepLink parsing, tab selection",
-    "DialedIn/Core/Training": "Training tab: workouts, tracker, programs, history, create flows",
-    "DialedIn/Components": "Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers",
-    "DialedIn/Managers": "App-owned managers, models and services (see Managers table)",
-    "DialedIn/Root": "AppDelegate, DialedInApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols",
-    "DialedIn/Utilities": "Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers",
-    "DialedIn/Extensions": "Foundation/SwiftUI type extensions (`X+EXT.swift`)",
-    "DialedIn/SupportingFiles": "Assets, entitlements, GoogleService plists, privacy manifest, seed JSON",
+    "Compound/Core/AdaptiveMain": "iPad/Mac split-vs-tab root chooser",
+    "Compound/Core/Analytics": "Progress tab: body metrics, exercise/nutrition analytics, insights, consistency",
+    "Compound/Core/AppView": "Root view: onboarding-or-tabbar switch, toasts, notification banner",
+    "Compound/Core/Challenges": "Group challenges (create, detail)",
+    "Compound/Core/Social": "Social tab: workout feed, circle goals, challenges, people search, invites, share card, profiles",
+    "Compound/Core/Today": "Today tab: today's workout, nutrition, weigh-in, streak, weekly check-in and weekly review",
+    "Compound/Core/DevSettings": "DEV/MOCK-only developer tools screen",
+    "Compound/Core/Notifications": "Activity notifications inbox",
+    "Compound/Core/Nutrition": "Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners",
+    "Compound/Core/Onboarding": "Numbered onboarding steps 0–9 (see OnboardingStepRouter)",
+    "Compound/Core/Paywalls": "Paywall screens",
+    "Compound/Core/Profile": "Profile tab and every settings screen (training, nutrition, general, account, legal)",
+    "Compound/Core/Sharing": "Share-to-follower and shared-item viewer",
+    "Compound/Core/SplitViewContainer": "iPad sidebar container",
+    "Compound/Core/TabBar": "Tab bar, DeepLink parsing, tab selection",
+    "Compound/Core/Training": "Training tab: workouts, tracker, programs, history, create flows",
+    "Compound/Components": "Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers",
+    "Compound/Managers": "App-owned managers, models and services (see Managers table)",
+    "Compound/Root": "AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols",
+    "Compound/Utilities": "Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers",
+    "Compound/Extensions": "Foundation/SwiftUI type extensions (`X+EXT.swift`)",
+    "Compound/SupportingFiles": "Assets, entitlements, GoogleService plists, privacy manifest, seed JSON",
     "Shared": "Code compiled into both the app and the Live Activity extension",
     "WorkoutSessionActivity": "Live Activity / Dynamic Island / home widget extension",
-    "DialedInUnitTests": "Swift Testing unit suites (BlueprintName DialedInUnitTests)",
-    "DialedInUITests": "XCUITest smoke and create-flow tests (launch via STARTSCREEN)",
+    "CompoundUnitTests": "Swift Testing unit suites (BlueprintName CompoundUnitTests)",
+    "CompoundUITests": "XCUITest smoke and create-flow tests (launch via STARTSCREEN)",
     "functions": "Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex)",
     "hosting": "Firebase Hosting landing page",
     "scripts": "Screenshot, contact-sheet, smoke-test generation, this map",
@@ -189,7 +189,7 @@ def short_route(name: str) -> str:
 
 def screen_tables(test_index: dict[str, Path]) -> str:
     modules: dict[Path, dict] = {}
-    for p in swift_files(ROOT / "DialedIn"):
+    for p in swift_files(ROOT / "Compound"):
         m = re.fullmatch(r"(\w+)Presenter\.swift", p.name)
         if not m:
             continue
@@ -248,7 +248,7 @@ def screen_tables(test_index: dict[str, Path]) -> str:
 
 def manager_table(test_index: dict[str, Path]) -> str:
     rows = []
-    for p in swift_files(ROOT / "DialedIn" / "Managers"):
+    for p in swift_files(ROOT / "Compound" / "Managers"):
         m = re.fullmatch(r"(\w+Manager)\.swift", p.name)
         if not m:
             continue
@@ -279,7 +279,7 @@ def manager_table(test_index: dict[str, Path]) -> str:
 def sync_model_table() -> str:
     rows = []
     pat = re.compile(r"^\s*(?:public |final )*(struct|class) (\w+)\s*:[^{]*DataSyncModelProtocol")
-    for p in swift_files(ROOT / "DialedIn"):
+    for p in swift_files(ROOT / "Compound"):
         for line in p.open(encoding="utf-8", errors="ignore"):
             if (m := pat.match(line)):
                 rows.append(f"| `{m.group(2)}` | {link(p, rel(p))} |")
@@ -288,7 +288,7 @@ def sync_model_table() -> str:
 
 def core_interactor_table() -> str:
     rows = []
-    for p in sorted((ROOT / "DialedIn/Root/RIBs/Core").glob("*.swift")):
+    for p in sorted((ROOT / "Compound/Root/RIBs/Core").glob("*.swift")):
         rows.append(f"| {link(p)} | {line_count(p)} |")
     return "| File | Lines |\n|---|---:|\n" + "\n".join(rows)
 
@@ -327,7 +327,7 @@ def rules_table() -> str:
 # --- tests -------------------------------------------------------------------------------
 
 def test_index() -> dict[str, Path]:
-    return {p.stem: p for p in swift_files(ROOT / "DialedInUnitTests") if p.stem.endswith("Tests")}
+    return {p.stem: p for p in swift_files(ROOT / "CompoundUnitTests") if p.stem.endswith("Tests")}
 
 
 def tests_table(index: dict[str, Path]) -> str:
@@ -338,8 +338,8 @@ def tests_table(index: dict[str, Path]) -> str:
     for d in sorted(by_dir):
         names = ", ".join(f"`{s}`" for s in sorted(by_dir[d]))
         out.append(f"**`{d}`** ({len(by_dir[d])}): {names}\n")
-    ui = ", ".join(f"`{p.stem}`" for p in sorted((ROOT / "DialedInUITests").glob("*.swift")))
-    out.append(f"**`DialedInUITests`**: {ui}\n")
+    ui = ", ".join(f"`{p.stem}`" for p in sorted((ROOT / "CompoundUITests").glob("*.swift")))
+    out.append(f"**`CompoundUITests`**: {ui}\n")
     return "\n".join(out)
 
 

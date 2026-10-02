@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.dialedin.app</string>
+		<string>group.com.compound.app</string>
 	</array>
 </dict>
 </plist>

@@ -49,63 +49,86 @@ function commentPreview(notification) {
         : text;
 }
 
+// How urgently each social type interrupts. A like waits quietly in Notification Center; the rest
+// are about someone waiting on the recipient, so they stay active (said explicitly, as the HIG asks).
+// "Rest complete" is time sensitive, but that one is a local notification set in the app.
+export const INTERRUPTION_LEVELS = {
+    like: "passive",
+    comment: "active",
+    mention: "active",
+    follow: "active",
+    followAccepted: "active",
+    follow_request: "active",
+    nudge: "active",
+    share: "active",
+    challenge_complete: "active",
+};
+
+// Fills a catalog key's %@ placeholders in order, for the English text sent beside the key.
+export function formatLocKey(key, args) {
+    let index = 0;
+    return key.replace(/%@/g, () => args[index++] ?? "");
+}
+
+// The body of each social push as a key in the app's string catalog (most are the keys the
+// Notifications screen already shows for the same activity) and its arguments. The device looks
+// the key up, so the push arrives in the recipient's language. No title: the generic ones ("New
+// like", "Mention") said less than the app's name, which the system shows instead.
+export function activityAlert(notification) {
+    const actor = notification.actor_name || "Someone";
+    const preview = commentPreview(notification);
+    switch (notification.type) {
+    case "like": return { key: "%@ liked your workout", args: [actor] };
+    case "comment":
+        // is_reply: the comment answers the recipient's own comment, not their workout.
+        if (notification.is_reply === true) return { key: "%@ replied to your comment: \"%@\"", args: [actor, preview] };
+        return preview ? { key: "%@ commented: \"%@\"", args: [actor, preview] } : { key: "%@ commented", args: [actor] };
+    case "mention":
+        return preview ? { key: "%@ mentioned you: \"%@\"", args: [actor, preview] } : { key: "%@ mentioned you", args: [actor] };
+    case "follow": return { key: "%@ started following you", args: [actor] };
+    case "nudge": return { key: "%@ nudged you to train", args: [actor] };
+    case "followAccepted": return { key: "%@ accepted your follow request", args: [actor] };
+    case "follow_request": return { key: "%@ wants to follow you", args: [actor] };
+    case "share": return { key: "%@ shared a workout", args: [actor] };
+    case "challenge_complete":
+        return notification.comment_text
+            ? { key: "You finished %@", args: [notification.comment_text] }
+            : { key: "You finished a challenge", args: [] };
+    default: return null;
+    }
+}
+
+// The APNs alert for a catalog key: English beside the key, for a build whose catalog lacks it.
+function localizedAlert({ key, args }, title = null) {
+    const alert = { body: formatLocKey(key, args), locKey: key, locArgs: args };
+    if (title) Object.assign(alert, { title: formatLocKey(title.key, title.args), titleLocKey: title.key, titleLocArgs: title.args });
+    return alert;
+}
+
 // Builds the push for a users/{uid}/notifications doc, or null when it should not be sent:
-// no token, an unknown type, or the recipient turned that type off. `data.tab` is what
-// DeepLink(pushUserInfo:) reads, so a tap lands on the Dashboard where the bell lives; with
-// `session_id` and `session_author_id` as well, the Dashboard then opens that session.
-export function buildActivityPush(notification, recipient) {
+// no token, an unknown type, or the recipient turned that type off. `badge` is the recipient's
+// unread count, read by the caller. `data.tab` is what DeepLink(pushUserInfo:) reads, so a tap lands
+// on the Dashboard where the bell lives; with `session_id` and `session_author_id` as well, the
+// Dashboard then opens that session.
+export function buildActivityPush(notification, recipient, badge = 1) {
     const token = recipient?.fcm_token;
     const preferenceKey = SOCIAL_PUSH_PREFERENCE_KEYS[notification?.type];
     if (!token || !preferenceKey || recipient[preferenceKey] === false) return null;
 
-    const actor = notification.actor_name || "Someone";
-    let title;
-    let body;
-    switch (notification.type) {
-    case "like":
-        title = "New like";
-        body = `${actor} liked your workout`;
-        break;
-    case "comment":
-        // is_reply: the comment answers the recipient's own comment, not their workout.
-        title = notification.is_reply === true ? "New reply" : "New comment";
-        body = notification.is_reply === true
-            ? `${actor} replied to your comment: ${commentPreview(notification)}`
-            : `${actor} commented: ${commentPreview(notification)}`;
-        break;
-    case "mention":
-        title = "Mention";
-        body = `${actor} mentioned you: ${commentPreview(notification)}`;
-        break;
-    case "follow":
-        title = "New follower";
-        body = `${actor} started following you`;
-        break;
-    case "nudge":
-        title = "Nudge";
-        body = `${actor} nudged you to train`;
-        break;
-    case "followAccepted":
-        title = "Request accepted";
-        body = followAcceptedMessage(actor);
-        break;    case "follow_request":
-        title = "Follow request";
-        body = `${actor} wants to follow you`;
-        break;
-    case "share":
-        title = "Shared with you";
-        body = `${actor} shared a workout with you`;
-        break;
-    case "challenge_complete":
-        title = "Challenge complete";
-        body = challengeCompleteMessage(notification.comment_text);
-        break;
-    }
-
+    const alert = localizedAlert(activityAlert(notification));
     return {
         token,
-        notification: { title, body },
-        apns: { payload: { aps: { badge: 1, sound: "default" } } },
+        notification: { body: alert.body },
+        apns: {
+            payload: {
+                aps: {
+                    alert,
+                    badge: Math.max(1, badge),
+                    sound: "default",
+                    "interruption-level": INTERRUPTION_LEVELS[notification.type],
+                },
+            },
+        },
         data: {
             tab: "dashboard",
             type: notification.type,
@@ -126,10 +149,6 @@ export function newlyBlockedIds(before, after) {
 // ---------------------------------------------------------------------------
 // Follow requests: users/{targetId}/follow_requests/{requesterId}
 // ---------------------------------------------------------------------------
-
-export function followAcceptedMessage(name) {
-    return `${name || "Someone"} accepted your follow request`;
-}
 
 // The name the app shows for a user doc, mirroring UserModel.fullNameCalculated: the submitted
 // name where there is one, else the one from auth.
@@ -174,12 +193,13 @@ export function buildFollowAcceptedNotification(target, { targetId, requesterId 
 // shape with type "follow_request", which the app routes to its notifications screen. Null for a
 // request that is not pending, one from someone the target blocked, or when buildActivityPush would
 // send nothing (no token, follows opted out).
-export function buildFollowRequestPush(request, recipient, target) {
+export function buildFollowRequestPush(request, recipient, target, badge = 1) {
     if (request?.status !== "pending" || !request.requester_id) return null;
     if ((target?.blocked_user_ids ?? []).includes(request.requester_id)) return null;
     return buildActivityPush(
         { type: "follow_request", actor_name: request.requester_name, actor_id: request.requester_id },
-        recipient
+        recipient,
+        badge
     );
 }
 
@@ -228,7 +248,8 @@ export function shouldReleaseReservation(reservation, uid) {
 // Scheduled pushes: streak reminder, Sunday digest, and the nudge cooldown
 // ---------------------------------------------------------------------------
 
-// Opt-outs for the scheduled pushes, in users/{uid}/private/settings. Absent means on.
+// The scheduled pushes' switches, in users/{uid}/private/settings. The digest is on unless turned
+// off; the streak reminder is off until the person says yes (the app offers it at a 3-day streak).
 export const SCHEDULED_PUSH_PREFERENCE_KEYS = {
     streakReminder: "social_push_streak_reminder",
     weeklyDigest: "social_push_weekly_digest",
@@ -274,15 +295,16 @@ function previousDay(isoDate) {
     return new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10);
 }
 
-function scheduledPushBase(settings, preferenceKey, now) {
-    if (!settings?.fcm_token || settings[preferenceKey] === false) return null;
+function scheduledPushBase(settings, preferenceKey, now, { optIn = false } = {}) {
+    if (!settings?.fcm_token) return null;
+    if (optIn ? settings[preferenceKey] !== true : settings[preferenceKey] === false) return null;
     return localTime(now, settings.timezone);
 }
 
 // Whether it is this user's reminder hour on their clock and they want the reminder. The
 // scheduled function checks this before reading the user's streak.
 export function isStreakReminderDue(settings, now) {
-    const local = scheduledPushBase(settings, SCHEDULED_PUSH_PREFERENCE_KEYS.streakReminder, now);
+    const local = scheduledPushBase(settings, SCHEDULED_PUSH_PREFERENCE_KEYS.streakReminder, now, { optIn: true });
     return !!local && local.hour === (settings.reminder_hour ?? DEFAULT_REMINDER_HOUR);
 }
 
@@ -298,10 +320,11 @@ export function buildStreakReminderPush(settings, streak, now) {
     const lastEvent = localTime(toDate(streak?.date_last_event), settings.timezone);
     if (days <= 0 || !lastEvent || lastEvent.date !== previousDay(local.date)) return null;
 
+    const alert = localizedAlert({ key: "Your %@-day streak ends at midnight.", args: [String(days)] }, { key: "Streak at Risk", args: [] });
     return {
         token: settings.fcm_token,
-        notification: { title: "Streak at risk", body: `Your ${days}-day streak ends at midnight` },
-        apns: { payload: { aps: { sound: "default" } } },
+        notification: { title: alert.title, body: alert.body },
+        apns: { payload: { aps: { alert, sound: "default", "interruption-level": "active" } } },
         data: { tab: "training", type: "streakReminder" },
     };
 }
@@ -326,13 +349,15 @@ export function countTrainingSessions(sessions) {
 // The Sunday digest, or null when there is no token or the user follows nobody.
 export function buildWeeklyDigestPush(settings, { mine, circle, followingCount }) {
     if (!settings?.fcm_token || !followingCount) return null;
+    // Counts as %@ arguments: loc-args are strings, and "Workouts this week" reads right for 1 too.
+    const alert = localizedAlert(
+        { key: "Workouts this week: you %@, your circle %@.", args: [String(mine), String(circle)] },
+        { key: "Your Week", args: [] }
+    );
     return {
         token: settings.fcm_token,
-        notification: {
-            title: "Your week",
-            body: `This week: you trained ${mine} ${mine === 1 ? "time" : "times"}, your circle ${circle}`,
-        },
-        apns: { payload: { aps: { sound: "default" } } },
+        notification: { title: alert.title, body: alert.body },
+        apns: { payload: { aps: { alert, sound: "default", "interruption-level": "passive" } } },
         data: { tab: "dashboard", type: "weeklyDigest" },
     };
 }
@@ -442,10 +467,6 @@ export function planReportModeration(report, reports, threshold = REPORT_HIDE_TH
 // ---------------------------------------------------------------------------
 // Challenges: challenges/{id} and challenges/{id}/progress/{uid}
 // ---------------------------------------------------------------------------
-
-export function challengeCompleteMessage(title) {
-    return `You finished ${title || "a challenge"}`;
-}
 
 // Whether a write to users/{uid}/workout_sessions/{id} is the session being finished: ended_at goes
 // from unset to set, on a session that is neither a rest day nor deleted. `before` is undefined for
@@ -660,7 +681,9 @@ export function personalRecordLines(session, priorSessions, limit = 3) {
 export function sessionPageContent(session, author, priorSessions = []) {
     const start = toDate(session.date_created);
     const end = toDate(session.ended_at);
-    const seconds = start && end ? Math.max(0, Math.floor((end - start) / 1000)) : null;
+    // Paused time is left out, as it is in the app. Sessions saved before the field existed have none.
+    const paused = Math.floor(session.paused_seconds ?? 0);
+    const seconds = start && end ? Math.max(0, Math.floor((end - start) / 1000) - paused) : null;
     const hours = Math.floor((seconds ?? 0) / 3600);
     const minutes = Math.floor(((seconds ?? 0) % 3600) / 60);
     const volume = (session.exercises ?? []).flatMap(workingSets).reduce((sum, set) => sum + (set.weight_kg ?? 0) * (set.reps ?? 0), 0);
@@ -724,4 +747,86 @@ ${c.streakText ? `<p>🔥 ${escapeHtml(c.streakText)}</p>` : ""}
 // Every refusal looks the same, so the page does not reveal whether a session exists.
 export function notFoundPageHtml() {
     return page({ title: "Workout not found · DialedIn", description: "This workout isn't available.", body: `<article class="card"><h1>Workout not found</h1><p>This workout is private or no longer available.</p></article>` });
+}
+
+// ---------------------------------------------------------------------------
+// Open Food Facts
+// ---------------------------------------------------------------------------
+
+// Full-text search. `world.openfoodfacts.org/api/v2/search` ignores `search_terms` (it only
+// filters by tags) and returned the most-scanned products for every query, which the relevance
+// filter then threw away, so every search came back empty. `/cgi/search.pl` does match text but
+// is rate-limited to the point of serving an HTML "temporarily unavailable" page.
+export const OFF_SEARCH_URL = "https://search.openfoodfacts.org/search";
+export const OFF_SEARCH_FIELDS = "code,product_name,brands,nutriments,serving_size,serving_quantity,image_front_small_url";
+
+// Each app nutrient, the OFF nutriment names it may be stored under (first found wins), and the
+// factor from OFF's unit to the app's. OFF normalises every `_100g` value to grams, so a
+// milligram field is ×1000 and a microgram field ×1,000,000; iron at 0.012 g is 12 mg.
+const G = 1;
+const MG = 1_000;
+const MCG = 1_000_000;
+export const OFF_NUTRIENTS = [
+    ["protein", ["proteins"], G],
+    ["carbs", ["carbohydrates"], G],
+    ["fatTotal", ["fat"], G],
+    ["fatSaturated", ["saturated-fat"], G],
+    ["fiber", ["fiber"], G],
+    ["sugar", ["sugars"], G],
+    ["sodiumMg", ["sodium"], MG],
+    ["potassiumMg", ["potassium"], MG],
+    ["calciumMg", ["calcium"], MG],
+    ["ironMg", ["iron"], MG],
+    ["magnesiumMg", ["magnesium"], MG],
+    ["zincMg", ["zinc"], MG],
+    ["phosphorusMg", ["phosphorus"], MG],
+    ["manganeseMg", ["manganese"], MG],
+    ["copperMg", ["copper"], MG],
+    ["chlorideMg", ["chloride"], MG],
+    ["cholesterolMg", ["cholesterol"], MG],
+    ["caffeineMg", ["caffeine"], MG],
+    ["vitaminCMg", ["vitamin-c"], MG],
+    ["vitaminEMg", ["vitamin-e"], MG],
+    ["vitaminB6Mg", ["vitamin-b6"], MG],
+    ["thiaminMg", ["vitamin-b1", "thiamin"], MG],
+    ["riboflavinMg", ["vitamin-b2", "riboflavin"], MG],
+    ["niacinMg", ["vitamin-pp", "niacin"], MG],
+    ["pantothenicAcidMg", ["pantothenic-acid"], MG],
+    ["vitaminAMcg", ["vitamin-a"], MCG],
+    ["vitaminDMcg", ["vitamin-d"], MCG],
+    ["vitaminKMcg", ["vitamin-k"], MCG],
+    ["vitaminB12Mcg", ["vitamin-b12"], MCG],
+    ["biotinMcg", ["biotin", "vitamin-b7"], MCG],
+    ["folateMcg", ["vitamin-b9", "folates"], MCG],
+    ["iodineMcg", ["iodine"], MCG],
+    ["seleniumMcg", ["selenium"], MCG],
+];
+
+// One search hit as the app's `foodSearch` row, or null for a hit with no name. Energy falls back
+// to kilojoules when a product only lists those.
+export function offProductToFood(product) {
+    const name = (product.product_name ?? "").trim();
+    if (!name) return null;
+    const nutriments = product.nutriments ?? {};
+    const per100g = (key) => {
+        const value = nutriments[`${key}_100g`];
+        return typeof value === "number" && Number.isFinite(value) ? value : null;
+    };
+    const kj = per100g("energy-kj") ?? per100g("energy");
+    const food = {
+        // The barcode, so the app can give a product the same id however it was found.
+        code: product.code ?? null,
+        name,
+        // search-a-licious returns brands as an array; the product API as a comma-separated string.
+        brandName: Array.isArray(product.brands) ? (product.brands.join(", ") || null) : (product.brands ?? null),
+        imageURL: product.image_front_small_url ?? null,
+        servingWeight: typeof product.serving_quantity === "number" ? product.serving_quantity : (Number(product.serving_quantity) || null),
+        servingSize: product.serving_size ?? null,
+        calories: per100g("energy-kcal") ?? (kj != null ? kj / 4.184 : null),
+    };
+    for (const [appKey, offKeys, factor] of OFF_NUTRIENTS) {
+        const value = offKeys.map(per100g).find((v) => v != null);
+        food[appKey] = value != null ? value * factor : null;
+    }
+    return food;
 }

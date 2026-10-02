@@ -1,6 +1,6 @@
 //
 //  WidgetSnapshot.swift
-//  DialedIn
+//  Compound
 //
 //  What the home-screen widgets show, written by the app into the App Group's UserDefaults on
 //  every session end and goal change, and read by the widget extension's timeline provider.
@@ -72,6 +72,9 @@ enum WidgetSnapshotStore {
     /// `compound://workout`, which the tab bar turns into the tracker (or the Dashboard's today
     /// card when nothing is under way).
     static let workoutURL = URL(string: "compound://workout")!
+
+    /// `compound://tab/training`, where the streak and the weekly goal are counted from.
+    static let trainingURL = URL(string: "compound://tab/training")!
 
     static func read(from defaults: UserDefaults? = SharedWorkoutStorage.sharedDefaults) -> WidgetSnapshot? {
         guard let data = defaults?.data(forKey: key) else { return nil }

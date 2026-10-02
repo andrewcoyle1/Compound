@@ -22,6 +22,9 @@ class AppPresenter {
     }
 
     var activityBanner: ActivityNotificationModel?
+    /// How long a banner stays before it clears itself. Tests set it to zero rather than wait on a
+    /// wall-clock timer that a loaded CI runner can stretch well past its four seconds.
+    var activityBannerDuration: Duration = .seconds(4)
 
     /// The app-level toast, raised from anywhere via `.appToast` so it can outlive the screen that
     /// asked for it.
@@ -121,7 +124,7 @@ class AppPresenter {
         activityBanner = notif
         let id = notif.id
         Task {
-            try? await Task.sleep(for: .seconds(4))
+            try? await Task.sleep(for: activityBannerDuration)
             if activityBanner?.id == id { activityBanner = nil }
         }
     }

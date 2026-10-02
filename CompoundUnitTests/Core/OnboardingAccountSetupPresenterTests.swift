@@ -613,6 +613,8 @@ struct OnboardingHeightPresenterTests {
     @Test("Staying on the metric picker carries the centimetre preference forward")
     func testTheMetricPreferenceTravels() {
         let screen = makeScreen()
+        // The picker opens on the device locale's system, and CI runs in en_US.
+        screen.presenter.unit = .centimeters
         screen.presenter.selectedCentimeters = 183
 
         screen.presenter.onContinuePressed(delegate: heightDelegate())

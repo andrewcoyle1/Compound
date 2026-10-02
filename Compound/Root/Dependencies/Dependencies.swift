@@ -340,7 +340,7 @@ struct Dependencies {
             logManager = LogManager(services: [
                 ConsoleService(printParameters: true),
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
+                MixpanelService(euToken: Keys.mixpanelToken, loggingEnabled: false),
                 FirebaseCrashlyticsService()
             ] + DataAccessLogging.devServices)
             
@@ -689,7 +689,7 @@ struct Dependencies {
             logManager = LogManager(services: [
 //                ConsoleService(),
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken),
+                MixpanelService(euToken: Keys.mixpanelToken),
                 FirebaseCrashlyticsService()
             ])
             authManager = AuthManager(service: FirebaseAuthService(), logger: logManager)

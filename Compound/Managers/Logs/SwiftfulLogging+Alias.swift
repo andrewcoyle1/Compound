@@ -7,6 +7,7 @@
 
 import SwiftfulLogging
 import SwiftfulLoggingMixpanel
+import Mixpanel
 import SwiftfulLoggingFirebaseAnalytics
 import SwiftfulLoggingFirebaseCrashlytics
 
@@ -19,6 +20,16 @@ typealias ConsoleService = SwiftfulLogging.ConsoleService
 typealias MixpanelService = SwiftfulLoggingMixpanel.MixpanelService
 typealias FirebaseAnalyticsService = SwiftfulLoggingFirebaseAnalytics.FirebaseAnalyticsService
 typealias FirebaseCrashlyticsService = SwiftfulLoggingFirebaseCrashlytics.FirebaseCrashlyticsService
+
+extension MixpanelService {
+    /// The Mixpanel project stores its data in the EU, which only accepts events sent to the EU
+    /// endpoint. Events queue until the first flush, so pointing the instance there straight after
+    /// `init` loses none.
+    init(euToken token: String, loggingEnabled: Bool = false) {
+        self.init(token: token, loggingEnabled: loggingEnabled)
+        Mixpanel.mainInstance().serverURL = "https://api-eu.mixpanel.com"
+    }
+}
 
 extension CoreInteractor {
     // MARK: LogManager

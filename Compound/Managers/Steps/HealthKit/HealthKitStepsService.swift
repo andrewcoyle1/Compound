@@ -7,21 +7,20 @@
 #if canImport(HealthKit)
 import HealthKit
 
-struct HealthKitStepsSample: Equatable {
-    let id: String
-    let steps: Int
-    let date: Date
-}
-
 enum HealthKitStepsServiceError: Error {
     case healthDataUnavailable
 }
 
+/// Every read leaves out samples this app wrote.
+@MainActor
 protocol HealthKitStepsService: Sendable {
-    /// - Parameters:
-    ///   - since: Last sync date; when nil, fetch from earliestDate or default range.
-    ///   - earliestDate: Do not import steps before this date (e.g. user creation date).
-    func readStepsSamples(since: Date?, earliestDate: Date?) async throws -> [HealthKitStepsSample]
-    func saveStepsSample(steps: Int, date: Date) async throws -> String
+    /// Changes to step samples starting on or after `start`.
+    func changes(after anchor: Data?, since start: Date) async throws -> HealthKitDayChanges
+    /// Each day's total from `start` up to `end`, keyed by the start of the day. Days with no
+    /// steps are left out. Totals come from HealthKit's statistics, which count a step recorded
+    /// by both iPhone and Watch once.
+    func dailySteps(from start: Date, to end: Date) async throws -> [Date: Int]
+    /// Fires when steps may have changed in Apple Health. Ends when cancelled.
+    func changeNotifications() -> AsyncStream<Void>
 }
 #endif

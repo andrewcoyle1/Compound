@@ -11,8 +11,8 @@ struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable {
     
     let id: String
     let authorId: String
-    let weightKg: Double?
-    let bodyFatPercentage: Double?
+    var weightKg: Double?
+    var bodyFatPercentage: Double?
     let neckCircumference: Double?
     let shoulderCircumference: Double?
     let bustCircumference: Double?
@@ -32,12 +32,12 @@ struct BodyMeasurementEntry: DataSyncModelProtocol, Equatable {
     let leftAnkleCircumference: Double?
     let rightAnkleCircumference: Double?
     let progressPhotoURLs: [String]?
-    let date: Date
+    var date: Date
     let source: WeightSource
     let notes: String?
     let dateCreated: Date
     let deletedAt: Date?
-    let healthKitUUID: UUID?
+    var healthKitUUID: UUID?
 
     init(
         id: String = UUID().uuidString,

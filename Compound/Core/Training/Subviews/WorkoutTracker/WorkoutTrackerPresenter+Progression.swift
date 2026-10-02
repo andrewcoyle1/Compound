@@ -117,7 +117,7 @@ extension WorkoutTrackerPresenter {
         ProgressionPlanner.ExerciseContext(
             sessionExercise: exercise,
             exercise: interactor.allExercises.first(where: { $0.id == exercise.templateId }),
-            preferredWeightUnit: exerciseUnitPreferences[exercise.templateId]?.weightUnit
+            preferredWeightUnit: interactor.getPreference(templateId: exercise.templateId).weightUnit
         )
     }
 

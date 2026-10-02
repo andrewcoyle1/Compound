@@ -287,7 +287,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: MockHealthKitNutritionService())
             aiManager = AIManager(service: MockAIService())
             reportManager = ReportManager(service: MockReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(
@@ -333,14 +333,14 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: MockHealthService(canRequestAuthorisation: false))
             commentsManager = CommentsManager(service: MockCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
-            stravaManager = StravaManager(service: MockStravaService(), clientId: "", clientSecret: "")
+            stravaManager = StravaManager(service: MockStravaService(), clientId: "")
             openFoodFactsService = MockOpenFoodFactsService()
 
         case .dev:
             logManager = LogManager(services: [
                 ConsoleService(printParameters: true),
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken, loggingEnabled: false),
+                MixpanelService(euToken: Keys.mixpanelToken, loggingEnabled: false),
                 FirebaseCrashlyticsService()
             ] + DataAccessLogging.devServices)
             
@@ -621,7 +621,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: ProductionHealthKitNutritionService())
             aiManager = AIManager(service: GoogleAIService())
             reportManager = ReportManager(service: FirebaseReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(
@@ -682,14 +682,14 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId, clientSecret: Keys.stravaClientSecret)
+            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
             openFoodFactsService = ProductionOpenFoodFactsService()
 
         case .prod:
             logManager = LogManager(services: [
 //                ConsoleService(),
                 FirebaseAnalyticsService(),
-                MixpanelService(token: Keys.mixpanelToken),
+                MixpanelService(euToken: Keys.mixpanelToken),
                 FirebaseCrashlyticsService()
             ])
             authManager = AuthManager(service: FirebaseAuthService(), logger: logManager)
@@ -964,7 +964,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: ProductionHealthKitNutritionService())
             aiManager = AIManager(service: GoogleAIService())
             reportManager = ReportManager(service: FirebaseReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(
@@ -1025,7 +1025,7 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId, clientSecret: Keys.stravaClientSecret)
+            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
             openFoodFactsService = ProductionOpenFoodFactsService()
         }
         hapticManager = HapticManager(logger: logManager)

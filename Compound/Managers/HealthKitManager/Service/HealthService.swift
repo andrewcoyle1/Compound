@@ -12,16 +12,18 @@ import HealthKit
 /// it is first used, so the permission sheet lists only what that feature reads and writes.
 ///
 /// The single request this replaces asked for about sixty types, most of which nothing read:
-/// every dietary type, activity summaries, basal energy, BMI, lean mass, height and waist. Add
+/// every dietary micronutrient, activity summaries, basal energy, BMI, lean mass, height and waist. Add
 /// a type here only together with the code that uses it, and keep the two purpose strings
 /// (`NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription`) in step.
 enum HealthDataScope: CaseIterable, Sendable {
-    /// Starting a workout: saves the workout, reads live heart rate and active energy.
+    /// Starting a workout: saves the workout with its heart rate and active energy, and reads them live.
     case workouts
     /// The Steps screen: reads step counts.
     case steps
     /// Logging or viewing weight: reads and writes weight, reads body fat.
     case bodyMeasurements
+    /// The Nutrition tab: reads food logged in other apps, as daily energy and macro totals.
+    case nutrition
     /// Onboarding's "Fill from Apple Health" buttons: each reads the one value its step asks for.
     case dateOfBirth
     case sex
@@ -30,8 +32,8 @@ enum HealthDataScope: CaseIterable, Sendable {
 
     var typesToShare: Set<HKSampleType> {
         switch self {
-        case .workouts: [HKObjectType.workoutType()]
-        case .steps: []
+        case .workouts: [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)]
+        case .steps, .nutrition: []
         case .bodyMeasurements: [HKQuantityType(.bodyMass)]
         case .dateOfBirth, .sex, .height, .weight: []
         }
@@ -41,6 +43,7 @@ enum HealthDataScope: CaseIterable, Sendable {
         switch self {
         case .workouts: [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)]
         case .steps: [HKQuantityType(.stepCount)]
+        case .nutrition: Set(ProductionHealthKitNutritionService.types)
         case .bodyMeasurements: [HKQuantityType(.bodyMass), HKQuantityType(.bodyFatPercentage)]
         case .dateOfBirth: [HKCharacteristicType(.dateOfBirth)]
         case .sex: [HKCharacteristicType(.biologicalSex)]

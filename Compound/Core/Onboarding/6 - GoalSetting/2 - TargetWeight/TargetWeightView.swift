@@ -9,6 +9,9 @@ import SwiftUI
 
 struct TargetWeightDelegate {
     let overarchingObjective: OverarchingObjective
+    /// Set from Profile or Goal Progress, where the flow is a sheet of its own rather than a step
+    /// of onboarding. Each step hands it on to the next.
+    var isStandaloneMode = false
     
     static func mock(overarchingObjective: OverarchingObjective) -> Self {
         Self(overarchingObjective: overarchingObjective)
@@ -94,7 +97,11 @@ struct TargetWeightView: View {
 extension CoreBuilder {
     func targetWeightView(router: AnyRouter, delegate: TargetWeightDelegate) -> some View {
         TargetWeightView(
-            presenter: TargetWeightPresenter(interactor: interactor, router: CoreRouter(router: router, builder: self)),
+            presenter: TargetWeightPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isStandaloneMode: delegate.isStandaloneMode
+            ),
             delegate: delegate
         )
     }

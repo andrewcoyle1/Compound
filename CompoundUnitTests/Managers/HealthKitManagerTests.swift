@@ -74,10 +74,11 @@ struct HealthKitManagerTests {
 
     @Test("Test Each Scope Asks Only For What Its Feature Uses")
     func testEachScopeAsksOnlyForWhatItsFeatureUses() {
-        #expect(HealthDataScope.workouts.typesToShare == [HKObjectType.workoutType()])
+        #expect(HealthDataScope.workouts.typesToShare == [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)])
         #expect(HealthDataScope.workouts.typesToRead == [HKObjectType.workoutType(), HKQuantityType(.activeEnergyBurned), HKQuantityType(.heartRate)])
         #expect(HealthDataScope.steps.typesToShare.isEmpty)
         #expect(HealthDataScope.steps.typesToRead == [HKQuantityType(.stepCount)])
+        #expect(HealthDataScope.nutrition.typesToShare.isEmpty)
         #expect(HealthDataScope.bodyMeasurements.typesToShare == [HKQuantityType(.bodyMass)])
         #expect(HealthDataScope.bodyMeasurements.typesToRead == [HKQuantityType(.bodyMass), HKQuantityType(.bodyFatPercentage)])
         // Onboarding's "Fill from Apple Health" buttons read one type each and write nothing.
@@ -119,15 +120,17 @@ struct HealthKitManagerTests {
         #expect(await HealthKitManager(service: unavailable).readSex() == nil)
     }
 
-    @Test("Test No Scope Asks For Nutrition Data")
-    func testNoScopeAsksForNutritionData() {
-        let requested = HealthDataScope.allCases.flatMap { scope in
-            scope.typesToRead.map(\.identifier) + scope.typesToShare.map(\.identifier)
+    /// Only the daily energy and macro totals the import stores, not every dietary type.
+    @Test("Test Only The Nutrition Scope Reads Dietary Data, And Only Energy And Macros")
+    func testOnlyTheNutritionScopeReadsDietaryData() {
+        #expect(HealthDataScope.nutrition.typesToRead == [
+            HKQuantityType(.dietaryEnergyConsumed), HKQuantityType(.dietaryProtein),
+            HKQuantityType(.dietaryCarbohydrates), HKQuantityType(.dietaryFatTotal)
+        ])
+        for scope in HealthDataScope.allCases where scope != .nutrition {
+            let requested = scope.typesToRead.map(\.identifier) + scope.typesToShare.map(\.identifier)
+            #expect(!requested.contains { $0.contains("Dietary") })
         }
-
-        let asksForNutrition = requested.contains { $0.contains("Dietary") }
-
-        #expect(asksForNutrition == false)
     }
 }
 

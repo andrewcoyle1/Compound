@@ -16,6 +16,7 @@ struct OnboardingGoalSummaryEstimateTests {
 
     private final class Interactor: SpyGlobalInteractor, GoalSummaryInteractor {
         var currentUser: UserModel?
+        var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
         init(currentWeightKg: Double?) {
             self.currentUser = UserModel(userId: "u1", submittedWeightKilograms: currentWeightKg)
         }

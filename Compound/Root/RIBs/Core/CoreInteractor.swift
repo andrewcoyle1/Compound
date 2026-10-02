@@ -146,7 +146,7 @@ struct CoreInteractor: GlobalInteractor {
         async let analyticsSettingsSignIn: () = analyticsSettingsManager.signIn(userId: user.uid, isNewUser: isNewUser)
         async let shortcutSettingsSignIn: () = shortcutSettingsManager.signIn(userId: user.uid, isNewUser: isNewUser)
         async let exerciseSettingsSignIn: () = exerciseSettingsManager.signIn(userId: user.uid)
-        async let stepsSignIn: () = stepsManager.signIn()
+        async let stepsSignIn: () = stepsManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let workoutTemplatesSignIn: () = workoutTemplateManager.signIn()
         async let gymProfileSignIn: () = gymProfileManager.signIn()
         async let mesocycleSignIn: () = mesocycleManager.signIn(userId: user.uid)
@@ -160,7 +160,7 @@ struct CoreInteractor: GlobalInteractor {
         async let recipeTemplatesSignIn: () = recipeTemplateManager.signIn()
         async let foodsSignIn: () = foodManager.signIn()
         async let nutritionSignIn: () = nutritionManager.signIn(dietPlanId: user.uid)
-        async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid)
+        async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let bodyMeasurementsSignIn: () = bodyMeasurementsManager.signIn(userId: user.uid)
         async let goalSignIn: () = goalManager.signIn(userId: user.uid)
         async let streakSignIn: () = streakManager.logIn(userId: user.uid)
@@ -219,6 +219,9 @@ struct CoreInteractor: GlobalInteractor {
 
     func signOut() async throws {
         try authManager.signOut()
+        // The tokens are per device, not per account: the next person to sign in must not upload
+        // to this one's Strava.
+        stravaManager.disconnect()
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
@@ -246,6 +249,8 @@ struct CoreInteractor: GlobalInteractor {
             stopListeningBeforeAccountDeletion()
             try await userManager.deleteCurrentUser(userId: auth.uid)
         }
+
+        stravaManager.disconnect()
 
         // Delete Purchases (RevenueCat)
         try await purchaseManager.logOut()

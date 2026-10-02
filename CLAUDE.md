@@ -145,7 +145,7 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
    `Info.plist`, and both `GoogleService-Info-{Dev,Prod}.plist` (all copied from
    `GoogleService-Info-Example.plist`). The examples are enough because only the Crashlytics
    run-script phase reads the plists and it exits early on simulator builds. The `Keys.swift`
-   example defines all 31 constants the app references, so it compiles unchanged.
+   example defines all 33 constants the app references, so it compiles unchanged.
 2. Runs `swiftlint --strict`, before the build so a style failure fails fast. `main` is at zero
    violations, so any warning fails the job. SwiftLint is **pinned** — see below.
 3. Runs `xcodebuild test` for `Compound - Development` with `-skip-testing:CompoundUITests`,
@@ -210,8 +210,8 @@ when it is merged: compare what each side has that the other lacks
 Copy example files and fill in credentials. All three destinations are gitignored, and the app
 will not build or sign in without them:
 
-- `Compound/Utilities/Keys.swift.example` → `Compound/Utilities/Keys.swift` — 34 constants:
-  OpenAI, Mixpanel, the RevenueCat dev and prod SDK keys, the two Strava values, and 28 `*ManagerKey` strings used as
+- `Compound/Utilities/Keys.swift.example` → `Compound/Utilities/Keys.swift` — 33 constants:
+  OpenAI, Mixpanel, the RevenueCat dev and prod SDK keys, the Strava client ID (its secret is the `STRAVA_CLIENT_SECRET` Functions secret), and 28 `*ManagerKey` strings used as
   local-persistence path names. The manager keys are arbitrary but must stay stable: changing
   one orphans data already persisted under the old name.
 - `Compound/Info.plist.example` → `Compound/Info.plist` — already contains the real reversed
@@ -512,8 +512,12 @@ actually checked.
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
-Six `onCall` callables, all in `us-central1`: `foodAnalyze`, `mealDescribe`,
-`nutritionLabelAnalyze`, `chatGenerate`, `imageGenerate`, `foodSearch`.
+Nine `onCall` callables, all in `us-central1`: `foodAnalyze`, `mealDescribe`,
+`nutritionLabelAnalyze`, `chatGenerate`, `imageGenerate`, `foodSearch`, `removeFollower`,
+`acceptInvite` and `stravaToken`. `stravaToken` does Strava's code exchange and refresh, because
+both need the client secret, which lives only in the `STRAVA_CLIENT_SECRET` Functions secret
+(`firebase functions:secrets:set` per project) and never in the app. It answers
+`permission-denied` when Strava refuses the grant, and the app disconnects on that.
 
 All six share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` and call
 `requireAuth(request)`, which throws `unauthenticated` when `request.auth` is missing. Keep both

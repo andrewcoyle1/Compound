@@ -81,20 +81,22 @@ extension AnalyticsPresenter {
             calendar: calendar
         )
         
+        // The cards say "Last 7 Days" and chart those days, so they count and rank by them. The
+        // aggregate's `total` is every workout ever logged, which both used to show and sort by.
+        func weekSets(_ muscle: Muscles) -> Double {
+            aggregated[muscle]?.last7Days.reduce(0, +) ?? 0
+        }
         let musclesWithData = Muscles.allCases
-            .filter { (aggregated[$0]?.total ?? 0) > 0 }
-            .sorted { (aggregated[$0]?.total ?? 0) > (aggregated[$1]?.total ?? 0) }
-        
-        if musclesWithData.isEmpty {
-            muscleGroupCards = [Muscles.upperBack, Muscles.rearDelts].map { muscle in
-                let data = aggregated[muscle] ?? (Array(repeating: 0.0, count: 7), 0.0)
-                return MuscleGroupCardItem(muscle: muscle, last7DaysData: data.last7Days, totalSets: data.total)
-            }
-        } else {
-            muscleGroupCards = Array(musclesWithData.prefix(2)).map { muscle in
-                let data = aggregated[muscle] ?? (Array(repeating: 0.0, count: 7), 0.0)
-                return MuscleGroupCardItem(muscle: muscle, last7DaysData: data.last7Days, totalSets: data.total)
-            }
+            .filter { weekSets($0) > 0 }
+            .sorted { weekSets($0) > weekSets($1) }
+
+        let shown = musclesWithData.isEmpty ? [Muscles.upperBack, Muscles.rearDelts] : Array(musclesWithData.prefix(2))
+        muscleGroupCards = shown.map { muscle in
+            MuscleGroupCardItem(
+                muscle: muscle,
+                last7DaysData: aggregated[muscle]?.last7Days ?? Array(repeating: 0.0, count: 7),
+                totalSets: weekSets(muscle)
+            )
         }
     }
     
@@ -203,23 +205,24 @@ extension AnalyticsPresenter {
     }
     
     func loadStepsData() async {
-        await interactor.backfillStepsFromHealthKit()
-        
-        let history = interactor.stepsHistory
+        await interactor.syncStepsFromHealthKit(fromScratch: false)
+    }
+
+    /// Read live, so steps imported from Apple Health appear while the tab is open.
+    var stepsLast7: [StepsModel] {
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: startOfToday),
               let endOfToday = calendar.date(byAdding: .day, value: 1, to: startOfToday) else {
-            stepsLast7 = []
-            return
+            return []
         }
         let userId = interactor.userId
         // Bounded by the end of today, not its start: a reading is dated when it was taken, so
         // `<= startOfToday` kept only a reading timed exactly at midnight and dropped today's.
-        let last7 = history
+        let last7 = interactor.stepsHistory
             .filter { $0.deletedAt == nil && $0.date >= startDate && $0.date < endOfToday && (userId == nil || $0.authorId == userId) }
             .sorted { $0.date < $1.date }
-        stepsLast7 = Array(Self.consolidateStepsByDay(Array(last7)).suffix(7))
+        return Array(Self.consolidateStepsByDay(Array(last7)).suffix(7))
     }
     
     static func consolidateStepsByDay(_ entries: [StepsModel]) -> [StepsModel] {

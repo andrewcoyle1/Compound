@@ -7,9 +7,6 @@ class ScaleWeightPresenter {
     private let interactor: ScaleWeightInteractor
     private let router: ScaleWeightRouter
 
-    private(set) var cachedEntries: [BodyMeasurementEntry] = []
-    private(set) var cachedTimeSeries: [TimeSeries] = []
-    
     var currentUser: UserModel? {
         interactor.currentUser
     }
@@ -25,30 +22,10 @@ class ScaleWeightPresenter {
     }
     
     var timeSeries: [TimeSeries] {
-        cachedTimeSeries
-    }
-    
-    init(interactor: ScaleWeightInteractor, router: ScaleWeightRouter) {
-        self.interactor = interactor
-        self.router = router
-        rebuildCaches()
-    }
-        
-    func onAddWeightPressed() {
-        router.showLogWeightView()
-    }
-    
-    func onDismissPressed() {
-        router.dismissScreen()
-    }
-    
-    private func rebuildCaches() {
-        let entries = interactor.bodyMeasurements.filter { $0.deletedAt == nil && $0.weightKg != nil }
-        cachedEntries = entries
-        cachedTimeSeries = [
+        [
             TimeSeries(
                 name: "Weight",
-                data: entries.compactMap { entry in
+                data: weightEntries.compactMap { entry in
                     guard let weightKg = entry.weightKg else { return nil }
                     return TimeSeriesDatapoint(
                         id: entry.id,
@@ -59,13 +36,32 @@ class ScaleWeightPresenter {
             )
         ]
     }
+    
+    init(interactor: ScaleWeightInteractor, router: ScaleWeightRouter) {
+        self.interactor = interactor
+        self.router = router
+    }
+        
+    func onAddWeightPressed() {
+        router.showLogWeightView()
+    }
+    
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+    
+    /// Read live, so weigh-ins imported from Apple Health appear while the screen is open.
+    private var weightEntries: [BodyMeasurementEntry] {
+        interactor.bodyMeasurements.filter { $0.deletedAt == nil && $0.weightKg != nil }
+    }
+
 }
 
 extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
     typealias Entry = BodyMeasurementEntry
 
     var entries: [BodyMeasurementEntry] {
-        cachedEntries
+        weightEntries
     }
 
     /// Scale weight uses the history chart (time series), not the contribution chart.
@@ -90,7 +86,7 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
     }
 
     func onAppear() async {
-        rebuildCaches()
+        await interactor.syncWeightFromHealthKit()
     }
 
     func onAddPressed() {
@@ -111,7 +107,6 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
-        rebuildCaches()
     }
 }
 

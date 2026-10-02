@@ -148,16 +148,6 @@ struct WorkoutTrackerPresenterTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
-    @Test("Test Opening Loads A Unit Preference For Every Exercise")
-    func testOpeningLoadsAUnitPreferenceForEveryExercise() throws {
-        let screen = try makeScreen(exercises: [
-            exercise(id: "e1", index: 1, sets: [set(1)]),
-            exercise(id: "e2", index: 2, sets: [set(1)])
-        ])
-
-        #expect(screen.presenter.exerciseUnitPreferences.count == 2)
-    }
-
     // MARK: - Smart warm-ups
 
     /// With the setting off, warm-ups the user has not done are stripped and what is left renumbered

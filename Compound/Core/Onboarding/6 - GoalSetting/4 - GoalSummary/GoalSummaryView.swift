@@ -11,17 +11,20 @@ struct GoalSummaryDelegate {
     let overarchingObjective: OverarchingObjective
     let targetWeight: Double
     let weightChangeRate: Double
+    let isStandaloneMode: Bool
     
-    init(overarchingObjective: OverarchingObjective, targetWeight: Double, weightChangeRate: Double) {
+    init(overarchingObjective: OverarchingObjective, targetWeight: Double, weightChangeRate: Double, isStandaloneMode: Bool = false) {
         self.overarchingObjective = overarchingObjective
         self.targetWeight = targetWeight
         self.weightChangeRate = weightChangeRate
+        self.isStandaloneMode = isStandaloneMode
     }
     
     init(delegate: WeightRateDelegate, weightChangeRate: Double) {
         self.overarchingObjective = delegate.overarchingObjective
         self.targetWeight = delegate.targetWeight
         self.weightChangeRate = weightChangeRate
+        self.isStandaloneMode = delegate.isStandaloneMode
     }
     
     static var mock: Self {
@@ -30,8 +33,6 @@ struct GoalSummaryDelegate {
 }
 
 struct GoalSummaryView: View {
-
-    @Environment(\.goalFlowDismissAction) private var dismissFlow
 
     @State var presenter: GoalSummaryPresenter
 
@@ -55,9 +56,6 @@ struct GoalSummaryView: View {
             motivationSection
         }
         .scrollIndicators(.hidden)
-        .onAppear {
-            presenter.onDismiss = dismissFlow
-        }
     }
 
     // MARK: - View Sections
@@ -159,7 +157,11 @@ struct GoalSummaryView: View {
 extension CoreBuilder {
     func goalSummaryView(router: AnyRouter, delegate: GoalSummaryDelegate) -> some View {
         GoalSummaryView(
-            presenter: GoalSummaryPresenter(interactor: interactor, router: CoreRouter(router: router, builder: self)),
+            presenter: GoalSummaryPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isStandaloneMode: delegate.isStandaloneMode
+            ),
             delegate: delegate
         )
     }

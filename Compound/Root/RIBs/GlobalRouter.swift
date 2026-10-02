@@ -20,6 +20,9 @@ protocol GlobalRouter {
     func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?)
     func showSimpleAlert(title: String, subtitle: String?)
     func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?)
+    /// A requirement for the same reason: a flow that saves and then closes its sheet is only
+    /// testable if the close can be observed.
+    func dismissEnvironment()
 }
 
 extension GlobalRouter {

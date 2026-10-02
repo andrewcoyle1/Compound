@@ -15,9 +15,6 @@ class StepsPresenter {
     private let router: StepsRouter
     private let calendar = Calendar.current
 
-    private(set) var cachedEntries: [StepsEntry] = []
-    private(set) var cachedTimeSeries: [TimeSeries] = []
-
     init(interactor: StepsInteractor, router: StepsRouter) {
         self.interactor = interactor
         self.router = router
@@ -31,34 +28,23 @@ class StepsPresenter {
                 // User denied or failed - continue to load; will show empty if no access
             }
         }
-        await interactor.backfillStepsFromHealthKit()
+        await interactor.syncStepsFromHealthKit(fromScratch: false)
+    }
 
-        let history = interactor.stepsHistory
+    /// The last 90 days, one per day. Read live, so steps imported from Apple Health appear
+    /// while the screen is open.
+    private var last90Days: [StepsModel] {
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         // Up to the end of today, not its start. A steps sample keeps the time it was recorded at,
         // so `<= startOfToday` compared every reading against midnight and dropped today's
         // altogether — the screen was always a day behind.
         let endOfToday = calendar.date(byAdding: .day, value: 1, to: startOfToday) ?? now
-        guard let startDate = calendar.date(byAdding: .day, value: -89, to: startOfToday) else {
-            cachedEntries = []
-            cachedTimeSeries = []
-            return
-        }
+        guard let startDate = calendar.date(byAdding: .day, value: -89, to: startOfToday) else { return [] }
         let userId = interactor.userId
-        let last90 = history
+        let last90 = interactor.stepsHistory
             .filter { $0.deletedAt == nil && $0.date >= startDate && $0.date < endOfToday && (userId == nil || $0.authorId == userId) }
-            .sorted { $0.date < $1.date }
-        let consolidated = Self.consolidateStepsByDay(Array(last90))
-        cachedEntries = consolidated
-            .map { StepsEntry(id: $0.id, date: $0.date, steps: $0.number) }
-            .reversed()
-        let seriesData = consolidated.map { step in
-            TimeSeriesDatapoint(id: step.id, date: step.date, value: Double(step.number))
-        }
-        cachedTimeSeries = [
-            TimeSeries(name: "Steps", data: seriesData)
-        ]
+        return Self.consolidateStepsByDay(last90)
     }
 
     private static func consolidateStepsByDay(_ entries: [StepsModel]) -> [StepsModel] {
@@ -77,11 +63,11 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
     typealias Entry = StepsEntry
 
     var entries: [StepsEntry] {
-        cachedEntries
+        last90Days.map { StepsEntry(id: $0.id, date: $0.date, steps: $0.number) }.reversed()
     }
 
     var timeSeries: [TimeSeries] {
-        cachedTimeSeries
+        [TimeSeries(name: "Steps", data: last90Days.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: Double($0.number)) })]
     }
 
     var configuration: MetricConfiguration {
@@ -103,7 +89,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
         await loadData()
     }
 
-    /// Steps cannot be typed in, but they can be fetched again — `backfillStepsFromHealthKit` and
+    /// Steps cannot be typed in, but they can be fetched again — `syncStepsFromHealthKit` and
     /// the authorisation request were already on the interactor with no caller on this screen, so
     /// an empty step history had nothing the user could do about it.
     func onAddPressed() {
@@ -119,8 +105,7 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
                     return
                 }
             }
-            await interactor.backfillStepsFromHealthKit()
-            await loadData()
+            await interactor.syncStepsFromHealthKit(fromScratch: true)
         }
     }
 

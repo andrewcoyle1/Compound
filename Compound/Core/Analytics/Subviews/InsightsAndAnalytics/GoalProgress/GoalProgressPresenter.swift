@@ -16,10 +16,6 @@ class GoalProgressPresenter {
         interactor.currentGoal
     }
     
-    private(set) var cachedEntries: [GoalProgressEntry] = []
-    private(set) var cachedTimeSeries: [TimeSeries] = []
-    private(set) var currentWeightKg: Double?
-
     /// The user's own unit. Goals and weigh-ins are stored in kilograms.
     var weightUnit: WeightUnitPreference {
         interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
@@ -38,69 +34,60 @@ class GoalProgressPresenter {
         router.showLogWeightView()
     }
 
-    private func rebuildCaches() {
-        guard let goal = activeGoal else {
-            cachedEntries = []
-            cachedTimeSeries = []
-            currentWeightKg = nil
-            return
-        }
-
-        let weightEntries = interactor.bodyMeasurements
+    /// Weigh-ins since the goal was set. Read live, so a goal set from this screen's empty state,
+    /// or a weigh-in imported while it is open, shows straight away.
+    private var weightEntriesSinceGoal: [BodyMeasurementEntry] {
+        guard let goal = activeGoal else { return [] }
+        return interactor.bodyMeasurements
             .filter { $0.deletedAt == nil && $0.weightKg != nil && $0.date >= goal.createdAt }
             .sorted { $0.date < $1.date }
+    }
 
-        let entries: [GoalProgressEntry] = weightEntries.compactMap { entry in
-            guard let weightKg = entry.weightKg else { return nil }
-            let progress = goal.calculateProgress(currentWeight: weightKg)
-            return GoalProgressEntry(
-                id: entry.id,
-                date: entry.date,
-                weightKg: weightKg,
-                progressPercent: progress * 100,
-                weightUnit: weightUnit
-            )
-        }
+    var currentWeightKg: Double? {
+        weightEntriesSinceGoal.last?.weightKg
+    }
 
-        cachedEntries = entries
-        currentWeightKg = weightEntries.last?.weightKg
-
-        let progressData = entries.map {
-            TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.progressPercent)
-        }
-        cachedTimeSeries = [
-            TimeSeries(name: "Progress", data: progressData)
-        ]
+    func onSetGoalPressed() {
+        router.showWeightGoalFlow()
     }
 }
 
 extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
     
-    /// `MetricDetailView` calls this, and it was empty. `rebuildCaches()` had one caller, a
-    /// `loadData()` with no call sites of its own, so nothing ever populated `cachedEntries` and the
-    /// screen came up empty however much weight history existed. `loadData()` is gone with the gap.
-    func onAppear() async {
-        rebuildCaches()
-    }
+    func onAppear() async { }
     
     typealias Entry = GoalProgressEntry
 
     var entries: [GoalProgressEntry] {
-        cachedEntries
+        guard let goal = activeGoal else { return [] }
+        return weightEntriesSinceGoal.compactMap { entry in
+            guard let weightKg = entry.weightKg else { return nil }
+            return GoalProgressEntry(
+                id: entry.id,
+                date: entry.date,
+                weightKg: weightKg,
+                progressPercent: goal.calculateProgress(currentWeight: weightKg) * 100,
+                weightUnit: weightUnit
+            )
+        }
     }
 
     var timeSeries: [TimeSeries] {
-        cachedTimeSeries
+        guard activeGoal != nil else { return [] }
+        return [TimeSeries(name: "Progress", data: entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.progressPercent) })]
     }
 
     var customChartView: AnyView? {
         guard let goal = activeGoal else {
             return AnyView(
-                ContentUnavailableView(
-                    "No Active Weight Goal",
-                    systemImage: Symbol.goal,
-                    description: Text("Set a weight goal in Profile to track your progress toward your target.")
-                )
+                ContentUnavailableView {
+                    Label("No Active Weight Goal", systemImage: Symbol.goal)
+                } description: {
+                    Text("Set a weight goal to track your progress toward your target.")
+                } actions: {
+                    Button("Set Goal") { self.onSetGoalPressed() }
+                        .buttonStyle(.borderedProminent)
+                }
             )
         }
 
@@ -165,7 +152,7 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
             showsAddButton: activeGoal != nil,
             sectionHeader: "Weight History",
             emptyStateMessage: activeGoal == nil
-                ? "Set a weight goal in Profile to track your progress."
+                ? "Set a weight goal to track your progress."
                 : "Log your weight to track progress toward your target.",
             chartColor: Color.Metric.goalProgress
         )

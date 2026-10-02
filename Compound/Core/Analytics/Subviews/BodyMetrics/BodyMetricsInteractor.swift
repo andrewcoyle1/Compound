@@ -3,6 +3,7 @@ import SwiftUI
 @MainActor
 protocol BodyMetricsInteractor: GlobalInteractor {
     func backfillBodyFatFromHealthKit() async
+    func syncWeightFromHealthKit() async
     var bodyMeasurements: [BodyMeasurementEntry] { get }
     /// For waist-to-height, whose denominator is the profile's height rather than a measurement.
     var currentUser: UserModel? { get }

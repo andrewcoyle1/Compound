@@ -13,8 +13,6 @@ class ProfilePresenter {
     private let interactor: ProfileInteractor
     private let router: ProfileRouter
 
-    private(set) var activeGoal: WeightGoal?
-
     var currentUser: UserModel? {
         interactor.currentUser
     }
@@ -40,6 +38,15 @@ class ProfilePresenter {
     ) {
         self.interactor = interactor
         self.router = router
+    }
+
+    /// The goal's objective, or "Not Set" when there is none, which is the cue to set one.
+    var weightGoalStatus: String {
+        currentGoal?.objective.description ?? String(localized: "Not Set")
+    }
+
+    func onWeightGoalPressed() {
+        router.showWeightGoalFlow()
     }
 
     func onGymProfilesPressed() {

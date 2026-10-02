@@ -27,7 +27,7 @@ protocol AnalyticsInteractor: GlobalInteractor {
     func getDailyTarget(for date: Date, userId: String) async throws -> DailyMacroTarget?
     func estimateTDEE(user: UserModel?) -> Double
     var stepsHistory: [StepsModel] { get }
-    func backfillStepsFromHealthKit() async
+    func syncStepsFromHealthKit(fromScratch: Bool) async
     var expenditureHistory: [ExpenditureEstimate] { get }
 }
 

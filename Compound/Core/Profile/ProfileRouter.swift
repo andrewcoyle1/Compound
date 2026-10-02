@@ -8,6 +8,7 @@
 @MainActor
 protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showAccountView(delegate: AccountDelegate)
+    func showWeightGoalFlow()
     func showNotificationsView()
     func showNotificationSettingsView(delegate: NotificationSettingsDelegate)
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate)

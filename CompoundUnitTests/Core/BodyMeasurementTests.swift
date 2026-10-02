@@ -327,6 +327,7 @@ struct BodyMeasurementDetailPresenterTests {
         var saveError: Error?
 
         func backfillBodyFatFromHealthKit() async { }
+        func syncWeightFromHealthKit() async { }
 
         func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {
             if let saveError { throw saveError }

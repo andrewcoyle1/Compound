@@ -37,6 +37,11 @@ class IntegrationsPresenter {
                 stravaIsConnected = interactor.stravaIsConnected
             } catch where SignInCancellation.isCancellation(error) {
                 // Closing Strava's sign-in page is a choice, not a failed connection.
+            } catch StravaError.missingUploadPermission {
+                router.showSimpleAlert(
+                    title: String(localized: "Unable to Connect Strava"),
+                    subtitle: StravaError.missingUploadPermission.localizedDescription
+                )
             } catch {
                 // The raw error is written for developers ("The operation couldn't be completed").
                 router.showSimpleAlert(
@@ -74,6 +79,8 @@ class IntegrationsPresenter {
                 try await interactor.stravaTestUpload()
                 interactor.showAppToast(AppToast(style: .success, message: String(localized: "Test upload sent to Strava")))
             } catch {
+                // A refused token disconnects, so the row has to say so.
+                stravaIsConnected = interactor.stravaIsConnected
                 router.showSimpleAlert(title: String(localized: "Upload Failed"), subtitle: error.localizedDescription)
             }
         }

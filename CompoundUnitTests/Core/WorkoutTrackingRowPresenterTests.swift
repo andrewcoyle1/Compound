@@ -648,10 +648,10 @@ struct SetTrackerRowPresenterTests {
 
     // MARK: - Units
 
-    /// A row redraws on every keystroke in the weight field, so the preference is read once and
-    /// cached rather than fetched per redraw.
-    @Test("Test A Unit Preference Is Read Once And Cached")
-    func testAUnitPreferenceIsReadOnceAndCached() {
+    /// The presenter reads the preference manager rather than a copy of its own. A copy went stale
+    /// when the unit changed elsewhere, and the keypad converted typed pounds from kilograms.
+    @Test("Test A Unit Changed Elsewhere Is Read Straight Away")
+    func testAUnitChangedElsewhereIsReadStraightAway() {
         let screen = makeScreen()
         screen.interactor.preferences["template-1"] = ExerciseUnitPreference(
             exerciseModelId: "template-1",
@@ -667,7 +667,7 @@ struct SetTrackerRowPresenterTests {
         let second = screen.presenter.getUnitPreference(for: model)
 
         #expect(first.weightUnit == .pounds)
-        #expect(second.weightUnit == .pounds)
+        #expect(second.weightUnit == .kilograms)
     }
 
     // MARK: - Analytics
@@ -698,5 +698,30 @@ struct SetTrackerRowPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["SetTrackerRowView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["SetTrackerRowView_Disappear"])
+    }
+}
+
+extension SetTrackerRowPresenterTests {
+
+    // MARK: - Units
+
+    /// Switching an exercise to pounds partway through used to leave the row's own copy of the
+    /// unit at kilograms: the header said lb, the keypad converted from kg, and a typed 50 lb was
+    /// stored as 50 kg, which then read as 110 lb and fed the 1RM and next session's suggestion.
+    @Test("Test Typing After Switching To Pounds Stores The Pounds As Kilograms")
+    func testTypingAfterSwitchingToPoundsConvertsFromPounds() {
+        let screen = makeScreen()
+        let exerciseBox = Box(exercise(sets: [set(weightKg: nil)]))
+        let setBox = Box(set(weightKg: nil))
+        let delegate = SetTrackerRowDelegate(exercise: exerciseBox.binding, set: setBox.binding, lastSet: nil)
+        screen.presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
+        screen.presenter.keyboard.close()
+
+        screen.interactor.preferences["template-1"] = ExerciseUnitPreference(exerciseModelId: "template-1", weightUnit: .pounds)
+        screen.presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
+        for key in "50" { screen.presenter.keyboard.type(key) }
+
+        // 50 lb is 22.68 kg; the bug stored 50.
+        #expect(abs((setBox.value.weightKg ?? 0) - 22.68) < 0.01)
     }
 }

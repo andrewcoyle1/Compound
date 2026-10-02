@@ -8,6 +8,7 @@
 @MainActor
 protocol OverarchingObjectiveInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var currentWeightKilograms: Double? { get }
 }
 
 extension CoreInteractor: OverarchingObjectiveInteractor { }

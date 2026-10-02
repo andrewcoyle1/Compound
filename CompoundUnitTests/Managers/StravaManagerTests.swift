@@ -33,34 +33,45 @@ struct StravaManagerTests {
     private static let refreshKey = "strava_refresh_token"
     private static let expiresKey = "strava_expires_at"
 
-    /// Captures the activity uploaded and the refresh it was asked for.
+    /// Captures the activity uploaded and the refresh it was asked for. `rejectedTokens` answers
+    /// an upload with those access tokens as Strava answers a revoked one; `refreshRevoked` refuses
+    /// the refresh the same way.
     private final class CapturingStravaService: StravaService {
         private(set) var uploaded: [StravaActivity] = []
         private(set) var refreshTokensUsed: [String] = []
         private(set) var codesExchanged: [String] = []
+        private(set) var deauthorized: [String] = []
+        var rejectedTokens: Set<String> = []
+        var refreshRevoked = false
         var refreshResponse = StravaTokenResponse(
             accessToken: "refreshed_access",
             refreshToken: "refreshed_refresh",
             expiresAt: Int(Date().timeIntervalSince1970) + 21_600
         )
 
-        func exchangeCodeForToken(code: String, clientId: String, clientSecret: String) async throws -> StravaTokenResponse {
+        func exchangeCodeForToken(code: String, clientId: String) async throws -> StravaTokenResponse {
             codesExchanged.append(code)
             return refreshResponse
         }
 
-        func refreshToken(refreshToken: String, clientId: String, clientSecret: String) async throws -> StravaTokenResponse {
+        func refreshToken(refreshToken: String, clientId: String) async throws -> StravaTokenResponse {
             refreshTokensUsed.append(refreshToken)
+            if refreshRevoked { throw StravaError.authorizationRevoked }
             return refreshResponse
         }
 
         func uploadActivity(_ activity: StravaActivity, accessToken: String) async throws {
+            if rejectedTokens.contains(accessToken) { throw StravaError.authorizationRevoked }
             uploaded.append(activity)
+        }
+
+        func deauthorize(accessToken: String) async throws {
+            deauthorized.append(accessToken)
         }
     }
 
     private func makeManager(service: StravaService) -> StravaManager {
-        StravaManager(service: service, clientId: "client-id", clientSecret: "client-secret")
+        StravaManager(service: service, clientId: "client-id")
     }
 
     /// Writes the three token keys the manager reads, and removes them again afterwards.
@@ -95,12 +106,6 @@ struct StravaManagerTests {
             notes: notes,
             exercises: []
         )
-    }
-
-    private func iso(_ date: Date) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.string(from: date)
     }
 
     // MARK: - The keychain these tests depend on
@@ -143,7 +148,7 @@ struct StravaManagerTests {
         #expect(activity.name == "Upper Body A")
         #expect(activity.sportType == "WeightTraining")
         #expect(activity.elapsedTime == 3_600)
-        #expect(activity.startDateLocal == iso(start))
+        #expect(activity.startDateLocal == StravaManager.localDateString(start))
         #expect(activity.description == "Felt strong")
     }
 
@@ -172,9 +177,8 @@ struct StravaManagerTests {
 
         try await manager.uploadWorkout(session(dateCreated: Date(), endedAt: nil))
 
-        #expect(service.uploaded.isEmpty)
         // The end date is checked before the token is, so this path needs no keychain at all.
-        #expect(!manager.isUploading)
+        #expect(service.uploaded.isEmpty)
     }
 
     @Test("Test A Workout Without Notes Sends No Description")
@@ -188,21 +192,6 @@ struct StravaManagerTests {
         }
 
         #expect(service.uploaded.first?.description == nil)
-    }
-
-    /// `isUploading` drives a spinner, so it has to come back down when the upload returns —
-    /// including when it throws, which is what the `defer` in the manager is for.
-    @Test("Test Uploading Clears Its Progress Flag")
-    func testUploadingClearsItsProgressFlag() async throws {
-        let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
-        }
-
-        #expect(!manager.isUploading)
     }
 
     // MARK: - Tokens
@@ -276,6 +265,104 @@ struct StravaManagerTests {
             #expect(KeychainHelper.read(forKey: Self.refreshKey, synchronizable: true) == nil)
             #expect(KeychainHelper.read(forKey: Self.expiresKey, synchronizable: true) == nil)
         }
+    }
+
+    /// Disconnecting also revokes the token at Strava, so Compound leaves the athlete's authorized
+    /// apps instead of lingering there.
+    @Test("Test Disconnecting Revokes The Token At Strava")
+    func testDisconnectingRevokesTheTokenAtStrava() async throws {
+        let service = CapturingStravaService()
+        let manager = makeManager(service: service)
+
+        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
+            manager.disconnect()
+        }
+
+        #expect(await TestManagers.eventually { service.deauthorized == ["stored_access"] })
+    }
+
+    /// A 401 on a token that had not expired gets one forced refresh, and the upload goes through
+    /// with the new token.
+    @Test("Test A Rejected Token Is Refreshed Once And The Upload Retried")
+    func testARejectedTokenIsRefreshedOnceAndTheUploadRetried() async throws {
+        let service = CapturingStravaService()
+        service.rejectedTokens = ["stored_access"]
+        let manager = makeManager(service: service)
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+
+        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
+            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+            #expect(manager.isConnected)
+        }
+
+        #expect(service.refreshTokensUsed == ["stored_refresh"])
+        #expect(service.uploaded.count == 1)
+    }
+
+    /// The athlete revoked Compound in Strava. Every upload would now fail, so the manager drops
+    /// the connection rather than keep claiming it.
+    @Test("Test A Revoked Authorization Disconnects")
+    func testARevokedAuthorizationDisconnects() async throws {
+        let service = CapturingStravaService()
+        service.rejectedTokens = ["stored_access"]
+        service.refreshRevoked = true
+        let manager = makeManager(service: service)
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+
+        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
+            await #expect(throws: StravaError.notConnected) {
+                try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+            }
+            #expect(!manager.isConnected)
+        }
+
+        #expect(service.uploaded.isEmpty)
+    }
+
+    /// A refresh that succeeds but whose token is still refused means the upload permission is gone.
+    @Test("Test A Token Refused After Refreshing Disconnects")
+    func testATokenRefusedAfterRefreshingDisconnects() async throws {
+        let service = CapturingStravaService()
+        service.rejectedTokens = ["stored_access", "refreshed_access"]
+        let manager = makeManager(service: service)
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+
+        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
+            await #expect(throws: StravaError.notConnected) {
+                try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+            }
+            #expect(!manager.isConnected)
+        }
+    }
+
+    // MARK: - The redirect
+
+    @Test("Test The Redirect Yields The Code When Upload Permission Was Granted")
+    func testTheRedirectYieldsTheCodeWhenUploadPermissionWasGranted() throws {
+        let url = try #require(URL(string: "compoundstrava://localhost/exchange_token?state=&code=abc&scope=read,activity:write"))
+        #expect(try StravaManager.authorizationCode(from: url) == "abc")
+    }
+
+    /// Strava's consent page lets the athlete untick the upload permission and still redirects with
+    /// a code. Connecting on that would leave every upload refused.
+    @Test("Test The Redirect Is Refused Without Upload Permission")
+    func testTheRedirectIsRefusedWithoutUploadPermission() throws {
+        let url = try #require(URL(string: "compoundstrava://localhost/exchange_token?state=&code=abc&scope=read"))
+        #expect(throws: StravaError.missingUploadPermission) { try StravaManager.authorizationCode(from: url) }
+        let noCode = try #require(URL(string: "compoundstrava://localhost/exchange_token?error=access_denied"))
+        #expect(throws: StravaError.missingAuthCode) { try StravaManager.authorizationCode(from: noCode) }
+    }
+
+    // MARK: - The start time
+
+    /// `start_date_local` is wall-clock time where the athlete is. Sent as UTC, a 09:00 London
+    /// workout in summer showed on Strava at 08:00.
+    @Test("Test The Start Time Is Wall Clock Time In The Device Zone")
+    func testTheStartTimeIsWallClockTimeInTheDeviceZone() throws {
+        let london = try #require(TimeZone(identifier: "Europe/London"))
+        // 2026-07-01 08:00 UTC is 09:00 in London.
+        let date = Date(timeIntervalSince1970: 1_782_892_800)
+        #expect(StravaManager.localDateString(date, in: london) == "2026-07-01T09:00:00")
     }
 
     // MARK: - The wire format
@@ -352,6 +439,8 @@ struct StravaManagerTests {
         #expect(StravaError.invalidURL.errorDescription == "Invalid Strava authorization URL.")
         #expect(StravaError.missingAuthCode.errorDescription == "No authorization code was returned from Strava.")
         #expect(StravaError.notConnected.errorDescription == "Not connected to Strava.")
+        #expect(StravaError.missingUploadPermission.errorDescription == "Allow Compound to upload your activities to connect Strava.")
+        #expect(StravaError.uploadFailed(status: 500).errorDescription == "Strava did not accept the upload (500).")
     }
 
     @Test("Test A Strava Error Is Readable Through Localized Description")

@@ -55,9 +55,6 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         // Back cannot be intercepted, so while editing it is hidden and the close button ends the
         // edit, asking first when the notes changed.
         .navigationBarBackButtonHidden(delegate.isWorkoutSummary || presenter.isEditMode)
-        .onAppear {
-            presenter.loadUnitPreferences(for: session)
-        }
         .task {
             await presenter.loadAuthor(for: session)
         }

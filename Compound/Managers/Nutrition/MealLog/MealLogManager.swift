@@ -14,32 +14,57 @@ class MealLogManager {
     private let draftMealLogPersistence: any LocalDocumentPersistence<MealLogModel>
     private let mealLogSyncEngine: CollectionSyncEngine<MealLogModel>
 
+    #if canImport(HealthKit)
+    private let healthKit: HealthKitNutritionService?
+    private var healthKitTask: Task<Void, Never>?
+    private var isHealthKitImportRunning = false
+    private var isHealthKitImportRequested = false
+    #endif
+
     // UI state for draft/edit flows
     var draftMeal: MealLogModel?
 
+    /// Compound's own log wins: a day with a meal logged here leaves out the day's Apple Health
+    /// total, so the same food is not counted twice. Decided here rather than when importing,
+    /// because the import can run before the listener has delivered the day's meals.
     var userMeals: [MealLogModel] {
-        mealLogSyncEngine.currentCollection
+        let meals = mealLogSyncEngine.currentCollection
+        let loggedDays = Set(meals.filter { !$0.isHealthKitImport }.map(\.dayKey))
+        return meals.filter { !$0.isHealthKitImport || !loggedDays.contains($0.dayKey) }
     }
 
     init(
         draftMealLogPersistence: any LocalDocumentPersistence<MealLogModel>,
-        mealLogSyncEngine: CollectionSyncEngine<MealLogModel>
+        mealLogSyncEngine: CollectionSyncEngine<MealLogModel>,
+        healthKitService: (any HealthKitNutritionService)? = nil
     ) {
         self.draftMealLogPersistence = draftMealLogPersistence
         self.mealLogSyncEngine = mealLogSyncEngine
+        #if canImport(HealthKit)
+        self.healthKit = healthKitService
+        #endif
         self.draftMeal = try? draftMealLogPersistence.getDocument(managerKey: Keys.draftMealLogManagerKey)
 
     }
 
     // MARK: - Lifecycle
 
-    func signIn(userId: String) async {
+    /// - Parameter importSince: food in Apple Health before this, usually the account's creation
+    ///   date, is not imported. A year back when nil.
+    func signIn(userId: String, importSince: Date? = nil) async {
         await mealLogSyncEngine.startListening { query in
             query.where("author_id", isEqualTo: userId)
         }
+        #if canImport(HealthKit)
+        startHealthKitImport(userId: userId, since: importSince)
+        #endif
     }
 
     func signOut() {
+        #if canImport(HealthKit)
+        healthKitTask?.cancel()
+        healthKitTask = nil
+        #endif
         mealLogSyncEngine.stopListening()
     }
 
@@ -91,6 +116,116 @@ class MealLogManager {
             fatGrams: totals.fats
         )
     }
+
+    #if canImport(HealthKit)
+    // MARK: - HealthKit Import
+
+    /// Imports what changed in Apple Health now, then again whenever Health reports a change,
+    /// until sign-out. Call again after access is granted: queries started without it see nothing.
+    /// `fromScratch` drops the anchor and recounts every day; only days whose totals differ are
+    /// written.
+    func startHealthKitImport(userId: String, since: Date?, fromScratch: Bool = false) {
+        guard let healthKit else { return }
+        if fromScratch { UserDefaults.standard.removeObject(forKey: Self.anchorKey(userId)) }
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: since ?? calendar.date(byAdding: .year, value: -1, to: .now) ?? .now)
+        healthKitTask?.cancel()
+        healthKitTask = Task { [weak self] in
+            await self?.importHealthKitChanges(userId: userId, since: start)
+            for await _ in healthKit.changeNotifications() {
+                await self?.importHealthKitChanges(userId: userId, since: start)
+            }
+        }
+    }
+
+    /// One run at a time, each in a task of its own so a restart cannot cut it off before its
+    /// anchor is stored. See `StepsManager.importHealthKitChanges`.
+    func importHealthKitChanges(userId: String, since start: Date) async {
+        guard !isHealthKitImportRunning else {
+            isHealthKitImportRequested = true
+            return
+        }
+        isHealthKitImportRunning = true
+        defer { isHealthKitImportRunning = false }
+        repeat {
+            isHealthKitImportRequested = false
+            await Task { try? await self.importChanges(userId: userId, since: start) }.value
+        } while isHealthKitImportRequested
+    }
+
+    private static func anchorKey(_ userId: String) -> String {
+        "healthkit.nutrition.anchor.\(userId)"
+    }
+
+    /// Fetches only what changed since the stored anchor, then rewrites the entry of each day it
+    /// touched. The anchor is stored only once every write has succeeded, so a failure is retried.
+    private func importChanges(userId: String, since start: Date) async throws {
+        guard let healthKit else { return }
+        let anchorKey = Self.anchorKey(userId)
+        let storedAnchor = UserDefaults.standard.data(forKey: anchorKey)
+        let changes = try await healthKit.changes(after: storedAnchor, since: start)
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let first = changes.hasDeletions ? start : changes.changedDays.min()
+        let last = changes.hasDeletions ? today : changes.changedDays.max()
+        if let first, let last, let end = calendar.date(byAdding: .day, value: 1, to: last) {
+            let totals = try await healthKit.dailyTotals(from: first, to: end)
+            let days = changes.hasDeletions ? Set(totals.keys).union(healthKitDays(from: first)) : changes.changedDays
+            // Every imported entry, including those `userMeals` hides behind a meal logged here:
+            // the total is kept current so it is right again if those meals are deleted.
+            let imported = Dictionary(
+                mealLogSyncEngine.currentCollection.filter(\.isHealthKitImport).map { ($0.mealId, $0) },
+                uniquingKeysWith: { first, _ in first }
+            )
+
+            for day in days.sorted() {
+                let id = MealLogModel.healthKitMealId(dayKey: day.dayKey)
+                let existing = imported[id]
+                let nutrients = totals[day] ?? NutrientMap()
+                if nutrients == NutrientMap() {
+                    if existing != nil { try await mealLogSyncEngine.deleteDocument(id: id) }
+                } else if existing?.totalNutrients != nutrients {
+                    try await mealLogSyncEngine.saveDocument(Self.healthKitMeal(id: id, userId: userId, day: day, nutrients: nutrients))
+                }
+            }
+        }
+
+        // Without read access HealthKit returns nothing rather than an error, and an anchor
+        // stored then would skip the history once access is granted. So the first anchor is
+        // kept only once Health has handed over something.
+        if storedAnchor != nil || !changes.changedDays.isEmpty {
+            UserDefaults.standard.set(changes.anchor, forKey: anchorKey)
+        }
+    }
+
+    /// Days already holding an imported entry, which a deletion may have changed.
+    private func healthKitDays(from start: Date) -> [Date] {
+        mealLogSyncEngine.currentCollection
+            .filter { $0.isHealthKitImport && $0.date >= start }
+            .map { Calendar.current.startOfDay(for: $0.date) }
+    }
+
+    /// One quick-add item carrying the day's totals: it resolves to nothing in the food library,
+    /// so the daily breakdown skips it while the totals, and the expenditure estimate, count it.
+    private static func healthKitMeal(id: String, userId: String, day: Date, nutrients: NutrientMap) -> MealLogModel {
+        MealLogModel(
+            mealId: id,
+            authorId: userId,
+            dayKey: day.dayKey,
+            date: day,
+            items: [MealItemModel(
+                itemId: id,
+                sourceType: .quickAdd,
+                sourceId: id,
+                displayName: "Apple Health",
+                amount: 1,
+                unit: "serving",
+                nutrients: nutrients
+            )]
+        )
+    }
+    #endif
 }
 
 extension CoreInteractor {
@@ -147,6 +282,14 @@ extension CoreInteractor {
         return keys.map { key in
             (dayKey: key, totals: mealLogManager.getDailyTotals(dayKey: key))
         }
+    }
+
+    /// Restarts the import so it runs with whatever access the person has just granted.
+    func syncNutritionFromHealthKit() async {
+        #if canImport(HealthKit)
+        guard let userId else { return }
+        mealLogManager.startHealthKitImport(userId: userId, since: currentUser?.creationDate)
+        #endif
     }
 
     func getDailyNutritionBreakdown(dayKey: String) throws -> DailyNutritionBreakdown {

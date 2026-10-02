@@ -36,7 +36,7 @@ None of them is used for tracking.
 |---|---|---|---|---|---|
 | Contact Info → Name | Yes | Yes | No | App Functionality | First/last name on the profile (`UserModel`), shown to circle members |
 | Contact Info → Email Address | Yes | Yes | No | App Functionality | Sign in with Apple / Google via Firebase Auth. Also sent to RevenueCat as a subscriber attribute (dev) |
-| Health & Fitness → Health | Yes | Yes | No | App Functionality | Body weight, circumference measurements, body fat and HealthKit reads (weight, steps), synced to Firestore |
+| Health & Fitness → Health | Yes | Yes | No | App Functionality | Body weight, circumference measurements, body fat and HealthKit reads (weight, steps, daily calorie and macro totals), synced to Firestore |
 | Health & Fitness → Fitness | Yes | Yes | No | App Functionality | Workout sessions, sets, PRs, programs, streaks, steps, Strava imports. Shared with the user's accountability circle |
 | User Content → Photos or Videos | Yes | Yes | No | App Functionality | Profile photo, progress photos, and food / recipe / gym / workout images, uploaded to Firebase Storage |
 | User Content → Other User Content | Yes | Yes | No | App Functionality | Meal and food logs, custom foods, recipes, exercises, templates, session and exercise notes, mentions, nudges, AI chat messages, reports |
@@ -93,7 +93,7 @@ full list on the device.
 
 | Permission | Purpose string key | Used for |
 |---|---|---|
-| Health (read / write) | `NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription` | Weight, steps, workouts |
+| Health (read / write) | `NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription` | Weight, steps, workouts with heart rate and active energy, daily calorie and macro totals (read only) |
 | Camera | `NSCameraUsageDescription` | Barcode scanning, food photo recognition |
 | Photo library (add only) | `NSPhotoLibraryAddUsageDescription` | Saving share cards and images. Picking photos uses `PhotosPicker`, which needs no permission |
 | Notifications | none | Pushes for nudges, follows and mentions |

@@ -30,6 +30,7 @@ struct OnboardingWeightRatePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, WeightRateInteractor {
         var currentUser: UserModel?
+        var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
         var expenditure: Double = 2000
 
         init(currentUser: UserModel?) {

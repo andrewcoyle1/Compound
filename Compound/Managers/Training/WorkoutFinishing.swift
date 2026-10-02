@@ -22,6 +22,23 @@ enum WorkoutSaveOutcome: Equatable {
     case failedPermanently
 }
 
+extension WorkoutSessionModel {
+    /// Sent once a finished workout is stored, by whichever path stored it: this function or the
+    /// tracker's retry. The core action in analytics, so the name is plain rather than screen-scoped.
+    static let finishedEventName = "Workout_Finished"
+
+    var finishedEventParameters: [String: Any] {
+        [
+            "exercise_count": exercises.count,
+            "completed_set_count": exercises.reduce(0) { $0 + $1.sets.filter { $0.completedAt != nil }.count },
+            "duration_minutes": Int((activeDuration ?? 0) / 60),
+            "from_template": workoutTemplateId != nil,
+            "from_plan": mesocycleId != nil,
+            "is_rest_day": isRestDay
+        ]
+    }
+}
+
 /// One attempt at storing a finished workout, classified for the caller's retry.
 @MainActor
 func saveFinishedWorkout(
@@ -31,6 +48,7 @@ func saveFinishedWorkout(
 ) async -> WorkoutSaveOutcome {
     do {
         try await sessions.endWorkoutSession(session)
+        logger.trackEvent(eventName: WorkoutSessionModel.finishedEventName, parameters: session.finishedEventParameters)
         return .saved
     } catch {
         logger.trackEvent(
@@ -101,7 +119,8 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
         in: managers.mesocycles.activeMesocycle(for: managers.users.currentUser),
         sessions: managers.sessions
     )
-    if let strava = managers.strava, strava.isConnected {
+    // Only a saved workout: one that failed to save would be on Strava and nowhere in Compound.
+    if outcome == .saved, let strava = managers.strava, strava.isConnected {
         do {
             try await strava.uploadWorkout(session)
         } catch {

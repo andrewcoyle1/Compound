@@ -11,25 +11,38 @@ import Foundation
 
 #if canImport(HealthKit)
 
-/// `StepsManager`'s HealthKit import: which samples get pulled in, which are skipped as
-/// duplicates, and how the local steps history holds up as the source of truth.
+/// `StepsManager`'s Apple Health import against an in-memory Health: one entry per day holding
+/// that day's total, kept up to date as Health changes.
 ///
-/// `importFromHealthKit` reads `UserDefaults.standard` for its "last synced" watermark under a
-/// fixed key, so every test that exercises it clears that key first and again afterwards —
-/// otherwise a run order where one test's sync date lingers would make a later test's samples
-/// look already-imported. Serialized for the same reason two tests must never race that key.
-@Suite(.serialized)
+/// The import's anchor is kept in UserDefaults per user, so each import test signs in as a user
+/// of its own.
 @MainActor
 struct StepsManagerTests {
 
-    private static let syncDateKey = "healthkit.steps.lastSyncDate"
-
-    private func resetSyncWatermark() {
-        UserDefaults.standard.removeObject(forKey: Self.syncDateKey)
+    private func entry(number: Int, date: Date, authorId: String = "author-1", source: StepsSource = .manual) -> StepsModel {
+        StepsModel(authorId: authorId, number: number, date: date, source: source)
     }
 
-    private func entry(number: Int, date: Date, authorId: String = "author-1", healthKitId: String? = nil, deletedAt: Date? = nil) -> StepsModel {
-        StepsModel(authorId: authorId, number: number, date: date, deletedAt: deletedAt, healthKitId: healthKitId)
+    private static let today = Calendar.current.startOfDay(for: .now)
+    private static let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)!
+
+    private func walk(_ steps: Int, on day: Date, hour: Double = 9) -> MockStepsSample {
+        MockStepsSample(steps: steps, date: day.addingTimeInterval(hour * 3600))
+    }
+
+    private func signedInWithHealth(
+        _ health: MockHealthKitStepsService,
+        userId: String = UUID().uuidString,
+        entries: [StepsModel] = [],
+        importSince: Date? = nil
+    ) async -> StepsManager {
+        let manager = TestManagers.stepsManager(entries: entries, healthKitService: health)
+        await manager.signIn(userId: userId, importSince: importSince)
+        return manager
+    }
+
+    private func total(_ manager: StepsManager, on day: Date) -> Int? {
+        manager.stepsHistory.first { Calendar.current.isDate($0.date, inSameDayAs: day) }?.number
     }
 
     // MARK: - Signing In
@@ -49,216 +62,105 @@ struct StepsManagerTests {
         #expect(await TestManagers.eventually { manager.stepsHistory.contains { $0.id == newEntry.id } })
     }
 
-    // MARK: - Backfill: only when local history is empty
+    // MARK: - Apple Health import
 
-    @Test("Test Backfill Does Nothing When Local History Is Not Empty")
-    func testBackfillDoesNothingWhenLocalHistoryIsNotEmpty() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let existing = entry(number: 4_000, date: .now)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 7_000, date: .now)
+    @Test("Test Signing In Imports One Total Per Day")
+    func testSigningInImportsOneTotalPerDay() async {
+        let health = MockHealthKitStepsService(samples: [
+            walk(3_000, on: Self.yesterday), walk(3_000, on: Self.yesterday, hour: 18), walk(8_000, on: Self.today)
         ])
-        let manager = await TestManagers.signedInStepsManager(entries: [existing], healthKitService: healthKit)
-
-        await manager.backfillStepsFromHealthKit(userId: "author-1")
-
-        #expect(manager.stepsHistory.count == 1)
-        #expect(manager.stepsHistory.first?.id == existing.id)
-    }
-
-    @Test("Test Backfill Imports Every Sample When Local History Is Empty")
-    func testBackfillImportsEverySampleWhenLocalHistoryIsEmpty() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let today = Date.now
-        let yesterday = today.addingTimeInterval(-86_400)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 6_000, date: yesterday),
-            HealthKitStepsSample(id: "sample-2", steps: 8_000, date: today)
-        ])
-        let manager = await TestManagers.signedInStepsManager(healthKitService: healthKit)
-
-        await manager.backfillStepsFromHealthKit(userId: "author-1")
+        let manager = await signedInWithHealth(health)
 
         #expect(await TestManagers.eventually { manager.stepsHistory.count == 2 })
+        #expect(total(manager, on: Self.yesterday) == 6_000)
+        #expect(total(manager, on: Self.today) == 8_000)
         #expect(manager.stepsHistory.allSatisfy { $0.source == .healthkit })
-        #expect(Set(manager.stepsHistory.map(\.healthKitId)) == ["sample-1", "sample-2"])
     }
 
-    @Test("Test Backfill Only Imports Samples On Or After The User's Creation Date")
-    func testBackfillOnlyImportsSamplesOnOrAfterTheUsersCreationDate() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
+    /// Today's total keeps rising as Health records more; it used to freeze at the first import.
+    @Test("Test More Steps In Apple Health Update The Day")
+    func testMoreStepsInAppleHealthUpdateTheDay() async {
+        let health = MockHealthKitStepsService(samples: [walk(2_000, on: Self.today)])
+        let manager = await signedInWithHealth(health)
+        _ = await TestManagers.eventually { total(manager, on: Self.today) == 2_000 }
 
-        let creationDate = Date.now.addingTimeInterval(-10 * 86_400)
-        let beforeCreation = creationDate.addingTimeInterval(-5 * 86_400)
-        let afterCreation = creationDate.addingTimeInterval(2 * 86_400)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "too-early", steps: 3_000, date: beforeCreation),
-            HealthKitStepsSample(id: "in-range", steps: 9_000, date: afterCreation)
-        ])
-        let manager = await TestManagers.signedInStepsManager(healthKitService: healthKit)
+        health.add(walk(1_500, on: Self.today, hour: 15))
 
-        await manager.backfillStepsFromHealthKit(userId: "author-1", userCreationDate: creationDate)
+        #expect(await TestManagers.eventually { total(manager, on: Self.today) == 3_500 })
+        #expect(manager.stepsHistory.count == 1)
+    }
+
+    /// A late sync for an earlier day, the Watch catching up say, still reaches that day.
+    @Test("Test Steps Synced Late For An Earlier Day Are Imported")
+    func testStepsSyncedLateForAnEarlierDayAreImported() async {
+        let health = MockHealthKitStepsService(samples: [walk(8_000, on: Self.today)])
+        let manager = await signedInWithHealth(health)
+        _ = await TestManagers.eventually { manager.stepsHistory.count == 1 }
+
+        health.add(walk(4_000, on: Self.yesterday))
+
+        #expect(await TestManagers.eventually { total(manager, on: Self.yesterday) == 4_000 })
+    }
+
+    @Test("Test Deleting In Apple Health Recounts The Day")
+    func testDeletingInAppleHealthRecountsTheDay() async {
+        let removed = walk(1_000, on: Self.today, hour: 15)
+        let health = MockHealthKitStepsService(samples: [walk(5_000, on: Self.today), removed])
+        let manager = await signedInWithHealth(health)
+        _ = await TestManagers.eventually { total(manager, on: Self.today) == 6_000 }
+
+        health.delete(removed.uuid)
+
+        #expect(await TestManagers.eventually { total(manager, on: Self.today) == 5_000 })
+    }
+
+    @Test("Test Steps Before The Import Start Are Left Out")
+    func testStepsBeforeTheImportStartAreLeftOut() async {
+        let health = MockHealthKitStepsService(samples: [walk(3_000, on: Self.yesterday), walk(9_000, on: Self.today)])
+        let manager = await signedInWithHealth(health, importSince: Self.today)
 
         #expect(await TestManagers.eventually { manager.stepsHistory.count == 1 })
-        #expect(manager.stepsHistory.first?.healthKitId == "in-range")
+        #expect(total(manager, on: Self.today) == 9_000)
     }
 
-    @Test("Test Backfill Leaves History Empty When The Service Throws")
-    func testBackfillLeavesHistoryEmptyWhenTheServiceThrows() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
+    /// A count entered here that is already as high is not doubled up with an import.
+    @Test("Test A Higher Count Entered Here Wins The Day")
+    func testAHigherCountEnteredHereWinsTheDay() async {
+        let userId = UUID().uuidString
+        let entered = entry(number: 10_000, date: Self.today, authorId: userId)
+        let health = MockHealthKitStepsService(samples: [walk(7_000, on: Self.today)])
+        let manager = await signedInWithHealth(health, userId: userId, entries: [entered])
+        _ = await TestManagers.eventually { manager.stepsHistory.count == 1 }
 
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 6_000, date: .now)
-        ])
-        healthKit.errorToThrow = HealthKitStepsServiceError.healthDataUnavailable
-        let manager = await TestManagers.signedInStepsManager(healthKitService: healthKit)
+        let doubled = await TestManagers.eventually(timeout: .milliseconds(500)) { manager.stepsHistory.count > 1 }
 
-        await manager.backfillStepsFromHealthKit(userId: "author-1")
-
-        #expect(manager.stepsHistory.isEmpty)
+        #expect(!doubled)
     }
 
-    // MARK: - Sync: dedup against what is already imported
+    /// Every steps screen restarts the import as it opens. That used to cancel a pass part-way
+    /// through, before its anchor was stored, so the catch-up started over on every launch.
+    @Test("Test Restarting The Import Does Not Abandon A Pass In Progress")
+    func testRestartingTheImportDoesNotAbandonAPassInProgress() async {
+        let userId = UUID().uuidString
+        let health = MockHealthKitStepsService(samples: [walk(8_000, on: Self.today)])
+        health.readDelay = .milliseconds(300)
+        let manager = await signedInWithHealth(health, userId: userId)
 
-    @Test("Test Sync Imports New Samples Alongside Existing History")
-    func testSyncImportsNewSamplesAlongsideExistingHistory() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
+        manager.startHealthKitImport(userId: userId, since: nil)
 
-        let existing = entry(number: 4_000, date: Date.now.addingTimeInterval(-2 * 86_400))
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 7_000, date: .now)
-        ])
-        let manager = await TestManagers.signedInStepsManager(entries: [existing], healthKitService: healthKit)
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(await TestManagers.eventually { manager.stepsHistory.count == 2 })
+        #expect(await TestManagers.eventually { total(manager, on: Self.today) == 8_000 })
+        #expect(await TestManagers.eventually { UserDefaults.standard.data(forKey: "healthkit.steps.anchor.\(userId)") != nil })
     }
 
-    @Test("Test Sync Skips A Sample Already Imported By Its HealthKit Id")
-    func testSyncSkipsASampleAlreadyImportedByItsHealthKitId() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
+    @Test("Test A Failing Read Imports Nothing")
+    func testAFailingReadImportsNothing() async {
+        let health = MockHealthKitStepsService(samples: [walk(6_000, on: Self.today)])
+        health.errorToThrow = HealthKitStepsServiceError.healthDataUnavailable
+        let manager = await signedInWithHealth(health)
 
-        let sampleDate = Date.now
-        let alreadyImported = entry(number: 7_000, date: sampleDate, healthKitId: "sample-1")
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 7_000, date: sampleDate)
-        ])
-        let manager = await TestManagers.signedInStepsManager(entries: [alreadyImported], healthKitService: healthKit)
+        let imported = await TestManagers.eventually(timeout: .milliseconds(500)) { !manager.stepsHistory.isEmpty }
 
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        // Nothing further to await: with the one sample skipped, `saveDocument` is never called,
-        // so there is no listener emission left to race.
-        #expect(manager.stepsHistory.count == 1)
-    }
-
-    @Test("Test Sync Skips A Sample At Or Below The Day's Existing Maximum")
-    func testSyncSkipsASampleAtOrBelowTheDaysExistingMaximum() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let day = Date.now
-        let existing = entry(number: 10_000, date: day)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "lower", steps: 8_000, date: day),
-            HealthKitStepsSample(id: "equal", steps: 10_000, date: day)
-        ])
-        let manager = await TestManagers.signedInStepsManager(entries: [existing], healthKitService: healthKit)
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(manager.stepsHistory.count == 1)
-    }
-
-    @Test("Test Sync Imports A Sample That Beats The Day's Existing Maximum")
-    func testSyncImportsASampleThatBeatsTheDaysExistingMaximum() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let day = Date.now
-        let existing = entry(number: 5_000, date: day)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "higher", steps: 12_000, date: day)
-        ])
-        let manager = await TestManagers.signedInStepsManager(entries: [existing], healthKitService: healthKit)
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(await TestManagers.eventually { manager.stepsHistory.count == 2 })
-    }
-
-    /// A day max only counts entries for the user being synced and not soft-deleted, so another
-    /// user's steps (following/shared data, if it ever lands in the same collection) or a
-    /// cleared entry cannot mask a real import.
-    @Test("Test A Day Max Only Considers The Synced User's Own, Undeleted Entries")
-    func testADayMaxOnlyConsidersTheSyncedUsersOwnUndeletedEntries() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let day = Date.now
-        let otherUsersEntry = entry(number: 20_000, date: day, authorId: "someone-else")
-        let deletedEntry = entry(number: 20_000, date: day, deletedAt: .now)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 9_000, date: day)
-        ])
-        let manager = await TestManagers.signedInStepsManager(
-            entries: [otherUsersEntry, deletedEntry],
-            healthKitService: healthKit
-        )
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(await TestManagers.eventually { manager.stepsHistory.count == 3 })
-    }
-
-    @Test("Test Sync Leaves History Untouched When The Service Throws")
-    func testSyncLeavesHistoryUntouchedWhenTheServiceThrows() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let existing = entry(number: 4_000, date: .now)
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 7_000, date: .now)
-        ])
-        healthKit.errorToThrow = HealthKitStepsServiceError.healthDataUnavailable
-        let manager = await TestManagers.signedInStepsManager(entries: [existing], healthKitService: healthKit)
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(manager.stepsHistory.count == 1)
-    }
-
-    // MARK: - Sync watermark
-
-    /// A second sync should not re-import what the first already pulled in, because the manager
-    /// advances its "last synced" watermark to the newest sample's date and passes it back to
-    /// the service as `since`. The mock filters on `date > since`, so a second call with no new
-    /// samples must return nothing to import.
-    @Test("Test A Second Sync Does Not Reimport What The First Already Pulled In")
-    func testASecondSyncDoesNotReimportWhatTheFirstAlreadyPulledIn() async {
-        resetSyncWatermark()
-        defer { resetSyncWatermark() }
-
-        let healthKit = MockHealthKitStepsService(samples: [
-            HealthKitStepsSample(id: "sample-1", steps: 6_000, date: .now)
-        ])
-        let manager = await TestManagers.signedInStepsManager(healthKitService: healthKit)
-
-        await manager.syncWithHealthKit(userId: "author-1")
-        #expect(await TestManagers.eventually { manager.stepsHistory.count == 1 })
-
-        await manager.syncWithHealthKit(userId: "author-1")
-
-        #expect(manager.stepsHistory.count == 1)
+        #expect(!imported)
     }
 }
 

@@ -14,116 +14,69 @@ struct ProductionHealthKitWeightService: HealthKitWeightService {
         self.healthStore = healthStore
     }
 
-    func readWeightSamples(since: Date?) async throws -> [HealthKitWeightSample] {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            throw HealthKitWeightServiceError.healthDataUnavailable
-        }
+    private nonisolated static let bodyMass = HKQuantityType(.bodyMass)
+    private nonisolated static let bodyFat = HKQuantityType(.bodyFatPercentage)
 
-        // Safe: a built-in HealthKit quantity identifier always has a type.
-        let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
-        let predicate: NSPredicate?
-        if let since {
-            predicate = HKQuery.predicateForSamples(withStart: since, end: nil, options: .strictStartDate)
-        } else {
-            predicate = nil
-        }
+    @concurrent
+    nonisolated func changes(after anchor: Data?) async throws -> HealthKitBodyChanges {
+        try checkAvailable()
+        let descriptor = HKAnchoredObjectQueryDescriptor(
+            predicates: [
+                .quantitySample(type: Self.bodyMass, predicate: HKHealthStore.notFromThisApp),
+                .quantitySample(type: Self.bodyFat, predicate: HKHealthStore.notFromThisApp)
+            ],
+            anchor: HKHealthStore.anchor(from: anchor)
+        )
+        let result = try await descriptor.result(for: healthStore)
+        return HealthKitBodyChanges(
+            addedDates: result.addedSamples.map(\.startDate),
+            deletedUUIDs: Set(result.deletedObjects.map(\.uuid)),
+            anchor: HKHealthStore.data(from: result.newAnchor)
+        )
+    }
 
-        return try await withCheckedThrowingContinuation { continuation in
-            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
-            let query = HKSampleQuery(
-                sampleType: quantityType,
-                predicate: predicate,
-                limit: HKObjectQueryNoLimit,
-                sortDescriptors: [sortDescriptor]
-            ) { _, samples, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                let unit = HKUnit.gramUnit(with: .kilo)
-                let mappedSamples = (samples as? [HKQuantitySample] ?? []).map {
-                    HealthKitWeightSample(
-                        uuid: $0.uuid,
-                        weightKg: $0.quantity.doubleValue(for: unit),
-                        date: $0.startDate
-                    )
-                }
-                continuation.resume(returning: mappedSamples)
-            }
-
-            healthStore.execute(query)
+    @concurrent
+    nonisolated func readWeightSamples(from start: Date, to end: Date) async throws -> [HealthKitWeightSample] {
+        try await samples(Self.bodyMass, from: start, to: end).map {
+            HealthKitWeightSample(uuid: $0.uuid, weightKg: $0.quantity.doubleValue(for: .gramUnit(with: .kilo)), date: $0.startDate)
         }
     }
 
-    func readBodyFatSamples(since: Date?) async throws -> [HealthKitBodyFatSample] {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            throw HealthKitWeightServiceError.healthDataUnavailable
-        }
-
-        // Safe: a built-in HealthKit quantity identifier always has a type.
-        let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage)!
-        let predicate: NSPredicate?
-        if let since {
-            predicate = HKQuery.predicateForSamples(withStart: since, end: nil, options: .strictStartDate)
-        } else {
-            predicate = nil
-        }
-
-        return try await withCheckedThrowingContinuation { continuation in
-            let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
-            let query = HKSampleQuery(
-                sampleType: quantityType,
-                predicate: predicate,
-                limit: HKObjectQueryNoLimit,
-                sortDescriptors: [sortDescriptor]
-            ) { _, samples, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                let unit = HKUnit.percent()
-                let mappedSamples = (samples as? [HKQuantitySample] ?? []).map {
-                    HealthKitBodyFatSample(
-                        uuid: $0.uuid,
-                        bodyFatPercentage: $0.quantity.doubleValue(for: unit) * 100.0,
-                        date: $0.startDate
-                    )
-                }
-                continuation.resume(returning: mappedSamples)
-            }
-
-            healthStore.execute(query)
+    @concurrent
+    nonisolated func readBodyFatSamples(from start: Date, to end: Date) async throws -> [HealthKitBodyFatSample] {
+        try await samples(Self.bodyFat, from: start, to: end).map {
+            HealthKitBodyFatSample(uuid: $0.uuid, bodyFatPercentage: $0.quantity.doubleValue(for: .percent()) * 100.0, date: $0.startDate)
         }
     }
 
-    func saveWeightSample(weightKg: Double, date: Date) async throws -> UUID {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            throw HealthKitWeightServiceError.healthDataUnavailable
-        }
+    @concurrent
+    private nonisolated func samples(_ type: HKQuantityType, from start: Date, to end: Date) async throws -> [HKQuantitySample] {
+        try checkAvailable()
+        let inRange = HKQuery.predicateForSamples(withStart: start, end: end)
+        let descriptor = HKSampleQueryDescriptor(
+            predicates: [.quantitySample(type: type, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [inRange, HKHealthStore.notFromThisApp]))],
+            sortDescriptors: [SortDescriptor(\.startDate)]
+        )
+        return try await descriptor.result(for: healthStore)
+    }
 
-        // Safe: a built-in HealthKit quantity identifier always has a type.
-        let quantityType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
-        let unit = HKUnit.gramUnit(with: .kilo)
-        let quantity = HKQuantity(unit: unit, doubleValue: weightKg)
-        let sample = HKQuantitySample(type: quantityType, quantity: quantity, start: date, end: date)
+    func changeNotifications() -> AsyncStream<Void> {
+        healthStore.changeNotifications(for: [Self.bodyMass, Self.bodyFat])
+    }
 
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            healthStore.save(sample) { success, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                if success {
-                    continuation.resume(returning: ())
-                } else {
-                    continuation.resume(throwing: URLError(.unknown))
-                }
-            }
-        }
-
+    @concurrent
+    nonisolated func saveWeightSample(weightKg: Double, date: Date) async throws -> UUID {
+        try checkAvailable()
+        let quantity = HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: weightKg)
+        let sample = HKQuantitySample(type: Self.bodyMass, quantity: quantity, start: date, end: date)
+        try await healthStore.save(sample)
         return sample.uuid
+    }
+
+    private nonisolated func checkAvailable() throws {
+        guard HKHealthStore.isHealthDataAvailable() else {
+            throw HealthKitWeightServiceError.healthDataUnavailable
+        }
     }
 }
 #endif

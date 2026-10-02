@@ -46,7 +46,7 @@ struct NutritionView<
         .navigationTitle("Nutrition")
         .searchable(
             text: $presenter.searchString,
-            placement: .navigationBarDrawer,
+            placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Foods and recipes")
         )
         .minimizingLargeTitleBar()

@@ -17,7 +17,6 @@ class GoalSummaryPresenter {
 
     var isLoading: Bool = false
     var goalCreated: Bool = false
-    var onDismiss: (() -> Void)?
         
     init(
         interactor: GoalSummaryInteractor,
@@ -29,13 +28,13 @@ class GoalSummaryPresenter {
         self.isStandaloneMode = isStandaloneMode
     }
     
-    /// Standalone mode, where this screen is the whole flow rather than a step of onboarding.
+    /// Standalone mode, where the flow is a sheet of its own rather than a step of onboarding.
     ///
-    /// The goal is saved first and the flow closed only once it is, so a user whose save fails
+    /// The goal is saved first and the sheet closed only once it is, so a user whose save fails
     /// sees the alert on the screen they were on rather than back where they started.
     func onCompletePressed(delegate: GoalSummaryDelegate) {
         Task {
-            await saveGoal(delegate: delegate, onSuccess: { [weak self] in self?.onDismiss?() })
+            await saveGoal(delegate: delegate, onSuccess: { [weak self] in self?.router.dismissEnvironment() })
         }
     }
 
@@ -56,7 +55,7 @@ class GoalSummaryPresenter {
         defer { isLoading = false }
 
         guard let user = interactor.currentUser,
-              let startingWeight = user.submittedWeightKilograms else {
+              let startingWeight = interactor.currentWeightKilograms else {
             router.showSimpleAlert(
                 title: String(localized: "Unable to save your Goal"),
                 subtitle: "Current weight not available."
@@ -110,7 +109,7 @@ class GoalSummaryPresenter {
     // MARK: - Computed Properties
     
     var currentWeight: Double? {
-        interactor.currentUser?.submittedWeightKilograms
+        interactor.currentWeightKilograms
     }
     
     var weightUnit: WeightUnitPreference {

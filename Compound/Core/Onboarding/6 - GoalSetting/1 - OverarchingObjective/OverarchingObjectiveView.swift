@@ -27,14 +27,25 @@ struct OverarchingObjectiveView: View {
                 }
             }
         }
+        .toolbar {
+            if presenter.isStandaloneMode {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) { presenter.onDismissPressed() }
+                }
+            }
+        }
     }
 
 }
 
 extension CoreBuilder {
-    func overarchingObjectiveView(router: AnyRouter) -> some View {
+    func overarchingObjectiveView(router: AnyRouter, isStandaloneMode: Bool = false) -> some View {
         OverarchingObjectiveView(
-            presenter: OverarchingObjectivePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
+            presenter: OverarchingObjectivePresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self),
+                isStandaloneMode: isStandaloneMode
+            )
         )
     }
 }
@@ -43,6 +54,13 @@ extension CoreRouter {
     func showOverarchingObjectiveView() {
         router.showScreen(.push) { router in
             builder.overarchingObjectiveView(router: router)
+        }
+    }
+
+    /// Setting or replacing the weight goal after onboarding, from Profile or Goal Progress.
+    func showWeightGoalFlow() {
+        router.showScreen(.sheet) { router in
+            builder.overarchingObjectiveView(router: router, isStandaloneMode: true)
         }
     }
 

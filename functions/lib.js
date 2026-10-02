@@ -830,3 +830,26 @@ export function offProductToFood(product) {
     }
     return food;
 }
+
+export const STRAVA_TOKEN_URL = "https://www.strava.com/api/v3/oauth/token";
+
+// The form `stravaToken` posts to Strava, or null when the request names neither a code to
+// exchange nor a refresh token. The secret is added here, server side, so it never reaches the app.
+export function stravaTokenForm(data, clientSecret) {
+    const clientId = typeof data?.clientId === "string" ? data.clientId.trim() : "";
+    if (!clientId) return null;
+    const base = { client_id: clientId, client_secret: clientSecret };
+    if (typeof data.code === "string" && data.code) {
+        return { ...base, code: data.code, grant_type: "authorization_code" };
+    }
+    if (typeof data.refreshToken === "string" && data.refreshToken) {
+        return { ...base, refresh_token: data.refreshToken, grant_type: "refresh_token" };
+    }
+    return null;
+}
+
+// Strava answers a revoked or invalid grant with 400 or 401; the app disconnects on
+// permission-denied. Anything else is worth retrying later.
+export function stravaTokenErrorCode(status) {
+    return status === 400 || status === 401 ? "permission-denied" : "unavailable";
+}

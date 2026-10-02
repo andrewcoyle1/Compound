@@ -8,6 +8,7 @@ import {
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
     isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
     SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
+    stravaTokenForm, stravaTokenErrorCode,
 } from "./lib.js";
 
 test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", () => {
@@ -33,16 +34,17 @@ test("every callable enforces App Check and requires auth", () => {
     const src = readFileSync(new URL("./index.js", import.meta.url), "utf8");
     assert.match(src, /const CALLABLE_OPTIONS = \{[^}]*enforceAppCheck: true/);
     const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request\) => \{\s*([^\n]*)/g)];
-    assert.equal(callables.length, 8, "expected eight callables");
+    assert.match(src, /const STRAVA_CALLABLE_OPTIONS = \{ \.\.\.CALLABLE_OPTIONS,/);
+    assert.equal(callables.length, 9, "expected nine callables");
     for (const [, name, options, firstLine] of callables) {
-        assert.equal(options.trim(), "CALLABLE_OPTIONS", `${name} must use CALLABLE_OPTIONS`);
+        assert.match(options.trim(), /^(STRAVA_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
         assert.match(firstLine, /requireAuth\(request\)/, `${name} must call requireAuth first`);
     }
 });
 
 test("each deployed callable rejects an unauthenticated request before doing any work", async () => {
     const fns = await import("./index.js");
-    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower"]) {
+    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower", "stravaToken"]) {
         await assert.rejects(fns[name].run({ data: {}, auth: null }), { code: "unauthenticated" }, name);
     }
 });
@@ -762,4 +764,21 @@ test("offProductToFood falls back to kilojoules and drops nameless hits", () => 
     assert.ok(Math.abs(offProductToFood({ product_name: "Oats", brands: "Tesco", nutriments: { "energy-kj_100g": 1569 } }).calories - 375) < 0.1);
     assert.equal(offProductToFood({ product_name: "Oats", brands: "Tesco" }).brandName, "Tesco");
     assert.equal(offProductToFood({ product_name: "  " }), null);
+});
+
+test("stravaTokenForm adds the secret and picks the grant from what the app sent", () => {
+    assert.deepEqual(stravaTokenForm({ clientId: "42", code: "c" }, "s"),
+        { client_id: "42", client_secret: "s", code: "c", grant_type: "authorization_code" });
+    assert.deepEqual(stravaTokenForm({ clientId: "42", refreshToken: "r" }, "s"),
+        { client_id: "42", client_secret: "s", refresh_token: "r", grant_type: "refresh_token" });
+    assert.equal(stravaTokenForm({ clientId: "42" }, "s"), null);
+    assert.equal(stravaTokenForm({ code: "c" }, "s"), null);
+    assert.equal(stravaTokenForm(null, "s"), null);
+});
+
+test("stravaTokenErrorCode tells a revoked grant apart from an outage", () => {
+    assert.equal(stravaTokenErrorCode(400), "permission-denied");
+    assert.equal(stravaTokenErrorCode(401), "permission-denied");
+    assert.equal(stravaTokenErrorCode(429), "unavailable");
+    assert.equal(stravaTokenErrorCode(503), "unavailable");
 });

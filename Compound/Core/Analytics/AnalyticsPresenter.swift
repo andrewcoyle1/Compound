@@ -29,7 +29,6 @@ class AnalyticsPresenter {
     var dailyTarget: DailyMacroTarget?
 
     // Steps (set from AnalyticsPresenter+DataLoading)
-    var stepsLast7: [StepsModel] = []
 
     // Muscle groups (set from AnalyticsPresenter+DataLoading)
     var muscleGroupCards: [MuscleGroupCardItem] = []

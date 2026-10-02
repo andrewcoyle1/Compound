@@ -15,86 +15,69 @@ struct ProductionHealthKitStepsService: HealthKitStepsService {
         self.healthStore = healthStore
     }
 
-    func readStepsSamples(since: Date?, earliestDate: Date?) async throws -> [HealthKitStepsSample] {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            throw HealthKitStepsServiceError.healthDataUnavailable
-        }
+    private nonisolated static let stepCount = HKQuantityType(.stepCount)
 
-        guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
-            return []
-        }
-
+    /// A Watch records steps every few minutes, so a first read with no anchor can return
+    /// hundreds of thousands of samples. Read in pages and keep only the day of each, off the main
+    /// actor: the protocol is main-actor isolated, and this struct would otherwise inherit it.
+    @concurrent
+    nonisolated func changes(after anchor: Data?, since start: Date) async throws -> HealthKitDayChanges {
+        try checkAvailable()
+        let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            HKQuery.predicateForSamples(withStart: start, end: nil),
+            HKHealthStore.notFromThisApp
+        ])
         let calendar = Calendar.current
-        let endDate = Date()
-        let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: endDate) ?? endDate
-        let candidateStart = since ?? earliestDate ?? oneYearAgo
-        let startDate = max(
-            earliestDate ?? .distantPast,
-            calendar.startOfDay(for: candidateStart)
-        )
-
-        let anchorDate = calendar.startOfDay(for: startDate)
-        let interval = DateComponents(day: 1)
-
-        return try await withCheckedThrowingContinuation { continuation in
-            let query = HKStatisticsCollectionQuery(
-                quantityType: stepType,
-                quantitySamplePredicate: nil,
-                options: .cumulativeSum,
-                anchorDate: anchorDate,
-                intervalComponents: interval
+        let pageSize = 10_000
+        var changes = HealthKitDayChanges(changedDays: [], hasDeletions: false, anchor: anchor)
+        var queryAnchor = HKHealthStore.anchor(from: anchor)
+        while true {
+            let descriptor = HKAnchoredObjectQueryDescriptor(
+                predicates: [.quantitySample(type: Self.stepCount, predicate: predicate)],
+                anchor: queryAnchor,
+                limit: pageSize
             )
-
-            query.initialResultsHandler = { _, results, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-
-                var samples: [HealthKitStepsSample] = []
-                let formatter = ISO8601DateFormatter()
-                formatter.formatOptions = [.withFullDate]
-
-                results?.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
-                    let steps = Int(statistics.sumQuantity()?.doubleValue(for: .count()) ?? 0)
-                    let date = statistics.startDate
-                    let id = "healthkit-daily-\(formatter.string(from: date))"
-                    samples.append(HealthKitStepsSample(id: id, steps: steps, date: date))
-                }
-                continuation.resume(returning: samples.sorted { $0.date < $1.date })
-            }
-
-            healthStore.execute(query)
+            let page = try await descriptor.result(for: healthStore)
+            changes.changedDays.formUnion(page.addedSamples.map { calendar.startOfDay(for: $0.startDate) })
+            changes.hasDeletions = changes.hasDeletions || !page.deletedObjects.isEmpty
+            changes.anchor = HKHealthStore.data(from: page.newAnchor)
+            queryAnchor = page.newAnchor
+            if page.addedSamples.count + page.deletedObjects.count < pageSize { return changes }
         }
     }
 
-    func saveStepsSample(steps: Int, date: Date) async throws -> String {
+    @concurrent
+    nonisolated func dailySteps(from start: Date, to end: Date) async throws -> [Date: Int] {
+        try checkAvailable()
+        let descriptor = HKStatisticsCollectionQueryDescriptor(
+            predicate: .quantitySample(
+                type: Self.stepCount,
+                predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+                    HKQuery.predicateForSamples(withStart: start, end: end),
+                    HKHealthStore.notFromThisApp
+                ])
+            ),
+            options: .cumulativeSum,
+            anchorDate: Calendar.current.startOfDay(for: start),
+            intervalComponents: DateComponents(day: 1)
+        )
+        var totals: [Date: Int] = [:]
+        try await descriptor.result(for: healthStore).enumerateStatistics(from: start, to: end) { statistics, _ in
+            if let sum = statistics.sumQuantity() {
+                totals[statistics.startDate] = Int(sum.doubleValue(for: .count()))
+            }
+        }
+        return totals
+    }
+
+    func changeNotifications() -> AsyncStream<Void> {
+        healthStore.changeNotifications(for: [Self.stepCount])
+    }
+
+    private nonisolated func checkAvailable() throws {
         guard HKHealthStore.isHealthDataAvailable() else {
             throw HealthKitStepsServiceError.healthDataUnavailable
         }
-
-        guard let quantityType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
-            throw HealthKitStepsServiceError.healthDataUnavailable
-        }
-        let unit = HKUnit.count()
-        let quantity = HKQuantity(unit: unit, doubleValue: Double(steps))
-        let sample = HKQuantitySample(type: quantityType, quantity: quantity, start: date, end: date)
-
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            healthStore.save(sample) { success, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                if success {
-                    continuation.resume(returning: ())
-                } else {
-                    continuation.resume(throwing: URLError(.unknown))
-                }
-            }
-        }
-
-        return sample.uuid.uuidString
     }
 }
 #endif

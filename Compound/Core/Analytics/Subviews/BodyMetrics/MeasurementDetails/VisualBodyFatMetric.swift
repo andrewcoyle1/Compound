@@ -44,7 +44,10 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
     private let interactor: BodyMetricsInteractor
     private let router: BodyMetricsRouter
 
-    var entries: [VisualBodyFatEntry]
+    /// Read live, so readings imported from Apple Health appear while the screen is open.
+    var entries: [VisualBodyFatEntry] {
+        Self.bodyFatEntries(from: interactor.bodyMeasurements)
+    }
 
     var timeSeries: [TimeSeries] {
         let data = entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.bodyFatPercent) }
@@ -66,28 +69,21 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
-    init(
-        interactor: BodyMetricsInteractor,
-        router: BodyMetricsRouter,
-        entries: [VisualBodyFatEntry] = []
-    ) {
+    init(interactor: BodyMetricsInteractor, router: BodyMetricsRouter) {
         self.interactor = interactor
         self.router = router
-        self.entries = entries.sorted { $0.date < $1.date }
     }
 
     func onAppear() async {
-        await interactor.backfillBodyFatFromHealthKit()
-        entries = Self.bodyFatEntries(from: interactor.bodyMeasurements)
+        await interactor.syncWeightFromHealthKit()
     }
 
-    /// There is no manual body-fat entry flow in the app — the value comes from HealthKit, via the
-    /// same backfill `onAppear` runs. So the action is to fetch it again rather than nothing: an
-    /// empty screen previously offered no way forward at all.
+    /// There is no manual body-fat entry flow in the app — the value comes from HealthKit. So the
+    /// action re-reads all of Apple Health, which also picks up history from before body fat
+    /// access was granted: an empty screen previously offered no way forward at all.
     func onAddPressed() {
         Task {
             await interactor.backfillBodyFatFromHealthKit()
-            entries = Self.bodyFatEntries(from: interactor.bodyMeasurements)
         }
     }
 
@@ -108,7 +104,6 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
-        entries = Self.bodyFatEntries(from: interactor.bodyMeasurements)
     }
 
     private static func bodyFatEntries(from weightEntries: [BodyMeasurementEntry]) -> [VisualBodyFatEntry] {

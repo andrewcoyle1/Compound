@@ -484,30 +484,16 @@ struct WorkoutSessionDetailPresenterTests {
 
     // MARK: - Unit preferences
 
-    @Test("Test Entering Edit Mode Loads A Preference For Every Exercise")
-    func testEnteringEditModeLoadsAPreferenceForEveryExercise() {
+    /// The screen reads the manager rather than a copy of its own, so a unit changed after the
+    /// screen opened is the one it shows and edits in. Copies like that went stale.
+    @Test("Test A Unit Changed After Opening Is Used")
+    func testAUnitChangedAfterOpeningIsUsed() {
         let screen = makeScreen()
-        let workout = session(exercises: [
-            exercise(id: "e1", index: 1, sets: []),
-            exercise(id: "e2", index: 2, sets: [])
-        ])
-
-        screen.presenter.enterEditMode(session: workout)
-
-        #expect(screen.presenter.exerciseUnitPreferences.count == 2)
-        #expect(screen.interactor.preferenceReads.sorted() == ["template-e1", "template-e2"])
-    }
-
-    /// The preference is read once and kept, so scrolling a long session does not hit the manager
-    /// for every row.
-    @Test("Test A Preference Is Read Once And Cached")
-    func testAPreferenceIsReadOnceAndCached() {
-        let screen = makeScreen()
-
-        _ = screen.presenter.getUnitPreference(for: "template-e1")
         _ = screen.presenter.getUnitPreference(for: "template-e1")
 
-        #expect(screen.interactor.preferenceReads == ["template-e1"])
+        screen.interactor.preferences["template-e1"] = ExerciseUnitPreference(exerciseModelId: "template-e1", weightUnit: .pounds)
+
+        #expect(screen.presenter.weightUnit(for: "template-e1") == .pounds)
     }
 
     @Test("Test Changing The Weight Unit Keeps The Distance Unit")

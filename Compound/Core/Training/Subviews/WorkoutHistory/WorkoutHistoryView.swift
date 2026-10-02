@@ -74,6 +74,8 @@ struct WorkoutHistoryView<WorkoutSessionRow: View>: View {
                     }
             }
             .removeListRowFormatting()
+            // Cards sit apart with a gap; a divider in it draws a hairline between two surfaces.
+            .listRowSeparator(.hidden)
         } header: {
             HStack {
                 Text("Completed Workouts")
@@ -81,7 +83,12 @@ struct WorkoutHistoryView<WorkoutSessionRow: View>: View {
                 Text("\(presenter.workoutSessions.count)")
                     .foregroundStyle(.secondary)
             }
+            // The section margin is gone, so the header keeps the cards' gutter itself.
+            .padding(.horizontal)
         }
+        .listSectionSeparator(.hidden)
+        // The margin would sit outside each card's own gutter and inset it twice.
+        .listSectionMargins(.horizontal, 0)
     }
 }
 

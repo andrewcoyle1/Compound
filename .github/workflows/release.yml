@@ -1,0 +1,170 @@
+name: Release
+
+# A push to main is a merged release PR from development. Once CI has passed on it, this uploads
+# the app to TestFlight and deploys Cloud Functions to the prod Firebase project.
+#
+# Both jobs use the `release` environment: it holds every secret below, accepts deployments
+# from main only, and waits for the owner's approval, so a merge alone ships nothing.
+# Submitting a TestFlight build for App Review stays manual, in App Store Connect.
+#
+# Environment secrets:
+#   KEYS_SWIFT                 base64 of Compound/Utilities/Keys.swift
+#   GOOGLE_SERVICE_INFO_PROD   base64 of GoogleService-Info-Prod.plist
+#   ASC_API_KEY_P8             contents of the App Store Connect API key (.p8)
+#   ASC_API_KEY_ID             its Key ID
+#   ASC_API_ISSUER_ID          the team's Issuer ID
+#
+# Cloud Functions needs no secret: the job proves it is this repo's `release` environment to
+# Google through workload identity federation, and gets an hour-long token for the
+# github-release service account. The pool's condition admits only andrewcoyle1/Compound, and
+# only the `release` environment's subject may impersonate the account.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+# Never two releases at once, and never cancel one half-way through an upload or deploy.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    name: Archive and upload to TestFlight
+    # workflow_run also fires for CI on pull requests whose head is a branch named main, so the
+    # event is checked as well as the conclusion.
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: release
+    env:
+      XCODE_APP: /Applications/Xcode_26.6.app
+
+    steps:
+      - name: Check out the commit CI passed
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$XCODE_APP"
+          xcodebuild -version
+
+      # The same four gitignored files CI makes from examples, but real: a TestFlight build
+      # needs the actual keys and the prod Firebase plist. The Dev plist is only read by Debug
+      # builds, so the example stands in for it.
+      - name: Write config and the API key from secrets
+        env:
+          KEYS_SWIFT: ${{ secrets.KEYS_SWIFT }}
+          GOOGLE_SERVICE_INFO_PROD: ${{ secrets.GOOGLE_SERVICE_INFO_PROD }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$KEYS_SWIFT" | base64 --decode > Compound/Utilities/Keys.swift
+          cp Compound/Info.plist.example Compound/Info.plist
+          plists=Compound/SupportingFiles/GoogleServicePLists
+          printf '%s' "$GOOGLE_SERVICE_INFO_PROD" | base64 --decode > "$plists/GoogleService-Info-Prod.plist"
+          cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Dev.plist"
+          printf '%s\n' "$ASC_API_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey.p8"
+
+      # Signing is automatic and authenticated by the API key, so the runner needs no
+      # certificates of its own: Xcode fetches or creates what the archive needs, and the export
+      # signs for distribution with a cloud-managed certificate. Packages resolve into
+      # DerivedData, not CI's ~/SourcePackages, because the Crashlytics phase looks for its
+      # upload script there.
+      - name: Archive
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          xcodebuild archive \
+            -project Compound.xcodeproj \
+            -scheme Compound \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Compound.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+
+      # manageAppVersionAndBuildNumber takes the next free build number from App Store Connect,
+      # as an upload from Xcode does, so the project's own build number never needs bumping.
+      - name: Upload to App Store Connect
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key><string>app-store-connect</string>
+              <key>destination</key><string>upload</string>
+              <key>teamID</key><string>VRNWC32C76</string>
+              <key>signingStyle</key><string>automatic</string>
+              <key>manageAppVersionAndBuildNumber</key><true/>
+              <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Compound.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_API_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_API_ISSUER_ID"
+
+      - name: Remove the API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
+
+  functions:
+    name: Deploy Cloud Functions to prod
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    # id-token lets the job request the GitHub OIDC token that Google exchanges for its own.
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: functions
+
+    steps:
+      - name: Check out the commit CI passed
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/94958324260/locations/global/workloadIdentityPools/github/providers/github-actions
+          service_account: github-release@dialed-c3cb5.iam.gserviceaccount.com
+
+      # The auth step points GOOGLE_APPLICATION_CREDENTIALS at a short-lived credential, which
+      # firebase-tools picks up. Unchanged functions are skipped, so a release that touches none
+      # of them deploys nothing.
+      - name: Deploy
+        working-directory: .
+        run: npx --yes firebase-tools@15 deploy --only functions --project dialed-c3cb5 --non-interactive

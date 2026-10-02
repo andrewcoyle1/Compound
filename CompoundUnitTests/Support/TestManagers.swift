@@ -203,10 +203,14 @@ enum TestManagers {
         return manager
     }
 
-    static func mealLogManager(meals: [MealLogModel] = []) -> MealLogManager {
+    static func mealLogManager(
+        meals: [MealLogModel] = [],
+        healthKitService: (any HealthKitNutritionService)? = nil
+    ) -> MealLogManager {
         MealLogManager(
             draftMealLogPersistence: MockLocalDocumentPersistence<MealLogModel>(),
-            mealLogSyncEngine: collectionEngine(meals, key: "meal-logs")
+            mealLogSyncEngine: collectionEngine(meals, key: "meal-logs"),
+            healthKitService: healthKitService
         )
     }
 

@@ -23,6 +23,9 @@ protocol NutritionInteractor: ReminderOfferInteractor {
     func addMeal(_ meal: MealLogModel) async throws
     func deleteDraftMeal() throws
     func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws
+    func canRequestHealthDataAuthorisation() -> Bool
+    func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws
+    func syncNutritionFromHealthKit() async
 }
 
 extension CoreInteractor: NutritionInteractor { }

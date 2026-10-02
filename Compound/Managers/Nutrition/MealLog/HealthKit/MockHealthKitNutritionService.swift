@@ -1,30 +1,33 @@
+//
+//  MockHealthKitNutritionService.swift
+//  Compound
+//
+//  Created by Andrew Coyle on 02/10/2026.
+//
 #if canImport(HealthKit)
 import Foundation
 
-struct MockStepsSample: Equatable {
+struct MockNutritionSample: Equatable {
     var uuid = UUID()
-    let steps: Int
+    let nutrients: NutrientMap
     let date: Date
 }
 
 /// An in-memory Apple Health. The anchor is the number of changes already handed out.
 @MainActor
-class MockHealthKitStepsService: HealthKitStepsService {
-    private(set) var samples: [MockStepsSample] = []
+class MockHealthKitNutritionService: HealthKitNutritionService {
+    private(set) var samples: [MockNutritionSample] = []
     private var changeLog: [Date?] = []
     private var observers: [AsyncStream<Void>.Continuation] = []
 
     /// When set, the reads throw this, so the import's failure path has something to exercise.
     var errorToThrow: Error?
-    /// When set, each read takes this long and, like a HealthKit query, throws if cancelled
-    /// meanwhile.
-    var readDelay: Duration?
 
-    init(samples: [MockStepsSample] = []) {
+    init(samples: [MockNutritionSample] = []) {
         samples.forEach { add($0) }
     }
 
-    func add(_ sample: MockStepsSample) {
+    func add(_ sample: MockNutritionSample) {
         samples.append(sample)
         record(sample.date)
     }
@@ -40,7 +43,6 @@ class MockHealthKitStepsService: HealthKitStepsService {
     }
 
     func changes(after anchor: Data?, since start: Date) async throws -> HealthKitDayChanges {
-        if let readDelay { try await Task.sleep(for: readDelay) }
         if let errorToThrow { throw errorToThrow }
         let seen = anchor.flatMap { String(bytes: $0, encoding: .utf8) }.flatMap(Int.init) ?? 0
         let new = changeLog.dropFirst(seen)
@@ -51,10 +53,10 @@ class MockHealthKitStepsService: HealthKitStepsService {
         )
     }
 
-    func dailySteps(from start: Date, to end: Date) async throws -> [Date: Int] {
+    func dailyTotals(from start: Date, to end: Date) async throws -> [Date: NutrientMap] {
         if let errorToThrow { throw errorToThrow }
         return Dictionary(
-            samples.filter { $0.date >= start && $0.date < end }.map { (Calendar.current.startOfDay(for: $0.date), $0.steps) },
+            samples.filter { $0.date >= start && $0.date < end }.map { (Calendar.current.startOfDay(for: $0.date), $0.nutrients) },
             uniquingKeysWith: +
         )
     }

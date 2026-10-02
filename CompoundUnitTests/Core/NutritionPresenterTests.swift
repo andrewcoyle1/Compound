@@ -32,6 +32,10 @@ struct NutritionPresenterTests {
         var foods: [FoodModel] = []
         var userRecipeTemplates: [RecipeTemplateModel] = []
 
+        func canRequestHealthDataAuthorisation() -> Bool { false }
+        func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
+        func syncNutritionFromHealthKit() async { }
+
         /// Keyed by day, the way `MealLogManager` serves the screen.
         var mealsByDayKey: [String: [MealLogModel]] = [:]
         var totalsByDayKey: [String: DailyMacroTarget] = [:]

@@ -8,7 +8,17 @@
 import HealthKit
 import UIKit
 
-/// The pieces the weight and steps imports share: they fetch what changed since a stored anchor,
+/// The days whose samples changed in Apple Health since `anchor` was handed out.
+struct HealthKitDayChanges: Sendable {
+    var changedDays: Set<Date>
+    /// HealthKit gives a deleted sample's UUID but not its date, so a deletion cannot be placed
+    /// on a day; the import recounts every day instead.
+    var hasDeletions: Bool
+    /// Opaque; pass back to `changes(after:since:)` to get only what changed since this call.
+    var anchor: Data?
+}
+
+/// The pieces the weight, steps and nutrition imports share: they fetch what changed since a stored anchor,
 /// and run again whenever Health reports a change.
 extension HKHealthStore {
 

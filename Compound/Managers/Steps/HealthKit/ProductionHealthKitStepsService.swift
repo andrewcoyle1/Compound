@@ -21,7 +21,7 @@ struct ProductionHealthKitStepsService: HealthKitStepsService {
     /// hundreds of thousands of samples. Read in pages and keep only the day of each, off the main
     /// actor: the protocol is main-actor isolated, and this struct would otherwise inherit it.
     @concurrent
-    nonisolated func changes(after anchor: Data?, since start: Date) async throws -> HealthKitStepsChanges {
+    nonisolated func changes(after anchor: Data?, since start: Date) async throws -> HealthKitDayChanges {
         try checkAvailable()
         let predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             HKQuery.predicateForSamples(withStart: start, end: nil),
@@ -29,7 +29,7 @@ struct ProductionHealthKitStepsService: HealthKitStepsService {
         ])
         let calendar = Calendar.current
         let pageSize = 10_000
-        var changes = HealthKitStepsChanges(changedDays: [], hasDeletions: false, anchor: anchor)
+        var changes = HealthKitDayChanges(changedDays: [], hasDeletions: false, anchor: anchor)
         var queryAnchor = HKHealthStore.anchor(from: anchor)
         while true {
             let descriptor = HKAnchoredObjectQueryDescriptor(

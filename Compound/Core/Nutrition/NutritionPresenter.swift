@@ -170,6 +170,16 @@ final class NutritionPresenter {
     func onViewAppear(delegate: NutritionDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         ReminderOfferFlow(interactor: interactor, router: router).offerMealRemindersIfNeeded()
+        Task { await importFromAppleHealth() }
+    }
+
+    /// Food logged in other apps comes in through Apple Health. HealthKit shows its sheet only the
+    /// first time; a refusal leaves the import reading nothing.
+    private func importFromAppleHealth() async {
+        if interactor.canRequestHealthDataAuthorisation() {
+            try? await interactor.requestHealthKitAuthorisation(for: .nutrition)
+        }
+        await interactor.syncNutritionFromHealthKit()
     }
 
     func onViewDisappear(delegate: NutritionDelegate) {

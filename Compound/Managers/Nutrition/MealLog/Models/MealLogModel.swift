@@ -23,6 +23,15 @@ struct MealLogModel: DataSyncModelProtocol, Hashable {
         items.reduce(NutrientMap()) { $0 + $1.nutrients }
     }
 
+    /// Derived from the day, so a run that cannot yet see the previous run's write, or another
+    /// device importing the same day, overwrites rather than duplicates.
+    static func healthKitMealId(dayKey: String) -> String {
+        "healthkit-nutrition-\(dayKey)"
+    }
+
+    /// The day's totals imported from Apple Health, rather than a meal logged here.
+    var isHealthKitImport: Bool { mealId == Self.healthKitMealId(dayKey: dayKey) }
+
     var totalCalories: Double { totalNutrients[.calories] ?? 0 }
     var totalProteinGrams: Double { totalNutrients[.protein] ?? 0 }
     var totalCarbGrams: Double { totalNutrients[.carbs] ?? 0 }

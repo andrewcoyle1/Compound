@@ -211,8 +211,10 @@ class WorkoutTrackerPresenter {
         // Return early if the HK session is already started — nothing more to do.
         guard SharedWorkoutStorage.hkStartedSessionId != workoutSession.id else { return }
 
-        // Only request HealthKit auth if we're about to start a new HK session.
-        if interactor.canRequestHealthDataAuthorisation() && interactor.needsAuthorisationForRequiredTypes() {
+        // Ask every time we're about to start a new HK session: HealthKit shows its sheet only for
+        // types not yet asked about, so this also reaches users who granted workouts before the
+        // scope gained heart rate and active energy.
+        if interactor.canRequestHealthDataAuthorisation() {
             do {
                 try await interactor.requestHealthKitAuthorisation(for: .workouts)
             } catch { }

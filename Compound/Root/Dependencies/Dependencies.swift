@@ -287,7 +287,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: MockHealthKitNutritionService())
             aiManager = AIManager(service: MockAIService())
             reportManager = ReportManager(service: MockReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(
@@ -621,7 +621,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: ProductionHealthKitNutritionService())
             aiManager = AIManager(service: GoogleAIService())
             reportManager = ReportManager(service: FirebaseReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(
@@ -964,7 +964,7 @@ struct Dependencies {
                 enableLocalPersistence: true,
                 logger: logManager
             )
-            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine)
+            mealLogManager = MealLogManager(draftMealLogPersistence: draftMealLogPersistence, mealLogSyncEngine: mealLogSyncEngine, healthKitService: ProductionHealthKitNutritionService())
             aiManager = AIManager(service: GoogleAIService())
             reportManager = ReportManager(service: FirebaseReportService(), userManager: userManager, logManager: logManager)
             let bodyMeasurementsSyncEngine = CollectionSyncEngine<BodyMeasurementEntry>(

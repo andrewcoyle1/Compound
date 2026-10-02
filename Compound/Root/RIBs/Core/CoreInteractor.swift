@@ -160,7 +160,7 @@ struct CoreInteractor: GlobalInteractor {
         async let recipeTemplatesSignIn: () = recipeTemplateManager.signIn()
         async let foodsSignIn: () = foodManager.signIn()
         async let nutritionSignIn: () = nutritionManager.signIn(dietPlanId: user.uid)
-        async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid)
+        async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let bodyMeasurementsSignIn: () = bodyMeasurementsManager.signIn(userId: user.uid)
         async let goalSignIn: () = goalManager.signIn(userId: user.uid)
         async let streakSignIn: () = streakManager.logIn(userId: user.uid)

@@ -1021,6 +1021,7 @@
 				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = Compound/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Mock";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";
@@ -1381,6 +1382,7 @@
 				GID_CLIENT_ID = "94958324260-t0henv0q8ij3cj1h80fr5ufh7ge3lehq.apps.googleusercontent.com";
 				INFOPLIST_FILE = Compound/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Compound - Dev";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";
@@ -1474,6 +1476,7 @@
 				GID_CLIENT_ID = "94958324260-bj1v2mbkjr92u8emp7li2i2157osija7.apps.googleusercontent.com";
 				INFOPLIST_FILE = Compound/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Compound;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "We use your calendar to schedule workouts and reminders.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Compound uses the camera to scan barcodes and nutrition labels, to photograph meals for analysis, and to take progress photos.";

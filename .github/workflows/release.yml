@@ -13,7 +13,11 @@ name: Release
 #   ASC_API_KEY_P8             contents of the App Store Connect API key (.p8)
 #   ASC_API_KEY_ID             its Key ID
 #   ASC_API_ISSUER_ID          the team's Issuer ID
-#   FIREBASE_SERVICE_ACCOUNT   JSON key of the deploy service account in the prod project
+#
+# Cloud Functions needs no secret: the job proves it is this repo's `release` environment to
+# Google through workload identity federation, and gets an hour-long token for the
+# github-release service account. The pool's condition admits only andrewcoyle1/Compound, and
+# only the `release` environment's subject may impersonate the account.
 on:
   workflow_run:
     workflows: [CI]
@@ -128,6 +132,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: release
+    # id-token lets the job request the GitHub OIDC token that Google exchanges for its own.
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: functions
@@ -148,18 +156,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # firebase-tools picks the service account up from GOOGLE_APPLICATION_CREDENTIALS. Unchanged
-      # functions are skipped, so a release that touches none of them deploys nothing.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/94958324260/locations/global/workloadIdentityPools/github/providers/github-actions
+          service_account: github-release@dialed-c3cb5.iam.gserviceaccount.com
+
+      # The auth step points GOOGLE_APPLICATION_CREDENTIALS at a short-lived credential, which
+      # firebase-tools picks up. Unchanged functions are skipped, so a release that touches none
+      # of them deploys nothing.
       - name: Deploy
         working-directory: .
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: |
-          set -euo pipefail
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$GOOGLE_APPLICATION_CREDENTIALS"
-          npx --yes firebase-tools@15 deploy --only functions --project dialed-c3cb5 --non-interactive
-
-      - name: Remove the service account key
-        if: always()
-        run: rm -f "${{ runner.temp }}/firebase-service-account.json"
+        run: npx --yes firebase-tools@15 deploy --only functions --project dialed-c3cb5 --non-interactive

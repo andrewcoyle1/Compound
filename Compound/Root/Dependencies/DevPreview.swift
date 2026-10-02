@@ -324,7 +324,7 @@ class DevPreview {
         self.imageUploadManager = ImageUploadManager(service: MockImageUploadService())
         self.commentsManager = CommentsManager(service: MockCommentsService())
         self.activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
-        self.stravaManager = StravaManager(service: MockStravaService(), clientId: "", clientSecret: "")
+        self.stravaManager = StravaManager(service: MockStravaService(), clientId: "")
         self.hapticManager = HapticManager()
         self.soundEffectManager = SoundEffectManager()
 

@@ -79,6 +79,11 @@ extension CoreRouter {
                 try await builder.interactor.stravaAuthenticate()
             } catch where SignInCancellation.isCancellation(error) {
                 // Closing Strava's sign-in page is a choice, not a failed connection.
+            } catch StravaError.missingUploadPermission {
+                showSimpleAlert(
+                    title: String(localized: "Unable to Connect Strava"),
+                    subtitle: StravaError.missingUploadPermission.localizedDescription
+                )
             } catch {
                 showSimpleAlert(
                     title: String(localized: "Unable to Connect Strava"),

@@ -3928,6 +3928,16 @@
         }
       }
     },
+    "Allow Compound to upload your activities to connect Strava." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que Compound suba tus actividades para conectar Strava."
+          }
+        }
+      }
+    },
     "Allow Smart Progression to fill in new values for exercise data entry fields mid-workout" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -20602,6 +20612,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recordatorio de racha"
+          }
+        }
+      }
+    },
+    "Strava did not accept the upload (%lld)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava no aceptó la subida (%lld)."
           }
         }
       }

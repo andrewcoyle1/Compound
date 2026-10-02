@@ -333,7 +333,7 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: MockHealthService(canRequestAuthorisation: false))
             commentsManager = CommentsManager(service: MockCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
-            stravaManager = StravaManager(service: MockStravaService(), clientId: "", clientSecret: "")
+            stravaManager = StravaManager(service: MockStravaService(), clientId: "")
             openFoodFactsService = MockOpenFoodFactsService()
 
         case .dev:
@@ -682,7 +682,7 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId, clientSecret: Keys.stravaClientSecret)
+            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
             openFoodFactsService = ProductionOpenFoodFactsService()
 
         case .prod:
@@ -1025,7 +1025,7 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId, clientSecret: Keys.stravaClientSecret)
+            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
             openFoodFactsService = ProductionOpenFoodFactsService()
         }
         hapticManager = HapticManager(logger: logManager)

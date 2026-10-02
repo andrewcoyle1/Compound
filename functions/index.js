@@ -2,6 +2,7 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getMessaging } from "firebase-admin/messaging";
 import {
@@ -10,6 +11,7 @@ import {
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
     isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
+    stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL,
 } from "./lib.js";
 import { genkit } from "genkit";
 import { vertexAI, gemini20Flash, imagen3Fast } from "@genkit-ai/vertexai";
@@ -900,4 +902,28 @@ export const sessionPage = onRequest({ region: REGION }, async (req, res) => {
     });
     // Short CDN cache: going private takes effect within ten minutes.
     res.set("Cache-Control", "public, max-age=300, s-maxage=600").send(html);
+});
+
+// Strava's token endpoint needs the client secret, so the code exchange and every refresh come
+// through here rather than from the app, where the secret could be read out of the binary.
+const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
+const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
+
+export const stravaToken = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
+    requireAuth(request);
+    const form = stravaTokenForm(request.data, STRAVA_CLIENT_SECRET.value());
+    if (!form) {
+        throw new HttpsError("invalid-argument", "clientId and either code or refreshToken are required");
+    }
+    const response = await fetch(STRAVA_TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(form),
+    });
+    if (!response.ok) {
+        console.warn(`Strava token ${form.grant_type} failed: ${response.status}`);
+        throw new HttpsError(stravaTokenErrorCode(response.status), `Strava returned ${response.status}`);
+    }
+    const body = await response.json();
+    return { access_token: body.access_token, refresh_token: body.refresh_token, expires_at: body.expires_at };
 });

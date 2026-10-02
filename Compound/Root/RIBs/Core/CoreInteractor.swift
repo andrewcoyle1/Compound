@@ -219,6 +219,9 @@ struct CoreInteractor: GlobalInteractor {
 
     func signOut() async throws {
         try authManager.signOut()
+        // The tokens are per device, not per account: the next person to sign in must not upload
+        // to this one's Strava.
+        stravaManager.disconnect()
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
@@ -246,6 +249,8 @@ struct CoreInteractor: GlobalInteractor {
             stopListeningBeforeAccountDeletion()
             try await userManager.deleteCurrentUser(userId: auth.uid)
         }
+
+        stravaManager.disconnect()
 
         // Delete Purchases (RevenueCat)
         try await purchaseManager.logOut()

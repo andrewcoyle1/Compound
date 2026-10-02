@@ -14,7 +14,6 @@ struct Keys {
     static let revenueCatDevAPIKey = ""  // RevenueCat public SDK key (appl_…) for com.andrewcoyle.compound.dev
     static let revenueCatProdAPIKey = ""  // RevenueCat public SDK key (appl_…) for com.andrewcoyle.compound
     static let stravaClientId = ""       // Strava application Client ID
-    static let stravaClientSecret = ""   // Strava application Client Secret
 
     // MARK: - Manager Keys
     // Unique keys for local persistence paths and analytics event prefixes.

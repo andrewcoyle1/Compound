@@ -138,7 +138,7 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every pull request and on pushes to `main`, as one job on the
+`.github/workflows/ci.yml` runs on every pull request, as one job on the
 `macos-26` runner with Xcode pinned to `/Applications/Xcode_26.6.app`. In order, it:
 
 1. Recreates the four gitignored config files from their checked-in examples — `Keys.swift`,
@@ -197,8 +197,14 @@ Two long-lived branches, `main` and `development`.
 - **`main`** is the release branch. Merges into it are periodic, by pull request from
   `development`, and the repository owner decides when. Do not merge or push to `main` unprompted.
 
-CI runs on pull requests and on pushes to `main`, so a direct push to `development` is not checked
-by CI: compile and run the unit suite locally first.
+CI runs on pull requests only, so a direct push to `development` is not checked by CI: compile
+and run the unit suite locally first.
+
+`main` is protected by the **Protect main** ruleset: no direct pushes, force pushes or deletion,
+and a PR merges only once `Lint, build and unit test` and `Cloud Functions unit tests` have
+passed on a branch up to date with `main`. Each merge then starts `.github/workflows/release.yml`
+(the push itself, not a second CI run), which waits for the owner's approval on the `release`
+environment, uploads to TestFlight from the `xcode-27` image and deploys Cloud Functions to prod.
 
 Before reviewing or changing code, `git fetch` and confirm the checkout is level with
 `origin/development`. Do not order branches by commit date, because a merge commit is stamped

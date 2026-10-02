@@ -1,7 +1,10 @@
 name: Release
 
-# A push to main is a merged release PR from development. Once CI has passed on it, this uploads
-# the app to TestFlight and deploys Cloud Functions to the prod Firebase project.
+# A push to main is a merged release PR from development. This uploads the app to TestFlight and
+# deploys Cloud Functions to the prod Firebase project.
+#
+# CI is not run again here. The "Protect main" ruleset admits only a PR whose CI checks passed on
+# a branch up to date with main, so the merge commit is the code those checks tested.
 #
 # Both jobs use the `release` environment: it holds every secret below, accepts deployments
 # from main only, and waits for the owner's approval, so a merge alone ships nothing.
@@ -19,9 +22,7 @@ name: Release
 # github-release service account. The pool's condition admits only andrewcoyle1/Compound, and
 # only the `release` environment's subject may impersonate the account.
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  push:
     branches: [main]
 
 # Never two releases at once, and never cancel one half-way through an upload or deploy.
@@ -32,20 +33,19 @@ concurrency:
 jobs:
   testflight:
     name: Archive and upload to TestFlight
-    # workflow_run also fires for CI on pull requests whose head is a branch named main, so the
-    # event is checked as well as the conclusion.
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
-    runs-on: macos-26
+    # Xcode 27.0 (27A266a), the build releases are archived with by hand. Xcode 26.6's Swift
+    # 6.3.3 crashes in the optimizer's ClosureSpecializer on CoreBuilder.weeklyReviewView, which
+    # only an optimised build reaches, so CI's Debug tests never see it. The xcode-27 image is a
+    # GitHub preview; CI stays on macos-26 until it is GA.
+    runs-on: xcode-27
     timeout-minutes: 60
     environment: release
     env:
-      XCODE_APP: /Applications/Xcode_26.6.app
+      XCODE_APP: /Applications/Xcode_27.app
 
     steps:
-      - name: Check out the commit CI passed
+      - name: Check out repository
         uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Select Xcode
         run: |
@@ -128,7 +128,6 @@ jobs:
 
   functions:
     name: Deploy Cloud Functions to prod
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: release
@@ -141,10 +140,8 @@ jobs:
         working-directory: functions
 
     steps:
-      - name: Check out the commit CI passed
+      - name: Check out repository
         uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -161,6 +158,13 @@ jobs:
         with:
           workload_identity_provider: projects/94958324260/locations/global/workloadIdentityPools/github/providers/github-actions
           service_account: github-release@dialed-c3cb5.iam.gserviceaccount.com
+
+      # The auth step only writes a credential file; the token exchange happens on first use.
+      # firebase-tools reports any failure there as "have you run firebase login?", so gcloud
+      # asks first and prints Google's actual reason.
+      - name: Check the Google credential works
+        working-directory: .
+        run: gcloud auth print-access-token --quiet > /dev/null && echo "Google accepted the workload identity credential"
 
       # The auth step points GOOGLE_APPLICATION_CREDENTIALS at a short-lived credential, which
       # firebase-tools picks up. Unchanged functions are skipped, so a release that touches none

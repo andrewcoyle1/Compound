@@ -50,6 +50,9 @@ Things that must be true before a build goes to the App Store. Each is marked in
 
 ## Design and product work not yet started
 
+`// Pending:` comments in the code mark where each of these lands. They are not `TODO`s because
+`swiftlint --strict` fails CI on those.
+
 - [ ] App icon rebuilt in Icon Composer from a plain background and a vector "C".
 - [ ] Muscle artwork for the muscle picker.
 - [ ] A rest-complete sound file (a system sound stands in).
@@ -58,3 +61,4 @@ Things that must be true before a build goes to the App Store. Each is marked in
 - [ ] The features behind the hidden Profile rows: Knowledge Base, Roadmap, App Icon, Tutorials,
       Exercise Assessment, Premove.
 - [ ] The free trial itself.
+- [ ] Editing a finished workout's sets and exercises (decision 11a, second step).

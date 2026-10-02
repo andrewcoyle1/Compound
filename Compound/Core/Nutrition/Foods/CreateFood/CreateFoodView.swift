@@ -34,7 +34,7 @@ struct CreateFoodView: View {
             barcodeSection
             #endif
             
-            // TODO: the public food database contribution is not built yet. Restore
+            // Pending: the public food database contribution is not built yet. Restore
             // `submitToPublicDatabaseSection` here, and `FoodPackagingView` in
             // `CreateFoodPresenter.onNextPressed`, when it is.
         }

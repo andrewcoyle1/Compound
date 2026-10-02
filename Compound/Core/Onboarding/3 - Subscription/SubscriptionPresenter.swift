@@ -28,7 +28,7 @@ class SubscriptionPresenter {
     func onContinuePressed() {
         interactor.trackEvent(event: Event.navigate)
         
-        // TODO: Free trial (decision 1a, planned): an app-managed trial with no payment sign-up. Offer "Start Free Trial" beside Continue here,
+        // Pending: Free trial (decision 1a, planned): an app-managed trial with no payment sign-up. Offer "Start Free Trial" beside Continue here,
         // store when it started on the user, and have `PremiumAccess.isPremium` grant access until it ends; after that only paying users get in.
         router.showPaywall(isOnboarding: true)
     }

@@ -99,7 +99,7 @@ struct MuscleGroupPickerView: View {
         return VStack(alignment: .center) {
             ZStack(alignment: .bottom) {
                 
-                // TODO: Every tile shows the same placeholder image. Replace it with each muscle's own artwork once that exists (artwork is planned).
+                // Pending: Every tile shows the same placeholder image. Replace it with each muscle's own artwork once that exists (artwork is planned).
                 // A fixed square, so a tile's height follows its width alone: sized by the loaded
                 // image instead, the list's cells never settled at iPad widths and UIKit crashed.
                 Color.clear

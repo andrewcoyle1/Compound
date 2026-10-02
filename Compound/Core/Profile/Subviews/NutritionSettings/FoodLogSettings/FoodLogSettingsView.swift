@@ -52,7 +52,7 @@ struct FoodLogSettingsView: View {
                     isOn: $presenter.showCalendarWeekBanner
                 )
                 
-                // TODO: The Premove switch is hidden: `FoodLogSettings.premove` is saved but nothing reads it. Restore a "Premove" `ListRowToggle` bound to `presenter.premove` here once the timeline can pre-log meals.
+                // Pending: The Premove switch is hidden: `FoodLogSettings.premove` is saved but nothing reads it. Restore a "Premove" `ListRowToggle` bound to `presenter.premove` here once the timeline can pre-log meals.
             } header: {
                 Text("Timeline Options")
             }

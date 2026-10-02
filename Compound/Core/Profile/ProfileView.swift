@@ -143,9 +143,9 @@ struct ProfileView: View {
                 Task { await presenter.onInviteFriendPressed() }
             }
             
-            // TODO: Knowledge Base is hidden: there is no help site. Add a row calling `presenter.onKnowledgeBasePressed()` here once one is published, and point that at its URL in `Constants`.
+            // Pending: Knowledge Base is hidden: there is no help site. Add a row calling `presenter.onKnowledgeBasePressed()` here once one is published, and point that at its URL in `Constants`.
             
-            // TODO: Roadmap is hidden: there is no public roadmap. Add a row calling `presenter.onRoadmapPressed()` here once one is published, and point that at its URL in `Constants`.
+            // Pending: Roadmap is hidden: there is no public roadmap. Add a row calling `presenter.onRoadmapPressed()` here once one is published, and point that at its URL in `Constants`.
             ListRowButton(title: String(localized: "Support"), systemImage: "questionmark.circle") {
                 presenter.onSupportPressed()
             }
@@ -163,9 +163,9 @@ struct ProfileView: View {
                 presenter.onLegalPressed()
             }
             
-            // TODO: App Icon is hidden: the asset catalog has one icon. Add a row calling `presenter.onAppIconPressed()` here once alternate icons ship and `AppIconView` offers them.
+            // Pending: App Icon is hidden: the asset catalog has one icon. Add a row calling `presenter.onAppIconPressed()` here once alternate icons ship and `AppIconView` offers them.
             
-            // TODO: Tutorials is hidden: there are no tutorials. Add a row calling `presenter.onTutorialPressed()` here once `TutorialsView` has content.
+            // Pending: Tutorials is hidden: there are no tutorials. Add a row calling `presenter.onTutorialPressed()` here once `TutorialsView` has content.
             ListRowButton(title: String(localized: "About"), systemImage: Symbol.info) {
                 presenter.onAboutPressed()
             }

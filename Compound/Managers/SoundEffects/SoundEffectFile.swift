@@ -33,7 +33,7 @@ enum SoundEffectFile: String, Equatable {
     var systemSoundStandIn: SystemSoundID? {
         switch self {
         
-        // TODO: Add RestComplete.wav to the bundle; `url` then finds it and this stand-in stops playing.
+        // Pending: Add RestComplete.wav to the bundle; `url` then finds it and this stand-in stops playing.
         case .restComplete: return 1007
         case .sample: return nil
         }

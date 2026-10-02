@@ -128,6 +128,7 @@ extension WorkoutTrackerPresenter {
     private func attemptSave(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome {
         do {
             try await interactor.endWorkoutSession(session)
+            interactor.trackEvent(eventName: WorkoutSessionModel.finishedEventName, parameters: session.finishedEventParameters, type: .analytic)
             return .saved
         } catch {
             interactor.trackEvent(

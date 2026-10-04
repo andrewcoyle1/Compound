@@ -7274,16 +7274,6 @@
         }
       }
     },
-    "Customize how you change time while logging" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza cómo cambias la hora al registrar"
-          }
-        }
-      }
-    },
     "Customize the top of your plate" : {
       "localizations" : {
         "es" : {
@@ -15864,26 +15854,6 @@
         }
       }
     },
-    "Optimization" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimización"
-          }
-        }
-      }
-    },
-    "Optimize for speed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimizar para velocidad"
-          }
-        }
-      }
-    },
     "Option %lld" : {
       "localizations" : {
         "es" : {
@@ -17482,16 +17452,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rojo"
-          }
-        }
-      }
-    },
-    "Reference Scope" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ámbito de referencia"
           }
         }
       }
@@ -21754,16 +21714,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tiempo"
-          }
-        }
-      }
-    },
-    "Time Selection" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selección de hora"
           }
         }
       }

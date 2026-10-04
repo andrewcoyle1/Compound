@@ -4,7 +4,6 @@ import SwiftUI
 protocol WorkoutSettingsRouter: GlobalRouter {
     func showRestTimerSettingsView(delegate: RestTimerSettingsDelegate)
     func showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate)
-    func showPreviousWorkoutReferenceSettingsView(delegate: PrevWORefSettingsDelegate)
     func showExerciseAssessmentView(delegate: ExerciseAssessmentDelegate)
 }
 

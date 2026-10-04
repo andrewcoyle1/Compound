@@ -98,7 +98,11 @@ struct ExpenditureSettingsView: View {
                     "Start date",
                     selection: Binding(
                         get: { presenter.calculationStartDate },
-                        set: { presenter.calculationStartDate = $0 }
+                        // Picking a day is the whole choice, so it closes the sheet too.
+                        set: {
+                            presenter.calculationStartDate = $0
+                            presenter.isChoosingStartDate = false
+                        }
                     ),
                     in: ...Date(),
                     displayedComponents: .date

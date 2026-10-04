@@ -10,7 +10,7 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// The seven screens that share the `FoodLogSettings` document.
+/// The six screens that share the `FoodLogSettings` document.
 ///
 /// Each one edits a copy of the whole document and writes the whole thing back, so the copy has to
 /// be the current one. Taken at init and never refreshed, it silently reverts whatever a sibling
@@ -19,15 +19,14 @@ import SwiftUI
 @MainActor
 struct FoodLogSettingsStaleSnapshotTests {
 
-    /// The six settings sub-screens all declare the same two requirements, so one double serves
-    /// them all. Timeline Actions needs more, and gets its own below.
+    /// Food Log Settings and its four sub-screens all declare the same two requirements, so one
+    /// double serves them all. Timeline Actions needs more, and gets its own below.
     private final class Interactor: SpyGlobalInteractor,
                                     TimelineFoodTilesInteractor,
                                     LoggerFoodTilesInteractor,
                                     LoggerBannerInteractor,
-                                    TimeSelectionInteractor,
                                     FavouriteMeasurementsInteractor,
-                                    OptimisationInteractor {
+                                    FoodLogSettingsInteractor {
         var foodLogSettings = FoodLogSettings(authorId: "user-1")
 
         func saveFoodLogSettings(_ settings: FoodLogSettings) async throws {
@@ -38,10 +37,14 @@ struct FoodLogSettingsStaleSnapshotTests {
     private final class Router: TimelineFoodTilesRouter,
                                 LoggerFoodTilesRouter,
                                 LoggerBannerRouter,
-                                TimeSelectionRouter,
                                 FavouriteMeasurementsRouter,
-                                OptimisationRouter {
+                                FoodLogSettingsRouter {
         let router: AnyRouter = TestRouting.anyRouter
+
+        func showTimelineFoodTilesView(delegate: TimelineFoodTilesDelegate) { }
+        func showLoggerFoodTilesView(delegate: LoggerFoodTilesDelegate) { }
+        func showLoggerBannerView(delegate: LoggerBannerDelegate) { }
+        func showFavouriteMeasurementsView(delegate: FavouriteMeasurementsDelegate) { }
 
         func showAlert(error: Error) { }
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
@@ -101,10 +104,10 @@ struct FoodLogSettingsStaleSnapshotTests {
         #expect(interactor.foodLogSettings.startHour == 5)
     }
 
-    @Test("Test Time Selection Does Not Revert Settings Changed Elsewhere")
-    func testTimeSelectionDoesNotRevertSettingsChangedElsewhere() async {
+    @Test("Test Auto-set Current Time Does Not Revert Settings Changed Elsewhere")
+    func testAutoSetCurrentTimeDoesNotRevertSettingsChangedElsewhere() async {
         let interactor = interactorWithChangeMadeElsewhere()
-        let presenter = TimeSelectionPresenter(interactor: interactor, router: Router())
+        let presenter = FoodLogSettingsPresenter(interactor: interactor, router: Router())
 
         presenter.onViewAppear()
         presenter.autoSetCurrentTime = true
@@ -129,10 +132,10 @@ struct FoodLogSettingsStaleSnapshotTests {
         #expect(interactor.foodLogSettings.startHour == 5)
     }
 
-    @Test("Test Optimisation Does Not Revert Settings Changed Elsewhere")
-    func testOptimisationDoesNotRevertSettingsChangedElsewhere() async {
+    @Test("Test Quick Add Does Not Revert Settings Changed Elsewhere")
+    func testQuickAddDoesNotRevertSettingsChangedElsewhere() async {
         let interactor = interactorWithChangeMadeElsewhere()
-        let presenter = OptimisationPresenter(interactor: interactor, router: Router())
+        let presenter = FoodLogSettingsPresenter(interactor: interactor, router: Router())
 
         presenter.onViewAppear()
         presenter.quickAddEnabled = true
@@ -147,7 +150,7 @@ struct FoodLogSettingsStaleSnapshotTests {
     @Test("Test A Saved Choice Survives The Screen Reappearing")
     func testASavedChoiceSurvivesTheScreenReappearing() async {
         let interactor = Interactor()
-        let presenter = OptimisationPresenter(interactor: interactor, router: Router())
+        let presenter = FoodLogSettingsPresenter(interactor: interactor, router: Router())
         presenter.quickAddEnabled = true
         #expect(await TestManagers.eventually { interactor.foodLogSettings.quickAddEnabled })
 

@@ -116,6 +116,31 @@ struct ChallengesPresenterTests {
         #expect(!presenter.canCreate, "tapping again deselects")
     }
 
+    /// One person to invite means no choice: they are ticked on appear, and that alone is not
+    /// something closing the sheet would lose.
+    @Test("Test Create Preselects The Only Candidate Without Counting It As A Change")
+    func testCreatePreselectsTheOnlyCandidate() {
+        let presenter = CreateChallengePresenter(interactor: CreateInteractor(), router: CreateRouter())
+        presenter.onViewAppear()
+
+        #expect(presenter.isSelected(presenter.candidates[0]))
+        #expect(!presenter.hasUnsavedChanges)
+
+        presenter.onCandidatePressed(presenter.candidates[0])
+        presenter.onViewAppear()
+        #expect(!presenter.isSelected(presenter.candidates[0]), "a later appear does not re-tick")
+    }
+
+    @Test("Test Create Preselects No One When There Is A Choice")
+    func testCreatePreselectsNoOneWhenThereIsAChoice() {
+        let interactor = CreateInteractor()
+        interactor.followingUsers.append(UserModel(userId: "mutual2", submittedFirstName: "Mutual 2", followingIds: ["me"]))
+        let presenter = CreateChallengePresenter(interactor: interactor, router: CreateRouter())
+        presenter.onViewAppear()
+
+        #expect(presenter.selectedIds.isEmpty)
+    }
+
     @Test("Test Create Rejects A Long Name, An Out Of Range Target And An Unoffered Duration")
     func testCreateRejectsOutOfRangeValues() {
         let presenter = CreateChallengePresenter(interactor: CreateInteractor(), router: CreateRouter())

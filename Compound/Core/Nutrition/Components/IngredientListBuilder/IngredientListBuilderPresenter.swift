@@ -70,9 +70,12 @@ class IngredientListBuilderPresenter {
                 onConfirm: recipeCallback
             ))
         } else if delegate.onMealItemConfirmed != nil {
-            router.showMealItemAmountViewView(delegate: MealItemAmountViewDelegate(
-                mode: .addFood(food),
-                onConfirm: { item in delegate.onMealItemConfirmed?(item) }
+            // The amount screen search and the barcode use, with Log beside Add to Plate. This
+            // opened a different one, in grams rather than the food's portion and with no Log.
+            router.showIngredientAmountView(delegate: IngredientAmountDelegate(
+                ingredient: food,
+                onPick: { item in delegate.onMealItemConfirmed?(item) },
+                onLog: delegate.onLog
             ))
         } else {
             delegate.onIngredientSelectionChanged?(food)
@@ -86,20 +89,9 @@ class IngredientListBuilderPresenter {
             let defaultAmount = food.portionGramsCalculated ?? food.portionMillilitersCalculated ?? 100
             recipeCallback(RecipeIngredientModel(ingredient: food, amount: defaultAmount, unit: unit))
         } else if delegate.onMealItemConfirmed != nil {
-            let baseAmount = food.portionGramsCalculated ?? food.portionMillilitersCalculated ?? 100
-            let scale = baseAmount / 100.0
-            let nutrients = food.nutrients.mapValues { $0 * scale }
-            let item = MealItemModel(
-                itemId: UUID().uuidString,
-                sourceType: .ingredient,
-                sourceId: food.ingredientId,
-                displayName: food.name,
-                amount: food.portionQuantityCalculated ?? baseAmount,
-                unit: food.portionNameCalculated ?? (food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")),
-                resolvedGrams: food.measurementMethod != .volume ? baseAmount : nil,
-                resolvedMilliliters: food.measurementMethod == .volume ? baseAmount : nil,
-                nutrients: nutrients
-            )
+            // Built as search's "+" builds it, at the amount last logged; this used its own
+            // version, at the default portion.
+            let item = food.quickAddItem(lastLoggedIn: interactor.userMeals)
             interactor.playHaptic(option: .success)
             delegate.onMealItemConfirmed?(item)
         } else {

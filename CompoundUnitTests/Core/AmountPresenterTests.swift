@@ -562,6 +562,22 @@ struct IngredientAmountPresenterTests {
         #expect(box.item?.resolvedMilliliters == nil)
     }
 
+    /// Log adds the food and logs the plate. A second Log, after a save that failed, logs again
+    /// without putting the food on the plate twice.
+    @Test("Test Logging Adds The Food Once And Logs Each Time")
+    func testLoggingAddsTheFoodOnceAndLogsEachTime() {
+        let presenter = ingredientPresenter()
+        presenter.amountText = "200"
+        var added = 0
+        var logged = 0
+
+        presenter.log(ingredient: food(), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+        presenter.log(ingredient: food(), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+
+        #expect(added == 1)
+        #expect(logged == 2)
+    }
+
     /// A negative amount would otherwise subtract food from the day.
     @Test("Test A Negative Amount Scales To Nothing")
     func testANegativeAmountScalesToNothing() {

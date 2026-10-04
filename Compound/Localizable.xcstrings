@@ -14,6 +14,56 @@
         }
       }
     },
+    "Couldn't reach Open Food Facts. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Open Food Facts. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
+    "Log Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar de nuevo"
+          }
+        }
+      }
+    },
+    "Log Meal Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar comida de nuevo"
+          }
+        }
+      }
+    },
+    "Logged again today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrado de nuevo hoy."
+          }
+        }
+      }
+    },
+    "My Recipes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis recetas"
+          }
+        }
+      }
+    },
     "Not Set" : {
       "localizations" : {
         "es" : {
@@ -50,6 +100,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fijar objetivo"
+          }
+        }
+      }
+    },
+    "Unable to Log Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo registrar la comida"
           }
         }
       }

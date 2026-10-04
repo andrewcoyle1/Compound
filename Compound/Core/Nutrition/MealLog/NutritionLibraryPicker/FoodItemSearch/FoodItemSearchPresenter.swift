@@ -34,6 +34,14 @@ class FoodItemSearchPresenter {
         }.prefix(20))
     }
 
+    /// The user's recipes matching the query, by name. Recipes used to be reachable only from the
+    /// Library tab, so searching for one's own chilli found nothing.
+    var recipeResults: [RecipeTemplateModel] {
+        let query = trimmedQuery
+        guard !query.isEmpty else { return [] }
+        return Array(interactor.userRecipeTemplates.filter { $0.name.localizedStandardContains(query) }.prefix(20))
+    }
+
     /// The Logger Food Tiles settings, which the library's rows already honoured and these ignored.
     var tileSettings: FoodLogSettings {
         interactor.foodLogSettings

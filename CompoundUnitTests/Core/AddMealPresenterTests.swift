@@ -76,7 +76,11 @@ struct AddMealPresenterTests {
         }
         func showSimpleAlert(title: String, subtitle: String?) { alerts.append((title: title, subtitle: subtitle)) }
 
-        func showNutritionLibraryPickerView(delegate: NutritionLibraryPickerDelegate) { shown.append("picker") }
+        private(set) var pickerDelegate: NutritionLibraryPickerDelegate?
+        func showNutritionLibraryPickerView(delegate: NutritionLibraryPickerDelegate) {
+            shown.append("picker")
+            pickerDelegate = delegate
+        }
         func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) { shown.append("itemAmount") }
     }
 
@@ -169,7 +173,8 @@ struct AddMealPresenterTests {
             presenter: AddMealPresenter(
                 interactor: interactor,
                 router: router,
-                delegate: AddMealDelegate(mealLog: logged)
+                delegate: AddMealDelegate(mealLog: logged),
+                pickerDelay: .zero
             ),
             interactor: interactor,
             router: router
@@ -549,6 +554,99 @@ struct AddMealPresenterTests {
     }
 
     // MARK: - Navigation
+
+    // MARK: - The picker
+
+    /// An empty plate has nothing to do but add food, so a new meal opens straight on the picker,
+    /// and only once: closing it back to the plate must not reopen it.
+    @Test("Test A New Meal Opens On The Picker Once")
+    func testANewMealOpensOnThePickerOnce() async {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear()
+        screen.presenter.onViewAppear()
+        await TestManagers.eventually { !screen.router.shown.isEmpty }
+
+        #expect(screen.router.shown == ["picker"])
+    }
+
+    /// A resumed draft already has food on it; the plate is what to show.
+    @Test("Test A Resumed Draft Opens On The Plate")
+    func testAResumedDraftOpensOnThePlate() {
+        let screen = makeScreen(meal: meal(items: [item(id: "a", calories: 100)]))
+
+        screen.presenter.onViewAppear()
+
+        #expect(screen.router.shown.isEmpty)
+    }
+
+    /// The picker's Log logs what was picked without going back to the plate first.
+    @Test("Test The Pickers Log Logs The Plate")
+    func testThePickersLogLogsThePlate() async {
+        let screen = makeScreen()
+        screen.presenter.onViewAppear()
+        await TestManagers.eventually { screen.router.pickerDelegate != nil }
+
+        screen.router.pickerDelegate?.onPick(item(id: "a", calories: 100))
+        screen.router.pickerDelegate?.onLog()
+        await TestManagers.eventually { !screen.interactor.savedMeals.isEmpty }
+
+        #expect(screen.interactor.savedMeals.first?.items.map(\.itemId) == ["a"])
+    }
+
+    /// Closing the picker with nothing picked leaves the logger, clearing its draft, rather than
+    /// stopping on an empty plate. With food picked, the plate stays for review.
+    @Test("Test Closing The Picker Empty Leaves The Logger")
+    func testClosingThePickerEmptyLeavesTheLogger() async {
+        let empty = makeScreen()
+        empty.presenter.onViewAppear()
+        await TestManagers.eventually { empty.router.pickerDelegate != nil }
+        empty.router.pickerDelegate?.onAppear()
+        empty.router.pickerDelegate?.onDidDismiss()
+
+        let picked = makeScreen()
+        picked.presenter.onViewAppear()
+        await TestManagers.eventually { picked.router.pickerDelegate != nil }
+        picked.router.pickerDelegate?.onAppear()
+        picked.router.pickerDelegate?.onPick(item(id: "a", calories: 100))
+        picked.router.pickerDelegate?.onDidDismiss()
+
+        #expect(empty.interactor.draftDeletes == 1)
+        #expect(picked.interactor.draftDeletes == 0)
+    }
+
+    /// The picker reads the plate through its binding, and has to hear when a pick changes it:
+    /// its "n on plate", row checkmarks and Log all hang off that.
+    @Test("Test The Pickers Plate Binding Reports Picks")
+    func testThePickersPlateBindingReportsPicks() {
+        let screen = makeScreen()
+        screen.presenter.onShowPickerPressed()
+        let delegate = screen.router.pickerDelegate
+        nonisolated(unsafe) var changed = false
+
+        withObservationTracking {
+            _ = delegate?.plate().count
+        } onChange: {
+            changed = true
+        }
+        delegate?.onPick(item(id: "a", calories: 100))
+
+        #expect(changed)
+        #expect(delegate?.plate().count == 1)
+    }
+
+    /// A picker the system never showed is reported as dismissed as well. That must not close the
+    /// logger: the plate stays, with its Add Food.
+    @Test("Test A Dropped Picker Leaves The Plate Open")
+    func testADroppedPickerLeavesThePlateOpen() async {
+        let screen = makeScreen()
+        screen.presenter.onViewAppear()
+        await TestManagers.eventually { screen.router.pickerDelegate != nil }
+
+        screen.router.pickerDelegate?.onDidDismiss()
+
+        #expect(screen.interactor.draftDeletes == 0)
+    }
 
     /// Editing an item and adding one open their own screens.
     @Test("Test Navigation Opens The Expected Screens")

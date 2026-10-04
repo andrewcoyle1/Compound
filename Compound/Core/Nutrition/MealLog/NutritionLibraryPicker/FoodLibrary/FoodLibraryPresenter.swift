@@ -53,22 +53,29 @@ class FoodLibraryPresenter {
     /// Same destination the search and barcode tabs use, so a favourite is logged with the amount
     /// step rather than being added at some assumed quantity — unless Quick Add is on, in which
     /// case it takes the same shortcut those tabs take.
-    func onFavouriteFoodPressed(_ food: FoodModel, onPick: ((MealItemModel) -> Void)?) {
+    func onFavouriteFoodPressed(_ food: FoodModel, onPick: ((MealItemModel) -> Void)?, onLog: (() -> Void)? = nil) {
         if interactor.foodLogSettings.quickAddEnabled {
             interactor.playHaptic(option: .success)
-            onPick?(food.mealItem(amount: food.defaultPortionAmount))
+            onPick?(food.quickAddItem(lastLoggedIn: interactor.userMeals))
             return
         }
         router.showIngredientAmountView(
             delegate: IngredientAmountDelegate(
                 ingredient: food,
-                onPick: { item in onPick?(item) }
+                onPick: { item in onPick?(item) },
+                onLog: onLog
             )
         )
     }
 
-    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel) {
-        router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
+    /// While logging, a favourite recipe goes to its servings, as every other recipe row does;
+    /// it used to open the recipe's page, which has no way to log it. Elsewhere, the page.
+    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel, onPick: ((MealItemModel) -> Void)? = nil, onLog: (() -> Void)? = nil) {
+        guard let onPick else {
+            router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
+            return
+        }
+        router.showRecipeAmountView(delegate: RecipeAmountDelegate(recipe: recipe, onPick: onPick, onLog: onLog))
     }
 
     /// The prompt and the list both change with the tab; a stale query would filter the new list

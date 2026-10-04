@@ -19,6 +19,7 @@ struct FoodItemSearchPresenterTests {
     private final class Interactor: SpyGlobalInteractor, FoodItemSearchInteractor {
         var recentFoods: [FoodModel] = []
         var foods: [FoodModel] = []
+        var userRecipeTemplates: [RecipeTemplateModel] = []
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
         var results: [FoodModel] = []
         var resultsByQuery: [String: [FoodModel]] = [:]
@@ -102,6 +103,20 @@ struct FoodItemSearchPresenterTests {
 
         #expect(screen.presenter.libraryResults.map(\.name) == ["Oat Milk"])
         #expect(screen.presenter.onlineResults.map(\.name) == ["Oat Milk Barista"])
+    }
+
+    /// The user's recipes are searched with their foods, by name, with no request.
+    @Test("Test Saved Recipes Match Locally")
+    func testSavedRecipesMatchLocally() {
+        let screen = makeScreen()
+        screen.interactor.userRecipeTemplates = [
+            RecipeTemplateModel.newRecipeTemplate(name: "Beef Chilli", authorId: "user-1"),
+            RecipeTemplateModel.newRecipeTemplate(name: "Pancakes", authorId: "user-1")
+        ]
+
+        screen.presenter.searchText = "chilli"
+
+        #expect(screen.presenter.recipeResults.map(\.name) == ["Beef Chilli"])
     }
 
     /// What the user logged before is offered before they type anything — most logging is

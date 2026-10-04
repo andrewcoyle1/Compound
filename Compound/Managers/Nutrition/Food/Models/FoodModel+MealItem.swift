@@ -51,6 +51,84 @@ extension FoodModel {
     }
 }
 
+extension FoodModel {
+
+    /// One portion as the user thinks of it: the food's named portion where it has one ("1 slice",
+    /// "0.5 cup"), otherwise `defaultPortionAmount` of grams or millilitres. The amount screen opens
+    /// on it and a never-logged "+" adds it, so the two agree.
+    var defaultPortion: (amount: Double, unit: ServingUnit?) {
+        if let name = portionNameCalculated, let unit = servingUnits.first(where: { $0.name == name }) {
+            return (portionQuantityCalculated ?? 1, unit)
+        }
+        return (defaultPortionAmount, nil)
+    }
+
+    /// What a picker row's "+" puts on the plate without the amount screen: this food at the
+    /// amount and unit it was last logged at, since most foods are eaten in the same quantity each
+    /// time, or its default portion if it has never been logged.
+    func quickAddItem(lastLoggedIn meals: [MealLogModel]) -> MealItemModel {
+        let isThisFood = { (item: MealItemModel) in item.sourceType == .ingredient && item.sourceId == ingredientId }
+        guard let last = meals
+            .filter({ $0.items.contains(where: isThisFood) })
+            .max(by: { $0.date < $1.date })?
+            .items.last(where: isThisFood) else {
+            return mealItem(amount: defaultPortion.amount, unit: defaultPortion.unit)
+        }
+        return mealItem(amount: last.amount, unit: servingUnits.first { $0.name == last.unit })
+    }
+}
+
+extension RecipeTemplateModel {
+
+    /// This recipe as a meal item of `servings` servings: per serving first, then by how many
+    /// were eaten. Scaling the whole recipe by the servings instead logged the entire pot for
+    /// every serving. Shared by the amount screen and every quick add, which used to build the
+    /// item three ways and log different figures for the same recipe.
+    func mealItem(servings: Double) -> MealItemModel {
+        MealItemModel(
+            itemId: UUID().uuidString,
+            sourceType: .recipe,
+            sourceId: recipeId,
+            displayName: name,
+            amount: servings,
+            unit: "serving",
+            resolvedGrams: nil,
+            resolvedMilliliters: nil,
+            nutrients: NutritionScaling.nutrients(of: self).scaled(by: NutritionScaling.factor(servings: servings, of: self))
+        )
+    }
+
+    /// The recipe's "+": the servings last logged, or one.
+    func quickAddItem(lastLoggedIn meals: [MealLogModel]) -> MealItemModel {
+        let isThisRecipe = { (item: MealItemModel) in item.sourceType == .recipe && item.sourceId == recipeId }
+        let last = meals
+            .filter { $0.items.contains(where: isThisRecipe) }
+            .max { $0.date < $1.date }?
+            .items.last(where: isThisRecipe)
+        return mealItem(servings: last?.amount ?? 1)
+    }
+}
+
+extension Array where Element == MealLogModel {
+
+    /// The foods most recently eaten, newest first and each once, as the search screen's "Recent".
+    /// By the meals' dates: the collection comes back in storage order, which this used to take
+    /// as the order they were eaten.
+    func recentFoods(from foods: [FoodModel], limit: Int = 20) -> [FoodModel] {
+        let byId = Dictionary(foods.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var seen = Set<String>()
+        var result: [FoodModel] = []
+        for meal in sorted(by: { $0.date > $1.date }) {
+            for item in meal.items.reversed() where item.sourceType == .ingredient && seen.insert(item.sourceId).inserted {
+                guard let food = byId[item.sourceId] else { continue }
+                result.append(food)
+                if result.count == limit { return result }
+            }
+        }
+        return result
+    }
+}
+
 extension Array where Element == MealItemModel {
     /// How many times this food is already on the plate, for the checkmark-and-count a picker row
     /// shows in place of "+" once a food has been added.

@@ -6,6 +6,8 @@ protocol FoodItemSearchInteractor: GlobalInteractor {
     var recentFoods: [FoodModel] { get }
     /// The user's own saved foods, searched on-device alongside Open Food Facts.
     var foods: [FoodModel] { get }
+    /// The user's recipes, searched alongside their foods.
+    var userRecipeTemplates: [RecipeTemplateModel] { get }
     var foodLogSettings: FoodLogSettings { get }
 }
 
@@ -15,16 +17,6 @@ extension CoreInteractor: FoodItemSearchInteractor {
     }
 
     var recentFoods: [FoodModel] {
-        let allItems = userMeals.flatMap { $0.items }
-        var seenIds = Set<String>()
-        var result: [FoodModel] = []
-        for item in allItems.reversed() where item.sourceType == .ingredient {
-            guard seenIds.insert(item.sourceId).inserted else { continue }
-            if let food = foods.first(where: { $0.id == item.sourceId }) {
-                result.append(food)
-                if result.count >= 20 { break }
-            }
-        }
-        return result
+        userMeals.recentFoods(from: foods)
     }
 }

@@ -4,6 +4,7 @@ import SwiftUI
 protocol RecipeListBuilderInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var userRecipeTemplates: [RecipeTemplateModel] { get }
+    var userMeals: [MealLogModel] { get }
     var foodLogSettings: FoodLogSettings { get }
 }
 

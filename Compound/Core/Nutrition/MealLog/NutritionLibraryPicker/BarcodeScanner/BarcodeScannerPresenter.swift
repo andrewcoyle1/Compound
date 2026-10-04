@@ -214,7 +214,11 @@ class BarcodeScannerPresenter {
                 try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
                 parsedIngredient = food
             } catch {
-                barcodeError = String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
+                // Open Food Facts answers a burst of lookups with a 429 page, which used to read as
+                // "not found" and send people off to re-enter a barcode that was fine.
+                barcodeError = (error as? OFFError) == .productNotFound
+                    ? String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
+                    : String(localized: "Couldn't reach Open Food Facts. Try again in a moment.")
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.onBarcodeError(message: error.localizedDescription))
             }

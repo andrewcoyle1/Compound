@@ -101,6 +101,22 @@ extension BarcodeScannerPresenterTests {
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
     }
 
+    /// Open Food Facts rate-limits bursts of lookups with a 429 page. That, or no connection, is
+    /// not "this product doesn't exist", and saying so sends people to re-type a good barcode.
+    @Test("Test Only A Missing Product Is Reported As Not Found")
+    func testOnlyAMissingProductIsReportedAsNotFound() async {
+        let missing = makeScreen()
+        missing.interactor.lookupError = OFFError.productNotFound
+        await detect("5012345678900", on: missing)
+
+        let unreachable = makeScreen()
+        unreachable.interactor.lookupError = URLError(.badServerResponse)
+        await detect("5012345678900", on: unreachable)
+
+        #expect(missing.presenter.barcodeError?.hasPrefix("Couldn't find") == true)
+        #expect(unreachable.presenter.barcodeError?.hasPrefix("Couldn't reach") == true)
+    }
+
     /// The camera fires repeatedly as it moves across a shelf, so a new code has to displace the
     /// last one's product and the last one's error rather than being shown beside them.
     @Test("Test A New Barcode Replaces The Previous Result")

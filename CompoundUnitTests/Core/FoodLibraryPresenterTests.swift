@@ -18,6 +18,7 @@ struct FoodLibraryPresenterTests {
         var foods: [FoodModel] = []
         var userRecipeTemplates: [RecipeTemplateModel] = []
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
+        var userMeals: [MealLogModel] = []
     }
 
     private final class Router: FoodLibraryRouter {
@@ -31,6 +32,11 @@ struct FoodLibraryPresenterTests {
 
         func showRecipeDetailView(delegate: RecipeDetailDelegate) {
             recipeDetailDelegates.append(delegate)
+        }
+
+        private(set) var recipeAmountDelegates: [RecipeAmountDelegate] = []
+        func showRecipeAmountView(delegate: RecipeAmountDelegate) {
+            recipeAmountDelegates.append(delegate)
         }
     }
 
@@ -184,6 +190,7 @@ struct FoodLibraryPresenterTests {
         #expect(item.amount == 40)
     }
 
+    /// Browsing, a favourite recipe opens its page.
     @Test("Test A Favourite Recipe Opens Its Detail")
     func testAFavouriteRecipeOpensItsDetail() {
         let screen = makeScreen()
@@ -191,6 +198,21 @@ struct FoodLibraryPresenterTests {
         screen.presenter.onFavouriteRecipePressed(recipe("Chilli"))
 
         #expect(screen.router.recipeDetailDelegates.first?.recipeTemplate.name == "Chilli")
+    }
+
+    /// Logging, a favourite recipe goes to its servings with the plate's Log, like every other
+    /// recipe row. It used to open the recipe's page, which cannot log it.
+    @Test("Test A Favourite Recipe Picked While Logging Opens Its Servings")
+    func testAFavouriteRecipePickedWhileLoggingOpensItsServings() {
+        let screen = makeScreen()
+        var logged = 0
+
+        screen.presenter.onFavouriteRecipePressed(recipe("Chilli"), onPick: { _ in }, onLog: { logged += 1 })
+        screen.router.recipeAmountDelegates.first?.onLog?()
+
+        #expect(screen.router.recipeDetailDelegates.isEmpty)
+        #expect(screen.router.recipeAmountDelegates.first?.recipe.name == "Chilli")
+        #expect(logged == 1)
     }
 
     @Test("Test The Search Prompt Follows The Tab")
@@ -211,6 +233,7 @@ struct NutritionPickerPresenterTests {
 
     private final class PickerInteractor: SpyGlobalInteractor, NutritionLibraryPickerInteractor {
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
+        var userMeals: [MealLogModel] = []
         private(set) var savedExternalFoods: [FoodModel] = []
 
         func saveExternalFood(_ food: FoodModel) async {
@@ -298,7 +321,7 @@ struct NutritionPickerPresenterTests {
         let screen = makeScreen()
         let external = FoodModel(ingredientId: "off-1", authorId: nil, name: "Oat Milk")
 
-        screen.presenter.navToIngredientAmount(external, onPick: { _ in })
+        screen.presenter.navToIngredientAmount(external, onPick: { _ in }, onLog: {})
         await TestManagers.eventually { !screen.interactor.savedExternalFoods.isEmpty }
 
         #expect(screen.interactor.savedExternalFoods.map(\.name) == ["Oat Milk"])
@@ -312,10 +335,37 @@ struct NutritionPickerPresenterTests {
         let screen = makeScreen()
         let owned = FoodModel(ingredientId: "food-1", authorId: "user-1", name: "My Oat Milk")
 
-        screen.presenter.navToIngredientAmount(owned, onPick: { _ in })
+        screen.presenter.navToIngredientAmount(owned, onPick: { _ in }, onLog: {})
 
         #expect(screen.interactor.savedExternalFoods.isEmpty)
         #expect(screen.router.amountDelegates.count == 1)
+    }
+
+    /// The amount screen opened from the picker can log the plate, so it is handed the plate's Log.
+    @Test("Test The Amount Screen Is Handed The Plates Log")
+    func testTheAmountScreenIsHandedThePlatesLog() {
+        let screen = makeScreen()
+        var logged = 0
+
+        screen.presenter.navToIngredientAmount(FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats"), onPick: { _ in }, onLog: { logged += 1 })
+        screen.router.amountDelegates.first?.onLog?()
+
+        #expect(logged == 1)
+    }
+
+    /// A row's "+" adds at once whatever the Quick Add setting, at the amount last logged.
+    @Test("Test A Rows Plus Adds The Last Amount Without The Amount Screen")
+    func testARowsPlusAddsTheLastAmountWithoutTheAmountScreen() throws {
+        let screen = makeScreen()
+        let oats = FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats", nutrients: [.calories: 380], servingWeight: 40)
+        screen.interactor.userMeals = [MealLogModel(authorId: "user-1", dayKey: Date().dayKey, date: Date(), items: [oats.mealItem(amount: 65)])]
+
+        var picked: [MealItemModel] = []
+        screen.presenter.quickAdd(oats, onPick: { picked.append($0) })
+
+        #expect(screen.router.amountDelegates.isEmpty)
+        #expect(try #require(picked.first).amount == 65)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
     // MARK: - Quick Add
@@ -329,7 +379,8 @@ struct NutritionPickerPresenterTests {
         var picked: [MealItemModel] = []
         screen.presenter.navToIngredientAmount(
             FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats", servingWeight: 40),
-            onPick: { picked.append($0) }
+            onPick: { picked.append($0) },
+            onLog: {}
         )
 
         #expect(screen.router.amountDelegates.count == 1)
@@ -349,7 +400,7 @@ struct NutritionPickerPresenterTests {
         )
 
         var picked: [MealItemModel] = []
-        screen.presenter.navToIngredientAmount(oats, onPick: { picked.append($0) })
+        screen.presenter.navToIngredientAmount(oats, onPick: { picked.append($0) }, onLog: {})
 
         #expect(screen.router.amountDelegates.isEmpty)
         let item = try #require(picked.first)
@@ -369,7 +420,7 @@ struct NutritionPickerPresenterTests {
         let rice = FoodModel(ingredientId: "rice", authorId: "user-1", name: "Rice", nutrients: [.calories: 130])
 
         var picked: [MealItemModel] = []
-        screen.presenter.navToIngredientAmount(rice, onPick: { picked.append($0) })
+        screen.presenter.navToIngredientAmount(rice, onPick: { picked.append($0) }, onLog: {})
 
         let item = try #require(picked.first)
         #expect(item.amount == 100)
@@ -391,7 +442,7 @@ struct NutritionPickerPresenterTests {
         )
 
         var picked: [MealItemModel] = []
-        screen.presenter.navToIngredientAmount(milk, onPick: { picked.append($0) })
+        screen.presenter.navToIngredientAmount(milk, onPick: { picked.append($0) }, onLog: {})
 
         let item = try #require(picked.first)
         #expect(item.amount == 250)
@@ -407,7 +458,7 @@ struct NutritionPickerPresenterTests {
         let screen = makeScreen(quickAdd: true)
         let external = FoodModel(ingredientId: "off-1", authorId: nil, name: "Oat Milk")
 
-        screen.presenter.navToIngredientAmount(external, onPick: { _ in })
+        screen.presenter.navToIngredientAmount(external, onPick: { _ in }, onLog: {})
         await TestManagers.eventually { !screen.interactor.savedExternalFoods.isEmpty }
 
         #expect(screen.interactor.savedExternalFoods.map(\.name) == ["Oat Milk"])

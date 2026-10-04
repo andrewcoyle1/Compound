@@ -151,6 +151,7 @@ struct IngredientListBuilderPresenterTests {
     private final class Interactor: SpyGlobalInteractor, IngredientListBuilderInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var foods: [FoodModel] = []
+        var userMeals: [MealLogModel] = []
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
     }
 
@@ -159,7 +160,11 @@ struct IngredientListBuilderPresenterTests {
         private(set) var shown: [String] = []
 
         func showCreateFoodView(delegate: CreateFoodDelegate) { shown.append("createFood") }
-        func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) { shown.append("mealItemAmount") }
+        private(set) var amountDelegates: [IngredientAmountDelegate] = []
+        func showIngredientAmountView(delegate: IngredientAmountDelegate) {
+            shown.append("ingredientAmount")
+            amountDelegates.append(delegate)
+        }
         func showRecipeIngredientAmountView(delegate: RecipeIngredientAmountDelegate) { shown.append("recipeIngredientAmount") }
     }
 
@@ -195,6 +200,22 @@ struct IngredientListBuilderPresenterTests {
         #expect(screen.router.shown == ["recipeIngredientAmount"])
         #expect(screen.interactor.trackedEventNames == ["IngredientsView_Ingredient_Selected"])
         #expect(confirmed.isEmpty)
+    }
+
+    /// Logging, a food opens the same amount screen search does, and it carries the plate's Log.
+    @Test("Test A Food Picked While Logging Opens The Amount Screen With Log")
+    func testAFoodPickedWhileLoggingOpensTheAmountScreenWithLog() {
+        let screen = makeScreen()
+        var logged = 0
+
+        screen.presenter.navToIngredientAmountView(
+            food: FoodModel(ingredientId: "food-1", name: "Oats"),
+            delegate: IngredientListBuilderDelegate(onMealItemConfirmed: { _ in }, onLog: { logged += 1 })
+        )
+        screen.router.amountDelegates.first?.onLog?()
+
+        #expect(screen.router.shown == ["ingredientAmount"])
+        #expect(logged == 1)
     }
 
     /// Quick Add skips the amount screen entirely, so it is the other half of the same number.

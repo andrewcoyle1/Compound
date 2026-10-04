@@ -127,6 +127,102 @@ struct NutritionScalingTests {
     }
 }
 
+/// A picker row's "+" puts the food on the plate without the amount screen.
+@MainActor
+struct FoodQuickAddItemTests {
+
+    private func meal(daysAgo: Int, _ items: [MealItemModel]) -> MealLogModel {
+        let date = Date().addingTimeInterval(-Double(daysAgo) * 86_400)
+        return MealLogModel(authorId: "user-1", dayKey: date.dayKey, date: date, items: items)
+    }
+
+    /// A "+" re-logs the most recent amount, in the unit it was logged in, not whichever meal
+    /// happens to come first in the collection.
+    @Test("Test Quick Add Repeats The Last Logged Amount")
+    func testQuickAddRepeatsTheLastLoggedAmount() {
+        let bread = FoodModel(name: "Bread", nutrients: NutrientMap([.calories: 250]), servingWeight: 40, portionSize: 1, portionName: "slice")
+        let slice = bread.servingUnits.first { $0.name == "slice" }
+        let meals = [
+            meal(daysAgo: 0, [bread.mealItem(amount: 3, unit: slice)]),
+            meal(daysAgo: 5, [bread.mealItem(amount: 80)])
+        ]
+
+        let item = bread.quickAddItem(lastLoggedIn: meals.reversed())
+
+        #expect(item.amount == 3)
+        #expect(item.unit == "slice")
+        #expect(item.resolvedGrams == 120)
+    }
+
+    /// A never-logged food with a named portion goes on as that portion, as the amount screen
+    /// opens: "1 slice", not its weight in grams.
+    @Test("Test Quick Add Uses A Named Portion")
+    func testQuickAddUsesANamedPortion() {
+        let bread = FoodModel(name: "Bread", nutrients: NutrientMap([.calories: 250]), servingWeight: 40, portionSize: 1, portionName: "slice")
+
+        let item = bread.quickAddItem(lastLoggedIn: [])
+
+        #expect(item.amount == 1)
+        #expect(item.unit == "slice")
+        #expect(item.resolvedGrams == 40)
+    }
+
+    /// 400 g of a 150 kcal/100 g food making four servings: 150 kcal a serving.
+    private func chilli() -> RecipeTemplateModel {
+        RecipeTemplateModel.newRecipeTemplate(
+            name: "Chilli",
+            authorId: "user-1",
+            ingredients: [
+                RecipeIngredientModel(ingredient: FoodModel(name: "Mince", nutrients: NutrientMap([.calories: 150])), amount: 400, unit: .grams)
+            ],
+            servingQuantity: 4
+        )
+    }
+
+    /// A recipe's "+" repeats the servings last logged, or adds one, scaled per serving either way.
+    @Test("Test Recipe Quick Add Repeats The Last Servings")
+    func testRecipeQuickAddRepeatsTheLastServings() {
+        let recipe = chilli()
+        let logged = [meal(daysAgo: 1, [recipe.mealItem(servings: 2)])]
+
+        let again = recipe.quickAddItem(lastLoggedIn: logged)
+        let first = recipe.quickAddItem(lastLoggedIn: [])
+
+        #expect(again.amount == 2)
+        #expect(again.nutrients[.calories] == 300)
+        #expect(first.amount == 1)
+        #expect(first.nutrients[.calories] == 150)
+    }
+
+    /// "Recent" is by when meals were eaten, newest first, each food once — not the order the
+    /// collection happens to store them in.
+    @Test("Test Recent Foods Are Newest First")
+    func testRecentFoodsAreNewestFirst() {
+        let oats = FoodModel(name: "Oats")
+        let milk = FoodModel(name: "Milk")
+        let eggs = FoodModel(name: "Eggs")
+        let meals = [
+            meal(daysAgo: 0, [eggs.mealItem(amount: 100)]),
+            meal(daysAgo: 3, [oats.mealItem(amount: 40), milk.mealItem(amount: 250)]),
+            meal(daysAgo: 1, [oats.mealItem(amount: 40)])
+        ]
+
+        #expect(meals.recentFoods(from: [oats, milk, eggs]).map(\.name) == ["Eggs", "Oats", "Milk"])
+    }
+
+    /// A food never logged goes on at its default portion.
+    @Test("Test Quick Add Falls Back To The Default Portion")
+    func testQuickAddFallsBackToTheDefaultPortion() {
+        let oats = FoodModel(name: "Oats", nutrients: NutrientMap([.calories: 380]))
+        let other = FoodModel(name: "Milk").mealItem(amount: 250)
+
+        let item = oats.quickAddItem(lastLoggedIn: [meal(daysAgo: 0, [other])])
+
+        #expect(item.amount == oats.defaultPortionAmount)
+        #expect(item.unit == "g")
+    }
+}
+
 /// The picker row's second line describes the portion it names.
 @MainActor
 struct FoodPickerRowDetailTests {

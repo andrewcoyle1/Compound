@@ -7,6 +7,8 @@ struct IngredientListBuilderDelegate {
     var onIngredientSelectionChanged: ((FoodModel) -> Void)?
     var onMealItemConfirmed: ((MealItemModel) -> Void)?
     var onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)?
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
     /// Optional list of ingredient templates that should display as "selected" in the UI.
     /// If `nil`, no selection state is shown.
     var selectedFoods: [FoodModel]?
@@ -19,7 +21,8 @@ struct IngredientListBuilderDelegate {
         onMealItemConfirmed: ((MealItemModel) -> Void)? = nil,
         onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)? = nil,
         selectedFoods: [FoodModel]? = nil,
-        searchText: String? = nil
+        searchText: String? = nil,
+        onLog: (() -> Void)? = nil
     ) {
         self.mealItems = mealItems
         self.onIngredientSelectionChanged = onIngredientSelectionChanged
@@ -27,6 +30,7 @@ struct IngredientListBuilderDelegate {
         self.onRecipeIngredientConfirmed = onRecipeIngredientConfirmed
         self.selectedFoods = selectedFoods
         self.searchText = searchText
+        self.onLog = onLog
     }
 }
 
@@ -84,9 +88,13 @@ struct IngredientListBuilderView: View {
         }
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
+            // Logging, this list sits inside the food picker, whose own Close it duplicated: two
+            // X buttons side by side, doing the same thing.
+            if delegate.onMealItemConfirmed == nil {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
+                        presenter.onDismissPressed()
+                    }
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {

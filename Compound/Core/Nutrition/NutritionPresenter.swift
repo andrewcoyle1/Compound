@@ -235,7 +235,7 @@ final class NutritionPresenter {
     func onEditMealItem(_ item: MealItemModel, in meal: MealLogModel) {
         router.showMealItemAmountViewView(
             delegate: MealItemAmountViewDelegate(
-                mode: .editItem(item),
+                item: item,
                 onConfirm: { [weak self] updated in
                     self?.saveEditedItem(updated, in: meal)
                 }

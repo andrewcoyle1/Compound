@@ -70,7 +70,7 @@ class AddMealPresenter {
     
     func onEditMealItem(_ item: MealItemModel) {
         router.showMealItemAmountViewView(delegate: MealItemAmountViewDelegate(
-            mode: .editItem(item),
+            item: item,
             onConfirm: { [weak self] updatedItem in
                 guard let self,
                       let idx = self.mealLog.items.firstIndex(where: { $0.itemId == updatedItem.itemId })

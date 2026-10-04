@@ -188,13 +188,9 @@ struct PortionDefinitionPresenterTests {
     }
 }
 
-/// Choosing how much of a food is being logged — both when adding one and when editing an amount
-/// already logged.
-///
-/// The two modes look identical on screen and scale completely differently underneath. Adding
-/// works from a food's per-100g figures, so the scale is the amount over a hundred. Editing works
-/// from figures already scaled to the old amount, which the delegate divides back down to one
-/// unit, so the scale is the amount itself. Swapping the two would be out by a hundredfold.
+/// Correcting the amount of a food already logged. It works from figures already scaled to the
+/// old amount, which the delegate divides back down to one unit, so the scale is the amount
+/// itself, not the amount over a hundred as when a food is added from its per-100g figures.
 @MainActor
 struct MealItemAmountPresenterTests {
 
@@ -208,19 +204,6 @@ struct MealItemAmountPresenterTests {
     @MainActor
     private final class ItemBox {
         var item: MealItemModel?
-    }
-
-    private func food(
-        name: String = "Oats",
-        caloriesPer100g: Double = 380,
-        method: MeasurementMethod = .weight
-    ) -> FoodModel {
-        FoodModel(
-            ingredientId: "food-1",
-            name: name,
-            measurementMethod: method,
-            nutrients: NutrientMap([.calories: caloriesPer100g, .protein: 13])
-        )
     }
 
     /// An item already logged: 50g of the food above, so its stored figures are half the per-100g.
@@ -244,9 +227,9 @@ struct MealItemAmountPresenterTests {
         let interactor: Interactor
     }
 
-    private func makeScreen(mode: MealItemAmountViewMode) -> Screen {
+    private func makeScreen(item: MealItemModel) -> Screen {
         let box = ItemBox()
-        let delegate = MealItemAmountViewDelegate(mode: mode, onConfirm: { box.item = $0 })
+        let delegate = MealItemAmountViewDelegate(item: item, onConfirm: { box.item = $0 })
         let interactor = Interactor()
         return Screen(
             presenter: MealItemAmountViewPresenter(
@@ -262,25 +245,12 @@ struct MealItemAmountPresenterTests {
 
     @Test("Test Confirming Plays A Success Haptic")
     func testConfirmingPlaysASuccessHaptic() {
-        let screen = makeScreen(mode: .addFood(food()))
+        let screen = makeScreen(item: loggedItem())
 
         screen.presenter.onConfirmPressed(delegate: screen.delegate)
 
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
-
-    /// Adding a food to the plate and correcting a logged one are different jobs, so the button
-    /// says which. "Add" rather than "Log": the meal itself is logged later, from Add Meal.
-    @Test("Test Adding Adds And Editing Saves")
-    func testAddingAddsAndEditingSaves() {
-        let adding = MealItemAmountViewDelegate(mode: .addFood(food()), onConfirm: { _ in })
-        let editing = MealItemAmountViewDelegate(mode: .editItem(loggedItem()), onConfirm: { _ in })
-
-        #expect(adding.confirmTitle == String(localized: "Add"))
-        #expect(editing.confirmTitle == String(localized: "Save"))
-    }
-
-    // MARK: - Adding a food
 
     /// `Double("nan")` and `Double("inf")` both parse, so a text field is a few letters away from
     /// a figure that is not a number — and this screen writes both the amount and the nutrients
@@ -290,7 +260,7 @@ struct MealItemAmountPresenterTests {
     @Test("Test An Amount That Is Not A Number Confirms Finite Figures")
     func testAnAmountThatIsNotANumberConfirmsFiniteFigures() {
         for typed in ["nan", "inf", "-inf", "1e400"] {
-            let screen = makeScreen(mode: .addFood(food()))
+            let screen = makeScreen(item: loggedItem())
             screen.presenter.amountText = typed
 
             #expect(screen.presenter.calories.isFinite, "\(typed) should not survive as an amount")
@@ -302,75 +272,6 @@ struct MealItemAmountPresenterTests {
         }
     }
 
-    /// Per-100g figures against a typed amount: 200g of a 380/100g food is 760.
-    @Test("Test Adding Scales From Per 100g")
-    func testAddingScalesFromPer100g() {
-        let screen = makeScreen(mode: .addFood(food()))
-        let presenter = screen.presenter
-        presenter.amountText = "200"
-
-        #expect(presenter.calories == 760)
-        #expect(presenter.protein == 26)
-    }
-
-    @Test("Test Adding Stores The Scaled Nutrients")
-    func testAddingStoresTheScaledNutrients() {
-        let screen = makeScreen(mode: .addFood(food()))
-        let presenter = screen.presenter
-        let box = screen.box
-        let delegate = screen.delegate
-        presenter.amountText = "50"
-
-        presenter.onConfirmPressed(delegate: delegate)
-
-        #expect(box.item?.nutrients[.calories] == 190)
-        #expect(box.item?.amount == 50)
-    }
-
-    /// A weight-measured food resolves to grams and nothing else; a drink to millilitres. Setting
-    /// both, or the wrong one, would put a drink on the plate as a solid.
-    @Test("Test A Weighed Food Resolves To Grams Only")
-    func testAWeighedFoodResolvesToGramsOnly() {
-        let screen = makeScreen(mode: .addFood(food(method: .weight)))
-        let presenter = screen.presenter
-        let box = screen.box
-        let delegate = screen.delegate
-        presenter.amountText = "50"
-
-        presenter.onConfirmPressed(delegate: delegate)
-
-        #expect(box.item?.resolvedGrams == 50)
-        #expect(box.item?.resolvedMilliliters == nil)
-    }
-
-    @Test("Test A Drink Resolves To Millilitres Only")
-    func testADrinkResolvesToMillilitresOnly() {
-        let screen = makeScreen(mode: .addFood(food(method: .volume)))
-        let presenter = screen.presenter
-        let box = screen.box
-        let delegate = screen.delegate
-        presenter.amountText = "250"
-
-        presenter.onConfirmPressed(delegate: delegate)
-
-        #expect(box.item?.resolvedMilliliters == 250)
-        #expect(box.item?.resolvedGrams == nil)
-    }
-
-    @Test("Test An Added Item Points At The Food It Came From")
-    func testAnAddedItemPointsAtTheFoodItCameFrom() {
-        let screen = makeScreen(mode: .addFood(food()))
-        let presenter = screen.presenter
-        let box = screen.box
-        let delegate = screen.delegate
-
-        presenter.onConfirmPressed(delegate: delegate)
-
-        #expect(box.item?.sourceType == .ingredient)
-        #expect(box.item?.sourceId == "food-1")
-        #expect(box.item?.displayName == "Oats")
-    }
-
     // MARK: - Editing an amount
 
     /// The delegate divides the stored figures back to one unit, so the presenter multiplies by
@@ -378,7 +279,7 @@ struct MealItemAmountPresenterTests {
     /// calories — it does not multiply them by a hundred.
     @Test("Test Editing Scales From The Stored Amount")
     func testEditingScalesFromTheStoredAmount() {
-        let screen = makeScreen(mode: .editItem(loggedItem(amount: 50, calories: 190)))
+        let screen = makeScreen(item: loggedItem(amount: 50, calories: 190))
         let presenter = screen.presenter
         presenter.amountText = "100"
 
@@ -387,7 +288,7 @@ struct MealItemAmountPresenterTests {
 
     @Test("Test Editing Keeps The Item It Is Editing")
     func testEditingKeepsTheItemItIsEditing() {
-        let screen = makeScreen(mode: .editItem(loggedItem()))
+        let screen = makeScreen(item: loggedItem())
         let presenter = screen.presenter
         let box = screen.box
         let delegate = screen.delegate
@@ -406,7 +307,7 @@ struct MealItemAmountPresenterTests {
     /// resolving to the 50g it was.
     @Test("Test Editing Moves The Resolved Weight With The Amount")
     func testEditingMovesTheResolvedWeightWithTheAmount() {
-        let screen = makeScreen(mode: .editItem(loggedItem(amount: 50)))
+        let screen = makeScreen(item: loggedItem(amount: 50))
         let presenter = screen.presenter
         let box = screen.box
         let delegate = screen.delegate
@@ -425,7 +326,7 @@ struct MealItemAmountPresenterTests {
     /// the user typed so it can be corrected.
     @Test("Test Editing An Item With No Amount Does Not Blow Up")
     func testEditingAnItemWithNoAmountDoesNotBlowUp() {
-        let screen = makeScreen(mode: .editItem(loggedItem(amount: 0, calories: 100)))
+        let screen = makeScreen(item: loggedItem(amount: 0, calories: 100))
         let presenter = screen.presenter
         let box = screen.box
         let delegate = screen.delegate
@@ -444,7 +345,7 @@ struct MealItemAmountPresenterTests {
     /// carrying the last good value.
     @Test("Test Unparseable Text Reads As Zero")
     func testUnparseableTextReadsAsZero() {
-        let screen = makeScreen(mode: .addFood(food()))
+        let screen = makeScreen(item: loggedItem())
         let presenter = screen.presenter
         presenter.amountText = "abc"
 
@@ -452,19 +353,9 @@ struct MealItemAmountPresenterTests {
         #expect(presenter.calories == 0)
     }
 
-    /// Adding opens on the food's own portion when it has one, rather than a bare 100g.
-    @Test("Test Adding Opens On The Foods Own Portion")
-    func testAddingOpensOnTheFoodsOwnPortion() {
-        let portioned = FoodModel(name: "Oat Milk", nutrients: NutrientMap(), servingWeight: 250)
-        let screen = makeScreen(mode: .addFood(portioned))
-        let presenter = screen.presenter
-
-        #expect(presenter.amountText == "250")
-    }
-
     @Test("Test Editing Opens On The Amount Already Logged")
     func testEditingOpensOnTheAmountAlreadyLogged() {
-        let screen = makeScreen(mode: .editItem(loggedItem(amount: 75)))
+        let screen = makeScreen(item: loggedItem(amount: 75))
         let presenter = screen.presenter
 
         #expect(presenter.amountText == "75")

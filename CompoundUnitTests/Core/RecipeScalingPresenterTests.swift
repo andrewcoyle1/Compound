@@ -121,11 +121,6 @@ struct ServingUnitPickerPresenterTests {
         func showDevSettingsView() { }
     }
 
-    private final class MealItemInteractor: SpyGlobalInteractor, MealItemAmountViewInteractor { }
-    private final class MealItemRouter: MealItemAmountViewRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-    }
-
     @MainActor
     private final class ItemBox {
         var item: MealItemModel?
@@ -199,24 +194,5 @@ struct ServingUnitPickerPresenterTests {
         #expect(box.item?.unit == "slice")
         #expect(box.item?.resolvedGrams == 120)
         #expect(box.item?.nutrients[.calories] == 300)
-    }
-
-    @Test("Test The Meal Item Sheet Logs In The Unit Picked")
-    func testTheMealItemSheetLogsInTheUnitPicked() {
-        let box = ItemBox()
-        let delegate = MealItemAmountViewDelegate(mode: .addFood(bread()), onConfirm: { box.item = $0 })
-        let presenter = MealItemAmountViewPresenter(interactor: MealItemInteractor(), router: MealItemRouter(), delegate: delegate)
-
-        presenter.selectedUnit = slice
-        presenter.amountText = "2"
-
-        #expect(presenter.unitLabel(delegate: delegate) == "slice")
-        #expect(presenter.calories == 200)
-
-        presenter.onConfirmPressed(delegate: delegate)
-
-        #expect(box.item?.unit == "slice")
-        #expect(box.item?.resolvedGrams == 80)
-        #expect(box.item?.nutrients[.calories] == 200)
     }
 }

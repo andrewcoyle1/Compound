@@ -457,7 +457,7 @@ to re-read", not "go fetch".
 ## Onboarding Flow
 
 Onboarding lives under `Core/Onboarding/`, in folders numbered by step: `0 - WelcomeView`
-through `9 - OnboardingCompleted` (there is no `7 -`). Each step is its own VIPER module.
+through `9 - OnboardingCompleted` (there is no `1 -` or `7 -`; Get Started goes straight to sign-in, and the account-setup and goal folders open on their first question rather than an intro screen). Each step is its own VIPER module.
 Notifications, Apple Health and Strava are not onboarding steps: each is offered where it is
 first used. Progress is
 persisted to Firestore. After completion, `AppState.startingModuleId` is updated to

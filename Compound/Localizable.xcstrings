@@ -14,6 +14,16 @@
         }
       }
     },
+    "Customize" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar"
+          }
+        }
+      }
+    },
     "Bust" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -214,6 +224,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fijar objetivo"
+          }
+        }
+      }
+    },
+    "Use Recommended Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar plan recomendado"
+          }
+        }
+      }
+    },
+    "Use the recommended plan, or answer a few questions to customize it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el plan recomendado o responde unas preguntas para personalizarlo."
           }
         }
       }

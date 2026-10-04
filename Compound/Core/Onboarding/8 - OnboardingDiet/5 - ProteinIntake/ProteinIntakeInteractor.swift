@@ -8,6 +8,7 @@
 @MainActor
 protocol ProteinIntakeInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var currentDietPlan: DietPlan? { get }
 }
 
 extension CoreInteractor: ProteinIntakeInteractor { }

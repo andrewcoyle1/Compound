@@ -87,9 +87,9 @@ struct PaywallPurchasePresenterTests {
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { alertTitles.append(title) }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
 
-        func showCompleteAccountSetupView() { shown.append("completeAccountSetup") }
+        func showNamePhotoView() { shown.append("namePhoto") }
         func showHealthDisclaimerView() { shown.append("healthDisclaimer") }
-        func showGoalSettingView() { shown.append("goalSetting") }
+        func showOverarchingObjectiveView() { shown.append("objective") }
         func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { shown.append("gymProfileSetup") }
         func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("trainingProgramSetup") }
         func showCustomisingDietProgramView() { shown.append("customisingDietProgram") }
@@ -244,7 +244,7 @@ struct PaywallPurchasePresenterTests {
 
         screen.presenter.onPurchaseProductPressed(product: product())
 
-        #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(await TestManagers.eventually { screen.router.shown == ["namePhoto"] })
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
         #expect(screen.interactor.purchasedProductIds == ["monthly"])
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_Success"))
@@ -306,7 +306,7 @@ struct PaywallPurchasePresenterTests {
 
         screen.presenter.onPurchaseProductPressed(product: product())
 
-        #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(await TestManagers.eventually { screen.router.shown == ["namePhoto"] })
         #expect(screen.interactor.restoreCount == 1)
         #expect(screen.router.alertedErrors.isEmpty)
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Purchase_AlreadyOwned"))
@@ -320,7 +320,7 @@ struct PaywallPurchasePresenterTests {
 
         screen.presenter.onRevenueCatPurchaseCompleted(hasActiveEntitlement: true)
 
-        #expect(screen.router.shown == ["completeAccountSetup"])
+        #expect(screen.router.shown == ["namePhoto"])
     }
 
     /// RevenueCat's paywall explains an empty restore itself, so the presenter adds no second alert.
@@ -394,7 +394,7 @@ struct PaywallPurchasePresenterTests {
 
         screen.presenter.onRestorePurchasePressed()
 
-        #expect(await TestManagers.eventually { screen.router.shown == ["completeAccountSetup"] })
+        #expect(await TestManagers.eventually { screen.router.shown == ["namePhoto"] })
         #expect(screen.interactor.restoreCount == 1)
         #expect(screen.interactor.trackedEventNames.contains("PaywallView_Restore_Start"))
     }
@@ -478,7 +478,7 @@ struct PaywallPurchasePresenterTests {
 
         screen.presenter.handleNavigation()
 
-        #expect(screen.router.shown == ["goalSetting"])
+        #expect(screen.router.shown == ["objective"])
     }
 
     /// A user whose profile is complete is shown the finish line rather than being dropped back

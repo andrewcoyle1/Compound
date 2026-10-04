@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol CalorieFloorInteractor: GlobalInteractor { }
+protocol CalorieFloorInteractor: GlobalInteractor {
+    var currentDietPlan: DietPlan? { get }
+}
 
 extension CoreInteractor: CalorieFloorInteractor { }

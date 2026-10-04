@@ -15,7 +15,8 @@ struct CustomisingDietProgramView: View {
         OnboardingStepScaffold(
             title: "Ready to Plan Meals?",
             progress: OnboardingStep.customiseProgram.progress,
-            primary: .init(title: "Continue", identifier: "Continue") { presenter.navigateToPreferredDiet() },
+            primary: .init(title: "Use Recommended Plan", identifier: "UseRecommendedPlan") { presenter.onUseRecommendedPlanPressed() },
+            secondary: .init(title: "Customize", identifier: "Customize") { presenter.navigateToPreferredDiet() },
             onDevSettingsPressed: nil
         ) {
             Section {
@@ -23,7 +24,7 @@ struct CustomisingDietProgramView: View {
             } header: {
                 Text("Diet Program")
             } footer: {
-                Text("We'll start with a few questions to get you started.")
+                Text("Use the recommended plan, or answer a few questions to customize it.")
             }
         }
     }

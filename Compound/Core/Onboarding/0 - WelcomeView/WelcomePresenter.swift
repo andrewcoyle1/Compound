@@ -36,14 +36,16 @@ class WelcomePresenter {
     }
 
     func onContinuePressed() {
+        // Get Started goes straight to sign-in: the "Why Compound?" pitch that sat between them
+        // was one more Continue before anything happened.
         guard let user = currentUser else {
-            router.showIntroView()
+            router.showAuthView()
             return
         }
 
         // isAnonymous is Bool? — treat nil (unset) the same as true
         if user.isAnonymous != false {
-            router.showIntroView()
+            router.showAuthView()
             return
         }
 

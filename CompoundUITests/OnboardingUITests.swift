@@ -23,17 +23,14 @@ final class OnboardingUITests: XCTestCase {
         setUpTraining(app)
         setUpDiet(app)
 
-        // The Strava step left onboarding (it is in Profile > Integrations), so the diet plan
-        // leads straight to the completion screen.
-        app.continueFrom("Onboarding Complete!")
+        // Accepting the diet plan finishes onboarding: no completion screen in between.
         app.waitFor(app.tabBars.firstMatch)
     }
 
-    /// Welcome, intro, auth, then the subscription pitch and the mock paywall: pick the first
+    /// Welcome, auth, then the subscription pitch and the mock paywall: pick the first
     /// product and subscribe. Get Started waits on the anonymous sign-in.
     private func signUp(_ app: XCUIApplication) {
         app.tapWhenEnabled("GetStartedButton")
-        app.continueFrom("Welcome to Compound.")
         app.waitFor(app.element("Auth.apple")).tap()
         app.continueFrom("Why Subscribe?")
         app.waitFor(app.staticTexts["Start"].firstMatch).tap()
@@ -41,7 +38,6 @@ final class OnboardingUITests: XCTestCase {
     }
 
     private func completeAccountSetup(_ app: XCUIApplication) {
-        app.continueFrom("The Basics")
         app.waitFor(app.textFields.firstMatch).tap()
         app.textFields.firstMatch.typeText("Test")
         app.continueFrom("Your Name")
@@ -63,8 +59,7 @@ final class OnboardingUITests: XCTestCase {
 
     /// Lose weight, one target below the 70 kg default, at the default rate.
     private func setGoal(_ app: XCUIApplication) {
-        app.continueFrom("Goal")
-        app.choose("Lose weight", on: "Choose one")
+        app.choose("Lose weight", on: "Your goal generates a custom plan to get you there. This can be changed later, and your plan will update accordingly.")
         app.waitFor(app.staticTexts["What's Your Target?"].firstMatch)
         app.waitFor(app.pickerWheels.firstMatch).adjust(toPickerWheelValue: "65 kg")
         app.tapWhenEnabled("Continue")
@@ -95,11 +90,8 @@ final class OnboardingUITests: XCTestCase {
     }
 
     private func setUpDiet(_ app: XCUIApplication) {
-        app.continueFrom("Diet Program")
-        app.choose("Balanced", on: nil)
-        // Onboarding applies the standard calorie floor without a step of its own.
-        app.choose("Distribute Evenly", on: nil)
-        app.choose("Low", on: nil)
+        app.waitFor(app.staticTexts["Diet Program"].firstMatch)
+        app.tapWhenEnabled("UseRecommendedPlan")
         app.continueFrom("Estimated TDEE", expected: false)
     }
 }

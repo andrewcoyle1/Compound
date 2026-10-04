@@ -13,9 +13,9 @@ import SwiftUI
 /// The onboarding destinations any screen that can resume onboarding needs to reach.
 @MainActor
 protocol OnboardingStepRouter: GlobalRouter {
-    func showCompleteAccountSetupView()
+    func showNamePhotoView()
     func showHealthDisclaimerView()
-    func showGoalSettingView()
+    func showOverarchingObjectiveView()
     func showCreateGymProfileView(delegate: CreateGymProfileDelegate)
     func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate)
     func showCustomisingDietProgramView()
@@ -35,8 +35,10 @@ extension OnboardingStepRouter {
     /// cases itself before delegating here.
     func routeToOnboardingStep(_ step: OnboardingStep, onComplete: @escaping @MainActor @Sendable () -> Void) {
         switch step {
+        // Account setup and goal setting start on their first question: the "Ready to Begin?"
+        // and "Ready to Set a Goal?" screens that only held a Continue button are gone.
         case .auth, .subscription, .completeAccountSetup:
-            showCompleteAccountSetupView()
+            showNamePhotoView()
 
         // The two permission steps are gone: each permission is now asked for where it is first
         // used. The cases stay because a stored profile can still name them.
@@ -44,7 +46,7 @@ extension OnboardingStepRouter {
             showHealthDisclaimerView()
 
         case .goalSetting:
-            showGoalSettingView()
+            showOverarchingObjectiveView()
 
         case .gymProfileSetup:
             showCreateGymProfileView(delegate: CreateGymProfileDelegate(onComplete: { onComplete() }))

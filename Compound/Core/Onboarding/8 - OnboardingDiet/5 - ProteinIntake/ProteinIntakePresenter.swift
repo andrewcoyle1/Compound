@@ -28,6 +28,8 @@ class ProteinIntakePresenter {
     ) {
         self.interactor = interactor
         self.router = router
+        // Opens on the current plan's answer when rebuilding it, otherwise on the recommendation.
+        selectedProteinIntake = interactor.currentDietPlan.flatMap { ProteinIntake(rawValue: $0.proteinIntake) } ?? .moderate
     }
     
     func onContinuePressed(delegate oldDelegate: ProteinIntakeDelegate) {

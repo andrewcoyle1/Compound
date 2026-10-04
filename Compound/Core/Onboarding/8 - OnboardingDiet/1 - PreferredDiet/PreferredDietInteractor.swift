@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol PreferredDietInteractor: GlobalInteractor { }
+protocol PreferredDietInteractor: GlobalInteractor {
+    var currentDietPlan: DietPlan? { get }
+}
 
 extension CoreInteractor: PreferredDietInteractor { }

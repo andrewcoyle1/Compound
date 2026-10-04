@@ -8,7 +8,6 @@
 @MainActor
 protocol WelcomeRouter: OnboardingStepRouter {
     func showPaywall(isOnboarding: Bool)
-    func showIntroView()
     func showAuthView()
     func showSubscriptionView()
     func switchToCoreModule()

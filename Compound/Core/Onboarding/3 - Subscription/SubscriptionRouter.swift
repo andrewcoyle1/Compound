@@ -11,7 +11,6 @@ protocol SubscriptionRouter: PaywallExitsRouter {
 func showDevSettingsView()
 #endif
     func showPaywall(isOnboarding: Bool)
-    func showCompleteAccountSetupView()
 }
 
 extension CoreRouter: SubscriptionRouter { }

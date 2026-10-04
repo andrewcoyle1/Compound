@@ -14,12 +14,176 @@
         }
       }
     },
+    "Bust" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busto"
+          }
+        }
+      }
+    },
+    "Hips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caderas"
+          }
+        }
+      }
+    },
+    "Left Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps izquierdo"
+          }
+        }
+      }
+    },
+    "Left Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla izquierda"
+          }
+        }
+      }
+    },
+    "Left Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca izquierda"
+          }
+        }
+      }
+    },
     "Not Set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin definir"
+          }
+        }
+      }
+    },
+    "Opens your weight history" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tu historial de peso"
+          }
+        }
+      }
+    },
+    "Right Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo derecho"
+          }
+        }
+      }
+    },
+    "Right Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps derecho"
+          }
+        }
+      }
+    },
+    "Right Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla derecha"
+          }
+        }
+      }
+    },
+    "Right Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo derecho"
+          }
+        }
+      }
+    },
+    "Right Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo derecho"
+          }
+        }
+      }
+    },
+    "Right Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca derecha"
           }
         }
       }
@@ -50,6 +214,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fijar objetivo"
+          }
+        }
+      }
+    },
+    "Shoulders" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombros"
+          }
+        }
+      }
+    },
+    "Take Back Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de espalda"
+          }
+        }
+      }
+    },
+    "Take Front Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de frente"
+          }
+        }
+      }
+    },
+    "Take Side Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de perfil"
+          }
+        }
+      }
+    },
+    "Waist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cintura"
           }
         }
       }

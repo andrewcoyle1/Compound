@@ -77,6 +77,7 @@ struct TodayPresenterTests {
         func showWorkoutTrackerView() { shown.append("workoutTracker") }
         func showMesocycleLibraryView() { shown.append("programs") }
         func showLogWeightView() { shown.append("logWeight") }
+        func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?) { shown.append("scaleWeight") }
         func showCheckInView(delegate: CheckInDelegate) { shown.append("checkIn") }
         func showWeeklyReviewView() { shown.append("weeklyReview") }
         func showAddMealView(delegate: AddMealDelegate) {
@@ -240,6 +241,16 @@ struct TodayPresenterTests {
         screen.presenter.onLogWeightPressed()
 
         #expect(screen.router.shown == ["logWeight"])
+    }
+
+    /// The weigh-in row opens the weight history, as the workout card opens the workout.
+    @Test("Test Tapping The Weigh-In Opens Scale Weight")
+    func testTappingTheWeighInOpensScaleWeight() {
+        let screen = makeScreen()
+
+        screen.presenter.onWeighInPressed()
+
+        #expect(screen.router.shown == ["scaleWeight"])
     }
 
     // MARK: Weekly check-in

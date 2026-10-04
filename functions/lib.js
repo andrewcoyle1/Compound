@@ -358,7 +358,8 @@ export function buildWeeklyDigestPush(settings, { mine, circle, followingCount }
         token: settings.fcm_token,
         notification: { title: alert.title, body: alert.body },
         apns: { payload: { aps: { alert, sound: "default", "interruption-level": "passive" } } },
-        data: { tab: "dashboard", type: "weeklyDigest" },
+        // Social, not Today ("dashboard"): the digest is about the circle.
+        data: { tab: "social", type: "weeklyDigest" },
     };
 }
 

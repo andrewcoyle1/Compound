@@ -67,7 +67,12 @@ class ProgressPhotosPresenter {
 
     // MARK: Add
 
-    func onCameraPressed() {
+    /// The pose the camera was opened for. Chosen before the shutter, so a camera photo saves as
+    /// soon as the camera closes; only a library photo is asked which pose it is.
+    private(set) var cameraPose: ProgressPhotoModel.Pose?
+
+    func onCameraPressed(pose: ProgressPhotoModel.Pose) {
+        cameraPose = pose
         isCameraPresented = true
     }
 
@@ -95,14 +100,21 @@ class ProgressPhotosPresenter {
         isPoseDialogPresented = true
     }
 
-    /// The camera hands its image over while its cover is still up, and a dialog cannot present
-    /// over a dismissing cover, so the pose is asked for once it has gone.
+    /// The camera hands its image over while its cover is still up, so the upload waits for the
+    /// cover to go and the progress overlay is not hidden behind it.
     func onCameraImagePicked(_ image: PlatformImage) {
         pendingImage = image
     }
 
-    func onCameraDismissed() {
-        isPoseDialogPresented = pendingImage != nil
+    func onCameraDismissed() async {
+        let pose = cameraPose
+        cameraPose = nil
+        guard pendingImage != nil else { return }
+        if let pose {
+            await onPoseSelected(pose)
+        } else {
+            isPoseDialogPresented = true
+        }
     }
 
     func onPoseCancelled() {

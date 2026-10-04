@@ -138,7 +138,8 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every pull request, as one job on the
+`.github/workflows/ci.yml` runs on every pull request. Besides the Cloud Functions tests and a
+**Release build (Xcode 27)** job (below), its main job runs on the
 `macos-26` runner with Xcode pinned to `/Applications/Xcode_26.6.app`. In order, it:
 
 1. Recreates the four gitignored config files from their checked-in examples — `Keys.swift`,
@@ -176,6 +177,17 @@ skips entitlement processing, which costs the test host its keychain access and 
 
 `concurrency` cancels superseded runs per ref; `timeout-minutes: 60`.
 
+The **Release build (Xcode 27)** job compiles the `Compound` scheme in Release, for the simulator,
+on the `xcode-27` image: the configuration and toolchain releases ship with. The unit tests build
+Debug on Xcode 26.6, where the optimiser never runs, and the first release crashed the compiler
+on code they had passed. Simulator rather than device, so it needs no signing and the Crashlytics
+phase skips.
+
+Every action in both workflows is pinned to a commit SHA, with its tag in a trailing comment, and
+the release pins `firebase-tools` to an exact version: the release runs them with prod
+credentials. Bump a pin deliberately, resolving the new tag with
+`gh api repos/<owner>/<repo>/commits/<tag> -q .sha`.
+
 **SwiftLint is pinned to a single `SWIFTLINT_VERSION` env var at the top of the workflow**
 (currently `0.59.1`). CI downloads the official `portable_swiftlint.zip` for that exact version,
 caches it keyed on the version, and fails the job if `swiftlint version` does not match before
@@ -193,7 +205,9 @@ CI reports violations you cannot reproduce, compare `swiftlint version` first.
 `.github/workflows/release.yml` runs on every push to `main`, which the ruleset allows only by a
 merged PR whose CI passed. Both jobs use the **`release`** environment: it accepts `main` only,
 holds the secrets, and waits for the owner's approval. Each run, and each **re-run** of a job,
-needs approving again. App Review submission stays manual in App Store Connect.
+needs approving again. The TestFlight job `needs` the Cloud Functions job, so the backend is
+always deployed first and a failed deploy stops the upload; it therefore asks for its own approval
+once the deploy finishes. App Review submission stays manual in App Store Connect.
 
 **TestFlight job** — archives the `Compound` scheme and uploads with an App Store Connect API key
 (`ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`; Admin role, because cloud-managed

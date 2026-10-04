@@ -30,8 +30,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       # Pinned rather than left on the image default, which GitHub bumps
       # periodically. Xcode 26.6 is the current default on macos-26; the
       # project is objectVersion 77 with LastUpgradeCheck 2620, so 26.x opens
@@ -62,7 +61,7 @@ jobs:
           cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Prod.plist"
 
       - name: Cache SwiftLint
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.swiftlint/${{ env.SWIFTLINT_VERSION }}
           key: swiftlint-${{ runner.os }}-${{ env.SWIFTLINT_VERSION }}
@@ -102,7 +101,7 @@ jobs:
         run: swiftlint --strict
 
       - name: Cache Swift Package Manager checkouts
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/SourcePackages
           key: ${{ runner.os }}-spm-${{ hashFiles('Compound.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
@@ -192,11 +191,45 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: TestResults
           path: TestResults.xcresult
           retention-days: 7
+
+  # The unit tests build Debug, where the optimiser never runs, and on Xcode 26.6. Releases build
+  # Release on Xcode 27, and the first one crashed the compiler on code every Debug build had
+  # passed. This compiles the app as it ships, with the release toolchain, so that surfaces on the
+  # PR. Simulator, not device, so it needs no signing and the Crashlytics upload phase skips.
+  release-build:
+    name: Release build (Xcode 27)
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_27.app
+          xcodebuild -version
+
+      - name: Materialise gitignored config from examples
+        run: |
+          set -euo pipefail
+          cp Compound/Utilities/Keys.swift.example Compound/Utilities/Keys.swift
+          cp Compound/Info.plist.example Compound/Info.plist
+          plists=Compound/SupportingFiles/GoogleServicePLists
+          cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Dev.plist"
+          cp "$plists/GoogleService-Info-Example.plist" "$plists/GoogleService-Info-Prod.plist"
+
+      - name: Build the Compound scheme, Release
+        run: |
+          xcodebuild build \
+            -project Compound.xcodeproj \
+            -scheme Compound \
+            -configuration Release \
+            -destination 'generic/platform=iOS Simulator'
 
   functions:
     name: Cloud Functions unit tests
@@ -207,9 +240,9 @@ jobs:
         working-directory: functions
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm

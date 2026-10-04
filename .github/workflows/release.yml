@@ -25,6 +25,9 @@ on:
   push:
     branches: [main]
 
+# Third-party code here runs with prod credentials, so every action is pinned to a commit (the
+# tag is in the comment) and firebase-tools to an exact version. Bump them deliberately.
+#
 # Never two releases at once, and never cancel one half-way through an upload or deploy.
 concurrency:
   group: release
@@ -33,6 +36,9 @@ concurrency:
 jobs:
   testflight:
     name: Archive and upload to TestFlight
+    # After the backend, so a build that relies on new Cloud Functions never reaches testers ahead
+    # of them, or at all if their deploy fails. It asks for its own approval once that job is done.
+    needs: functions
     # Xcode 27.0 (27A266a), the build releases are archived with by hand. Xcode 26.6's Swift
     # 6.3.3 crashes in the optimizer's ClosureSpecializer on CoreBuilder.weeklyReviewView, which
     # only an optimised build reaches, so CI's Debug tests never see it. The xcode-27 image is a
@@ -45,8 +51,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Select Xcode
         run: |
           sudo xcode-select -s "$XCODE_APP"
@@ -141,10 +146,9 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: npm
@@ -154,7 +158,7 @@ jobs:
         run: npm ci
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2.1.13
         with:
           workload_identity_provider: projects/94958324260/locations/global/workloadIdentityPools/github/providers/github-actions
           service_account: github-release@dialed-c3cb5.iam.gserviceaccount.com
@@ -171,4 +175,4 @@ jobs:
       # of them deploys nothing.
       - name: Deploy
         working-directory: .
-        run: npx --yes firebase-tools@15 deploy --only functions --project dialed-c3cb5 --non-interactive
+        run: npx --yes firebase-tools@15.17.0 deploy --only functions --project dialed-c3cb5 --non-interactive

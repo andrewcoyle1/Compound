@@ -14,116 +14,6 @@
         }
       }
     },
-    "Couldn't reach Open Food Facts. Try again in a moment." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo conectar con Open Food Facts. Inténtalo de nuevo en un momento."
-          }
-        }
-      }
-    },
-    "Log Again" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrar de nuevo"
-          }
-        }
-      }
-    },
-    "Log Meal Again" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrar comida de nuevo"
-          }
-        }
-      }
-    },
-    "Logged again today." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrado de nuevo hoy."
-          }
-        }
-      }
-    },
-    "My Recipes" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mis recetas"
-          }
-        }
-      }
-    },
-    "Not Set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin definir"
-          }
-        }
-      }
-    },
-    "Set a weight goal to track your progress toward your target." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fija un objetivo de peso para seguir tu progreso hacia él."
-          }
-        }
-      }
-    },
-    "Set a weight goal to track your progress." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fija un objetivo de peso para seguir tu progreso."
-          }
-        }
-      }
-    },
-    "Set Goal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fijar objetivo"
-          }
-        }
-      }
-    },
-    "Unable to Log Meal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo registrar la comida"
-          }
-        }
-      }
-    },
-    "Weight Goal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objetivo de peso"
-          }
-        }
-      }
-    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -6813,6 +6703,16 @@
         }
       }
     },
+    "Couldn't reach Open Food Facts. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Open Food Facts. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
     "Couldn't read this label. Hold the camera steady and try again, or enter it manually." : {
       "localizations" : {
         "es" : {
@@ -9428,6 +9328,7 @@
       }
     },
     "Estimated Macros (per serving)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12815,6 +12716,16 @@
         }
       }
     },
+    "Log Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar de nuevo"
+          }
+        }
+      }
+    },
     "Log body metrics" : {
       "localizations" : {
         "es" : {
@@ -12873,6 +12784,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrar comida"
+          }
+        }
+      }
+    },
+    "Log Meal Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar comida de nuevo"
           }
         }
       }
@@ -12956,6 +12877,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrado"
+          }
+        }
+      }
+    },
+    "Logged again today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrado de nuevo hoy."
           }
         }
       }
@@ -14031,6 +13962,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mis programas"
+          }
+        }
+      }
+    },
+    "My Recipes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis recetas"
           }
         }
       }
@@ -15155,6 +15096,16 @@
       }
     },
     "Not set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin definir"
+          }
+        }
+      }
+    },
+    "Not Set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19433,6 +19384,26 @@
         }
       }
     },
+    "Set a weight goal to track your progress toward your target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso hacia él."
+          }
+        }
+      }
+    },
+    "Set a weight goal to track your progress." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso."
+          }
+        }
+      }
+    },
     "Set completed" : {
       "localizations" : {
         "es" : {
@@ -19449,6 +19420,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meta"
+          }
+        }
+      }
+    },
+    "Set Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fijar objetivo"
           }
         }
       }
@@ -20645,6 +20626,16 @@
         }
       }
     },
+    "Strava did not accept the upload (%lld)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava no aceptó la subida (%lld)."
+          }
+        }
+      }
+    },
     "Strava Didn't Respond" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -20672,16 +20663,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recordatorio de racha"
-          }
-        }
-      }
-    },
-    "Strava did not accept the upload (%lld)." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strava no aceptó la subida (%lld)."
           }
         }
       }
@@ -23222,6 +23203,16 @@
         }
       }
     },
+    "Unable to Log Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo registrar la comida"
+          }
+        }
+      }
+    },
     "Unable to Log Set" : {
       "localizations" : {
         "es" : {
@@ -24903,6 +24894,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Detalles del peso"
+          }
+        }
+      }
+    },
+    "Weight Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de peso"
           }
         }
       }

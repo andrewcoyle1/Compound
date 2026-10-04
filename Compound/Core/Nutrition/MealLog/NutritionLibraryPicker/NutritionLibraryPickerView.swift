@@ -71,9 +71,9 @@ struct NutritionLibraryPickerView<
                     mealItems: plateBinding
                 ))
             case .aiScanner:
-                foodPhotoScanner(FoodPhotoScannerDelegate(onPick: delegate.onPick))
+                foodPhotoScanner(FoodPhotoScannerDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             case .quickAdd:
-                foodQuickAdd(FoodItemQuickAddDelegate(onPick: delegate.onPick))
+                foodQuickAdd(FoodItemQuickAddDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             case .library:
                 foodLibrary(
                     FoodLibraryDelegate(
@@ -83,7 +83,7 @@ struct NutritionLibraryPickerView<
                     )
                 )
             case .describe:
-                mealDescribe(MealDescribeDelegate(onPick: delegate.onPick))
+                mealDescribe(MealDescribeDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             }
         }
         .onAppear { delegate.onAppear() }

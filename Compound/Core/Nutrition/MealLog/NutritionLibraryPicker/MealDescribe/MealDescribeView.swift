@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MealDescribeDelegate {
     let onPick: (MealItemModel) -> Void
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
 
     var eventParameters: [String: Any]? {
         nil

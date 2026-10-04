@@ -28,6 +28,10 @@ class NameMesocyclePresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
     
+    func onDismissPressed() {
+        router.dismissEnvironment()
+    }
+
     func onNextPressed(delegate: NameMesocycleDelegate) {
         guard canSave else { return }
         router.showMesocycleIconView(delegate: MesocycleIconDelegate(onComplete: delegate.onComplete, name: trimmedName))

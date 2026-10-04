@@ -32,6 +32,7 @@ struct ExercisesPickerView<ExerciseList: View>: View {
                     Button(role: .close) {
                         presenter.onDismissPressed()
                     }
+                    .accessibilityIdentifier("ExercisesPicker.close")
                 }
 
                 ToolbarItem(placement: .confirmationAction) {

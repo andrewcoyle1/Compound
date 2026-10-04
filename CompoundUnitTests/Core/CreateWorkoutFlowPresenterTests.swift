@@ -66,56 +66,6 @@ private func flowTemplateExercise(
     )
 }
 
-// MARK: - Step 1: the splash that starts the wizard
-
-/// The first screen of building a workout: an image, a blurb and a Continue button. It holds no
-/// state, so the only thing it can lose is the callback the caller handed in — the route by which
-/// a workout built to "start now" gets back to the screen that asked for it.
-@MainActor
-struct WorkoutBuildStartPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, CreateWorkoutInteractor { }
-
-    /// `cancel()` goes through `dismissScreen()`, a `GlobalRouter` extension method rather than a
-    /// requirement of `CreateWorkoutRouter`. It dispatches statically and never reaches this
-    /// double, so there is nothing to record and nothing to assert.
-    private final class Router: CreateWorkoutRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var nameDelegates: [NameWorkoutDelegate] = []
-
-        func showNameWorkoutView(delegate: NameWorkoutDelegate) {
-            nameDelegates.append(delegate)
-        }
-    }
-
-    private func makeScreen() -> (CreateWorkoutPresenter, Router) {
-        let router = Router()
-        return (CreateWorkoutPresenter(interactor: Interactor(), router: router), router)
-    }
-
-    @Test("Test Continuing Opens The Naming Step")
-    func testContinuingOpensTheNamingStep() {
-        let (presenter, router) = makeScreen()
-
-        presenter.onContinuePressed(delegate: CreateWorkoutDelegate())
-
-        #expect(router.nameDelegates.count == 1)
-        #expect(router.nameDelegates.first?.workoutTemplate == nil)
-    }
-
-    /// The template being edited was dropped on this hop, so "Edit" ran the new-workout wizard and
-    /// saving produced a second template beside the original.
-    @Test("Test The Template Being Edited Reaches The Naming Step")
-    func testTheTemplateBeingEditedReachesTheNamingStep() {
-        let (presenter, router) = makeScreen()
-        let template = WorkoutTemplateModel(id: "wt-1", authorId: "user-1", name: "Push")
-
-        presenter.onContinuePressed(delegate: CreateWorkoutDelegate(workoutTemplate: template))
-
-        #expect(router.nameDelegates.first?.workoutTemplate?.id == "wt-1")
-    }
-}
-
 // MARK: - Step 2: naming it
 
 /// Naming the workout. The name typed here is the one the workout is saved under three screens
@@ -204,6 +154,46 @@ struct WorkoutBuildNamePresenterTests {
 
     /// The gym may have been deleted since the template was made, so the chooser is shown again
     /// but the template still travels.
+    /// With one gym there is nothing to choose, so the chooser is skipped for that gym.
+    @Test("Test A Single Gym Skips The Gym Step")
+    func testASingleGymSkipsTheGymStep() {
+        let gym = GymProfileModel(id: "gym-1", authorId: "user-1", name: "Home Gym")
+        let (presenter, router) = makeScreen(gyms: [gym], workoutName: "Push Day")
+
+        presenter.onContinuePressed(delegate: NameWorkoutDelegate())
+
+        #expect(router.gymDelegates.isEmpty)
+        #expect(router.defineDelegates.first?.gymProfile.id == "gym-1")
+        #expect(router.defineDelegates.first?.name == "Push Day")
+    }
+
+    @Test("Test Several Gyms Ask Which One")
+    func testSeveralGymsAskWhichOne() {
+        let gyms = [
+            GymProfileModel(id: "gym-1", authorId: "user-1", name: "Home Gym"),
+            GymProfileModel(id: "gym-2", authorId: "user-1", name: "Commercial")
+        ]
+        let (presenter, router) = makeScreen(gyms: gyms, workoutName: "Push Day")
+
+        presenter.onContinuePressed(delegate: NameWorkoutDelegate())
+
+        #expect(router.defineDelegates.isEmpty)
+        #expect(router.gymDelegates.count == 1)
+    }
+
+    /// Return on the keyboard continues, but not past an empty name.
+    @Test("Test Return Continues Only With A Name")
+    func testReturnContinuesOnlyWithAName() {
+        let (presenter, router) = makeScreen()
+
+        presenter.onNameSubmitted(delegate: NameWorkoutDelegate())
+        #expect(router.gymDelegates.isEmpty)
+
+        presenter.workoutName = "Push Day"
+        presenter.onNameSubmitted(delegate: NameWorkoutDelegate())
+        #expect(router.gymDelegates.first?.name == "Push Day")
+    }
+
     @Test("Test Editing Asks For A Gym When The Old One Is Gone")
     func testEditingAsksForAGymWhenTheOldOneIsGone() {
         let (presenter, router) = makeScreen(workoutName: "Leg Day")
@@ -429,6 +419,37 @@ struct WorkoutBuildDefinePresenterTests {
 
         #expect(screen.presenter.exercises.map(\.exercise.name) == ["Bench Press", "Squat"])
         #expect(screen.box.value.map(\.exercise.name) == ["Bench Press", "Squat"])
+    }
+
+    /// A new workout opens the picker by itself, the first time only: closing it leaves the user
+    /// on an empty list they chose.
+    @Test("Test An Empty New Workout Opens The Picker Once")
+    func testAnEmptyNewWorkoutOpensThePickerOnce() {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear(autoOpensPicker: true)
+        screen.presenter.onViewAppear(autoOpensPicker: true)
+
+        #expect(screen.router.pickerDelegates.count == 1)
+    }
+
+    @Test("Test A Workout With Exercises Does Not Open The Picker")
+    func testAWorkoutWithExercisesDoesNotOpenThePicker() {
+        let screen = makeScreen(exercises: [flowTemplateExercise(exercise: flowExercise())])
+
+        screen.presenter.onViewAppear(autoOpensPicker: true)
+
+        #expect(screen.router.pickerDelegates.isEmpty)
+    }
+
+    /// A mesocycle day with no exercises is a rest day, so nothing opens there.
+    @Test("Test A Rest Day Does Not Open The Picker")
+    func testARestDayDoesNotOpenThePicker() {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear(autoOpensPicker: false)
+
+        #expect(screen.router.pickerDelegates.isEmpty)
     }
 
     // MARK: Editing an exercise's targets

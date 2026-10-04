@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CreateMesocycleDelegate {
     /// Set by onboarding, which pushes this flow and resumes when it finishes. Nil when the flow
-    /// is a cover, which is when it needs its own close button.
+    /// is a cover, which opens on the name screen with its own close button.
     let onComplete: (@Sendable () -> Void)?
 
     init(onComplete: (@Sendable () -> Void)? = nil) {
@@ -42,9 +42,6 @@ struct CreateMesocycleView: View {
         .onDisappear {
             presenter.onViewDisappear()
         }
-        .toolbar {
-            toolbarContent
-        }
         .bottomCTA {
             CallToActionButton {
                 presenter.onNextPressed(delegate: delegate)
@@ -54,31 +51,26 @@ struct CreateMesocycleView: View {
             .accessibilityIdentifier("CreateProgram.continue")
         }
     }
-    
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        // The library entry passed no dismiss closure, so its cover had no way out but to finish.
-        if delegate.onComplete == nil {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
-                }
-                .accessibilityIdentifier("CreateProgram.close")
-            }
-        }
-    }
 }
 
 extension CoreBuilder {
-    
+
+    /// From the library the cover opens straight on the name: the splash was a tap with nothing to
+    /// decide. Onboarding pushes the flow and keeps the splash, as the introduction to the
+    /// training part of setup.
+    @ViewBuilder
     func createMesocycleView(router: AnyRouter, delegate: CreateMesocycleDelegate) -> some View {
-        CreateMesocycleView(
-            presenter: CreateMesocyclePresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
-            delegate: delegate
-        )
+        if delegate.onComplete == nil {
+            nameMesocycleView(router: router, delegate: NameMesocycleDelegate(showsCloseButton: true))
+        } else {
+            CreateMesocycleView(
+                presenter: CreateMesocyclePresenter(
+                    interactor: interactor,
+                    router: CoreRouter(router: router, builder: self)
+                ),
+                delegate: delegate
+            )
+        }
     }
 }
 

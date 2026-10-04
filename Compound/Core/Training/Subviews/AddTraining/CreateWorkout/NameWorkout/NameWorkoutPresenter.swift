@@ -39,16 +39,22 @@ class NameWorkoutPresenter {
         self.draftExercises = draftExercises
     }
         
-    /// A template being edited already has a gym, so that step is skipped when the gym still exists.
+    /// Return on the keyboard continues, once there is a name to continue with.
+    func onNameSubmitted(delegate: NameWorkoutDelegate) {
+        guard canSave else { return }
+        onContinuePressed(delegate: delegate)
+    }
+
+    /// The gym step is skipped when there is nothing to choose: a template being edited whose gym
+    /// still exists, or a user with only one gym.
     func onContinuePressed(delegate: NameWorkoutDelegate) {
         let name = workoutName.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let template = delegate.workoutTemplate,
-           let gym = interactor.gymProfiles.first(where: { $0.id == template.gymProfileId }) {
+        if let gym = gymWithoutAsking(for: delegate.workoutTemplate) {
             router.showDefineWorkoutWrapperView(
                 delegate: DefineWorkoutWrapperDelegate(
                     name: name,
                     gymProfile: gym,
-                    workoutTemplate: template,
+                    workoutTemplate: delegate.workoutTemplate,
                     draftExercises: draftBinding
                 )
             )
@@ -57,6 +63,13 @@ class NameWorkoutPresenter {
                 delegate: ChooseGymProfileDelegate(name: name, workoutTemplate: delegate.workoutTemplate, draftExercises: draftBinding)
             )
         }
+    }
+
+    private func gymWithoutAsking(for template: WorkoutTemplateModel?) -> GymProfileModel? {
+        if let template, let gym = interactor.gymProfiles.first(where: { $0.id == template.gymProfileId }) {
+            return gym
+        }
+        return interactor.gymProfiles.count == 1 ? interactor.gymProfiles.first : nil
     }
 
     func onClosePressed() {

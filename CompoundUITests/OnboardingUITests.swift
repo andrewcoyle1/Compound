@@ -29,15 +29,14 @@ final class OnboardingUITests: XCTestCase {
         app.waitFor(app.tabBars.firstMatch)
     }
 
-    /// Welcome, intro, auth, then the subscription pitch and the mock paywall: pick the first
-    /// product and subscribe. Get Started waits on the anonymous sign-in.
+    /// Welcome, intro, auth, then the subscription pitch and the mock paywall, which opens with
+    /// its first plan chosen, so Subscribe is ready. Get Started waits on the anonymous sign-in.
     private func signUp(_ app: XCUIApplication) {
         app.tapWhenEnabled("GetStartedButton")
         app.continueFrom("Welcome to Compound.")
         app.waitFor(app.element("Auth.apple")).tap()
         app.continueFrom("Why Subscribe?")
-        app.waitFor(app.staticTexts["Start"].firstMatch).tap()
-        app.tap("Subscribe")
+        app.tapWhenEnabled("Subscribe")
     }
 
     private func completeAccountSetup(_ app: XCUIApplication) {
@@ -91,7 +90,7 @@ final class OnboardingUITests: XCTestCase {
         app.tap("ExercisesPicker.confirm")
         app.tapWhenEnabled("ProgramDesign.activate")
         // Activating offers to keep the mesocycle's days as standalone workout templates.
-        app.waitFor(app.buttons["No"].firstMatch).tap()
+        app.waitFor(app.buttons["Don't Save"].firstMatch).tap()
     }
 
     private func setUpDiet(_ app: XCUIApplication) {

@@ -24,7 +24,7 @@ final class CreateExerciseUITests: XCTestCase {
         app.tap("MuscleGroupPicker.Front Delts")
         app.tap("MuscleGroupPicker.next")
 
-        app.waitFor(app.switches["ExerciseEquipment.bodyweight"].firstMatch).tap()
+        app.bodyweightToggle().tap()
         app.tap("ExerciseEquipment.next")
 
         app.tap("FinalExerciseDetails.next")
@@ -57,12 +57,21 @@ final class CreateExerciseUITests: XCTestCase {
         app.tap("EnumPicker.Reps")
         app.tap("CreateExercise.next")
         app.tap("MuscleGroupPicker.next")
-        app.waitFor(app.switches["ExerciseEquipment.bodyweight"].firstMatch).tap()
+        app.bodyweightToggle().tap()
         app.tap("ExerciseEquipment.next")
 
         let field = app.waitFor(app.textFields["FinalExerciseDetails.contribution"].firstMatch)
         field.tap()
         field.typeText("0")
         XCTAssertFalse(app.button("FinalExerciseDetails.next").isEnabled)
+    }
+}
+
+private extension XCUIApplication {
+
+    /// The control that flips. The identifier sits on the labelled `ListRowToggle` row, and tapping
+    /// the row left the switch off, so Next stayed disabled with no equipment chosen.
+    func bodyweightToggle() -> XCUIElement {
+        waitFor(switches["ExerciseEquipment.bodyweight"].firstMatch).switches.firstMatch
     }
 }

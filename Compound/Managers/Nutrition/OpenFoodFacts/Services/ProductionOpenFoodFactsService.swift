@@ -28,7 +28,16 @@ final class ProductionOpenFoodFactsService: OpenFoodFactsService {
     }
 
     func searchFoods(query: String) async throws -> [FoodModel] {
-        let result = try await functions.httpsCallable("foodSearch").call(["query": query])
+        // The user's country and language, so their own shops' products come first: searching the
+        // world put French apple turnovers at the top of "apple" in Ireland.
+        var payload: [String: Any] = ["query": query]
+        if let region = Locale.current.region?.identifier, let tag = Self.countryTag(regionCode: region) {
+            payload["country"] = tag
+        }
+        if let language = Locale.current.language.languageCode?.identifier {
+            payload["lang"] = language
+        }
+        let result = try await functions.httpsCallable("foodSearch").call(payload)
         guard let dict = result.data as? [String: Any],
               let rawProducts = dict["products"] as? [Any] else {
             return []
@@ -38,6 +47,14 @@ final class ProductionOpenFoodFactsService: OpenFoodFactsService {
         return rawProducts
             .compactMap { $0 as? [String: Any] }
             .compactMap { foodModel(from: $0, now: now) }
+    }
+
+    /// A region as Open Food Facts tags countries: its English name, lowercased and hyphenated
+    /// ("IE" is "en:ireland", "US" "en:united-states"). A name OFF spells differently simply finds
+    /// nothing local, and the search falls back to the world.
+    static func countryTag(regionCode: String) -> String? {
+        guard let name = Locale(identifier: "en").localizedString(forRegionCode: regionCode) else { return nil }
+        return "en:" + name.lowercased().replacingOccurrences(of: " ", with: "-")
     }
 
     /// One row of the `foodSearch` callable's payload.

@@ -47,4 +47,12 @@ struct OpenFoodFactsDecodingTests {
         #expect(response.status == 0)
         #expect(response.product == nil)
     }
+
+    /// The search is sent the user's country as OFF tags countries, so local products come first.
+    @Test("Test A Region Becomes An Open Food Facts Country Tag")
+    func testARegionBecomesAnOpenFoodFactsCountryTag() {
+        #expect(ProductionOpenFoodFactsService.countryTag(regionCode: "IE") == "en:ireland")
+        #expect(ProductionOpenFoodFactsService.countryTag(regionCode: "US") == "en:united-states")
+        #expect(ProductionOpenFoodFactsService.countryTag(regionCode: "GB") == "en:united-kingdom")
+    }
 }

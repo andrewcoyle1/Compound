@@ -8,6 +8,7 @@ import {
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
     isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
     SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
+    offCountryTag, offSearchLangs, mergeSearchHits,
     stravaTokenForm, stravaTokenErrorCode,
 } from "./lib.js";
 
@@ -781,4 +782,26 @@ test("stravaTokenErrorCode tells a revoked grant apart from an outage", () => {
     assert.equal(stravaTokenErrorCode(401), "permission-denied");
     assert.equal(stravaTokenErrorCode(429), "unavailable");
     assert.equal(stravaTokenErrorCode(503), "unavailable");
+});
+
+test("offCountryTag lets through only an OFF country tag, since it goes into the search query", () => {
+    assert.equal(offCountryTag("en:ireland"), "en:ireland");
+    assert.equal(offCountryTag("en:united-kingdom"), "en:united-kingdom");
+    assert.equal(offCountryTag('en:ireland" OR *:*'), null);
+    assert.equal(offCountryTag("IE"), null);
+    assert.equal(offCountryTag(undefined), null);
+});
+
+test("offSearchLangs searches the app's language and English, and falls back to English", () => {
+    assert.equal(offSearchLangs("es"), "es,en");
+    assert.equal(offSearchLangs("en"), "en");
+    assert.equal(offSearchLangs("spanish"), "en");
+    assert.equal(offSearchLangs(undefined), "en");
+});
+
+test("mergeSearchHits puts the country first, drops repeats and products with no calories", () => {
+    const local = [{ code: "1", name: "Tesco Gala Apples", calories: 53 }, { code: "2", name: "Gala apples", calories: null }];
+    const global = [{ code: "1", name: "Tesco Gala Apples", calories: 53 }, { code: "3", name: "Chausson aux pommes", calories: 251 }];
+    assert.deepEqual(mergeSearchHits(local, global).map((f) => f.code), ["1", "3"]);
+    assert.equal(mergeSearchHits(local, global, 1).length, 1);
 });

@@ -30,6 +30,8 @@ class PreferredDietPresenter {
         self.interactor = interactor
         self.router = router
         self.isFromSettings = isFromSettings
+        // Opens on the current plan's answer when rebuilding it, otherwise on the recommendation.
+        selectedDiet = interactor.currentDietPlan.flatMap { PreferredDiet(rawValue: $0.preferredDiet) } ?? .balanced
     }
 
     func navigateToCalorieFloor() {

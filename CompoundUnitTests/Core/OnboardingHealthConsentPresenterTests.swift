@@ -36,7 +36,7 @@ struct OnboardingHealthConsentPresenterTests {
 
         sut.onContinuePressed()
 
-        #expect(await TestManagers.eventually { router.shown == ["goalSetting"] })
+        #expect(await TestManagers.eventually { router.shown == ["objective"] })
         #expect(interactor.consents.map(\.disclaimer) == [UserModel.currentHealthDisclaimerVersion])
         #expect(interactor.consents.map(\.privacy) == [UserModel.currentHealthPrivacyPolicyVersion])
         #expect(router.alertTitles.isEmpty)

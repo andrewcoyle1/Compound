@@ -67,7 +67,7 @@ class HealthDisclaimerPresenter {
 
     func handleNavigation() {
         interactor.trackEvent(event: Event.navigate)
-        router.showGoalSettingView()
+        router.showOverarchingObjectiveView()
     }
 
     enum Event: LoggableEvent {

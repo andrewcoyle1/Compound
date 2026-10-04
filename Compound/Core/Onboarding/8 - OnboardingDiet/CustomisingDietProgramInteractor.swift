@@ -8,6 +8,7 @@
 @MainActor
 protocol CustomisingDietProgramInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var activeMesocycle: Mesocycle? { get }
 }
 
 extension CoreInteractor: CustomisingDietProgramInteractor { }

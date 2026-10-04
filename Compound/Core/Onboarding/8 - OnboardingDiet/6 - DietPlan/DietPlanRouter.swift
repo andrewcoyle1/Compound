@@ -7,7 +7,7 @@
 
 @MainActor
 protocol DietPlanRouter: GlobalRouter {
-    func showOnboardingCompletedView()
+    func switchToCoreModule()
 }
 
 extension CoreRouter: DietPlanRouter { }

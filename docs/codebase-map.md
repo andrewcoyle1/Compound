@@ -94,12 +94,12 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/DevSettings` | 4 | 797 | DEV/MOCK-only developer tools screen |
 | `Compound/Core/Notifications` | 10 | 1,279 | Activity notifications inbox |
 | `Compound/Core/Nutrition` | 147 | 12,881 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
-| `Compound/Core/Onboarding` | 109 | 7,079 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
+| `Compound/Core/Onboarding` | 97 | 6,704 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `Compound/Core/Paywalls` | 9 | 882 | Paywall screens |
 | `Compound/Core/Profile` | 201 | 12,700 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
 | `Compound/Core/Sharing` | 8 | 502 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 473 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 226 | 19,160 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Core/Training` | 226 | 19,167 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 74 | 6,683 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
 | `Compound/Managers` | 251 | 31,278 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,348 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
@@ -108,17 +108,17 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 600 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 275 | 73,635 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
-| `CompoundUITests` | 7 | 573 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 10 | 17,130 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `CompoundUnitTests` | 274 | 73,690 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUITests` | 7 | 565 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
+| `functions` | 9 | 17,130 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 47 | 10,163 | Specs, reviews, audits, this map |
+| `docs` | 46 | 10,163 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-205 presenter-backed modules.
+202 presenter-backed modules.
 
 ### `Compound/Components` (4 modules)
 
@@ -223,16 +223,14 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **RecipeStart** | [Recipes/RecipeStart](Compound/Core/Nutrition/Recipes/RecipeStart) | 120 |  | RecipeStartDelegate, `showStartRecipeView` | RecipeStartDelegate.swift |  |
 | **TimelineActions** | [TimelineActions](Compound/Core/Nutrition/TimelineActions) | 365 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
 
-### `Compound/Core/Onboarding` (26 modules)
+### `Compound/Core/Onboarding` (23 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Welcome** | [0 - WelcomeView](Compound/Core/Onboarding/0%20-%20WelcomeView) | 257 | Auth, Intro, Paywall, Subscription | WelcomeDelegate |  |  |
-| **Intro** | [1 - IntroView](Compound/Core/Onboarding/1%20-%20IntroView) | 176 | Auth | `showIntroView` |  |  |
+| **Welcome** | [0 - WelcomeView](Compound/Core/Onboarding/0%20-%20WelcomeView) | 258 | Auth, Paywall, Subscription | WelcomeDelegate |  |  |
 | **Auth** | [2 - AuthView](Compound/Core/Onboarding/2%20-%20AuthView) | 434 | Paywall, Subscription | `showAuthView` |  |  |
-| **Subscription** | [3 - Subscription](Compound/Core/Onboarding/3%20-%20Subscription) | 171 | CompleteAccountSetup, Paywall | `showSubscriptionView` |  |  |
-| **CompleteAccountSetup** | [4 - CompleteAccountSetup](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup) | 182 | NamePhoto | `showCompleteAccountSetupView` | CardioFitnessLevel.swift |  |
-| **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 332 | Gender | `showNamePhotoView` |  |  |
+| **Subscription** | [3 - Subscription](Compound/Core/Onboarding/3%20-%20Subscription) | 170 | Paywall | `showSubscriptionView` |  |  |
+| **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 350 | Gender | `showNamePhotoView` |  |  |
 | **Gender** | [4 - CompleteAccountSetup/2 - Gender](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/2%20-%20Gender) | 197 | DateOfBirth | `showGenderView` |  |  |
 | **DateOfBirth** | [4 - CompleteAccountSetup/3 - DateOfBirth](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth) | 187 | Height | DateOfBirthDelegate, `showDateOfBirthView` |  |  |
 | **Height** | [4 - CompleteAccountSetup/4 - Height](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height) | 306 | Weight | HeightDelegate, `showHeightView` |  |  |
@@ -240,18 +238,17 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseFrequency** | [4 - CompleteAccountSetup/6 - ExerciseFrequency](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency) | 201 | Activity | ExerciseFrequencyDelegate, `showExerciseFrequencyView` |  |  |
 | **Activity** | [4 - CompleteAccountSetup/7 - Activity](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 218 | Expenditure | ActivityDelegate, `showActivityView` |  |  |
 | **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 563 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
-| **HealthDisclaimer** | [5 - HealthDisclaimer](Compound/Core/Onboarding/5%20-%20HealthDisclaimer) | 242 | GoalSetting | `showHealthDisclaimerView` |  |  |
-| **GoalSetting** | [6 - GoalSetting](Compound/Core/Onboarding/6%20-%20GoalSetting) | 134 | OverarchingObjective | `showGoalSettingView` |  |  |
-| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 221 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
+| **HealthDisclaimer** | [5 - HealthDisclaimer](Compound/Core/Onboarding/5%20-%20HealthDisclaimer) | 242 | OverarchingObjective | `showHealthDisclaimerView` |  |  |
+| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 224 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
 | **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 385 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
 | **WeightRate** | [6 - GoalSetting/3 - WeightRate](Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 401 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
 | **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 445 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
-| **CustomisingDietProgram** | [8 - OnboardingDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet) | 139 | PreferredDiet | `showCustomisingDietProgramView` |  |  |
-| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 198 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
-| **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 202 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
-| **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 231 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
-| **ProteinIntake** | [8 - OnboardingDiet/5 - ProteinIntake](Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake) | 204 | DietPlan | ProteinIntakeDelegate, `showProteinIntakeView` |  |  |
-| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 282 | OnboardingCompleted | DietPlanDelegate, `showDietPlanView` |  |  |
+| **CustomisingDietProgram** | [8 - OnboardingDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet) | 151 | DietPlan, PreferredDiet | `showCustomisingDietProgramView` |  |  |
+| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 202 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
+| **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 210 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
+| **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 242 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
+| **ProteinIntake** | [8 - OnboardingDiet/5 - ProteinIntake](Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake) | 207 | DietPlan | ProteinIntakeDelegate, `showProteinIntakeView` |  |  |
+| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 291 |  | DietPlanDelegate, `showDietPlanView` |  |  |
 | **OnboardingCompleted** | [9 - OnboardingCompleted](Compound/Core/Onboarding/9%20-%20OnboardingCompleted) | 179 |  | `showOnboardingCompletedView` |  |  |
 
 ### `Compound/Core/Paywalls` (1 modules)
@@ -386,7 +383,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **InactiveMesocycle** | [Subviews/MesocycleLibrary/InactiveMesocycle](Compound/Core/Training/Subviews/MesocycleLibrary/InactiveMesocycle) | 155 |  | InactiveMesocycleDelegate, `showInactiveMesocycleView` |  |  |
 | **MesocycleDisclosureGroup** | [Subviews/MesocycleLibrary/MesocycleDisclosureGroup](Compound/Core/Training/Subviews/MesocycleLibrary/MesocycleDisclosureGroup) | 163 | EditMesocycle, ShareToFollower | MesocycleDisclosureGroupDelegate, `showMesocycleDisclosureGroupView` |  |  |
 | **PrebuiltMesocycleDetail** | [Subviews/MesocycleLibrary/PrebuiltMesocycleDetail](Compound/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail) | 209 |  | `showPrebuiltMesocycleDetailView` |  |  |
-| **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 292 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
+| **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 299 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
 | **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](Compound/Core/Training/Subviews/WorkoutSessionDetailView) | 955 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
 | **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](Compound/Core/Training/Subviews/WorkoutTemplateDetail) | 348 | CreateWorkout, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
 | **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 1923 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | StravaOffer.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
@@ -697,7 +694,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [docs/specs/ui-framework/wp-15-lock-in.md](docs/specs/ui-framework/wp-15-lock-in.md) | 52 |
 | [docs/specs/weekly-check-in.md](docs/specs/weekly-check-in.md) | 128 |
 | [docs/ui-audit.md](docs/ui-audit.md) | 120 |
-| [.github/workflows/ci.yml](.github/workflows/ci.yml) | 219 |
+| [.github/workflows/ci.yml](.github/workflows/ci.yml) | 220 |
+| [.github/workflows/release.yml](.github/workflows/release.yml) | 174 |
 | [functions/functions.test.js](functions/functions.test.js) | 504 |
 | [functions/index.js](functions/index.js) | 929 |
 | [functions/index.test.js](functions/index.test.js) | 784 |

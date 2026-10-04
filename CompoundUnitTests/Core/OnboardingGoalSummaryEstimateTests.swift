@@ -26,9 +26,9 @@ struct OnboardingGoalSummaryEstimateTests {
 
     private final class Router: GoalSummaryRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        func showCompleteAccountSetupView() { }
+        func showNamePhotoView() { }
         func showHealthDisclaimerView() { }
-        func showGoalSettingView() { }
+        func showOverarchingObjectiveView() { }
         func showCustomisingDietProgramView() { }
         func showOnboardingCompletedView() { }
         func showDevSettingsView() { }

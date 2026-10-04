@@ -29,6 +29,10 @@ class CalorieDistributionPresenter {
     ) {
         self.interactor = interactor
         self.router = router
+        // Rebuilding a plan opens on the split it was built with.
+        if let current = interactor.currentDietPlan.flatMap({ CalorieDistribution(rawValue: $0.calorieDistribution) }) {
+            selectedCalorieDistribution = current
+        }
         loadTrainingContext()
     }
     
@@ -36,32 +40,21 @@ class CalorieDistributionPresenter {
     /// `Mesocycle` no longer has, so it did nothing: `hasMesocycle` stayed false,
     /// `trainingDaysPerWeek` stayed nil, and `prefillCalorieDistribution` was never reached.
     ///
-    /// `workoutTemplates` is the mesocycle's weekly cycle — `SocialPresenter.todaysScheduledItem`
-    /// indexes it by weekday, and a template with no exercises is a rest day — so the training days
-    /// are the templates that have exercises.
     private func loadTrainingContext() {
         guard let mesocycle = interactor.activeMesocycle else { return }
 
         hasMesocycle = true
-        let trainingDays = mesocycle.workoutTemplates.filter { !$0.exercises.isEmpty }.count
+        let trainingDays = CalorieDistribution.trainingDays(in: mesocycle)
         trainingDaysPerWeek = trainingDays
-        prefillCalorieDistribution(daysPerWeek: trainingDays)
-        interactor.trackEvent(event: Event.trainingContextLoaded(daysPerWeek: trainingDays))
-    }
-    
-    private func prefillCalorieDistribution(daysPerWeek: Int) {
-        // Heuristic: <=3 days = even, >=4 days = varied (to bias carbs to training days)
         if selectedCalorieDistribution == nil {
-            if daysPerWeek <= 3 {
-                selectedCalorieDistribution = .even
-            } else {
-                selectedCalorieDistribution = .varied
-            }
+            let recommended = CalorieDistribution.recommended(for: mesocycle)
+            selectedCalorieDistribution = recommended
             interactor.trackEvent(event: Event.calorieDistributionPrefilled(
-                distribution: selectedCalorieDistribution ?? .even,
-                reason: "training_days_\(daysPerWeek)"
+                distribution: recommended,
+                reason: "training_days_\(trainingDays)"
             ))
         }
+        interactor.trackEvent(event: Event.trainingContextLoaded(daysPerWeek: trainingDays))
     }
     
     func navigateToProteinIntake(delegate: CalorieDistributionDelegate) {
@@ -126,5 +119,22 @@ enum CalorieDistribution: String, CaseIterable, Identifiable {
         case .varied:
             return String(localized: "Distribute calories to increase energy on training days.")
         }
+    }
+}
+
+extension CalorieDistribution {
+
+    /// `workoutTemplates` is the mesocycle's weekly cycle — `SocialPresenter.todaysScheduledItem`
+    /// indexes it by weekday, and a template with no exercises is a rest day — so the training days
+    /// are the templates that have exercises.
+    static func trainingDays(in mesocycle: Mesocycle) -> Int {
+        mesocycle.workoutTemplates.filter { !$0.exercises.isEmpty }.count
+    }
+
+    /// Three training days a week or fewer: even. Four or more: varied, to bias carbs to training
+    /// days. No mesocycle counts as no training days. Shared by this screen's prefill and the
+    /// "Use Recommended Plan" shortcut, so the two cannot disagree.
+    static func recommended(for mesocycle: Mesocycle?) -> CalorieDistribution {
+        (mesocycle.map(trainingDays(in:)) ?? 0) <= 3 ? .even : .varied
     }
 }

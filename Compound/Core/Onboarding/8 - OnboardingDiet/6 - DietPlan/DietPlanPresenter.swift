@@ -45,12 +45,19 @@ class DietPlanPresenter {
             do {
                 try await interactor.saveDietPlan(plan)
                 interactor.trackEvent(event: Event.saveDietPlanSuccess)
+                if !isFromSettings {
+                    // The plan is the last answer, so onboarding finishes here, as
+                    // `OnboardingCompletedPresenter` does, rather than on a screen with one more
+                    // button. That screen stays for a profile that resumes at `.complete`.
+                    try await interactor.saveOnboardingComplete()
+                    interactor.playHaptic(option: .success)
+                }
                 interactor.trackEvent(event: Event.navigate)
                 if isFromSettings {
                     router.dismissScreen()
                 } else {
                     // Strava is no longer offered here (decision 11d): it is in Profile > Integrations.
-                    router.showOnboardingCompletedView()
+                    router.switchToCoreModule()
                 }
             } catch {
                 router.showSimpleAlert(title: String(localized: "Unable to update your profile"), subtitle: String(localized: "Please check your internet connection and try again"))

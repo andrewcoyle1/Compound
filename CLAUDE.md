@@ -188,6 +188,59 @@ your local SwiftLint, bump `SWIFTLINT_VERSION` too, and the reverse holds: bumpi
 fixing whatever the new rules report, as its own change rather than folded into an unrelated PR. If
 CI reports violations you cannot reproduce, compare `swiftlint version` first.
 
+### Release (CD)
+
+`.github/workflows/release.yml` runs on every push to `main`, which the ruleset allows only by a
+merged PR whose CI passed. Both jobs use the **`release`** environment: it accepts `main` only,
+holds the secrets, and waits for the owner's approval. Each run, and each **re-run** of a job,
+needs approving again. App Review submission stays manual in App Store Connect.
+
+**TestFlight job** — archives the `Compound` scheme and uploads with an App Store Connect API key
+(`ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`; Admin role, because cloud-managed
+distribution signing needs it). `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` are base64 of the
+local files; update the secret when either file changes, or the release ships stale keys.
+`manageAppVersionAndBuildNumber` takes the next free build number, so the project's own build
+number stays at 1.
+
+- It runs on the **`xcode-27`** runner image (a GitHub preview), not `macos-26` like CI. Xcode
+  26.6's Swift 6.3.3 crashes in the optimizer's ClosureSpecializer on
+  `CoreBuilder.weeklyReviewView`, which only an optimised build reaches, so CI's Debug tests never
+  see it. `xcode-27` carries Xcode 27.0 27A266a, the same build used locally. Unknown to actionlint;
+  pass `-ignore 'label "xcode-27" is unknown'`.
+- `ITSAppUsesNonExemptEncryption = NO` is set on the app target, so builds skip the export
+  compliance question.
+
+**Cloud Functions job** — deploys to `dialed-c3cb5` as the **`github-release`** service account
+through workload identity federation; no key is stored anywhere.
+
+- Pool `github`, provider `github-actions` (issuer `https://token.actions.githubusercontent.com`,
+  condition `assertion.repository == 'andrewcoyle1/Compound'`), project number `94958324260`.
+- This repo uses GitHub's **immutable subject** format, so the token's `sub` is
+  `repo:andrewcoyle1@200482452/Compound@1064429405:environment:release`, IDs included. The
+  Workload Identity User grant on `github-release` names exactly that subject. The usual guides
+  show `repo:andrewcoyle1/Compound:environment:release`, which never matches and fails as
+  `Permission 'iam.serviceAccounts.getAccessToken' denied`. Check the format with
+  `gh api repos/andrewcoyle1/Compound/actions/oidc/customization/sub`.
+- `github-release` holds the least the deploy was shown to need, found by re-running the job with
+  nothing changed (every function is skipped, but every pre-deploy check runs):
+  - Project: Cloud Functions Admin, Cloud Scheduler Admin (the scheduled functions' jobs), Secret
+    Manager Viewer, and the custom role **Release deploy reads** (`releaseDeployReads`):
+    `firebase.projects.get`, `datastore.databases.getMetadata`,
+    `artifactregistry.repositories.get`, `resourcemanager.projects.get`,
+    `serviceusage.services.get`. None of them reads app data, which is why no Firebase viewer role
+    is used: those include Firestore, Realtime Database and Storage reads.
+  - Service Account User on **only** two accounts: `94958324260-compute@developer` (the functions'
+    runtime account) and `dialed-c3cb5@appspot` (firebase-tools checks actAs on it before every
+    deploy, though nothing runs as it). Never project-wide: that would let it act as the Admin SDK
+    account.
+- Not yet exercised: deploying a **new** callable, which sets its invoker policy and may need one
+  more permission. If a deploy fails on a permission, add it to `releaseDeployReads` (reads) or the
+  narrowest role that grants it, and record it here.
+- The workflow requests a token with `gcloud auth print-access-token` before deploying, because
+  firebase-tools reports any credential failure as "have you run firebase login?".
+- The Cloud Billing API is enabled on the project because firebase-tools checks billing and the
+  deploy account cannot enable APIs.
+
 ## Branching
 
 Two long-lived branches, `main` and `development`.
@@ -540,8 +593,9 @@ Two things live outside the code and are easy to miss:
 - Enabling enforcement breaks already-shipped app versions that predate the App Check wiring.
   Check App Check metrics for unverified traffic before turning it on.
 
-Deploy with `firebase deploy --only functions` — this is not part of the Xcode build, so changes
-under `functions/` have no effect until deployed.
+Each release to `main` deploys them to prod (see Release (CD)). Outside a release, deploy with
+`firebase deploy --only functions --project <id>`; it is not part of the Xcode build, so changes
+under `functions/` have no effect until deployed, and the dev project is only ever deployed by hand.
 
 `npm test` in `functions/` runs five `node:test` cases (`index.test.js`) with no emulator: the
 pure helpers in `lib.js`, a source check that every `onCall` takes `CALLABLE_OPTIONS` and opens

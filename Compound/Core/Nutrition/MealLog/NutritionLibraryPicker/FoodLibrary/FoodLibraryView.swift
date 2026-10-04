@@ -43,7 +43,7 @@ struct FoodLibraryView<
                     Section {
                         ForEach(presenter.favouriteRecipes) { recipe in
                             Button {
-                                presenter.onFavouriteRecipePressed(recipe)
+                                presenter.onFavouriteRecipePressed(recipe, onPick: delegate.onItemPick)
                             } label: {
                                 ListRow(title: recipe.name, subtitle: recipe.description, imageName: recipe.imageURL, accessory: .chevron)
                                     .contentShape(.rect)

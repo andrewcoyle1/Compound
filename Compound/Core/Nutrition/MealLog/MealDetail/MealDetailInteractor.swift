@@ -7,6 +7,9 @@
 
 @MainActor
 protocol MealDetailInteractor: GlobalInteractor {
+    var currentUser: UserModel? { get }
+    var draftMeal: MealLogModel? { get }
+    func deleteDraftMeal() throws
     func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws
 }
 

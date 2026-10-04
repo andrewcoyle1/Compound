@@ -47,6 +47,28 @@ class MealDetailPresenter {
         let value: String
     }
 
+    /// The same meal again, now: Add Meal opens on a copy so it can be adjusted before logging.
+    /// Asks first when a draft is in progress, since logging deletes the draft.
+    func onLogAgainPressed(meal: MealLogModel) {
+        guard let userId = interactor.currentUser?.userId else { return }
+        let copy = meal.copy(at: Date(), authorId: userId)
+        guard let draft = interactor.draftMeal else {
+            router.showAddMealView(delegate: AddMealDelegate(mealLog: copy))
+            return
+        }
+        router.showDraftMealDialog(
+            onContinue: { [weak self] in
+                Task { @MainActor in self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: draft)) }
+            },
+            onStartNew: { [weak self] in
+                Task { @MainActor in
+                    try? self?.interactor.deleteDraftMeal()
+                    self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: copy))
+                }
+            }
+        )
+    }
+
     func onDeletePressed(meal: MealLogModel) {
         // Deleting a logged meal cannot be undone, so it is confirmed first.
         router.showAlert(

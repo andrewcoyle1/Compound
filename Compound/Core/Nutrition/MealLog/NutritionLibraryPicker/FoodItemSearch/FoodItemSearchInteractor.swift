@@ -15,10 +15,9 @@ extension CoreInteractor: FoodItemSearchInteractor {
     }
 
     var recentFoods: [FoodModel] {
-        let allItems = userMeals.flatMap { $0.items }
         var seenIds = Set<String>()
         var result: [FoodModel] = []
-        for item in allItems.reversed() where item.sourceType == .ingredient {
+        for item in userMeals.ingredientItemsNewestFirst {
             guard seenIds.insert(item.sourceId).inserted else { continue }
             if let food = foods.first(where: { $0.id == item.sourceId }) {
                 result.append(food)

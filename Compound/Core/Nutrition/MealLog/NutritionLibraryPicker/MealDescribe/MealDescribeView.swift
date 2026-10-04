@@ -13,6 +13,8 @@ struct MealDescribeView: View {
     @State var presenter: MealDescribePresenter
     let delegate: MealDescribeDelegate
 
+    @FocusState private var isDescriptionFocused: Bool
+
     var body: some View {
         List {
             Section {
@@ -20,6 +22,7 @@ struct MealDescribeView: View {
                     text: $presenter.descriptionText,
                     prompt: "Describe your meal"
                 )
+                .focused($isDescriptionFocused)
                 .onChange(of: presenter.descriptionText) { _, newValue in
                     presenter.onDescriptionChanged(newValue)
                 }
@@ -54,7 +57,9 @@ struct MealDescribeView: View {
                         }
                     }
                 } header: {
-                    Text("AI Estimate")
+                    AIEstimateHeader(count: presenter.analysisResults.count, isAdded: presenter.didAddAll) {
+                        presenter.onAddAllPressed(delegate: delegate)
+                    }
                 } footer: {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }
@@ -62,6 +67,13 @@ struct MealDescribeView: View {
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
+        }
+        // Typing is the whole job until there is something to analyze; with results showing, the
+        // keyboard would only cover them.
+        .onFirstAppear {
+            if presenter.descriptionText.isEmpty {
+                isDescriptionFocused = true
+            }
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)

@@ -62,6 +62,8 @@ struct MealItemAmountViewView: View {
     @State var presenter: MealItemAmountViewPresenter
     let delegate: MealItemAmountViewDelegate
 
+    @FocusState private var isAmountFocused: Bool
+
     var body: some View {
         Form {
             headerSection
@@ -74,6 +76,9 @@ struct MealItemAmountViewView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
+        }
+        .onFirstAppear {
+            isAmountFocused = true
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
@@ -110,6 +115,7 @@ struct MealItemAmountViewView: View {
             HStack {
                 TextField("0", text: $presenter.amountText)
                     .keyboardType(.decimalPad)
+                    .focused($isAmountFocused)
                 if case .addFood(let food) = delegate.mode, !food.servingUnits.isEmpty {
                     ServingUnitPicker(baseLabel: delegate.unit, units: food.servingUnits, selection: $presenter.selectedUnit)
                 } else {

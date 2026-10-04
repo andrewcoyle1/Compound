@@ -72,7 +72,7 @@ class TimelineActionsPresenter {
             defer { isWorking = false }
             do {
                 for meal in meals {
-                    try await interactor.saveMeal(copy(of: meal, to: destination, authorId: authorId))
+                    try await interactor.saveMeal(meal.copy(onDayOf: destination, authorId: authorId))
                 }
                 interactor.playHaptic(option: .success)
                 isChoosingCopyDestination = false
@@ -83,25 +83,6 @@ class TimelineActionsPresenter {
                 router.showSimpleAlert(title: String(localized: "Unable to Copy Day"), subtitle: String(localized: "Please try again."))
             }
         }
-    }
-
-    private func copy(of meal: MealLogModel, to destination: Date, authorId: String) -> MealLogModel {
-        let calendar = Calendar.current
-        let time = calendar.dateComponents([.hour, .minute], from: meal.date)
-        let date = calendar.date(
-            bySettingHour: time.hour ?? 0,
-            minute: time.minute ?? 0,
-            second: 0,
-            of: destination
-        ) ?? destination
-
-        return MealLogModel(
-            authorId: authorId,
-            dayKey: date.dayKey,
-            date: date,
-            items: meal.items,
-            notes: meal.notes
-        )
     }
 
     func onClearDayPressed(delegate: TimelineActionsDelegate) {

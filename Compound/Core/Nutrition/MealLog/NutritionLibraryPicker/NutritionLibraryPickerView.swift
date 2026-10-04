@@ -46,6 +46,9 @@ struct NutritionLibraryPickerView<
                     onFoodSelected: { food in
                         presenter.navToIngredientAmount(food, onPick: delegate.onPick)
                     },
+                    onFoodQuickAdded: { food in
+                        presenter.quickAdd(food, onPick: delegate.onPick)
+                    },
                     mealItems: delegate.items
                 ))
             case .aiScanner:

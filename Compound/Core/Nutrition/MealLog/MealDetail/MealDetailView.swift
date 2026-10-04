@@ -34,6 +34,14 @@ struct MealDetailView: View {
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
+        .bottomCTA {
+            CallToActionButton {
+                presenter.onLogAgainPressed(meal: delegate.meal)
+            } label: {
+                Text("Log Again")
+            }
+            .disabled(delegate.meal.items.isEmpty)
+        }
     }
 
     private var summarySection: some View {

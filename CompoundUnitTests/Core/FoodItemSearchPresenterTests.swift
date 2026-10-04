@@ -17,7 +17,7 @@ import SwiftUI
 struct FoodItemSearchPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, FoodItemSearchInteractor {
-        var recentFoods: [FoodModel] = []
+        var recentPicks: [RecentPick] = []
         var foods: [FoodModel] = []
         var userRecipeTemplates: [RecipeTemplateModel] = []
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
@@ -124,11 +124,11 @@ struct FoodItemSearchPresenterTests {
     @Test("Test Recent Foods Are Offered On Appear")
     func testRecentFoodsAreOfferedOnAppear() {
         let screen = makeScreen()
-        screen.interactor.recentFoods = [food("Oats"), food("Milk")]
+        screen.interactor.recentPicks = [.food(food("Oats")), .food(food("Milk"))]
 
         screen.presenter.onViewAppear(delegate: screen.delegate)
 
-        #expect(screen.presenter.historyFoods.map(\.name) == ["Oats", "Milk"])
+        #expect(screen.presenter.history.map(\.id) == ["food-Oats", "food-Milk"])
     }
 
     /// Offline the remote search is not tried, and no alert rises per keystroke: the failed state

@@ -3,7 +3,7 @@ import SwiftUI
 @MainActor
 protocol FoodItemSearchInteractor: GlobalInteractor {
     func searchOpenFoodFacts(query: String) async throws -> [FoodModel]
-    var recentFoods: [FoodModel] { get }
+    var recentPicks: [RecentPick] { get }
     /// The user's own saved foods, searched on-device alongside Open Food Facts.
     var foods: [FoodModel] { get }
     /// The user's recipes, searched alongside their foods.
@@ -16,7 +16,7 @@ extension CoreInteractor: FoodItemSearchInteractor {
         try await openFoodFactsService.searchFoods(query: query)
     }
 
-    var recentFoods: [FoodModel] {
-        userMeals.recentFoods(from: foods)
+    var recentPicks: [RecentPick] {
+        userMeals.recentPicks(foods: foods, recipes: userRecipeTemplates)
     }
 }

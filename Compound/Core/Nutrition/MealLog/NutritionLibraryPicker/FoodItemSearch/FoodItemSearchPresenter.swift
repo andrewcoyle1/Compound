@@ -7,7 +7,7 @@ class FoodItemSearchPresenter {
     private let interactor: FoodItemSearchInteractor
     private let router: FoodItemSearchRouter
 
-    private(set) var historyFoods: [FoodModel] = []
+    private(set) var history: [RecentPick] = []
     private(set) var openFoodFactsFoods: [FoodModel] = []
     private(set) var isSearching: Bool = false
 
@@ -77,7 +77,7 @@ class FoodItemSearchPresenter {
 
     func onViewAppear(delegate: FoodItemSearchDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-        historyFoods = interactor.recentFoods
+        history = interactor.recentPicks
     }
 
     func onViewDisappear(delegate: FoodItemSearchDelegate) {

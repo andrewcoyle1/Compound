@@ -194,20 +194,23 @@ struct FoodQuickAddItemTests {
         #expect(first.nutrients[.calories] == 150)
     }
 
-    /// "Recent" is by when meals were eaten, newest first, each food once — not the order the
-    /// collection happens to store them in.
-    @Test("Test Recent Foods Are Newest First")
-    func testRecentFoodsAreNewestFirst() {
-        let oats = FoodModel(name: "Oats")
-        let milk = FoodModel(name: "Milk")
-        let eggs = FoodModel(name: "Eggs")
+    /// "Recent" is by when meals were eaten, newest first, each food or recipe once — not the
+    /// order the collection happens to store them in — and recipes are in it too.
+    @Test("Test Recent Picks Are Newest First And Include Recipes")
+    func testRecentPicksAreNewestFirstAndIncludeRecipes() {
+        let oats = FoodModel(ingredientId: "oats", name: "Oats")
+        let milk = FoodModel(ingredientId: "milk", name: "Milk")
+        let eggs = FoodModel(ingredientId: "eggs", name: "Eggs")
+        let recipe = chilli()
         let meals = [
             meal(daysAgo: 0, [eggs.mealItem(amount: 100)]),
             meal(daysAgo: 3, [oats.mealItem(amount: 40), milk.mealItem(amount: 250)]),
-            meal(daysAgo: 1, [oats.mealItem(amount: 40)])
+            meal(daysAgo: 1, [oats.mealItem(amount: 40), recipe.mealItem(servings: 1)])
         ]
 
-        #expect(meals.recentFoods(from: [oats, milk, eggs]).map(\.name) == ["Eggs", "Oats", "Milk"])
+        let picks = meals.recentPicks(foods: [oats, milk, eggs], recipes: [recipe])
+
+        #expect(picks.map(\.id) == ["food-eggs", "recipe-\(recipe.id)", "food-oats", "food-milk"])
     }
 
     /// A food never logged goes on at its default portion.

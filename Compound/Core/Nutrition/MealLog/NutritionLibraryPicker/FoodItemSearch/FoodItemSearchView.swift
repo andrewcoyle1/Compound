@@ -22,7 +22,7 @@ struct FoodItemSearchView: View {
     var body: some View {
         List {
             if trimmedQuery.isEmpty {
-                if presenter.historyFoods.isEmpty {
+                if presenter.history.isEmpty {
                     ContentUnavailableView {
                         Label("Search Foods", systemImage: Symbol.search)
                     } description: {
@@ -101,8 +101,13 @@ struct FoodItemSearchView: View {
 
     private var historySection: some View {
         Section {
-            ForEach(presenter.historyFoods) { food in
-                foodRow(food)
+            ForEach(presenter.history) { pick in
+                switch pick {
+                case .food(let food):
+                    foodRow(food)
+                case .recipe(let recipe):
+                    if delegate.onRecipeSelected != nil { recipeRow(recipe) }
+                }
             }
         } header: {
             Text("Recent")

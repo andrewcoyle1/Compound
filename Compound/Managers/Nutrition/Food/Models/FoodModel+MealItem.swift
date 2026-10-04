@@ -109,19 +109,39 @@ extension RecipeTemplateModel {
     }
 }
 
+/// A food or a recipe, as the search screen's "Recent" lists them together.
+enum RecentPick: Identifiable {
+    case food(FoodModel)
+    case recipe(RecipeTemplateModel)
+
+    var id: String {
+        switch self {
+        case .food(let food): return "food-\(food.id)"
+        case .recipe(let recipe): return "recipe-\(recipe.id)"
+        }
+    }
+}
+
 extension Array where Element == MealLogModel {
 
-    /// The foods most recently eaten, newest first and each once, as the search screen's "Recent".
-    /// By the meals' dates: the collection comes back in storage order, which this used to take
-    /// as the order they were eaten.
-    func recentFoods(from foods: [FoodModel], limit: Int = 20) -> [FoodModel] {
-        let byId = Dictionary(foods.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    /// The foods and recipes most recently eaten, newest first and each once, as the search
+    /// screen's "Recent". By the meals' dates: the collection comes back in storage order, which
+    /// this used to take as the order they were eaten. Recipes used to be left out altogether.
+    func recentPicks(foods: [FoodModel], recipes: [RecipeTemplateModel], limit: Int = 20) -> [RecentPick] {
+        let foodsById = Dictionary(foods.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let recipesById = Dictionary(recipes.map { ($0.recipeId, $0) }, uniquingKeysWith: { first, _ in first })
         var seen = Set<String>()
-        var result: [FoodModel] = []
+        var result: [RecentPick] = []
         for meal in sorted(by: { $0.date > $1.date }) {
-            for item in meal.items.reversed() where item.sourceType == .ingredient && seen.insert(item.sourceId).inserted {
-                guard let food = byId[item.sourceId] else { continue }
-                result.append(food)
+            for item in meal.items.reversed() {
+                let pick: RecentPick?
+                switch item.sourceType {
+                case .ingredient: pick = foodsById[item.sourceId].map(RecentPick.food)
+                case .recipe: pick = recipesById[item.sourceId].map(RecentPick.recipe)
+                default: pick = nil
+                }
+                guard let pick, seen.insert(pick.id).inserted else { continue }
+                result.append(pick)
                 if result.count == limit { return result }
             }
         }

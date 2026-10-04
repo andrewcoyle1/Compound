@@ -14,6 +14,10 @@ class BarcodeScannerPresenter {
     /// then hands the code straight back and closes, with no product lookup: the usual reason to
     /// create a food is that the lookup would not find it.
     private let onBarcodeScanned: ((String) -> Void)?
+    /// Logging, a found product goes straight on to its amount: the card in between asked for a
+    /// "Use This Food" tap that the amount screen, which names the product, already confirms.
+    /// The card stays behind it, with Re-scan, for a wrong match.
+    private let onFoodFound: ((FoodModel) -> Void)?
 
     var returnsBarcodeOnly: Bool { onBarcodeScanned != nil }
 
@@ -58,6 +62,7 @@ class BarcodeScannerPresenter {
         self.interactor = interactor
         self.router = router
         self.onBarcodeScanned = delegate.onBarcodeScanned
+        self.onFoodFound = delegate.onFoodFound
     }
 
     func onViewAppear(delegate: BarcodeScannerDelegate) {
@@ -204,7 +209,7 @@ class BarcodeScannerPresenter {
             defer { isLookingUpBarcode = false }
             do {
                 if let local = interactor.findLocalFood(withBarcode: code) {
-                    parsedIngredient = local
+                    found(local)
                     return
                 }
                 // `resolvedBarcode` stays set, so the camera seeing the code again does not repeat it.
@@ -212,7 +217,7 @@ class BarcodeScannerPresenter {
                 let food = try await interactor.lookupBarcode(code)
                 // Silent: caching the looked-up food is a side effect; the scan itself still succeeds.
                 try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
-                parsedIngredient = food
+                found(food)
             } catch {
                 // Open Food Facts answers a burst of lookups with a 429 page, which used to read as
                 // "not found" and send people off to re-enter a barcode that was fine.
@@ -233,6 +238,13 @@ class BarcodeScannerPresenter {
     /// several switched in place — not a pushed screen of its own — so dismissing here would close
     /// the whole picker before `onFoodFound`'s amount screen could be shown. Only the delegate
     /// decides what happens next.
+    private func found(_ food: FoodModel) {
+        parsedIngredient = food
+        guard let onFoodFound else { return }
+        interactor.playHaptic(option: .success)
+        onFoodFound(food)
+    }
+
     func onUseThisFoodPressed(_ food: FoodModel, delegate: BarcodeScannerDelegate) {
         delegate.onFoodFound?(food)
     }

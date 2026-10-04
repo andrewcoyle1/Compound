@@ -26,12 +26,12 @@ struct CalendarDayCell: View {
                 .foregroundStyle(dayNumberStyle)
             Text(day.formatted(.dateTime.weekday(.short)))
                 .font(.subheadline)
-                .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.secondary))
+                .foregroundStyle(.secondary)
 
             todayDot
         }
         .monospacedDigit()
-        .fontWeight(isSelected || isToday ? .semibold : .regular)
+        .fontWeight(isToday ? .semibold : .regular)
         .padding(.vertical, Spacing.m)
         .frame(maxWidth: .infinity)
         .background {
@@ -67,19 +67,13 @@ struct CalendarDayCell: View {
             .frame(width: 4, height: 4)
     }
 
-    /// Inverted on the selected cell, which is filled with the tint the dot would otherwise use.
     private var todayDotStyle: AnyShapeStyle {
-        isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.tint)
+        AnyShapeStyle(.tint)
     }
 
+    /// The selection is the soft fill behind the day, so the text keeps its own colours on it.
     private var dayNumberStyle: AnyShapeStyle {
-        if isSelected {
-            return AnyShapeStyle(.onAccent)
-        } else if isToday {
-            return AnyShapeStyle(.tint)
-        } else {
-            return AnyShapeStyle(.primary)
-        }
+        isToday ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary)
     }
 
     /// The capsule behind the day, and its stroke.
@@ -92,22 +86,20 @@ struct CalendarDayCell: View {
     @ViewBuilder
     private var outline: some View {
         ZStack {
-            // No fill: the centre shows the header's own background through the ring.
-
-            // The selection sits *inside* the ring rather than under it, with a hairline of the
-            // cell surface between them. Filling the whole capsule put the ring on the boundary
-            // between two surfaces, which is what made it depend on the selection to stay legible.
+            // The selected day is a soft system fill in place of its outline, as the system's own
+            // date strips mark it: quieter than the solid tint capsule it replaces, which drew
+            // the eye to the selection rather than to the days' rings. The fill adapts to light
+            // and dark, so the ring keeps its contrast on it.
             if isSelected {
                 Capsule()
-                    .fill(.tint)
-                    .padding(Self.ringWidth + 1.5)
+                    .fill(.fill.secondary)
+            } else {
+                // `inset(by:)` half the line width keeps the whole stroke inside the capsule.
+                // Stroking the boundary splits the line either side of the edge.
+                Capsule()
+                    .inset(by: Self.ringWidth / 2)
+                    .stroke(trackStyle, lineWidth: Self.ringWidth)
             }
-
-            // `inset(by:)` half the line width keeps the whole stroke inside the capsule.
-            // Stroking the boundary splits the line either side of the edge.
-            Capsule()
-                .inset(by: Self.ringWidth / 2)
-                .stroke(trackStyle, lineWidth: Self.ringWidth)
 
             if let marker, !marker.isEmpty {
                 Capsule()
@@ -127,8 +119,8 @@ struct CalendarDayCell: View {
     /// Half the gap between neighbouring capsules, which comes out at `Spacing.l`.
     static let capsuleInset: CGFloat = Spacing.s
 
-    /// The unfilled remainder, and the whole stroke on a day with nothing logged. One colour in
-    /// every state now that the ring never overlaps the selection.
+    /// The unfilled remainder, and the whole stroke on a day with nothing logged. The selected
+    /// day has no track: its fill stands in for the outline.
     private var trackStyle: AnyShapeStyle {
         AnyShapeStyle(.secondary)
     }
@@ -198,7 +190,7 @@ struct CalendarDayCell: View {
             CalendarDayCell(day: today, marker: .goalProgress(value: 2650, goal: 2200, grace: 100), isToday: false, isSelected: false)
         }
 
-        // The same five, selected, where the capsule is already tint-filled
+        // The same five, selected: the soft fill, with each ring's progress on it
         HStack(spacing: 0) {
             CalendarDayCell(day: today, marker: .goalProgress(value: 550, goal: 2200, grace: 100), isToday: false, isSelected: true)
             CalendarDayCell(day: today, marker: .goalProgress(value: 1100, goal: 2200, grace: 100), isToday: false, isSelected: true)

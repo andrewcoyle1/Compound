@@ -44,6 +44,9 @@ struct NutritionView<
         }
         .scrollIndicators(.hidden)
         .navigationTitle("Nutrition")
+        // The day the timeline shows, in the format Today used: the strip's cells give only the
+        // day and weekday, so which month a selected day was in had no answer on screen.
+        .navigationSubtitle(presenter.selectedDate.formatted(date: .abbreviated, time: .omitted))
         .searchable(
             text: $presenter.searchString,
             placement: .navigationBarDrawer(displayMode: .always),

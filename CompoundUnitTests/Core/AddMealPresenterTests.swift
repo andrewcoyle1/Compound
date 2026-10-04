@@ -169,7 +169,8 @@ struct AddMealPresenterTests {
             presenter: AddMealPresenter(
                 interactor: interactor,
                 router: router,
-                delegate: AddMealDelegate(mealLog: logged)
+                delegate: AddMealDelegate(mealLog: logged),
+                pickerOpenDelay: .zero
             ),
             interactor: interactor,
             router: router
@@ -559,5 +560,31 @@ struct AddMealPresenterTests {
         screen.presenter.onShowPickerPressed()
 
         #expect(screen.router.shown == ["itemAmount", "picker"])
+    }
+
+    /// A new meal's empty plate opens the picker by itself, once: closing it on an empty plate and
+    /// coming back does not open it again.
+    @Test("Test An Empty Plate Opens The Picker Once")
+    func testAnEmptyPlateOpensThePickerOnce() async {
+        let screen = makeScreen(meal: meal(items: []))
+
+        screen.presenter.onViewAppear()
+        let opened = await TestManagers.eventually(timeout: .seconds(5)) { screen.router.shown == ["picker"] }
+        screen.presenter.onViewAppear()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        #expect(opened)
+        #expect(screen.router.shown == ["picker"])
+    }
+
+    /// A draft that already has food opens on its plate.
+    @Test("Test A Plate With Food Does Not Open The Picker")
+    func testAPlateWithFoodDoesNotOpenThePicker() async {
+        let screen = makeScreen(meal: meal(items: [item(id: "a", calories: 100)]))
+
+        screen.presenter.onViewAppear()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        #expect(screen.router.shown.isEmpty)
     }
 }

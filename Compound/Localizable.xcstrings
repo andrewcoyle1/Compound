@@ -26208,6 +26208,36 @@
           }
         }
       }
+    },
+    "Log Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar de nuevo"
+          }
+        }
+      }
+    },
+    "Add All (%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir todo (%lld)"
+          }
+        }
+      }
+    },
+    "Added" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -20,6 +20,9 @@ class MealDescribePresenter {
     /// Set once a description has been analysed successfully, so an empty result reads as "no
     /// foods recognized" rather than the screen showing nothing at all.
     private(set) var didAnalyse = false
+    /// Set once Add All has put these results on the plate, so a second tap cannot add them twice.
+    /// A new analysis clears it.
+    private(set) var didAddAll = false
 
     init(interactor: MealDescribeInteractor, router: MealDescribeRouter) {
         self.interactor = interactor
@@ -51,6 +54,7 @@ class MealDescribePresenter {
         isAnalysing = true
         errorMessage = nil
         analysisResults = []
+        didAddAll = false
         interactor.trackEvent(event: Event.onSubmit(text: descriptionText))
         do {
             let json = try await interactor.describeMeal(text: descriptionText)
@@ -63,6 +67,16 @@ class MealDescribePresenter {
             interactor.trackEvent(event: Event.onError(message: error.localizedDescription))
         }
         isAnalysing = false
+    }
+
+    /// Every result onto the plate at its estimate, in one tap. Correcting an amount is still a tap
+    /// on its row away.
+    func onAddAllPressed(delegate: MealDescribeDelegate) {
+        guard !didAddAll, !analysisResults.isEmpty else { return }
+        didAddAll = true
+        interactor.trackEvent(event: Event.onAddAll(count: analysisResults.count))
+        analysisResults.forEach { delegate.onPick($0.mealItem) }
+        interactor.playHaptic(option: .success)
     }
 
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
@@ -84,6 +98,7 @@ extension MealDescribePresenter {
         case onDisappear(delegate: MealDescribeDelegate)
         case onSubmit(text: String)
         case onAddItem(name: String)
+        case onAddAll(count: Int)
         case onError(message: String)
 
         var eventName: String {
@@ -92,6 +107,7 @@ extension MealDescribePresenter {
             case .onDisappear: return "MealDescribeView_Disappear"
             case .onSubmit:    return "MealDescribe_Submit"
             case .onAddItem:   return "MealDescribe_AddItem"
+            case .onAddAll:    return "MealDescribe_AddAll"
             case .onError:     return "MealDescribe_Error"
             }
         }
@@ -104,6 +120,8 @@ extension MealDescribePresenter {
                 return ["text_length": text.count]
             case .onAddItem(let name):
                 return ["item_name": name]
+            case .onAddAll(let count):
+                return ["item_count": count]
             case .onError(let message):
                 return ["error": message]
             }

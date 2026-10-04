@@ -23,18 +23,40 @@ class AddMealPresenter {
     var showAllNutrients: Bool = false
     var nutritionScope: NutritionScope = .plate
     
+    /// How long the picker waits after the screen first appears. A sheet presented while the
+    /// cover is still animating in is dropped, so this matches SwiftfulRouting's own wait.
+    private let pickerOpenDelay: Duration
+    private var hasAppeared = false
+
     init(
         interactor: AddMealInteractor,
         router: AddMealRouter,
-        delegate: AddMealDelegate
+        delegate: AddMealDelegate,
+        pickerOpenDelay: Duration = .milliseconds(550)
     ) {
         self.interactor = interactor
         self.router = router
         self.mealLog = delegate.mealLog
+        self.pickerOpenDelay = pickerOpenDelay
     }
     
     func onViewAppear() {
         interactor.trackEvent(event: Event.onAppear)
+        guard !hasAppeared else { return }
+        hasAppeared = true
+        openPickerIfPlateIsEmpty()
+    }
+
+    /// An empty plate's only next step is choosing food, so a new meal opens the picker itself.
+    /// Once only: closing the picker on an empty plate leaves it closed, and a draft that already
+    /// has food opens on its plate.
+    private func openPickerIfPlateIsEmpty() {
+        guard mealLog.items.isEmpty else { return }
+        Task {
+            try? await Task.sleep(for: pickerOpenDelay)
+            guard mealLog.items.isEmpty else { return }
+            onShowPickerPressed()
+        }
     }
 
     func onViewDisappear() {

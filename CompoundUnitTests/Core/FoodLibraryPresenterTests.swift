@@ -24,6 +24,7 @@ struct FoodLibraryPresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var amountDelegates: [IngredientAmountDelegate] = []
         private(set) var recipeDetailDelegates: [RecipeDetailDelegate] = []
+        private(set) var recipeAmountDelegates: [RecipeAmountDelegate] = []
 
         func showIngredientAmountView(delegate: IngredientAmountDelegate) {
             amountDelegates.append(delegate)
@@ -31,6 +32,10 @@ struct FoodLibraryPresenterTests {
 
         func showRecipeDetailView(delegate: RecipeDetailDelegate) {
             recipeDetailDelegates.append(delegate)
+        }
+
+        func showRecipeAmountView(delegate: RecipeAmountDelegate) {
+            recipeAmountDelegates.append(delegate)
         }
     }
 
@@ -40,9 +45,10 @@ struct FoodLibraryPresenterTests {
         let router: Router
     }
 
-    private func makeScreen(quickAdd: Bool = false) -> Screen {
+    private func makeScreen(quickAdd: Bool = false, favouriteFoodIds: [String] = []) -> Screen {
         let interactor = Interactor()
         interactor.foodLogSettings.quickAddEnabled = quickAdd
+        interactor.foodLogSettings.favouriteFoodIds = favouriteFoodIds
         let router = Router()
         return Screen(
             presenter: FoodLibraryPresenter(interactor: interactor, router: router),
@@ -60,6 +66,14 @@ struct FoodLibraryPresenterTests {
     }
 
     // MARK: - Tabs
+
+    /// Favourites are what gets logged again and again, so the library opens on them once there
+    /// are any, and on recipes until then.
+    @Test("Test The Library Opens On Favourites When There Are Any")
+    func testTheLibraryOpensOnFavouritesWhenThereAreAny() {
+        #expect(makeScreen().presenter.foodLibraryOption == .recipes)
+        #expect(makeScreen(favouriteFoodIds: ["Oats"]).presenter.foodLibraryOption == .favourites)
+    }
 
     @Test("Test Changing Tab Clears The Search And Plays A Selection Haptic")
     func testChangingTabClearsTheSearchAndPlaysASelectionHaptic() {
@@ -184,6 +198,7 @@ struct FoodLibraryPresenterTests {
         #expect(item.amount == 40)
     }
 
+    /// Outside the picker there is nothing to log into, so a favourite recipe opens its detail.
     @Test("Test A Favourite Recipe Opens Its Detail")
     func testAFavouriteRecipeOpensItsDetail() {
         let screen = makeScreen()
@@ -191,6 +206,19 @@ struct FoodLibraryPresenterTests {
         screen.presenter.onFavouriteRecipePressed(recipe("Chilli"))
 
         #expect(screen.router.recipeDetailDelegates.first?.recipeTemplate.name == "Chilli")
+        #expect(screen.router.recipeAmountDelegates.isEmpty)
+    }
+
+    /// In the picker it is being logged, so it opens the servings step, as the Recipes tab does;
+    /// the detail screen was a dead end with no way to add it.
+    @Test("Test A Favourite Recipe In The Picker Opens Its Servings Step")
+    func testAFavouriteRecipeInThePickerOpensItsServingsStep() {
+        let screen = makeScreen()
+
+        screen.presenter.onFavouriteRecipePressed(recipe("Chilli"), onPick: { _ in })
+
+        #expect(screen.router.recipeAmountDelegates.first?.recipe.name == "Chilli")
+        #expect(screen.router.recipeDetailDelegates.isEmpty)
     }
 
     @Test("Test The Search Prompt Follows The Tab")
@@ -212,9 +240,14 @@ struct NutritionPickerPresenterTests {
     private final class PickerInteractor: SpyGlobalInteractor, NutritionLibraryPickerInteractor {
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
         private(set) var savedExternalFoods: [FoodModel] = []
+        var lastLoggedItems: [String: MealItemModel] = [:]
 
         func saveExternalFood(_ food: FoodModel) async {
             savedExternalFoods.append(food)
+        }
+
+        func lastLoggedItem(forIngredientId ingredientId: String) -> MealItemModel? {
+            lastLoggedItems[ingredientId]
         }
     }
 
@@ -412,6 +445,70 @@ struct NutritionPickerPresenterTests {
 
         #expect(screen.interactor.savedExternalFoods.map(\.name) == ["Oat Milk"])
         #expect(screen.router.amountDelegates.isEmpty)
+    }
+
+    // MARK: - The row's "+"
+
+    /// "+" adds the food without the amount screen, at its own portion when it has never been
+    /// logged, with the success haptic. The row itself still opens the amount screen.
+    @Test("Test Plus Adds A Food Without The Amount Step")
+    func testPlusAddsAFoodWithoutTheAmountStep() throws {
+        let screen = makeScreen()
+        let oats = FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats", nutrients: [.calories: 380], servingWeight: 40)
+
+        var picked: [MealItemModel] = []
+        screen.presenter.quickAdd(oats, onPick: { picked.append($0) })
+
+        #expect(screen.router.amountDelegates.isEmpty)
+        let item = try #require(picked.first)
+        #expect(item.amount == 40)
+        #expect(item.calories == 152)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// A food logged before is added again at last time's amount, as a new item.
+    @Test("Test Plus Repeats The Last Logged Amount")
+    func testPlusRepeatsTheLastLoggedAmount() throws {
+        let screen = makeScreen()
+        let oats = FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats", nutrients: [.calories: 380], servingWeight: 40)
+        let last = oats.mealItem(amount: 65)
+        screen.interactor.lastLoggedItems["oats"] = last
+
+        var picked: [MealItemModel] = []
+        screen.presenter.quickAdd(oats, onPick: { picked.append($0) })
+
+        let item = try #require(picked.first)
+        #expect(item.amount == 65)
+        #expect(item.unit == "g")
+        #expect(item.itemId != last.itemId)
+    }
+
+    /// "+" on an external food still takes it into the library.
+    @Test("Test Plus Takes An External Food Into The Library")
+    func testPlusTakesAnExternalFoodIntoTheLibrary() async {
+        let screen = makeScreen()
+        let external = FoodModel(ingredientId: "off-1", authorId: nil, name: "Oat Milk")
+
+        screen.presenter.quickAdd(external, onPick: { _ in })
+        await TestManagers.eventually { !screen.interactor.savedExternalFoods.isEmpty }
+
+        #expect(screen.interactor.savedExternalFoods.map(\.name) == ["Oat Milk"])
+    }
+
+    /// The amount screen opens at last time's amount for a food logged before, and at the food's
+    /// own portion (no prefill) otherwise.
+    @Test("Test The Amount Step Opens At The Last Logged Amount")
+    func testTheAmountStepOpensAtTheLastLoggedAmount() {
+        let screen = makeScreen()
+        let oats = FoodModel(ingredientId: "oats", authorId: "user-1", name: "Oats", servingWeight: 40)
+        let rice = FoodModel(ingredientId: "rice", authorId: "user-1", name: "Rice")
+        screen.interactor.lastLoggedItems["oats"] = oats.mealItem(amount: 65)
+
+        screen.presenter.navToIngredientAmount(oats, onPick: { _ in })
+        screen.presenter.navToIngredientAmount(rice, onPick: { _ in })
+
+        #expect(screen.router.amountDelegates.first?.initialAmountText == "65")
+        #expect(screen.router.amountDelegates.last?.initialAmountText == nil)
     }
 
     @Test("Test Choosing A Recipe Opens Its Amount Step")

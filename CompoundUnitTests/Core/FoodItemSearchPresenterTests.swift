@@ -312,4 +312,20 @@ struct FoodItemSearchPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["FoodItemSearchView_Appear"])
     }
+
+    /// Recent is newest first whatever order the meal store holds meals in: by meal date, and
+    /// within a meal the item added last first. Recipes are not foods and are left out.
+    @Test("Test Recent Foods Are Newest First")
+    func testRecentFoodsAreNewestFirst() {
+        func item(_ id: String, _ type: MealItemSourceType = .ingredient) -> MealItemModel {
+            MealItemModel(itemId: UUID().uuidString, sourceType: type, sourceId: id, displayName: id, amount: 1, unit: "g")
+        }
+        let now = Date()
+        let older = MealLogModel(authorId: "user-1", dayKey: "a", date: now.addingTimeInterval(-86_400), items: [item("rice")])
+        let newer = MealLogModel(authorId: "user-1", dayKey: "b", date: now, items: [item("oats"), item("chilli", .recipe), item("milk")])
+
+        let ids = [older, newer].ingredientItemsNewestFirst.map(\.sourceId)
+
+        #expect(ids == ["milk", "oats", "rice"])
+    }
 }

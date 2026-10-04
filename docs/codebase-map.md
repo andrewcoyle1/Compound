@@ -93,27 +93,27 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/Today` | 11 | 1,226 | Today tab: today's workout, nutrition, weigh-in, streak, weekly check-in and weekly review |
 | `Compound/Core/DevSettings` | 4 | 797 | DEV/MOCK-only developer tools screen |
 | `Compound/Core/Notifications` | 10 | 1,279 | Activity notifications inbox |
-| `Compound/Core/Nutrition` | 147 | 12,881 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
+| `Compound/Core/Nutrition` | 147 | 13,091 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
 | `Compound/Core/Onboarding` | 109 | 7,079 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `Compound/Core/Paywalls` | 9 | 882 | Paywall screens |
 | `Compound/Core/Profile` | 201 | 12,700 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
 | `Compound/Core/Sharing` | 8 | 502 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 473 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 226 | 19,160 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Core/Training` | 226 | 19,167 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 74 | 6,683 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 251 | 31,278 | App-owned managers, models and services (see Managers table) |
+| `Compound/Managers` | 252 | 31,337 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,348 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 600 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 275 | 73,635 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 274 | 73,871 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 7 | 573 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 10 | 17,130 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `functions` | 9 | 17,130 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 47 | 10,163 | Specs, reviews, audits, this map |
+| `docs` | 46 | 10,163 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -189,7 +189,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Nutrition** | [Compound/Core/Nutrition](Compound/Core/Nutrition) | 806 | AddMeal, FoodDetail, FoodLogSettings, Foods, MealDetail, MealItemAmountView, NutritionOverview, ProfileViewZoom, RecipeDetail, Recipes, TimelineActions | NutritionDelegate, `showNutritionView` |  | NutritionPresenterTests.swift |
+| **Nutrition** | [Compound/Core/Nutrition](Compound/Core/Nutrition) | 828 | AddMeal, FoodDetail, FoodLogSettings, Foods, MealDetail, MealItemAmountView, NutritionOverview, ProfileViewZoom, RecipeDetail, Recipes, TimelineActions | NutritionDelegate, `showNutritionView` |  | NutritionPresenterTests.swift |
 | **CheckIn** | [CheckIn](Compound/Core/Nutrition/CheckIn) | 803 |  | CheckInDelegate, `showCheckInView` | CheckInPresenter+Events.swift, CheckInStep.swift | CheckInPresenterTests.swift |
 | **IngredientListBuilder** | [Components/IngredientListBuilder](Compound/Core/Nutrition/Components/IngredientListBuilder) | 377 | CreateFood, MealItemAmountView, RecipeIngredientAmount | IngredientListBuilderDelegate, `showIngredientListBuilderView` |  |  |
 | **MealAccessory** | [Components/MealAccessory](Compound/Core/Nutrition/Components/MealAccessory) | 186 | AddMeal | MealAccessoryDelegate |  | MealAccessoryPresenterTests.swift |
@@ -201,18 +201,18 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **FoodPackaging** | [Foods/CreateFood/FoodPackaging](Compound/Core/Nutrition/Foods/CreateFood/FoodPackaging) | 261 | PortionDefinition | FoodPackagingDelegate, `showFoodPackagingView` |  |  |
 | **PortionDefinition** | [Foods/CreateFood/PortionDefinition](Compound/Core/Nutrition/Foods/CreateFood/PortionDefinition) | 357 | FoodDefinition | PortionDefinitionDelegate, `showPortionDefinitionView` |  |  |
 | **FoodDetail** | [Foods/FoodDetail](Compound/Core/Nutrition/Foods/FoodDetail) | 381 |  | FoodDetailDelegate, `showDeleteConfirmation`, `showFoodDetailView` |  |  |
-| **AddMeal** | [MealLog/AddMeal](Compound/Core/Nutrition/MealLog/AddMeal) | 667 | MealItemAmountView, NutritionLibraryPicker | AddMealDelegate, `showAddMealView` |  | AddMealPresenterTests.swift |
-| **IngredientAmount** | [MealLog/IngredientAmount](Compound/Core/Nutrition/MealLog/IngredientAmount) | 210 |  | IngredientAmountDelegate, `showIngredientAmountView` |  |  |
-| **MealDetail** | [MealLog/MealDetail](Compound/Core/Nutrition/MealLog/MealDetail) | 265 |  | MealDetailDelegate, `showMealDetailView` |  |  |
-| **MealItemAmountView** | [MealLog/MealItemAmountView](Compound/Core/Nutrition/MealLog/MealItemAmountView) | 309 |  | MealItemAmountViewDelegate, `showMealItemAmountViewView` |  |  |
-| **NutritionLibraryPicker** | [MealLog/NutritionLibraryPicker](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker) | 322 | IngredientAmount, RecipeAmount | NutritionLibraryPickerDelegate, `showNutritionLibraryPickerView` |  |  |
+| **AddMeal** | [MealLog/AddMeal](Compound/Core/Nutrition/MealLog/AddMeal) | 689 | MealItemAmountView, NutritionLibraryPicker | AddMealDelegate, `showAddMealView` |  | AddMealPresenterTests.swift |
+| **IngredientAmount** | [MealLog/IngredientAmount](Compound/Core/Nutrition/MealLog/IngredientAmount) | 227 |  | IngredientAmountDelegate, `showIngredientAmountView` |  |  |
+| **MealDetail** | [MealLog/MealDetail](Compound/Core/Nutrition/MealLog/MealDetail) | 300 | AddMeal | MealDetailDelegate, `showMealDetailView` |  |  |
+| **MealItemAmountView** | [MealLog/MealItemAmountView](Compound/Core/Nutrition/MealLog/MealItemAmountView) | 315 |  | MealItemAmountViewDelegate, `showMealItemAmountViewView` |  |  |
+| **NutritionLibraryPicker** | [MealLog/NutritionLibraryPicker](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker) | 353 | IngredientAmount, RecipeAmount | NutritionLibraryPickerDelegate, `showNutritionLibraryPickerView` |  |  |
 | **BarcodeScanner** | [MealLog/NutritionLibraryPicker/BarcodeScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/BarcodeScanner) | 919 |  | BarcodeScannerDelegate, `showBarcodeScannerView` |  | BarcodeScannerPresenterTests.swift |
 | **FoodItemQuickAdd** | [MealLog/NutritionLibraryPicker/FoodItemQuickAdd](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemQuickAdd) | 297 |  | FoodItemQuickAddDelegate |  | FoodItemQuickAddPresenterTests.swift |
-| **FoodItemSearch** | [MealLog/NutritionLibraryPicker/FoodItemSearch](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemSearch) | 351 |  | FoodItemSearchDelegate, `showFoodItemSearchView` |  | FoodItemSearchPresenterTests.swift |
-| **FoodLibrary** | [MealLog/NutritionLibraryPicker/FoodLibrary](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodLibrary) | 315 | IngredientAmount, RecipeDetail | FoodLibraryDelegate, `showFoodLibraryView` |  | FoodLibraryPresenterTests.swift |
-| **FoodPhotoScanner** | [MealLog/NutritionLibraryPicker/FoodPhotoScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodPhotoScanner) | 444 | IngredientAmount | FoodPhotoScannerDelegate |  |  |
-| **MealDescribe** | [MealLog/NutritionLibraryPicker/MealDescribe](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/MealDescribe) | 248 | IngredientAmount | MealDescribeDelegate, `showMealDescribeView` |  |  |
-| **RecipeAmount** | [MealLog/RecipeAmount](Compound/Core/Nutrition/MealLog/RecipeAmount) | 181 |  | RecipeAmountDelegate, `showRecipeAmountView` |  |  |
+| **FoodItemSearch** | [MealLog/NutritionLibraryPicker/FoodItemSearch](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemSearch) | 353 |  | FoodItemSearchDelegate, `showFoodItemSearchView` |  | FoodItemSearchPresenterTests.swift |
+| **FoodLibrary** | [MealLog/NutritionLibraryPicker/FoodLibrary](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodLibrary) | 327 | IngredientAmount, RecipeAmount, RecipeDetail | FoodLibraryDelegate, `showFoodLibraryView` |  | FoodLibraryPresenterTests.swift |
+| **FoodPhotoScanner** | [MealLog/NutritionLibraryPicker/FoodPhotoScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodPhotoScanner) | 466 | IngredientAmount | FoodPhotoScannerDelegate |  |  |
+| **MealDescribe** | [MealLog/NutritionLibraryPicker/MealDescribe](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/MealDescribe) | 278 | IngredientAmount | MealDescribeDelegate, `showMealDescribeView` |  |  |
+| **RecipeAmount** | [MealLog/RecipeAmount](Compound/Core/Nutrition/MealLog/RecipeAmount) | 187 |  | RecipeAmountDelegate, `showRecipeAmountView` |  |  |
 | **NutritionOverview** | [NutritionOverview](Compound/Core/Nutrition/NutritionOverview) | 560 | CheckIn | NutritionOverviewDelegate, `showNutritionOverviewView` |  | NutritionOverviewPresenterTests.swift |
 | **Recipes** | [Recipes](Compound/Core/Nutrition/Recipes) | 150 | CreateRecipe, RecipeDetail, SimpleAlert | `showRecipesView` |  |  |
 | **AddFood** | [Recipes/AddFood](Compound/Core/Nutrition/Recipes/AddFood) | 160 |  | AddFoodDelegate, `showAddIngredientView` | AddFoodDelegate.swift |  |
@@ -221,7 +221,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **RecipePreparation** | [Recipes/CreateRecipe/RecipePreparation](Compound/Core/Nutrition/Recipes/CreateRecipe/RecipePreparation) | 395 |  | RecipePreparationDelegate, `showRecipePreparationView` |  | RecipePreparationPresenterTests.swift |
 | **RecipeDetail** | [Recipes/RecipeDetail](Compound/Core/Nutrition/Recipes/RecipeDetail) | 308 | StartRecipe | RecipeDetailDelegate, `showDeleteConfirmation`, `showRecipeDetailView` | RecipeDetailDelegate.swift |  |
 | **RecipeStart** | [Recipes/RecipeStart](Compound/Core/Nutrition/Recipes/RecipeStart) | 120 |  | RecipeStartDelegate, `showStartRecipeView` | RecipeStartDelegate.swift |  |
-| **TimelineActions** | [TimelineActions](Compound/Core/Nutrition/TimelineActions) | 365 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
+| **TimelineActions** | [TimelineActions](Compound/Core/Nutrition/TimelineActions) | 346 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
 
 ### `Compound/Core/Onboarding` (26 modules)
 
@@ -386,7 +386,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **InactiveMesocycle** | [Subviews/MesocycleLibrary/InactiveMesocycle](Compound/Core/Training/Subviews/MesocycleLibrary/InactiveMesocycle) | 155 |  | InactiveMesocycleDelegate, `showInactiveMesocycleView` |  |  |
 | **MesocycleDisclosureGroup** | [Subviews/MesocycleLibrary/MesocycleDisclosureGroup](Compound/Core/Training/Subviews/MesocycleLibrary/MesocycleDisclosureGroup) | 163 | EditMesocycle, ShareToFollower | MesocycleDisclosureGroupDelegate, `showMesocycleDisclosureGroupView` |  |  |
 | **PrebuiltMesocycleDetail** | [Subviews/MesocycleLibrary/PrebuiltMesocycleDetail](Compound/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail) | 209 |  | `showPrebuiltMesocycleDetailView` |  |  |
-| **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 292 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
+| **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 299 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
 | **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](Compound/Core/Training/Subviews/WorkoutSessionDetailView) | 955 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
 | **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](Compound/Core/Training/Subviews/WorkoutTemplateDetail) | 348 | CreateWorkout, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
 | **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 1923 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | StravaOffer.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
@@ -416,7 +416,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ActivityNotificationManager** | [Compound/Managers/Notifications](Compound/Managers/Notifications/ActivityNotificationManager.swift) | 111 |  |  |  |  | ActivityNotificationManagerTests.swift |
 | **FoodManager** | [Compound/Managers/Nutrition/Food](Compound/Managers/Nutrition/Food/FoodManager.swift) | 63 | Collection<FoodModel> | FoodModel, FoodModel+MealItem, ServingUnit |  |  | FoodManagerTests.swift |
 | **FoodLogSettingsManager** | [Compound/Managers/Nutrition/FoodLogSettings](Compound/Managers/Nutrition/FoodLogSettings/FoodLogSettingsManager.swift) | 88 | Document<FoodLogSettings> | FoodLogSettings |  |  | FoodLogSettingsManagerTests.swift |
-| **MealLogManager** | [Compound/Managers/Nutrition/MealLog](Compound/Managers/Nutrition/MealLog/MealLogManager.swift) | 486 | Collection<MealLogModel> | MealItemModel, MealItemSourceType, MealLogModel, MealLogModel+Mocks |  |  | MealLogManagerTests.swift |
+| **MealLogManager** | [Compound/Managers/Nutrition/MealLog](Compound/Managers/Nutrition/MealLog/MealLogManager.swift) | 486 | Collection<MealLogModel> | MealItemModel, MealItemSourceType, MealLogModel, MealLogModel+Mocks, MealLogModel+Repeat |  |  | MealLogManagerTests.swift |
 | **NutritionManager** | [Compound/Managers/Nutrition/NutritionManager](Compound/Managers/Nutrition/NutritionManager/NutritionManager.swift) | 437 | Document<DietPlan> | DailyMacroTarget, DailyNutritionBreakdown, DietPlan |  |  | NutritionManagerDietPlanTests.swift, NutritionManagerTests.swift |
 | **NutritionStrategyManager** | [Compound/Managers/Nutrition/NutritionStrategy](Compound/Managers/Nutrition/NutritionStrategy/NutritionStrategyManager.swift) | 188 | Collection<NutritionDayAnnotation>, Document<CheckInRecord>, Document<LoggingBreak> | CheckInRecord, LoggingBreak, NutritionDayAnnotation |  |  | NutritionStrategyManagerTests.swift |
 | **NutritionStrategySettingsManager** | [Compound/Managers/Nutrition/NutritionStrategySettings](Compound/Managers/Nutrition/NutritionStrategySettings/NutritionStrategySettingsManager.swift) | 57 | Document<NutritionStrategySettings> | NutritionStrategySettings |  |  | NutritionStrategySettingsManagerTests.swift |
@@ -697,7 +697,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [docs/specs/ui-framework/wp-15-lock-in.md](docs/specs/ui-framework/wp-15-lock-in.md) | 52 |
 | [docs/specs/weekly-check-in.md](docs/specs/weekly-check-in.md) | 128 |
 | [docs/ui-audit.md](docs/ui-audit.md) | 120 |
-| [.github/workflows/ci.yml](.github/workflows/ci.yml) | 219 |
+| [.github/workflows/ci.yml](.github/workflows/ci.yml) | 220 |
+| [.github/workflows/release.yml](.github/workflows/release.yml) | 174 |
 | [functions/functions.test.js](functions/functions.test.js) | 504 |
 | [functions/index.js](functions/index.js) | 929 |
 | [functions/index.test.js](functions/index.test.js) | 784 |

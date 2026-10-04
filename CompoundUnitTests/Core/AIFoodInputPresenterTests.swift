@@ -193,7 +193,7 @@ struct FoodPhotoScannerPresenterTests {
         await screen.presenter.onCapture(image)
         let result = screen.presenter.analysisResults.first
 
-        let item = result.map { screen.presenter.makeMealItem(from: $0) }
+        let item = result?.mealItem
 
         #expect(item?.displayName == "Scrambled Eggs")
         #expect(item?.amount == 150)
@@ -214,7 +214,7 @@ struct FoodPhotoScannerPresenterTests {
         await screen.presenter.onCapture(image)
         let result = screen.presenter.analysisResults.first
 
-        let item = result.map { screen.presenter.makeMealItem(from: $0) }
+        let item = result?.mealItem
 
         #expect(item?.nutrients[.calories] == 110)
         #expect(item?.nutrients[.protein] == nil)
@@ -230,7 +230,7 @@ struct FoodPhotoScannerPresenterTests {
         await screen.presenter.onCapture(image)
         let result = screen.presenter.analysisResults.first
 
-        let item = result.map { screen.presenter.makeMealItem(from: $0) }
+        let item = result?.mealItem
 
         #expect(item?.sourceId == "food-1")
     }
@@ -266,6 +266,28 @@ struct FoodPhotoScannerPresenterTests {
 
         delegate?.onPick(MealItemModel(itemId: "x", sourceType: .ingredient, sourceId: "food-1", displayName: "Scrambled Eggs", amount: 150, unit: "g", nutrients: NutrientMap()))
         #expect(picked?.displayName == "Scrambled Eggs")
+    }
+
+    /// Add All puts every result on the plate at its estimate in one tap, and only once.
+    @Test("Test Add All Adds Every Result Once")
+    func testAddAllAddsEveryResultOnce() async {
+        let screen = makeScreen()
+        screen.interactor.json = """
+        {"items": [
+            {"id": "1", "name": "Eggs", "amountGrams": 150, "calories": 220},
+            {"id": "2", "name": "Toast", "amountGrams": 40, "calories": 110}
+        ]}
+        """
+        await screen.presenter.onCapture(image)
+
+        var picked: [MealItemModel] = []
+        screen.presenter.onAddAllPressed { picked.append($0) }
+        screen.presenter.onAddAllPressed { picked.append($0) }
+
+        #expect(picked.map(\.displayName) == ["Eggs", "Toast"])
+        #expect(picked.map(\.amount) == [150, 40])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(screen.router.amountDelegates.isEmpty)
     }
 
     /// A refused camera used to show a capture button over a black preview. It is now its own
@@ -342,7 +364,7 @@ struct MealDescribePresenterTests {
     private func tapAndConfirm(_ item: FoodAnalysisItem, on screen: Screen) {
         screen.presenter.onResultTapped(item, delegate: screen.delegate)
         guard let delegate = screen.router.amountDelegates.last else { return }
-        delegate.onPick(delegate.ingredient.mealItem(amount: Double(delegate.initialAmountText) ?? 0))
+        delegate.onPick(delegate.ingredient.mealItem(amount: Double(delegate.initialAmountText ?? "") ?? 0))
     }
 
     private var json: String {
@@ -496,6 +518,28 @@ struct MealDescribePresenterTests {
 
         #expect(screen.box.picked.map(\.displayName) == ["Banana"])
         #expect(screen.presenter.analysisResults.count == 2)
+    }
+
+    /// Add All puts every result on the plate at its estimate in one tap, and only once; a new
+    /// analysis allows it again.
+    @Test("Test Add All Adds Every Result Once")
+    func testAddAllAddsEveryResultOnce() async {
+        let screen = makeScreen()
+        screen.interactor.json = json
+        screen.presenter.descriptionText = "Porridge and a banana"
+        await screen.presenter.onAnalysePressed()
+
+        screen.presenter.onAddAllPressed(delegate: screen.delegate)
+        screen.presenter.onAddAllPressed(delegate: screen.delegate)
+
+        #expect(screen.box.picked.map(\.displayName) == ["Porridge", "Banana"])
+        #expect(screen.box.picked.map(\.amount) == [200, 120])
+        #expect(screen.box.picked.first?.nutrients[.calories] == 180)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(screen.router.amountDelegates.isEmpty)
+
+        await screen.presenter.onAnalysePressed()
+        #expect(!screen.presenter.didAddAll)
     }
 
     @Test("Test A Nutrient The Model Omitted Is Absent")

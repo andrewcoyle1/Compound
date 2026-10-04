@@ -150,6 +150,9 @@ class PushManager {
             content.body = reminder.body
             content.sound = .default
             content.interruptionLevel = .passive
+            // Tapping one opens Nutrition, where the meal is logged, rather than whichever tab was
+            // last on screen. `DeepLink(pushUserInfo:)` reads this.
+            content.userInfo = ["tab": DeepLink.Tab.nutrition.rawValue]
             let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: reminder.hour, minute: reminder.minute), repeats: true)
             return UNNotificationRequest(identifier: id, content: content, trigger: trigger)
         }

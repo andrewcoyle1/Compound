@@ -185,6 +185,11 @@ class TodayPresenter {
         router.showLogWeightView()
     }
 
+    func onWeighInPressed() {
+        interactor.trackEvent(event: Event.weighInPressed)
+        router.showScaleWeightView(delegate: ScaleWeightDelegate(), themeColor: Color.Metric.scaleWeight)
+    }
+
     // MARK: - Weekly check-in
 
     /// The week the check-in is for, or nil when none is waiting.
@@ -239,6 +244,7 @@ extension TodayPresenter {
         case startEmptyWorkoutPressed
         case logMealPressed
         case logWeightPressed
+        case weighInPressed
         case checkInStarted
         case checkInSkipped
         case weeklyReviewPressed
@@ -252,6 +258,7 @@ extension TodayPresenter {
             case .startEmptyWorkoutPressed: return "TodayView_StartEmptyWorkout_Press"
             case .logMealPressed:           return "TodayView_LogMeal_Press"
             case .logWeightPressed:         return "TodayView_LogWeight_Press"
+            case .weighInPressed:           return "TodayView_WeighIn_Press"
             case .checkInStarted:           return "TodayView_CheckIn_Start"
             case .checkInSkipped:           return "TodayView_CheckIn_Skip"
             case .weeklyReviewPressed:      return "TodayView_WeeklyReview_Press"

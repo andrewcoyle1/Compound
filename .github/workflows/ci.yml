@@ -1,9 +1,10 @@
 name: CI
 
+# Pull requests only. main accepts nothing but a PR whose checks passed on a branch up to date
+# with it (the "Protect main" ruleset), so the merge commit is the code already tested here, and
+# Release starts from the push without running this again.
 on:
   pull_request:
-  push:
-    branches: [main]
 
 # One run per ref: a new push supersedes whatever is still in flight.
 concurrency:

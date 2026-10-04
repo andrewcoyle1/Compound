@@ -81,7 +81,7 @@ struct SocialView<WorkoutSessionRow: View>: View {
         .minimizingLargeTitleBar()
         .searchable(
             text: $presenter.peopleSearch.query,
-//            isPresented: $presenter.isSearchPresented,
+            isPresented: $presenter.isSearchPresented,
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: Text("Name or @username")
         )

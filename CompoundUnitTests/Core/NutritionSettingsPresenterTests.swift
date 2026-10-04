@@ -11,7 +11,7 @@ import Foundation
 
 // MARK: - Food Log Settings
 
-/// The Food Log Settings screen: eleven preferences edited in place, plus six rows that push a
+/// The Food Log Settings screen: thirteen preferences edited in place, plus four rows that push a
 /// sub-screen editing the *same* settings document.
 ///
 /// Every one of these presenters holds a copy of the stored settings and writes the whole document
@@ -30,7 +30,7 @@ struct NutritionSettingsFoodLogTests {
         }
     }
 
-    /// `FoodLogSettingsRouter` requires only the six sub-screen destinations, so those are the only
+    /// `FoodLogSettingsRouter` requires only the four sub-screen destinations, so those are the only
     /// calls a double sees. The alignment picker goes out through `showAlert(title:subtitle:buttons:)`,
     /// a `GlobalRouter` extension that dispatches statically — see the alignment test.
     private final class Router: FoodLogSettingsRouter {
@@ -40,9 +40,7 @@ struct NutritionSettingsFoodLogTests {
         func showTimelineFoodTilesView(delegate: TimelineFoodTilesDelegate) { shown.append("timelineFoodTiles") }
         func showLoggerFoodTilesView(delegate: LoggerFoodTilesDelegate) { shown.append("loggerFoodTiles") }
         func showLoggerBannerView(delegate: LoggerBannerDelegate) { shown.append("loggerBanner") }
-        func showTimeSelectionView(delegate: TimeSelectionDelegate) { shown.append("timeSelection") }
         func showFavouriteMeasurementsView(delegate: FavouriteMeasurementsDelegate) { shown.append("favouriteMeasurements") }
-        func showOptimisationView(delegate: OptimisationDelegate) { shown.append("optimisation") }
     }
 
     private struct Screen {
@@ -123,7 +121,7 @@ struct NutritionSettingsFoodLogTests {
         #expect(screen.presenter.showOveragesSubtitle.hasPrefix("Negative numbers will be used"))
     }
 
-    /// Six rows on this screen push a sub-screen that edits the same document. Coming back and
+    /// Four rows on this screen push a sub-screen that edits the same document. Coming back and
     /// flicking a toggle here used to save the copy taken when this screen was first opened, so the
     /// tile and ring choices just made in the sub-screen silently reverted.
     @Test("Test Returning From A Sub Screen Does Not Undo Its Changes")
@@ -144,6 +142,34 @@ struct NutritionSettingsFoodLogTests {
         #expect(saved?.showCaloriesInTimeline == false)
         #expect(saved?.showCaloriesRing == false)
         #expect(saved?.showsFoodTimestamps == false)
+    }
+
+    // MARK: Logger switches
+
+    /// Auto-set Current Time and Quick Add used to sit alone on their own pushed screens. Both are
+    /// now switches here, so each has to save in both directions without touching the other.
+    @Test("Test The Logger Switches Are Saved Both Ways")
+    func testTheLoggerSwitchesAreSavedBothWays() async {
+        let screen = makeScreen { settings in
+            settings.favouriteFoodIds = ["food-1"]
+        }
+
+        screen.presenter.autoSetCurrentTime = true
+        screen.presenter.quickAddEnabled = true
+        await TestManagers.eventually { screen.interactor.savedSettings.count == 2 }
+        #expect(screen.interactor.savedSettings.last?.autoSetCurrentTime == true)
+        #expect(screen.interactor.savedSettings.last?.quickAddEnabled == true)
+
+        screen.presenter.autoSetCurrentTime = false
+        await TestManagers.eventually { screen.interactor.savedSettings.count == 3 }
+        #expect(screen.presenter.autoSetCurrentTime == false)
+        #expect(screen.interactor.savedSettings.last?.autoSetCurrentTime == false)
+        #expect(screen.interactor.savedSettings.last?.quickAddEnabled == true)
+
+        screen.presenter.quickAddEnabled = false
+        await TestManagers.eventually { screen.interactor.savedSettings.count == 4 }
+        #expect(screen.interactor.savedSettings.last?.quickAddEnabled == false)
+        #expect(screen.interactor.savedSettings.last?.favouriteFoodIds == ["food-1"])
     }
 
     // MARK: Timeline hours
@@ -217,13 +243,10 @@ struct NutritionSettingsFoodLogTests {
         screen.presenter.onLoggedBannerPressed()
         screen.presenter.onTimelineFoodTilesPressed()
         screen.presenter.onLoggerFoodTilesPressed()
-        screen.presenter.onTimeSelectionPressed()
         screen.presenter.onFavouriteMeasurementsPressed()
-        screen.presenter.onOptimisationPressed()
 
         #expect(screen.router.shown == [
-            "loggerBanner", "timelineFoodTiles", "loggerFoodTiles",
-            "timeSelection", "favouriteMeasurements", "optimisation"
+            "loggerBanner", "timelineFoodTiles", "loggerFoodTiles", "favouriteMeasurements"
         ])
     }
 

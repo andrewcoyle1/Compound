@@ -75,6 +75,16 @@ class FoodLogSettingsPresenter {
         set { settings.showOpenFoodFactsFoods = newValue; save() }
     }
 
+    var autoSetCurrentTime: Bool {
+        get { settings.autoSetCurrentTime }
+        set { settings.autoSetCurrentTime = newValue; save() }
+    }
+
+    var quickAddEnabled: Bool {
+        get { settings.quickAddEnabled }
+        set { settings.quickAddEnabled = newValue; save() }
+    }
+
     /// An hour of the day as the device writes it: "7 AM" on a 12-hour clock, "07" on a 24-hour one.
     static func hourLabel(_ hour: Int, locale: Locale = .current) -> String {
         var calendar = Calendar(identifier: .gregorian)
@@ -104,7 +114,7 @@ class FoodLogSettingsPresenter {
     }
 
     func onViewAppear() {
-        // Six of this screen's rows push a sub-screen that edits the *same* settings document and
+        // Four of this screen's rows push a sub-screen that edits the *same* settings document and
         // saves it. Coming back, the snapshot taken when this screen was first pushed is out of
         // date, so the next toggle here would save it and undo whatever was changed in there.
         // Re-reading on every appear — including the pop back from a sub-screen — keeps the two in
@@ -130,16 +140,8 @@ class FoodLogSettingsPresenter {
         router.showLoggerFoodTilesView(delegate: LoggerFoodTilesDelegate())
     }
 
-    func onTimeSelectionPressed() {
-        router.showTimeSelectionView(delegate: TimeSelectionDelegate())
-    }
-
     func onFavouriteMeasurementsPressed() {
         router.showFavouriteMeasurementsView(delegate: FavouriteMeasurementsDelegate())
-    }
-
-    func onOptimisationPressed() {
-        router.showOptimisationView(delegate: OptimisationDelegate())
     }
 }
 

@@ -13,7 +13,7 @@ import SwiftUI
 //
 //  The workout settings screens.
 //
-//  All five of these edit one document — every toggle on every one of them writes the whole
+//  All four of these edit one document — every toggle on every one of them writes the whole
 //  `WorkoutSettings` back. Each presenter holds its own copy of that document, which is what makes
 //  them worth testing: a copy taken when the screen was built goes stale the moment another screen
 //  saves, and saving a stale copy does not fail, it quietly reinstates the old values of everything
@@ -29,8 +29,7 @@ import SwiftUI
 private final class SettingsInteractor: SpyGlobalInteractor,
                                         WorkoutSettingsInteractor,
                                         RestTimerSettingsInteractor,
-                                        SmartProgressionSettingsInteractor,
-                                        PrevWORefSettingsInteractor {
+                                        SmartProgressionSettingsInteractor {
     var workoutSettings = WorkoutSettings(authorId: "user-1")
     private(set) var savedSettings: [WorkoutSettings] = []
 
@@ -49,7 +48,7 @@ private func settleSettings() async {
     }
 }
 
-/// The top of the workout settings, and the way in to the four screens below it.
+/// The top of the workout settings, and the way in to the three screens below it.
 @MainActor
 struct WorkoutSettingsPresenterTests {
 
@@ -59,7 +58,6 @@ struct WorkoutSettingsPresenterTests {
 
         func showRestTimerSettingsView(delegate: RestTimerSettingsDelegate) { shown.append("restTimer") }
         func showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate) { shown.append("smartProgression") }
-        func showPreviousWorkoutReferenceSettingsView(delegate: PrevWORefSettingsDelegate) { shown.append("previousReference") }
         func showExerciseAssessmentView(delegate: ExerciseAssessmentDelegate) { shown.append("exerciseAssessment") }
     }
 
@@ -157,10 +155,9 @@ struct WorkoutSettingsPresenterTests {
 
         screen.presenter.onRestTimerSettingsPressed()
         screen.presenter.onSmartProgressionSettingsPressed()
-        screen.presenter.onPreviousReferenceSettingsPressed()
         screen.presenter.onExerciseAssessmentPressed()
 
-        #expect(screen.router.shown == ["restTimer", "smartProgression", "previousReference", "exerciseAssessment"])
+        #expect(screen.router.shown == ["restTimer", "smartProgression", "exerciseAssessment"])
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")
@@ -399,16 +396,20 @@ struct SmartProgressionSettingsPresenterTests {
     }
 }
 
-/// Which earlier workout the "last time" figures are taken from.
+/// Which earlier workout the "last time" figures are taken from: a section of Workout Settings.
 @MainActor
-struct PrevWORefSettingsPresenterTests {
+struct WorkoutSettingsPreviousReferenceTests {
 
-    private final class Router: PreviousWorkoutReferenceSettingsRouter {
+    private final class Router: WorkoutSettingsRouter {
         let router: AnyRouter = TestRouting.anyRouter
+
+        func showRestTimerSettingsView(delegate: RestTimerSettingsDelegate) { }
+        func showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate) { }
+        func showExerciseAssessmentView(delegate: ExerciseAssessmentDelegate) { }
     }
 
     private struct Screen {
-        let presenter: PrevWORefSettingsPresenter
+        let presenter: WorkoutSettingsPresenter
         let interactor: SettingsInteractor
     }
 
@@ -416,21 +417,21 @@ struct PrevWORefSettingsPresenterTests {
         let interactor = SettingsInteractor()
         interactor.workoutSettings = settings
         return Screen(
-            presenter: PrevWORefSettingsPresenter(interactor: interactor, router: Router()),
+            presenter: WorkoutSettingsPresenter(interactor: interactor, router: Router()),
             interactor: interactor
         )
     }
 
-    @Test("Test Both References Are Offered")
-    func testBothReferencesAreOffered() {
+    @Test("Test Every Reference Is Offered")
+    func testEveryReferenceIsOffered() {
         let screen = makeScreen()
 
-        #expect(screen.presenter.options == PreviousWorkoutReferenceOption.allCases)
+        #expect(screen.presenter.previousWorkoutReferenceOptions == PreviousWorkoutReferenceOption.allCases)
         #expect(screen.presenter.previousWorkoutReference == .sameWorkout)
     }
 
     /// This decides which numbers a set is compared against while training, so it has to reach
-    /// storage rather than only the radio button.
+    /// storage rather than only the checkmark.
     @Test("Test Choosing A Reference Is Saved")
     func testChoosingAReferenceIsSaved() async {
         let screen = makeScreen()
@@ -455,15 +456,6 @@ struct PrevWORefSettingsPresenterTests {
         let saved = screen.interactor.savedSettings.last
         #expect(saved?.rirTracking == true)
         #expect(saved?.defaultRestDurationSeconds == 120)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear(delegate: PrevWORefSettingsDelegate())
-
-        #expect(screen.interactor.trackedScreenEventNames == ["PreviousWorkoutReferenceSettingsView_Appear"])
     }
 }
 

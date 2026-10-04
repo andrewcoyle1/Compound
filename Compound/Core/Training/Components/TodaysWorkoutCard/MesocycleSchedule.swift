@@ -72,6 +72,16 @@ enum MesocycleSchedule {
         var isMesocycleComplete: Bool { next == nil }
     }
 
+    /// Whether the microcycle numbered `cycleIndex` (1-based, as the header shows it) is the
+    /// mesocycle's deload, when every working weight is cut.
+    static func isDeload(cycleIndex: Int, of mesocycle: Mesocycle) -> Bool {
+        switch mesocycle.deload {
+        case .none:  return false
+        case .start: return cycleIndex == 1
+        case .end:   return cycleIndex == mesocycle.numMicrocycles
+        }
+    }
+
     /// Where an account from before plans was. The old schedule counted every session the mesocycle
     /// ever had, name-matched ones included, and went back to the first microcycle after the last,
     /// so the run starts just after the last full pass through the block. Starting from the

@@ -123,11 +123,7 @@ class WorkoutTemplateDetailPresenter {
         Task {
             defer { isStarting = false }
             do {
-                try await self.interactor.startWorkout(for: workoutTemplate, in: mesocycleId)
-                if isDeloadCycle, var session = self.activeSession {
-                    session.applyDeloadWeightReduction()
-                    try? self.interactor.updateActiveSession(session)
-                }
+                try await self.interactor.startWorkout(for: workoutTemplate, in: mesocycleId, isDeloadCycle: isDeloadCycle)
                 self.router.dismissEnvironment()
                 self.router.dismissScreen()
                 onStartWorkout?()

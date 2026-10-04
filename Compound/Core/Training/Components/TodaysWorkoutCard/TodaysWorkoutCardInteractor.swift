@@ -6,11 +6,12 @@
 //
 
 @MainActor
-protocol TodaysWorkoutCardInteractor: GlobalInteractor {
+protocol TodaysWorkoutCardInteractor: GlobalInteractor, WorkoutStartInteractor {
     var activeMesocycle: Mesocycle? { get }
     var activeMesocycleRun: MesocycleSchedule.Run? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     func skipScheduledWorkout(_ slot: MesocycleSchedule.Slot) async throws
+    func deleteActiveSession() throws
 }
 
 extension CoreInteractor: TodaysWorkoutCardInteractor { }

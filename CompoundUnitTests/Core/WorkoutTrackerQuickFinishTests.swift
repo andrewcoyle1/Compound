@@ -9,8 +9,8 @@ import Foundation
 
 /// The Finish Workout button that appears at the bottom of the tracker once every set is logged.
 ///
-/// It is a second way into the one finish flow, not a flow of its own: it calls the same
-/// `onFinishPressed` as the menu item, so the notes sheet, the save and its retries are shared.
+/// It skips the notes sheet the menu item opens (notes stay editable on the overview card and the
+/// summary) but shares the rest of the finish: the empty-workout check, the save and its retries.
 @MainActor
 struct WorkoutTrackerQuickFinishTests {
 
@@ -88,12 +88,25 @@ struct WorkoutTrackerQuickFinishTests {
         #expect(!presenter.canQuickFinish)
     }
 
-    /// The button's action is `onFinishPressed`, the menu item's: it opens the finish sheet, and
-    /// confirming it ends the workout through the shared finish.
-    @Test("Test Quick Finish Runs The Menu's Finish Flow")
-    func testQuickFinishRunsTheMenusFinishFlow() throws {
+    /// The button's action is `onFinishConfirmed`: every set is logged, so it ends the workout and
+    /// opens the summary with no notes sheet in between.
+    @Test("Test Quick Finish Goes Straight To The Summary")
+    func testQuickFinishGoesStraightToTheSummary() throws {
         let (presenter, router) = try makeScreen(sets: [set("a", done: true)])
         #expect(presenter.canQuickFinish)
+
+        presenter.onFinishConfirmed()
+
+        #expect(presenter.isDone)
+        #expect(router.notesDelegates.isEmpty)
+        #expect(router.shown == ["summary"])
+        presenter.cancelPendingSave()
+    }
+
+    /// The menu's Finish still asks for notes first, then ends the workout through the same finish.
+    @Test("Test The Menu's Finish Opens The Notes Sheet")
+    func testTheMenusFinishOpensTheNotesSheet() throws {
+        let (presenter, router) = try makeScreen(sets: [set("a", done: true)])
 
         presenter.onFinishPressed()
         let delegate = try #require(router.notesDelegates.first)

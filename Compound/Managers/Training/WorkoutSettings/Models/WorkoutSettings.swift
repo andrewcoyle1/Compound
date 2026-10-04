@@ -7,7 +7,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
 
     // MARK: - General
     var previousWorkoutReference: PreviousWorkoutReferenceOption = .sameWorkout
-    var propagateChanges: Bool = false
+    var propagateChanges: Bool = true
     var rirTracking: Bool = false
     var supersetAutoScroll: Bool = true
     var exerciseAutoNext: Bool = true

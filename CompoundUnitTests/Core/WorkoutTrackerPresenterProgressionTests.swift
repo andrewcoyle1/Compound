@@ -57,6 +57,8 @@ struct WorkoutTrackerPresenterProgressionTests {
     ) throws -> Screen {
         let interactor = WorkoutTrackerInteractorDouble()
         interactor.workoutSettings.smartProgressionApplyInSession = applyInSession
+        // Off, so the reps typed into set one stay there and only progression moves the rest.
+        interactor.workoutSettings.propagateChanges = false
         interactor.activeSession = WorkoutSessionModel(
             id: "session-1",
             authorId: "author-1",

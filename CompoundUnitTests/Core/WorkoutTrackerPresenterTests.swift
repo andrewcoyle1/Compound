@@ -620,7 +620,11 @@ struct WorkoutTrackerPresenterTests {
     /// edit the user is making.
     @Test("Test A Session Arriving Mid-Update Is Not Adopted")
     func testASessionArrivingMidUpdateIsNotAdopted() throws {
-        let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2)])])
+        // Propagation off, so set 2 keeping its reps is down to the adoption alone.
+        let screen = try makeScreen(
+            exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2)])],
+            settings: { $0.propagateChanges = false }
+        )
         let own = try #require(screen.presenter.workoutSession.exercises.first).sets[0]
         var other = try #require(screen.interactor.activeSession)
         var exercises = other.exercises
@@ -671,5 +675,55 @@ struct WorkoutTrackerPresenterTests {
         screen.interactor.favouriteGymProfile = GymProfileModel(id: "gym-1", authorId: "author-1", name: "Home Gym")
         screen.presenter.onGymProfilePressed()
         #expect(screen.router.shown == ["gymProfile"])
+    }
+}
+
+// MARK: - Propagating an edit made through the row binding
+
+extension WorkoutTrackerPresenterTests {
+
+    /// The set rows edit through a binding into `workoutSession`, not through `updateSet`, so this
+    /// is the path a typed weight actually takes.
+    @Test("Test An Edit Through The Row Binding Carries To Matching Unlogged Sets")
+    func testAnEditThroughTheRowBindingCarriesToMatchingUnloggedSets() throws {
+        let screen = try makeScreen(
+            exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2), set(3, done: true)])],
+            settings: { $0.propagateChanges = true }
+        )
+
+        screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+
+        #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
+        #expect(screen.interactor.activeSession?.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
+    }
+
+    @Test("Test An Edit Through The Row Binding With Propagation Off Changes One Set")
+    func testAnEditThroughTheRowBindingWithPropagationOffChangesOneSet() throws {
+        let screen = try makeScreen(
+            exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2)])],
+            settings: { $0.propagateChanges = false }
+        )
+
+        screen.presenter.workoutSession.exercises[0].sets[0].reps = 12
+
+        #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.reps) == [12, 8])
+    }
+
+    /// Correcting a set already logged fixes the record of that set only.
+    @Test("Test Editing A Logged Set Does Not Propagate")
+    func testEditingALoggedSetDoesNotPropagate() throws {
+        let screen = try makeScreen(
+            exercises: [exercise(id: "e1", index: 1, sets: [set(1, done: true), set(2)])],
+            settings: { $0.propagateChanges = true }
+        )
+
+        screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+
+        #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 80])
+    }
+
+    @Test("Test Propagate Changes Is On By Default")
+    func testPropagateChangesIsOnByDefault() {
+        #expect(WorkoutSettings(authorId: "author-1").propagateChanges)
     }
 }

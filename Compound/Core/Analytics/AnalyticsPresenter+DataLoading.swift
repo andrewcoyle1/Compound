@@ -126,7 +126,9 @@ extension AnalyticsPresenter {
         exerciseCards = Array(allCards.sorted { $0.latest1RM > $1.latest1RM }.prefix(2))
     }
     
-    func loadWeighInData() {
+    /// Computed rather than loaded, so a weigh-in logged from this tab's + menu is counted as soon
+    /// as it syncs. It was filled once on the first task, which a sheet's dismissal never re-runs.
+    var weighInSummary: (countThisWeek: Int, contribution: [Double]) {
         let now = Date()
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: now) ?? now
         let startOfToday = calendar.startOfDay(for: now)
@@ -139,15 +141,16 @@ extension AnalyticsPresenter {
             return entryDate >= startOf30DaysAgo && entryDate <= startOfToday
         }
 
+        let countThisWeek: Int
         if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: now) {
             let weekStart = calendar.startOfDay(for: weekInterval.start)
             let weekEnd = calendar.startOfDay(for: weekInterval.end)
-            weighInCountThisWeek = weightEntries.filter { entry in
+            countThisWeek = weightEntries.filter { entry in
                 let entryDate = calendar.startOfDay(for: entry.date)
                 return entryDate >= weekStart && entryDate < weekEnd
             }.count
         } else {
-            weighInCountThisWeek = 0
+            countThisWeek = 0
         }
 
         var contributionData = Array(repeating: 0.0, count: 30)
@@ -168,7 +171,7 @@ extension AnalyticsPresenter {
                 }
             }
         }
-        weighInContributionData = contributionData
+        return (countThisWeek, contributionData)
     }
     
     func loadMacrosData() {
@@ -185,6 +188,7 @@ extension AnalyticsPresenter {
                 let dayTotals = try interactor.getDailyTotals(dayKey: key)
                 totals.append(dayTotals)
             } catch {
+                interactor.trackEvent(event: Event.loadMacrosFail(error: error))
                 totals.append(DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0))
             }
         }
@@ -200,6 +204,7 @@ extension AnalyticsPresenter {
         do {
             dailyTarget = try await interactor.getDailyTarget(for: now, userId: userId)
         } catch {
+            interactor.trackEvent(event: Event.loadDailyTargetFail(error: error))
             dailyTarget = nil
         }
     }

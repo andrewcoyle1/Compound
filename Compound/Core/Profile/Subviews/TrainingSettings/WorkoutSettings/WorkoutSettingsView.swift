@@ -14,6 +14,7 @@ struct WorkoutSettingsView: View {
     var body: some View {
         List {
             generalSection
+            previousReferenceSection
             displaySection
             warmUpSection
             
@@ -44,13 +45,6 @@ struct WorkoutSettingsView: View {
                 systemImage: "wand.and.stars"
             ) {
                 presenter.onSmartProgressionSettingsPressed()
-            }
-            ListRowButton(
-                title: String(localized: "Previous Reference"),
-                subtitle: presenter.previousWorkoutReferenceTitle,
-                systemImage: "arrow.trianglehead.counterclockwise"
-            ) {
-                presenter.onPreviousReferenceSettingsPressed()
             }
             ListRowToggle(
                 title: String(localized: "Propagate Changes"),
@@ -83,6 +77,26 @@ struct WorkoutSettingsView: View {
 
     }
     
+    /// A checkmark list rather than a `Picker`, so each option can carry the explanation the
+    /// option enum already defines as its `subtitle`.
+    private var previousReferenceSection: some View {
+        Section {
+            ForEach(presenter.previousWorkoutReferenceOptions) { option in
+                SelectableRow(
+                    title: option.title,
+                    subtitle: option.subtitle,
+                    isSelected: presenter.previousWorkoutReference == option
+                ) {
+                    presenter.previousWorkoutReference = option
+                }
+            }
+        } header: {
+            Text("Previous Reference")
+        } footer: {
+            Text("Applies to the previous values shown beside each set while you train.")
+        }
+    }
+
     private var displaySection: some View {
         Section {
             ListRowToggle(

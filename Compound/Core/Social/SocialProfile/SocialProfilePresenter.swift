@@ -135,6 +135,7 @@ class SocialProfilePresenter {
             do {
                 fetchedSessions = try await interactor.fetchWorkoutSessions(authorId: userId, limit: 30)
             } catch {
+                interactor.trackEvent(event: Event.loadSessionsFail(error: error))
                 loadSessionsFailed = true
             }
         }
@@ -150,6 +151,7 @@ class SocialProfilePresenter {
                 followers = try await interactor.fetchFollowers(userId: userId)
             } catch {
                 // Silent — followers stay empty in mock mode
+                interactor.trackEvent(event: Event.loadFollowersFail(error: error))
             }
         }
     }
@@ -178,6 +180,7 @@ class SocialProfilePresenter {
                 let users = try await interactor.fetchUsers(userIds: profileUser.followingIds ?? [])
                 router.showFollowersList(delegate: FollowersListDelegate(followers: users, title: String(localized: "Following")))
             } catch {
+                interactor.trackEvent(event: Event.loadFollowingFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Load Following"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -224,10 +227,13 @@ class SocialProfilePresenter {
     func onBlockConfirmed() {
         guard let profileUser else { return }
         interactor.trackEvent(event: Event.blockConfirmed)
+        interactor.trackEvent(event: Event.blockStart)
         Task {
             do {
                 try await interactor.blockUser(userId: profileUser.userId)
+                interactor.trackEvent(event: Event.blockSuccess)
             } catch {
+                interactor.trackEvent(event: Event.blockFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Block User"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -236,10 +242,13 @@ class SocialProfilePresenter {
     func onUnblockPressed() {
         guard let profileUser else { return }
         interactor.trackEvent(event: Event.unblockPressed)
+        interactor.trackEvent(event: Event.unblockStart)
         Task {
             do {
                 try await interactor.unblockUser(userId: profileUser.userId)
+                interactor.trackEvent(event: Event.unblockSuccess)
             } catch {
+                interactor.trackEvent(event: Event.unblockFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Unblock User"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -272,6 +281,15 @@ extension SocialProfilePresenter {
         case cancelRequestPressed
         case blockConfirmed
         case unblockPressed
+        case blockStart
+        case blockSuccess
+        case blockFail(error: Error)
+        case unblockStart
+        case unblockSuccess
+        case unblockFail(error: Error)
+        case loadSessionsFail(error: Error)
+        case loadFollowersFail(error: Error)
+        case loadFollowingFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -282,6 +300,15 @@ extension SocialProfilePresenter {
             case .cancelRequestPressed:     return "SocialProfileView_CancelRequest_Pressed"
             case .blockConfirmed:           return "SocialProfileView_Block_Confirmed"
             case .unblockPressed:           return "SocialProfileView_Unblock_Pressed"
+            case .blockStart:               return "SocialProfileView_Block_Start"
+            case .blockSuccess:             return "SocialProfileView_Block_Success"
+            case .blockFail:                return "SocialProfileView_Block_Fail"
+            case .unblockStart:             return "SocialProfileView_Unblock_Start"
+            case .unblockSuccess:           return "SocialProfileView_Unblock_Success"
+            case .unblockFail:              return "SocialProfileView_Unblock_Fail"
+            case .loadSessionsFail:         return "SocialProfileView_LoadSessions_Fail"
+            case .loadFollowersFail:        return "SocialProfileView_LoadFollowers_Fail"
+            case .loadFollowingFail:        return "SocialProfileView_LoadFollowing_Fail"
             }
         }
         
@@ -289,6 +316,9 @@ extension SocialProfilePresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .blockFail(error: let error), .unblockFail(error: let error), .loadSessionsFail(error: let error),
+                 .loadFollowersFail(error: let error), .loadFollowingFail(error: let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -296,6 +326,10 @@ extension SocialProfilePresenter {
         
         var type: LogType {
             switch self {
+            case .blockFail, .unblockFail, .loadSessionsFail, .loadFollowingFail:
+                return .severe
+            case .loadFollowersFail:
+                return .warning
             default:
                 return .analytic
             }

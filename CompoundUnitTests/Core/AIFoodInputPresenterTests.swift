@@ -156,6 +156,28 @@ struct FoodPhotoScannerPresenterTests {
 
     /// A second capture clears the first one's results and error, so a retry that works does not
     /// show its plate under the message explaining why the last one failed.
+    /// Add All puts every result on the plate at its estimate in one tap, and only once.
+    @Test("Test Add All Adds Every Result Once")
+    func testAddAllAddsEveryResultOnce() async {
+        let screen = makeScreen()
+        screen.interactor.json = """
+        {"items": [
+            {"id": "1", "name": "Eggs", "amountGrams": 150, "calories": 220},
+            {"id": "2", "name": "Toast", "amountGrams": 40, "calories": 110}
+        ]}
+        """
+        await screen.presenter.onCapture(image)
+
+        var picked: [MealItemModel] = []
+        screen.presenter.onAddAllPressed { picked.append($0) }
+        screen.presenter.onAddAllPressed { picked.append($0) }
+
+        #expect(picked.map(\.displayName) == ["Eggs", "Toast"])
+        #expect(picked.map(\.amount) == [150, 40])
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(screen.router.amountDelegates.isEmpty)
+    }
+
     @Test("Test A Second Capture Clears The First Ones Outcome")
     func testASecondCaptureClearsTheFirstOnesOutcome() async {
         let screen = makeScreen()
@@ -233,15 +255,6 @@ struct FoodPhotoScannerPresenterTests {
         let item = result.map { screen.presenter.makeMealItem(from: $0) }
 
         #expect(item?.sourceId == "food-1")
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear()
-
-        #expect(screen.interactor.trackedScreenEventNames == ["FoodPhotoScannerView_Appear"])
     }
 
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled at the
@@ -342,7 +355,7 @@ struct MealDescribePresenterTests {
     private func tapAndConfirm(_ item: FoodAnalysisItem, on screen: Screen) {
         screen.presenter.onResultTapped(item, delegate: screen.delegate)
         guard let delegate = screen.router.amountDelegates.last else { return }
-        delegate.onPick(delegate.ingredient.mealItem(amount: Double(delegate.initialAmountText) ?? 0))
+        delegate.onPick(delegate.ingredient.mealItem(amount: Double(delegate.initialAmountText ?? "") ?? 0))
     }
 
     private var json: String {
@@ -444,6 +457,28 @@ struct MealDescribePresenterTests {
 
     /// Resubmitting clears the last answer, so a second description does not show its items
     /// alongside the first one's.
+    /// Add All puts every result on the plate at its estimate in one tap, and only once; a new
+    /// analysis allows it again.
+    @Test("Test Add All Adds Every Result Once")
+    func testAddAllAddsEveryResultOnce() async {
+        let screen = makeScreen()
+        screen.interactor.json = json
+        screen.presenter.descriptionText = "Porridge and a banana"
+        await screen.presenter.onAnalysePressed()
+
+        screen.presenter.onAddAllPressed(delegate: screen.delegate)
+        screen.presenter.onAddAllPressed(delegate: screen.delegate)
+
+        #expect(screen.box.picked.map(\.displayName) == ["Porridge", "Banana"])
+        #expect(screen.box.picked.map(\.amount) == [200, 120])
+        #expect(screen.box.picked.first?.nutrients[.calories] == 180)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(screen.router.amountDelegates.isEmpty)
+
+        await screen.presenter.onAnalysePressed()
+        #expect(!screen.presenter.didAddAll)
+    }
+
     @Test("Test Resubmitting Clears The Previous Answer")
     func testResubmittingClearsThePreviousAnswer() async {
         let screen = makeScreen()
@@ -511,14 +546,5 @@ struct MealDescribePresenterTests {
 
         #expect(screen.box.picked.first?.nutrients[.calories] == 105)
         #expect(screen.box.picked.first?.nutrients[.protein] == nil)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["MealDescribeView_Appear"])
     }
 }

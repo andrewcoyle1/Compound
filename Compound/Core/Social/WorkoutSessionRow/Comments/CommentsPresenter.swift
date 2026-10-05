@@ -42,7 +42,12 @@ class CommentsPresenter {
     }
 
     func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
         Task { await loadComments() }
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
     }
 
     private func loadComments() async {
@@ -56,12 +61,18 @@ class CommentsPresenter {
             let fetched = try await interactor.fetchComments(sessionId: session.id)
             comments = Self.threaded(hidingBlocked(fetched))
         } catch {
+            interactor.trackEvent(event: Event.loadCommentsFail(error: error))
             loadFailed = true
         }
         isLoading = false
         if !knownPeople.contains(where: { $0.id == session.authorId }) {
             // Silent: the author is only needed for mention suggestions.
-            sessionAuthor = try? await interactor.getUser(userId: session.authorId)
+            do {
+                sessionAuthor = try await interactor.getUser(userId: session.authorId)
+            } catch {
+                interactor.trackEvent(event: Event.loadAuthorFail(error: error))
+                sessionAuthor = nil
+            }
         }
     }
 
@@ -134,11 +145,14 @@ class CommentsPresenter {
         // Shown at once: Firestore queues the write, and offline the await does not return until the
         // signal does, which left the comment invisible behind a spinner. Taken back if it fails.
         comments = Self.threaded(comments + [comment])
+        interactor.trackEvent(event: Event.addCommentStart)
         Task {
             do {
                 try await interactor.addComment(comment)
+                interactor.trackEvent(event: Event.addCommentSuccess)
                 interactor.playHaptic(option: .success)
             } catch {
+                interactor.trackEvent(event: Event.addCommentFail(error: error))
                 interactor.playHaptic(option: .error)
                 comments.removeAll { $0.id == comment.id }
                 replyingTo = parent
@@ -246,10 +260,13 @@ class CommentsPresenter {
               let current = comments.first(where: { $0.id == comment.id }) else { return }
         let isLiked = !current.likedByUserIds.contains(readerId)
         setLike(isLiked, commentId: comment.id, userId: readerId)
+        interactor.trackEvent(event: Event.likeStart(liking: isLiked))
         Task {
             do {
                 try await interactor.toggleCommentLike(id: comment.id, userId: readerId, isLiked: isLiked)
+                interactor.trackEvent(event: Event.likeSuccess(liking: isLiked))
             } catch {
+                interactor.trackEvent(event: Event.likeFail(liking: isLiked, error: error))
                 setLike(!isLiked, commentId: comment.id, userId: readerId)
                 interactor.playHaptic(option: .error)
             }
@@ -278,10 +295,13 @@ class CommentsPresenter {
     func onDeleteConfirmed(_ comment: WorkoutSessionComment) {
         // Removed at once, for the same reason a new comment is shown at once; put back if it fails.
         comments.removeAll { $0.id == comment.id }
+        interactor.trackEvent(event: Event.deleteCommentStart)
         Task {
             do {
                 try await interactor.deleteComment(id: comment.id)
+                interactor.trackEvent(event: Event.deleteCommentSuccess)
             } catch {
+                interactor.trackEvent(event: Event.deleteCommentFail(error: error))
                 comments = Self.threaded(comments + [comment])
                 // Was `try?` with an unconditional removal, so a failed delete looked like it worked
                 // until the next refresh brought the comment back.
@@ -290,6 +310,63 @@ class CommentsPresenter {
         }
     }
  }
+
+extension CommentsPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case loadCommentsFail(error: Error)
+        case loadAuthorFail(error: Error)
+        case addCommentStart
+        case addCommentSuccess
+        case addCommentFail(error: Error)
+        case likeStart(liking: Bool)
+        case likeSuccess(liking: Bool)
+        case likeFail(liking: Bool, error: Error)
+        case deleteCommentStart
+        case deleteCommentSuccess
+        case deleteCommentFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:                 return "CommentsView_Appear"
+            case .onDisappear:              return "CommentsView_Disappear"
+            case .loadCommentsFail:         return "CommentsView_LoadComments_Fail"
+            case .loadAuthorFail:           return "CommentsView_LoadAuthor_Fail"
+            case .addCommentStart:          return "CommentsView_AddComment_Start"
+            case .addCommentSuccess:        return "CommentsView_AddComment_Success"
+            case .addCommentFail:           return "CommentsView_AddComment_Fail"
+            case .likeStart(let liking):    return liking ? "CommentsView_LikeComment_Start" : "CommentsView_UnlikeComment_Start"
+            case .likeSuccess(let liking):  return liking ? "CommentsView_LikeComment_Success" : "CommentsView_UnlikeComment_Success"
+            case .likeFail(let liking, _):  return liking ? "CommentsView_LikeComment_Fail" : "CommentsView_UnlikeComment_Fail"
+            case .deleteCommentStart:       return "CommentsView_DeleteComment_Start"
+            case .deleteCommentSuccess:     return "CommentsView_DeleteComment_Success"
+            case .deleteCommentFail:        return "CommentsView_DeleteComment_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadCommentsFail(let error), .loadAuthorFail(let error), .addCommentFail(let error),
+                 .likeFail(_, let error), .deleteCommentFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .loadCommentsFail, .addCommentFail, .likeFail, .deleteCommentFail:
+                return .severe
+            case .loadAuthorFail:
+                return .warning
+            default:
+                return .analytic
+            }
+        }
+    }
+}
 
 /// Someone who can be picked from the mention row. The inserted text is `@handle`, or `@firstName`
 /// for someone without one; the id is what the comment records.

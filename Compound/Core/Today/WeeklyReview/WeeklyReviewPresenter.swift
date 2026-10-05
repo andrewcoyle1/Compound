@@ -55,6 +55,10 @@ class WeeklyReviewPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onPreviousWeekPressed() {
         week = calendar.date(byAdding: .weekOfYear, value: -1, to: week) ?? week
     }
@@ -81,11 +85,13 @@ extension WeeklyReviewPresenter {
 
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case sharePressed
 
         var eventName: String {
             switch self {
             case .onAppear:     return "WeeklyReviewView_Appear"
+            case .onDisappear:  return "WeeklyReviewView_Disappear"
             case .sharePressed: return "WeeklyReviewView_Share_Pressed"
             }
         }

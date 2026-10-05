@@ -152,7 +152,13 @@ class WorkoutTrackerPresenter {
     
     func onTask() async {
         guard let gymProfileId = self.workoutTemplate?.gymProfileId else { return }
-        let profile = try? await interactor.getGymProfile(gymProfileId: gymProfileId)
+        let profile: GymProfileModel?
+        do {
+            profile = try await interactor.getGymProfile(gymProfileId: gymProfileId)
+        } catch {
+            profile = nil
+            interactor.trackEvent(event: Event.loadGymProfileFail(error: error))
+        }
         self.gymProfile = profile
         interactor.setActiveWorkoutGymProfile(profile)
     }
@@ -217,7 +223,9 @@ class WorkoutTrackerPresenter {
         if interactor.canRequestHealthDataAuthorisation() {
             do {
                 try await interactor.requestHealthKitAuthorisation(for: .workouts)
-            } catch { }
+            } catch {
+                interactor.trackEvent(event: Event.healthKitAuthorisationFail(error: error))
+            }
         }
 
         guard !interactor.needsAuthorisationForRequiredTypes() else { return }
@@ -257,9 +265,15 @@ class WorkoutTrackerPresenter {
     // MARK: - Workout Actions
     
     func discardWorkout() {
+        interactor.trackEvent(event: Event.discardWorkoutStart)
         isDone = true
         interactor.setActiveWorkoutGymProfile(nil)
-        try? interactor.deleteActiveSession()
+        do {
+            try interactor.deleteActiveSession()
+            interactor.trackEvent(event: Event.discardWorkoutSuccess)
+        } catch {
+            interactor.trackEvent(event: Event.discardWorkoutFail(error: error))
+        }
         UIApplication.shared.isIdleTimerDisabled = false
         SharedWorkoutStorage.clearHKStartedSessionId()
         router.dismissScreen()
@@ -318,6 +332,7 @@ class WorkoutTrackerPresenter {
         do {
             try interactor.updateActiveSession(workoutSession)
         } catch {
+            interactor.trackEvent(event: Event.saveProgressFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your workout. Please try again."))
         }
     }
@@ -339,10 +354,7 @@ class WorkoutTrackerPresenter {
     
     func computeTotalVolumeKg() -> Double {
         return workoutSession.exercises.flatMap { $0.sets }
-            .compactMap { set in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
     }
     
@@ -531,6 +543,7 @@ class WorkoutTrackerPresenter {
 
     private func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
+        propagateEdit(comparedTo: oldSession)
         guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
 
         let exercise = workoutSession.exercises[exerciseIndex]
@@ -547,6 +560,43 @@ class WorkoutTrackerPresenter {
         }
 
         refreshLiveActivity()
+    }
+
+    /// The set rows write straight into `workoutSession` through their bindings, so a typed weight
+    /// or reps arrives here rather than through `updateSet`. Carries it onto the sibling sets the
+    /// same way `updateSet` does.
+    ///
+    /// Only when exactly one set's weight or reps changed: that is what a user's edit looks like.
+    /// A change to several at once is the screen's own (a progression re-suggestion, an adopted
+    /// save) and is not the user's to copy.
+    private func propagateEdit(comparedTo oldSession: WorkoutSessionModel) {
+        guard interactor.workoutSettings.propagateChanges else { return }
+
+        var edits: [(exerciseIndex: Int, original: WorkoutSetModel)] = []
+        for (exerciseIndex, exercise) in workoutSession.exercises.enumerated() {
+            guard let oldExercise = oldSession.exercises.first(where: { $0.id == exercise.id }) else { continue }
+            for set in exercise.sets {
+                guard let original = oldExercise.sets.first(where: { $0.id == set.id }),
+                      original.weightKg != set.weightKg || original.reps != set.reps else { continue }
+                edits.append((exerciseIndex, original))
+            }
+        }
+        guard edits.count == 1, let edit = edits.first,
+              let setIndex = workoutSession.exercises[edit.exerciseIndex].sets.firstIndex(where: { $0.id == edit.original.id })
+        else { return }
+
+        var updatedExercises = workoutSession.exercises
+        propagateChanges(
+            of: updatedExercises[edit.exerciseIndex].sets[setIndex],
+            replacing: edit.original,
+            at: setIndex,
+            in: &updatedExercises[edit.exerciseIndex].sets
+        )
+        guard updatedExercises != workoutSession.exercises else { return }
+
+        isProcessingUpdateSet = true
+        workoutSession.updateExercises(updatedExercises)
+        isProcessingUpdateSet = false
     }
 
     /// The first exercise holding a set that flipped incomplete → complete relative to

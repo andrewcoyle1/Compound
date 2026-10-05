@@ -11,6 +11,7 @@ protocol NamePhotoInteractor {
     func updateUserName(firstName: String?, lastName: String?) async throws 
     func updateProfileImageUrl(image: PlatformImage) async throws
     func trackEvent(event: LoggableEvent)
+    func trackScreenEvent(event: LoggableEvent)
 }
 
 extension CoreInteractor: NamePhotoInteractor { }

@@ -3,10 +3,9 @@ import SwiftUI
 struct FoodItemQuickAddDelegate {
     /// Hands the composed item back to the picker, the same way every other picker mode does.
     var onPick: (MealItemModel) -> Void = { _ in }
+    /// The plate's Log: adds these macros and logs the meal in one step.
+    var onLog: (() -> Void)?
 
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct FoodItemQuickAddView: View {
@@ -32,18 +31,20 @@ struct FoodItemQuickAddView: View {
             }
         }
         .bottomCTA {
-            CallToActionButton {
+            if let onLog = delegate.onLog {
+                CallToActionButton {
+                    presenter.onLogPressed(delegate: delegate, onLog: onLog)
+                } label: {
+                    Text("Log")
+                }
+                .disabled(!presenter.canSubmit)
+            }
+            CallToActionButton(isPrimaryAction: delegate.onLog == nil) {
                 presenter.onQuickAddPressed(delegate: delegate)
             } label: {
                 Text("Add to Plate")
             }
             .disabled(!presenter.canSubmit)
-        }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
     }
 

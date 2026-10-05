@@ -34,6 +34,8 @@ struct SubscriptionView: View {
             }
         }
         .navigationBarBackButtonHidden()
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var onDevSettingsPressed: (() -> Void)? {

@@ -4,18 +4,19 @@ struct FoodLibraryDelegate {
     
     let mealItems: Binding<[MealItemModel]>
     let onItemPick: ((MealItemModel) -> Void)?
-    
+    /// The plate's Log, handed on to the amount screens.
+    let onLog: (() -> Void)?
+
     init(
         mealItems: Binding<[MealItemModel]>,
-        onItemPick: ((MealItemModel) -> Void)? = nil
+        onItemPick: ((MealItemModel) -> Void)? = nil,
+        onLog: (() -> Void)? = nil
     ) {
         self.mealItems = mealItems
         self.onItemPick = onItemPick
+        self.onLog = onLog
     }
     
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct FoodLibraryView<
@@ -43,7 +44,7 @@ struct FoodLibraryView<
                     Section {
                         ForEach(presenter.favouriteRecipes) { recipe in
                             Button {
-                                presenter.onFavouriteRecipePressed(recipe)
+                                presenter.onFavouriteRecipePressed(recipe, onPick: delegate.onItemPick, onLog: delegate.onLog)
                             } label: {
                                 ListRow(title: recipe.name, subtitle: recipe.description, imageName: recipe.imageURL, accessory: .chevron)
                                     .contentShape(.rect)
@@ -58,7 +59,7 @@ struct FoodLibraryView<
                     Section {
                         ForEach(presenter.favouriteFoods) { food in
                             Button {
-                                presenter.onFavouriteFoodPressed(food, onPick: delegate.onItemPick)
+                                presenter.onFavouriteFoodPressed(food, onPick: delegate.onItemPick, onLog: delegate.onLog)
                             } label: {
                                 ListRow(title: food.name, subtitle: food.description, imageName: food.imageURL, accessory: .chevron)
                                     .contentShape(.rect)
@@ -80,6 +81,8 @@ struct FoodLibraryView<
                 recipeList(
                     RecipeListBuilderDelegate(
                         onMealItemConfirmed: { item in delegate.onItemPick?(item) },
+                        onLog: delegate.onLog,
+                        mealItems: delegate.mealItems,
                         searchText: presenter.searchText
                     )
                 )
@@ -88,7 +91,9 @@ struct FoodLibraryView<
                     IngredientListBuilderDelegate(
                         mealItems: delegate.mealItems,
                         onMealItemConfirmed: { item in delegate.onItemPick?(item) },
-                        searchText: presenter.searchText
+                        searchText: presenter.searchText,
+                        onLog: delegate.onLog,
+                        isEmbedded: true
                     )
                 )
             case .favourites:
@@ -106,14 +111,8 @@ struct FoodLibraryView<
             .padding(.bottom, Spacing.s)
         }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text(presenter.searchPrompt))
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
         .onChange(of: presenter.foodLibraryOption) {
             presenter.onLibraryOptionChanged()
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
     }
 }

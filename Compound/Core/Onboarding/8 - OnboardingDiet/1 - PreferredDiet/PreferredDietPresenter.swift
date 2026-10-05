@@ -30,6 +30,16 @@ class PreferredDietPresenter {
         self.interactor = interactor
         self.router = router
         self.isFromSettings = isFromSettings
+        // Opens on the current plan's answer when rebuilding it, otherwise on the recommendation.
+        selectedDiet = interactor.currentDietPlan.flatMap { PreferredDiet(rawValue: $0.preferredDiet) } ?? .balanced
+    }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
 
     func navigateToCalorieFloor() {
@@ -47,16 +57,24 @@ class PreferredDietPresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "PreferredDietView_Appear"
+            case .onDisappear: return "PreferredDietView_Disappear"
             case .navigate: return "Onboarding_PrefDiet_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .navigate:
                 return nil
             }
@@ -64,6 +82,8 @@ class PreferredDietPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

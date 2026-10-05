@@ -26,7 +26,9 @@ struct AppView<Content: View>: View {
                 },
                 onApplicationDidBecomeActive: nil,
                 onApplicationWillResignActive: nil,
-                onApplicationDidEnterBackground: nil,
+                onApplicationDidEnterBackground: { _ in
+                    presenter.onAppDidEnterBackground()
+                },
                 onApplicationWillTerminate: nil
             ),
             content: {

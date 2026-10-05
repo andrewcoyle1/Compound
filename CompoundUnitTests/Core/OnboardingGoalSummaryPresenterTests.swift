@@ -322,7 +322,7 @@ struct OnboardingGoalSummaryPresenterTests {
 
         screen.presenter.handleNavigation()
 
-        #expect(screen.router.shown == ["goalSetting"])
+        #expect(screen.router.shown == ["objective"])
     }
 
     /// Nothing to route from without a signed-in user, and in particular no step to infer.

@@ -107,7 +107,11 @@ class ExerciseSettingsPresenter {
                 let total = self.restPickerMinutes * 60 + self.restPickerSeconds
                 let seconds = total > 0 ? total : nil
                 Task {
-                    try? await self.interactor.setExerciseRestOverride(seconds, for: self.exercise.id)
+                    do {
+                        try await self.interactor.setExerciseRestOverride(seconds, for: self.exercise.id)
+                    } catch {
+                        self.interactor.trackEvent(event: Event.saveRestOverrideFail(error: error))
+                    }
                     self.restOverride = seconds
                 }
                 self.router.dismissModal()
@@ -138,7 +142,11 @@ class ExerciseSettingsPresenter {
                 guard let self else { return }
                 let trimmed = self.note.trimmingCharacters(in: .whitespacesAndNewlines)
                 Task {
-                    try? await self.interactor.setExerciseNote(trimmed.isEmpty ? nil : trimmed, for: self.exercise.id)
+                    do {
+                        try await self.interactor.setExerciseNote(trimmed.isEmpty ? nil : trimmed, for: self.exercise.id)
+                    } catch {
+                        self.interactor.trackEvent(event: Event.saveNoteFail(error: error))
+                    }
                 }
             }
         ))
@@ -150,11 +158,15 @@ extension ExerciseSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: ExerciseSettingsDelegate)
         case onDisappear(delegate: ExerciseSettingsDelegate)
+        case saveRestOverrideFail(error: Error)
+        case saveNoteFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:     return "ExerciseSettingsView_Appear"
-            case .onDisappear:  return "ExerciseSettingsView_Disappear"
+            case .onAppear:             return "ExerciseSettingsView_Appear"
+            case .onDisappear:          return "ExerciseSettingsView_Disappear"
+            case .saveRestOverrideFail: return "ExerciseSettingsView_SaveRestOverride_Fail"
+            case .saveNoteFail:         return "ExerciseSettingsView_SaveNote_Fail"
             }
         }
 
@@ -162,11 +174,15 @@ extension ExerciseSettingsPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .saveRestOverrideFail(error: let error), .saveNoteFail(error: let error):
+                return error.eventParameters
             }
         }
 
         var type: LogType {
             switch self {
+            case .saveRestOverrideFail, .saveNoteFail:
+                return .warning
             default:
                 return .analytic
             }

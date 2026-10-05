@@ -400,6 +400,9 @@ struct OnboardingDietPlanScreenTests {
     private final class Interactor: DietPlanInteractor {
         var currentUser: UserModel?
         var saveError: Error?
+        var completeError: Error?
+        private(set) var completedOnboardingCount = 0
+        private(set) var playedHaptics: [HapticOption] = []
         private(set) var computedFor: [UserModel?] = []
         private(set) var savedPlans: [DietPlan] = []
         private(set) var trackedEventNames: [String] = []
@@ -431,7 +434,14 @@ struct OnboardingDietPlanScreenTests {
             savedPlans.append(plan)
         }
 
+        func saveOnboardingComplete() async throws {
+            if let completeError { throw completeError }
+            completedOnboardingCount += 1
+        }
+
         func trackEvent(event: LoggableEvent) { trackedEventNames.append(event.eventName) }
+        func trackScreenEvent(event: LoggableEvent) { trackedEventNames.append(event.eventName) }
+        func playHaptic(option: HapticOption) { playedHaptics.append(option) }
     }
 
     /// `showSimpleAlert` is a `GlobalRouter` requirement, so the failure message is observable.
@@ -443,7 +453,7 @@ struct OnboardingDietPlanScreenTests {
         private(set) var alertTitles: [String] = []
 
         func showDevSettingsView() { shown.append("devSettings") }
-        func showOnboardingCompletedView() { shown.append("onboardingCompleted") }
+        func switchToCoreModule() { shown.append("coreModule") }
         func showSimpleAlert(title: String, subtitle: String?) { alertTitles.append(title) }
     }
 
@@ -486,17 +496,34 @@ struct OnboardingDietPlanScreenTests {
         #expect(screen.router.shown.isEmpty)
     }
 
-    @Test("Test Accepting The Plan Saves It And Moves On")
-    func testAcceptingThePlanSavesItAndMovesOn() async {
+    /// The plan is the last answer, so accepting it finishes onboarding there and then, as the
+    /// completion screen's Finish does, instead of showing that screen for one more press.
+    @Test("Test Accepting The Plan Saves It And Finishes Onboarding")
+    func testAcceptingThePlanSavesItAndFinishesOnboarding() async {
         let screen = makeScreen()
         screen.presenter.createPlan(delegate: dietPlanDelegate())
 
         screen.presenter.navigate()
 
-        #expect(await TestManagers.eventually { !screen.interactor.savedPlans.isEmpty })
+        #expect(await TestManagers.eventually { screen.router.shown == ["coreModule"] })
         #expect(screen.interactor.savedPlans.first?.planId == "plan-1")
-        // The completion screen, not Strava: the Strava step left onboarding (decision 11d).
-        #expect(await TestManagers.eventually { screen.router.shown == ["onboardingCompleted"] })
+        #expect(screen.interactor.completedOnboardingCount == 1)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// A plan that saved while the profile did not leaves onboarding unfinished, so the user stays
+    /// here and is told, rather than being let into the app.
+    @Test("Test A Failed Finish Is Surfaced And Goes Nowhere")
+    func testAFailedFinishIsSurfacedAndGoesNowhere() async {
+        let screen = makeScreen()
+        screen.interactor.completeError = URLError(.notConnectedToInternet)
+        screen.presenter.createPlan(delegate: dietPlanDelegate())
+
+        screen.presenter.navigate()
+
+        #expect(await TestManagers.eventually { !screen.router.alertTitles.isEmpty })
+        #expect(screen.router.shown.isEmpty)
+        #expect(screen.interactor.playedHaptics.isEmpty)
     }
 
     /// Rebuilding the plan from settings has to go back to settings. Carrying on into the Strava
@@ -511,6 +538,7 @@ struct OnboardingDietPlanScreenTests {
         #expect(await TestManagers.eventually { !screen.interactor.savedPlans.isEmpty })
         // The settings path dismisses the screen, which cannot be observed through a double.
         #expect(screen.router.shown.isEmpty)
+        #expect(screen.interactor.completedOnboardingCount == 0)
     }
 
     /// If the plan did not save, the user must not be walked on as though it had — they would

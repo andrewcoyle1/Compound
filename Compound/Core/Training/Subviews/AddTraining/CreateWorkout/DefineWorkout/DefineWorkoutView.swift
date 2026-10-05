@@ -29,10 +29,7 @@ struct DefineWorkoutView: View {
             exercisesSection
         }
         .onAppear {
-            presenter.onViewAppear()
-        }
-        .onDisappear {
-            presenter.onViewDisappear()
+            presenter.onViewAppear(autoOpensPicker: delegate.topSectionStyle == .standaloneWorkout)
         }
         .navigationTitle(delegate.name)
         .navigationBarTitleDisplayMode(.inline)

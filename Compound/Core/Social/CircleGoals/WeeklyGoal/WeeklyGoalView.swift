@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A stepper sheet for the weekly session goal, opened from the user's own profile and from the
+/// A one-tap sheet for the weekly session goal, opened from the user's own profile and from the
 /// Dashboard strip while no goal is set.
 struct WeeklyGoalView: View {
 
@@ -9,10 +9,21 @@ struct WeeklyGoalView: View {
     var body: some View {
         Form {
             Section {
-                Stepper(value: $presenter.goal, in: CircleWeek.goalRange) {
-                    Text("^[\(presenter.goal) session](inflect: true) a week")
+                if let goal = presenter.selectedGoal {
+                    Text("^[\(goal) session](inflect: true) a week")
+                        .font(.sectionTitle)
+                } else {
+                    Text("Set your weekly session goal")
                         .font(.sectionTitle)
                 }
+                Picker(String(localized: "Weekly Goal"), selection: goalSelection) {
+                    ForEach(CircleWeek.goalRange, id: \.self) { goal in
+                        Text(goal, format: .number).tag(Optional(goal))
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .disabled(presenter.isSaving)
             } footer: {
                 Text("Your circle sees your progress towards this as a ring round your face.")
             }
@@ -25,19 +36,27 @@ struct WeeklyGoalView: View {
                     presenter.onCancelPressed()
                 }
             }
-            ToolbarItem(placement: .confirmationAction) {
-                if presenter.isSaving {
+            if presenter.isSaving {
+                ToolbarItem(placement: .confirmationAction) {
                     ProgressView()
-                } else {
-                    Button(role: .confirm) {
-                        presenter.onSavePressed()
-                    }
                 }
             }
         }
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
+    }
+
+    private var goalSelection: Binding<Int?> {
+        Binding(
+            get: { presenter.selectedGoal },
+            set: { goal in
+                if let goal { presenter.onGoalSelected(goal) }
+            }
+        )
     }
 }
 

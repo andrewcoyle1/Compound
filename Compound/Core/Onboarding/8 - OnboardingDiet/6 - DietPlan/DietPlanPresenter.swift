@@ -26,6 +26,14 @@ class DietPlanPresenter {
         self.router = router
 
     }
+
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
+    }
+
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
+    }
     
     var currentUser: UserModel? {
         interactor.currentUser
@@ -45,12 +53,19 @@ class DietPlanPresenter {
             do {
                 try await interactor.saveDietPlan(plan)
                 interactor.trackEvent(event: Event.saveDietPlanSuccess)
+                if !isFromSettings {
+                    // The plan is the last answer, so onboarding finishes here, as
+                    // `OnboardingCompletedPresenter` does, rather than on a screen with one more
+                    // button. That screen stays for a profile that resumes at `.complete`.
+                    try await interactor.saveOnboardingComplete()
+                    interactor.playHaptic(option: .success)
+                }
                 interactor.trackEvent(event: Event.navigate)
                 if isFromSettings {
                     router.dismissScreen()
                 } else {
                     // Strava is no longer offered here (decision 11d): it is in Profile > Integrations.
-                    router.showOnboardingCompletedView()
+                    router.switchToCoreModule()
                 }
             } catch {
                 router.showSimpleAlert(title: String(localized: "Unable to update your profile"), subtitle: String(localized: "Please check your internet connection and try again"))
@@ -61,6 +76,10 @@ class DietPlanPresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case saveDietPlanStart
         case saveDietPlanSuccess
         case saveDietPlanFail(error: Error)
@@ -68,6 +87,8 @@ class DietPlanPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "DietPlanView_Appear"
+            case .onDisappear: return "DietPlanView_Disappear"
             case .saveDietPlanStart:            return "DietView_SaveDietPlan_Start"
             case .saveDietPlanSuccess:          return "DietView_SaveDietPlan_Success"
             case .saveDietPlanFail:             return "DietView_SaveDietPlan_Fail"
@@ -77,6 +98,8 @@ class DietPlanPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .saveDietPlanFail(error: let error):
                 return error.eventParameters
             default:

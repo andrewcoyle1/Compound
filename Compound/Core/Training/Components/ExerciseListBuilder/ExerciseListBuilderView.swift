@@ -40,16 +40,10 @@ struct ExerciseListBuilderView: View {
                 ContentUnavailableView.search(text: presenter.searchText)
             }
         }
-        .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search exercises"))
+        .searchable(text: $presenter.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search exercises"))
         .scrollIndicators(.hidden)
         .toolbarVisibility(.hidden)
-        .onAppear {
-            presenter.onViewAppear()
-        }
-        .onDisappear {
-            presenter.onViewDisappear()
-        }
-        .safeAreaInset(edge: .top) {
+        .safeAreaBar(edge: .top) {
             filterSection
         }
     }

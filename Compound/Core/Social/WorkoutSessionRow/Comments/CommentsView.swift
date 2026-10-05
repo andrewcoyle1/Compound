@@ -14,6 +14,7 @@ struct CommentsDelegate {
 struct CommentsView: View {
 
     @State var presenter: CommentsPresenter
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
         List {
@@ -81,6 +82,19 @@ struct CommentsView: View {
         .scrollIndicators(.hidden)
         .onAppear {
             presenter.onViewAppear()
+        }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
+        // Reply already means "I'm about to type".
+        .onChange(of: presenter.replyingTo?.id) { _, parentId in
+            if parentId != nil { isInputFocused = true }
+        }
+        // An empty thread has nothing to read, so the only thing to do is write.
+        .onChange(of: presenter.isLoading) { wasLoading, isLoading in
+            if wasLoading, !isLoading, !presenter.loadFailed, presenter.comments.isEmpty {
+                isInputFocused = true
+            }
         }
         .safeAreaInset(edge: .bottom) {
             inputBar
@@ -203,6 +217,7 @@ struct CommentsView: View {
         HStack(spacing: Spacing.s) {
             TextField(presenter.replyingTo == nil ? String(localized: "Add a comment…") : String(localized: "Add a reply…"), text: $presenter.commentDraft, axis: .vertical)
                 .lineLimit(1...4)
+                .focused($isInputFocused)
             Button {
                 presenter.onSendPressed()
             } label: {

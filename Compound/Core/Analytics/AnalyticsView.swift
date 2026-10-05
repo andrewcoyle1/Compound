@@ -151,8 +151,16 @@ struct AnalyticsView<NutritionChart: View>: View {
                 } label: {
                     Label("Log Weight", systemImage: Symbol.scaleWeight)
                 }
-                Button {
-                    presenter.onLogMeasurementPressed()
+                Menu {
+                    ForEach(presenter.measurementMenuSections, id: \.header) { section in
+                        Section(section.header) {
+                            ForEach(section.kinds) { kind in
+                                Button(LocalizedStringKey(kind.displayName)) {
+                                    presenter.onLogMeasurementPressed(kind: kind)
+                                }
+                            }
+                        }
+                    }
                 } label: {
                     Label("Log Measurement", systemImage: "ruler")
                 }

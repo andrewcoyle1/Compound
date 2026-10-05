@@ -117,6 +117,14 @@ extension MuscleGroupDetailPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(muscle: muscle))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(muscle: muscle))
+    }
+
     func onAppear() async {
         await loadData()
     }
@@ -124,5 +132,28 @@ extension MuscleGroupDetailPresenter: @MainActor MetricDetailPresenter {
     func onAddPressed() {
         // Sets do come from workouts — so this starts one rather than doing nothing.
         router.showWorkoutsView(delegate: WorkoutsDelegate())
+    }
+}
+
+extension MuscleGroupDetailPresenter {
+    enum Event: LoggableEvent {
+        case onAppear(muscle: Muscles)
+        case onDisappear(muscle: Muscles)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "MuscleGroupDetailView_Appear"
+            case .onDisappear: return "MuscleGroupDetailView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let muscle), .onDisappear(let muscle):
+                return ["muscle": muscle.rawValue]
+            }
+        }
+
+        var type: LogType { .analytic }
     }
 }

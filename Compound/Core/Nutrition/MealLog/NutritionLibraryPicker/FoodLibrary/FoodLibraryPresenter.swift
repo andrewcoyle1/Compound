@@ -7,7 +7,7 @@ class FoodLibraryPresenter {
     private let interactor: FoodLibraryInteractor
     private let router: FoodLibraryRouter
     
-    var foodLibraryOption: FoodLibraryOption = .recipes
+    var foodLibraryOption: FoodLibraryOption
 
     /// The query in the library's search field. It filters the favourites drawn here and is handed
     /// to the recipes and foods lists, which had no search of their own despite this comment
@@ -17,6 +17,11 @@ class FoodLibraryPresenter {
     init(interactor: FoodLibraryInteractor, router: FoodLibraryRouter) {
         self.interactor = interactor
         self.router = router
+        // Favourites are what the user keeps coming back to, so they open first once there are any.
+        let settings = interactor.foodLogSettings
+        self.foodLibraryOption = settings.favouriteFoodIds.isEmpty && settings.favouriteRecipeIds.isEmpty
+            ? .recipes
+            : .favourites
     }
 
     var searchPrompt: String {
@@ -53,22 +58,29 @@ class FoodLibraryPresenter {
     /// Same destination the search and barcode tabs use, so a favourite is logged with the amount
     /// step rather than being added at some assumed quantity — unless Quick Add is on, in which
     /// case it takes the same shortcut those tabs take.
-    func onFavouriteFoodPressed(_ food: FoodModel, onPick: ((MealItemModel) -> Void)?) {
+    func onFavouriteFoodPressed(_ food: FoodModel, onPick: ((MealItemModel) -> Void)?, onLog: (() -> Void)? = nil) {
         if interactor.foodLogSettings.quickAddEnabled {
             interactor.playHaptic(option: .success)
-            onPick?(food.mealItem(amount: food.defaultPortionAmount))
+            onPick?(food.quickAddItem(lastLoggedIn: interactor.userMeals))
             return
         }
         router.showIngredientAmountView(
             delegate: IngredientAmountDelegate(
                 ingredient: food,
-                onPick: { item in onPick?(item) }
+                onPick: { item in onPick?(item) },
+                onLog: onLog
             )
         )
     }
 
-    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel) {
-        router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
+    /// While logging, a favourite recipe goes to its servings, as every other recipe row does;
+    /// it used to open the recipe's page, which has no way to log it. Elsewhere, the page.
+    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel, onPick: ((MealItemModel) -> Void)? = nil, onLog: (() -> Void)? = nil) {
+        guard let onPick else {
+            router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
+            return
+        }
+        router.showRecipeAmountView(delegate: RecipeAmountDelegate(recipe: recipe, onPick: onPick, onLog: onLog))
     }
 
     /// The prompt and the list both change with the tab; a stale query would filter the new list
@@ -77,44 +89,4 @@ class FoodLibraryPresenter {
         interactor.playHaptic(option: .selection)
         searchText = ""
     }
-
-    func onViewAppear(delegate: FoodLibraryDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-    }
-    
-    func onViewDisappear(delegate: FoodLibraryDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
-    }
-}
-
-extension FoodLibraryPresenter {
-    
-    enum Event: LoggableEvent {
-        case onAppear(delegate: FoodLibraryDelegate)
-        case onDisappear(delegate: FoodLibraryDelegate)
-        
-        var eventName: String {
-            switch self {
-            case .onAppear:                 return "FoodLibraryView_Appear"
-            case .onDisappear:              return "FoodLibraryView_Disappear"
-            }
-        }
-        
-        var parameters: [String: Any]? {
-            switch self {
-            case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
-                return delegate.eventParameters
-                //            default:
-                //                return nil
-            }
-        }
-        
-        var type: LogType {
-            switch self {
-            default:
-                return .analytic
-            }
-        }
-    }
-    
 }

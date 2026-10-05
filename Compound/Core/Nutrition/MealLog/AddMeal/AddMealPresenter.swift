@@ -23,18 +23,37 @@ class AddMealPresenter {
     var showAllNutrients: Bool = false
     var nutritionScope: NutritionScope = .plate
     
+    /// How long the cover gets to finish arriving before the picker opens over it. A sheet
+    /// presented while the cover is still animating in is dropped by the system and reported as
+    /// dismissed; SwiftfulRouting waits the same 0.55 s between back-to-back presentations.
+    /// Injectable so a test need not wait it out.
+    private let pickerDelay: Duration
+
     init(
         interactor: AddMealInteractor,
         router: AddMealRouter,
-        delegate: AddMealDelegate
+        delegate: AddMealDelegate,
+        pickerDelay: Duration = .milliseconds(550)
     ) {
         self.interactor = interactor
         self.router = router
         self.mealLog = delegate.mealLog
+        self.pickerDelay = pickerDelay
     }
     
+    /// Set once the picker has opened by itself, so closing it back to the plate does not reopen it.
+    private var hasOpenedPicker = false
+    private var isPickerShowing = false
+
+    /// A new meal opens straight on the picker: an empty plate has nothing to do but add food.
     func onViewAppear() {
         interactor.trackEvent(event: Event.onAppear)
+        guard !hasOpenedPicker, mealLog.items.isEmpty else { return }
+        hasOpenedPicker = true
+        Task {
+            try? await Task.sleep(for: pickerDelay)
+            onShowPickerPressed()
+        }
     }
 
     func onViewDisappear() {
@@ -51,7 +70,7 @@ class AddMealPresenter {
     
     func onEditMealItem(_ item: MealItemModel) {
         router.showMealItemAmountViewView(delegate: MealItemAmountViewDelegate(
-            mode: .editItem(item),
+            item: item,
             onConfirm: { [weak self] updatedItem in
                 guard let self,
                       let idx = self.mealLog.items.firstIndex(where: { $0.itemId == updatedItem.itemId })
@@ -71,14 +90,32 @@ class AddMealPresenter {
 
     func onShowPickerPressed() {
         let delegate = NutritionLibraryPickerDelegate(
-            items: Binding(get: {
-                self.mealLog.items
-            }, set: { newValues in
-                self.mealLog.items = newValues
-            }),
+            plate: { self.mealLog.items },
             onPick: { newItem in
                 self.mealLog.items.append(newItem)
-        })
+            },
+            onLog: { [weak self] in
+                self?.logFromPicker()
+            },
+            onAppear: { [weak self] in
+                self?.isPickerShowing = true
+            },
+            // Closing the picker with nothing picked means nothing is being logged: leave the
+            // logger rather than stop on an empty plate. Only if it was ever on screen: a
+            // presentation the system dropped is reported as dismissed too, and that has to leave
+            // the plate and its Add Food, not close the logger under the user's tap.
+            onDidDismiss: { [weak self] in
+                guard let self else { return }
+                defer { isPickerShowing = false }
+                if closeOnceThePickerHasGone {
+                    dismissScreen()
+                    return
+                }
+                guard isPickerShowing, mealLog.items.isEmpty, !isSaving else { return }
+                dismissScreen()
+            }
+        )
+        hasOpenedPicker = true
         router.showNutritionLibraryPickerView(delegate: delegate)
     }
     
@@ -88,6 +125,7 @@ class AddMealPresenter {
         do {
             try interactor.updateDraftMeal(mealLog)
         } catch {
+            interactor.trackEvent(event: Event.saveDraftFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your meal. Please try again."))
         }
     }
@@ -96,6 +134,24 @@ class AddMealPresenter {
     private(set) var isSaving: Bool = false
 
     func saveMeal() {
+        saveMeal(thenDismiss: dismissScreen)
+    }
+
+    /// Set when the picker's Log has saved the meal and closed the picker, so the logger closes
+    /// once the picker has gone.
+    private var closeOnceThePickerHasGone = false
+
+    /// The picker's Log, and the amount screen's. iOS will not dismiss this cover in the same
+    /// update as the sheet over it: dismissing both at once closed only the top screen and left a
+    /// logged meal on screen. So the picker goes first and `onDidDismiss` takes the logger after it.
+    private func logFromPicker() {
+        saveMeal { [weak self] in
+            self?.closeOnceThePickerHasGone = true
+            self?.router.dismissLastEnvironment()
+        }
+    }
+
+    private func saveMeal(thenDismiss dismiss: @escaping () -> Void) {
         guard !isSaving else { return }
         isSaving = true
         Task {
@@ -108,7 +164,7 @@ class AddMealPresenter {
                 try? interactor.deleteDraftMeal()
                 interactor.trackEvent(event: Event.saveMealSuccess)
                 interactor.playHaptic(option: .success)
-                self.dismissScreen()
+                dismiss()
             } catch {
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
                 interactor.playHaptic(option: .error)
@@ -124,7 +180,11 @@ class AddMealPresenter {
 
     func dismissScreen() {
         if self.mealLog.items.isEmpty {
-            try? self.interactor.deleteDraftMeal()
+            do {
+                try self.interactor.deleteDraftMeal()
+            } catch {
+                interactor.trackEvent(event: Event.deleteDraftFail(error: error))
+            }
         }
         router.dismissScreen()
     }
@@ -260,7 +320,9 @@ extension AddMealPresenter {
         case saveMealStart
         case saveMealSuccess
         case saveMealFail(error: Error)
-        
+        case saveDraftFail(error: Error)
+        case deleteDraftFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear:         return "AddMealView_Appear"
@@ -268,12 +330,14 @@ extension AddMealPresenter {
             case .saveMealStart:    return "AddMealView_SaveMeal_Start"
             case .saveMealSuccess:  return "AddMealView_SaveMeal_Success"
             case .saveMealFail:     return "AddMealView_SaveMeal_Fail"
+            case .saveDraftFail:    return "AddMealView_SaveDraft_Fail"
+            case .deleteDraftFail:  return "AddMealView_DeleteDraft_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
-            case .saveMealFail(error: let error):
+            case .saveMealFail(error: let error), .saveDraftFail(error: let error), .deleteDraftFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -282,8 +346,10 @@ extension AddMealPresenter {
         
         var type: LogType {
             switch self {
-            case .saveMealFail:
+            case .saveMealFail, .saveDraftFail:
                 return .severe
+            case .deleteDraftFail:
+                return .warning
             default:
                 return .analytic
             }

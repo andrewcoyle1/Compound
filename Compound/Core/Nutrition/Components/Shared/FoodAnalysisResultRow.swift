@@ -34,3 +34,27 @@ struct FoodAnalysisResultRow: View {
         .padding(.vertical, Spacing.xs)
     }
 }
+
+/// The AI results' section header, with Add All: every result onto the plate at its estimate in
+/// one tap, rather than a tap and a confirm per row.
+struct AIEstimateHeader: View {
+    let count: Int
+    let isAdded: Bool
+    let onAddAll: () -> Void
+
+    var body: some View {
+        HStack {
+            Text("AI Estimate")
+            Spacer()
+            Button(action: onAddAll) {
+                if isAdded {
+                    Label("Added", systemImage: "checkmark")
+                } else {
+                    Text("Add All (\(count))")
+                }
+            }
+            .disabled(isAdded)
+            .textCase(nil)
+        }
+    }
+}

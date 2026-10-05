@@ -51,22 +51,22 @@ struct SetTrackerRowView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             deleteSetButton
         }
+        // No rest runs when a finished workout is being corrected, which is the one place these
+        // rows are built without a rest handler.
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            restTimerButton
+            if presenter.onStartRest != nil {
+                restTimerButton
+            }
         }
         // `rowActions` does this for one edge; this row swipes both ways, so one menu carries both
         // actions for anyone who cannot swipe.
         .contextMenu {
-            restTimerButton
+            if presenter.onStartRest != nil {
+                restTimerButton
+            }
             deleteSetButton
         }
         .moveDisabled(true)
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
-        }
     }
     
     /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.
@@ -187,7 +187,8 @@ struct SetTrackerRowView: View {
             RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
                 .strokeBorder(.tint, lineWidth: isActive ? 2 : 0)
         }
-        .disabled(delegate.set.wrappedValue.completedAt != nil)
+        // A logged set stays editable, so a typo is corrected in place rather than by un-logging,
+        // which would restart the rest timer. The edit is not copied to other sets.
         .task {
             // `STARTSCREEN_SET_KEYBOARD`: the first open weight field opens its keyboard.
             guard field == .weight, set.wrappedValue.completedAt == nil, SetKeyboardLaunch.isPending else { return }
@@ -304,29 +305,50 @@ struct SetTrackerRowView: View {
         switch trackingMode {
         case .weightReps:
             if let weight = prev.weightKg, let reps = prev.reps {
-                columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)")
-                    .anyButton {
-                        delegate.set.wrappedValue.weightKg = weight
-                        delegate.set.wrappedValue.reps = reps
-                    }
-                    .accessibilityHint("Fills this set")
-                    .disabled(delegate.set.wrappedValue.completedAt != nil)
+                fillFromPrevious(columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)")) {
+                    $0.weightKg = weight
+                    $0.reps = reps
+                }
             } else {
                 emptyTargetLabel
             }
         case .repsOnly:
-            columnText(prev.reps.map(String.init) ?? Format.placeholder)
+            if let reps = prev.reps {
+                fillFromPrevious(columnText(String(reps))) { $0.reps = reps }
+            } else {
+                emptyTargetLabel
+            }
         case .timeOnly:
-            columnText(prev.durationSec.map { Format.duration(TimeInterval($0)) } ?? Format.placeholder)
+            if let duration = prev.durationSec {
+                fillFromPrevious(columnText(Format.duration(TimeInterval(duration)))) { $0.durationSec = duration }
+            } else {
+                emptyTargetLabel
+            }
         case .distanceTime:
             if let distance = prev.distanceMeters, let duration = prev.durationSec {
                 let displayDistance = Format.distance(meters: distance, exerciseUnit: unitPreference.distanceUnit)
-                columnText("\(displayDistance) \(Format.duration(TimeInterval(duration)))", font: .caption2)
-                    .lineLimit(2)
+                fillFromPrevious(
+                    columnText("\(displayDistance) \(Format.duration(TimeInterval(duration)))", font: .caption2)
+                        .lineLimit(2)
+                ) {
+                    $0.distanceMeters = distance
+                    $0.durationSec = duration
+                }
             } else {
                 emptyTargetLabel
             }
         }
+    }
+
+    /// A Prev value that fills this set when tapped, for every tracking mode. Not on a logged set,
+    /// where a stray tap would overwrite what was recorded.
+    private func fillFromPrevious(_ label: some View, fill: @escaping (inout WorkoutSetModel) -> Void) -> some View {
+        label
+            .anyButton {
+                fill(&delegate.set.wrappedValue)
+            }
+            .accessibilityHint("Fills this set")
+            .disabled(delegate.set.wrappedValue.completedAt != nil)
     }
 
 }

@@ -33,6 +33,7 @@ protocol AnalyticsRouter: GlobalRouter {
     func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate)
     func showWeeklyReviewView()
     func showLogWeightView()
+    func showLogMeasurementView(kind: BodyMeasurementKind)
 }
 
 extension CoreRouter: AnalyticsRouter { }

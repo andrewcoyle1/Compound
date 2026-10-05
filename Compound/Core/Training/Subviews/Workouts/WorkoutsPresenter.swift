@@ -22,7 +22,8 @@ class WorkoutsPresenter {
         self.router = router
     }
     
-    func onWorkoutPressed(workout: WorkoutTemplateModel) {
+    /// A mesocycle's day opened from here starts on its own, outside the mesocycle's schedule.
+    func onWorkoutPressed(workout: WorkoutTemplateModel, mesocycle: Mesocycle?) {
         router.showWorkoutTemplateDetailView(
             delegate: WorkoutTemplateDetailDelegate(
                 workoutTemplate: workout,
@@ -31,9 +32,33 @@ class WorkoutsPresenter {
                     Task { @MainActor in
                         self?.router.showWorkoutTrackerView()
                     }
-                }
+                },
+                mesocycle: mesocycle
             )
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "WorkoutsView_Appear"
+            case .onDisappear:  return "WorkoutsView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
 }

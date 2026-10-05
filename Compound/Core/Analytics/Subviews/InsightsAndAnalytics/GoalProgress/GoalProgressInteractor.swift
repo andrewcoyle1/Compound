@@ -6,7 +6,7 @@
 import SwiftUI
 
 @MainActor
-protocol GoalProgressInteractor {
+protocol GoalProgressInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var currentGoal: WeightGoal? { get }
     var bodyMeasurements: [BodyMeasurementEntry] { get }

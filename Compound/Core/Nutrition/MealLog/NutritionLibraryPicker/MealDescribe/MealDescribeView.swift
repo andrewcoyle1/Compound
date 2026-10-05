@@ -2,10 +2,9 @@ import SwiftUI
 
 struct MealDescribeDelegate {
     let onPick: (MealItemModel) -> Void
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
 
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct MealDescribeView: View {
@@ -54,17 +53,13 @@ struct MealDescribeView: View {
                         }
                     }
                 } header: {
-                    Text("AI Estimate")
+                    AIEstimateHeader(count: presenter.analysisResults.count, isAdded: presenter.didAddAll) {
+                        presenter.onAddAllPressed(delegate: delegate)
+                    }
                 } footer: {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }
             }
-        }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
         .bottomCTA {
             CallToActionButton(isLoading: presenter.isAnalysing) {

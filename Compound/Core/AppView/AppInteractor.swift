@@ -15,6 +15,7 @@ protocol AppInteractor: GlobalInteractor {
     func saveUserFCMToken(token: String) async throws
     func applyLocalReminderSettings() async
     func syncAllRemoteDataIfLoggedIn() async
+    func refreshWidgetSnapshot(weeklyGoal: Int?)
 }
 
 extension CoreInteractor: AppInteractor { }

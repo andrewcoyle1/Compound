@@ -47,6 +47,8 @@ struct WeightRateView: View {
         .onFirstAppear {
             presenter.onAppear(delegate: delegate)
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var rateSelectionSection: some View {

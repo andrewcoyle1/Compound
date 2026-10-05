@@ -13,6 +13,7 @@ protocol AuthInteractor {
     func signInGoogle() async throws -> (user: UserAuthInfo, isNewUser: Bool)
     func logIn(user: UserAuthInfo, isNewUser: Bool) async throws
     func trackEvent(event: LoggableEvent)
+    func trackScreenEvent(event: LoggableEvent)
 }
 
 extension CoreInteractor: AuthInteractor { }

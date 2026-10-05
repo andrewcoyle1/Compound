@@ -28,6 +28,16 @@ class ProteinIntakePresenter {
     ) {
         self.interactor = interactor
         self.router = router
+        // Opens on the current plan's answer when rebuilding it, otherwise on the recommendation.
+        selectedProteinIntake = interactor.currentDietPlan.flatMap { ProteinIntake(rawValue: $0.proteinIntake) } ?? .moderate
+    }
+
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
+    }
+
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
     
     func onContinuePressed(delegate oldDelegate: ProteinIntakeDelegate) {
@@ -39,16 +49,24 @@ class ProteinIntakePresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "ProteinIntakeView_Appear"
+            case .onDisappear: return "ProteinIntakeView_Disappear"
             case .navigate: return "Onboarding_ProteinIntake_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .navigate:
                 return nil
             }
@@ -56,6 +74,8 @@ class ProteinIntakePresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

@@ -53,12 +53,14 @@ enum TrainingTabFixture {
         name: String = "Upper",
         on date: Date,
         finished: Bool = true,
-        isRestDay: Bool = false
+        isRestDay: Bool = false,
+        mesocycleId: String? = nil
     ) -> WorkoutSessionModel {
         WorkoutSessionModel(
             id: id,
             authorId: "author-1",
             name: name,
+            mesocycleId: mesocycleId,
             dateCreated: date,
             endedAt: finished ? date.addingTimeInterval(3600) : nil,
             exercises: [],
@@ -73,8 +75,8 @@ enum TrainingTabFixture {
 /// workout, and the doors to the mesocycle, workout and history libraries.
 ///
 /// The risk is the calendar. Markers are built in one pass keyed by day, so anything keyed on the
-/// raw logged timestamp would give every session its own cell, and the mesocycle pre-creates rest
-/// days for dates that have not arrived — those must not appear as already done.
+/// raw logged timestamp would give every session its own cell, and rest days are sessions too but
+/// must never mark a day.
 ///
 /// `showAlert(...)`, `showSimpleAlert(...)` and `dismissScreen()` come from a `GlobalRouter`
 /// protocol extension, so a double can never see them. Where the screen's answer is an alert, these
@@ -87,6 +89,7 @@ struct TrainingHomePresenterTests {
         var currentUser: UserModel?
         var userImageUrl: String?
         var activeMesocycle: Mesocycle?
+        var mesocycles: [Mesocycle] = []
         var activeSession: WorkoutSessionModel?
         var workoutSessions: [WorkoutSessionModel] = []
         var favouriteGymProfile: GymProfileModel?
@@ -207,7 +210,7 @@ struct TrainingHomePresenterTests {
         let markers = screen.presenter.loggedWorkoutMarkersByDay()
 
         #expect(markers.count == 1)
-        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: morning)] == .count(2))
+        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: morning)] == .sessions(colours: [nil, nil]))
     }
 
     @Test("Test Separate Days Get Separate Markers")
@@ -221,8 +224,8 @@ struct TrainingHomePresenterTests {
 
         let markers = screen.presenter.loggedWorkoutMarkersByDay()
 
-        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: wednesday)] == .count(1))
-        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: friday)] == .count(1))
+        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: wednesday)] == .sessions(colours: [nil]))
+        #expect(markers[TrainingTabFixture.calendar.startOfDay(for: friday)] == .sessions(colours: [nil]))
     }
 
     /// A workout still in progress has not been logged yet, so it must not tick its day.
@@ -235,26 +238,36 @@ struct TrainingHomePresenterTests {
         #expect(screen.presenter.loggedWorkoutMarkersByDay().isEmpty)
     }
 
-    /// A mesocycle pre-creates its rest days for dates ahead of today. Marking them would tell the
-    /// user they had already rested on a day that has not happened.
-    @Test("Test A Rest Day Yet To Come Is Not Marked")
-    func testARestDayYetToComeIsNotMarked() {
-        let tomorrow = Date().addingTimeInterval(86_400)
+    /// Rest days are sessions so the mesocycle can count them, past or pre-created for days ahead.
+    /// Neither kind is a workout, so neither marks its day.
+    @Test("Test Rest Days Are Not Marked")
+    func testRestDaysAreNotMarked() {
         let screen = makeScreen(sessions: [
-            TrainingTabFixture.session(id: "rest", name: "Rest", on: tomorrow, isRestDay: true)
+            TrainingTabFixture.session(id: "past-rest", name: "Rest", on: TrainingTabFixture.date(day: 11), isRestDay: true),
+            TrainingTabFixture.session(id: "future-rest", name: "Rest", on: Date().addingTimeInterval(86_400), isRestDay: true)
         ])
 
         #expect(screen.presenter.loggedWorkoutMarkersByDay().isEmpty)
     }
 
-    @Test("Test A Rest Day Already Taken Is Marked")
-    func testARestDayAlreadyTakenIsMarked() {
-        let past = TrainingTabFixture.date(day: 11)
+    /// Each workout is one stroke in its mesocycle's colour, in the order they were done; one
+    /// outside any mesocycle, or in one since deleted, takes the accent.
+    @Test("Test Each Workout Wears Its Mesocycle's Colour")
+    func testEachWorkoutWearsItsMesocyclesColour() {
         let screen = makeScreen(sessions: [
-            TrainingTabFixture.session(id: "rest", name: "Rest", on: past, isRestDay: true)
+            TrainingTabFixture.session(id: "evening", on: TrainingTabFixture.date(day: 11, hour: 19), mesocycleId: "strength"),
+            TrainingTabFixture.session(id: "morning", on: TrainingTabFixture.date(day: 11, hour: 7), mesocycleId: "hypertrophy"),
+            TrainingTabFixture.session(id: "blank", on: TrainingTabFixture.date(day: 11, hour: 12)),
+            TrainingTabFixture.session(id: "gone", on: TrainingTabFixture.date(day: 11, hour: 21), mesocycleId: "deleted")
         ])
+        screen.interactor.mesocycles = [
+            Mesocycle(id: "hypertrophy", authorId: "author-1", name: "Hypertrophy", icon: "dumbbell", colour: "#0000FF"),
+            Mesocycle(id: "strength", authorId: "author-1", name: "Strength", icon: "dumbbell", colour: "#FF9500")
+        ]
 
-        #expect(screen.presenter.loggedWorkoutMarkersByDay()[TrainingTabFixture.calendar.startOfDay(for: past)] == .count(1))
+        let marker = screen.presenter.loggedWorkoutMarkersByDay()[TrainingTabFixture.calendar.startOfDay(for: TrainingTabFixture.date(day: 11))]
+
+        #expect(marker == .sessions(colours: ["#0000FF", nil, "#FF9500", nil]))
     }
 
     // MARK: - Tapping a day
@@ -409,9 +422,16 @@ struct TrainingHomePresenterTests {
 @MainActor
 struct TrainingTemplateDetailPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, WorkoutTemplateDetailInteractor {
+    final class Interactor: SpyGlobalInteractor, WorkoutTemplateDetailInteractor {
         var currentUser: UserModel?
         var activeSession: WorkoutSessionModel?
+        var mesocycles: [Mesocycle] = []
+        var allWorkoutTemplates: [WorkoutTemplateModel] = []
+        private(set) var savedTemplates: [WorkoutTemplateModel] = []
+
+        func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws {
+            savedTemplates.append(workoutTemplate)
+        }
         var startWorkoutError: Error?
         var deleteError: Error?
         var sessionAfterStart: WorkoutSessionModel?
@@ -443,8 +463,10 @@ struct TrainingTemplateDetailPresenterTests {
         }
     }
 
-    private final class Router: WorkoutTemplateDetailRouter {
+    final class Router: WorkoutTemplateDetailRouter {
         func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
+        private(set) var editedMesocycleIds: [String] = []
+        func showEditMesocycleView(delegate: EditMesocycleDelegate) { editedMesocycleIds.append(delegate.mesocycle.id) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var exerciseDetailDelegates: [ExerciseModelDetailDelegate] = []
@@ -464,13 +486,13 @@ struct TrainingTemplateDetailPresenterTests {
         }
     }
 
-    private struct Screen {
+    struct Screen {
         let presenter: WorkoutTemplateDetailPresenter
         let interactor: Interactor
         let router: Router
     }
 
-    private func makeScreen(active: WorkoutSessionModel? = nil) -> Screen {
+    func makeScreen(active: WorkoutSessionModel? = nil) -> Screen {
         let interactor = Interactor()
         interactor.activeSession = active
         let router = Router()

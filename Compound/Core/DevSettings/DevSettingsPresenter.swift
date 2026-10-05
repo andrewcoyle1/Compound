@@ -116,11 +116,14 @@ class DevSettingsPresenter {
         updateAction: (inout ActiveABTests) -> Void
     ) {
         if newValue != savedValue {
+            interactor.trackEvent(event: Event.overrideTestStart)
             do {
                 var tests = interactor.activeTests
                 updateAction(&tests)
                 try interactor.override(updatedTests: tests)
+                interactor.trackEvent(event: Event.overrideTestSuccess)
             } catch {
+                interactor.trackEvent(event: Event.overrideTestFail(error: error))
                 property = savedValue
                 router.showAlert(error: error)
             }
@@ -203,6 +206,7 @@ class DevSettingsPresenter {
                 isFetchingSession = false
             }
         } catch {
+            interactor.trackEvent(event: Event.fetchSessionFail(error: error))
             await MainActor.run {
                 fetchError = error.localizedDescription
                 isFetchingSession = false
@@ -239,6 +243,10 @@ class DevSettingsPresenter {
         case forceSignOutStart
         case forceSignOutSuccess
         case forceSignOutFail(error: Error)
+        case overrideTestStart
+        case overrideTestSuccess
+        case overrideTestFail(error: Error)
+        case fetchSessionFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -247,12 +255,16 @@ class DevSettingsPresenter {
             case .forceSignOutStart:    return "DevSettingsView_ForceSignOut_Start"
             case .forceSignOutSuccess:  return "DevSettingsView_ForceSignOut_Success"
             case .forceSignOutFail:     return "DevSettingsView_ForceSignOut_Fail"
+            case .overrideTestStart:    return "DevSettingsView_OverrideTest_Start"
+            case .overrideTestSuccess:  return "DevSettingsView_OverrideTest_Success"
+            case .overrideTestFail:     return "DevSettingsView_OverrideTest_Fail"
+            case .fetchSessionFail:     return "DevSettingsView_FetchSession_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
-            case .forceSignOutFail(error: let error):
+            case .forceSignOutFail(error: let error), .overrideTestFail(error: let error), .fetchSessionFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -261,7 +273,7 @@ class DevSettingsPresenter {
         
         var type: LogType {
             switch self {
-            case .forceSignOutFail:
+            case .forceSignOutFail, .overrideTestFail, .fetchSessionFail:
                 return .severe
             default:
                 return .analytic

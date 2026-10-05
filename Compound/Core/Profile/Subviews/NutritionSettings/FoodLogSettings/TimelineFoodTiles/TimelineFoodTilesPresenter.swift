@@ -32,8 +32,10 @@ class TimelineFoodTilesPresenter {
 
     private func save() {
         Task {
+            interactor.trackEvent(event: Event.saveStart)
             do {
                 try await interactor.saveFoodLogSettings(settings)
+                interactor.trackEvent(event: Event.saveSuccess)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
@@ -48,17 +50,27 @@ class TimelineFoodTilesPresenter {
         settings = interactor.foodLogSettings
         interactor.trackScreenEvent(event: Event.onAppear)
     }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
 }
 
 extension TimelineFoodTilesPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
+        case saveStart
+        case saveSuccess
         case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveStart: return "TimelineFoodTilesView_Save_Start"
+            case .saveSuccess: return "TimelineFoodTilesView_Save_Success"
             case .saveFail: return "TimelineFoodTilesView_Save_Fail"
             case .onAppear: return "TimelineFoodTilesView_Appear"
+            case .onDisappear: return "TimelineFoodTilesView_Disappear"
             }
         }
 

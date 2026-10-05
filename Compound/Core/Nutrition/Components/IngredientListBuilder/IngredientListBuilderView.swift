@@ -7,11 +7,16 @@ struct IngredientListBuilderDelegate {
     var onIngredientSelectionChanged: ((FoodModel) -> Void)?
     var onMealItemConfirmed: ((MealItemModel) -> Void)?
     var onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)?
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
     /// Optional list of ingredient templates that should display as "selected" in the UI.
     /// If `nil`, no selection state is shown.
     var selectedFoods: [FoodModel]?
     /// A query typed into a search field the host owns. `nil` means the list shows its own.
     var searchText: String?
+    /// Set by a parent that shows this list as part of its own screen (Foods, the food picker's
+    /// Library): the parent logs the screen, so the list logs Appear and Disappear only when routed.
+    var isEmbedded: Bool
 
     init(
         mealItems: Binding<[MealItemModel]>? = nil,
@@ -19,7 +24,9 @@ struct IngredientListBuilderDelegate {
         onMealItemConfirmed: ((MealItemModel) -> Void)? = nil,
         onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)? = nil,
         selectedFoods: [FoodModel]? = nil,
-        searchText: String? = nil
+        searchText: String? = nil,
+        onLog: (() -> Void)? = nil,
+        isEmbedded: Bool = false
     ) {
         self.mealItems = mealItems
         self.onIngredientSelectionChanged = onIngredientSelectionChanged
@@ -27,6 +34,8 @@ struct IngredientListBuilderDelegate {
         self.onRecipeIngredientConfirmed = onRecipeIngredientConfirmed
         self.selectedFoods = selectedFoods
         self.searchText = searchText
+        self.onLog = onLog
+        self.isEmbedded = isEmbedded
     }
 }
 
@@ -77,16 +86,20 @@ struct IngredientListBuilderView: View {
             if let newValue { presenter.searchText = newValue }
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(delegate: delegate)
         }
         .onDisappear {
-            presenter.onViewDisappear()
+            presenter.onViewDisappear(delegate: delegate)
         }
         .scrollIndicators(.hidden)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: .close) {
-                    presenter.onDismissPressed()
+            // Logging, this list sits inside the food picker, whose own Close it duplicated: two
+            // X buttons side by side, doing the same thing.
+            if delegate.onMealItemConfirmed == nil {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
+                        presenter.onDismissPressed()
+                    }
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {

@@ -46,10 +46,6 @@ class FoodPhotoScannerPresenter {
         self.router = router
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-
     /// Asks for the camera the first time the AI tab is opened. A refusal used to leave a capture
     /// button over a black preview, with nothing to say why.
     func onCameraNeeded(isSupported: Bool) async {
@@ -74,6 +70,7 @@ class FoodPhotoScannerPresenter {
         isAnalysing = true
         errorMessage = nil
         analysisResults = []
+        didAddAll = false
         interactor.trackEvent(event: Event.onCapture)
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
@@ -87,6 +84,7 @@ class FoodPhotoScannerPresenter {
             let json = try await interactor.analyzeFood(imageData: data)
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
+            interactor.trackEvent(event: Event.analyseSuccess(count: decoded.items.count))
         } catch {
             errorMessage = String(localized: "Couldn't recognize the food in this photo. Retake it in good light, or use Search or Describe.")
             interactor.playHaptic(option: .error)
@@ -98,37 +96,38 @@ class FoodPhotoScannerPresenter {
     func onRetakePressed() {
         isAnalysing = false
         analysisResults = []
+        didAddAll = false
         errorMessage = nil
     }
 
     func makeMealItem(from item: FoodAnalysisItem) -> MealItemModel {
         interactor.trackEvent(event: Event.onAddItem(name: item.name))
-        var nutrients = NutrientMap()
-        if let val = item.calories { nutrients[.calories] = val }
-        if let val = item.proteinGrams { nutrients[.protein] = val }
-        if let val = item.carbGrams { nutrients[.carbs] = val }
-        if let val = item.fatGrams { nutrients[.fatTotal] = val }
-        return MealItemModel(
-            itemId: UUID().uuidString,
-            sourceType: .ingredient,
-            sourceId: item.ingredientId ?? UUID().uuidString,
-            displayName: item.name,
-            amount: item.amountGrams,
-            unit: "g",
-            resolvedGrams: item.amountGrams,
-            resolvedMilliliters: nil,
-            nutrients: nutrients
-        )
+        return item.mealItem
+    }
+
+    /// Set once Add All has put this shot's results on the plate, so a second tap cannot add them
+    /// twice. A new shot clears it.
+    private(set) var didAddAll = false
+
+    /// Every result onto the plate at its estimate, in one tap. Correcting an amount is still a tap
+    /// on its row away.
+    func onAddAllPressed(onPick: (MealItemModel) -> Void) {
+        guard !didAddAll, !analysisResults.isEmpty else { return }
+        didAddAll = true
+        interactor.trackEvent(event: Event.onAddAll(count: analysisResults.count))
+        analysisResults.forEach { onPick($0.mealItem) }
+        interactor.playHaptic(option: .success)
     }
 
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
     /// adding it as is — the amount and, through it, the macros can be corrected first.
-    func onResultTapped(_ item: FoodAnalysisItem, onPick: @escaping (MealItemModel) -> Void) {
+    func onResultTapped(_ item: FoodAnalysisItem, onPick: @escaping (MealItemModel) -> Void, onLog: (() -> Void)? = nil) {
         interactor.trackEvent(event: Event.onAddItem(name: item.name))
         router.showIngredientAmountView(delegate: IngredientAmountDelegate(
             ingredient: item.estimatedFood,
             onPick: onPick,
-            initialAmountText: item.amountGrams.formatted(.number.grouping(.never))
+            initialAmountText: item.amountGrams.formatted(.number.grouping(.never)),
+            onLog: onLog
         ))
     }
 }
@@ -136,18 +135,20 @@ class FoodPhotoScannerPresenter {
 extension FoodPhotoScannerPresenter {
 
     enum Event: LoggableEvent {
-        case onAppear
         case onCapture
+        case analyseSuccess(count: Int)
         case onAddItem(name: String)
+        case onAddAll(count: Int)
         case onError(message: String)
         case onCameraDenied
         case onOpenSettings
 
         var eventName: String {
             switch self {
-            case .onAppear:   return "FoodPhotoScannerView_Appear"
+            case .analyseSuccess: return "FoodPhotoScannerView_Analyse_Success"
             case .onCapture:  return "FoodPhotoScanner_Capture"
             case .onAddItem:  return "FoodPhotoScanner_AddItem"
+            case .onAddAll:   return "FoodPhotoScanner_AddAll"
             case .onError:    return "FoodPhotoScanner_Error"
             case .onCameraDenied: return "FoodPhotoScanner_CameraDenied"
             case .onOpenSettings: return "FoodPhotoScanner_OpenSettings"
@@ -157,6 +158,7 @@ extension FoodPhotoScannerPresenter {
         var parameters: [String: Any]? {
             switch self {
             case .onAddItem(let name):    return ["item_name": name]
+            case .onAddAll(let count), .analyseSuccess(let count):    return ["item_count": count]
             case .onError(let message):  return ["error": message]
             default:                     return nil
             }
@@ -168,5 +170,28 @@ extension FoodPhotoScannerPresenter {
             default:       return .analytic
             }
         }
+    }
+}
+
+extension FoodAnalysisItem {
+    /// The estimate as a meal item, as is. The model's figures are absolute for the amount it
+    /// estimated, so they go through unscaled; a nutrient it did not give stays absent.
+    var mealItem: MealItemModel {
+        var nutrients = NutrientMap()
+        if let calories { nutrients[.calories] = calories }
+        if let proteinGrams { nutrients[.protein] = proteinGrams }
+        if let carbGrams { nutrients[.carbs] = carbGrams }
+        if let fatGrams { nutrients[.fatTotal] = fatGrams }
+        return MealItemModel(
+            itemId: UUID().uuidString,
+            sourceType: .ingredient,
+            sourceId: ingredientId ?? UUID().uuidString,
+            displayName: name,
+            amount: amountGrams,
+            unit: "g",
+            resolvedGrams: amountGrams,
+            resolvedMilliliters: nil,
+            nutrients: nutrients
+        )
     }
 }

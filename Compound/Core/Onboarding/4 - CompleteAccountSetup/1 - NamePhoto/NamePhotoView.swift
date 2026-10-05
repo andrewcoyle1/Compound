@@ -12,9 +12,14 @@ struct NamePhotoView: View {
 
     @State var presenter: NamePhotoPresenter
 
+    private enum Field { case firstName, lastName }
+    @FocusState private var focusedField: Field?
+
     var body: some View {
         OnboardingStepScaffold(
             title: "What's Your Name?",
+            // The sentence the removed "Ready to Begin?" screen held on its own.
+            subtitle: "A few details tailor your recommendations to your fitness journey.",
             progress: OnboardingStep.completeAccountSetup.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.saveAndContinue() },
             onDevSettingsPressed: nil
@@ -23,7 +28,15 @@ struct NamePhotoView: View {
             nameSection
         }
         .scrollIndicators(.hidden)
-        .onAppear(perform: presenter.prefillFromCurrentUser)
+        // This is the first screen after the paywall, which back must not return to.
+        .navigationBarBackButtonHidden()
+        .onAppear {
+            presenter.onViewAppear()
+            // No focus on appear: with the field focused as the push lands, Continue's loading modal
+            // swallowed the push to the next step and the screen stayed put (OnboardingUITests).
+            presenter.prefillFromCurrentUser()
+        }
+        .onDisappear { presenter.onViewDisappear() }
         .onChange(of: presenter.selectedPhotoItem) {
             Task {
                 await presenter.handlePhotoSelection()
@@ -92,9 +105,15 @@ struct NamePhotoView: View {
             TextField("First name", text: $presenter.firstName)
                 .textContentType(.givenName)
                 .textInputAutocapitalization(.words)
+                .focused($focusedField, equals: .firstName)
+                .submitLabel(.next)
+                .onSubmit { focusedField = .lastName }
             TextField("Last name (optional)", text: $presenter.lastName)
                 .textContentType(.familyName)
                 .textInputAutocapitalization(.words)
+                .focused($focusedField, equals: .lastName)
+                .submitLabel(.continue)
+                .onSubmit { presenter.saveAndContinue() }
         } header: {
             Text("Your Name")
         } footer: {

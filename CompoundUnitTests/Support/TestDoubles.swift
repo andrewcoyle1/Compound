@@ -33,21 +33,27 @@ class SpyGlobalInteractor: GlobalInteractor {
     private(set) var trackedEventNames: [String] = []
     private(set) var trackedScreenEventNames: [String] = []
     private(set) var playedHaptics: [HapticOption] = []
+    /// The parameters each event was last sent with, by event name.
+    private(set) var lastParameters: [String: [String: Any]] = [:]
 
     func trackEvent(eventName: String, parameters: [String: Any]?, type: LogType) {
         trackedEventNames.append(eventName)
+        lastParameters[eventName] = parameters
     }
 
     func trackEvent(event: AnyLoggableEvent) {
         trackedEventNames.append(event.eventName)
+        lastParameters[event.eventName] = event.parameters
     }
 
     func trackEvent(event: LoggableEvent) {
         trackedEventNames.append(event.eventName)
+        lastParameters[event.eventName] = event.parameters
     }
 
     func trackScreenEvent(event: LoggableEvent) {
         trackedScreenEventNames.append(event.eventName)
+        lastParameters[event.eventName] = event.parameters
     }
 
     func playHaptic(option: HapticOption) {
@@ -108,9 +114,9 @@ class SpyOnboardingRouter: OnboardingStepRouter {
         shown.append(destination)
     }
 
-    func showCompleteAccountSetupView() { record("completeAccountSetup") }
+    func showNamePhotoView() { record("namePhoto") }
     func showHealthDisclaimerView() { record("healthDisclaimer") }
-    func showGoalSettingView() { record("goalSetting") }
+    func showOverarchingObjectiveView() { record("objective") }
     func showCreateGymProfileView(delegate: CreateGymProfileDelegate) { record("gymProfileSetup") }
     func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { record("trainingProgramSetup") }
     func showCustomisingDietProgramView() { record("customisingDietProgram") }

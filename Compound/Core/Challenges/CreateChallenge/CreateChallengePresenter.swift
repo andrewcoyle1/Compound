@@ -16,6 +16,8 @@ class CreateChallengePresenter {
     var durationDays: Int = 14
     private(set) var selectedIds: Set<String> = []
     private(set) var isSaving: Bool = false
+    /// The member picked for the user when there was only one to pick; closing does not lose it.
+    private var preselectedIds: Set<String>?
 
     init(interactor: CreateChallengeInteractor, router: CreateChallengeRouter) {
         self.interactor = interactor
@@ -39,7 +41,7 @@ class CreateChallengePresenter {
 
     /// Anything entered that closing would throw away.
     var hasUnsavedChanges: Bool {
-        !trimmedTitle.isEmpty || !selectedIds.isEmpty
+        !trimmedTitle.isEmpty || !selectedIds.subtracting(preselectedIds ?? []).isEmpty
     }
 
     /// Why Create is disabled, shown under the form; nil when it is ready.
@@ -67,6 +69,17 @@ class CreateChallengePresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
+        // With exactly one person to invite there is no choice to make, so make it — once, so a
+        // later appear cannot re-tick someone the user has unticked.
+        if preselectedIds == nil {
+            let candidateIds = candidates.map(\.userId)
+            preselectedIds = candidateIds.count == 1 && selectedIds.isEmpty ? Set(candidateIds) : []
+            selectedIds.formUnion(preselectedIds ?? [])
+        }
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
     }
 
     func isSelected(_ user: UserModel) -> Bool {
@@ -118,6 +131,7 @@ class CreateChallengePresenter {
 extension CreateChallengePresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case createStart(target: Int, days: Int, members: Int)
         case createSuccess
         case createFail(error: Error)
@@ -125,6 +139,7 @@ extension CreateChallengePresenter {
         var eventName: String {
             switch self {
             case .onAppear:         return "CreateChallengeView_Appear"
+            case .onDisappear:      return "CreateChallengeView_Disappear"
             case .createStart:      return "CreateChallengeView_Create_Start"
             case .createSuccess:    return "CreateChallengeView_Create_Success"
             case .createFail:       return "CreateChallengeView_Create_Fail"

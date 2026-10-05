@@ -34,7 +34,9 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View>: View {
     @ViewBuilder var mealAccessoryView: (MealAccessoryDelegate) -> MealTabAccessory
 
     var body: some View {
-        TabView(selection: $presenter.selectedTab) {
+        // Only a tap writes through this binding; links and the restored tab set `selectedTab`
+        // directly, so the selection event counts the user's own choices.
+        TabView(selection: Binding(get: { presenter.selectedTab }, set: { presenter.onTabSelected($0) })) {
             ForEach(tabs) { tab in
                 Tab(value: tab.tab) {
                     tab.screen()
@@ -55,6 +57,9 @@ struct TabBarView<TrainingTabAccessory: View, MealTabAccessory: View>: View {
         }
         .onAppear {
             presenter.onViewAppear(restoredTab: DeepLink.Tab(name: storedTab))
+        }
+        .onDisappear {
+            presenter.onViewDisappear()
         }
         .onChange(of: presenter.selectedTab) { _, tab in
             storedTab = tab.rawValue

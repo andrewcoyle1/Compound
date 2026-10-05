@@ -65,7 +65,14 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
     private let router: BodyMetricsRouter
     private let kind: BodyRatioKind
 
-    var entries: [BodyRatioEntry]
+    /// Read live, so a waist logged from this screen's Add shows up without reopening it.
+    var entries: [BodyRatioEntry] {
+        Self.entries(
+            kind: kind,
+            measurements: interactor.bodyMeasurements,
+            heightCentimetres: interactor.currentUser?.submittedHeightCentimeters
+        )
+    }
 
     var timeSeries: [TimeSeries] {
         let data = entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.ratio) }
@@ -96,15 +103,16 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
         self.interactor = interactor
         self.router = router
         self.kind = kind
-        self.entries = []
     }
 
-    func onAppear() async {
-        entries = Self.entries(
-            kind: kind,
-            measurements: interactor.bodyMeasurements,
-            heightCentimetres: interactor.currentUser?.submittedHeightCentimeters
-        )
+    func onAppear() async { }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(kind: kind))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: kind))
     }
 
     /// A ratio is computed rather than logged, but the waist is the input measurement both kinds
@@ -150,6 +158,29 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
             .sorted { $0.date < $1.date }
     }
 
+}
+
+extension BodyRatioPresenter {
+    enum Event: LoggableEvent {
+        case onAppear(kind: BodyRatioKind)
+        case onDisappear(kind: BodyRatioKind)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:    return "BodyRatioView_Appear"
+            case .onDisappear: return "BodyRatioView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let kind), .onDisappear(let kind):
+                return ["ratio": kind.rawValue]
+            }
+        }
+
+        var type: LogType { .analytic }
+    }
 }
 
 extension CoreRouter {

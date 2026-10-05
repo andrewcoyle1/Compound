@@ -54,7 +54,15 @@ extension XCUIApplication {
 
     func type(_ text: String, into identifier: String, file: StaticString = #filePath, line: UInt = #line) {
         let field = waitFor(textFields[identifier].firstMatch, file: file, line: line)
-        field.tap()
+        // On a cold launch the first tap can land while the flow is still presenting and be lost,
+        // and typing then fails with "Neither element nor any descendant has keyboard focus". So
+        // tap again until the field has focus before typing.
+        let focus = NSPredicate(format: "hasKeyboardFocus == true")
+        for _ in 0..<3 {
+            field.tap()
+            if XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: focus, object: field)], timeout: 2) == .completed { break }
+        }
+        XCTAssertTrue(focus.evaluate(with: field), "\(identifier) never took focus", file: file, line: line)
         field.typeText(text)
     }
 

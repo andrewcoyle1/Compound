@@ -25,4 +25,27 @@ class ExercisesPresenter {
         router.showExerciseModelDetailView(delegate: ExerciseModelDetailDelegate(exerciseModel: exercise))
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "ExercisesView_Appear"
+            case .onDisappear:  return "ExercisesView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
 }

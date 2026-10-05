@@ -17,6 +17,23 @@ import SwiftUI
 // delegate. Nothing is stored along the way, so an answer dropped between two screens is an
 // answer the finished plan was never built from — and the user has no way to tell.
 
+/// A saved plan whose four answers are none of the screens' own defaults, so a screen that opens
+/// on one of them can only have read it from the plan.
+private func currentPlan() -> DietPlan {
+    DietPlan(
+        planId: "plan-1",
+        userId: "user-1",
+        createdAt: Date(timeIntervalSince1970: 1_700_000_000),
+        tdeeEstimate: 2500,
+        preferredDiet: PreferredDiet.keto.rawValue,
+        calorieFloor: CalorieFloor.low.rawValue,
+        trainingType: "moderate",
+        calorieDistribution: CalorieDistribution.varied.rawValue,
+        proteinIntake: ProteinIntake.veryHigh.rawValue,
+        days: []
+    )
+}
+
 // MARK: - The splash that starts the diet questions
 
 @MainActor
@@ -24,14 +41,70 @@ struct OnboardingCustomisingDietTests {
 
     private final class Interactor: SpyGlobalInteractor, CustomisingDietProgramInteractor {
         var currentUser: UserModel?
+        var activeMesocycle: Mesocycle?
     }
 
     private final class Router: CustomisingDietProgramRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
+        private(set) var planDelegates: [DietPlanDelegate] = []
 
         func showDevSettingsView() { shown.append("devSettings") }
         func showPreferredDietView() { shown.append("preferredDiet") }
+        func showDietPlanView(delegate: DietPlanDelegate) {
+            shown.append("dietPlan")
+            planDelegates.append(delegate)
+        }
+    }
+
+    private func mesocycle(trainingDays: Int) -> Mesocycle {
+        Mesocycle(
+            id: "program-1",
+            authorId: "user-1",
+            name: "Block",
+            icon: "flag",
+            colour: "#FF0000",
+            workoutTemplates: (0..<trainingDays).map { index in
+                WorkoutTemplateModel(
+                    id: "training-\(index)",
+                    authorId: "user-1",
+                    name: "Day \(index)",
+                    exercises: [WorkoutTemplateExercise(exercise: ExerciseModel.mock, setRestTimers: false)]
+                )
+            }
+        )
+    }
+
+    /// "Use Recommended Plan" skips the four questions with the answers each would open on, and
+    /// the split follows the same rule as the distribution screen's prefill.
+    @Test("Test The Recommended Plan Skips Straight To The Plan", arguments: [(3, CalorieDistribution.even), (5, .varied)])
+    func testTheRecommendedPlanSkipsStraightToThePlan(trainingDays: Int, distribution: CalorieDistribution) {
+        let interactor = Interactor()
+        interactor.activeMesocycle = mesocycle(trainingDays: trainingDays)
+        let router = Router()
+        let presenter = CustomisingDietProgramPresenter(interactor: interactor, router: router)
+
+        presenter.onUseRecommendedPlanPressed()
+
+        #expect(router.shown == ["dietPlan"])
+        let passed = router.planDelegates.first
+        #expect(passed?.preferredDiet == .balanced)
+        #expect(passed?.calorieFloor == .standard)
+        #expect(passed?.calorieDistribution == distribution)
+        #expect(passed?.proteinIntake == .moderate)
+        #expect(passed?.isFromSettings == false)
+        #expect(interactor.trackedEventNames == ["Onboarding_CustProgram_UseRecommended"])
+    }
+
+    /// Without a mesocycle there are no training days to vary around, so the week is flat.
+    @Test("Test The Recommended Plan Without A Program Is Even")
+    func testTheRecommendedPlanWithoutAProgramIsEven() {
+        let router = Router()
+        let presenter = CustomisingDietProgramPresenter(interactor: Interactor(), router: router)
+
+        presenter.onUseRecommendedPlanPressed()
+
+        #expect(router.planDelegates.first?.calorieDistribution == .even)
     }
 
     @Test("Test Continuing Opens The First Diet Question")
@@ -55,7 +128,9 @@ struct OnboardingCustomisingDietTests {
 @MainActor
 struct OnboardingPreferredDietPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, PreferredDietInteractor { }
+    private final class Interactor: SpyGlobalInteractor, PreferredDietInteractor {
+        var currentDietPlan: DietPlan?
+    }
 
     private final class Router: PreferredDietRouter {
         let router: AnyRouter = TestRouting.anyRouter
@@ -74,6 +149,7 @@ struct OnboardingPreferredDietPresenterTests {
         let interactor = Interactor()
         let router = Router()
         let presenter = PreferredDietPresenter(interactor: interactor, router: router)
+        presenter.selectedDiet = nil
 
         presenter.navigateToCalorieFloor()
 
@@ -81,6 +157,18 @@ struct OnboardingPreferredDietPresenterTests {
         #expect(router.distributionDelegates.isEmpty)
         // A navigation event logged without a navigation would read as a step the user completed.
         #expect(interactor.trackedEventNames.isEmpty)
+    }
+
+    /// A new plan opens on the recommendation; rebuilding one opens on the answer it was built with.
+    @Test("Test The Diet Opens On Balanced Or On The Current Plan")
+    func testTheDietOpensOnBalancedOrOnTheCurrentPlan() {
+        #expect(PreferredDietPresenter(interactor: Interactor(), router: Router()).selectedDiet == .balanced)
+
+        let interactor = Interactor()
+        interactor.currentDietPlan = currentPlan()
+        let presenter = PreferredDietPresenter(interactor: interactor, router: Router(), isFromSettings: true)
+
+        #expect(presenter.selectedDiet == .keto)
     }
 
     /// Every one of the four diets has to reach the next screen unchanged — the plan builder
@@ -138,7 +226,9 @@ struct OnboardingPreferredDietPresenterTests {
 @MainActor
 struct OnboardingCalorieFloorPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, CalorieFloorInteractor { }
+    private final class Interactor: SpyGlobalInteractor, CalorieFloorInteractor {
+        var currentDietPlan: DietPlan?
+    }
 
     private final class Router: CalorieFloorRouter {
         let router: AnyRouter = TestRouting.anyRouter
@@ -161,6 +251,15 @@ struct OnboardingCalorieFloorPresenterTests {
 
         #expect(presenter.selectedFloor == .standard)
         #expect(interactor.trackedEventNames == ["Onboarding_CalFloor_Prefilled"])
+    }
+
+    @Test("Test Rebuilding A Plan Opens On Its Floor")
+    func testRebuildingAPlanOpensOnItsFloor() {
+        let interactor = Interactor()
+        interactor.currentDietPlan = currentPlan()
+        let presenter = CalorieFloorPresenter(interactor: interactor, router: Router())
+
+        #expect(presenter.selectedFloor == .low)
     }
 
     /// The two floors are the numbers the plan is clamped to, and the descriptions on the screen
@@ -214,9 +313,11 @@ struct OnboardingCalorieDistributionTests {
 
     private final class Interactor: SpyGlobalInteractor, CalorieDistributionInteractor {
         var activeMesocycle: Mesocycle?
+        var currentDietPlan: DietPlan?
 
-        init(activeMesocycle: Mesocycle? = nil) {
+        init(activeMesocycle: Mesocycle? = nil, currentDietPlan: DietPlan? = nil) {
             self.activeMesocycle = activeMesocycle
+            self.currentDietPlan = currentDietPlan
         }
     }
 
@@ -310,6 +411,17 @@ struct OnboardingCalorieDistributionTests {
         #expect(!presenter.hasMesocycle)
     }
 
+    /// Rebuilding a plan opens on the split the user chose, even where the mesocycle would suggest
+    /// the other one.
+    @Test("Test Rebuilding A Plan Opens On Its Split")
+    func testRebuildingAPlanOpensOnItsSplit() {
+        let interactor = Interactor(activeMesocycle: mesocycle(trainingDays: 3, restDays: 4), currentDietPlan: currentPlan())
+        let presenter = CalorieDistributionPresenter(interactor: interactor, router: Router())
+
+        #expect(presenter.selectedCalorieDistribution == .varied)
+        #expect(presenter.trainingDaysPerWeek == 3)
+    }
+
     @Test("Test Nothing Chosen Does Not Move On")
     func testNothingChosenDoesNotMoveOn() {
         let router = Router()
@@ -350,6 +462,7 @@ struct OnboardingProteinIntakePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, ProteinIntakeInteractor {
         var currentUser: UserModel?
+        var currentDietPlan: DietPlan?
     }
 
     private final class Router: ProteinIntakeRouter {
@@ -374,10 +487,23 @@ struct OnboardingProteinIntakePresenterTests {
     func testNoProteinLevelPickedDoesNotMoveOn() {
         let router = Router()
         let presenter = ProteinIntakePresenter(interactor: Interactor(), router: router)
+        presenter.selectedProteinIntake = nil
 
         presenter.onContinuePressed(delegate: incoming())
 
         #expect(router.delegates.isEmpty)
+    }
+
+    /// A new plan opens on the recommendation; rebuilding one opens on the answer it was built with.
+    @Test("Test Protein Opens On Moderate Or On The Current Plan")
+    func testProteinOpensOnModerateOrOnTheCurrentPlan() {
+        #expect(ProteinIntakePresenter(interactor: Interactor(), router: Router()).selectedProteinIntake == .moderate)
+
+        let interactor = Interactor()
+        interactor.currentDietPlan = currentPlan()
+        let presenter = ProteinIntakePresenter(interactor: interactor, router: Router())
+
+        #expect(presenter.selectedProteinIntake == .veryHigh)
     }
 
     /// This is the one point where all four answers are together. If any of them is dropped here

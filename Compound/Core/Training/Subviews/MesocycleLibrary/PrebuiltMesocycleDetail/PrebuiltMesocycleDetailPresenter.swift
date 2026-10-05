@@ -15,24 +15,37 @@ class PrebuiltMesocycleDetailPresenter {
     private let router: PrebuiltMesocycleDetailRouter
 
     let mesocycle: Mesocycle
+    /// Set by onboarding, which resumes once the program is the active mesocycle. Nil from the
+    /// library, where starting goes back to it.
+    private let onStarted: (@Sendable () -> Void)?
     private(set) var isStarting = false
 
     var workoutCount: Int {
         mesocycle.workoutTemplates.filter { !$0.exercises.isEmpty }.count
     }
 
-    init(interactor: PrebuiltMesocycleDetailInteractor, router: PrebuiltMesocycleDetailRouter, mesocycle: Mesocycle) {
+    init(
+        interactor: PrebuiltMesocycleDetailInteractor,
+        router: PrebuiltMesocycleDetailRouter,
+        mesocycle: Mesocycle,
+        onStarted: (@Sendable () -> Void)? = nil
+    ) {
         self.interactor = interactor
         self.router = router
         self.mesocycle = mesocycle
+        self.onStarted = onStarted
     }
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear(mesocycleId: mesocycle.id))
     }
 
-    /// Copies the template under the user, makes the copy active, and returns to the library,
-    /// where it now shows as the active mesocycle.
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(mesocycleId: mesocycle.id))
+    }
+
+    /// Copies the template under the user and makes the copy active, then returns to the library,
+    /// where it now shows as the active mesocycle, or hands back to onboarding.
     func onStartPressed() async {
         guard !isStarting else { return }
         isStarting = true
@@ -42,7 +55,11 @@ class PrebuiltMesocycleDetailPresenter {
             _ = try await interactor.startPrebuiltMesocycle(mesocycle)
             interactor.trackEvent(event: Event.startSuccess(mesocycleId: mesocycle.id))
             interactor.playHaptic(option: .success)
-            router.dismissScreen()
+            if let onStarted {
+                onStarted()
+            } else {
+                router.dismissScreen()
+            }
         } catch {
             interactor.trackEvent(event: Event.startFail(mesocycleId: mesocycle.id, error: error))
             interactor.playHaptic(option: .error)
@@ -54,6 +71,7 @@ class PrebuiltMesocycleDetailPresenter {
 extension PrebuiltMesocycleDetailPresenter {
     enum Event: LoggableEvent {
         case onAppear(mesocycleId: String)
+        case onDisappear(mesocycleId: String)
         case startStart(mesocycleId: String)
         case startSuccess(mesocycleId: String)
         case startFail(mesocycleId: String, error: Error)
@@ -61,6 +79,7 @@ extension PrebuiltMesocycleDetailPresenter {
         var eventName: String {
             switch self {
             case .onAppear:     return "PrebuiltProgramDetailView_Appear"
+            case .onDisappear:  return "PrebuiltProgramDetailView_Disappear"
             case .startStart:   return "PrebuiltProgramDetailView_Start_Start"
             case .startSuccess: return "PrebuiltProgramDetailView_Start_Success"
             case .startFail:    return "PrebuiltProgramDetailView_Start_Fail"
@@ -69,7 +88,7 @@ extension PrebuiltMesocycleDetailPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(let mesocycleId), .startStart(let mesocycleId), .startSuccess(let mesocycleId):
+            case .onAppear(let mesocycleId), .onDisappear(let mesocycleId), .startStart(let mesocycleId), .startSuccess(let mesocycleId):
                 return ["program_id": mesocycleId]
             case .startFail(let mesocycleId, let error):
                 var params = error.eventParameters

@@ -58,6 +58,14 @@ class WorkoutSessionDetailPresenter {
         self.router = router
         self.isWorkoutSummary = isWorkoutSummary
     }
+
+    func onViewAppear(delegate: WorkoutSessionDetailDelegate) {
+        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
+    }
+
+    func onViewDisappear(delegate: WorkoutSessionDetailDelegate) {
+        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
+    }
     
     func loadAuthor(for session: WorkoutSessionModel) async {
         let authorId = session.authorId
@@ -66,7 +74,12 @@ class WorkoutSessionDetailPresenter {
             return
         }
         // An author who cannot be read stays unknown: no header is better than someone else's name.
-        author = try? await interactor.getUser(userId: authorId)
+        do {
+            author = try await interactor.getUser(userId: authorId)
+        } catch {
+            author = nil
+            interactor.trackEvent(event: Event.loadAuthorFail(error: error))
+        }
     }
 
     func totalSets(session: WorkoutSessionModel) -> Int {
@@ -82,10 +95,7 @@ class WorkoutSessionDetailPresenter {
             .exercises
             .flatMap { $0.sets }
             .filter { !$0.isWarmup }
-            .compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
     }
     
@@ -114,10 +124,7 @@ class WorkoutSessionDetailPresenter {
         let workingSets = exercise.workingSets
         let unit = weightUnit(for: exercise.templateId)
         let volumeKg = workingSets
-            .compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
         return String(localized: "\(String(localized: "\(workingSets.pairedSetCount) sets")) · \(Format.weight(kg: volumeKg, unit: unit)) volume")
     }
@@ -137,7 +144,7 @@ class WorkoutSessionDetailPresenter {
     }
 
     /// Leaves editing without saving. A pushed screen hides Back while editing, so this is the way
-    /// out there; unsaved notes are asked about and then put back as they were.
+    /// out there; unsaved edits are asked about and then put back as they were.
     func onEndEditingPressed(initialSession: WorkoutSessionModel, session: Binding<WorkoutSessionModel>) {
         guard hasUnsavedChanges(session: initialSession, editedSession: session.wrappedValue) else {
             isEditMode = false
@@ -199,11 +206,14 @@ class WorkoutSessionDetailPresenter {
 
     private func persistTimingChange(_ session: WorkoutSessionModel) {
         Task {
+            interactor.trackEvent(event: Event.saveTimingStart)
             do {
                 try await interactor.saveWorkoutSession(session)
+                interactor.trackEvent(event: Event.saveTimingSuccess)
                 lastSavedSession = session
                 interactor.playHaptic(option: .success)
             } catch {
+                interactor.trackEvent(event: Event.saveTimingFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(
                     title: String(localized: "Unable to Save Workout"),
@@ -228,15 +238,18 @@ class WorkoutSessionDetailPresenter {
                 return
             }
             session.wrappedValue.updateExercises(session.wrappedValue.exercises)
-            
+
+            interactor.trackEvent(event: Event.saveChangesStart)
             try await interactor.saveWorkoutSession(session.wrappedValue)
+            interactor.trackEvent(event: Event.saveChangesSuccess)
             interactor.playHaptic(option: .success)
 
-            // Stays on the screen, which already shows the saved notes. Leaving would return a
+            // Stays on the screen, which already shows the saved workout. Leaving would return a
             // pushed session to its list, and the summary to the finished tracker behind it.
             lastSavedSession = session.wrappedValue
             isEditMode = false
         } catch {
+            interactor.trackEvent(event: Event.saveChangesFail(error: error))
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Unable to Save Workout"),
@@ -247,10 +260,21 @@ class WorkoutSessionDetailPresenter {
     
     // MARK: - Exercise Updates
 
-    // Nothing on screen calls the set and exercise editing below yet: "Edit Notes" edits notes only.
-    
-    // Pending: Real editing of a finished workout's sets and exercises is planned (decision 11a, second step). Wire these into the session detail's edit mode, and rename "Edit Notes" back to an editor row, once it is built.
-    
+    // Edit mode shows the tracker's own exercise rows, so sets are corrected the way they were
+    // logged. The rows edit the session through their binding; these cover what they hand back.
+
+    func setSupersetGroupId(session: Binding<WorkoutSessionModel>, _ groupId: String?, forExerciseId exerciseId: String) {
+        guard let index = session.wrappedValue.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
+        session.wrappedValue.exercises[index].supersetGroupId = groupId
+    }
+
+    /// An empty note clears it, as in the tracker.
+    func updateExerciseNotes(session: Binding<WorkoutSessionModel>, _ notes: String, exerciseId: String) {
+        guard let index = session.wrappedValue.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
+        let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        session.wrappedValue.exercises[index].notes = trimmed.isEmpty ? nil : trimmed
+    }
+
     func updateExercise(session: Binding<WorkoutSessionModel>, at index: Int, with updated: WorkoutExerciseModel) {
         guard session.wrappedValue.exercises.indices.contains(index) else { return }
         
@@ -273,9 +297,7 @@ class WorkoutSessionDetailPresenter {
         // numbering, and counting instead of looking handed the new set an index another set
         // already held. Duplicate indices are what last session's figures are matched on.
         var nextIndex = (existingSets.map(\.index).max() ?? 0) + 1
-        let sides: [SetSide?] = updatedExercises[exerciseIndex].isPerSide ? SetSide.ordered.map { $0 } : [nil]
-
-        for side in sides {
+        for side in updatedExercises[exerciseIndex].sidesPerSet {
             // Carry forward the last set on the same side, so a left set copies the left limb's
             // weight rather than the right one's.
             let lastSet = existingSets.last(where: { side == nil || $0.side == side }) ?? existingSets.last
@@ -418,8 +440,10 @@ class WorkoutSessionDetailPresenter {
     /// Dismisses only once the delete has landed, so a failure can still be shown on this screen.
     func deleteSession(session: WorkoutSessionModel) {
         Task {
+            interactor.trackEvent(event: Event.deleteSessionStart)
             do {
                 try await interactor.deleteWorkoutSession(id: session.id)
+                interactor.trackEvent(event: Event.deleteSessionSuccess)
                 if isWorkoutSummary {
                     router.dismissEnvironment()
                 } else {
@@ -488,11 +512,33 @@ class WorkoutSessionDetailPresenter {
 
 extension WorkoutSessionDetailPresenter {
     enum Event: LoggableEvent {
+        case onAppear(delegate: WorkoutSessionDetailDelegate)
+        case onDisappear(delegate: WorkoutSessionDetailDelegate)
+        case loadAuthorFail(error: Error)
+        case saveTimingStart
+        case saveTimingSuccess
+        case saveTimingFail(error: Error)
+        case saveChangesStart
+        case saveChangesSuccess
+        case saveChangesFail(error: Error)
+        case deleteSessionStart
+        case deleteSessionSuccess
         case deleteSessionFail(error: Error)
         case copyLink(sessionId: String)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "WorkoutSessionDetailView_Appear"
+            case .onDisappear: return "WorkoutSessionDetailView_Disappear"
+            case .loadAuthorFail: return "WorkoutSessionDetailView_LoadAuthor_Fail"
+            case .saveTimingStart: return "WorkoutSessionDetailView_SaveTiming_Start"
+            case .saveTimingSuccess: return "WorkoutSessionDetailView_SaveTiming_Success"
+            case .saveTimingFail: return "WorkoutSessionDetailView_SaveTiming_Fail"
+            case .saveChangesStart: return "WorkoutSessionDetailView_SaveChanges_Start"
+            case .saveChangesSuccess: return "WorkoutSessionDetailView_SaveChanges_Success"
+            case .saveChangesFail: return "WorkoutSessionDetailView_SaveChanges_Fail"
+            case .deleteSessionStart: return "WorkoutSessionDetailView_DeleteSession_Start"
+            case .deleteSessionSuccess: return "WorkoutSessionDetailView_DeleteSession_Success"
             case .deleteSessionFail: return "WorkoutSessionDetailView_DeleteSession_Fail"
             case .copyLink: return "WorkoutSessionDetailView_CopyLink"
             }
@@ -500,15 +546,20 @@ extension WorkoutSessionDetailPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .deleteSessionFail(error: let error): return error.eventParameters
+            case .onAppear(let delegate), .onDisappear(let delegate):
+                return ["session_id": delegate.initialSession.id, "is_workout_summary": delegate.isWorkoutSummary]
+            case .loadAuthorFail(error: let error), .saveTimingFail(error: let error), .saveChangesFail(error: let error), .deleteSessionFail(error: let error):
+                return error.eventParameters
             case .copyLink(let sessionId): return ["session_id": sessionId]
+            default: return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .deleteSessionFail: return .severe
-            case .copyLink: return .analytic
+            case .saveTimingFail, .saveChangesFail, .deleteSessionFail: return .severe
+            case .loadAuthorFail: return .warning
+            default: return .analytic
             }
         }
     }

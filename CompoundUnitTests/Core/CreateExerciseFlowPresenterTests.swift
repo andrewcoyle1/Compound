@@ -285,39 +285,3 @@ struct MuscleGroupPickerPresenterTests {
         #expect(screen.interactor.trackedEventNames == ["MuscleGroupPickerView_Disappear"])
     }
 }
-
-// MARK: - Enum picker
-
-@MainActor
-struct EnumPickerPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, EnumPickerInteractor { }
-
-    private final class Router: EnumPickerRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-    }
-
-    @MainActor
-    private final class Choice {
-        var value: TrackableExerciseMetric?
-
-        var binding: Binding<TrackableExerciseMetric?> {
-            Binding(
-                get: { MainActor.assumeIsolated { self.value } },
-                set: { newValue in MainActor.assumeIsolated { self.value = newValue } }
-            )
-        }
-    }
-
-    @Test("Test Choosing An Option Writes It Back And Plays The Selection Haptic")
-    func testChoosingAnOptionWritesItBackAndPlaysTheSelectionHaptic() {
-        let interactor = Interactor()
-        let presenter = EnumPickerPresenter(interactor: interactor, router: Router())
-        let choice = Choice()
-
-        presenter.onSelect(item: TrackableExerciseMetric.reps, binding: choice.binding)
-
-        #expect(choice.value == .reps)
-        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection"])
-    }
-}

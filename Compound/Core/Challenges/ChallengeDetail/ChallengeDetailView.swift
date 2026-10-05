@@ -42,6 +42,7 @@ struct ChallengeDetailView: View {
             }
         }
         .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .task { await presenter.loadStandings() }
     }
 

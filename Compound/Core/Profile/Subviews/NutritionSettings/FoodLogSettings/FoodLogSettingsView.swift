@@ -96,24 +96,22 @@ struct FoodLogSettingsView: View {
                 ) {
                     presenter.onLoggedBannerPressed()
                 }
-                ListRowButton(
-                    title: String(localized: "Time Selection"),
-                    subtitle: String(localized: "Customize how you change time while logging")
-                ) {
-                    presenter.onTimeSelectionPressed()
-                }
+                ListRowToggle(
+                    title: String(localized: "Auto-set Current Time"),
+                    subtitle: String(localized: "Automatically set the time to now when logging a meal"),
+                    isOn: $presenter.autoSetCurrentTime
+                )
                 ListRowButton(
                     title: String(localized: "Favorite Measurements"),
                     subtitle: String(localized: "Select the measurements to pin to serving size selections.")
                 ) {
                     presenter.onFavouriteMeasurementsPressed()
                 }
-                ListRowButton(
-                    title: String(localized: "Optimization"),
-                    subtitle: String(localized: "Optimize for speed")
-                ) {
-                    presenter.onOptimisationPressed()
-                }
+                ListRowToggle(
+                    title: String(localized: "Quick Add"),
+                    subtitle: String(localized: "Use default portion and skip the amount entry screen"),
+                    isOn: $presenter.quickAddEnabled
+                )
 
             } header: {
                 Text("Logger Options")

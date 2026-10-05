@@ -21,14 +21,28 @@ final class FoodLoggingConsistencyPresenter: @MainActor MetricDetailPresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         let endDate = Date()
         guard let startDate = calendar.date(byAdding: .year, value: -1, to: endDate) else { return }
         let startDayKey = calendar.startOfDay(for: startDate).dayKey
         let endDayKey = calendar.startOfDay(for: endDate).dayKey
 
-        // Silent: local read for a chart; no data draws an empty grid.
-        let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
+        // Local read for a chart; no data draws an empty grid, so a failure is logged but not shown.
+        let totalsData: [(dayKey: String, totals: DailyMacroTarget)]
+        do {
+            totalsData = try interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)
+        } catch {
+            interactor.trackEvent(event: Event.loadFail(error: error))
+            totalsData = []
+        }
         var newEntries: [NutritionMetricEntry] = []
         for item in totalsData {
             let total = item.totals.proteinGrams + item.totals.carbGrams + item.totals.fatGrams
@@ -94,4 +108,36 @@ final class FoodLoggingConsistencyPresenter: @MainActor MetricDetailPresenter {
         router.dismissScreen()
     }
 
+}
+
+extension FoodLoggingConsistencyPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case loadFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "FoodLoggingConsistencyView_Appear"
+            case .onDisappear: return "FoodLoggingConsistencyView_Disappear"
+            case .loadFail: return "FoodLoggingConsistencyView_Load_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .loadFail: return .warning
+            default: return .analytic
+            }
+        }
+    }
 }

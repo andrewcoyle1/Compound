@@ -36,13 +36,14 @@ class WorkoutSettingsPresenter {
         router.showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate())
     }
     
-    /// The Previous Reference row's subtitle: the option chosen, re-read with the settings on appear.
-    var previousWorkoutReferenceTitle: String {
-        settings.previousWorkoutReference.title
-    }
+    // MARK: - Previous Reference
 
-    func onPreviousReferenceSettingsPressed() {
-        router.showPreviousWorkoutReferenceSettingsView(delegate: PrevWORefSettingsDelegate())
+    /// Widest scope first; each carries the explanation the row shows beneath its title.
+    let previousWorkoutReferenceOptions = PreviousWorkoutReferenceOption.allCases
+
+    var previousWorkoutReference: PreviousWorkoutReferenceOption {
+        get { settings.previousWorkoutReference }
+        set { settings.previousWorkoutReference = newValue; save() }
     }
     
     func onExerciseAssessmentPressed() {
@@ -105,8 +106,10 @@ class WorkoutSettingsPresenter {
 
     private func save() {
         Task {
+            interactor.trackEvent(event: Event.saveStart)
             do {
                 try await interactor.saveWorkoutSettings(settings)
+                interactor.trackEvent(event: Event.saveSuccess)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
@@ -120,10 +123,14 @@ extension WorkoutSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: WorkoutSettingsDelegate)
         case onDisappear(delegate: WorkoutSettingsDelegate)
+        case saveStart
+        case saveSuccess
         case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveStart: return "WorkoutSettingsView_Save_Start"
+            case .saveSuccess: return "WorkoutSettingsView_Save_Success"
             case .saveFail: return "WorkoutSettingsView_Save_Fail"
             case .onAppear:                 return "WorkoutSettingsView_Appear"
             case .onDisappear:              return "WorkoutSettingsView_Disappear"
@@ -135,6 +142,8 @@ extension WorkoutSettingsPresenter {
             case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .saveStart, .saveSuccess:
+                return nil
             }
         }
 

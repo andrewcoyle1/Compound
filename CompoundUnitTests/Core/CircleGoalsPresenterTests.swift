@@ -62,6 +62,39 @@ struct WeeklyGoalPresenterTests {
         #expect(await TestManagers.eventually { interactor.playedHaptics.map { "\($0)" } == ["success"] })
     }
 
+    /// Nothing is pre-selected until a goal is saved, so the default can still be tapped.
+    @Test("Test Only A Saved Goal Starts Selected")
+    func testOnlyASavedGoalStartsSelected() {
+        let unset = WeeklyGoalPresenter(interactor: Interactor(currentUser: UserModel(userId: "me")), router: Router())
+        let saved = WeeklyGoalPresenter(interactor: Interactor(currentUser: UserModel(userId: "me", weeklySessionGoal: 5)), router: Router())
+        #expect(unset.selectedGoal == nil)
+        #expect(saved.selectedGoal == 5)
+    }
+
+    @Test("Test Picking A Goal Saves It")
+    func testPickingAGoalSavesIt() async {
+        let interactor = Interactor(currentUser: UserModel(userId: "me"))
+        let presenter = WeeklyGoalPresenter(interactor: interactor, router: Router())
+
+        presenter.onGoalSelected(3)
+
+        #expect(presenter.selectedGoal == 3)
+        #expect(await TestManagers.eventually { interactor.savedGoals == [3] })
+        #expect(await TestManagers.eventually { interactor.playedHaptics.map { "\($0)" } == ["success"] })
+    }
+
+    @Test("Test A Failed Pick Clears The Selection")
+    func testAFailedPickClearsTheSelection() async {
+        let interactor = Interactor(currentUser: UserModel(userId: "me"))
+        interactor.saveError = DashboardTestError.failed
+        let presenter = WeeklyGoalPresenter(interactor: interactor, router: Router())
+
+        presenter.onGoalSelected(4)
+
+        #expect(await TestManagers.eventually { !presenter.isSaving })
+        #expect(presenter.selectedGoal == nil)
+    }
+
     @Test("Test A Failed Save Says So")
     func testAFailedSaveSaysSo() async {
         let interactor = Interactor(currentUser: UserModel(userId: "me"))

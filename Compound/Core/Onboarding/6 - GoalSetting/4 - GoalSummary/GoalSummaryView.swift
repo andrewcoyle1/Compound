@@ -56,6 +56,8 @@ struct GoalSummaryView: View {
             motivationSection
         }
         .scrollIndicators(.hidden)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     // MARK: - View Sections

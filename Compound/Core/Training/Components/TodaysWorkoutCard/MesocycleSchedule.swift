@@ -12,6 +12,10 @@
 //  doing C before B leaves B next. Only sessions finished after the block started count, so a new
 //  or repeated block starts empty whatever the calendar week or earlier history says.
 //
+//  Rest days never hold the queue up. One is done once a rest-day session for it has arrived,
+//  either pre-logged by finishing the workout before it or ticked by the user, and skipped once a
+//  workout after it is done without it: the user trained through it.
+//
 
 import Foundation
 
@@ -72,6 +76,16 @@ enum MesocycleSchedule {
         var isMesocycleComplete: Bool { next == nil }
     }
 
+    /// Whether the microcycle numbered `cycleIndex` (1-based, as the header shows it) is the
+    /// mesocycle's deload, when every working weight is cut.
+    static func isDeload(cycleIndex: Int, of mesocycle: Mesocycle) -> Bool {
+        switch mesocycle.deload {
+        case .none:  return false
+        case .start: return cycleIndex == 1
+        case .end:   return cycleIndex == mesocycle.numMicrocycles
+        }
+    }
+
     /// Where an account from before plans was. The old schedule counted every session the mesocycle
     /// ever had, name-matched ones included, and went back to the first microcycle after the last,
     /// so the run starts just after the last full pass through the block. Starting from the
@@ -82,13 +96,13 @@ enum MesocycleSchedule {
         while true {
             let progress = progress(of: Run(mesocycle: mesocycle, startedAt: startedAt), sessions: sessions)
             guard progress.isMesocycleComplete,
-                  let finishedAt = progress.cycles.joined().compactMap(\.completedAt).max() else { break }
+                  let finishedAt = progress.cycles.joined().filter({ !$0.isRest }).compactMap(\.completedAt).max() else { break }
             startedAt = finishedAt.addingTimeInterval(0.001)
         }
         return Run(mesocycle: mesocycle, startedAt: startedAt)
     }
 
-    static func progress(of run: Run, sessions: [WorkoutSessionModel]) -> Progress {
+    static func progress(of run: Run, sessions: [WorkoutSessionModel], now: Date = Date()) -> Progress {
         let dayPlans = run.mesocycle.workoutTemplates
         let cycleCount = max(run.mesocycle.numMicrocycles, 1)
         var cycles = (0..<cycleCount).map { cycle in
@@ -111,7 +125,45 @@ enum MesocycleSchedule {
             guard let (cycle, position) = firstOpenSlot(for: session, in: cycles) else { continue }
             cycles[cycle][position].state = .done(sessionId: session.id, completedAt: endedAt)
         }
+        fillRestDays(&cycles, run: run, sessions: sessions, now: now)
         return Progress(cycles: cycles)
+    }
+
+    /// Each rest-day session fills the first open rest day with its plan after the workout done
+    /// before it, so the one pre-logged after A ticks A's rest and not an earlier microcycle's,
+    /// which shares its plan. Then an open rest day with a workout done after it was trained
+    /// through, and reads as skipped.
+    private static func fillRestDays(_ cycles: inout [[Slot]], run: Run, sessions: [WorkoutSessionModel], now: Date) {
+        // Queue order. Every microcycle has the same days, so a slot's place is index / width.
+        var slots = cycles.flatMap { $0 }
+        let rests = sessions
+            .filter { session in
+                session.isRestDay && session.deletedAt == nil && session.mesocycleId == run.mesocycle.id
+                    && session.dateCreated >= run.startedAt && session.dateCreated <= now
+            }
+            .sorted { $0.dateCreated < $1.dateCreated }
+
+        for rest in rests {
+            let fits = { (slot: Slot) in slot.isRest && slot.state == .open && slot.dayPlan.id == rest.workoutTemplateId }
+            let anchor = slots.indices
+                .filter { !slots[$0].isRest && slots[$0].completedAt.map { $0 < rest.dateCreated } == true }
+                .max { (slots[$0].completedAt ?? .distantPast) < (slots[$1].completedAt ?? .distantPast) }
+            guard let index = slots.indices[(anchor.map { $0 + 1 } ?? 0)...].first(where: { fits(slots[$0]) }) else { continue }
+            slots[index].state = .done(sessionId: rest.id, completedAt: rest.dateCreated)
+        }
+
+        var workoutDoneLater = false
+        for index in slots.indices.reversed() {
+            if !slots[index].isRest {
+                workoutDoneLater = workoutDoneLater || slots[index].completedSessionId != nil
+            } else if slots[index].state == .open, workoutDoneLater, slots[index].cycleIndex >= run.firstMicrocycleIndex {
+                slots[index].state = .skipped
+            }
+        }
+
+        let width = cycles.first?.count ?? 0
+        guard width > 0 else { return }
+        cycles = stride(from: 0, to: slots.count, by: width).map { Array(slots[$0..<$0 + width]) }
     }
 
     /// Today's entry for the Today card, widget and App Intents: the workout finished today if
@@ -125,14 +177,15 @@ enum MesocycleSchedule {
     ) -> MicrocycleWorkoutTemplateModelItem? {
         guard let run, !run.mesocycle.workoutTemplates.isEmpty else { return nil }
         let today = calendar.startOfDay(for: now)
-        let progress = progress(of: run, sessions: sessions)
+        let progress = progress(of: run, sessions: sessions, now: now)
 
         let doneToday = progress.cycles.joined()
             .compactMap { slot -> (Slot, Date)? in
                 guard case .done(_, let completedAt) = slot.state, calendar.isDate(completedAt, inSameDayAs: today) else { return nil }
                 return (slot, completedAt)
             }
-            .max { $0.1 < $1.1 }
+            // A workout over a rest day ticked the same day: the card shows what was trained.
+            .max { ($0.0.isRest ? 0 : 1, $0.1) < ($1.0.isRest ? 0 : 1, $1.1) }
         if let (slot, _) = doneToday {
             return item(slot.dayPlan, on: today, sessionId: slot.completedSessionId)
         }

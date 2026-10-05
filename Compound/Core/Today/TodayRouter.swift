@@ -15,6 +15,7 @@ protocol TodayRouter: GlobalRouter {
     func showMesocycleLibraryView()
     func showAddMealView(delegate: AddMealDelegate)
     func showLogWeightView()
+    func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?)
     func showCheckInView(delegate: CheckInDelegate)
     func showWeeklyReviewView()
 }

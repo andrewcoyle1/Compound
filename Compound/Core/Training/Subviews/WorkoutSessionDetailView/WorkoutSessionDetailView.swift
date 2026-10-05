@@ -19,24 +19,30 @@ struct WorkoutSessionDetailDelegate {
     }
 }
 
-struct WorkoutSessionDetailView<AuthorHeader: View>: View {
+struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View {
 
     @State var presenter: WorkoutSessionDetailPresenter
     @State private var session: WorkoutSessionModel
+    /// Every exercise opens expanded for editing; these are the ones the user folded away.
+    @State private var collapsedExerciseIds: Set<String> = []
 
     let delegate: WorkoutSessionDetailDelegate
 
     @ViewBuilder var authorHeader: (AuthorHeaderDelegate) -> AuthorHeader
+    /// The workout tracker's exercise rows, shown while editing.
+    @ViewBuilder var exerciseEditor: (ExerciseTrackerDelegate) -> ExerciseEditor
 
     init(
         presenter: WorkoutSessionDetailPresenter,
         delegate: WorkoutSessionDetailDelegate,
         authorHeader: @escaping (AuthorHeaderDelegate) -> AuthorHeader,
+        exerciseEditor: @escaping (ExerciseTrackerDelegate) -> ExerciseEditor
     ) {
         self._presenter = State(initialValue: presenter)
         self._session = State(initialValue: delegate.initialSession)
         self.delegate = delegate
         self.authorHeader = authorHeader
+        self.exerciseEditor = exerciseEditor
     }
     
     var body: some View {
@@ -53,10 +59,16 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
             toolbarContent
         }
         // Back cannot be intercepted, so while editing it is hidden and the close button ends the
-        // edit, asking first when the notes changed.
+        // edit, asking first when anything changed.
         .navigationBarBackButtonHidden(delegate.isWorkoutSummary || presenter.isEditMode)
         .task {
             await presenter.loadAuthor(for: session)
+        }
+        .onAppear { presenter.onViewAppear(delegate: delegate) }
+        .onDisappear { presenter.onViewDisappear(delegate: delegate) }
+        .onChange(of: presenter.selectedExerciseModels) { _, newValue in
+            guard !newValue.isEmpty else { return }
+            presenter.addSelectedExercises(session: $session)
         }
     }
 
@@ -94,11 +106,12 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                         presenter.onEditDurationPressed(session: $session)
                     }
                 }
-                // Notes are all it edits, so it says so and opens nothing: no chevron.
+                // Edits in place rather than opening a screen: no chevron.
                 if !presenter.isEditMode {
-                    ListRowButton(title: String(localized: "Edit Notes"), systemImage: Symbol.edit, accessory: .none) {
+                    ListRowButton(title: String(localized: "Edit Workout"), systemImage: Symbol.edit, accessory: .none) {
                         presenter.enterEditMode(session: session)
                     }
+                    .accessibilityIdentifier("SessionDetail.edit")
                 }
             } else {
                 ListRow(
@@ -117,7 +130,63 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
         }
     }
 
+    @ViewBuilder
     private var exerciseDetailsSection: some View {
+        if presenter.isEditMode {
+            exerciseEditorSection
+        } else {
+            exerciseReadSection
+        }
+    }
+
+    private var exerciseEditorSection: some View {
+        Section {
+            ForEach($session.exercises) { $exercise in
+                let exerciseId = exercise.id
+                exerciseEditor(
+                    ExerciseTrackerDelegate(
+                        exercise: $exercise,
+                        lastExercise: nil,
+                        isExpanded: Binding(
+                            get: { !collapsedExerciseIds.contains(exerciseId) },
+                            set: { isExpanded in
+                                if isExpanded {
+                                    collapsedExerciseIds.remove(exerciseId)
+                                } else {
+                                    collapsedExerciseIds.insert(exerciseId)
+                                }
+                            }
+                        ),
+                        allWorkoutExercises: session.exercises,
+                        onSetSupersetGroup: { exerciseId, groupId in
+                            presenter.setSupersetGroupId(session: $session, groupId, forExerciseId: exerciseId)
+                        },
+                        onDeleteExercise: {
+                            presenter.deleteExercise(session: $session, id: exerciseId)
+                        },
+                        onUpdateNote: { note in
+                            presenter.updateExerciseNotes(session: $session, note, exerciseId: exerciseId)
+                        }
+                    )
+                )
+            }
+        } header: {
+            HStack {
+                Text("Exercise Details")
+                Spacer()
+                Button {
+                    presenter.onAddExercisePressed()
+                } label: {
+                    Image(systemName: Symbol.add)
+                }
+                .accessibilityLabel("Add exercise")
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+            }
+        }
+    }
+
+    private var exerciseReadSection: some View {
         Section {
             ForEach(session.exercises) { exercise in
                 DisclosureGroup {
@@ -182,6 +251,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                 Button(role: .confirm) {
                     Task { await presenter.saveChanges(initialSession: delegate.initialSession, session: $session) }
                 }
+                .accessibilityIdentifier("SessionDetail.save")
                 .disabled(presenter.isLoading || !presenter.hasUnsavedChanges(session: delegate.initialSession, editedSession: session))
             }
         } else if delegate.isWorkoutSummary {
@@ -198,7 +268,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View>: View {
                     Button {
                         presenter.enterEditMode(session: session)
                     } label: {
-                        Label("Edit Notes", systemImage: Symbol.edit)
+                        Label("Edit Workout", systemImage: Symbol.edit)
                     }
 
                     Button(role: .destructive) {
@@ -245,6 +315,9 @@ extension CoreBuilder {
             delegate: delegate,
             authorHeader: { delegate in
                 self.authorHeaderView(router: router, delegate: delegate)
+            },
+            exerciseEditor: { delegate in
+                self.exerciseTrackerView(router: router, delegate: delegate)
             }
         )
     }

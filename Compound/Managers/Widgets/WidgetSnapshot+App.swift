@@ -3,8 +3,9 @@
 //  Compound
 //
 //  The app's side of the home-screen widgets: building a `WidgetSnapshot` from the managers and
-//  writing it to the App Group. Called when a session finishes (`finishWorkout`) and when the
-//  weekly goal changes (`updateWeeklySessionGoal`).
+//  writing it to the App Group. Called whenever the app goes to the background, which catches
+//  every change made in it, and straight away where a change can happen without the app ever
+//  coming forward: a session finished from the Live Activity.
 //
 
 import Foundation
@@ -22,16 +23,20 @@ extension WidgetSnapshot {
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> WidgetSnapshot {
-        let item = MesocycleSchedule.todayItem(run: run, sessions: sessions, now: now, calendar: calendar)
-        return WidgetSnapshot(
-            todaysWorkout: item.map {
+        func workout(on date: Date) -> TodaysWorkout? {
+            MesocycleSchedule.todayItem(run: run, sessions: sessions, now: date, calendar: calendar).map {
                 TodaysWorkout(
                     name: $0.dayPlan.name,
                     exerciseCount: $0.dayPlan.exercises.count,
                     isRestDay: $0.dayPlan.exercises.isEmpty,
                     isCompleted: $0.isCompleted
                 )
-            },
+            }
+        }
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now))
+        return WidgetSnapshot(
+            todaysWorkout: workout(on: now),
+            upcomingWorkout: tomorrow.flatMap(workout(on:)),
             day: calendar.startOfDay(for: now),
             currentStreak: streak ?? 0,
             sessionsThisWeek: CircleWeek.sessionCount(of: userId, inWeekOf: now, sessions: sessions, calendar: calendar),

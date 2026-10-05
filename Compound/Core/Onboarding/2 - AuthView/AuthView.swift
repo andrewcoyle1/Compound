@@ -33,7 +33,9 @@ struct AuthView: View {
                 .ignoresSafeArea()
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { presenter.onViewAppear() }
         .onDisappear {
+            presenter.onViewDisappear()
             presenter.cleanUp()
         }
         .safeAreaBar(edge: .top) {

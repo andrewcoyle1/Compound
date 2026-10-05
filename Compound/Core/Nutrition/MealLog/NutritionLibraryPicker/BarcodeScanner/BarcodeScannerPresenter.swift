@@ -14,6 +14,10 @@ class BarcodeScannerPresenter {
     /// then hands the code straight back and closes, with no product lookup: the usual reason to
     /// create a food is that the lookup would not find it.
     private let onBarcodeScanned: ((String) -> Void)?
+    /// Logging, a found product goes straight on to its amount: the card in between asked for a
+    /// "Use This Food" tap that the amount screen, which names the product, already confirms.
+    /// The card stays behind it, with Re-scan, for a wrong match.
+    private let onFoodFound: ((FoodModel) -> Void)?
 
     var returnsBarcodeOnly: Bool { onBarcodeScanned != nil }
 
@@ -58,10 +62,13 @@ class BarcodeScannerPresenter {
         self.interactor = interactor
         self.router = router
         self.onBarcodeScanned = delegate.onBarcodeScanned
+        self.onFoodFound = delegate.onFoodFound
     }
 
     func onViewAppear(delegate: BarcodeScannerDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
+        if !delegate.isEmbedded {
+            interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
+        }
         isScanning = true
     }
 
@@ -80,7 +87,9 @@ class BarcodeScannerPresenter {
     }
 
     func onViewDisappear(delegate: BarcodeScannerDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
+        if !delegate.isEmbedded {
+            interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
+        }
         isScanning = false
     }
 
@@ -134,6 +143,7 @@ class BarcodeScannerPresenter {
             let json = try await interactor.analyzeNutritionLabel(text: text)
             let decoded = try JSONDecoder().decode(NutritionLabelResponse.self, from: Data(json.utf8))
             parsedIngredient = decoded.toFood(authorId: interactor.currentUser?.userId)
+            interactor.trackEvent(event: Event.parseLabelSuccess)
         } catch {
             labelError = String(localized: "Couldn't read this label. Hold the camera steady and try again, or enter it manually.")
             interactor.playHaptic(option: .error)
@@ -149,6 +159,7 @@ class BarcodeScannerPresenter {
 
         do {
             try await interactor.saveFood(ingredient, image: nil)
+            interactor.trackEvent(event: Event.saveIngredientSuccess)
             savedSuccessfully = true
             interactor.playHaptic(option: .success)
             parsedIngredient = nil
@@ -204,17 +215,27 @@ class BarcodeScannerPresenter {
             defer { isLookingUpBarcode = false }
             do {
                 if let local = interactor.findLocalFood(withBarcode: code) {
-                    parsedIngredient = local
+                    interactor.trackEvent(event: Event.lookupBarcodeSuccess(source: "library"))
+                    found(local)
                     return
                 }
                 // `resolvedBarcode` stays set, so the camera seeing the code again does not repeat it.
                 guard interactor.ensureOnline(or: router) else { return }
                 let food = try await interactor.lookupBarcode(code)
-                // Silent: caching the looked-up food is a side effect; the scan itself still succeeds.
-                try? await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
-                parsedIngredient = food
+                interactor.trackEvent(event: Event.lookupBarcodeSuccess(source: "open_food_facts"))
+                // Caching the looked-up food is a side effect; the scan itself still succeeds.
+                do {
+                    try await interactor.saveFood(food.withAuthorId(interactor.currentUser?.userId ?? ""), image: nil)
+                } catch {
+                    interactor.trackEvent(event: Event.cacheFoodFail(error: error))
+                }
+                found(food)
             } catch {
-                barcodeError = String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
+                // Open Food Facts answers a burst of lookups with a 429 page, which used to read as
+                // "not found" and send people off to re-enter a barcode that was fine.
+                barcodeError = (error as? OFFError) == .productNotFound
+                    ? String(localized: "Couldn't find this product. Scan again, or enter the barcode manually.")
+                    : String(localized: "Couldn't reach Open Food Facts. Try again in a moment.")
                 interactor.playHaptic(option: .error)
                 interactor.trackEvent(event: Event.onBarcodeError(message: error.localizedDescription))
             }
@@ -229,6 +250,13 @@ class BarcodeScannerPresenter {
     /// several switched in place — not a pushed screen of its own — so dismissing here would close
     /// the whole picker before `onFoodFound`'s amount screen could be shown. Only the delegate
     /// decides what happens next.
+    private func found(_ food: FoodModel) {
+        parsedIngredient = food
+        guard let onFoodFound else { return }
+        interactor.playHaptic(option: .success)
+        onFoodFound(food)
+    }
+
     func onUseThisFoodPressed(_ food: FoodModel, delegate: BarcodeScannerDelegate) {
         delegate.onFoodFound?(food)
     }
@@ -256,6 +284,10 @@ extension BarcodeScannerPresenter {
         case onBarcodeDetected(code: String)
         case onBarcodeError(message: String)
         case onTorchFail(error: Error)
+        case parseLabelSuccess
+        case saveIngredientSuccess
+        case lookupBarcodeSuccess(source: String)
+        case cacheFoodFail(error: Error)
         case onCameraDenied
         case onOpenSettings
 
@@ -269,6 +301,10 @@ extension BarcodeScannerPresenter {
             case .onBarcodeDetected:  return "BarcodeScanner_BarcodeDetected"
             case .onBarcodeError:     return "BarcodeScanner_BarcodeError"
             case .onTorchFail:        return "BarcodeScanner_TorchFail"
+            case .parseLabelSuccess:      return "BarcodeScannerView_ParseLabel_Success"
+            case .saveIngredientSuccess:  return "BarcodeScannerView_SaveIngredient_Success"
+            case .lookupBarcodeSuccess:   return "BarcodeScannerView_LookupBarcode_Success"
+            case .cacheFoodFail:          return "BarcodeScannerView_CacheFood_Fail"
             case .onCameraDenied:     return "BarcodeScanner_CameraDenied"
             case .onOpenSettings:     return "BarcodeScanner_OpenSettings"
             }
@@ -286,8 +322,10 @@ extension BarcodeScannerPresenter {
                 return ["code": code]
             case .onBarcodeError(let message):
                 return ["error": message]
-            case .onTorchFail(let error):
+            case .onTorchFail(let error), .cacheFoodFail(let error):
                 return error.eventParameters
+            case .lookupBarcodeSuccess(let source):
+                return ["source": source]
             default:
                 return nil
             }
@@ -296,6 +334,7 @@ extension BarcodeScannerPresenter {
         var type: LogType {
             switch self {
             case .onLabelError, .onBarcodeError, .onTorchFail: return .severe
+            case .cacheFoodFail:                  return .warning
             default:                              return .analytic
             }
         }

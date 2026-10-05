@@ -46,7 +46,7 @@ struct ShareCardContent: Equatable {
         locale: Locale = .current
     ) -> ShareCardContent {
         let workingSets = session.exercises.flatMap(\.workingSets)
-        let volume = workingSets.reduce(0.0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
+        let volume = workingSets.reduce(0.0) { $0 + ($1.volumeKg ?? 0) }
         // A left and a right are one set, as on the feed card.
         let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
 

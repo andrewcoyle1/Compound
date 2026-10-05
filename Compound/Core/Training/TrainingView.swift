@@ -52,6 +52,8 @@ struct TrainingView<CalendarHeaderView: View, ActiveMesocycleView: View>: View {
         .toolbar {
             toolbarContent
         }
+        .onAppear { presenter.onViewAppear(delegate: delegate) }
+        .onDisappear { presenter.onViewDisappear(delegate: delegate) }
         .safeAreaBar(edge: .top) {
             calendarHeader(
                 CalendarHeaderDelegate(

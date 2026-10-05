@@ -10,6 +10,7 @@ protocol TrainingInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var userImageUrl: String? { get }
     var activeMesocycle: Mesocycle? { get }
+    var mesocycles: [Mesocycle] { get }
     var activeSession: WorkoutSessionModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var favouriteGymProfile: GymProfileModel? { get }

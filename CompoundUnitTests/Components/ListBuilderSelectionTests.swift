@@ -69,17 +69,6 @@ struct ExerciseListBuilderPresenterTests {
 
         #expect(interactor.trackedEventNames == ["ExercisesView_Exercise_Selected"])
     }
-
-    @Test("Test The Screen Is Tracked Under Its Own Name")
-    func testTheScreenIsTrackedUnderItsOwnName() {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-
-        #expect(interactor.trackedScreenEventNames == ["ExercisesView_Appear"])
-        #expect(interactor.trackedEventNames == ["ExercisesView_Disappear"])
-    }
 }
 
 // MARK: - Workouts
@@ -92,6 +81,7 @@ struct WorkoutListBuilderPresenterTests {
         var userWorkoutTemplates: [WorkoutTemplateModel] = []
         var systemWorkoutTemplates: [WorkoutTemplateModel] = []
         var allWorkoutTemplates: [WorkoutTemplateModel] = []
+        var mesocycles: [Mesocycle] = []
     }
 
     private final class Router: WorkoutListRouterBuilder {
@@ -116,7 +106,7 @@ struct WorkoutListBuilderPresenterTests {
         let workout = WorkoutTemplateModel(id: "wo-1", authorId: "user-1", name: "Push Day")
         var selected: [WorkoutTemplateModel] = []
 
-        presenter.onWorkoutPressed(workout: workout, onWorkoutPressed: { selected.append($0) })
+        presenter.onWorkoutPressed(workout: workout, onWorkoutPressed: { workout, _ in selected.append(workout) })
 
         #expect(selected.map(\.id) == ["wo-1"])
         #expect(interactor.trackedEventNames == ["WorkoutsView_Workout_Selected"])
@@ -131,15 +121,46 @@ struct WorkoutListBuilderPresenterTests {
         #expect(interactor.trackedEventNames == ["WorkoutsView_Workout_Selected"])
     }
 
-    @Test("Test The Screen Is Tracked Under Its Own Name")
-    func testTheScreenIsTrackedUnderItsOwnName() {
+    private func day(_ name: String, exercises: Int) -> WorkoutTemplateModel {
+        WorkoutTemplateModel(
+            id: name.lowercased(),
+            authorId: "user-1",
+            name: name,
+            exercises: Array(repeating: WorkoutTemplateExercise(exercise: .mock, setRestTimers: false), count: exercises)
+        )
+    }
+
+    /// A mesocycle's days are listed from the mesocycle itself rather than as library copies,
+    /// in its own order, without its rest days; a mesocycle of rest days alone is not listed.
+    @Test("Test A Mesocycle's Workout Days Are Listed In Its Own Order")
+    func testAMesocyclesWorkoutDaysAreListedInItsOwnOrder() {
         let (presenter, interactor) = makePresenter()
+        let block = Mesocycle(id: "m1", authorId: "user-1", name: "Block", icon: "flag", colour: "#FF0000",
+                              workoutTemplates: [day("Push", exercises: 1), day("Rest", exercises: 0), day("Legs", exercises: 2)])
+        let rest = Mesocycle(id: "m2", authorId: "user-1", name: "Rest", icon: "flag", colour: "#FF0000",
+                             workoutTemplates: [day("Rest", exercises: 0)])
+        interactor.mesocycles = [block, rest]
 
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
+        #expect(presenter.mesocycles.map(\.id) == ["m1"])
+        #expect(presenter.days(of: block).map(\.name) == ["Push", "Legs"])
+        #expect(presenter.workoutsCount == 2)
 
-        #expect(interactor.trackedScreenEventNames == ["WorkoutsView_Appear"])
-        #expect(interactor.trackedEventNames == ["WorkoutsView_Disappear"])
+        presenter.searchText = "leg"
+        #expect(presenter.days(of: block).map(\.name) == ["Legs"])
+        presenter.searchText = "pull"
+        #expect(presenter.mesocycles.isEmpty)
+    }
+
+    @Test("Test Picking A Mesocycle Day Hands On Its Mesocycle")
+    func testPickingAMesocycleDayHandsOnItsMesocycle() {
+        let (presenter, _) = makePresenter()
+        let block = Mesocycle(id: "m1", authorId: "user-1", name: "Block", icon: "flag", colour: "#FF0000",
+                              workoutTemplates: [day("Push", exercises: 1)])
+        var picked: [String?] = []
+
+        presenter.onWorkoutPressed(workout: block.workoutTemplates[0], mesocycle: block) { _, mesocycle in picked.append(mesocycle?.id) }
+
+        #expect(picked == ["m1"])
     }
 }
 
@@ -151,6 +172,7 @@ struct IngredientListBuilderPresenterTests {
     private final class Interactor: SpyGlobalInteractor, IngredientListBuilderInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var foods: [FoodModel] = []
+        var userMeals: [MealLogModel] = []
         var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
     }
 
@@ -159,7 +181,11 @@ struct IngredientListBuilderPresenterTests {
         private(set) var shown: [String] = []
 
         func showCreateFoodView(delegate: CreateFoodDelegate) { shown.append("createFood") }
-        func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate) { shown.append("mealItemAmount") }
+        private(set) var amountDelegates: [IngredientAmountDelegate] = []
+        func showIngredientAmountView(delegate: IngredientAmountDelegate) {
+            shown.append("ingredientAmount")
+            amountDelegates.append(delegate)
+        }
         func showRecipeIngredientAmountView(delegate: RecipeIngredientAmountDelegate) { shown.append("recipeIngredientAmount") }
     }
 
@@ -197,6 +223,22 @@ struct IngredientListBuilderPresenterTests {
         #expect(confirmed.isEmpty)
     }
 
+    /// Logging, a food opens the same amount screen search does, and it carries the plate's Log.
+    @Test("Test A Food Picked While Logging Opens The Amount Screen With Log")
+    func testAFoodPickedWhileLoggingOpensTheAmountScreenWithLog() {
+        let screen = makeScreen()
+        var logged = 0
+
+        screen.presenter.navToIngredientAmountView(
+            food: FoodModel(ingredientId: "food-1", name: "Oats"),
+            delegate: IngredientListBuilderDelegate(onMealItemConfirmed: { _ in }, onLog: { logged += 1 })
+        )
+        screen.router.amountDelegates.first?.onLog?()
+
+        #expect(screen.router.shown == ["ingredientAmount"])
+        #expect(logged == 1)
+    }
+
     /// Quick Add skips the amount screen entirely, so it is the other half of the same number.
     @Test("Test Quick Adding An Ingredient Is Tracked Under The Same Name")
     func testQuickAddingAnIngredientIsTrackedUnderTheSameName() {
@@ -232,11 +274,26 @@ struct IngredientListBuilderPresenterTests {
     func testTheScreenIsTrackedUnderItsOwnName() {
         let screen = makeScreen()
 
-        screen.presenter.onViewAppear()
-        screen.presenter.onViewDisappear()
+        let delegate = IngredientListBuilderDelegate()
+        screen.presenter.onViewAppear(delegate: delegate)
+        screen.presenter.onViewDisappear(delegate: delegate)
 
         #expect(screen.interactor.trackedScreenEventNames == ["IngredientsView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["IngredientsView_Disappear"])
+    }
+
+    /// Inside Foods and the food picker's Library the list is part of the parent's screen, which
+    /// logs the screen view itself.
+    @Test("Test The Embedded List Logs No Screen Events")
+    func testTheEmbeddedListLogsNoScreenEvents() {
+        let screen = makeScreen()
+
+        let delegate = IngredientListBuilderDelegate(isEmbedded: true)
+        screen.presenter.onViewAppear(delegate: delegate)
+        screen.presenter.onViewDisappear(delegate: delegate)
+
+        #expect(screen.interactor.trackedScreenEventNames.isEmpty)
+        #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 }
 

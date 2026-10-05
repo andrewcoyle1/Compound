@@ -1,59 +1,18 @@
 import SwiftUI
 
-enum MealItemAmountViewMode {
-    case addFood(FoodModel)
-    case editItem(MealItemModel)
-}
-
+/// Corrects the amount of a food already on a plate or in a logged meal. Adding a food goes
+/// through `IngredientAmountView`; this screen's add mode was last used by the Library tab and
+/// went when that moved to the same amount screen as search.
 struct MealItemAmountViewDelegate {
-    let mode: MealItemAmountViewMode
+    let item: MealItemModel
     let onConfirm: (MealItemModel) -> Void
 
     var eventParameters: [String: Any]? { nil }
 
-    var displayName: String {
-        switch mode {
-        case .addFood(let food): return food.name
-        case .editItem(let item): return item.displayName
-        }
-    }
-
-    var initialAmountText: String {
-        switch mode {
-        case .addFood(let food):
-            let base = food.portionGramsCalculated ?? food.portionMillilitersCalculated ?? 100
-            return base.formatted(.number.grouping(.never))
-        case .editItem(let item):
-            return item.amount.formatted(.number.grouping(.never))
-        }
-    }
-
-    var unit: String {
-        switch mode {
-        case .addFood(let food):
-            return food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")
-        case .editItem(let item):
-            return item.unit
-        }
-    }
-
-    /// Logging a new food and correcting a logged one are different jobs, so they get different
-    /// verbs.
-    var confirmTitle: String {
-        switch mode {
-        case .addFood: return String(localized: "Add")
-        case .editItem: return String(localized: "Save")
-        }
-    }
-
+    /// The item's figures for one of its units, which the amount typed multiplies back up.
     var unitNutrients: NutrientMap {
-        switch mode {
-        case .addFood(let food):
-            return food.nutrients
-        case .editItem(let item):
-            guard item.amount > 0 else { return NutrientMap() }
-            return item.nutrients.mapValues { $0 / item.amount }
-        }
+        guard item.amount > 0 else { return NutrientMap() }
+        return item.nutrients.mapValues { $0 / item.amount }
     }
 }
 
@@ -70,7 +29,7 @@ struct MealItemAmountViewView: View {
                 breakdownSection(macro: macro)
             }
         }
-        .navigationTitle(delegate.displayName)
+        .navigationTitle(delegate.item.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -80,7 +39,7 @@ struct MealItemAmountViewView: View {
         }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(delegate.confirmTitle, role: .confirm) {
+                Button("Save", role: .confirm) {
                     presenter.onConfirmPressed(delegate: delegate)
                 }
                 .disabled(presenter.amountValue <= 0)
@@ -110,12 +69,8 @@ struct MealItemAmountViewView: View {
             HStack {
                 TextField("0", text: $presenter.amountText)
                     .keyboardType(.decimalPad)
-                if case .addFood(let food) = delegate.mode, !food.servingUnits.isEmpty {
-                    ServingUnitPicker(baseLabel: delegate.unit, units: food.servingUnits, selection: $presenter.selectedUnit)
-                } else {
-                    Text(presenter.unitLabel(delegate: delegate))
-                        .foregroundStyle(.secondary)
-                }
+                Text(delegate.item.unit)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -140,7 +95,7 @@ struct MealItemAmountViewView: View {
     let interactor = CoreInteractor(container: container)
     let builder = CoreBuilder(interactor: interactor)
     let delegate = MealItemAmountViewDelegate(
-        mode: .addFood(FoodModel.mock),
+        item: MealItemModel.mocks[0],
         onConfirm: { _ in }
     )
 

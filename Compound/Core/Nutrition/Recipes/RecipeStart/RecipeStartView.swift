@@ -24,6 +24,8 @@ struct RecipeStartView: View {
         }
         .navigationTitle(delegate.recipe.name)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
     private func unitString(_ unit: IngredientAmountUnit) -> String {
         switch unit {

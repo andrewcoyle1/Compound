@@ -44,14 +44,6 @@ class RecipeListBuilderPresenter {
         self.router = router
     }
     
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-    
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
-    }
-    
     func onAddRecipePressed() {
         router.showCreateRecipeView()
     }
@@ -63,62 +55,16 @@ class RecipeListBuilderPresenter {
     func navToRecipeAmountView(recipe: RecipeTemplateModel, delegate: RecipeListBuilderDelegate) {
         router.showRecipeAmountView(delegate: RecipeAmountDelegate(
             recipe: recipe,
-            onPick: { delegate.onMealItemConfirmed?($0) }
+            onPick: { delegate.onMealItemConfirmed?($0) },
+            onLog: delegate.onLog
         ))
     }
 
+    /// The row's "+": the servings last logged, built the way the amount screen builds it. This
+    /// used to sum the nutrients itself, counting a "unit" ingredient as 100 g, so the same recipe
+    /// logged different figures from here than from the amount screen.
     func quickAdd(recipe: RecipeTemplateModel, delegate: RecipeListBuilderDelegate) {
-        var nutrients = NutrientMap()
-        for recipeIngredient in recipe.ingredients {
-            let grams: Double
-            switch recipeIngredient.unit {
-            case .grams: grams = recipeIngredient.amount
-            case .milliliters: grams = recipeIngredient.amount
-            case .units: grams = recipeIngredient.amount * 100
-            }
-            for (key, value) in recipeIngredient.ingredient.nutrients {
-                nutrients[key, default: 0] += value * (grams / 100.0)
-            }
-        }
-        let perServing = nutrients.mapValues { $0 / max(recipe.servingQuantity, 1) }
-        let item = MealItemModel(
-            itemId: UUID().uuidString,
-            sourceType: .recipe,
-            sourceId: recipe.recipeId,
-            displayName: recipe.name,
-            amount: 1,
-            unit: "serving",
-            resolvedGrams: nil,
-            resolvedMilliliters: nil,
-            nutrients: perServing
-        )
-        delegate.onMealItemConfirmed?(item)
+        interactor.playHaptic(option: .success)
+        delegate.onMealItemConfirmed?(recipe.quickAddItem(lastLoggedIn: interactor.userMeals))
     }
-
-    enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
-
-        var eventName: String {
-            switch self {
-            case .onAppear:     return "RecipeListBuilderView_Appear"
-            case .onDisappear:  return "RecipeListBuilderView_Disappear"
-            }
-        }
-
-        var parameters: [String: Any]? {
-            switch self {
-            default:
-                return nil
-            }
-        }
-
-        var type: LogType {
-            switch self {
-            default:
-                return .analytic
-            }
-        }
-    }
-
 }

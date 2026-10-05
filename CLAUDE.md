@@ -63,9 +63,12 @@ that could actually fail:
 Repeat runs belong in **one** invocation with `-test-iterations`, never N invocations — the build
 and simulator boot dominate, so five separate calls cost five times the setup for the same tests.
 
-Add `-skip-testing:CompoundUITests` to anything routine. It is three tests, one of them
-chronically flaky, and it needs its own simulator clone; it is also what makes a run report
-`** TEST FAILED **` when every unit test passed.
+Add `-skip-testing:CompoundUITests` to anything routine. Its ten tests (plus a smoke deck that
+skips unless `TEST_RUNNER_SMOKE=1`) take about seven minutes serially and need their own simulator
+clone; a launch flake there is also what makes a run report `** TEST FAILED **` when every unit
+test passed. To run it on its own: `-only-testing:CompoundUITests -parallel-testing-enabled NO`.
+Until 4 Oct 2026 the target's `TEST_TARGET_NAME` still said `DialedIn`, so that run failed with
+"UITargetAppPath should be provided" and three tests had gone stale unnoticed; all ten pass now.
 
 **Simulator clones.** A parallel test run clones the destination simulator several times into
 `~/Library/Developer/XCTestDevices` and never removes the clones. On 29 Sep 2026 that had grown
@@ -138,7 +141,8 @@ SwiftLint config (`.swiftlint.yml`): line limit 300, type body 500 lines, file l
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every pull request, as one job on the
+`.github/workflows/ci.yml` runs on every pull request. Besides the Cloud Functions tests and a
+**Release build (Xcode 27)** job (below), its main job runs on the
 `macos-26` runner with Xcode pinned to `/Applications/Xcode_26.6.app`. In order, it:
 
 1. Recreates the four gitignored config files from their checked-in examples — `Keys.swift`,
@@ -176,6 +180,17 @@ skips entitlement processing, which costs the test host its keychain access and 
 
 `concurrency` cancels superseded runs per ref; `timeout-minutes: 60`.
 
+The **Release build (Xcode 27)** job compiles the `Compound` scheme in Release, for the simulator,
+on the `xcode-27` image: the configuration and toolchain releases ship with. The unit tests build
+Debug on Xcode 26.6, where the optimiser never runs, and the first release crashed the compiler
+on code they had passed. Simulator rather than device, so it needs no signing and the Crashlytics
+phase skips.
+
+Every action in both workflows is pinned to a commit SHA, with its tag in a trailing comment, and
+the release pins `firebase-tools` to an exact version: the release runs them with prod
+credentials. Bump a pin deliberately, resolving the new tag with
+`gh api repos/<owner>/<repo>/commits/<tag> -q .sha`.
+
 **SwiftLint is pinned to a single `SWIFTLINT_VERSION` env var at the top of the workflow**
 (currently `0.59.1`). CI downloads the official `portable_swiftlint.zip` for that exact version,
 caches it keyed on the version, and fails the job if `swiftlint version` does not match before
@@ -187,6 +202,61 @@ locally. The pin must stay **in step with the version developers install locally
 your local SwiftLint, bump `SWIFTLINT_VERSION` too, and the reverse holds: bumping the pin means
 fixing whatever the new rules report, as its own change rather than folded into an unrelated PR. If
 CI reports violations you cannot reproduce, compare `swiftlint version` first.
+
+### Release (CD)
+
+`.github/workflows/release.yml` runs on every push to `main`, which the ruleset allows only by a
+merged PR whose CI passed. Both jobs use the **`release`** environment: it accepts `main` only,
+holds the secrets, and waits for the owner's approval. Each run, and each **re-run** of a job,
+needs approving again. The TestFlight job `needs` the Cloud Functions job, so the backend is
+always deployed first and a failed deploy stops the upload; it therefore asks for its own approval
+once the deploy finishes. App Review submission stays manual in App Store Connect.
+
+**TestFlight job** — archives the `Compound` scheme and uploads with an App Store Connect API key
+(`ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`; Admin role, because cloud-managed
+distribution signing needs it). `KEYS_SWIFT` and `GOOGLE_SERVICE_INFO_PROD` are base64 of the
+local files; update the secret when either file changes, or the release ships stale keys.
+`manageAppVersionAndBuildNumber` takes the next free build number, so the project's own build
+number stays at 1.
+
+- It runs on the **`xcode-27`** runner image (a GitHub preview), not `macos-26` like CI. Xcode
+  26.6's Swift 6.3.3 crashes in the optimizer's ClosureSpecializer on
+  `CoreBuilder.weeklyReviewView`, which only an optimised build reaches, so CI's Debug tests never
+  see it. `xcode-27` carries Xcode 27.0 27A266a, the same build used locally. Unknown to actionlint;
+  pass `-ignore 'label "xcode-27" is unknown'`.
+- `ITSAppUsesNonExemptEncryption = NO` is set on the app target, so builds skip the export
+  compliance question.
+
+**Cloud Functions job** — deploys to `dialed-c3cb5` as the **`github-release`** service account
+through workload identity federation; no key is stored anywhere.
+
+- Pool `github`, provider `github-actions` (issuer `https://token.actions.githubusercontent.com`,
+  condition `assertion.repository == 'andrewcoyle1/Compound'`), project number `94958324260`.
+- This repo uses GitHub's **immutable subject** format, so the token's `sub` is
+  `repo:andrewcoyle1@200482452/Compound@1064429405:environment:release`, IDs included. The
+  Workload Identity User grant on `github-release` names exactly that subject. The usual guides
+  show `repo:andrewcoyle1/Compound:environment:release`, which never matches and fails as
+  `Permission 'iam.serviceAccounts.getAccessToken' denied`. Check the format with
+  `gh api repos/andrewcoyle1/Compound/actions/oidc/customization/sub`.
+- `github-release` holds the least the deploy was shown to need, found by re-running the job with
+  nothing changed (every function is skipped, but every pre-deploy check runs):
+  - Project: Cloud Functions Admin, Cloud Scheduler Admin (the scheduled functions' jobs), Secret
+    Manager Viewer, and the custom role **Release deploy reads** (`releaseDeployReads`):
+    `firebase.projects.get`, `datastore.databases.getMetadata`,
+    `artifactregistry.repositories.get`, `resourcemanager.projects.get`,
+    `serviceusage.services.get`. None of them reads app data, which is why no Firebase viewer role
+    is used: those include Firestore, Realtime Database and Storage reads.
+  - Service Account User on **only** two accounts: `94958324260-compute@developer` (the functions'
+    runtime account) and `dialed-c3cb5@appspot` (firebase-tools checks actAs on it before every
+    deploy, though nothing runs as it). Never project-wide: that would let it act as the Admin SDK
+    account.
+- Not yet exercised: deploying a **new** callable, which sets its invoker policy and may need one
+  more permission. If a deploy fails on a permission, add it to `releaseDeployReads` (reads) or the
+  narrowest role that grants it, and record it here.
+- The workflow requests a token with `gcloud auth print-access-token` before deploying, because
+  firebase-tools reports any credential failure as "have you run firebase login?".
+- The Cloud Billing API is enabled on the project because firebase-tools checks billing and the
+  deploy account cannot enable APIs.
 
 ## Branching
 
@@ -404,7 +474,7 @@ to re-read", not "go fetch".
 ## Onboarding Flow
 
 Onboarding lives under `Core/Onboarding/`, in folders numbered by step: `0 - WelcomeView`
-through `9 - OnboardingCompleted` (there is no `7 -`). Each step is its own VIPER module.
+through `9 - OnboardingCompleted` (there is no `1 -` or `7 -`; Get Started goes straight to sign-in, and the account-setup and goal folders open on their first question rather than an intro screen). Each step is its own VIPER module.
 Notifications, Apple Health and Strava are not onboarding steps: each is offered where it is
 first used. Progress is
 persisted to Firestore. After completion, `AppState.startingModuleId` is updated to
@@ -540,8 +610,9 @@ Two things live outside the code and are easy to miss:
 - Enabling enforcement breaks already-shipped app versions that predate the App Check wiring.
   Check App Check metrics for unverified traffic before turning it on.
 
-Deploy with `firebase deploy --only functions` — this is not part of the Xcode build, so changes
-under `functions/` have no effect until deployed.
+Each release to `main` deploys them to prod (see Release (CD)). Outside a release, deploy with
+`firebase deploy --only functions --project <id>`; it is not part of the Xcode build, so changes
+under `functions/` have no effect until deployed, and the dev project is only ever deployed by hand.
 
 `npm test` in `functions/` runs five `node:test` cases (`index.test.js`) with no emulator: the
 pure helpers in `lib.js`, a source check that every `onCall` takes `CALLABLE_OPTIONS` and opens

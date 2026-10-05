@@ -11,6 +11,7 @@ protocol CustomisingDietProgramRouter: GlobalRouter {
 func showDevSettingsView()
 #endif
     func showPreferredDietView()
+    func showDietPlanView(delegate: DietPlanDelegate)
 }
 
 extension CoreRouter: CustomisingDietProgramRouter { }

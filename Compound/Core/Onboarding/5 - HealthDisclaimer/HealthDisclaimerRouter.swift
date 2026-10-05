@@ -10,7 +10,7 @@ protocol HealthDisclaimerRouter: GlobalRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif
-    func showGoalSettingView()
+    func showOverarchingObjectiveView()
 }
 
 extension CoreRouter: HealthDisclaimerRouter { }

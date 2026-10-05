@@ -151,47 +151,12 @@ class MesocycleDesignPresenter {
         router.showMesocycleSettingsView(mesocycle: mesocycle)
     }
     
-    /// A choice that follows the person's own tap, so an action sheet, answered with verbs.
+    /// Activates straight away. It used to offer to save each day to the workout library as well,
+    /// which made a second copy of every day that then drifted from the mesocycle's own. The
+    /// library lists the mesocycle's days instead (`WorkoutListViewBuilder`).
     func onActivatePressed(delegate: MesocycleDesignDelegate) {
         guard canSave else { return }
-        router.showConfirmationDialog(
-            title: String(localized: "Save Workout Templates?"),
-            subtitle: String(localized: "Each workout day can also be saved to your library, to start on its own.")
-        ) {
-            AnyView(
-                VStack {
-                    Button("Save Templates") {
-                        Task { await self.saveTemplatesAndActivate(delegate: delegate) }
-                    }
-                    Button("Don't Save") {
-                        Task { await self.activateMesocycle(delegate: delegate) }
-                    }
-                    Button("Cancel", role: .cancel) { }
-                }
-            )
-        }
-    }
-
-    /// Saves each workout day as a standalone template, then activates. A failure here
-    /// used to be swallowed by an unstructured `Task`, leaving the mesocycle un-activated with
-    /// no feedback; now it surfaces and activation is skipped.
-    ///
-    /// Rest days are skipped: an empty template in the library is nothing anyone would start.
-    /// ponytail: sequential saves; a failure part-way leaves the earlier templates saved.
-    func saveTemplatesAndActivate(delegate: MesocycleDesignDelegate) async {
-        isSaving = true
-        defer { isSaving = false }
-        do {
-            for workoutTemplate in dayPlans where !workoutTemplate.exercises.isEmpty {
-                try await interactor.saveWorkoutTemplate(workoutTemplate: workoutTemplate, image: nil)
-            }
-        } catch {
-            interactor.playHaptic(option: .error)
-            router.showAlert(title: String(localized: "Unable to Save Templates"), error: error)
-            return
-        }
-
-        await activateMesocycle(delegate: delegate)
+        Task { await activateMesocycle(delegate: delegate) }
     }
 
     /// This was declared `async throws` while wrapping its whole body in a nested `Task`, so
@@ -201,9 +166,11 @@ class MesocycleDesignPresenter {
     func activateMesocycle(delegate: MesocycleDesignDelegate) async {
         isSaving = true
         defer { isSaving = false }
+        interactor.trackEvent(event: Event.activateStart)
         do {
             try await interactor.saveMesocycle(mesocycle: mesocycle)
             try await interactor.setActiveMesocycle(mesocycleId: mesocycle.id)
+            interactor.trackEvent(event: Event.activateSuccess)
             interactor.playHaptic(option: .success)
             // Onboarding hands in the closure that resumes it. This screen used to route
             // onboarding itself and never call it, so the closure was carried four screens for nothing.
@@ -213,6 +180,7 @@ class MesocycleDesignPresenter {
                 router.dismissEnvironment()
             }
         } catch {
+            interactor.trackEvent(event: Event.activateFail(error: error))
             interactor.playHaptic(option: .error)
             router.showAlert(title: String(localized: "Unable to Activate Mesocycle"), error: error)
         }
@@ -255,11 +223,14 @@ class MesocycleDesignPresenter {
     }
 
     func deleteMesocycle() async {
+        interactor.trackEvent(event: Event.deleteStart)
         do {
             try await interactor.deleteMesocycle(mesocycleId: mesocycle.id)
+            interactor.trackEvent(event: Event.deleteSuccess)
             interactor.playHaptic(option: .success)
             router.dismissEnvironment()
         } catch {
+            interactor.trackEvent(event: Event.deleteFail(error: error))
             interactor.playHaptic(option: .error)
             router.showAlert(title: String(localized: "Unable to Delete Mesocycle"), error: error)
         }
@@ -270,11 +241,14 @@ class MesocycleDesignPresenter {
         isSaving = true
         Task {
             defer { isSaving = false }
+            interactor.trackEvent(event: Event.saveStart)
             do {
                 try await interactor.saveMesocycle(mesocycle: mesocycle)
+                interactor.trackEvent(event: Event.saveSuccess)
                 interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showAlert(title: String(localized: "Unable to Save Mesocycle"), error: error)
             }
@@ -339,23 +313,45 @@ extension MesocycleDesignPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
-        
+        case activateStart
+        case activateSuccess
+        case activateFail(error: Error)
+        case deleteStart
+        case deleteSuccess
+        case deleteFail(error: Error)
+        case saveStart
+        case saveSuccess
+        case saveFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear: return "ProgramDesignView_Appear"
             case .onDisappear: return "ProgramDesignView_Disappear"
+            case .activateStart: return "ProgramDesignView_Activate_Start"
+            case .activateSuccess: return "ProgramDesignView_Activate_Success"
+            case .activateFail: return "ProgramDesignView_Activate_Fail"
+            case .deleteStart: return "ProgramDesignView_Delete_Start"
+            case .deleteSuccess: return "ProgramDesignView_Delete_Success"
+            case .deleteFail: return "ProgramDesignView_Delete_Fail"
+            case .saveStart: return "ProgramDesignView_Save_Start"
+            case .saveSuccess: return "ProgramDesignView_Save_Success"
+            case .saveFail: return "ProgramDesignView_Save_Fail"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
+            case .activateFail(let error), .deleteFail(let error), .saveFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
         }
-        
+
         var type: LogType {
             switch self {
+            case .activateFail, .deleteFail, .saveFail:
+                return .severe
             default:
                 return .analytic
             }

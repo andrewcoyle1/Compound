@@ -36,11 +36,16 @@ class ExerciseModelDetailPresenter {
     /// Rebuilt on appear rather than computed per section: all three history-bearing tabs walk the
     /// same sessions, and the collection only changes when a workout is logged.
     func onViewAppear(delegate: ExerciseModelDetailDelegate) {
+        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         unitPreference = interactor.getPreference(templateId: delegate.exerciseModel.id)
         stats = ExerciseModelDetailStats.make(
             from: interactor.workoutSessions,
             templateId: delegate.exerciseModel.id
         )
+    }
+
+    func onViewDisappear(delegate: ExerciseModelDetailDelegate) {
+        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
 
     var performedSubtitle: String {
@@ -147,12 +152,51 @@ class ExerciseModelDetailPresenter {
     /// `onDismiss` is the router's dismiss in the app; a parameter so a test can see it happen.
     func deleteExercise(_ exercise: ExerciseModel, onDismiss: @escaping () -> Void) async {
         isDeleting = true
+        interactor.trackEvent(event: Event.deleteExerciseStart)
         do {
             try await interactor.deleteExerciseModel(exerciseId: exercise.id)
+            interactor.trackEvent(event: Event.deleteExerciseSuccess)
             onDismiss()
         } catch {
+            interactor.trackEvent(event: Event.deleteExerciseFail(error: error))
             isDeleting = false
             router.showSimpleAlert(title: String(localized: "Failed to delete exercise"), subtitle: String(localized: "Please try again later"))
+        }
+    }
+
+    enum Event: LoggableEvent {
+        case onAppear(delegate: ExerciseModelDetailDelegate)
+        case onDisappear(delegate: ExerciseModelDetailDelegate)
+        case deleteExerciseStart
+        case deleteExerciseSuccess
+        case deleteExerciseFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:              return "ExerciseModelDetailView_Appear"
+            case .onDisappear:           return "ExerciseModelDetailView_Disappear"
+            case .deleteExerciseStart:   return "ExerciseModelDetailView_DeleteExercise_Start"
+            case .deleteExerciseSuccess: return "ExerciseModelDetailView_DeleteExercise_Success"
+            case .deleteExerciseFail:    return "ExerciseModelDetailView_DeleteExercise_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let delegate), .onDisappear(let delegate):
+                return ["exercise_id": delegate.exerciseModel.id]
+            case .deleteExerciseFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteExerciseFail: return .severe
+            default:                  return .analytic
+            }
         }
     }
     

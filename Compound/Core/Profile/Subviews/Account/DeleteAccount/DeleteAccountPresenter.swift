@@ -37,6 +37,10 @@ class DeleteAccountPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onManageSubscriptionPressed() {
         interactor.trackEvent(event: Event.manageSubscriptionPressed)
         isManageSubscriptionsPresented = true
@@ -80,6 +84,7 @@ class DeleteAccountPresenter {
 
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case manageSubscriptionPressed
         case deleteAccountStartConfirm
         case deleteAccountSuccess
@@ -91,6 +96,7 @@ class DeleteAccountPresenter {
         var eventName: String {
             switch self {
             case .onAppear:                     return "DeleteAccountView_Appear"
+            case .onDisappear:                  return "DeleteAccountView_Disappear"
             case .manageSubscriptionPressed:    return "DeleteAccountView_ManageSubscription_Press"
             case .deleteAccountStartConfirm:    return "Settings_DeleteAccount_StartConfirm"
             case .deleteAccountSuccess:         return "Settings_DeleteAccount_Success"

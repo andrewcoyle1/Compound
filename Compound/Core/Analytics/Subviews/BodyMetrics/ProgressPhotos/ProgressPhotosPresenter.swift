@@ -65,9 +65,18 @@ class ProgressPhotosPresenter {
         await interactor.startListeningForProgressPhotos()
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     // MARK: Add
 
-    func onCameraPressed() {
+    /// The pose the camera was opened for. Chosen before the shutter, so a camera photo saves as
+    /// soon as the camera closes; only a library photo is asked which pose it is.
+    private(set) var cameraPose: ProgressPhotoModel.Pose?
+
+    func onCameraPressed(pose: ProgressPhotoModel.Pose) {
+        cameraPose = pose
         isCameraPresented = true
     }
 
@@ -85,6 +94,7 @@ class ProgressPhotosPresenter {
             }
             onImagePicked(image)
         } catch {
+            interactor.trackEvent(event: Event.loadLibraryPhotoFail(error: error))
             router.showAlert(title: String(localized: "Unable to Load Photo"), error: error)
         }
     }
@@ -95,14 +105,21 @@ class ProgressPhotosPresenter {
         isPoseDialogPresented = true
     }
 
-    /// The camera hands its image over while its cover is still up, and a dialog cannot present
-    /// over a dismissing cover, so the pose is asked for once it has gone.
+    /// The camera hands its image over while its cover is still up, so the upload waits for the
+    /// cover to go and the progress overlay is not hidden behind it.
     func onCameraImagePicked(_ image: PlatformImage) {
         pendingImage = image
     }
 
-    func onCameraDismissed() {
-        isPoseDialogPresented = pendingImage != nil
+    func onCameraDismissed() async {
+        let pose = cameraPose
+        cameraPose = nil
+        guard pendingImage != nil else { return }
+        if let pose {
+            await onPoseSelected(pose)
+        } else {
+            isPoseDialogPresented = true
+        }
     }
 
     func onPoseCancelled() {
@@ -176,6 +193,7 @@ class ProgressPhotosPresenter {
         guard let photo = photoPendingDelete else { return }
         photoPendingDelete = nil
         selectedIds.removeAll { $0 == photo.id }
+        interactor.trackEvent(event: Event.deleteStart)
         do {
             try await interactor.deleteProgressPhoto(photo)
             interactor.trackEvent(event: Event.deleteSuccess)
@@ -189,20 +207,26 @@ class ProgressPhotosPresenter {
 extension ProgressPhotosPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
+        case loadLibraryPhotoFail(error: Error)
         case addStart(pose: ProgressPhotoModel.Pose)
         case addSuccess(pose: ProgressPhotoModel.Pose)
         case addFail(error: Error)
         case compare
+        case deleteStart
         case deleteSuccess
         case deleteFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:      return "ProgressPhotosView_Appear"
+            case .onDisappear:   return "ProgressPhotosView_Disappear"
+            case .loadLibraryPhotoFail: return "ProgressPhotosView_LoadLibraryPhoto_Fail"
             case .addStart:      return "ProgressPhotosView_Add_Start"
             case .addSuccess:    return "ProgressPhotosView_Add_Success"
             case .addFail:       return "ProgressPhotosView_Add_Fail"
             case .compare:       return "ProgressPhotosView_Compare"
+            case .deleteStart:   return "ProgressPhotosView_Delete_Start"
             case .deleteSuccess: return "ProgressPhotosView_Delete_Success"
             case .deleteFail:    return "ProgressPhotosView_Delete_Fail"
             }
@@ -212,7 +236,7 @@ extension ProgressPhotosPresenter {
             switch self {
             case .addStart(let pose), .addSuccess(let pose):
                 return ["pose": pose.rawValue]
-            case .addFail(let error), .deleteFail(let error):
+            case .addFail(let error), .deleteFail(let error), .loadLibraryPhotoFail(let error):
                 return error.eventParameters
             default:
                 return nil
@@ -221,7 +245,7 @@ extension ProgressPhotosPresenter {
 
         var type: LogType {
             switch self {
-            case .addFail, .deleteFail: return .severe
+            case .addFail, .deleteFail, .loadLibraryPhotoFail: return .severe
             default:                    return .analytic
             }
         }

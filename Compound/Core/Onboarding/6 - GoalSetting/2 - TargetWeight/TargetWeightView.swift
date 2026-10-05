@@ -47,6 +47,8 @@ struct TargetWeightView: View {
         .onFirstAppear {
             presenter.onAppear(delegate: delegate)
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var kilogramsSection: some View {

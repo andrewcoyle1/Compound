@@ -26,6 +26,8 @@ struct PreferredDietView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 }
 

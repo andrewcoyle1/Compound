@@ -65,12 +65,15 @@ class MesocycleSettingsPresenter {
         isSaving = true
         Task {
             defer { isSaving = false }
+            interactor.trackEvent(event: Event.activateStart)
             do {
                 try await interactor.saveMesocycle(mesocycle: mesocycle)
                 try await interactor.setActiveMesocycle(mesocycleId: mesocycle.id)
+                interactor.trackEvent(event: Event.activateSuccess)
                 interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
+                interactor.trackEvent(event: Event.activateFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showAlert(title: String(localized: "Unable to Activate Mesocycle"), error: error)
             }
@@ -83,23 +86,33 @@ extension MesocycleSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
-        
+        case activateStart
+        case activateSuccess
+        case activateFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear: return "ProgramSettingsView_Appear"
             case .onDisappear: return "ProgramSettingsView_Disappear"
+            case .activateStart: return "ProgramSettingsView_Activate_Start"
+            case .activateSuccess: return "ProgramSettingsView_Activate_Success"
+            case .activateFail: return "ProgramSettingsView_Activate_Fail"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
+            case .activateFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
         }
-        
+
         var type: LogType {
             switch self {
+            case .activateFail:
+                return .severe
             default:
                 return .analytic
             }

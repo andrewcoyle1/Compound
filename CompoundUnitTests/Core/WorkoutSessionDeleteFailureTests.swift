@@ -48,6 +48,6 @@ struct WorkoutSessionDeleteFailureTests {
         #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
         for _ in 0..<10 { await Task.yield() }
         #expect(router.alertTitles == ["Unable to Delete Workout"])
-        #expect(interactor.trackedEventNames == ["WorkoutSessionDetailView_DeleteSession_Fail"])
+        #expect(interactor.trackedEventNames == ["WorkoutSessionDetailView_DeleteSession_Start", "WorkoutSessionDetailView_DeleteSession_Fail"])
     }
 }

@@ -659,6 +659,40 @@ struct NutritionPresenterTests {
         #expect(screen.router.addMealDelegates.last?.mealLog.dayKey == Date().dayKey)
     }
 
+    /// Log Again copies a meal from any day to now, as a new meal with the same foods.
+    @Test("Test Log Again Logs A Copy Of The Meal Now")
+    func testLogAgainLogsACopyOfTheMealNow() async {
+        let screen = makeScreen()
+        let original = meal(id: "breakfast", hour: 8, calories: 300)
+
+        screen.presenter.onLogAgainPressed(original)
+        await TestManagers.eventually { !screen.interactor.addedMeals.isEmpty }
+
+        let copy = screen.interactor.addedMeals.first
+        #expect(copy?.mealId != original.mealId)
+        #expect(copy?.dayKey == Date().dayKey)
+        #expect(copy?.items.map(\.itemId) == original.items.map(\.itemId))
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// From another day the copy lands on today, out of sight, so a toast says where it went.
+    /// Logged again from today, the meal appears on screen and needs none.
+    @Test("Test Log Again From Another Day Says Where The Meal Went")
+    func testLogAgainFromAnotherDaySaysWhereTheMealWent() async {
+        let past = makeScreen()
+        past.presenter.selectedDate = monday
+        past.presenter.onLogAgainPressed(meal(id: "breakfast", hour: 8, calories: 300))
+        await TestManagers.eventually { !past.interactor.addedMeals.isEmpty }
+
+        let today = makeScreen()
+        today.presenter.selectedDate = Date()
+        today.presenter.onLogAgainPressed(meal(id: "breakfast", hour: 8, calories: 300))
+        await TestManagers.eventually { !today.interactor.addedMeals.isEmpty }
+
+        #expect(past.interactor.shownToasts.map(\.message) == ["Logged again today."])
+        #expect(today.interactor.shownToasts.isEmpty)
+    }
+
     @Test("Test The Library Rows Open Foods And Recipes")
     func testTheLibraryRowsOpenFoodsAndRecipes() {
         let screen = makeScreen()

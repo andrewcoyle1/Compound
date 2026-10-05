@@ -352,12 +352,13 @@ struct TrainingWorkoutHistoryPresenterTests {
         #expect(screen.presenter.workoutSessions.map(\.id) == ["done"])
     }
 
-    /// Rest days for days still to come are written ahead of time by the mesocycle. Listing one puts
-    /// tomorrow at the top of the user's history.
-    @Test("Test A Rest Day Yet To Come Is Not In The History")
-    func testARestDayYetToComeIsNotInTheHistory() {
+    /// Rest days are sessions only so the mesocycle can count them done, including the ones it
+    /// writes ahead for days still to come. None of them is a workout.
+    @Test("Test Rest Days Are Not In The History")
+    func testRestDaysAreNotInTheHistory() {
         let screen = makeScreen(sessions: [
             TrainingTabFixture.session(id: "done", on: TrainingTabFixture.date(day: 11)),
+            TrainingTabFixture.session(id: "past-rest", name: "Rest", on: TrainingTabFixture.date(day: 12), isRestDay: true),
             TrainingTabFixture.session(
                 id: "future-rest",
                 name: "Rest",
@@ -367,15 +368,6 @@ struct TrainingWorkoutHistoryPresenterTests {
         ])
 
         #expect(screen.presenter.workoutSessions.map(\.id) == ["done"])
-    }
-
-    @Test("Test A Rest Day Already Taken Stays In The History")
-    func testARestDayAlreadyTakenStaysInTheHistory() {
-        let screen = makeScreen(sessions: [
-            TrainingTabFixture.session(id: "past-rest", name: "Rest", on: TrainingTabFixture.date(day: 11), isRestDay: true)
-        ])
-
-        #expect(screen.presenter.workoutSessions.map(\.id) == ["past-rest"])
     }
 
     @Test("Test Pressing A Workout Opens It")
@@ -634,23 +626,50 @@ struct TrainingWorkoutsLibraryPresenterTests {
         let router = Router()
         let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
 
-        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"))
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: nil)
 
         #expect(router.detailDelegates.first?.workoutTemplate.name == "Push")
         #expect(router.detailDelegates.first?.mesocycleId == nil)
         #expect(router.detailDelegates.first?.isDeloadCycle == false)
     }
 
+    /// A mesocycle's day picked from the library starts on its own, but the detail screen is told
+    /// whose day it is, so editing goes to the mesocycle rather than into the library.
+    @Test("Test A Mesocycle Day Opens On Its Own But Knows Its Mesocycle")
+    func testAMesocycleDayOpensOnItsOwnButKnowsItsMesocycle() {
+        let router = Router()
+        let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
+        let block = TrainingTabFixture.mesocycle("Block", id: "m1")
+
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: block)
+
+        #expect(router.detailDelegates.first?.mesocycleId == nil)
+        #expect(router.detailDelegates.first?.mesocycle?.id == "m1")
+    }
+
     @Test("Test Starting The Opened Workout Shows The Tracker")
     func testStartingTheOpenedWorkoutShowsTheTracker() async {
         let router = Router()
         let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
-        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"))
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: nil)
 
         router.detailDelegates.first?.onStartWorkoutPressed?()
         await TestManagers.eventually { router.shown.contains("tracker") }
 
         #expect(router.shown == ["templateDetail", "tracker"])
+    }
+
+    /// The screen logs itself; the list it embeds no longer does, so a visit counts once.
+    @Test("Test The Screen Is Tracked Under Its Own Name")
+    func testTheScreenIsTrackedUnderItsOwnName() {
+        let interactor = Interactor()
+        let presenter = WorkoutsPresenter(interactor: interactor, router: Router())
+
+        presenter.onViewAppear()
+        presenter.onViewDisappear()
+
+        #expect(interactor.trackedScreenEventNames == ["WorkoutsView_Appear"])
+        #expect(interactor.trackedEventNames == ["WorkoutsView_Disappear"])
     }
 }
 
@@ -678,47 +697,5 @@ struct MesocycleGroupPresenterTests {
         presenter.onSavedMesocyclePressed(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
         #expect(router.editDelegates.first?.mesocycle.id == "ul")
-    }
-
-    @Test("Test Appearing And Leaving Are Both Tracked")
-    func testAppearingAndLeavingAreBothTracked() {
-        let interactor = Interactor()
-        let presenter = MesocycleDisclosureGroupPresenter(interactor: interactor, router: Router())
-        let delegate = MesocycleDisclosureGroupDelegate(
-            mesocycle: TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
-        )
-
-        presenter.onViewAppear(delegate: delegate)
-        presenter.onViewDisappear(delegate: delegate)
-
-        #expect(interactor.trackedScreenEventNames == ["TrainingProgramDisclosureGroupView_Appear"])
-        #expect(interactor.trackedEventNames == ["TrainingProgramDisclosureGroupView_Disappear"])
-    }
-}
-
-/// The section listing mesocycles the user is not running. It owns no data of its own — the rows do —
-/// so all it is answerable for is reporting that it was seen.
-@MainActor
-struct TrainingInactiveMesocyclePresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, InactiveMesocycleInteractor { }
-
-    private final class Router: InactiveMesocycleRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-    }
-
-    @Test("Test Appearing And Leaving Are Both Tracked")
-    func testAppearingAndLeavingAreBothTracked() {
-        let interactor = Interactor()
-        let presenter = InactiveMesocyclePresenter(interactor: interactor, router: Router())
-        let delegate = InactiveMesocycleDelegate(inactiveMesocycles: [
-            TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
-        ])
-
-        presenter.onViewAppear(delegate: delegate)
-        presenter.onViewDisappear(delegate: delegate)
-
-        #expect(interactor.trackedScreenEventNames == ["InactiveTrainingProgramView_Appear"])
-        #expect(interactor.trackedEventNames == ["InactiveTrainingProgramView_Disappear"])
     }
 }

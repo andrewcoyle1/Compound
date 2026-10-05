@@ -25,9 +25,13 @@ extension MixpanelService {
     /// The Mixpanel project stores its data in the EU, which only accepts events sent to the EU
     /// endpoint. Events queue until the first flush, so pointing the instance there straight after
     /// `init` loses none.
-    init(euToken token: String, loggingEnabled: Bool = false) {
+    ///
+    /// Dev and prod builds share one Mixpanel project, so every event carries
+    /// `build_configuration` ("dev" or "prod") to let reports leave development traffic out.
+    init(euToken token: String, buildConfiguration: String, loggingEnabled: Bool = false) {
         self.init(token: token, loggingEnabled: loggingEnabled)
         Mixpanel.mainInstance().serverURL = "https://api-eu.mixpanel.com"
+        Mixpanel.mainInstance().registerSuperProperties(["build_configuration": buildConfiguration])
     }
 }
 

@@ -74,15 +74,36 @@ struct WidgetSnapshotTests {
         #expect(entry.snapshot.currentStreak == 0)
     }
 
-    /// The midnight entry drops today's workout; within the week it keeps the count.
-    @Test("Test The Midnight Entry Drops Today's Workout But Keeps The Week")
-    func testTheMidnightEntryDropsTodaysWorkoutButKeepsTheWeek() throws {
-        let entries = WidgetSnapshotTimeline.entries(snapshot: snapshot(at: Self.wednesday), now: Self.wednesday, calendar: Self.calendar)
+    /// The midnight entry moves on to the upcoming workout; within the week it keeps the count.
+    @Test("Test The Midnight Entry Shows The Upcoming Workout And Keeps The Week")
+    func testTheMidnightEntryShowsTheUpcomingWorkoutAndKeepsTheWeek() throws {
+        var written = snapshot(at: Self.wednesday)
+        written.upcomingWorkout = .init(name: "Pull Day", exerciseCount: 4, isRestDay: false, isCompleted: false)
+        let entries = WidgetSnapshotTimeline.entries(snapshot: written, now: Self.wednesday, calendar: Self.calendar)
         let now = entries[0], midnight = entries[1]
 
         #expect(now.snapshot.todaysWorkout(on: now.date, calendar: Self.calendar)?.name == "Push Day")
-        #expect(midnight.snapshot.todaysWorkout(on: midnight.date, calendar: Self.calendar) == nil)
+        #expect(midnight.snapshot.todaysWorkout(on: midnight.date, calendar: Self.calendar)?.name == "Pull Day")
         #expect(midnight.snapshot.sessionsThisWeek(on: midnight.date, calendar: Self.calendar) == 2)
+    }
+
+    @Test("Test A Snapshot Written Before Upcoming Existed Still Decodes")
+    func testASnapshotWrittenBeforeUpcomingExistedStillDecodes() throws {
+        let old = #"{"day":0,"currentStreak":3,"sessionsThisWeek":1,"weeklyGoal":3,"updatedAt":0}"#
+        let decoded = try JSONDecoder().decode(WidgetSnapshot.self, from: Data(old.utf8))
+        #expect(decoded.upcomingWorkout == nil)
+        #expect(decoded.currentStreak == 3)
+    }
+
+    @Test("Test Clearing Removes The Snapshot")
+    func testClearingRemovesTheSnapshot() throws {
+        let suite = "WidgetSnapshotTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        WidgetSnapshotStore.write(snapshot(at: Self.wednesday), to: defaults)
+        WidgetSnapshotStore.clear(from: defaults)
+        #expect(WidgetSnapshotStore.read(from: defaults) == nil)
     }
 
     @Test("Test A New Week Empties The Ring")
@@ -133,6 +154,8 @@ struct WidgetSnapshotTests {
         )
 
         #expect(built.todaysWorkout == .init(name: template.name, exerciseCount: template.exercises.count, isRestDay: false, isCompleted: true))
+        // A one-day mesocycle comes round again tomorrow, not yet done.
+        #expect(built.upcomingWorkout == .init(name: template.name, exerciseCount: template.exercises.count, isRestDay: false, isCompleted: false))
         #expect(built.day == Self.calendar.startOfDay(for: Self.wednesday))
         #expect(built.currentStreak == 9)
         #expect(built.sessionsThisWeek == 1)

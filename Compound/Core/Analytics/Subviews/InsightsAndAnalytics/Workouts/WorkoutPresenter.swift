@@ -48,10 +48,7 @@ class WorkoutPresenter {
                 let sets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }.count
                 let volume = session.exercises.flatMap { $0.sets }
                     .filter { !$0.isWarmup }
-                    .compactMap { set -> Double? in
-                        guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                        return weight * Double(reps)
-                    }
+                    .compactMap(\.volumeKg)
                     .reduce(0, +)
                 return WorkoutEntry(
                     id: session.id,
@@ -102,6 +99,14 @@ extension WorkoutPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         loadData()
     }
@@ -112,4 +117,22 @@ extension WorkoutPresenter: @MainActor MetricDetailPresenter {
         router.showWorkoutsView(delegate: WorkoutsDelegate())
     }
 
+}
+
+extension WorkoutPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "WorkoutView_Appear"
+            case .onDisappear: return "WorkoutView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
 }

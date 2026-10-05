@@ -45,7 +45,27 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     private let router: BodyMetricsRouter
     private let kind: BodyMeasurementKind
 
-    var entries: [BodyMeasurementDetailEntry]
+    /// Read live, like Scale Weight, so a reading logged from this screen's Add appears as soon as
+    /// the sync engine applies it. This was a stored array filled once in `onAppear`, so the screen
+    /// went on showing the old data until it was closed and reopened.
+    ///
+    /// Values are converted here, once, so `displayValue` and the chart agree with the
+    /// suffix in `configuration`.
+    var entries: [BodyMeasurementDetailEntry] {
+        let unit = interactor.lengthUnitPreference
+        return interactor.bodyMeasurements
+            .filter { $0.deletedAt == nil }
+            .compactMap { entry in
+                guard let value = entry[keyPath: kind.entryValue] else { return nil }
+                return BodyMeasurementDetailEntry(
+                    id: entry.id,
+                    date: entry.date,
+                    value: UnitConversion.convertLength(value, to: unit),
+                    kind: kind
+                )
+            }
+            .sorted { $0.date < $1.date }
+    }
 
     var timeSeries: [TimeSeries] {
         let data = entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.value) }
@@ -68,17 +88,21 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     init(
         kind: BodyMeasurementKind,
         interactor: BodyMetricsInteractor,
-        router: BodyMetricsRouter,
-        entries: [BodyMeasurementDetailEntry] = []
+        router: BodyMetricsRouter
     ) {
         self.kind = kind
         self.interactor = interactor
         self.router = router
-        self.entries = entries.sorted { $0.date < $1.date }
     }
 
-    func onAppear() async {
-        reload()
+    func onAppear() async { }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(kind: kind))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: kind))
     }
 
     func onAddPressed() {
@@ -94,33 +118,54 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     func onDeleteEntry(_ entry: BodyMeasurementDetailEntry) async {
         guard let baseEntry = interactor.bodyMeasurements.first(where: { $0.id == entry.id }) else { return }
         let updatedEntry = baseEntry.withCleared(kind.clearedField)
+        interactor.trackEvent(event: Event.deleteEntryStart(kind: kind))
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess(kind: kind))
         } catch {
+            interactor.trackEvent(event: Event.deleteEntryFail(kind: kind, error: error))
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
-        reload()
     }
+}
 
-    /// Values are converted here, once, so `displayValue` and the chart agree with the
-    /// suffix in `configuration`.
-    private func reload() {
-        let unit = interactor.lengthUnitPreference
-        entries = interactor.bodyMeasurements
-            .filter { $0.deletedAt == nil }
-            .compactMap { entry in
-                guard let value = entry[keyPath: kind.entryValue] else { return nil }
-                return BodyMeasurementDetailEntry(
-                    id: entry.id,
-                    date: entry.date,
-                    value: UnitConversion.convertLength(value, to: unit),
-                    kind: kind
-                )
+extension BodyMeasurementDetailPresenter {
+    /// One set of names for all eighteen measurements, told apart by the `measurement` parameter.
+    enum Event: LoggableEvent {
+        case onAppear(kind: BodyMeasurementKind)
+        case onDisappear(kind: BodyMeasurementKind)
+        case deleteEntryStart(kind: BodyMeasurementKind)
+        case deleteEntrySuccess(kind: BodyMeasurementKind)
+        case deleteEntryFail(kind: BodyMeasurementKind, error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:           return "BodyMeasurementDetailView_Appear"
+            case .onDisappear:        return "BodyMeasurementDetailView_Disappear"
+            case .deleteEntryStart:   return "BodyMeasurementDetailView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "BodyMeasurementDetailView_DeleteEntry_Success"
+            case .deleteEntryFail:    return "BodyMeasurementDetailView_DeleteEntry_Fail"
             }
-            .sorted { $0.date < $1.date }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let kind), .onDisappear(let kind), .deleteEntryStart(let kind), .deleteEntrySuccess(let kind):
+                return ["measurement": kind.rawValue]
+            case .deleteEntryFail(let kind, let error):
+                return error.eventParameters.merging(["measurement": kind.rawValue]) { $1 }
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteEntryFail: return .severe
+            default:               return .analytic
+            }
+        }
     }
 }
 

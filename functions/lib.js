@@ -358,7 +358,8 @@ export function buildWeeklyDigestPush(settings, { mine, circle, followingCount }
         token: settings.fcm_token,
         notification: { title: alert.title, body: alert.body },
         apns: { payload: { aps: { alert, sound: "default", "interruption-level": "passive" } } },
-        data: { tab: "dashboard", type: "weeklyDigest" },
+        // Social, not Today ("dashboard"): the digest is about the circle.
+        data: { tab: "social", type: "weeklyDigest" },
     };
 }
 
@@ -829,6 +830,35 @@ export function offProductToFood(product) {
         food[appKey] = value != null ? value * factor : null;
     }
     return food;
+}
+
+// The OFF country tag the app sent ("en:ireland"), or null for anything else. It is put into
+// the search query, so only the tag's own shape gets through.
+export function offCountryTag(value) {
+    return typeof value === "string" && /^en:[a-z]+(?:-[a-z]+)*$/.test(value) ? value : null;
+}
+
+// The `langs` the search matches names in: the app's language, then English, which most
+// products carry whatever their market. Anything that is not a two-letter code reads as English.
+export function offSearchLangs(value) {
+    const lang = typeof value === "string" && /^[a-z]{2}$/.test(value) ? value : "en";
+    return lang === "en" ? "en" : `${lang},en`;
+}
+
+// One search's results: the user's country first, then the rest of the world, each product
+// once, and only those with a calorie figure. Searching the world alone put French apple
+// turnovers first for "apple" in Ireland, and a product with no calories logs as nothing.
+export function mergeSearchHits(local, global, limit = 20) {
+    const seen = new Set();
+    const merged = [];
+    for (const food of [...local, ...global]) {
+        const key = food.code ?? food.name;
+        if (food.calories == null || seen.has(key)) continue;
+        seen.add(key);
+        merged.push(food);
+        if (merged.length === limit) break;
+    }
+    return merged;
 }
 
 export const STRAVA_TOKEN_URL = "https://www.strava.com/api/v3/oauth/token";

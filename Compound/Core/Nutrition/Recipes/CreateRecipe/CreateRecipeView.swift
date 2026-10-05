@@ -22,6 +22,8 @@ struct CreateRecipeView: View {
             foodsSection
         }
         .navigationTitle("Create Recipe")
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             toolbarContent

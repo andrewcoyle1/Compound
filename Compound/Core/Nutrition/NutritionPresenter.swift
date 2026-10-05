@@ -177,7 +177,11 @@ final class NutritionPresenter {
     /// first time; a refusal leaves the import reading nothing.
     private func importFromAppleHealth() async {
         if interactor.canRequestHealthDataAuthorisation() {
-            try? await interactor.requestHealthKitAuthorisation(for: .nutrition)
+            do {
+                try await interactor.requestHealthKitAuthorisation(for: .nutrition)
+            } catch {
+                interactor.trackEvent(event: Event.healthAuthorisationFail(error: error))
+            }
         }
         await interactor.syncNutritionFromHealthKit()
     }
@@ -235,7 +239,7 @@ final class NutritionPresenter {
     func onEditMealItem(_ item: MealItemModel, in meal: MealLogModel) {
         router.showMealItemAmountViewView(
             delegate: MealItemAmountViewDelegate(
-                mode: .editItem(item),
+                item: item,
                 onConfirm: { [weak self] updated in
                     self?.saveEditedItem(updated, in: meal)
                 }
@@ -255,6 +259,30 @@ final class NutritionPresenter {
             } catch {
                 interactor.playHaptic(option: .error)
                 router.showFailure(String(localized: "Unable to Update Food"), error: error)
+                interactor.trackEvent(event: Event.saveMealFail(error: error))
+            }
+        }
+    }
+
+    /// Logs the same foods again as a new meal at the current time, from whichever day the
+    /// original is on. Copy Day does this for a whole day; most repeats are one meal.
+    func onLogAgainPressed(_ meal: MealLogModel) {
+        guard let authorId = interactor.currentUser?.userId else { return }
+        let now = Date()
+        let copy = MealLogModel(authorId: authorId, dayKey: now.dayKey, date: now, items: meal.items, notes: meal.notes)
+        Task {
+            interactor.trackEvent(event: Event.saveMealStart)
+            do {
+                try await interactor.addMeal(copy)
+                interactor.trackEvent(event: Event.saveMealSuccess)
+                interactor.playHaptic(option: .success)
+                // From another day the copy lands out of sight, on today; say where it went.
+                if !Calendar.current.isDateInToday(selectedDate) {
+                    interactor.showAppToast(AppToast(style: .success, message: String(localized: "Logged again today.")))
+                }
+            } catch {
+                interactor.playHaptic(option: .error)
+                router.showFailure(String(localized: "Unable to Log Meal"), error: error)
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
             }
         }
@@ -305,7 +333,11 @@ final class NutritionPresenter {
             },
             onStartNew: { [weak self] in
                 Task { @MainActor in
-                    try? self?.interactor.deleteDraftMeal()
+                    do {
+                        try self?.interactor.deleteDraftMeal()
+                    } catch {
+                        self?.interactor.trackEvent(event: Event.discardDraftFail(error: error))
+                    }
                     self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
                 }
             }
@@ -375,7 +407,9 @@ extension NutritionPresenter {
         case saveMealStart
         case saveMealSuccess
         case saveMealFail(error: Error)
-        
+        case healthAuthorisationFail(error: Error)
+        case discardDraftFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear:         return "NutritionView_Appear"
@@ -383,6 +417,8 @@ extension NutritionPresenter {
             case .saveMealStart:    return "NutritionView_SaveMeal_Start"
             case .saveMealSuccess:  return "NutritionView_SaveMeal_Success"
             case .saveMealFail:     return "NutritionView_SaveMeal_Fail"
+            case .healthAuthorisationFail:  return "NutritionView_HealthAuthorisation_Fail"
+            case .discardDraftFail:         return "NutritionView_DiscardDraft_Fail"
             }
         }
         
@@ -390,7 +426,7 @@ extension NutritionPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .saveMealFail(error: let error):
+            case .saveMealFail(error: let error), .healthAuthorisationFail(error: let error), .discardDraftFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -401,6 +437,8 @@ extension NutritionPresenter {
             switch self {
             case .saveMealFail:
                 return .severe
+            case .healthAuthorisationFail, .discardDraftFail:
+                return .warning
             default:
                 return .analytic
             }

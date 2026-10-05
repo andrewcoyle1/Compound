@@ -69,6 +69,20 @@ struct FoodItemQuickAddPresenterTests {
         return screen
     }
 
+    /// Log adds the typed macros and logs the plate; a second Log after a failed save logs again
+    /// without adding them twice.
+    @Test("Test Log Adds The Macros Once And Logs Each Time")
+    func testLogAddsTheMacrosOnceAndLogsEachTime() {
+        let screen = filledScreen()
+        var logged = 0
+
+        screen.presenter.onLogPressed(delegate: screen.delegate, onLog: { logged += 1 })
+        screen.presenter.onLogPressed(delegate: screen.delegate, onLog: { logged += 1 })
+
+        #expect(screen.box.picked.count == 1)
+        #expect(logged == 2)
+    }
+
     // MARK: - Deriving the energy
 
     /// Atwater: four per gram of protein and carbohydrate, nine for fat.
@@ -266,14 +280,5 @@ struct FoodItemQuickAddPresenterTests {
         #expect(item?.nutrients[.protein] == 10)
         #expect(item?.nutrients[.carbs] == nil)
         #expect(item?.nutrients[.fatTotal] == nil)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["FoodItemQuickAddView_Appear"])
     }
 }

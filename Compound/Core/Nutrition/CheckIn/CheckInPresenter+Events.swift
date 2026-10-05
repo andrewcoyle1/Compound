@@ -18,10 +18,26 @@ extension CheckInPresenter {
         case completed(weekStart: Date)
         case dismissed(step: CheckInStep?)
         case completeFail(error: Error)
+        case completeSuccess
+        case logWeightStart
+        case logWeightSuccess
+        case logWeightFail(error: Error)
+        case saveAnswerStart(action: String)
+        case saveAnswerSuccess(action: String)
+        case saveAnswerFail(action: String, error: Error)
+        case loadMealsFail(error: Error)
 
         var eventName: String {
             switch self {
             case .completeFail: return "CheckInView_Complete_Fail"
+            case .completeSuccess:   return "CheckInView_Complete_Success"
+            case .logWeightStart:    return "CheckInView_LogWeight_Start"
+            case .logWeightSuccess:  return "CheckInView_LogWeight_Success"
+            case .logWeightFail:     return "CheckInView_LogWeight_Fail"
+            case .saveAnswerStart:   return "CheckInView_SaveAnswer_Start"
+            case .saveAnswerSuccess: return "CheckInView_SaveAnswer_Success"
+            case .saveAnswerFail:    return "CheckInView_SaveAnswer_Fail"
+            case .loadMealsFail:     return "CheckInView_LoadMeals_Fail"
             case .onAppear:         return "CheckInView_Appear"
             case .onDisappear:      return "CheckInView_Disappear"
             case .stepShown:        return "CheckInView_Step_Shown"
@@ -34,7 +50,14 @@ extension CheckInPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .completeFail(error: let error): return error.eventParameters
+            case .completeFail(error: let error), .logWeightFail(error: let error), .loadMealsFail(error: let error):
+                return error.eventParameters
+            case .completeSuccess, .logWeightStart, .logWeightSuccess:
+                return nil
+            case .saveAnswerStart(let action), .saveAnswerSuccess(let action):
+                return ["action": action]
+            case .saveAnswerFail(let action, let error):
+                return error.eventParameters.merging(["action": action]) { _, new in new }
             case .onAppear(let weekStart, let steps):
                 return [
                     "check_in_week_start": weekStart,
@@ -64,7 +87,8 @@ extension CheckInPresenter {
 
         var type: LogType {
             switch self {
-            case .completeFail: return .severe
+            case .completeFail, .logWeightFail, .saveAnswerFail: return .severe
+            case .loadMealsFail: return .warning
             default: return .analytic
             }
         }

@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol ExerciseModelDetailInteractor {
+protocol ExerciseModelDetailInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     func getPreference(templateId: String) -> ExerciseUnitPreference

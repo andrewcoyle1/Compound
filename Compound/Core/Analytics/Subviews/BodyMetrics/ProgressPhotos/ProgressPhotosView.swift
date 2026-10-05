@@ -9,11 +9,21 @@ struct ProgressPhotosView: View {
     var body: some View {
         ScrollView {
             if presenter.photos.isEmpty {
-                ContentUnavailableView(
-                    "No Progress Photos",
-                    systemImage: Symbol.camera,
-                    description: Text("Add a front, side or back photo to see how you change over time.")
-                )
+                ContentUnavailableView {
+                    Label("No Progress Photos", systemImage: Symbol.camera)
+                } description: {
+                    Text("Add a front, side or back photo to see how you change over time.")
+                } actions: {
+                    // The same choices as the + menu, so an empty screen is not a dead end.
+                    Menu {
+                        addPhotoItems
+                    } label: {
+                        Text("Add Photo")
+                            .foregroundStyle(.onAccent)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(presenter.isUploading)
+                }
                 .padding(.top, Spacing.xxl)
             } else {
                 LazyVStack(alignment: .leading, spacing: Spacing.xl) {
@@ -38,14 +48,19 @@ struct ProgressPhotosView: View {
         }
         .toolbar { toolbarContent }
         .task { await presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .photosPicker(isPresented: $presenter.isLibraryPresented, selection: $presenter.libraryItem, matching: .images)
         .onChange(of: presenter.libraryItem) {
             Task { await presenter.onLibraryItemChanged() }
         }
-        .fullScreenCover(isPresented: $presenter.isCameraPresented, onDismiss: presenter.onCameraDismissed) {
-            ProgressPhotoCameraPicker { presenter.onCameraImagePicked($0) }
-                .ignoresSafeArea()
-        }
+        .fullScreenCover(
+            isPresented: $presenter.isCameraPresented,
+            onDismiss: { Task { await presenter.onCameraDismissed() } },
+            content: {
+                ProgressPhotoCameraPicker { presenter.onCameraImagePicked($0) }
+                    .ignoresSafeArea()
+            }
+        )
         .confirmationDialog("Which pose is this?", isPresented: $presenter.isPoseDialogPresented, titleVisibility: .visible) {
             ForEach(ProgressPhotoModel.Pose.allCases, id: \.self) { pose in
                 Button(pose.title) {
@@ -87,16 +102,27 @@ struct ProgressPhotosView: View {
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button("Take Photo", systemImage: Symbol.camera) { presenter.onCameraPressed() }
-                }
-                Button("Choose from Library", systemImage: "photo.on.rectangle") { presenter.onLibraryPressed() }
+                addPhotoItems
             } label: {
                 Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add Photo")
             .disabled(presenter.isUploading)
         }
+    }
+
+    /// One camera item per pose, so the pose is known before the shutter and the photo saves
+    /// without a question afterwards. A library photo could be any pose, so that one still asks.
+    @ViewBuilder
+    private var addPhotoItems: some View {
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            Section {
+                Button("Take Front Photo", systemImage: Symbol.camera) { presenter.onCameraPressed(pose: .front) }
+                Button("Take Side Photo", systemImage: Symbol.camera) { presenter.onCameraPressed(pose: .side) }
+                Button("Take Back Photo", systemImage: Symbol.camera) { presenter.onCameraPressed(pose: .back) }
+            }
+        }
+        Button("Choose from Library", systemImage: "photo.on.rectangle") { presenter.onLibraryPressed() }
     }
 
     private func sectionView(_ section: ProgressPhotoSection) -> some View {

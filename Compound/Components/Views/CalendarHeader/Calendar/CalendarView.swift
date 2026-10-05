@@ -36,6 +36,8 @@ struct CalendarView: View {
             .toolbar {
                 toolbarContent
             }
+            .onAppear { presenter.onViewAppear() }
+            .onDisappear { presenter.onViewDisappear() }
     }
 
     private var monthsScrollView: some View {
@@ -186,9 +188,13 @@ extension CoreRouter {
 
 // MARK: - Previews
 
-/// `CalendarInteractor` is empty and `CalendarRouter` only needs an `AnyRouter`, so the sheet
-/// previews without `DevPreview`, whose container opens eighteen SwiftData stores in `init`.
-private struct PreviewCalendarInteractor: CalendarInteractor { }
+/// `CalendarInteractor` only tracks events and `CalendarRouter` only needs an `AnyRouter`, so the
+/// sheet previews without `DevPreview`, whose container opens eighteen SwiftData stores in `init`.
+@MainActor
+private struct PreviewCalendarInteractor: CalendarInteractor {
+    func trackEvent(event: LoggableEvent) { }
+    func trackScreenEvent(event: LoggableEvent) { }
+}
 
 @MainActor
 private struct PreviewCalendarRouter: CalendarRouter {

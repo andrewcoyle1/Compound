@@ -2,6 +2,8 @@ import SwiftUI
 
 struct FoodPhotoScannerDelegate {
     let onPick: (MealItemModel) -> Void
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
 }
 
 struct FoodPhotoScannerView: View {
@@ -25,9 +27,6 @@ struct FoodPhotoScannerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            presenter.onViewAppear()
-        }
         .task {
             await presenter.onCameraNeeded(isSupported: UIImagePickerController.isSourceTypeAvailable(.camera))
         }
@@ -112,11 +111,13 @@ struct FoodPhotoScannerView: View {
                 Section {
                     ForEach(presenter.analysisResults) { item in
                         FoodAnalysisResultRow(item: item) {
-                            presenter.onResultTapped(item, onPick: delegate.onPick)
+                            presenter.onResultTapped(item, onPick: delegate.onPick, onLog: delegate.onLog)
                         }
                     }
                 } header: {
-                    Text("AI Estimate")
+                    AIEstimateHeader(count: presenter.analysisResults.count, isAdded: presenter.didAddAll) {
+                        presenter.onAddAllPressed(onPick: delegate.onPick)
+                    }
                 } footer: {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }

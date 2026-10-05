@@ -11,6 +11,7 @@ import {
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
     isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
+    offCountryTag, offSearchLangs, mergeSearchHits,
     stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL,
 } from "./lib.js";
 import { genkit } from "genkit";
@@ -294,9 +295,11 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
     }
 
     const trimmed = query.trim();
+    const country = offCountryTag(request.data.country);
+    const langs = offSearchLangs(request.data.lang);
     const db = getFirestore();
-    // "v2:" skips rows cached from the old endpoint, which are empty or in the wrong units.
-    const cacheKey = `v2:${trimmed.toLowerCase().replace(/\s+/g, "_")}`;
+    // "v3:" adds the country and language; rows cached before them answered for the world.
+    const cacheKey = `v3:${country ?? "world"}:${langs}:${trimmed.toLowerCase().replace(/\s+/g, "_")}`;
     const cacheRef = db.collection("food_search_cache").doc(cacheKey);
 
     // Check cache
@@ -311,8 +314,28 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
         }
     }
 
+    // The user's country first; the world only tops it up when that is thin.
+    const local = country ? await searchOpenFoodFacts(`${trimmed} countries_tags:"${country}"`, langs) : [];
+    const global = mergeSearchHits(local, []).length < 20 ? await searchOpenFoodFacts(trimmed, langs) : [];
+    const products = mergeSearchHits(local, global);
+
+    cacheRef.set({
+        query: trimmed,
+        country,
+        langs,
+        products,
+        cachedAt: FieldValue.serverTimestamp(),
+        hitCount: 0,
+    });
+
+    console.log(`Cache MISS: "${trimmed}" [${country ?? "world"}] — ${local.length} local, ${global.length} global, kept ${products.length}`);
+    return { products };
+});
+
+async function searchOpenFoodFacts(q, langs) {
     const url = new URL(OFF_SEARCH_URL);
-    url.searchParams.set("q", trimmed);
+    url.searchParams.set("q", q);
+    url.searchParams.set("langs", langs);
     url.searchParams.set("fields", OFF_SEARCH_FIELDS);
     url.searchParams.set("page_size", "20");
 
@@ -330,18 +353,8 @@ export const foodSearch = onCall(CALLABLE_OPTIONS, async (request) => {
     }
 
     const json = await response.json();
-    const products = (json.hits ?? []).map(offProductToFood).filter(Boolean);
-
-    cacheRef.set({
-        query: trimmed,
-        products,
-        cachedAt: FieldValue.serverTimestamp(),
-        hitCount: 0,
-    });
-
-    console.log(`Cache MISS: "${trimmed}" — fetched ${products.length} from OFF`);
-    return { products };
-});
+    return (json.hits ?? []).map(offProductToFood).filter(Boolean);
+}
 
 // ---------------------------------------------------------------------------
 // FCM push for social activity (likes / comments / mentions / follows / nudges)

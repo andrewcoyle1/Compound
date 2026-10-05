@@ -1,0 +1,23 @@
+{
+  "images": [
+    {
+      "filename": "OverhandGripCableLatPulldown.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "filename": "OverhandGripCableLatPulldown@2x.png",
+      "idiom": "universal",
+      "scale": "2x"
+    },
+    {
+      "filename": "OverhandGripCableLatPulldown@3x.png",
+      "idiom": "universal",
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

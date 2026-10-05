@@ -31,6 +31,19 @@ class RecipeAmountPresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    /// A per-serving figure for the servings entered.
+    func forServings(_ perServing: Double?) -> Double? {
+        perServing.map { $0 * servings }
+    }
+
     func baseCalories(recipe: RecipeTemplateModel) -> Double? {
         NutritionScaling.perServing(recipe)[.calories]
     }
@@ -48,24 +61,44 @@ class RecipeAmountPresenter {
     }
 
     func add(recipe: RecipeTemplateModel, onConfirm: @escaping (MealItemModel) -> Void) {
-        // Per serving first, then by how many servings were eaten. Scaling the whole recipe by the
-        // servings instead logged the entire pot for every serving — a four-serving dish went in
-        // at four times what was eaten.
-        let scaledNutrients = NutritionScaling.nutrients(of: recipe)
-            .scaled(by: NutritionScaling.factor(servings: servings, of: recipe))
-        let item = MealItemModel(
-            itemId: UUID().uuidString,
-            sourceType: .recipe,
-            sourceId: recipe.recipeId,
-            displayName: recipe.name,
-            amount: servings,
-            unit: "serving",
-            resolvedGrams: nil,
-            resolvedMilliliters: nil,
-            nutrients: scaledNutrients
-        )
         interactor.playHaptic(option: .success)
-        onConfirm(item)
+        onConfirm(recipe.mealItem(servings: servings))
         router.dismissScreen()
+    }
+
+    /// Set once Log has put the recipe on the plate, so a second Log after a failed save does not
+    /// add it twice.
+    private var hasAddedForLog = false
+
+    /// Adds the recipe and logs the plate in one step; logging closes the logger, this screen
+    /// with it.
+    func log(recipe: RecipeTemplateModel, onConfirm: (MealItemModel) -> Void, onLog: () -> Void) {
+        if !hasAddedForLog {
+            hasAddedForLog = true
+            onConfirm(recipe.mealItem(servings: servings))
+        }
+        onLog()
+    }
+}
+
+extension RecipeAmountPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "RecipeAmountView_Appear"
+            case .onDisappear:  return "RecipeAmountView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
     }
 }

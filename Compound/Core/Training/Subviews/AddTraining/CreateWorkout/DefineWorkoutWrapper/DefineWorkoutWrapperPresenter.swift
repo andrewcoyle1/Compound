@@ -71,11 +71,14 @@ class DefineWorkoutWrapperPresenter {
         isSaving = true
         Task { @MainActor in
             defer { isSaving = false }
+            interactor.trackEvent(event: Event.saveWorkoutStart(isNew: existing == nil))
             do {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: workout, image: nil)
+                interactor.trackEvent(event: Event.saveWorkoutSuccess(isNew: existing == nil))
                 interactor.playHaptic(option: .success)
                 router.dismissEnvironment()
             } catch {
+                interactor.trackEvent(event: Event.saveWorkoutFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Workout"), subtitle: String(localized: "Please try again."))
             }
@@ -88,23 +91,35 @@ extension DefineWorkoutWrapperPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
-        
+        case saveWorkoutStart(isNew: Bool)
+        case saveWorkoutSuccess(isNew: Bool)
+        case saveWorkoutFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear: return "DefineWorkoutWrapperView_Appear"
             case .onDisappear: return "DefineWorkoutWrapperView_Disappear"
+            case .saveWorkoutStart: return "DefineWorkoutWrapperView_SaveWorkout_Start"
+            case .saveWorkoutSuccess: return "DefineWorkoutWrapperView_SaveWorkout_Success"
+            case .saveWorkoutFail: return "DefineWorkoutWrapperView_SaveWorkout_Fail"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
+            case .saveWorkoutStart(let isNew), .saveWorkoutSuccess(let isNew):
+                return ["is_new": isNew]
+            case .saveWorkoutFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
         }
-        
+
         var type: LogType {
             switch self {
+            case .saveWorkoutFail:
+                return .severe
             default:
                 return .analytic
             }

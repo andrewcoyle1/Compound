@@ -33,6 +33,7 @@ struct MacrocycleDetailView: View {
             .disabled(!presenter.canSave)
         }
         .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var mesocyclesSection: some View {

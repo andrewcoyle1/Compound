@@ -57,15 +57,23 @@ class IngredientAmountPresenter {
     /// Opens on the food's own portion, the one its row in the list and Quick Add describe, rather
     /// than a flat 100 g: rolled oats listed at "0.5 cup" used to open at 100 g. Once only, so
     /// coming back from the unit picker keeps what was typed.
-    func onViewAppear(ingredient: FoodModel) {
+    ///
+    /// An amount handed in — an AI estimate — wins: the portion used to overwrite it, so a 250 g
+    /// estimate opened at 100 g.
+    func onViewAppear(ingredient: FoodModel, initialAmountText: String? = nil) {
+        interactor.trackScreenEvent(event: Event.onAppear)
         guard !hasStartedFromPortion else { return }
         hasStartedFromPortion = true
-        if let portion = ingredient.portionNameCalculated,
-           let unit = ingredient.servingUnits.first(where: { $0.name == portion }) {
+        if let initialAmountText {
+            amountText = initialAmountText
+            return
+        }
+        let portion = ingredient.defaultPortion
+        if let unit = portion.unit {
             selectedUnit = unit
-            amountText = (ingredient.portionQuantityCalculated ?? 1).formatted(.number.grouping(.never))
+            amountText = portion.amount.formatted(.number.grouping(.never))
         } else {
-            amountText = NutritionScaling.rounded(ingredient.defaultPortionAmount).formatted(.number.grouping(.never))
+            amountText = NutritionScaling.rounded(portion.amount).formatted(.number.grouping(.never))
         }
     }
 
@@ -77,8 +85,49 @@ class IngredientAmountPresenter {
         router.dismissScreen()
     }
 
+    /// Set once Log has put the food on the plate, so a second Log after a failed save logs the
+    /// plate again without adding the food twice.
+    private var hasAddedForLog = false
+
+    /// Adds the food and logs the plate in one step. Logging closes the whole logger, this screen
+    /// included; popping this screen as well started a second transition in the same instant and
+    /// the system dropped the dismissal, leaving the logger open over a logged meal.
+    func log(ingredient: FoodModel, onConfirm: (MealItemModel) -> Void, onLog: () -> Void) {
+        if !hasAddedForLog {
+            hasAddedForLog = true
+            onConfirm(ingredient.mealItem(amount: amountValue, unit: selectedUnit))
+        }
+        onLog()
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func dismissScreen() {
         router.dismissScreen()
     }
 
+}
+
+extension IngredientAmountPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "IngredientAmountView_Appear"
+            case .onDisappear:  return "IngredientAmountView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
+    }
 }

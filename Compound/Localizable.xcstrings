@@ -14,56 +14,6 @@
         }
       }
     },
-    "Not Set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin definir"
-          }
-        }
-      }
-    },
-    "Set a weight goal to track your progress toward your target." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fija un objetivo de peso para seguir tu progreso hacia él."
-          }
-        }
-      }
-    },
-    "Set a weight goal to track your progress." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fija un objetivo de peso para seguir tu progreso."
-          }
-        }
-      }
-    },
-    "Set Goal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fijar objetivo"
-          }
-        }
-      }
-    },
-    "Weight Goal" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Objetivo de peso"
-          }
-        }
-      }
-    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -261,6 +211,16 @@
         }
       }
     },
+    "%@ (copy)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (copia)"
+          }
+        }
+      }
+    },
     "%@ / %@" : {
       "localizations" : {
         "es" : {
@@ -333,6 +293,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ × %2$lld"
+          }
+        }
+      }
+    },
+    "%@ a week · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a la semana · %@"
           }
         }
       }
@@ -485,6 +455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ de déficit"
+          }
+        }
+      }
+    },
+    "%@ every %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ cada %@"
           }
         }
       }
@@ -1914,10 +1894,40 @@
     },
     "%lld weeks" : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld week"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld weeks"
+                }
+              }
+            }
+          }
+        },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld semanas"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld semana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld semanas"
+                }
+              }
+            }
           }
         }
       }
@@ -3072,6 +3082,16 @@
         }
       }
     },
+    "Add All (%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir todo (%lld)"
+          }
+        }
+      }
+    },
     "Add band" : {
       "localizations" : {
         "es" : {
@@ -3223,6 +3243,7 @@
       }
     },
     "Add Ingredients" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3610,6 +3631,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade tu nombre"
+          }
+        }
+      }
+    },
+    "Added" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido"
           }
         }
       }
@@ -4727,6 +4758,16 @@
         }
       }
     },
+    "Based on how often you said you exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según la frecuencia con la que dijiste que haces ejercicio."
+          }
+        }
+      }
+    },
     "Based on lean mass, so it needs a body fat percentage to mean anything." : {
       "localizations" : {
         "es" : {
@@ -5094,6 +5135,16 @@
         }
       }
     },
+    "Both sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambos lados"
+          }
+        }
+      }
+    },
     "Both sides of the body work together at the same time." : {
       "localizations" : {
         "es" : {
@@ -5154,12 +5205,33 @@
         }
       }
     },
+    "Build My Own" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear el mío"
+          }
+        }
+      }
+    },
     "Building healthy weight takes time and dedication. Focus on nutrient-dense foods and progressive strength training. Your body will thank you for the consistent effort." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ganar peso de forma saludable requiere tiempo y dedicación. Céntrate en alimentos ricos en nutrientes y en un entrenamiento de fuerza progresivo. Tu cuerpo agradecerá el esfuerzo constante."
+          }
+        }
+      }
+    },
+    "Bust" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busto"
           }
         }
       }
@@ -5794,6 +5866,16 @@
         }
       }
     },
+    "Choose a Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un programa"
+          }
+        }
+      }
+    },
     "Choose a reason for the report." : {
       "localizations" : {
         "es" : {
@@ -5979,6 +6061,7 @@
       }
     },
     "Clear selection" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -6753,6 +6836,16 @@
         }
       }
     },
+    "Couldn't reach Open Food Facts. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo conectar con Open Food Facts. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
     "Couldn't read this label. Hold the camera steady and try again, or enter it manually." : {
       "localizations" : {
         "es" : {
@@ -7016,6 +7109,7 @@
       }
     },
     "Create Workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7234,6 +7328,16 @@
         }
       }
     },
+    "Customize" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar"
+          }
+        }
+      }
+    },
     "Customize Analytics" : {
       "localizations" : {
         "es" : {
@@ -7270,16 +7374,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personaliza cómo aparecen los alimentos en tu cronología"
-          }
-        }
-      }
-    },
-    "Customize how you change time while logging" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza cómo cambias la hora al registrar"
           }
         }
       }
@@ -7537,6 +7631,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días registrados"
+          }
+        }
+      }
+    },
+    "Days of this mesocycle. Change them by editing the mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días de este mesociclo. Cámbialos editando el mesociclo."
           }
         }
       }
@@ -8546,6 +8650,7 @@
       }
     },
     "Don't Save" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8668,6 +8773,7 @@
       }
     },
     "Each workout day can also be saved to your library, to start on its own." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8689,6 +8795,7 @@
       }
     },
     "Easily log meals, scan foods, and get AI-powered nutrition analysis. Set goals, track macros, and receive personalized recommendations to fuel your journey." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8790,6 +8897,7 @@
       }
     },
     "Edit Notes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9368,6 +9476,7 @@
       }
     },
     "Estimated Macros (per serving)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10809,6 +10918,7 @@
       }
     },
     "Goal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11226,6 +11336,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muy activo, movimiento constante, exigencia física"
+          }
+        }
+      }
+    },
+    "Hips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caderas"
           }
         }
       }
@@ -11855,6 +11976,7 @@
       }
     },
     "It's time to create a custom mesocycle." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12432,6 +12554,72 @@
         }
       }
     },
+    "Left Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps izquierdo"
+          }
+        }
+      }
+    },
+    "Left Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla izquierda"
+          }
+        }
+      }
+    },
+    "Left Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca izquierda"
+          }
+        }
+      }
+    },
     "Legal" : {
       "localizations" : {
         "es" : {
@@ -12755,6 +12943,16 @@
         }
       }
     },
+    "Log Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar de nuevo"
+          }
+        }
+      }
+    },
     "Log body metrics" : {
       "localizations" : {
         "es" : {
@@ -12817,6 +13015,16 @@
         }
       }
     },
+    "Log Meal Again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar comida de nuevo"
+          }
+        }
+      }
+    },
     "Log Measurement" : {
       "localizations" : {
         "es" : {
@@ -12860,6 +13068,7 @@
       }
     },
     "Log your strength and cardio sessions, follow expert routines, and visualize your progress over time. Stay motivated with streaks and personal bests." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12881,6 +13090,7 @@
       }
     },
     "Log your weight over time and visualize your progress with interactive charts. Set goals, monitor trends, and stay accountable on your fitness journey." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12896,6 +13106,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrado"
+          }
+        }
+      }
+    },
+    "Logged again today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrado de nuevo hoy."
           }
         }
       }
@@ -12956,6 +13176,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pausa en el registro"
+          }
+        }
+      }
+    },
+    "Logs each side as its own set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra cada lado como su propia serie"
           }
         }
       }
@@ -13263,6 +13493,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marca la serie actual como completada e inicia el descanso"
+          }
+        }
+      }
+    },
+    "Marks the rest day not taken" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desmarca el día de descanso"
+          }
+        }
+      }
+    },
+    "Marks the rest day taken" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca el día de descanso como hecho"
           }
         }
       }
@@ -13834,6 +14084,7 @@
       }
     },
     "Monitor Your Nutrition" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13879,6 +14130,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Más acciones"
+          }
+        }
+      }
+    },
+    "More Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más programas"
           }
         }
       }
@@ -13971,6 +14232,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mis programas"
+          }
+        }
+      }
+    },
+    "My Recipes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mis recetas"
           }
         }
       }
@@ -14782,6 +15053,7 @@
       }
     },
     "No shortcuts. The Search tab will show only recent searches until you add one." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15095,6 +15367,16 @@
       }
     },
     "Not set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin definir"
+          }
+        }
+      }
+    },
+    "Not Set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15677,6 +15959,7 @@
       }
     },
     "On the Search Tab" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15842,6 +16125,16 @@
         }
       }
     },
+    "Opens your weight history" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tu historial de peso"
+          }
+        }
+      }
+    },
     "Optimisation" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15855,26 +16148,6 @@
     },
     "Optimise for speed" : {
       "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimizar para velocidad"
-          }
-        }
-      }
-    },
-    "Optimization" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimización"
-          }
-        }
-      }
-    },
-    "Optimize for speed" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17041,6 +17314,16 @@
         }
       }
     },
+    "Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programas"
+          }
+        }
+      }
+    },
     "Progress" : {
       "localizations" : {
         "es" : {
@@ -17317,6 +17600,7 @@
       }
     },
     "Ready to Begin?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17337,6 +17621,7 @@
       }
     },
     "Ready to Set a Goal?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17446,6 +17731,16 @@
         }
       }
     },
+    "Recommended for You" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recomendado para ti"
+          }
+        }
+      }
+    },
     "Record today's body weight." : {
       "localizations" : {
         "es" : {
@@ -17482,16 +17777,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rojo"
-          }
-        }
-      }
-    },
-    "Reference Scope" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ámbito de referencia"
           }
         }
       }
@@ -18224,6 +18509,7 @@
       }
     },
     "Restore Defaults" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18407,6 +18693,72 @@
         }
       }
     },
+    "Right Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo derecho"
+          }
+        }
+      }
+    },
+    "Right Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps derecho"
+          }
+        }
+      }
+    },
+    "Right Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla derecha"
+          }
+        }
+      }
+    },
+    "Right Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo derecho"
+          }
+        }
+      }
+    },
+    "Right Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo derecho"
+          }
+        }
+      }
+    },
+    "Right Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca derecha"
+          }
+        }
+      }
+    },
     "RIR" : {
       "localizations" : {
         "es" : {
@@ -18555,6 +18907,16 @@
         }
       }
     },
+    "Save a Copy to Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar una copia en entrenamientos"
+          }
+        }
+      }
+    },
     "Save Account" : {
       "localizations" : {
         "es" : {
@@ -18627,6 +18989,7 @@
       }
     },
     "Save Templates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18658,6 +19021,7 @@
       }
     },
     "Save Workout Templates?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19015,6 +19379,7 @@
       }
     },
     "Select one or more ingredients to add" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19373,6 +19738,26 @@
         }
       }
     },
+    "Set a weight goal to track your progress toward your target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso hacia él."
+          }
+        }
+      }
+    },
+    "Set a weight goal to track your progress." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fija un objetivo de peso para seguir tu progreso."
+          }
+        }
+      }
+    },
     "Set completed" : {
       "localizations" : {
         "es" : {
@@ -19389,6 +19774,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meta"
+          }
+        }
+      }
+    },
+    "Set Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fijar objetivo"
           }
         }
       }
@@ -19595,11 +19990,23 @@
       }
     },
     "Shortcuts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accesos directos"
+          }
+        }
+      }
+    },
+    "Shoulders" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombros"
           }
         }
       }
@@ -19927,6 +20334,7 @@
       }
     },
     "Siri & Shortcuts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20147,6 +20555,26 @@
         }
       }
     },
+    "Split L/R" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar I/D"
+          }
+        }
+      }
+    },
+    "Split left and right" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar izquierda y derecha"
+          }
+        }
+      }
+    },
     "Square" : {
       "localizations" : {
         "es" : {
@@ -20254,6 +20682,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "INICIO"
+          }
+        }
+      }
+    },
+    "Start %@ Instead" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar %@ en su lugar"
           }
         }
       }
@@ -20430,6 +20868,16 @@
         }
       }
     },
+    "Start with a ready-made mesocycle, or build your own." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza con un mesociclo ya preparado o crea el tuyo."
+          }
+        }
+      }
+    },
     "Start Workout" : {
       "localizations" : {
         "es" : {
@@ -20585,6 +21033,16 @@
         }
       }
     },
+    "Strava did not accept the upload (%lld)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava no aceptó la subida (%lld)."
+          }
+        }
+      }
+    },
     "Strava Didn't Respond" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -20612,16 +21070,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recordatorio de racha"
-          }
-        }
-      }
-    },
-    "Strava did not accept the upload (%lld)." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strava no aceptó la subida (%lld)."
           }
         }
       }
@@ -20850,6 +21298,26 @@
         }
       }
     },
+    "Take Back Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de espalda"
+          }
+        }
+      }
+    },
+    "Take Front Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de frente"
+          }
+        }
+      }
+    },
     "Take photo" : {
       "localizations" : {
         "es" : {
@@ -20861,11 +21329,22 @@
       }
     },
     "Take Photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hacer foto"
+          }
+        }
+      }
+    },
+    "Take Side Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de perfil"
           }
         }
       }
@@ -21218,6 +21697,7 @@
       }
     },
     "The Basics" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21758,16 +22238,6 @@
         }
       }
     },
-    "Time Selection" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selección de hora"
-          }
-        }
-      }
-    },
     "Time to get back to your workout!" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -22207,6 +22677,7 @@
       }
     },
     "Track Your Weight" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22217,6 +22688,7 @@
       }
     },
     "Track Your Workouts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22379,6 +22851,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenar es más fácil con alguien que te mantenga en el camino."
+          }
+        }
+      }
+    },
+    "Trains today and marks the rest day skipped" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenas hoy y el día de descanso queda omitido"
           }
         }
       }
@@ -23162,6 +23644,16 @@
         }
       }
     },
+    "Unable to Log Meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo registrar la comida"
+          }
+        }
+      }
+    },
     "Unable to Log Set" : {
       "localizations" : {
         "es" : {
@@ -23403,6 +23895,7 @@
       }
     },
     "Unable to Save Templates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23622,6 +24115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo actualizar el alimento"
+          }
+        }
+      }
+    },
+    "Unable to Update Rest Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar el día de descanso"
           }
         }
       }
@@ -24002,6 +24505,16 @@
         }
       }
     },
+    "Use Recommended Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar plan recomendado"
+          }
+        }
+      }
+    },
     "Use Rest Timers" : {
       "localizations" : {
         "es" : {
@@ -24028,6 +24541,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar temporizadores de descanso al pasar de un ejercicio a otro"
+          }
+        }
+      }
+    },
+    "Use the recommended plan, or answer a few questions to customize it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el plan recomendado o responde unas preguntas para personalizarlo."
           }
         }
       }
@@ -24415,6 +24938,17 @@
         }
       }
     },
+    "Waist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cintura"
+          }
+        }
+      }
+    },
     "Waist to Height" : {
       "localizations" : {
         "es" : {
@@ -24648,6 +25182,7 @@
       }
     },
     "We'll start with a few questions to get you started." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -24847,6 +25382,16 @@
         }
       }
     },
+    "Weight Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de peso"
+          }
+        }
+      }
+    },
     "Weight in %@. %@. %@" : {
       "localizations" : {
         "es" : {
@@ -24920,6 +25465,7 @@
       }
     },
     "Weight Tracking" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25010,6 +25556,7 @@
       }
     },
     "Welcome to Compound." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25247,6 +25794,7 @@
       }
     },
     "Why Compound?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25819,6 +26367,7 @@
       }
     },
     "You will create a new workout for your library." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

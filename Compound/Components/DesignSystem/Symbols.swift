@@ -42,6 +42,8 @@ enum Symbol {
     static let restDay = "bed.double"
     static let warmup = "thermometer.sun"
     static let superset = "link"
+    /// Logging each side of a one-limb exercise as its own row.
+    static let splitSides = "rectangle.split.2x1"
     static let personalRecord = "trophy.fill"
     static let mesocycle = "list.bullet.clipboard"
     /// A macrocycle: mesocycles run one after another.
@@ -104,6 +106,7 @@ enum Symbol {
     /// A menu that picks one of several, such as which microcycle of a mesocycle to show.
     static let choose = "chevron.up.chevron.down"
     static let repeatMacrocycle = "arrow.counterclockwise"
+    static let logAgain = "arrow.counterclockwise"
 
     // Status
     static let info = "info.circle"

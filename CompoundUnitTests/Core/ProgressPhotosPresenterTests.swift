@@ -146,17 +146,35 @@ struct ProgressPhotosPresenterTests {
         #expect(screen.presenter.photos.isEmpty)
     }
 
-    @Test("Test The Camera Asks For The Pose Only Once Its Cover Has Gone")
-    func testCameraAsksForPoseAfterDismiss() async {
+    /// The camera is opened for a pose, so its photo saves once the cover has gone, with no
+    /// question about which pose it is.
+    @Test("Test A Camera Photo Saves With The Pose Chosen Before The Shutter")
+    func testCameraPhotoSavesWithChosenPose() async {
         let screen = await makeScreen()
 
-        screen.presenter.onCameraDismissed()
-        #expect(!screen.presenter.isPoseDialogPresented, "cancelled camera asks nothing")
-
+        screen.presenter.onCameraPressed(pose: .back)
+        #expect(screen.presenter.isCameraPresented)
         screen.presenter.onCameraImagePicked(image)
+        #expect(await screen.service.uploads.isEmpty, "nothing uploads while the cover is still up")
+        await screen.presenter.onCameraDismissed()
+
         #expect(!screen.presenter.isPoseDialogPresented)
-        screen.presenter.onCameraDismissed()
-        #expect(screen.presenter.isPoseDialogPresented)
+        #expect(screen.presenter.pendingImage == nil)
+        #expect(await screen.service.uploads.count == 1)
+        let saved = await TestManagers.eventually { screen.presenter.photos.first?.pose == .back }
+        #expect(saved)
+    }
+
+    @Test("Test A Cancelled Camera Saves And Asks Nothing")
+    func testCancelledCameraSavesNothing() async {
+        let screen = await makeScreen()
+
+        screen.presenter.onCameraPressed(pose: .front)
+        await screen.presenter.onCameraDismissed()
+
+        #expect(!screen.presenter.isPoseDialogPresented)
+        #expect(await screen.service.uploads.isEmpty)
+        #expect(screen.presenter.cameraPose == nil)
     }
 
     // MARK: Delete

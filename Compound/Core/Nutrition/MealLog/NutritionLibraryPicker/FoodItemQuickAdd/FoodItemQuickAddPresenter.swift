@@ -57,14 +57,6 @@ class FoodItemQuickAddPresenter {
 
     private static let kilojoulesPerKilocalorie: Double = 4.184
 
-    func onViewAppear(delegate: FoodItemQuickAddDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-    }
-
-    func onViewDisappear(delegate: FoodItemQuickAddDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
-    }
-
     /// Adds the typed macros to the plate being built, leaving the user in the picker's parent to
     /// keep adding. This is the same hand-back every other picker mode performs.
     func onQuickAddPressed(delegate: FoodItemQuickAddDelegate) {
@@ -73,6 +65,21 @@ class FoodItemQuickAddPresenter {
         interactor.playHaptic(option: .success)
         delegate.onPick(quickAddItem())
         router.dismissScreen()
+    }
+
+    /// Set once Log has put the item on the plate, so a second Log after a failed save does not
+    /// add it twice.
+    private var hasAddedForLog = false
+
+    /// Adds the typed macros and logs the plate; logging closes the logger with the picker in it.
+    func onLogPressed(delegate: FoodItemQuickAddDelegate, onLog: () -> Void) {
+        guard canSubmit else { return }
+        if !hasAddedForLog {
+            hasAddedForLog = true
+            interactor.trackEvent(event: Event.onQuickAdd(name: trimmedName))
+            delegate.onPick(quickAddItem())
+        }
+        onLog()
     }
 
     private var trimmedName: String {
@@ -115,22 +122,16 @@ class FoodItemQuickAddPresenter {
 extension FoodItemQuickAddPresenter {
     
     enum Event: LoggableEvent {
-        case onAppear(delegate: FoodItemQuickAddDelegate)
-        case onDisappear(delegate: FoodItemQuickAddDelegate)
         case onQuickAdd(name: String)
 
         var eventName: String {
             switch self {
-            case .onAppear:                 return "FoodItemQuickAddView_Appear"
-            case .onDisappear:              return "FoodItemQuickAddView_Disappear"
             case .onQuickAdd:               return "FoodItemQuickAddView_QuickAdd"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
-                return delegate.eventParameters
             case .onQuickAdd(name: let name):
                 return ["food_name": name]
             }

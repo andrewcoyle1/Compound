@@ -127,6 +127,6 @@ struct ProgressionPlanner {
     private static func completedWorkingSets(of exercise: WorkoutExerciseModel) -> [WorkoutSetModel] {
         exercise.sets
             .filter { !$0.isWarmup && $0.completedAt != nil }
-            .filter { $0.side == nil || $0.side == .left }
+            .filter { $0.side != .right }
     }
 }

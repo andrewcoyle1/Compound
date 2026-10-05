@@ -79,11 +79,14 @@ class FoodDetailPresenter {
     /// `onDismiss` is the router's dismiss in the app; a parameter so a test can see it happen.
     func deleteFood(_ food: FoodModel, onDismiss: @escaping () -> Void) async {
         isDeleting = true
+        interactor.trackEvent(event: Event.deleteStart)
         do {
             try await interactor.deleteFood(ingredientId: food.id)
+            interactor.trackEvent(event: Event.deleteSuccess)
             onDismiss()
         } catch {
             isDeleting = false
+            interactor.trackEvent(event: Event.deleteFail(error: error))
             router.showSimpleAlert(title: String(localized: "Failed to delete food"), subtitle: String(localized: "Please try again later"))
         }
     }
@@ -94,6 +97,9 @@ class FoodDetailPresenter {
         case favouriteIngredientStart
         case favouriteIngredientSuccess
         case favouriteIngredientFail(error: Error)
+        case deleteStart
+        case deleteSuccess
+        case deleteFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -102,12 +108,15 @@ class FoodDetailPresenter {
             case .favouriteIngredientStart:     return "FoodDetailView_Favourite_Start"
             case .favouriteIngredientSuccess:   return "FoodDetailView_Favourite_Success"
             case .favouriteIngredientFail:      return "FoodDetailView_Favourite_Fail"
+            case .deleteStart:                  return "FoodDetailView_Delete_Start"
+            case .deleteSuccess:                return "FoodDetailView_Delete_Success"
+            case .deleteFail:                   return "FoodDetailView_Delete_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .favouriteIngredientFail(error: let error):
+            case .favouriteIngredientFail(error: let error), .deleteFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -116,7 +125,7 @@ class FoodDetailPresenter {
 
         var type: LogType {
             switch self {
-            case .favouriteIngredientFail:
+            case .favouriteIngredientFail, .deleteFail:
                 return .severe
             default:
                 return .analytic

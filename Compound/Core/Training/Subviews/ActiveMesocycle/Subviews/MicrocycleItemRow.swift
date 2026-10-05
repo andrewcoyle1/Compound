@@ -14,17 +14,11 @@ struct MicrocycleItemRow: View {
     var body: some View {
         HStack {
             // Full contrast: a finished day still opens its session, and the checkmark says it is done.
-            WorkoutTemplateRow(workoutTemplate: item.workoutTemplate)
+            WorkoutTemplateRow(workoutTemplate: item.workoutTemplate, badge: badge)
             Spacer()
-            if item.isToday {
-                Chip("Today")
-            }
-            if item.isBeforeStart {
-                Chip("Not tracked")
-            }
-            // A checkmark when done, the skip symbol when skipped. Otherwise a chevron, because the
-            // row opens the workout: the empty circle it used to show is `ListRow`'s unchecked option.
-            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : (item.isSkipped ? Symbol.skip : "chevron.forward"))
+            // The same circle on every day, filled when done. Tapping a rest day ticks it; tapping a
+            // workout opens it, and only finishing it ticks it, so a workout is never done unlogged.
+            Image(systemName: item.isCompleted ? Symbol.success : (item.isSkipped ? Symbol.skip : "circle"))
                 .iconSize(.small)
                 .foregroundStyle(item.isCompleted ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                 .accessibilityHidden(true)
@@ -32,6 +26,13 @@ struct MicrocycleItemRow: View {
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
         .accessibilityValue(accessibilityValue)
+        .accessibilityHint(item.canToggleRest ? Text(item.isCompleted ? "Marks the rest day not taken" : "Marks the rest day taken") : Text(verbatim: ""))
+    }
+
+    private var badge: LocalizedStringKey? {
+        if item.isToday { return "Today" }
+        if item.isBeforeStart { return "Not tracked" }
+        return nil
     }
 
     private var accessibilityValue: Text {

@@ -30,6 +30,14 @@ class CalorieFloorPresenter {
         prefillCalorieFloor()
     }
 
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
+    }
+
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
+    }
+
     /// `loadTrainingContext()` used to be called here and was empty, so `prefillCalorieFloor` — which
     /// it was the only caller of — never ran and the screen opened with nothing selected. Its two
     /// properties, `trainingDaysPerWeek` and `hasMesocycle`, were written by nothing and read by
@@ -37,6 +45,12 @@ class CalorieFloorPresenter {
     /// So this is what it did, minus the parameter that changed nothing.
     private func prefillCalorieFloor() {
         guard selectedFloor == nil else { return }
+        // Rebuilding a plan opens on the floor it was built with.
+        if let current = interactor.currentDietPlan.flatMap({ CalorieFloor(rawValue: $0.calorieFloor) }) {
+            selectedFloor = current
+            interactor.trackEvent(event: Event.calorieFloorPrefilled(floor: current, reason: "current_plan"))
+            return
+        }
         selectedFloor = .standard
         interactor.trackEvent(event: Event.calorieFloorPrefilled(floor: .standard, reason: "default"))
     }
@@ -50,11 +64,17 @@ class CalorieFloorPresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case calorieFloorPrefilled(floor: CalorieFloor, reason: String)
         case navigate(skipReason: String? = nil)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "CalorieFloorView_Appear"
+            case .onDisappear: return "CalorieFloorView_Disappear"
             case .calorieFloorPrefilled: return "Onboarding_CalFloor_Prefilled"
             case .navigate: return "Onboarding_CalFloor_Navigate"
             }
@@ -62,6 +82,8 @@ class CalorieFloorPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .calorieFloorPrefilled(floor: let floor, reason: let reason):
                 return ["floor": floor.rawValue, "reason": reason]
             case .navigate(skipReason: let skipReason):
@@ -75,6 +97,8 @@ class CalorieFloorPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate, .calorieFloorPrefilled:
                 return .info
             }

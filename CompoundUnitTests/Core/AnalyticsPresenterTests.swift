@@ -625,4 +625,32 @@ extension AnalyticsPresenterTests {
         #expect(screen.presenter.muscleGroupCards.map(\.muscle) == [.upperBack, .chest])
         #expect(screen.presenter.muscleGroupCards.map(\.totalSets) == [3, 1])
     }
+
+    // MARK: - + menu
+
+    /// Each measurement in the + menu opens its own logger, and the menu offers all eighteen once.
+    /// It used to open Body Metrics, three taps short of the logger.
+    @Test("Test Log Measurement Opens That Measurement's Logger")
+    func testLogMeasurementOpensThatMeasurementsLogger() {
+        let screen = makeScreen()
+
+        screen.presenter.onLogMeasurementPressed(kind: .leftCalf)
+
+        #expect(screen.router.shown == ["logMeasurement-leftCalf"])
+        let kinds = screen.presenter.measurementMenuSections.flatMap(\.kinds)
+        #expect(kinds.count == BodyMeasurementKind.allCases.count)
+        #expect(Set(kinds) == Set(BodyMeasurementKind.allCases))
+    }
+
+    /// A weigh-in that syncs after the tab first loaded is counted without a reload.
+    @Test("Test A New Weigh-In Is Counted Without A Reload")
+    func testANewWeighInIsCountedWithoutAReload() {
+        let screen = makeScreen()
+        #expect(screen.presenter.weighInCountThisWeek == 0)
+
+        screen.interactor.bodyMeasurements = [weighIn(id: "today", daysAgo: 0, weightKg: 72)]
+
+        #expect(screen.presenter.weighInCountThisWeek == 1)
+        #expect(screen.presenter.weighInContributionData.last == 1.0)
+    }
 }

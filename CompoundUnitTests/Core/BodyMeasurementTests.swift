@@ -444,6 +444,18 @@ struct BodyMeasurementDetailPresenterTests {
         #expect(screen.presenter.entries.first?.value == 80)
     }
 
+    /// A reading logged from this screen's Add appears while it is still open. The rows used to
+    /// be filled once on appearance, so the new reading stayed hidden until the screen reopened.
+    @Test("Test A Reading Logged While Open Appears")
+    func testAReadingLoggedWhileOpenAppears() async {
+        let screen = makeScreen(kind: .waist, measurements: [entry(id: "first", kind: .waist, centimetres: 80, daysAgo: 2)])
+        await screen.presenter.onAppear()
+
+        screen.interactor.bodyMeasurements.append(entry(id: "logged", kind: .waist, centimetres: 79, daysAgo: 0))
+
+        #expect(screen.presenter.entries.map(\.id) == ["first", "logged"])
+    }
+
     /// Rows run oldest to newest so the chart reads left to right.
     @Test("Test Entries Are Ordered Oldest First")
     func testEntriesAreOrderedOldestFirst() async {

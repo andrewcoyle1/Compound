@@ -89,8 +89,14 @@ class EnergyBalancePresenter {
         let startDayKey = startDate.dayKey
         let endDayKey = startOfToday.dayKey
 
-        // Silent: local read for a chart; no data draws an empty chart.
-        let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
+        // Local read for a chart; no data draws an empty chart, so a failure is logged but not shown.
+        let totalsData: [(dayKey: String, totals: DailyMacroTarget)]
+        do {
+            totalsData = try interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)
+        } catch {
+            interactor.trackEvent(event: Event.loadFail(error: error))
+            totalsData = []
+        }
 
         var entries: [EnergyBalanceEntry] = []
         var expenditureData: [TimeSeriesDatapoint] = []
@@ -152,6 +158,14 @@ extension EnergyBalancePresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         loadData()
     }
@@ -160,4 +174,36 @@ extension EnergyBalancePresenter: @MainActor MetricDetailPresenter {
         onAddMealPressed()
     }
 
+}
+
+extension EnergyBalancePresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case loadFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "EnergyBalanceView_Appear"
+            case .onDisappear: return "EnergyBalanceView_Disappear"
+            case .loadFail: return "EnergyBalanceView_Load_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .loadFail: return .warning
+            default: return .analytic
+            }
+        }
+    }
 }

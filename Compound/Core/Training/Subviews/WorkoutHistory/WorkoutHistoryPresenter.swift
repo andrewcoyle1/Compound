@@ -21,20 +21,14 @@ class WorkoutHistoryPresenter {
     
     var selectedSession: WorkoutSessionModel?
 
-    /// The list is headed "Completed Workouts", so only finished ones belong in it.
+    /// The list is headed "Completed Workouts", so only finished workouts belong in it.
     ///
     /// `interactor.workoutSessions` is everything the sync engine holds, which includes the
     /// workout currently in progress (started sessions are saved straight away, with no
-    /// `endedAt`) and the rest days the mesocycle pre-creates for days that have not arrived yet.
-    /// Both were being listed and counted as history.
+    /// `endedAt`) and rest days, which are sessions only so the mesocycle can count them done.
     var workoutSessions: [WorkoutSessionModel] {
-        let now = Date()
-        return interactor.workoutSessions
-            .filter { session in
-                guard session.endedAt != nil else { return false }
-                if session.isRestDay { return session.dateCreated <= now }
-                return true
-            }
+        interactor.workoutSessions
+            .filter { $0.endedAt != nil && !$0.isRestDay }
             .sorted { ($0.dateCreated) > ($1.dateCreated) }
     }
     

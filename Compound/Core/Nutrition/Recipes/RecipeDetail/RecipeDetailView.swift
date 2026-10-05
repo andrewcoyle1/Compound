@@ -43,6 +43,9 @@ struct RecipeDetailView: View {
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
     
     private func imageSection(url: String) -> some View {

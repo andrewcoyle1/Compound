@@ -77,6 +77,9 @@ struct SharedItemView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 }
 

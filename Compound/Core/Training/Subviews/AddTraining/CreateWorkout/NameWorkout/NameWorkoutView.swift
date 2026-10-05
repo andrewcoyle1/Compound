@@ -18,10 +18,17 @@ struct NameWorkoutView: View {
 
     var delegate: NameWorkoutDelegate
 
+    @FocusState private var isNameFocused: Bool
+
     var body: some View {
         Form {
             Section {
                 TextField("Enter workout name", text: $presenter.workoutName)
+                    .focused($isNameFocused)
+                    .submitLabel(.continue)
+                    .onSubmit {
+                        presenter.onNameSubmitted(delegate: delegate)
+                    }
                     .accessibilityIdentifier("NameWorkout.name")
             } header: {
                 Text("Workout Name")
@@ -30,15 +37,19 @@ struct NameWorkoutView: View {
         .navigationTitle(delegate.workoutTemplate == nil ? String(localized: "Name Workout") : String(localized: "Edit Workout"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Editing opens straight onto this screen, so it needs the close the splash normally has.
-            if delegate.workoutTemplate != nil {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) {
-                        presenter.onClosePressed()
-                    }
+            // The wizard opens on this screen, so it carries the cover's close.
+            ToolbarItem(placement: .cancellationAction) {
+                Button(role: .close) {
+                    presenter.onClosePressed()
                 }
             }
         }
+        .onAppear {
+            presenter.onViewAppear()
+            // A new workout's first job is its name, so the keyboard is already up.
+            if delegate.workoutTemplate == nil { isNameFocused = true }
+        }
+        .onDisappear { presenter.onViewDisappear() }
         .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(delegate: delegate)
@@ -62,14 +73,6 @@ extension CoreBuilder {
             ),
             delegate: delegate
         )
-    }
-}
-
-extension CoreRouter {
-    func showNameWorkoutView(delegate: NameWorkoutDelegate) {
-        router.showScreen(.push) { router in
-            builder.nameWorkoutView(router: router, delegate: delegate)
-        }
     }
 }
 

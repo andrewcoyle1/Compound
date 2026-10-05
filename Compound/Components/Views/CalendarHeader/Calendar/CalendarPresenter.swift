@@ -54,6 +54,14 @@ class CalendarPresenter {
         self.months = buildMonths()
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// The month the sheet opens on.
     var initialMonth: Date {
         monthStart(for: selectedDate)
@@ -115,5 +123,23 @@ class CalendarPresenter {
             title: start.formatted(.dateTime.year().month(.wide)),
             days: days
         )
+    }
+}
+
+extension CalendarPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "CalendarView_Appear"
+            case .onDisappear:  return "CalendarView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
     }
 }

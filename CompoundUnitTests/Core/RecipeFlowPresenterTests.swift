@@ -87,6 +87,30 @@ struct RecipeAmountPresenterTests {
         #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
+    /// Log adds the recipe and logs the plate. A second Log, after a failed save, does not add it
+    /// twice.
+    @Test("Test Log Adds The Recipe Once And Logs Each Time")
+    func testLogAddsTheRecipeOnceAndLogsEachTime() {
+        let presenter = presenter()
+        var added = 0
+        var logged = 0
+
+        presenter.log(recipe: recipe(servings: 4), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+        presenter.log(recipe: recipe(servings: 4), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+
+        #expect(added == 1)
+        #expect(logged == 2)
+    }
+
+    /// The figures follow the servings entered, so they confirm the amount being logged.
+    @Test("Test The Preview Follows The Servings Entered")
+    func testThePreviewFollowsTheServingsEntered() {
+        let presenter = presenter()
+        presenter.servingsText = "2"
+
+        #expect(presenter.forServings(presenter.baseCalories(recipe: recipe(servings: 4))) == 300)
+    }
+
     @Test("Test Logging Two Servings Logs Twice As Much")
     func testLoggingTwoServingsLogsTwiceAsMuch() {
         let presenter = presenter()
@@ -563,38 +587,6 @@ struct RecipeDetailPresenterTests {
 
         #expect(interactor.trackedScreenEventNames == ["RecipesView_Appear"])
     }
-
-    /// The embedded recipe picker logged "RecipesView_Appear" too, so the Recipes tab's screen-view
-    /// count was the two screens added together. It is tracked under its own name now.
-    @Test("Test The Embedded Recipe Picker Is Tracked Under Its Own Name")
-    func testTheEmbeddedRecipePickerIsTrackedUnderItsOwnName() {
-        let interactor = ListBuilderInteractor()
-        let presenter = RecipeListBuilderPresenter(interactor: interactor, router: ListBuilderRouter())
-
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-
-        #expect(interactor.trackedScreenEventNames == ["RecipeListBuilderView_Appear"])
-        #expect(interactor.trackedEventNames == ["RecipeListBuilderView_Disappear"])
-    }
-}
-
-/// The recipe picker embedded in the food library, which is a different screen from the Recipes tab
-/// even though the two used to share an event name.
-@MainActor
-private final class ListBuilderInteractor: SpyGlobalInteractor, RecipeListBuilderInteractor {
-    var currentUser: UserModel? = UserModel(userId: "user-1")
-    var userRecipeTemplates: [RecipeTemplateModel] = []
-    var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
-}
-
-@MainActor
-private final class ListBuilderRouter: RecipeListBuilderRouter {
-    let router: AnyRouter = TestRouting.anyRouter
-
-    func showRecipeDetailView(delegate: RecipeDetailDelegate) { }
-    func showCreateRecipeView() { }
-    func showRecipeAmountView(delegate: RecipeAmountDelegate) { }
 }
 
 /// A food's own screen: its figures, and whether it is a favourite.

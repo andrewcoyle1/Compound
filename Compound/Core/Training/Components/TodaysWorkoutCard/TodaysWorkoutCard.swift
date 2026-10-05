@@ -28,6 +28,10 @@ struct TodaysWorkoutCard: View {
                 }
             }
         }
+        // Again whenever today's workout changes: after a finish, a skip or a new block.
+        .task(id: presenter.todaysWorkoutTemplate?.id) {
+            await presenter.loadTargets()
+        }
     }
     
     private var restDayCard: some View {
@@ -47,13 +51,27 @@ struct TodaysWorkoutCard: View {
         }
     }
     
+    /// The session's summary once it has synced; the plain card until then.
+    @ViewBuilder
     private var workoutCompleted: some View {
-        WorkoutCompletedCard(template: delegate.todaysWorkoutTemplate)
+        if let summary = presenter.completedSummary {
+            WorkoutSummaryCard(title: delegate.todaysWorkoutTemplate.name, summary: summary)
+                .anyButton(.press) {
+                    presenter.onCompletedSessionPressed()
+                }
+                .accessibilityHint("Opens today's workout")
+        } else {
+            WorkoutCompletedCard(template: delegate.todaysWorkoutTemplate)
+        }
     }
-    
+
     private var startWorkoutCard: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            TodaysWorkoutCardLabel(template: delegate.todaysWorkoutTemplate)
+            TodaysWorkoutCardLabel(
+                template: delegate.todaysWorkoutTemplate,
+                subtitle: presenter.startSubtitle,
+                targets: presenter.targets
+            )
                 .anyButton(.press) {
                     presenter.onTodaysWorkoutPressed()
                 }

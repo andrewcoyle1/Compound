@@ -265,6 +265,17 @@ struct CoreInteractor: GlobalInteractor {
     }
     
     func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+        let session = try await plannedSession(for: template, in: mesocycleId)
+        try self.updateActiveSession(session)
+        #if !targetEnvironment(macCatalyst)
+        hkWorkoutManager.startWorkout(workout: session)
+        ensureLiveActivity(session: session)
+        #endif
+    }
+
+    /// The session starting `template` would begin, prefilled as the tracker prefills it, without
+    /// starting anything. Today's card reads its targets from this, so they are the tracker's own.
+    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel {
         guard let userId = self.userId else { throw CoreError.noCurrentUser }
         var unitPreferences: [String: ExerciseUnitPreference] = [:]
         for exerciseModel in template.exercises {
@@ -279,7 +290,7 @@ struct CoreInteractor: GlobalInteractor {
             unitPreferences: unitPreferences
         )
 
-        let session = WorkoutSessionModel(
+        return WorkoutSessionModel(
             authorId: userId,
             template: template,
             notes: nil,
@@ -288,12 +299,6 @@ struct CoreInteractor: GlobalInteractor {
             unitPreferences: unitPreferences,
             prefill: prefill
         )
-        
-        try self.updateActiveSession(session)
-        #if !targetEnvironment(macCatalyst)
-        hkWorkoutManager.startWorkout(workout: session)
-        ensureLiveActivity(session: session)
-        #endif
     }
     
     /// A session with no template and no exercises; the tracker adds exercises as it goes.

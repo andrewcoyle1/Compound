@@ -457,6 +457,31 @@ struct WorkoutSessionDetailPresenterTests {
         #expect(workout.value.exercises.map(\.index) == [1, 2])
     }
 
+    @Test("Test An Exercise Note Is Saved Trimmed And Cleared When Empty")
+    func testAnExerciseNoteIsSavedTrimmedAndClearedWhenEmpty() {
+        let screen = makeScreen()
+        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])]))
+
+        screen.presenter.updateExerciseNotes(session: workout.binding, "  Felt heavy  ", exerciseId: "e1")
+        #expect(workout.value.exercises[0].notes == "Felt heavy")
+
+        screen.presenter.updateExerciseNotes(session: workout.binding, "   ", exerciseId: "e1")
+        #expect(workout.value.exercises[0].notes == nil)
+    }
+
+    @Test("Test A Superset Group Is Set On That Exercise Only")
+    func testASupersetGroupIsSetOnThatExerciseOnly() {
+        let screen = makeScreen()
+        let workout = MutableSession(session(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1)]),
+            exercise(id: "e2", index: 2, sets: [set(2)])
+        ]))
+
+        screen.presenter.setSupersetGroupId(session: workout.binding, "group-1", forExerciseId: "e2")
+
+        #expect(workout.value.exercises.map(\.supersetGroupId) == [nil, "group-1"])
+    }
+
     @Test("Test Replacing An Exercise Keeps Its Place")
     func testReplacingAnExerciseKeepsItsPlace() {
         let screen = makeScreen()

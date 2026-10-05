@@ -51,13 +51,19 @@ struct SetTrackerRowView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             deleteSetButton
         }
+        // No rest runs when a finished workout is being corrected, which is the one place these
+        // rows are built without a rest handler.
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            restTimerButton
+            if presenter.onStartRest != nil {
+                restTimerButton
+            }
         }
         // `rowActions` does this for one edge; this row swipes both ways, so one menu carries both
         // actions for anyone who cannot swipe.
         .contextMenu {
-            restTimerButton
+            if presenter.onStartRest != nil {
+                restTimerButton
+            }
             deleteSetButton
         }
         .moveDisabled(true)

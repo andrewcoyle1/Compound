@@ -1,25 +1,28 @@
-# DialedIn
+# Compound
 
-[![CI](https://github.com/andrewcoyle1/DialedIn/actions/workflows/ci.yml/badge.svg)](https://github.com/andrewcoyle1/DialedIn/actions/workflows/ci.yml)
+[![CI](https://github.com/andrewcoyle1/Compound/actions/workflows/ci.yml/badge.svg)](https://github.com/andrewcoyle1/Compound/actions/workflows/ci.yml)
 
-A production-grade iOS fitness tracking application built with SwiftUI and VIPER architecture.
+A production-grade fitness app for iPhone, iPad and Mac (Catalyst), built with SwiftUI and a
+VIPER-style architecture.
 
 ## Features
 
-- **Real-time Workout Tracking**: Track exercises, sets, and reps with rest timers
-- **iOS Live Activities**: Dynamic Island and Lock Screen workout sessions
-- **Nutrition Logging**: Track meals and macros (calories, protein, carbs, fat)
-- **HealthKit Integration**: Synchronize workout data with Apple Health
-- **Training Programs**: Create and follow structured training programs with progress analytics
-- **Body Measurements & Steps**: Weight trends, 18 circumference sites, progress photos, daily steps
-- **Recipes & Barcode Scanning**: Recipe builder plus Open Food Facts barcode lookup
+- **Workout Tracking**: Exercises, sets, reps and rest timers, with iOS Live Activities on the
+  Dynamic Island and Lock Screen
+- **Training Plans**: Mesocycles and macrocycles run as a queue, with skips and progress analytics
+- **Nutrition Logging**: Meals and macros, recipes, Open Food Facts barcode lookup, and food logged
+  in other apps imported through Apple Health
 - **AI Food Analysis**: Photo, description and nutrition-label analysis via Cloud Functions
-- **Strava Integration**: OAuth connect and activity import
+- **Apple Health**: Workouts saved with heart rate and active energy; weight and steps imported
+- **Body Measurements & Steps**: Weight trends and goals, 18 circumference sites, progress photos,
+  daily steps
+- **Social & Challenges**: Follow other athletes, a workout feed, and challenges
+- **Strava**: Finished workouts uploaded to Strava; the client secret stays on the server
 - **Gamification**: Streaks, progress and experience points
-- **Multi-environment Configuration**: Dev/Mock/Prod environments for safe development
-- **A/B Testing Framework**: Built-in framework for feature experimentation
-- **Firebase Backend**: Cloud Firestore for persistence, Cloud Functions for AI, App Check for
-  attestation
+- **Analytics & A/B Testing**: Mixpanel (EU data residency) and Firebase, with a built-in
+  experiment framework
+- **Firebase Backend**: Cloud Firestore for persistence, Cloud Functions for AI and Strava, App
+  Check for attestation
 
 ## Architecture
 
@@ -32,7 +35,8 @@ A production-grade iOS fitness tracking application built with SwiftUI and VIPER
 - **Package-based infrastructure**: Auth, logging, purchasing, routing, data sync and gamification
   come from the `Swiftful*` Swift packages, surfaced through `*+Alias.swift` typealiases.
 
-See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
+See [CLAUDE.md](CLAUDE.md) for the full architecture reference and
+[docs/codebase-map.md](docs/codebase-map.md) for where every file lives.
 
 ## Technologies
 
@@ -45,23 +49,24 @@ See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
 - Mixpanel (Analytics)
 - Open Food Facts, Strava
 - Swift Package Manager
-- Unit & UI Testing, SwiftLint
+- Swift Testing, XCTest, SwiftLint
+- GitHub Actions (CI and release)
 
 ## Setup Instructions
 
 ### Prerequisites
 
-- Xcode 26.0 or later
+- Xcode 26.6 or later (releases are archived with Xcode 27.0)
 - iOS 26.0+ deployment target
 - Swift 6 language mode (test and extension targets still build in Swift 5 mode)
-- SwiftLint, for `swiftlint` to run locally
+- SwiftLint 0.59.1, the version CI pins, for `swiftlint` to run locally
 
 ### Configuration
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd DialedIn
+   git clone https://github.com/andrewcoyle1/Compound.git
+   cd Compound
    ```
 
 2. **Install dependencies**
@@ -70,18 +75,19 @@ See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
    Xcode resolves them when you open the project.
 
 3. **Configure API Keys**
-   - Copy `DialedIn/Utilities/Keys.swift.example` to `DialedIn/Utilities/Keys.swift`
+   - Copy `Compound/Utilities/Keys.swift.example` to `Compound/Utilities/Keys.swift`
    - Fill in the 33 constants:
      - OpenAI API key (if using AI features)
-     - Mixpanel token
-     - RevenueCat API key
-     - Strava client ID and secret
+     - Mixpanel project token
+     - RevenueCat public SDK keys, one for dev and one for prod
+     - Strava client ID. The client secret is not in the app: it is the `STRAVA_CLIENT_SECRET`
+       Cloud Functions secret, used by the `stravaToken` function.
      - 28 `*ManagerKey` strings — arbitrary names used as local-persistence paths. Keep them
        stable once chosen; renaming one orphans data already stored under the old name.
    - **Note**: `Keys.swift` is gitignored. You must create it locally for the app to build.
 
 4. **Configure Firebase**
-   - Copy `DialedIn/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` to,
+   - Copy `Compound/SupportingFiles/GoogleServicePLists/GoogleService-Info-Example.plist` to,
      in the same folder:
      - `GoogleService-Info-Dev.plist` (for development)
      - `GoogleService-Info-Prod.plist` (for production)
@@ -89,7 +95,7 @@ See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
    - **Note**: These files are gitignored for security. You must create them locally for the app to build.
 
 5. **Configure Google Sign-In & URL schemes**
-   - Copy `DialedIn/Info.plist.example` to `DialedIn/Info.plist`
+   - Copy `Compound/Info.plist.example` to `Compound/Info.plist`
    - The example already carries the `REVERSED_CLIENT_ID` for both Firebase projects and the
      `compound` deep-link scheme, so for this project it is a straight copy. If you point the app
      at your own Firebase projects, replace each reversed client ID with the one from your
@@ -98,25 +104,25 @@ See [CLAUDE.md](CLAUDE.md) for the full architecture reference.
 
 6. **Open the project**
    ```bash
-   open DialedIn.xcodeproj
+   open Compound.xcodeproj
    ```
-   Then pick a scheme: `DialedIn - Development`, `DialedIn - Mock` (no backend required), or
-   `DialedIn - Production`. There is no scheme called plain `DialedIn`.
+   Then pick a scheme: `Compound - Development`, `Compound - Mock` (no backend required), or
+   `Compound` (production).
 
 ### Build Configurations
 
 | Scheme | Configuration | Backend |
 |---|---|---|
-| `DialedIn - Development` | Debug | Firebase dev project |
-| `DialedIn - Mock` | Mock | Mock services only, no Firebase |
-| `DialedIn - Production` | Release | Firebase prod project |
+| `Compound - Development` | Debug | Firebase dev project |
+| `Compound - Mock` | Mock | Mock services only, no Firebase |
+| `Compound` | Release | Firebase prod project |
 
 ## Project Structure
 
 ```
-DialedIn/
-├── Core/                     # VIPER modules (Training, Nutrition, Profile, Onboarding, ...)
-├── Components/               # Reusable UI components
+Compound/
+├── Core/                     # VIPER modules (Today, Training, Nutrition, Social, Profile, ...)
+├── Components/               # Reusable UI components and the design system
 ├── Managers/                 # Domain managers resolved through CoreInteractor
 ├── Root/                     # App entry point, DI container, CoreInteractor/CoreRouter
 ├── Extensions/               # Swift/SwiftUI extensions
@@ -126,28 +132,46 @@ DialedIn/
 WorkoutSessionActivity/       # Live Activity / Dynamic Island widget extension
 Shared/                       # Code shared between the app and the widget extension
 functions/                    # Firebase Cloud Functions (Node, Genkit/Vertex AI)
-DialedInUnitTests/            # Unit tests
-DialedInUITests/              # UI tests
+CompoundUnitTests/            # Unit tests
+CompoundUITests/              # UI tests
+docs/                         # Codebase map, release checklist, privacy notes, reviews
 ```
 
 ## Testing
 
-Run tests:
+Run the unit tests:
 ```bash
-xcodebuild test -project DialedIn.xcodeproj -scheme 'DialedIn - Development' \
-  -destination 'platform=iOS Simulator,name=iPhone 17'
+xcodebuild test -project Compound.xcodeproj -scheme 'Compound - Development' \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -skip-testing:CompoundUITests
 ```
 
-The suite is 2,715 tests across 168 files in `DialedInUnitTests/`, and it passes. Run the whole
-thing only when pushing — `-only-testing:DialedInUnitTests/<Suite>` is about forty-five seconds
-against fifteen minutes for everything. Add `-skip-testing:DialedInUITests` to anything routine:
-the UI bundle is three tests, one of them chronically flaky, and a single flake there prints
-`** TEST FAILED **` over a clean unit run. See CLAUDE.md for the full cadence.
+The unit suite is about 3,750 tests in `CompoundUnitTests/` and takes under three minutes. One
+suite runs in about forty-five seconds with `-only-testing:CompoundUnitTests/<Suite>`. Skip the UI
+bundle for anything routine: it is three tests, one of them chronically flaky, and a single flake
+there prints `** TEST FAILED **` over a clean unit run. See CLAUDE.md for the full cadence.
+
+Cloud Functions tests:
+```bash
+cd functions && npm test
+```
 
 Lint (SwiftLint must be installed):
 ```bash
 swiftlint
 ```
+
+## CI and Releases
+
+- **CI** (`.github/workflows/ci.yml`) runs on every pull request: SwiftLint in strict mode, the
+  unit suite, and the Cloud Functions tests.
+- **`main` is protected**: it only accepts a pull request whose checks passed on a branch up to
+  date with it. Work happens on `development`, which is merged into `main` to release.
+- **Release** (`.github/workflows/release.yml`) runs on each merge to `main` and waits for the
+  owner's approval. It then uploads the app to TestFlight and deploys Cloud Functions to the
+  production Firebase project. Submitting to App Review stays manual.
+
+See CLAUDE.md for the details, including the secrets and Google Cloud permissions the release uses.
 
 ## License
 
@@ -158,4 +182,3 @@ This project is proprietary and confidential. Unauthorized copying, modification
 ## Author
 
 Andrew Coyle
-

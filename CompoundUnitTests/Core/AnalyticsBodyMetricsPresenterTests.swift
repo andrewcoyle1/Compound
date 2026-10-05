@@ -475,18 +475,18 @@ struct AnalyticsScaleWeightPresenterTests {
 
         await screen.presenter.onDeleteEntry(row)
 
-        #expect(screen.interactor.trackedEventNames == ["ScaleWeightView_DeleteEntry_Fail"])
+        #expect(screen.interactor.trackedEventNames == ["ScaleWeightView_DeleteEntry_Start", "ScaleWeightView_DeleteEntry_Fail"])
     }
 
-    @Test("Test A Delete That Works Reports Nothing")
-    func testADeleteThatWorksReportsNothing() async throws {
+    @Test("Test A Delete That Works Reports No Failure")
+    func testADeleteThatWorksReportsNoFailure() async throws {
         let screen = makeScreen(measurements: [entry(id: "a", kilograms: 82, day: 4)])
         await screen.presenter.onAppear()
         let row = try #require(screen.presenter.entries.first)
 
         await screen.presenter.onDeleteEntry(row)
 
-        #expect(screen.interactor.trackedEventNames.isEmpty)
+        #expect(screen.interactor.trackedEventNames == ["ScaleWeightView_DeleteEntry_Start", "ScaleWeightView_DeleteEntry_Success"])
     }
 
     @Test("Test Adding Opens The Weight Logger")

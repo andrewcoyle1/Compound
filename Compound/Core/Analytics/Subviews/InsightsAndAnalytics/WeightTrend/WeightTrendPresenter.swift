@@ -110,6 +110,14 @@ extension WeightTrendPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// Was a no-op. `rebuildCaches()` runs in `init`, so the screen had data — but it never picked
     /// up a weight logged through its own "Add" button, which routes to LogWeight and comes back.
     func onAppear() async {
@@ -125,14 +133,53 @@ extension WeightTrendPresenter: @MainActor MetricDetailPresenter {
     func onDeleteEntry(_ entry: WeightTrendEntry) async {
         guard let bodyEntry = interactor.bodyMeasurements.first(where: { $0.id == entry.id }) else { return }
         let updatedEntry = bodyEntry.withCleared(.weightKg)
+        interactor.trackEvent(event: Event.deleteEntryStart)
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess)
         } catch {
+            interactor.trackEvent(event: Event.deleteEntryFail(error: error))
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
         rebuildCaches()
+    }
+}
+
+extension WeightTrendPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case deleteEntryStart
+        case deleteEntrySuccess
+        case deleteEntryFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "WeightTrendView_Appear"
+            case .onDisappear: return "WeightTrendView_Disappear"
+            case .deleteEntryStart: return "WeightTrendView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "WeightTrendView_DeleteEntry_Success"
+            case .deleteEntryFail: return "WeightTrendView_DeleteEntry_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .deleteEntryFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteEntryFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }

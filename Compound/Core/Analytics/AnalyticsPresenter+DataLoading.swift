@@ -188,6 +188,7 @@ extension AnalyticsPresenter {
                 let dayTotals = try interactor.getDailyTotals(dayKey: key)
                 totals.append(dayTotals)
             } catch {
+                interactor.trackEvent(event: Event.loadMacrosFail(error: error))
                 totals.append(DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0))
             }
         }
@@ -203,6 +204,7 @@ extension AnalyticsPresenter {
         do {
             dailyTarget = try await interactor.getDailyTarget(for: now, userId: userId)
         } catch {
+            interactor.trackEvent(event: Event.loadDailyTargetFail(error: error))
             dailyTarget = nil
         }
     }

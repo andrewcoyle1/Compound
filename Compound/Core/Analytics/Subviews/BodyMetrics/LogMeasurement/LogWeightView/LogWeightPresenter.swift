@@ -44,6 +44,14 @@ class LogWeightPresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func loadInitialData() async {
         guard let user = interactor.currentUser else { return }
 
@@ -71,6 +79,7 @@ class LogWeightPresenter {
         guard let user = interactor.currentUser else { return }
 
         isLoading = true
+        interactor.trackEvent(event: Event.saveStart)
 
         do {
             // Save weight entry
@@ -79,10 +88,12 @@ class LogWeightPresenter {
 
             // Update user's current weight
             try await interactor.updateWeight(userId: user.userId, weight: weightKg, weightUnitPreference: unit == .kilograms ? .kilograms : .pounds)
+            interactor.trackEvent(event: Event.saveSuccess)
 
             interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
+            interactor.trackEvent(event: Event.saveFail(error: error))
             interactor.playHaptic(option: .error)
             router.showAlert(title: String(localized: "Unable to Save Weight"), error: error)
         }
@@ -92,5 +103,39 @@ class LogWeightPresenter {
 
     func onDismissPressed() {
         router.dismissScreen()
+    }
+}
+
+extension LogWeightPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case saveStart
+        case saveSuccess
+        case saveFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:    return "LogWeightView_Appear"
+            case .onDisappear: return "LogWeightView_Disappear"
+            case .saveStart:   return "LogWeightView_Save_Start"
+            case .saveSuccess: return "LogWeightView_Save_Success"
+            case .saveFail:    return "LogWeightView_Save_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .saveFail(let error): return error.eventParameters
+            default:                   return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .saveFail: return .severe
+            default:        return .analytic
+            }
+        }
     }
 }

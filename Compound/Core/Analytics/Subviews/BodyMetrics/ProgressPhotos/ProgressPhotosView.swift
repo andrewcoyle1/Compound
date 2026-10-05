@@ -48,6 +48,7 @@ struct ProgressPhotosView: View {
         }
         .toolbar { toolbarContent }
         .task { await presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .photosPicker(isPresented: $presenter.isLibraryPresented, selection: $presenter.libraryItem, matching: .images)
         .onChange(of: presenter.libraryItem) {
             Task { await presenter.onLibraryItemChanged() }

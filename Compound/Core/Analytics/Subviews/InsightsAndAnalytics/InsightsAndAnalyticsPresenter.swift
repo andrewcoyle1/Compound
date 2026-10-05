@@ -61,6 +61,7 @@ class InsightsAndAnalyticsPresenter {
                 let dayTotals = try interactor.getDailyTotals(dayKey: key)
                 totals.append(dayTotals)
             } catch {
+                interactor.trackEvent(event: Event.loadMacrosFail(error: error))
                 totals.append(DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0))
             }
         }
@@ -271,16 +272,20 @@ extension InsightsAndAnalyticsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case loadMacrosFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:    return "InsightsAndAnalyticsView_Appear"
             case .onDisappear: return "InsightsAndAnalyticsView_Disappear"
+            case .loadMacrosFail: return "InsightsAndAnalyticsView_LoadMacros_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
+            case .loadMacrosFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -288,6 +293,8 @@ extension InsightsAndAnalyticsPresenter {
         
         var type: LogType {
             switch self {
+            case .loadMacrosFail:
+                return .warning
             default:
                 return .analytic
             }

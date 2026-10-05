@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol EnergyBalanceInteractor {
+protocol EnergyBalanceInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var draftMeal: MealLogModel? { get }
     func getDailyTotals(dayKey: String) throws -> DailyMacroTarget

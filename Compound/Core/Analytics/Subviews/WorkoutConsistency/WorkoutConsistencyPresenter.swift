@@ -99,6 +99,14 @@ extension WorkoutConsistencyPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         loadData()
     }
@@ -107,4 +115,22 @@ extension WorkoutConsistencyPresenter: @MainActor MetricDetailPresenter {
         router.showWorkoutsView(delegate: WorkoutsDelegate())
     }
 
+}
+
+extension WorkoutConsistencyPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "WorkoutConsistencyView_Appear"
+            case .onDisappear: return "WorkoutConsistencyView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
 }

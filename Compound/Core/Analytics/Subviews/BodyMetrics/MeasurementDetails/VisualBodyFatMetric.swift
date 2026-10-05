@@ -78,6 +78,14 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
         await interactor.syncWeightFromHealthKit()
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// There is no manual body-fat entry flow in the app — the value comes from HealthKit. So the
     /// action re-reads all of Apple Health, which also picks up history from before body fat
     /// access was granted: an empty screen previously offered no way forward at all.
@@ -96,9 +104,12 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
     func onDeleteEntry(_ entry: VisualBodyFatEntry) async {
         guard let baseEntry = interactor.bodyMeasurements.first(where: { $0.id == entry.id }) else { return }
         let updatedEntry = baseEntry.withCleared(.bodyFatPercentage)
+        interactor.trackEvent(event: Event.deleteEntryStart)
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess)
         } catch {
+            interactor.trackEvent(event: Event.deleteEntryFail(error: error))
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
@@ -118,6 +129,40 @@ final class VisualBodyFatPresenter: @MainActor MetricDetailPresenter {
                 )
             }
             .sorted { $0.date < $1.date }
+    }
+}
+
+extension VisualBodyFatPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case deleteEntryStart
+        case deleteEntrySuccess
+        case deleteEntryFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:           return "VisualBodyFatView_Appear"
+            case .onDisappear:        return "VisualBodyFatView_Disappear"
+            case .deleteEntryStart:   return "VisualBodyFatView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "VisualBodyFatView_DeleteEntry_Success"
+            case .deleteEntryFail:    return "VisualBodyFatView_DeleteEntry_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .deleteEntryFail(let error): return error.eventParameters
+            default:                          return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteEntryFail: return .severe
+            default:               return .analytic
+            }
+        }
     }
 }
 

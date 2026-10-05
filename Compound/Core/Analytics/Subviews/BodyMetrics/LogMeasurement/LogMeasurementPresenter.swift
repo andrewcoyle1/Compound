@@ -45,6 +45,14 @@ class LogMeasurementPresenter {
         self.selectedInches = kind.defaultInches
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(kind: kind))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: kind))
+    }
+
     func loadInitialData() async {
         guard let user = interactor.currentUser else { return }
 
@@ -67,6 +75,7 @@ class LogMeasurementPresenter {
         guard let user = interactor.currentUser else { return }
 
         isLoading = true
+        interactor.trackEvent(event: Event.saveStart(kind: kind))
 
         do {
             let existingEntries = interactor.bodyMeasurements
@@ -74,10 +83,12 @@ class LogMeasurementPresenter {
 
             let base = existingEntries.first ?? BodyMeasurementEntry(authorId: user.userId, date: selectedDate)
             try await interactor.saveBodyMeasurement(bodyMeasurement: base.withUpdated(kind.update(to: measurementCm)))
+            interactor.trackEvent(event: Event.saveSuccess(kind: kind))
 
             interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
+            interactor.trackEvent(event: Event.saveFail(kind: kind, error: error))
             interactor.playHaptic(option: .error)
             router.showAlert(title: String(localized: "Unable to Save Measurement"), error: error)
         }
@@ -87,5 +98,42 @@ class LogMeasurementPresenter {
 
     func onDismissPressed() {
         router.dismissScreen()
+    }
+}
+
+extension LogMeasurementPresenter {
+    /// One set of names for all eighteen measurements, told apart by the `measurement` parameter.
+    enum Event: LoggableEvent {
+        case onAppear(kind: BodyMeasurementKind)
+        case onDisappear(kind: BodyMeasurementKind)
+        case saveStart(kind: BodyMeasurementKind)
+        case saveSuccess(kind: BodyMeasurementKind)
+        case saveFail(kind: BodyMeasurementKind, error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:    return "LogMeasurementView_Appear"
+            case .onDisappear: return "LogMeasurementView_Disappear"
+            case .saveStart:   return "LogMeasurementView_Save_Start"
+            case .saveSuccess: return "LogMeasurementView_Save_Success"
+            case .saveFail:    return "LogMeasurementView_Save_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let kind), .onDisappear(let kind), .saveStart(let kind), .saveSuccess(let kind):
+                return ["measurement": kind.rawValue]
+            case .saveFail(let kind, let error):
+                return error.eventParameters.merging(["measurement": kind.rawValue]) { $1 }
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .saveFail: return .severe
+            default:        return .analytic
+            }
+        }
     }
 }

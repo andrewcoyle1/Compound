@@ -89,6 +89,14 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
         await interactor.syncWeightFromHealthKit()
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAddPressed() {
         onAddWeightPressed()
     }
@@ -97,8 +105,10 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
 
     func onDeleteEntry(_ entry: BodyMeasurementEntry) async {
         let updatedEntry = entry.withCleared(.weightKg)
+        interactor.trackEvent(event: Event.deleteEntryStart)
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess)
         } catch {
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why. The alert told the user; nothing told us,
@@ -112,11 +122,19 @@ extension ScaleWeightPresenter: @MainActor MetricDetailPresenter {
 
 extension ScaleWeightPresenter {
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case deleteEntryStart
+        case deleteEntrySuccess
         case deleteEntryFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .deleteEntryFail: return "ScaleWeightView_DeleteEntry_Fail"
+            case .onAppear:           return "ScaleWeightView_Appear"
+            case .onDisappear:        return "ScaleWeightView_Disappear"
+            case .deleteEntryStart:   return "ScaleWeightView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "ScaleWeightView_DeleteEntry_Success"
+            case .deleteEntryFail:    return "ScaleWeightView_DeleteEntry_Fail"
             }
         }
 
@@ -124,6 +142,8 @@ extension ScaleWeightPresenter {
             switch self {
             case .deleteEntryFail(error: let error):
                 return error.eventParameters
+            default:
+                return nil
             }
         }
 
@@ -131,6 +151,8 @@ extension ScaleWeightPresenter {
             switch self {
             case .deleteEntryFail:
                 return .severe
+            default:
+                return .analytic
             }
         }
     }

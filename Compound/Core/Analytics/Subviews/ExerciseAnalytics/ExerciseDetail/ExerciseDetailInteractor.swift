@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol ExerciseDetailInteractor {
+protocol ExerciseDetailInteractor: GlobalInteractor {
     var auth: UserAuthInfo? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     func getPreference(templateId: String) -> ExerciseUnitPreference

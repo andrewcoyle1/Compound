@@ -28,6 +28,8 @@ struct LogMeasurementView: View {
         .task {
             await presenter.loadInitialData()
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     // The picker's own "Date" label already says what the row is; a header and footer that both

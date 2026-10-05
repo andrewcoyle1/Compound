@@ -105,15 +105,15 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Root` | 22 | 3,434 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
-| `Compound/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
+| `Compound/SupportingFiles` | 318 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 600 | Code compiled into both the app and the Live Activity extension |
-| `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 276 | 74,022 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `WorkoutSessionActivity` | 264 | 2,523 | Live Activity / Dynamic Island / home widget extension |
+| `CompoundUnitTests` | 276 | 74,056 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 8 | 609 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 10 | 17,196 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 49 | 10,740 | Specs, reviews, audits, this map |
+| `docs` | 49 | 10,763 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -643,11 +643,11 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [scripts/screenshots-diff.py](scripts/screenshots-diff.py) | 119 |
 | [scripts/screenshots.sh](scripts/screenshots.sh) | 95 |
 | [docs/AppPrivacy.md](docs/AppPrivacy.md) | 101 |
-| [docs/analytics/mixpanel-business-context.md](docs/analytics/mixpanel-business-context.md) | 109 |
+| [docs/analytics/mixpanel-business-context.md](docs/analytics/mixpanel-business-context.md) | 113 |
 | [docs/dead-settings-audit.md](docs/dead-settings-audit.md) | 279 |
 | [docs/release-checklist.md](docs/release-checklist.md) | 64 |
 | [docs/reviews/2026-10-01-list-form-and-wide-layouts.md](docs/reviews/2026-10-01-list-form-and-wide-layouts.md) | 73 |
-| [docs/reviews/analytics-coverage.md](docs/reviews/analytics-coverage.md) | 474 |
+| [docs/reviews/analytics-coverage.md](docs/reviews/analytics-coverage.md) | 494 |
 | [docs/reviews/hig-active-workout.md](docs/reviews/hig-active-workout.md) | 527 |
 | [docs/reviews/hig-analytics-charts.md](docs/reviews/hig-analytics-charts.md) | 474 |
 | [docs/reviews/hig-dashboard-social.md](docs/reviews/hig-dashboard-social.md) | 552 |

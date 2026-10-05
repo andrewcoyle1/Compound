@@ -46,9 +46,10 @@ struct FoodLibraryPresenterTests {
         let router: Router
     }
 
-    private func makeScreen(quickAdd: Bool = false) -> Screen {
+    private func makeScreen(quickAdd: Bool = false, favouriteFoodIds: [String] = []) -> Screen {
         let interactor = Interactor()
         interactor.foodLogSettings.quickAddEnabled = quickAdd
+        interactor.foodLogSettings.favouriteFoodIds = favouriteFoodIds
         let router = Router()
         return Screen(
             presenter: FoodLibraryPresenter(interactor: interactor, router: router),
@@ -66,6 +67,14 @@ struct FoodLibraryPresenterTests {
     }
 
     // MARK: - Tabs
+
+    /// Favourites are what gets logged again and again, so the library opens on them once there
+    /// are any, and on Recipes until then.
+    @Test("Test The Library Opens On Favourites When There Are Any")
+    func testTheLibraryOpensOnFavouritesWhenThereAreAny() {
+        #expect(makeScreen().presenter.foodLibraryOption == .recipes)
+        #expect(makeScreen(favouriteFoodIds: ["Oats"]).presenter.foodLibraryOption == .favourites)
+    }
 
     @Test("Test Changing Tab Clears The Search And Plays A Selection Haptic")
     func testChangingTabClearsTheSearchAndPlaysASelectionHaptic() {

@@ -118,7 +118,9 @@ struct FoodPhotoScannerView: View {
                         }
                     }
                 } header: {
-                    Text("AI Estimate")
+                    AIEstimateHeader(count: presenter.analysisResults.count, isAdded: presenter.didAddAll) {
+                        presenter.onAddAllPressed(onPick: delegate.onPick)
+                    }
                 } footer: {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }

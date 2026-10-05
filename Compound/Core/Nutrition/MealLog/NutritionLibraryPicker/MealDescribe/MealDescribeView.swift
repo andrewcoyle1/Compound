@@ -56,7 +56,9 @@ struct MealDescribeView: View {
                         }
                     }
                 } header: {
-                    Text("AI Estimate")
+                    AIEstimateHeader(count: presenter.analysisResults.count, isAdded: presenter.didAddAll) {
+                        presenter.onAddAllPressed(delegate: delegate)
+                    }
                 } footer: {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }

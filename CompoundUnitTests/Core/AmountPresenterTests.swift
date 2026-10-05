@@ -409,6 +409,22 @@ struct IngredientAmountPresenterTests {
 
     // MARK: - Adding an ingredient to the plate
 
+    /// An amount handed in, such as an AI estimate, is what the screen opens on. The food's
+    /// default portion used to overwrite it on appear, so a 250 g estimate showed 100 g.
+    @Test("Test A Prefilled Amount Survives Appearing")
+    func testAPrefilledAmountSurvivesAppearing() {
+        let presenter = ingredientPresenter()
+
+        presenter.onViewAppear(ingredient: food(), initialAmountText: "250")
+
+        #expect(presenter.amountText == "250")
+        #expect(presenter.selectedUnit == nil)
+
+        let plain = ingredientPresenter()
+        plain.onViewAppear(ingredient: food())
+        #expect(plain.amountText != "250")
+    }
+
     @Test("Test Logging An Ingredient Or Adding It To A Recipe Plays A Success Haptic")
     func testLoggingAnIngredientOrAddingItToARecipePlaysASuccessHaptic() {
         let ingredientInteractor = IngredientInteractor()

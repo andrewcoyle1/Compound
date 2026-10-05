@@ -7,7 +7,7 @@ class FoodLibraryPresenter {
     private let interactor: FoodLibraryInteractor
     private let router: FoodLibraryRouter
     
-    var foodLibraryOption: FoodLibraryOption = .recipes
+    var foodLibraryOption: FoodLibraryOption
 
     /// The query in the library's search field. It filters the favourites drawn here and is handed
     /// to the recipes and foods lists, which had no search of their own despite this comment
@@ -17,6 +17,11 @@ class FoodLibraryPresenter {
     init(interactor: FoodLibraryInteractor, router: FoodLibraryRouter) {
         self.interactor = interactor
         self.router = router
+        // Favourites are what the user keeps coming back to, so they open first once there are any.
+        let settings = interactor.foodLogSettings
+        self.foodLibraryOption = settings.favouriteFoodIds.isEmpty && settings.favouriteRecipeIds.isEmpty
+            ? .recipes
+            : .favourites
     }
 
     var searchPrompt: String {

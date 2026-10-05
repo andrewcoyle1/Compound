@@ -57,9 +57,16 @@ class IngredientAmountPresenter {
     /// Opens on the food's own portion, the one its row in the list and Quick Add describe, rather
     /// than a flat 100 g: rolled oats listed at "0.5 cup" used to open at 100 g. Once only, so
     /// coming back from the unit picker keeps what was typed.
-    func onViewAppear(ingredient: FoodModel) {
+    ///
+    /// An amount handed in — an AI estimate — wins: the portion used to overwrite it, so a 250 g
+    /// estimate opened at 100 g.
+    func onViewAppear(ingredient: FoodModel, initialAmountText: String? = nil) {
         guard !hasStartedFromPortion else { return }
         hasStartedFromPortion = true
+        if let initialAmountText {
+            amountText = initialAmountText
+            return
+        }
         let portion = ingredient.defaultPortion
         if let unit = portion.unit {
             selectedUnit = unit

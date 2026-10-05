@@ -12,7 +12,8 @@ struct IngredientAmountDelegate {
     let onPick: (MealItemModel) -> Void
     /// Prefills the amount, e.g. with an AI estimate's amount, so it can be corrected rather than
     /// starting the field over at 100.
-    var initialAmountText: String = "100"
+    /// Nil opens on the food's own portion.
+    var initialAmountText: String?
     /// The plate's Log. When set, the screen offers Log beside Add to Plate, so a single food can be
     /// logged from here without going back through the picker and the plate.
     var onLog: (() -> Void)?
@@ -58,7 +59,7 @@ struct IngredientAmountView: View {
         }
         .navigationTitle(delegate.ingredient.name)
         .onAppear {
-            presenter.onViewAppear(ingredient: delegate.ingredient)
+            presenter.onViewAppear(ingredient: delegate.ingredient, initialAmountText: delegate.initialAmountText)
             isAmountFocused = true
         }
         // Selected once the field has focus: taking focus puts the caret at the end, which
@@ -90,13 +91,11 @@ struct IngredientAmountView: View {
 
 extension CoreBuilder {
     func ingredientAmountView(router: AnyRouter, delegate: IngredientAmountDelegate) -> some View {
-        let presenter = IngredientAmountPresenter(
-            interactor: interactor,
-            router: CoreRouter(router: router, builder: self)
-        )
-        presenter.amountText = delegate.initialAmountText
-        return IngredientAmountView(
-            presenter: presenter,
+        IngredientAmountView(
+            presenter: IngredientAmountPresenter(
+                interactor: interactor,
+                router: CoreRouter(router: router, builder: self)
+            ),
             delegate: delegate
         )
     }

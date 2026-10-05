@@ -75,10 +75,67 @@ extension Collection where Element == WorkoutSetModel {
             if previous >= 0, sets[previous].side == .left, !sets[previous].isWarmup {
                 return [sets[previous].id, set.id]
             }
-        case nil:
+        case .both, nil:
             break
         }
         return [set.id]
+    }
+}
+
+extension Array where Element == WorkoutSetModel {
+
+    /// Each `both` row as a left and a right row, the figures and the tick copied to each, for when
+    /// the sides differ. The left keeps the row's id, so whatever pointed at the set still does.
+    func splittingSides() -> [WorkoutSetModel] {
+        reindexed(flatMap { set -> [WorkoutSetModel] in
+            guard set.side == .both else { return [set] }
+            var left = set
+            left.side = .left
+            let right = WorkoutSetModel(
+                id: UUID().uuidString,
+                authorId: set.authorId,
+                index: set.index,
+                reps: set.reps,
+                weightKg: set.weightKg,
+                durationSec: set.durationSec,
+                distanceMeters: set.distanceMeters,
+                rpe: set.rpe,
+                side: .right,
+                isWarmup: set.isWarmup,
+                completedAt: set.completedAt,
+                dateCreated: set.dateCreated
+            )
+            return [left, right]
+        })
+    }
+
+    /// Each left/right pair as one `both` row with the left side's figures. It is ticked only when
+    /// both sides were: with one arm still to do, the set is not done.
+    func joiningSides() -> [WorkoutSetModel] {
+        var joined: [WorkoutSetModel] = []
+        for set in self {
+            if set.side == .right, let left = joined.last, left.side == .left, !left.isWarmup, !set.isWarmup {
+                joined[joined.count - 1].side = .both
+                if set.completedAt == nil { joined[joined.count - 1].completedAt = nil }
+                continue
+            }
+            joined.append(set)
+        }
+        // A left whose right was deleted elsewhere is still a set for both sides.
+        return reindexed(joined.map { set in
+            var set = set
+            if set.side == .left || set.side == .right { set.side = .both }
+            return set
+        })
+    }
+
+    /// Numbered by position, as `addSet` and the detail screen's delete leave them.
+    private func reindexed(_ sets: [WorkoutSetModel]) -> [WorkoutSetModel] {
+        sets.enumerated().map { position, set in
+            var set = set
+            set.index = position + 1
+            return set
+        }
     }
 }
 
@@ -96,6 +153,19 @@ extension WorkoutExerciseModel {
     /// so a set added afterwards follows them rather than guessing.
     var isPerSide: Bool {
         sets.contains { !$0.isWarmup && $0.side != nil }
+    }
+
+    /// Whether the sides are logged apart, a left and a right row per set, rather than one `both`
+    /// row. The tracker's Split chip switches between the two.
+    var isSplit: Bool {
+        sets.contains { !$0.isWarmup && ($0.side == .left || $0.side == .right) }
+    }
+
+    /// The rows one more set is made of: a left and a right when split, one `both` row for an
+    /// exercise worked a side at a time, otherwise one plain row.
+    var sidesPerSet: [SetSide?] {
+        if isSplit { return [.left, .right] }
+        return isPerSide ? [.both] : [nil]
     }
 
     /// How many working sets this exercise asks for, pairs counted once.
@@ -123,15 +193,28 @@ extension WorkoutExerciseModel {
         return upToAndIncluding.pairedSetCount
     }
 
-    /// This exercise's row for `set` as it was logged last session, matched on the set number and
-    /// the side. Falls back to a sideless row of the same number, which is everything logged
-    /// before sides existed.
-    func matchingSet(for set: WorkoutSetModel) -> WorkoutSetModel? {
-        if let exact = sets.first(where: { $0.index == set.index && $0.side == set.side }) {
-            return exact
+    /// This exercise's row for `set` (a row of `current`) as it was logged last session, matched
+    /// on the set number shown and then the side.
+    ///
+    /// The number, not the stored index: last time may have been split and this time not, and
+    /// then the indices no longer line up — set 2 of three `both` rows is index 2, where last
+    /// session's index 2 was the right arm of set 1. A limb takes its own side's history first,
+    /// then a row done for both sides (or before sides existed), never the other limb's. A row for
+    /// both sides takes the left of a split pair, the side `ProgressionPlanner` reads too.
+    func matchingSet(for set: WorkoutSetModel, in current: WorkoutExerciseModel) -> WorkoutSetModel? {
+        guard !set.isWarmup else {
+            return sets.first { $0.index == set.index && $0.side == set.side }
         }
-        guard set.side != nil else { return nil }
-        return sets.first { $0.index == set.index && $0.side == nil }
+        let number = current.workingSetNumber(for: set)
+        let candidates = workingSets.filter { workingSetNumber(for: $0) == number }
+        let acceptable: [SetSide?] = switch set.side {
+        case .left, .right: [set.side, .both, nil]
+        case .both, nil: [.both, nil, .left]
+        }
+        for side in acceptable {
+            if let match = candidates.first(where: { $0.side == side }) { return match }
+        }
+        return nil
     }
 }
 

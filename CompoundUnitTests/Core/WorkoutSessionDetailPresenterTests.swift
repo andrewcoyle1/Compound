@@ -648,7 +648,7 @@ struct WorkoutSessionDetailPresenterTests {
 
         screen.presenter.addSelectedExercises(session: workout.binding)
 
-        #expect(workout.value.exercises.first?.sets.map(\.side) == [.left, .right])
+        #expect(workout.value.exercises.first?.sets.map(\.side) == [.both])
     }
 
     /// A two-sided exercise still joins with one row per set.

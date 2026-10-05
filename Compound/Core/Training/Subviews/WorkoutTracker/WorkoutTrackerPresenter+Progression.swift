@@ -63,7 +63,7 @@ extension WorkoutTrackerPresenter {
         let workingSets = exercise.sets.filter { !$0.isWarmup }
         guard let position = workingSets.firstIndex(where: { $0.id == completed.id }) else { return }
 
-        let perSide = workingSets.contains { $0.side != nil }
+        let perSide = exercise.isSplit
         let remaining = workingSets[(position + 1)...].filter { $0.completedAt == nil }
         guard !remaining.isEmpty else { return }
 

@@ -14,6 +14,46 @@
         }
       }
     },
+    "Both sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambos lados"
+          }
+        }
+      }
+    },
+    "Logs each side as its own set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra cada lado como su propia serie"
+          }
+        }
+      }
+    },
+    "Split L/R" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar I/D"
+          }
+        }
+      }
+    },
+    "Split left and right" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar izquierda y derecha"
+          }
+        }
+      }
+    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {

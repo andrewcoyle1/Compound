@@ -11,8 +11,8 @@ import Foundation
 
 /// Sets worked one limb at a time.
 ///
-/// A single-arm row is logged as two rows per set, because each arm lifts its own weight for its
-/// own reps — but the user did one set, and a screen that says otherwise is telling them they have
+/// A single-arm row starts as one `both` row per set, and splits into a left and a right row when
+/// the arms differ — but either way the user did one set, and a screen that says otherwise is telling them they have
 /// done twice the work they have. Everything here defends that one rule: sides are told apart by
 /// `side`, never by position or index; a left and a right count as one set everywhere a set count
 /// is shown; and volume is the deliberate exception, because both arms really did lift.
@@ -113,11 +113,10 @@ struct WorkoutSetSideTests {
 
     // MARK: - Generating sets in pairs
 
-    /// Asking for three sets of a per-side exercise means three sets, logged as six rows so each
-    /// limb gets its own figures. Left comes first so a pair reads down the screen the way it is
-    /// performed.
-    @Test("Test Three Sets A Side Are Minted As Three Pairs")
-    func testThreeSetsASideAreMintedAsThreePairs() {
+    /// Asking for three sets of a per-side exercise means three rows logged for both sides: the
+    /// user nearly always matches the arms, and a row per arm was a second tick for nothing.
+    @Test("Test Three Sets A Side Are Minted As Three Rows For Both Sides")
+    func testThreeSetsASideAreMintedAsThreeRowsForBothSides() {
         let sets = WorkoutSessionModel.defaultSets(
             trackingMode: .weightReps,
             authorId: "author-1",
@@ -125,9 +124,8 @@ struct WorkoutSetSideTests {
             perSide: true
         )
 
-        #expect(sets.count == 6)
-        #expect(sets.map(\.side) == [.left, .right, .left, .right, .left, .right])
-        #expect(sets.map(\.index) == [1, 2, 3, 4, 5, 6])
+        #expect(sets.map(\.side) == [.both, .both, .both])
+        #expect(sets.map(\.index) == [1, 2, 3])
         #expect(sets.pairedSetCount == 3)
     }
 
@@ -150,7 +148,7 @@ struct WorkoutSetSideTests {
         )
         let run = WorkoutSessionModel.defaultSets(trackingMode: .distanceTime, authorId: "author-1", targetCount: 1)
 
-        #expect(timed.count == 4)
+        #expect(timed.count == 2)
         #expect(timed.allSatisfy { $0.durationSec == 60 && $0.distanceMeters == nil })
         #expect(run.first?.durationSec == 120)
         #expect(run.first?.distanceMeters == 400)
@@ -174,9 +172,67 @@ struct WorkoutSetSideTests {
     func testVolumeStillCountsBothSides() {
         let exercise = exercise(sets: threeSetsPerSide)
 
-        let volume = exercise.workingSets.reduce(0.0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
+        let volume = exercise.workingSets.compactMap(\.volumeKg).reduce(0, +)
 
         #expect(volume == 1200)
+    }
+
+    /// A row logged for both sides is both arms' work, so it counts as the pair it stands for —
+    /// otherwise not splitting would halve the user's volume.
+    @Test("Test A Row For Both Sides Counts Twice In Volume")
+    func testARowForBothSidesCountsTwiceInVolume() {
+        #expect(set(index: 1, side: .both, reps: 10, weightKg: 20).volumeKg == 400)
+        #expect(set(index: 1, side: .left, reps: 10, weightKg: 20).volumeKg == 200)
+        #expect(set(index: 1, reps: 10, weightKg: 20).volumeKg == 200)
+        #expect(set(index: 1, side: .both, reps: nil).volumeKg == nil)
+    }
+
+    // MARK: - Splitting and joining
+
+    /// Splitting copies each row to both arms, tick included, and keeps the left on the row's id.
+    @Test("Test Splitting Turns Each Row Into A Pair")
+    func testSplittingTurnsEachRowIntoAPair() {
+        let sets = [
+            set(index: 1, isWarmup: true),
+            set(index: 2, side: .both, reps: 8, completed: true),
+            set(index: 3, side: .both, reps: 6)
+        ].splittingSides()
+
+        #expect(sets.map(\.side) == [nil, .left, .right, .left, .right])
+        #expect(sets.map(\.index) == [1, 2, 3, 4, 5])
+        #expect(sets.map(\.reps) == [10, 8, 8, 6, 6])
+        #expect(sets.map { $0.completedAt != nil } == [false, true, true, false, false])
+        #expect(sets[1].id == "set-2")
+        #expect(Set(sets.map(\.id)).count == 5)
+        #expect(exercise(sets: sets).workingSetCount == 2)
+    }
+
+    /// Joining keeps the left arm's figures, and a pair with one arm still to do is not done.
+    @Test("Test Joining Turns Each Pair Into One Row")
+    func testJoiningTurnsEachPairIntoOneRow() {
+        let sets = [
+            set(index: 1, side: .left, weightKg: 20, completed: true),
+            set(index: 2, side: .right, weightKg: 22.5),
+            set(index: 3, side: .left, weightKg: 25, completed: true),
+            set(index: 4, side: .right, weightKg: 27.5, completed: true)
+        ].joiningSides()
+
+        #expect(sets.map(\.id) == ["set-1", "set-3"])
+        #expect(sets.map(\.side) == [.both, .both])
+        #expect(sets.map(\.index) == [1, 2])
+        #expect(sets.map(\.weightKg) == [20, 25])
+        #expect(sets.map { $0.completedAt != nil } == [false, true])
+    }
+
+    @Test("Test Split And Sides Per Set Follow The Rows")
+    func testSplitAndSidesPerSetFollowTheRows() {
+        let both = exercise(sets: [set(index: 1, side: .both)])
+        let split = exercise(sets: threeSetsPerSide)
+        let plain = exercise(sets: [set(index: 1)])
+
+        #expect(both.isPerSide && !both.isSplit && both.sidesPerSet == [.both])
+        #expect(split.isPerSide && split.isSplit && split.sidesPerSet == [.left, .right])
+        #expect(!plain.isPerSide && !plain.isSplit && plain.sidesPerSet == [nil])
     }
 
     /// A pair counts from the moment either limb is done — the left arm being behind them is
@@ -305,10 +361,27 @@ struct WorkoutSetSideTests {
             set(index: 1, side: .left, weightKg: 20),
             set(index: 2, side: .right, weightKg: 22.5)
         ])
+        let left = set(index: 1, side: .left)
+        let right = set(index: 2, side: .right)
+        let current = exercise(sets: [left, right])
+        let leftOnly = exercise(sets: [set(index: 1, side: .left, weightKg: 20)])
 
-        #expect(previous.matchingSet(for: set(index: 1, side: .left))?.weightKg == 20)
-        #expect(previous.matchingSet(for: set(index: 2, side: .right))?.weightKg == 22.5)
-        #expect(previous.matchingSet(for: set(index: 2, side: .left)) == nil)
+        #expect(previous.matchingSet(for: left, in: current)?.weightKg == 20)
+        #expect(previous.matchingSet(for: right, in: current)?.weightKg == 22.5)
+        #expect(leftOnly.matchingSet(for: right, in: current) == nil)
+    }
+
+    /// Last time split, this time not: the indices no longer line up, so rows are matched on the
+    /// set number. Index 2 here is set 2, where last session's index 2 was set 1's right arm.
+    @Test("Test A Row For Both Sides Reads Last Session's Pair By Set Number")
+    func testARowForBothSidesReadsLastSessionsPairBySetNumber() {
+        let previous = exercise(sets: threeSetsPerSide.enumerated().map { offset, row in
+            set(index: row.index, side: row.side, weightKg: 20 + Double(offset))
+        })
+        let rows = [set(index: 1, side: .both), set(index: 2, side: .both), set(index: 3, side: .both)]
+        let current = exercise(sets: rows)
+
+        #expect(rows.map { previous.matchingSet(for: $0, in: current)?.weightKg } == [20, 22, 24])
     }
 
     /// Everything logged before sides existed has no side at all. That history belongs to both
@@ -316,9 +389,12 @@ struct WorkoutSetSideTests {
     @Test("Test History From Before Sides Existed Still Shows")
     func testHistoryFromBeforeSidesExistedStillShows() {
         let previous = exercise(sets: [set(index: 1, weightKg: 20)])
+        let left = set(index: 1, side: .left)
+        let right = set(index: 2, side: .right)
+        let current = exercise(sets: [left, right])
 
-        #expect(previous.matchingSet(for: set(index: 1, side: .left))?.weightKg == 20)
-        #expect(previous.matchingSet(for: set(index: 1, side: .right))?.weightKg == 20)
+        #expect(previous.matchingSet(for: left, in: current)?.weightKg == 20)
+        #expect(previous.matchingSet(for: right, in: current)?.weightKg == 20)
     }
 
     // MARK: - Stored sets
@@ -372,7 +448,7 @@ struct WorkoutSetSideTests {
     /// gets to veto the decode.
     @Test("Test An Unrecognised Stored Side Decodes As Sideless")
     func testAnUnrecognisedStoredSideDecodesAsSideless() throws {
-        let data = try JSONSerialization.data(withJSONObject: Self.storedSet(side: "both"))
+        let data = try JSONSerialization.data(withJSONObject: Self.storedSet(side: "middle"))
 
         let decoded = try Self.decoder.decode(WorkoutSetModel.self, from: data)
 
@@ -397,7 +473,7 @@ struct WorkoutSetSideTests {
         )
         var exercises = try #require(raw["exercises"] as? [[String: Any]])
         var sets = try #require(exercises[0]["sets"] as? [[String: Any]])
-        sets[0]["side"] = "both"
+        sets[0]["side"] = "middle"
         exercises[0]["sets"] = sets
         raw["exercises"] = exercises
 
@@ -445,7 +521,7 @@ struct WorkoutSetSideTests {
     @Test("Test An Unknown Side Reads As None")
     func testAnUnknownSideReadsAsNone() {
         #expect(SetSide(storedValue: "left") == .left)
-        #expect(SetSide(storedValue: "both") == nil)
+        #expect(SetSide(storedValue: "middle") == nil)
         #expect(SetSide(storedValue: nil) == nil)
     }
 }

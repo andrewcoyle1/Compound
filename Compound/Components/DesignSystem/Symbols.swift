@@ -42,6 +42,8 @@ enum Symbol {
     static let restDay = "bed.double"
     static let warmup = "thermometer.sun"
     static let superset = "link"
+    /// Logging each side of a one-limb exercise as its own row.
+    static let splitSides = "rectangle.split.2x1"
     static let personalRecord = "trophy.fill"
     static let mesocycle = "list.bullet.clipboard"
     /// A macrocycle: mesocycles run one after another.

@@ -198,6 +198,35 @@ struct SetSideTrackingTests {
         #expect(Set(indices).count == indices.count)
     }
 
+    /// Unsplit, a per-side exercise takes one more row for both sides, not a pair.
+    @Test("Test Adding To An Unsplit Per-Side Exercise Adds One Row For Both Sides")
+    func testAddingToAnUnsplitPerSideExerciseAddsOneRowForBothSides() {
+        let (presenter, _) = makeListPresenter()
+        let box = MutableExercise(exercise(sets: [set(id: "s1", index: 1, side: .both)]))
+
+        presenter.addSet(exercise: box.binding)
+
+        #expect(box.value.sets.map(\.side) == [.both, .both])
+    }
+
+    /// The Split chip turns the rows into pairs and back.
+    @Test("Test The Split Chip Toggles Between Rows And Pairs")
+    func testTheSplitChipTogglesBetweenRowsAndPairs() {
+        let (presenter, _) = makeListPresenter()
+        let box = MutableExercise(exercise(sets: [
+            set(id: "s1", index: 1, side: .both),
+            set(id: "s2", index: 2, side: .both)
+        ]))
+
+        presenter.onSplitSidesPressed(box.binding)
+        #expect(box.value.sets.map(\.side) == [.left, .right, .left, .right])
+        #expect(box.value.workingSetCount == 2)
+
+        presenter.onSplitSidesPressed(box.binding)
+        #expect(box.value.sets.map(\.side) == [.both, .both])
+        #expect(box.value.sets.map(\.id) == ["s1", "s2"])
+    }
+
     /// Nothing changes for the exercises that are not worked a side at a time, which is nearly all
     /// of them.
     @Test("Test Adding To A Two-Sided Exercise Still Adds One Set")

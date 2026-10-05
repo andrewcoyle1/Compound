@@ -354,10 +354,7 @@ class WorkoutTrackerPresenter {
     
     func computeTotalVolumeKg() -> Double {
         return workoutSession.exercises.flatMap { $0.sets }
-            .compactMap { set in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
     }
     

@@ -53,7 +53,7 @@ enum CircleWeek {
             .flatMap(\.exercises)
             .flatMap(\.sets)
             .filter { !$0.isWarmup }
-            .reduce(0) { $0 + ($1.weightKg ?? 0) * Double($1.reps ?? 0) }
+            .reduce(0) { $0 + ($1.volumeKg ?? 0) }
     }
 
     static func isFirstDayOfWeek(_ date: Date, calendar: Calendar = .current) -> Bool {

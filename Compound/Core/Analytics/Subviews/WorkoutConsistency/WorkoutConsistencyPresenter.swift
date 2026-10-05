@@ -46,10 +46,7 @@ class WorkoutConsistencyPresenter {
             let sets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }.count
             let volume = session.exercises.flatMap { $0.sets }
                 .filter { !$0.isWarmup }
-                .compactMap { set -> Double? in
-                    guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                    return weight * Double(reps)
-                }
+                .compactMap(\.volumeKg)
                 .reduce(0, +)
             return WorkoutEntry(
                 id: session.id,

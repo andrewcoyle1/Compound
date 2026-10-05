@@ -95,10 +95,7 @@ class WorkoutSessionDetailPresenter {
             .exercises
             .flatMap { $0.sets }
             .filter { !$0.isWarmup }
-            .compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
     }
     
@@ -127,10 +124,7 @@ class WorkoutSessionDetailPresenter {
         let workingSets = exercise.workingSets
         let unit = weightUnit(for: exercise.templateId)
         let volumeKg = workingSets
-            .compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }
+            .compactMap(\.volumeKg)
             .reduce(0.0, +)
         return String(localized: "\(String(localized: "\(workingSets.pairedSetCount) sets")) · \(Format.weight(kg: volumeKg, unit: unit)) volume")
     }
@@ -303,9 +297,7 @@ class WorkoutSessionDetailPresenter {
         // numbering, and counting instead of looking handed the new set an index another set
         // already held. Duplicate indices are what last session's figures are matched on.
         var nextIndex = (existingSets.map(\.index).max() ?? 0) + 1
-        let sides: [SetSide?] = updatedExercises[exerciseIndex].isPerSide ? SetSide.ordered.map { $0 } : [nil]
-
-        for side in sides {
+        for side in updatedExercises[exerciseIndex].sidesPerSet {
             // Carry forward the last set on the same side, so a left set copies the left limb's
             // weight rather than the right one's.
             let lastSet = existingSets.last(where: { side == nil || $0.side == side }) ?? existingSets.last

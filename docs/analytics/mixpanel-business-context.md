@@ -46,6 +46,8 @@ Every event name has the form `{Source}_{Action}[_{Outcome}]`.
   - `BodyRatioView_*`: `ratio`.
   - `MuscleGroupDetailView_*`: `muscle`.
   - `ExerciseDetailView_*`: `exercise_template_id`.
+  - `TabBarView_Tab_Selected`: `tab`, the main tab the user tapped. Deep links and the
+    restored tab are not counted.
   - `NutritionLibraryPickerView_Tab_Selected`: `tab`, the food logger mode: `library`, `search`, `describe`, `aiScanner` (photo), `barcode` or `quickAdd`.
 
 **Older names.** A few events predate this scheme, for example `BarcodeScanner_ParseLabel`,
@@ -80,7 +82,10 @@ existing reports keep working.
     users created in the window.
 - **Workout.**
   - The flow runs from `WorkoutTrackerView_Appear` (a workout started from Today, Training or a
-    template) to finishing the workout, then to `WorkoutSessionDetailView_Appear`.
+    template) to `WorkoutTrackerView_FinishWorkout_Success`, then to
+    `WorkoutSessionDetailView_Appear`.
+  - `WorkoutTrackerView_FinishWorkout_Fail` carries `reason`: `permanent`,
+    `retries_exhausted`, `signed_out` or `cancelled`.
   - Templates and mesocycles drive which workout is scheduled for today.
 - **Meal logging.**
   - The flow runs from `AddMealView_Appear` to `NutritionLibraryPickerView_Appear` (the food

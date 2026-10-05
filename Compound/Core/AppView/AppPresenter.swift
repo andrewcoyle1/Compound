@@ -46,6 +46,13 @@ class AppPresenter {
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
     }
+
+    /// The home-screen widgets are only seen with the app in the background, so this is the one
+    /// write that covers everything changed while it was open: a mesocycle started or edited, a
+    /// session deleted, a workout synced from another device.
+    func onAppDidEnterBackground() {
+        interactor.refreshWidgetSnapshot(weeklyGoal: nil)
+    }
     
     /// The id of the toast that says the app cannot reach the server, so a later success can take
     /// exactly that one down.

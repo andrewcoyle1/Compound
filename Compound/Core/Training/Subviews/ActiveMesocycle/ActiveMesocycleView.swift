@@ -27,12 +27,12 @@ struct ActiveMesocycleView: View {
                     isDeloadCycle: presenter.isDeloadCycle,
                     periodisationPhase: presenter.periodisationPhase
                 )
-                .anyButton(.press) {
-                    presenter.onMesocyclePressed(mesocycle: delegate.mesocycle)
-                }
                 .rowActions {
                     Button("Delete", systemImage: Symbol.delete, role: .destructive) {
                         presenter.onMesocycleDeletePressed(mesocycle: delegate.mesocycle)
+                    }
+                    Button("Info", systemImage: Symbol.info) {
+                        presenter.onMesocyclePressed(mesocycle: delegate.mesocycle)
                     }
                 }
             }
@@ -68,6 +68,7 @@ struct ActiveMesocycleView: View {
         .buttonStyle(.borderless)
         .accessibilityLabel("Choose microcycle")
         .accessibilityValue(presenter.microcycleHeaderText)
+        .foregroundStyle(Color.secondary)
     }
 
     @ViewBuilder

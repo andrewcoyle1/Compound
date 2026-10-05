@@ -1568,6 +1568,2037 @@
       "favourite_count": 0,
       "date_created": 757382400.0,
       "date_modified": 757382400.0
+    },
+    {
+      "id": "system-low-to-high-cable-fly",
+      "author_id": "official",
+      "name": "Low-To-High Cable Fly",
+      "description": "A standing cable fly sweeping upward from low pulleys that emphasizes the upper chest.",
+      "image_url": "LowToHighCableFly",
+      "trackable_metrics": [
+        "weightPerSide",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "chest": "primary",
+        "frontDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "340DE61B-17D1-415B-A516-E2F99C6D7D13",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "14AFB9A0-9D1C-4D8B-83DF-90341B396B1D",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Standing Low-To-High Cable Fly",
+        "Low-To-High Cable Crossover",
+        "Low-To-High Cable Chest Fly",
+        "Low-To-High Cable Pec Fly"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812446476.095998,
+      "date_modified": 812446476.095998
+    },
+    {
+      "id": "system-wide-grip-pull-up",
+      "author_id": "official",
+      "name": "Wide Grip Pull-up",
+      "description": "A bodyweight vertical pull with a wide overhand grip that builds the lats and upper back.",
+      "image_url": "WideGripPullUp",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "lats": "primary",
+        "upperBack": "secondary",
+        "biceps": "primary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 95,
+      "alternate_names": [
+        "Overhand Wide Grip Pull-Up",
+        "Overhand Wide Grip Bodyweight Pull-Up"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812446629.74194,
+      "date_modified": 812446629.74194
+    },
+    {
+      "id": "system-deficit-pendlay-row",
+      "author_id": "official",
+      "name": "Deficit Pendlay Row",
+      "description": "A strict barbell row from a dead stop on the floor, standing on a platform for extra range.",
+      "image_url": "DeficitPendlayRow",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "upperTraps": "secondary",
+        "rearDelts": "primary",
+        "lats": "primary",
+        "upperBack": "primary",
+        "biceps": "secondary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "BAF5561D-3AB1-4DF4-A1DC-CEB199CC2249",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "901E81CA-30A4-4DE4-9694-A6494CF11BEF",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812446810.866965,
+      "date_modified": 812446810.866965
+    },
+    {
+      "id": "system-single-arm-bayesian-curl",
+      "author_id": "official",
+      "name": "Single Arm Bayesian Curl",
+      "description": "A single-arm cable curl facing away from the stack that loads the biceps in a stretch.",
+      "image_url": "SingleArmBayesianCurl",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "81C28981-D16B-4AF4-9546-8A5E24BDA8E1",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "0A0CEA6A-05AE-45A3-9689-6FD810B3A528",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "9ADF48CE-E709-4737-981D-B068BBF76E55",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "578C0AEC-6BFF-4703-BC43-E22B7D5CD323",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Unilateral Cable Biceps Curl (Facing Away From Machine)",
+        "Single Arm Biceps Curl (Facing Away From Machine)"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812446994.2119019,
+      "date_modified": 812446994.2119019
+    },
+    {
+      "id": "system-smith-machine-back-squat",
+      "author_id": "official",
+      "name": "Smith Machine Back Squat",
+      "description": "A back squat on a Smith machine that targets the quads and glutes with a fixed bar path.",
+      "image_url": "SmithMachineBackSquat",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "quads": "primary",
+        "adductors": "primary",
+        "glutes": "primary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "BE89863E-6E4D-486F-8026-62163BB2C6C1",
+          "resistance_equipment": [
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            },
+            {
+              "id": "smith_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "CAE91615-09BD-4071-A1AE-CB3CC1E90D6C",
+          "resistance_equipment": [
+            {
+              "id": "smith_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Smith Machine Squat"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812447144.790205,
+      "date_modified": 812447144.790205
+    },
+    {
+      "id": "system-seated-plate-loaded-machine-calf-raise",
+      "author_id": "official",
+      "name": "Seated Plate-Loaded Machine Calf Raise",
+      "description": "A seated calf raise on a plate-loaded machine that targets the soleus.",
+      "image_url": "SeatedPlateLoadedMachineCalfRaise",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "calves": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "FC61BADB-E9ED-4A5B-9AE4-81D918339CB1",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_calf_raise_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "B275B37F-CD9A-48EC-8C62-D65F02050B69",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_calf_raise_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "899AD406-C173-451B-8968-C4A465464EBB",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_calf_raise_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Machine Calf Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812447348.3668981,
+      "date_modified": 812447348.3668981
+    },
+    {
+      "id": "system-kneeling-cable-crunch",
+      "author_id": "official",
+      "name": "Kneeling Cable Crunch",
+      "description": "A kneeling spinal flexion against a high cable that loads the abs through a full range.",
+      "image_url": "KneelingCableCrunch",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "A48B6C60-EE81-443E-A435-E35022FEC815",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "EA6B8DAA-C927-4ECA-97F4-99B074668656",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "A98E0C34-2938-468C-BC0D-9D7D106482C1",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "7DA0FC45-7045-428F-9677-1DF120BE7760",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812447523.87608,
+      "date_modified": 812447523.87608
+    },
+    {
+      "id": "system-overhand-grip-plate-loaded-row",
+      "author_id": "official",
+      "name": "Overhand Grip Plate-Loaded Row",
+      "description": "A chest-supported row on a plate-loaded machine with an overhand grip for the upper back.",
+      "image_url": "OverhandGripPlateLoadedRow",
+      "trackable_metrics": [
+        "weightPerSide",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "rearDelts": "primary",
+        "lats": "primary",
+        "upperBack": "primary",
+        "biceps": "secondary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "EFE39CED-C9BA-4FE6-8B26-FC6DFA2FF09A",
+          "resistance_equipment": [
+            {
+              "id": "chest-supported_plate-loaded_row_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "9CA816E2-8514-4AE2-A2F5-93BB7CFF6A52",
+          "resistance_equipment": [
+            {
+              "id": "chest-supported_plate-loaded_row_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812447677.8025129,
+      "date_modified": 812447677.8025129
+    },
+    {
+      "id": "system-single-arm-45-degree-cable-rear-delt-fly",
+      "author_id": "official",
+      "name": "Single Arm 45° Cable Rear Delt Fly",
+      "description": "A single-arm cable reverse fly at a 45 degree angle that isolates the rear delts.",
+      "image_url": "SingleArm45DegreeCableRearDeltFly",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "upperTraps": "secondary",
+        "rearDelts": "primary",
+        "lats": "secondary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "FBF7C662-626E-4C13-AD13-5F7A692E2B81",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "68048C8D-1A13-491D-8A1C-0C8182DF5A00",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "7B4913CE-9593-4F74-BAE1-B911073EE1AE",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "BA8A28F1-DD4A-44B1-9C4A-348E9BD84C76",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Single Arm High-To-Low Cable Rear Delt Fly",
+        "Single Arm 45° Cable Reverse Fly"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812447876.174294,
+      "date_modified": 812447876.174294
+    },
+    {
+      "id": "system-barbell-shrug",
+      "author_id": "official",
+      "name": "Barbell Shrug",
+      "description": "A standing shoulder elevation with a barbell that targets the upper traps.",
+      "image_url": "BarbellShrug",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "upperTraps": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "8E1882BF-C5BF-4868-8DAB-9DD429034214",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "7C87473F-011E-42DF-927B-E38E54AD0D52",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448018.666363,
+      "date_modified": 812448018.666363
+    },
+    {
+      "id": "system-pin-loaded-machine-shoulder-press",
+      "author_id": "official",
+      "name": "Pin-Loaded Machine Shoulder Press",
+      "description": "A seated overhead press on a pin-loaded machine that targets the front delts and triceps.",
+      "image_url": "PinLoadedMachineShoulderPress",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "secondary",
+        "upperTraps": "secondary",
+        "serratus": "secondary",
+        "sideDelts": "secondary",
+        "frontDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "4A2D4C0A-F91C-494E-A2F2-F2588147E1BE",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_shoulder_press_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Overhand Grip Pin-Loaded Machine Shoulder Press"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448205.880975,
+      "date_modified": 812448205.880975
+    },
+    {
+      "id": "system-dumbbell-fly",
+      "author_id": "official",
+      "name": "Dumbbell Fly",
+      "description": "A flat-bench fly with dumbbells that stretches and loads the chest.",
+      "image_url": "DumbbellFly",
+      "trackable_metrics": [
+        "weightPerSide",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "chest": "primary",
+        "frontDelts": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "AFE3A7B4-B642-4E7A-A34D-4BCD604C9B94",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "flat_bench",
+              "kind": "supportEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Flat Dumbbell Fly",
+        "Dumbbell Chest Fly",
+        "Dumbbell Pec Fly"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448335.1709881,
+      "date_modified": 812448335.1709881
+    },
+    {
+      "id": "system-neutral-grip-cable-triceps-kickback",
+      "author_id": "official",
+      "name": "Neutral Grip Cable Triceps Kickback",
+      "description": "A hinged single-arm cable kickback that isolates the triceps in the shortened position.",
+      "image_url": "NeutralGripCableTricepsKickback",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "A59545D0-B9A3-4AF5-A087-89DBD58CDE84",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "4755A467-A504-435F-BCA3-7F90FC751EF8",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "CB929044-6D5B-4319-B092-5892C44CC781",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "2F4D4536-4521-4FBA-B061-B1C5C0EFD66F",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448453.6285429,
+      "date_modified": 812448453.6285429
+    },
+    {
+      "id": "system-captains-chair-knee-raise",
+      "author_id": "official",
+      "name": "Captain’s Chair Knee Raise",
+      "description": "A supported knee raise on a captain’s chair that trains the abs and hip flexors.",
+      "image_url": "CaptainsChairKneeRaise",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 40,
+      "alternate_names": [
+        "Captain’s Chair Bent-Knee Leg Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448535.780781,
+      "date_modified": 812448535.780781
+    },
+    {
+      "id": "system-45-degree-leg-press",
+      "author_id": "official",
+      "name": "45° Leg Press",
+      "description": "A plate-loaded sled press at 45 degrees that targets the quads and glutes.",
+      "image_url": "45DegreeLegPress",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "quads": "primary",
+        "adductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "98BF88ED-AA16-4460-9DF0-AA9BFD160862",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_leg_press_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "C5D6E080-6EDF-400F-A1A1-3363E6320A2E",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_leg_press_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Plate-Loaded Machine Leg Press"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448711.134388,
+      "date_modified": 812448711.134388
+    },
+    {
+      "id": "system-seated-hamstring-curl",
+      "author_id": "official",
+      "name": "Seated Hamstring Curl",
+      "description": "A seated machine knee flexion that isolates the hamstrings from a lengthened position.",
+      "image_url": "SeatedHamstringCurl",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary",
+        "calves": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "E354EE19-C533-4DC8-9DD9-68B0E1B5EAAD",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_leg_curl_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "E3F3A91B-E84D-41CD-8886-DF1A26EBDCB3",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_leg_curl_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "2C94DAE1-0EF5-4024-A087-83B6A47F0D5D",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_leg_curl_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Pin-Loaded Machine Leg Curl",
+        "Seated Pin-Loaded Machine Hamstring Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812448867.0795751,
+      "date_modified": 812448867.0795751
+    },
+    {
+      "id": "system-seated-machine-hip-adduction",
+      "author_id": "official",
+      "name": "Seated Machine Hip Adduction",
+      "description": "A seated machine movement squeezing the knees together that targets the adductors.",
+      "image_url": "SeatedMachineHipAdduction",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "adductors": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "F4035883-30A9-47E8-933D-92D0ECBE43B0",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_hip_adduction_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "21E449C7-27A6-4564-86FF-1E34CB614592",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "DE7085CD-D06B-4478-B8FA-D61414A191AC",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "3126C98F-7C7F-498C-92CE-A516016260DF",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "2524F062-5AF4-4563-9FA1-087E995A8FA1",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_adduction_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "7F31A201-71B0-4AE0-B243-1C25083AD6CE",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_adduction_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Pin-Loaded Machine Hip Adduction"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812449042.86866,
+      "date_modified": 812449042.86866
+    },
+    {
+      "id": "system-seated-machine-hip-abduction",
+      "author_id": "official",
+      "name": "Seated Machine Hip Abduction",
+      "description": "A seated machine movement pushing the knees apart that targets the outer glutes.",
+      "image_url": "SeatedMachineHipAbduction",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "F916298C-8635-47EC-906F-DF538DFEB6C5",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_hip_abduction_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "FAFE2067-7FFE-4226-BF07-500817B015BB",
+          "resistance_equipment": [
+            {
+              "id": "seated_pin-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "0A2CC998-7388-48C3-A8A7-D9C65888C548",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "45DC5A3E-D08B-469D-B147-05A7F7D3891B",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "D3A662A4-3D8C-40B5-BA04-3220CC1BCE7C",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "5CD0D76F-AE77-424D-9D80-8C3204385115",
+          "resistance_equipment": [
+            {
+              "id": "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Pin-Loaded Machine Hip Abduction"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812449186.5354381,
+      "date_modified": 812449186.5354381
+    },
+    {
+      "id": "system-45-degree-incline-dumbbell-press",
+      "author_id": "official",
+      "name": "45° Incline Dumbbell Press",
+      "description": "An incline press with dumbbells that emphasizes the upper chest and front delts.",
+      "image_url": "45DegreeInclineDumbbellPress",
+      "trackable_metrics": [
+        "weightPerSide",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "secondary",
+        "chest": "primary",
+        "frontDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "4231D6BE-F5D9-4DF3-BB47-6BFC2FA39E4D",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "adjustable_bench",
+              "kind": "supportEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Moderate Incline Dumbbell Bench Press Station"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812449618.359894,
+      "date_modified": 812449618.359894
+    },
+    {
+      "id": "system-wide-grip-cable-lat-pulldown",
+      "author_id": "official",
+      "name": "Wide Grip Cable Lat Pulldown",
+      "description": "A vertical pull with a wide overhand grip that targets the lats and upper back.",
+      "image_url": "WideGripCableLatPulldown",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "lats": "primary",
+        "upperBack": "secondary",
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "ABDEF179-03E1-436E-BDC6-961148AF79C9",
+          "resistance_equipment": [
+            {
+              "id": "cable_lat_pulldown_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Overhand Wide Grip Cable Lat Pulldown"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812449731.766469,
+      "date_modified": 812449731.766469
+    },
+    {
+      "id": "system-bent-over-barbell-row",
+      "author_id": "official",
+      "name": "Bent-Over Barbell Row",
+      "description": "A compound pull with the torso hinged forward that builds the lats, upper back and rear delts.",
+      "image_url": "BentOverBarbellRow",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "upperTraps": "secondary",
+        "rearDelts": "primary",
+        "lats": "primary",
+        "upperBack": "primary",
+        "biceps": "secondary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "8A317CF3-F47B-4A34-BB38-B3C05AAFE763",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "03E514A5-4FDD-4D6D-B080-14B48999D6AD",
+          "resistance_equipment": [
+            {
+              "id": "barbell",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Bent-Over Overhand Grip Barbell Row"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812449868.8129301,
+      "date_modified": 812449868.8129301
+    },
+    {
+      "id": "system-smith-machine-front-foot-elevated-split-squat",
+      "author_id": "official",
+      "name": "Smith Machine Front Foot Elevated Split Squat",
+      "description": "A split squat on a Smith machine with the front foot raised for a deeper quad and glute stretch.",
+      "image_url": "SmithMachineFrontFootElevatedSplitSquat",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "assymetrical",
+      "muscle_groups": {
+        "quads": "primary",
+        "abductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "47F02E04-0754-4A4F-95A0-6065026C16B0",
+          "resistance_equipment": [
+            {
+              "id": "smith_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "yoga_blocks",
+              "kind": "accessoryEquipment"
+            }
+          ]
+        },
+        {
+          "id": "350433C6-3470-4109-A19A-DF16EEDBF629",
+          "resistance_equipment": [
+            {
+              "id": "smith_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "yoga_blocks",
+              "kind": "accessoryEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Smith Machine Front Foot Elevated Static Lunge"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812450253.8729801,
+      "date_modified": 812450253.8729801
+    },
+    {
+      "id": "system-goblet-roman-chair-hip-hinge",
+      "author_id": "official",
+      "name": "Goblet Roman Chair Hip Hinge",
+      "description": "A back extension on a Roman chair holding a weight to the chest that trains the glutes and hamstrings.",
+      "image_url": "GobletRomanChairHipHinge",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary",
+        "adductors": "primary",
+        "glutes": "primary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "47F6CE2E-BA25-493C-93CE-746B02A2E33D",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "roman_chair",
+              "kind": "supportEquipment"
+            }
+          ]
+        },
+        {
+          "id": "4DC3628D-A352-4776-8CFB-752507C41EBF",
+          "resistance_equipment": [
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "roman_chair",
+              "kind": "supportEquipment"
+            }
+          ]
+        },
+        {
+          "id": "9D5DEF79-377E-4B30-A3A3-E9A23BE2FF88",
+          "resistance_equipment": [
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "roman_chair",
+              "kind": "supportEquipment"
+            }
+          ]
+        },
+        {
+          "id": "38936F81-503B-4670-9FB6-1584003372B5",
+          "resistance_equipment": [
+            {
+              "id": "kettlebells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "roman_chair",
+              "kind": "supportEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Weighted Roman Chair Hyperextension (Holding Weight To Chest)",
+        "Weighted Roman Chair Hip Extension (Holding Weight To Chest)",
+        "Bent-Elbow Weighted Roman Chair Hip Hinge",
+        "Weighted 45° Hyperextension (Holding Weight To Chest)",
+        "Weighted Roman Chair Hip Hinge Back Extension (Holding Weight To Chest)"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812450544.562566,
+      "date_modified": 812450544.562566
+    },
+    {
+      "id": "system-machine-crunch-with-overhead-handles",
+      "author_id": "official",
+      "name": "Machine Crunch (With Overhead Handles)",
+      "description": "A seated machine crunch pulling overhead handles down to load the abs.",
+      "image_url": "MachineCrunchWithOverheadHandles",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "46D59FBB-DA27-4624-800A-5CF246E7E129",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_abdominal_crunch_machine_with_overhead_handles",
+              "kind": "pinLoadedMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Pin-Loaded Machine Crunch (With Overhead Handles)"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812450652.0266991,
+      "date_modified": 812450652.0266991
+    },
+    {
+      "id": "system-overhand-grip-cable-lat-pulldown",
+      "author_id": "official",
+      "name": "Overhand Grip Cable Lat Pulldown",
+      "description": "A vertical pull with a shoulder-width overhand grip that builds the lats.",
+      "image_url": "OverhandGripCableLatPulldown",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "rearDelts": "secondary",
+        "lats": "primary",
+        "upperBack": "secondary",
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "665A7610-1D66-4085-B7FD-7321BB87E041",
+          "resistance_equipment": [
+            {
+              "id": "cable_lat_pulldown_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812451823.142901,
+      "date_modified": 812451823.142901
+    },
+    {
+      "id": "system-wide-grip-cable-row",
+      "author_id": "official",
+      "name": "Wide Grip Cable Row",
+      "description": "A seated horizontal pull with a wide overhand grip that emphasizes the upper back and rear delts.",
+      "image_url": "WideGripCableRow",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "upperTraps": "secondary",
+        "rearDelts": "primary",
+        "lats": "secondary",
+        "upperBack": "primary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "A69A314C-042F-4A27-966F-2AA78766705F",
+          "resistance_equipment": [
+            {
+              "id": "seated_cable_row_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Overhand Wide Grip Cable Row"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812451942.041949,
+      "date_modified": 812451942.041949
+    },
+    {
+      "id": "system-pause-cable-shrug-in",
+      "author_id": "official",
+      "name": "Pause Cable Shrug-In",
+      "description": "A cable shrug pulled up and in with a pause at the top to load the upper traps.",
+      "image_url": "PauseCableShrugIn",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "upperTraps": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "96A703F7-EF1F-4EBD-8729-AD4C470B6911",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "F63AF216-6874-4055-BF5F-611325BEEBC1",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "D11438CE-40EE-47F0-B5AF-AE420CB0C27E",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "51F80004-3063-4AFB-9D31-008A4485E8E8",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "12820D80-B19B-4980-BC7D-99BFDAB8FFE5",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "3DCD5ECF-3236-4090-8151-80734C4FD871",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Single Arm Pause Cable Shrug-In",
+        "Cable Paused Shrug-In"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812452182.2332301,
+      "date_modified": 812452182.2332301
+    },
+    {
+      "id": "system-cable-rope-hammer-curl",
+      "author_id": "official",
+      "name": "Cable Rope Hammer Curl",
+      "description": "A neutral-grip curl on a cable rope that trains the brachialis, brachioradialis and biceps.",
+      "image_url": "CableRopeHammerCurl",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "DC6C90D3-1466-4811-A98D-961445661BFD",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_single_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "C3A2ECD6-A3CD-49EE-BE17-638E01B17C87",
+          "resistance_equipment": [
+            {
+              "id": "pin-loaded_dual_cable_machine",
+              "kind": "cableMachine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "CFBA1BA5-F772-4DB0-B2F7-8D9DF7E54F61",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "BFD1AF80-8BC5-4060-86E9-35A26862570A",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_single_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "F7A18CEA-B990-49E3-8A0A-FACCC76BDC60",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "B4D62477-3A08-4ECE-87E4-C7059F577048",
+          "resistance_equipment": [
+            {
+              "id": "plate-loaded_dual_cable_machine",
+              "kind": "plateLoadedMachine"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812452344.041656,
+      "date_modified": 812452344.041656
+    },
+    {
+      "id": "system-dumbbell-concentration-curl",
+      "author_id": "official",
+      "name": "Dumbbell Concentration Curl",
+      "description": "A seated single-arm curl braced against the thigh that isolates the biceps.",
+      "image_url": "DumbbellConcentrationCurl",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "5A10AA27-0578-49FD-AAAD-9A236CBB19A1",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "adjustable_bench",
+              "kind": "supportEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Dumbbell Concentration Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812452433.421442,
+      "date_modified": 812452433.421442
+    },
+    {
+      "id": "system-ez-bar-skull-crusher",
+      "author_id": "official",
+      "name": "EZ Bar Skull Crusher",
+      "description": "A lying elbow extension with an EZ bar that isolates the triceps, especially the long head.",
+      "image_url": "EZBarSkullCrusher",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "CC70D2D2-9F2A-40BE-8C49-73168C4A10B6",
+          "resistance_equipment": [
+            {
+              "id": "ez_bar",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "weight_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "flat_bench",
+              "kind": "supportEquipment"
+            }
+          ]
+        },
+        {
+          "id": "5AD4E403-2609-4989-9750-7CC7B1CC9022",
+          "resistance_equipment": [
+            {
+              "id": "ez_bar",
+              "kind": "loadableBar"
+            },
+            {
+              "id": "bumper_plates",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": [
+            {
+              "id": "flat_bench",
+              "kind": "supportEquipment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Lying EZ Bar Triceps Extensions",
+        "EZ Bar Skullcrusher"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812478388.663137,
+      "date_modified": 812478388.663137
+    },
+    {
+      "id": "system-ab-wheel-rollout",
+      "author_id": "official",
+      "name": "Ab Wheel Rollout",
+      "description": "A kneeling anti-extension rollout on an ab wheel that challenges the abs and core.",
+      "image_url": "AbWheelRollout",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "lats": "secondary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 75,
+      "alternate_names": [
+        "Kneeling Ab Wheel Rollout"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812478461.732167,
+      "date_modified": 812478461.732167
+    },
+    {
+      "id": "system-dumbbell-reverse-lunge",
+      "author_id": "official",
+      "name": "Dumbbell Reverse Lunge",
+      "description": "A stepping-back lunge holding dumbbells that trains the quads and glutes one leg at a time.",
+      "image_url": "DumbbellReverseLunge",
+      "trackable_metrics": [
+        "weightPerSidePersistent",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "assymetrical",
+      "muscle_groups": {
+        "forearms": "secondary",
+        "quads": "primary",
+        "adductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "2B3A0C43-FE36-4A17-B8E5-D8CE4E30D591",
+          "resistance_equipment": [
+            {
+              "id": "dumbbells",
+              "kind": "freeWeight"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 2,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Dumbbell Backward Lunge"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 812478674.3576281,
+      "date_modified": 812478674.3576281
     }
   ]
 }

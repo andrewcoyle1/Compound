@@ -16,6 +16,10 @@ enum CalendarDayMarker: Hashable, Sendable {
     /// A number of logged items. Outlines the day, and badges counts above one.
     case count(Int)
 
+    /// Logged workouts in the order they were done, each drawn as its own stroke in its
+    /// mesocycle's colour (a hex string), or the accent for nil: a workout outside any mesocycle.
+    case sessions(colours: [String?])
+
     /// Progress toward a daily goal, drawn as a ring around the cell.
     ///
     /// `grace` is how far past `goal` still counts as on target — going over by a little is not
@@ -27,6 +31,8 @@ enum CalendarDayMarker: Hashable, Sendable {
         switch self {
         case .count(let count):
             return count > 0 ? 1 : 0
+        case .sessions(let colours):
+            return colours.isEmpty ? 0 : 1
         case .goalProgress(let value, let goal, _):
             guard goal > 0 else { return 0 }
             return min(max(value / goal, 0), 1)
@@ -36,7 +42,7 @@ enum CalendarDayMarker: Hashable, Sendable {
     /// True once the goal has been reached, whether or not the grace allowance is also used up.
     var isGoalMet: Bool {
         switch self {
-        case .count:
+        case .count, .sessions:
             return false
         case .goalProgress(let value, let goal, _):
             return goal > 0 && value >= goal
@@ -46,7 +52,7 @@ enum CalendarDayMarker: Hashable, Sendable {
     /// True once the goal plus its grace allowance has been exceeded.
     var isOverGoal: Bool {
         switch self {
-        case .count:
+        case .count, .sessions:
             return false
         case .goalProgress(let value, let goal, let grace):
             return goal > 0 && value > goal + grace
@@ -65,6 +71,8 @@ enum CalendarDayMarker: Hashable, Sendable {
         switch self {
         case .count(let count):
             return count <= 0
+        case .sessions(let colours):
+            return colours.isEmpty
         case .goalProgress(let value, _, _):
             return value <= 0
         }
@@ -77,6 +85,8 @@ enum CalendarDayMarker: Hashable, Sendable {
         switch self {
         case .count(let count):
             return count == 1 ? String(localized: "Logged") : String(localized: "\(count) logged")
+        case .sessions(let colours):
+            return colours.count == 1 ? String(localized: "Logged") : String(localized: "\(colours.count) logged")
         case .goalProgress(let value, let goal, _):
             guard goal > 0 else { return String(localized: "Logged") }
             let progress = String(localized: "\(Format.percent(value / goal)) of goal")
@@ -90,12 +100,13 @@ enum CalendarDayMarker: Hashable, Sendable {
         }
     }
 
-    /// The number shown in the corner badge, if any. Progress rings speak for themselves.
+    /// The number shown in the corner badge, if any. Progress rings and one stroke per workout
+    /// speak for themselves.
     var badgeCount: Int? {
         switch self {
         case .count(let count):
             return count > 1 ? count : nil
-        case .goalProgress:
+        case .goalProgress, .sessions:
             return nil
         }
     }

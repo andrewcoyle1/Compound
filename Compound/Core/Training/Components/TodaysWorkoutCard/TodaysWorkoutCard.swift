@@ -31,7 +31,20 @@ struct TodaysWorkoutCard: View {
     }
     
     private var restDayCard: some View {
-        RestDayCard()
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            RestDayCard()
+            if let name = presenter.nextWorkoutName {
+                Button {
+                    presenter.onStartPressed()
+                } label: {
+                    Label("Start \(name) Instead", systemImage: Symbol.start)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .accessibilityHint("Trains today and marks the rest day skipped")
+            }
+        }
     }
     
     private var workoutCompleted: some View {

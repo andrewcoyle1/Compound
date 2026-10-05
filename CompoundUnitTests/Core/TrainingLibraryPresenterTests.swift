@@ -352,12 +352,13 @@ struct TrainingWorkoutHistoryPresenterTests {
         #expect(screen.presenter.workoutSessions.map(\.id) == ["done"])
     }
 
-    /// Rest days for days still to come are written ahead of time by the mesocycle. Listing one puts
-    /// tomorrow at the top of the user's history.
-    @Test("Test A Rest Day Yet To Come Is Not In The History")
-    func testARestDayYetToComeIsNotInTheHistory() {
+    /// Rest days are sessions only so the mesocycle can count them done, including the ones it
+    /// writes ahead for days still to come. None of them is a workout.
+    @Test("Test Rest Days Are Not In The History")
+    func testRestDaysAreNotInTheHistory() {
         let screen = makeScreen(sessions: [
             TrainingTabFixture.session(id: "done", on: TrainingTabFixture.date(day: 11)),
+            TrainingTabFixture.session(id: "past-rest", name: "Rest", on: TrainingTabFixture.date(day: 12), isRestDay: true),
             TrainingTabFixture.session(
                 id: "future-rest",
                 name: "Rest",
@@ -367,15 +368,6 @@ struct TrainingWorkoutHistoryPresenterTests {
         ])
 
         #expect(screen.presenter.workoutSessions.map(\.id) == ["done"])
-    }
-
-    @Test("Test A Rest Day Already Taken Stays In The History")
-    func testARestDayAlreadyTakenStaysInTheHistory() {
-        let screen = makeScreen(sessions: [
-            TrainingTabFixture.session(id: "past-rest", name: "Rest", on: TrainingTabFixture.date(day: 11), isRestDay: true)
-        ])
-
-        #expect(screen.presenter.workoutSessions.map(\.id) == ["past-rest"])
     }
 
     @Test("Test Pressing A Workout Opens It")

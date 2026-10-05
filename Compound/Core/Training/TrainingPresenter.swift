@@ -85,16 +85,17 @@ class TrainingPresenter {
         router.showProfileViewZoom(transitionId: transitionId, namespace: namespace)
     }
     
-    /// Logged sessions grouped by day in one pass. The calendar header used to ask for a count
-    /// per visible day, and each answer filtered every session with `isDate(_:inSameDayAs:)`.
+    /// Finished workouts grouped by day in one pass, each in its mesocycle's colour and in the
+    /// order they were done. Rest days are not workouts, so they leave the day blank. The calendar
+    /// header used to ask for a count per visible day, and each answer filtered every session.
     func loggedWorkoutMarkersByDay() -> [Date: CalendarDayMarker] {
-        let now = Date()
-        let counts = workoutSessions.reduce(into: [Date: Int]()) { counts, session in
-            guard session.endedAt != nil else { return }
-            if session.isRestDay && session.dateCreated > now { return }
-            counts[calendar.startOfDay(for: session.dateCreated), default: 0] += 1
+        let colours = Dictionary(interactor.mesocycles.map { ($0.id, $0.colour) }, uniquingKeysWith: { first, _ in first })
+        let byDay = Dictionary(grouping: workoutSessions.filter { $0.endedAt != nil && !$0.isRestDay }) {
+            calendar.startOfDay(for: $0.dateCreated)
         }
-        return counts.mapValues { .count($0) }
+        return byDay.mapValues { sessions in
+            .sessions(colours: sessions.sorted { $0.dateCreated < $1.dateCreated }.map { $0.mesocycleId.flatMap { colours[$0] } })
+        }
     }
         
     func onStartEmptyWorkoutPressed() {
@@ -153,10 +154,7 @@ class TrainingPresenter {
     
     private func sessionsForDate(_ date: Date) -> [WorkoutSessionModel] {
         interactor.workoutSessions.filter { session in
-            guard session.endedAt != nil,
-                  calendar.isDate(session.dateCreated, inSameDayAs: date) else { return false }
-            if session.isRestDay { return session.dateCreated <= Date() }
-            return true
+            session.endedAt != nil && !session.isRestDay && calendar.isDate(session.dateCreated, inSameDayAs: date)
         }
     }
         

@@ -226,6 +226,7 @@ struct CoreInteractor: GlobalInteractor {
         premiumEntitlementResolution.reset()
         userManager.signOut()
         stopListeningBeforeAccountDeletion()
+        WidgetSnapshotStore.clear()
         pushManager.setReadyForDeepLinks(false)
     }
     
@@ -251,6 +252,7 @@ struct CoreInteractor: GlobalInteractor {
         }
 
         stravaManager.disconnect()
+        WidgetSnapshotStore.clear()
 
         // Delete Purchases (RevenueCat)
         try await purchaseManager.logOut()

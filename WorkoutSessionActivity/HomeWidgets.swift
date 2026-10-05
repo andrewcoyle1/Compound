@@ -98,7 +98,7 @@ struct StreakWidget: Widget {
                 .widgetURL(WidgetSnapshotStore.trainingURL)
         }
         .configurationDisplayName("Streak")
-        .description("Track your training streak.")
+        .description("Weeks in a row you have hit your weekly goal.")
         .supportedFamilies([.systemSmall, .accessoryCircular])
     }
 }
@@ -121,7 +121,7 @@ struct StreakWidgetView: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(entry.snapshot.currentStreak) day streak")
+            .accessibilityLabel("\(entry.snapshot.currentStreak) week streak")
         } else {
             VStack(alignment: .leading, spacing: 4) {
                 Image(systemName: "flame.fill")
@@ -132,9 +132,9 @@ struct StreakWidgetView: View {
                 Text("\(entry.snapshot.currentStreak)")
                     .font(.system(.largeTitle, design: .rounded, weight: .bold))
                     .minimumScaleFactor(0.5)
-                // Two keys so Spanish can agree with the count ("día" / "días"). English reads
-                // "day streak" for both: the catalog gives "days streak" that English value.
-                Text(entry.snapshot.currentStreak == 1 ? "day streak" : "days streak")
+                // Two keys so Spanish can agree with the count ("semana" / "semanas"). English reads
+                // "week streak" for both: the catalog gives "weeks streak" that English value.
+                Text(entry.snapshot.currentStreak == 1 ? "week streak" : "weeks streak")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

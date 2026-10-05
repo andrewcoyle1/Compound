@@ -310,7 +310,8 @@ enum RemotePushCopy {
             String(localized: "\(first) replied to your comment: \"\(second)\""),
             String(localized: "\(first) wants to follow you"),
             String(localized: "Streak at Risk"),
-            String(localized: "Your \(first)-day streak ends at midnight."),
+            String(localized: "One more session this week keeps your \(first)-week streak."),
+            String(localized: "\(first) more sessions this week keep your \(second)-week streak."),
             String(localized: "Your Week"),
             String(localized: "Workouts this week: you \(first), your circle \(second).")
         ]

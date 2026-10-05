@@ -256,7 +256,7 @@ export function shouldReleaseReservation(reservation, uid) {
 // ---------------------------------------------------------------------------
 
 // The scheduled pushes' switches, in users/{uid}/private/settings. The digest is on unless turned
-// off; the streak reminder is off until the person says yes (the app offers it at a 3-day streak).
+// off; the streak reminder is off until the person says yes (the app offers it at a two-week streak).
 export const SCHEDULED_PUSH_PREFERENCE_KEYS = {
     streakReminder: "social_push_streak_reminder",
     weeklyDigest: "social_push_weekly_digest",
@@ -315,19 +315,40 @@ export function isStreakReminderDue(settings, now) {
     return !!local && local.hour === (settings.reminder_hour ?? DEFAULT_REMINDER_HOUR);
 }
 
-// The "streak ends at midnight" push for one user, or null. `streak` is the StreakManager doc at
-// user_streaks/{uid}/workout/current_streak. Sent in the user's reminder hour when the streak's
-// last workout was yesterday on their clock: today means they have trained, earlier means the
-// streak has already gone.
-// ponytail: ignores the app's 2 leeway hours, so a workout just after midnight counts as today here.
-export function buildStreakReminderPush(settings, streak, now) {
-    if (!isStreakReminderDue(settings, now)) return null;
-    const local = localTime(now, settings.timezone);
-    const days = streak?.current_streak ?? 0;
-    const lastEvent = localTime(toDate(streak?.date_last_event), settings.timezone);
-    if (days <= 0 || !lastEvent || lastEvent.date !== previousDay(local.date)) return null;
+// This week as the server can know it, from the app's WeeklyStreak copy in the private settings
+// (week_streak, week_sessions, week_goal, week_ends_at), or null when there is nothing to keep.
+// The server cannot work out the user's weeks (it does not know their first weekday), so it
+// trusts week_ends_at and, when the app has not been opened since, rolls one week on: the streak
+// survives into it only if the stored week met its goal.
+export function streakWeek(settings, now) {
+    let endsAt = toDate(settings?.week_ends_at);
+    let sessions = settings?.week_sessions ?? 0;
+    const goal = settings?.week_goal ?? 0;
+    const weeks = settings?.week_streak ?? 0;
+    if (!endsAt || goal <= 0 || weeks <= 0) return null;
+    if (now >= endsAt) {
+        if (sessions < goal || now.getTime() >= endsAt.getTime() + 7 * DAY_MS) return null;
+        endsAt = new Date(endsAt.getTime() + 7 * DAY_MS);
+        sessions = 0;
+    }
+    return { weeks, remaining: Math.max(goal - sessions, 0), daysLeft: Math.ceil((endsAt - now) / DAY_MS) };
+}
 
-    const alert = localizedAlert({ key: "Your %@-day streak ends at midnight.", args: [String(days)] }, { key: "Streak at Risk", args: [] });
+// The "one more session keeps your streak" push for one user, or null. Sent in the reminder hour
+// when keeping the weekly streak needs a session today: as many sessions still owed as days left,
+// today included, and none logged today on the user's clock. Not when more are owed than days
+// remain: the streak is already gone, and the push would promise what cannot happen.
+export function buildStreakReminderPush(settings, now) {
+    if (!isStreakReminderDue(settings, now)) return null;
+    const week = streakWeek(settings, now);
+    if (!week || week.remaining === 0 || week.remaining !== week.daysLeft) return null;
+    const lastTrained = localTime(toDate(settings.last_trained_at), settings.timezone);
+    if (lastTrained && lastTrained.date === localTime(now, settings.timezone).date) return null;
+
+    const body = week.remaining === 1
+        ? { key: "One more session this week keeps your %@-week streak.", args: [String(week.weeks)] }
+        : { key: "%@ more sessions this week keep your %@-week streak.", args: [String(week.remaining), String(week.weeks)] };
+    const alert = localizedAlert(body, { key: "Streak at Risk", args: [] });
     return {
         token: settings.fcm_token,
         notification: { title: alert.title, body: alert.body },
@@ -706,7 +727,9 @@ export function sessionPageContent(session, author, priorSessions = []) {
         durationText: seconds === null ? null : hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
         volumeText: volume > 0 ? `${Math.round(volume).toLocaleString("en-US")} kg` : null,
         personalRecordLines: personalRecordLines(session, priorSessions),
-        streakText: session.streak_count > 1 ? `${session.streak_count}-day streak` : null,
+        // The weekly streak stamped at finish. Older sessions carry a day streak in streak_count,
+        // which is not shown: its number meant something else.
+        streakText: session.week_streak_count > 1 ? `${session.week_streak_count}-week streak` : null,
     };
 }
 

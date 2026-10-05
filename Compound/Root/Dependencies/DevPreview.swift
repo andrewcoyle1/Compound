@@ -40,7 +40,6 @@ class DevPreview {
         container.register(BodyMeasurementsManager.self, service: bodyMeasurementsManager)
         container.register(StepsManager.self, service: stepsManager)
         container.register(GoalManager.self, service: goalManager)
-        container.register(StreakManager.self, service: streakManager)
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         container.register(HKWorkoutManager.self, service: hkWorkoutManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)
@@ -96,7 +95,6 @@ class DevPreview {
     let bodyMeasurementsManager: BodyMeasurementsManager
     let stepsManager: StepsManager
     let goalManager: GoalManager
-    let streakManager: StreakManager
     #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
     let hkWorkoutManager: HKWorkoutManager
     let liveActivityManager: LiveActivityManager
@@ -305,11 +303,6 @@ class DevPreview {
             logger: logManager
         )
         self.goalManager = GoalManager(userGoalSyncEngine: userGoalSyncEngine)
-        self.streakManager = StreakManager(
-            services: MockStreakServices(),
-            configuration: StreakConfiguration(streakKey: "workout", leewayHours: 2),
-            logger: logManager
-        )
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         let unitPreferences = exerciseUnitPreferenceManager
         liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {

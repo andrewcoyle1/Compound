@@ -33,7 +33,6 @@ extension CoreInteractor {
         mealLogManager.signOut()
         bodyMeasurementsManager.signOut()
         goalManager.signOut()
-        streakManager.logOut()
         activityNotificationManager.stopListening()
         progressPhotoManager.stopListening()
     }

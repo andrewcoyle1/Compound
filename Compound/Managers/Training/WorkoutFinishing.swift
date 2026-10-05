@@ -65,8 +65,7 @@ func saveFinishedWorkout(
 
 #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
 
-/// The managers finishing a workout touches. The streak and Strava are optional so a test can
-/// finish without them.
+/// The managers finishing a workout touches. Strava is optional so a test can finish without it.
 @MainActor
 struct WorkoutFinishManagers {
     let sessions: WorkoutSessionManager
@@ -76,7 +75,6 @@ struct WorkoutFinishManagers {
     let mesocycles: MesocycleManager
     let users: UserManager
     var macrocycles: MacrocycleManager?
-    var streak: StreakManager?
     var strava: StravaManager?
     let logger: LogManager
 }
@@ -87,7 +85,7 @@ struct WorkoutFinishManagers {
 /// The activity is torn down on the first answer rather than the last: waiting for a whole retry
 /// schedule would leave the Dynamic Island claiming a workout was under way for half a minute
 /// after the user finished it. The side effects are each independent of the save and of each
-/// other — a failed streak write must not skip the Strava upload.
+/// other — a failed streak stamp must not skip the Strava upload.
 @MainActor
 func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinishManagers) async -> WorkoutSaveOutcome {
     let logger = managers.logger
@@ -98,22 +96,6 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
     let outcome = await saveFinishedWorkout(session, sessions: managers.sessions, logger: logger)
     managers.liveActivity.endLiveActivity(session: session, isCompleted: outcome == .saved)
 
-    if let streak = managers.streak {
-        do {
-            _ = try await streak.addStreakEvent()
-            // Followers cannot read the author's streak, so it rides on the session they can
-            // read. A second write rather than stamping before the save: the save goes first so
-            // it is never held up by the streak, and a session that did not save has nothing to
-            // stamp. The stamp is best-effort — a session without it renders as before.
-            if outcome == .saved, let count = streak.currentStreakData.currentStreak {
-                var stamped = session
-                stamped.streakCount = count
-                try await managers.sessions.saveWorkoutSession(stamped)
-            }
-        } catch {
-            logger.trackEvent(eventName: "finish_workout_streak_error", parameters: ["error": error.localizedDescription], type: .warning)
-        }
-    }
     await preCompleteConsecutiveRestDays(
         after: session,
         in: managers.mesocycles.activeMesocycle(for: managers.users.currentUser),
@@ -121,13 +103,13 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
     )
     let sessionsIncludingThis = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
     if outcome == .saved {
+        await stampWeeklyStreak(on: session, using: managers, sessions: sessionsIncludingThis)
         await advanceMacrocycle(using: managers, sessions: sessionsIncludingThis)
         refreshWidgetSnapshot(
             users: managers.users,
             mesocycles: managers.mesocycles,
             macrocycles: managers.macrocycles,
-            sessions: sessionsIncludingThis,
-            streak: managers.streak?.currentStreakData.currentStreak
+            sessions: sessionsIncludingThis
         )
         recordFinishedSessionForReviewPrompt(session)
         if let user = managers.users.currentUser {
@@ -141,6 +123,21 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
         await managers.strava?.queueUpload(session)
     }
     return outcome
+}
+
+/// Followers cannot read the author's history, so the streak rides on the session they can read:
+/// a field write after the save, so it never holds the save up. The server's copy is updated too,
+/// for the evening reminder. Best-effort: a session without it renders as before.
+@MainActor
+private func stampWeeklyStreak(on session: WorkoutSessionModel, using managers: WorkoutFinishManagers, sessions: [WorkoutSessionModel]) async {
+    guard let user = managers.users.currentUser else { return }
+    let streak = WeeklyStreak.make(sessions: sessions, userId: user.userId, goal: CircleWeek.goal(for: user))
+    do {
+        try await managers.sessions.setWeekStreakCount(streak.weeks, sessionId: session.id)
+        try await recordWeeklyStreak(streak, users: managers.users)
+    } catch {
+        managers.logger.trackEvent(eventName: "finish_workout_streak_error", parameters: ["error": error.localizedDescription], type: .warning)
+    }
 }
 
 /// A workout that finishes the block's last open slot moves the plan on. Best-effort: the

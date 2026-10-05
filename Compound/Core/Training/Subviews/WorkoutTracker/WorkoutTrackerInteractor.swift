@@ -170,7 +170,6 @@ extension CoreInteractor: WorkoutTrackerInteractor {
             mesocycles: mesocycleManager,
             users: userManager,
             macrocycles: macrocycleManager,
-            streak: streakManager,
             strava: stravaManager,
             logger: logManager
         ))

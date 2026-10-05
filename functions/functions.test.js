@@ -414,20 +414,24 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
         beforeEach(() => mock.timers.enable({ apis: ["Date"], now: sunday }));
         after(() => mock.timers.reset());
 
-        test("streakReminder warns a user whose streak ends tonight, and no one else", async () => {
-            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18, social_push_streak_reminder: true };
+        test("streakReminder warns a user whose weekly streak needs a session today, and no one else", async () => {
+            // Sunday 18:00 UTC with the week ending at midnight: one day left, today.
+            const week = { week_streak: 4, week_goal: 3, week_ends_at: new Date(sunday.getTime() + 6 * HOUR) };
+            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18, social_push_streak_reminder: true, ...week };
             await seed({
-                "users/a/private/settings": { ...settings, fcm_token: "tok-a" },
-                "user_streaks/a/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - 20 * HOUR) },
-                "users/b/private/settings": { ...settings, fcm_token: "tok-b" },
-                "user_streaks/b/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - HOUR) },
-                "users/c/private/settings": { ...settings, fcm_token: "tok-c", reminder_hour: 9 },
-                "user_streaks/c/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - 20 * HOUR) },
+                // Two of three, nothing today: the last session keeps it.
+                "users/a/private/settings": { ...settings, fcm_token: "tok-a", week_sessions: 2, last_trained_at: new Date(sunday.getTime() - 30 * HOUR) },
+                // Trained today.
+                "users/b/private/settings": { ...settings, fcm_token: "tok-b", week_sessions: 2, last_trained_at: new Date(sunday.getTime() - HOUR) },
+                // Not their reminder hour.
+                "users/c/private/settings": { ...settings, fcm_token: "tok-c", week_sessions: 2, reminder_hour: 9 },
+                // Goal already met.
+                "users/d/private/settings": { ...settings, fcm_token: "tok-d", week_sessions: 3 },
             });
             await run(fns.streakReminder, {});
             mock.timers.reset();
             assert.deepEqual(sent.map((m) => m.token), ["tok-a"]);
-            assert.equal(sent[0].notification.body, "Your 4-day streak ends at midnight.");
+            assert.equal(sent[0].notification.body, "One more session this week keeps your 4-week streak.");
         });
 
         test("weeklyDigest counts the user's and their circle's sessions over seven days", async () => {

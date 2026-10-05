@@ -27,7 +27,7 @@ struct ShareCardTests {
             dateCreated: start,
             endedAt: start.addingTimeInterval(minutes * 60),
             exercises: [WorkoutExerciseModel(id: "e1", authorId: "me", templateId: "bench", name: "Bench", trackingMode: .weightReps, index: 1, sets: sets)],
-            streakCount: streak
+            weekStreakCount: streak
         )
     }
 
@@ -86,7 +86,7 @@ struct ShareCardTests {
 
         #expect(card.personalRecordLines == ["Bench 100 kg × 5"])
         #expect(card.weeklyText == "3rd workout of the week")
-        #expect(card.streakText == "12-day streak")
+        #expect(card.streakText == "12-week streak")
     }
 
     @Test("Test A First Workout With No Records Has No Highlights")

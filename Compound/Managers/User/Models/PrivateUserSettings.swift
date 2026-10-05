@@ -28,6 +28,15 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
     var timezone: String?
     var socialPushStreakReminder: Bool?
     var socialPushWeeklyDigest: Bool?
+    // MARK: - WeeklyStreak
+    /// The app's `WeeklyStreak`, written for `streakReminder` in `functions/`, which cannot work out
+    /// the user's weeks itself: it does not know their first weekday.
+    var weekStreak: Int?
+    var weekSessions: Int?
+    var weekGoal: Int?
+    /// The instant this week ends on the user's calendar.
+    var weekEndsAt: Date?
+    var lastTrainedAt: Date?
     // MARK: - Challenges
     var socialPushChallenges: Bool?
     // MARK: - LocalReminders
@@ -49,6 +58,12 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
         case timezone
         case socialPushStreakReminder = "social_push_streak_reminder"
         case socialPushWeeklyDigest = "social_push_weekly_digest"
+        // MARK: - WeeklyStreak
+        case weekStreak = "week_streak"
+        case weekSessions = "week_sessions"
+        case weekGoal = "week_goal"
+        case weekEndsAt = "week_ends_at"
+        case lastTrainedAt = "last_trained_at"
         // MARK: - Challenges
         case socialPushChallenges = "social_push_challenges"
         // MARK: - LocalReminders
@@ -104,7 +119,7 @@ extension PrivateUserSettings {
     /// Must match `DEFAULT_REMINDER_HOUR` in `functions/lib.js`.
     static let defaultReminderHour = 19
 
-    /// Off until chosen: offered once, at a 3-day streak. Absent means never answered. The server
+    /// Off until chosen: offered once, at a two-week streak. Absent means never answered. The server
     /// reads it the same way (`isStreakReminderDue` in `functions/lib.js`).
     var isStreakReminderEnabled: Bool { socialPushStreakReminder ?? false }
 }

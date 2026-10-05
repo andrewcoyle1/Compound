@@ -4,7 +4,7 @@
 //
 //  Meal reminders and the streak reminder are off until chosen. Each is offered once, in the app,
 //  at the moment it becomes relevant: meal reminders on the first visit to Nutrition, the streak
-//  reminder once a 3-day streak is reached. Either answer is final; the switches in Notification
+//  reminder once a two-week streak is reached. Either answer is final; the switches in Notification
 //  Settings change it afterwards.
 //
 
@@ -13,7 +13,7 @@ import SwiftUI
 @MainActor
 protocol ReminderOfferInteractor: GlobalInteractor {
     var privateUserSettings: PrivateUserSettings { get }
-    var currentStreakData: CurrentStreakData { get }
+    var weeklyStreak: WeeklyStreak { get }
     func canRequestNotificationAuthorisation() async -> Bool
     func requestPushAuthorisation() async throws -> Bool
     func setMealReminders(isEnabled: Bool) async throws
@@ -33,7 +33,9 @@ final class ReminderOfferFlow {
         var shownKey: String { "hasShownReminderOffer_\(rawValue)" }
     }
 
-    static let streakThreshold = 3
+    /// Two weeks: one is only this week's goal; a second means the habit has started to hold, and
+    /// there is now a streak worth an evening reminder.
+    static let streakThreshold = 2
 
     private let interactor: ReminderOfferInteractor
     private let router: GlobalRouter
@@ -55,7 +57,7 @@ final class ReminderOfferFlow {
             return settings.pushMealReminders == nil
         case .streakReminder:
             return settings.socialPushStreakReminder == nil
-                && (interactor.currentStreakData.currentStreak ?? 0) >= Self.streakThreshold
+                && interactor.weeklyStreak.weeks >= Self.streakThreshold
         }
     }
 
@@ -101,10 +103,10 @@ final class ReminderOfferFlow {
                 accept: String(localized: "Turn On Meal Reminders")
             )
         case .streakReminder:
-            let days = interactor.currentStreakData.currentStreak ?? Self.streakThreshold
+            let weeks = interactor.weeklyStreak.weeks
             return Copy(
                 title: String(localized: "Streak Reminder"),
-                message: String(localized: "You're on a \(days)-day streak. Compound can remind you in the evening on a day your streak would end."),
+                message: String(localized: "You're on a \(weeks)-week streak. Compound can remind you in the evening when this week's goal needs a session that day."),
                 accept: String(localized: "Turn On Streak Reminder")
             )
         }

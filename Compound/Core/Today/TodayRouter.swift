@@ -18,6 +18,10 @@ protocol TodayRouter: GlobalRouter {
     func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?)
     func showCheckInView(delegate: CheckInDelegate)
     func showWeeklyReviewView()
+    func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate)
+    func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate)
+    func showStepsView(delegate: StepsDelegate, themeColor: Color?)
+    func showIntegrationsView(delegate: IntegrationsDelegate)
 }
 
 extension CoreRouter: TodayRouter { }

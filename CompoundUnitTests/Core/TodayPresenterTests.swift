@@ -63,6 +63,24 @@ struct TodayPresenterTests {
             if let skipError { throw skipError }
             skippedWeeks.append(weekStart)
         }
+
+        // MARK: - Checklist
+        var userMeals: [MealLogModel] = []
+        var currentGoal: WeightGoal?
+        var stepsHistory: [StepsModel] = []
+        private(set) var stepSyncCount = 0
+        func syncStepsFromHealthKit(fromScratch: Bool) async { stepSyncCount += 1 }
+        func canRequestHealthDataAuthorisation() -> Bool { false }
+        func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
+        var analyticsSettings = AnalyticsSettings(authorId: "me")
+        private(set) var savedAnalyticsSettings: [AnalyticsSettings] = []
+        func saveAnalyticsSettings(_ settings: AnalyticsSettings) async throws {
+            savedAnalyticsSettings.append(settings)
+            analyticsSettings = settings
+        }
+        var stravaIsConnected = false
+        var followingWorkoutSessions: [WorkoutSessionModel] = []
+        var followingUsers: [UserModel] = []
     }
 
     /// `showDevSettingsView()` is declared unguarded: the test target builds without `-DDEV`.
@@ -80,6 +98,10 @@ struct TodayPresenterTests {
         func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?) { shown.append("scaleWeight") }
         func showCheckInView(delegate: CheckInDelegate) { shown.append("checkIn") }
         func showWeeklyReviewView() { shown.append("weeklyReview") }
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("sessionDetail") }
+        func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { shown.append("templateDetail") }
+        func showStepsView(delegate: StepsDelegate, themeColor: Color?) { shown.append("steps") }
+        func showIntegrationsView(delegate: IntegrationsDelegate) { shown.append("integrations") }
         func showAddMealView(delegate: AddMealDelegate) {
             shown.append("addMeal")
             addMealDelegates.append(delegate)
@@ -155,7 +177,8 @@ struct TodayPresenterTests {
 
     // MARK: Nutrition
 
-    /// Filled on appear, so opening the tab after logging breakfast shows breakfast.
+    /// Totals are read live from the meal log, so a meal logged anywhere shows at once; the
+    /// target loads on appear.
     @Test("Test Appearing Loads Todays Nutrition Totals And Target")
     func testAppearingLoadsTodaysNutritionTotalsAndTarget() async {
         let screen = makeScreen()
@@ -167,7 +190,7 @@ struct TodayPresenterTests {
 
         #expect(screen.presenter.nutritionTotals?.calories == 900)
         #expect(screen.presenter.nutritionTarget?.calories == DailyMacroTarget.mock.calories)
-        #expect(screen.interactor.totalsDayKeys == [Date().dayKey])
+        #expect(Set(screen.interactor.totalsDayKeys) == [Date().dayKey])
     }
 
     @Test("Test A Failed Totals Read Leaves The Card Empty")
@@ -291,8 +314,8 @@ struct TodayPresenterTests {
         screen.presenter.onViewDisappear(delegate: screen.delegate)
 
         #expect(screen.interactor.trackedScreenEventNames == ["TodayView_Appear"])
-        // The double has no totals, so appearing also logs the failed nutrition read.
-        #expect(screen.interactor.trackedEventNames == ["TodayView_LoadNutritionTotals_Fail", "TodayView_Disappear"])
+        // Totals are read live rather than loaded on appear, so a missing total logs nothing.
+        #expect(screen.interactor.trackedEventNames == ["TodayView_Disappear"])
     }
 
     // MARK: Streak reminder offer

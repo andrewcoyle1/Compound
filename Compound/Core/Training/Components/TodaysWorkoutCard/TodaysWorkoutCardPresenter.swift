@@ -37,12 +37,17 @@ class TodaysWorkoutCardPresenter {
 
     /// Today's workout is the next open one, so it can be started straight from the card.
     var canStart: Bool {
-        todaysOpenSlot != nil
+        startableSlot != nil
+    }
+
+    /// On a rest day, the workout after it, for a user who would rather train.
+    var nextWorkoutName: String? {
+        isTodayRestDay ? startableSlot?.dayPlan.name : nil
     }
 
     /// Start on the card: straight into the tracker, skipping the preview the card itself opens.
     func onStartPressed() {
-        guard let slot = todaysOpenSlot else { return }
+        guard let slot = startableSlot else { return }
         interactor.trackEvent(event: Event.startPressed)
         let mesocycleId = interactor.activeMesocycle?.id
         let isDeload = isTodayDeload
@@ -81,7 +86,7 @@ class TodaysWorkoutCardPresenter {
 
     /// Whether today's workout falls in the mesocycle's deload microcycle.
     var isTodayDeload: Bool {
-        guard let slot = todaysOpenSlot, let run = interactor.activeMesocycleRun else { return false }
+        guard let slot = startableSlot, let run = interactor.activeMesocycleRun else { return false }
         return MesocycleSchedule.isDeload(cycleIndex: slot.cycleIndex + 1, of: run.mesocycle)
     }
     
@@ -141,6 +146,14 @@ class TodaysWorkoutCardPresenter {
               let next = MesocycleSchedule.progress(of: run, sessions: interactor.workoutSessions).next,
               next.dayPlan.id == item.dayPlan.id else { return nil }
         return next
+    }
+
+    /// What Start begins: today's workout, or on a rest day the next one. Training then removes
+    /// the day's rest, and the schedule shows it skipped.
+    private var startableSlot: MesocycleSchedule.Slot? {
+        guard isTodayRestDay else { return todaysOpenSlot }
+        guard let run = interactor.activeMesocycleRun else { return nil }
+        return MesocycleSchedule.progress(of: run, sessions: interactor.workoutSessions).next
     }
 
     private var todaysScheduledItem: MicrocycleWorkoutTemplateModelItem? {

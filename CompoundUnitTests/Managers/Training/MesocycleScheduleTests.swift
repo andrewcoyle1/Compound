@@ -173,6 +173,74 @@ struct MesocycleScheduleTests {
         #expect(item?.dayPlan.exercises.isEmpty == true)
     }
 
+    // MARK: - Rest days
+
+    private func restSession(_ templateId: String, dayOffset: Int, hour: Int = 0) -> WorkoutSessionModel {
+        let date = Self.calendar.date(byAdding: .day, value: dayOffset, to: Self.calendar.startOfDay(for: Self.wednesday))!
+            .addingTimeInterval(Double(hour) * 3600)
+        return WorkoutSessionModel(
+            id: "\(templateId)-\(dayOffset)-\(hour)", authorId: "me", name: templateId, workoutTemplateId: templateId,
+            mesocycleId: "program-1", dateCreated: date, endedAt: date, exercises: [], isRestDay: true
+        )
+    }
+
+    private func slot(_ progress: MesocycleSchedule.Progress, cycle: Int = 0, _ templateId: String) -> MesocycleSchedule.Slot? {
+        progress.cycles[cycle].first { $0.dayPlan.id == templateId }
+    }
+
+    private func at(dayOffset: Int, hour: Int = 12) -> Date {
+        Self.calendar.date(byAdding: .day, value: dayOffset, to: Self.calendar.startOfDay(for: Self.wednesday))!
+            .addingTimeInterval(Double(hour) * 3600)
+    }
+
+    /// Finishing A pre-logs Thursday's rest. On Wednesday evening it is not taken yet.
+    @Test("Test A Pre-Logged Rest Is Not Ticked Before Its Day")
+    func testAPreLoggedRestIsNotTickedBeforeItsDay() {
+        let sessions = [session("a", dayOffset: 0), restSession("rest 1", dayOffset: 1)]
+
+        let wednesday = MesocycleSchedule.progress(of: run(), sessions: sessions, now: at(dayOffset: 0, hour: 20))
+        #expect(slot(wednesday, "rest 1")?.state == .open)
+
+        let thursday = MesocycleSchedule.progress(of: run(), sessions: sessions, now: at(dayOffset: 1))
+        #expect(slot(thursday, "rest 1")?.completedSessionId == "rest 1-1-0")
+        #expect(thursday.next?.dayPlan.id == "b")
+    }
+
+    /// Training B on the rest day: finishing it removes the day's rest, and the rest reads as skipped.
+    @Test("Test A Rest Day Trained Through Reads As Skipped")
+    func testARestDayTrainedThroughReadsAsSkipped() {
+        let progress = MesocycleSchedule.progress(
+            of: run(), sessions: [session("a", dayOffset: 0), session("b", dayOffset: 1)], now: at(dayOffset: 1, hour: 20)
+        )
+        #expect(slot(progress, "rest 1")?.state == .skipped)
+        #expect(slot(progress, "rest 2")?.state == .open)
+        #expect(progress.next?.dayPlan.id == "c")
+    }
+
+    /// Every microcycle shares its rest days' plans, so the pre-logged rest after the second A
+    /// must tick the second microcycle's rest, not the first one's trained-through rest.
+    @Test("Test A Rest Ticks The Rest After Its Own Workout")
+    func testARestTicksTheRestAfterItsOwnWorkout() {
+        let sessions = [
+            session("a", dayOffset: 0), session("b", dayOffset: 0, hour: 12), session("c", dayOffset: 0, hour: 14),
+            session("a", dayOffset: 1), restSession("rest 1", dayOffset: 2)
+        ]
+        let progress = MesocycleSchedule.progress(of: run(), sessions: sessions, now: at(dayOffset: 2))
+
+        #expect(slot(progress, cycle: 0, "rest 1")?.state == .skipped)
+        #expect(slot(progress, cycle: 1, "rest 1")?.completedSessionId == "rest 1-2-0")
+    }
+
+    /// Ticking a rest after training the same day leaves the card on what was trained.
+    @Test("Test Today Shows The Workout Over A Rest Ticked The Same Day")
+    func testTodayShowsTheWorkoutOverARestTickedTheSameDay() {
+        let sessions = [session("a", dayOffset: 0, hour: 10), restSession("rest 1", dayOffset: 0, hour: 11)]
+        let item = MesocycleSchedule.todayItem(run: run(), sessions: sessions, now: at(dayOffset: 0, hour: 12), calendar: Self.calendar)
+
+        #expect(item?.dayPlan.id == "a")
+        #expect(item?.isCompleted == true)
+    }
+
     // MARK: - Accounts from before plans
 
     /// The old schedule counted every session the mesocycle had, so a user who has not finished a

@@ -164,6 +164,8 @@ private func advanceMacrocycle(using managers: WorkoutFinishManagers, sessions: 
 
 /// Pre-creates a completed rest-day session for each rest day that follows the finished workout
 /// in its mesocycle, so the calendar shows them done rather than waiting on the user to tap through.
+/// First removes any rest day logged for today: the user trained through it, and the schedule
+/// then shows it skipped rather than taken.
 @MainActor
 func preCompleteConsecutiveRestDays(
     after session: WorkoutSessionModel,
@@ -173,11 +175,15 @@ func preCompleteConsecutiveRestDays(
     guard let mesocycle, mesocycle.id == session.mesocycleId,
           let templateId = session.workoutTemplateId else { return }
 
-    let restTemplates = consecutiveRestTemplates(after: templateId, in: mesocycle)
-    guard !restTemplates.isEmpty else { return }
-
     let calendar = Calendar.current
     let today = calendar.startOfDay(for: Date())
+    for rest in sessions.workoutSessions where rest.isRestDay && rest.mesocycleId == mesocycle.id
+        && calendar.isDate(rest.dateCreated, inSameDayAs: today) {
+        try? await sessions.deleteWorkoutSession(id: rest.id)
+    }
+
+    let restTemplates = consecutiveRestTemplates(after: templateId, in: mesocycle)
+    guard !restTemplates.isEmpty else { return }
     let existingSessions = sessions.workoutSessions
 
     for (offset, restTemplate) in restTemplates.enumerated() {

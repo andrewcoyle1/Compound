@@ -103,6 +103,34 @@ struct TodaysWorkoutCardPresenterTests {
         return Screen(presenter: TodaysWorkoutCardPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
     }
 
+    /// On a rest day the card offers the workout after it, for a user who would rather train.
+    @Test("Test A Rest Day Offers The Next Workout")
+    func testARestDayOffersTheNextWorkout() async {
+        let rest = WorkoutTemplateModel(id: "rest", authorId: "author-1", name: "Rest", exercises: [])
+        let pull = WorkoutTemplateModel(id: "pull", authorId: "author-1", name: "Pull", exercises: day.exercises)
+        let screen = makeScreen()
+        let mesocycle = Mesocycle(
+            id: "meso-1", authorId: "author-1", name: "Block", icon: "dumbbell", colour: "#FF0000",
+            numMicrocycles: 4, workoutTemplates: [day, rest, pull], dateCreated: Date(timeIntervalSince1970: 0)
+        )
+        screen.interactor.activeMesocycle = mesocycle
+        screen.interactor.activeMesocycleRun = MesocycleSchedule.Run(mesocycle: mesocycle, startedAt: Date(timeIntervalSince1970: 0))
+        let yesterday = Date().addingTimeInterval(-86_400)
+        let today = Calendar.current.startOfDay(for: Date())
+        screen.interactor.workoutSessions = [
+            WorkoutSessionModel(authorId: "author-1", name: "Push", workoutTemplateId: "push", mesocycleId: "meso-1",
+                                dateCreated: yesterday, endedAt: yesterday, exercises: []),
+            WorkoutSessionModel(authorId: "author-1", name: "Rest", workoutTemplateId: "rest", mesocycleId: "meso-1",
+                                dateCreated: today, endedAt: today, exercises: [], isRestDay: true)
+        ]
+
+        #expect(screen.presenter.isTodayRestDay)
+        #expect(screen.presenter.nextWorkoutName == "Pull")
+        screen.presenter.onStartPressed()
+
+        #expect(await TestManagers.eventually { screen.interactor.startedTemplateIds == ["pull"] })
+    }
+
     @Test("Test Start Opens The Tracker Without The Preview")
     func testStartOpensTheTrackerWithoutThePreview() async {
         let screen = makeScreen()

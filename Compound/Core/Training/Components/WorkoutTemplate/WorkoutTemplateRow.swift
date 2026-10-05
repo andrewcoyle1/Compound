@@ -10,6 +10,8 @@ import SwiftUI
 struct WorkoutTemplateRow: View {
     
     var workoutTemplate: WorkoutTemplateModel
+    /// A chip on the name's line, so it never narrows the exercise list below.
+    var badge: LocalizedStringKey?
     
     var caption: String {
         let names = workoutTemplate.exercises.compactMap { exerciseItem -> String? in
@@ -40,10 +42,15 @@ struct WorkoutTemplateRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(workoutTemplate.name)
-                .font(.rowTitle)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
+            HStack(spacing: Spacing.xs) {
+                Text(workoutTemplate.name)
+                    .font(.rowTitle)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                if let badge {
+                    Chip(badge)
+                }
+            }
             if !workoutTemplate.exercises.isEmpty {
                 Text(caption)
                     .font(.rowDetail)

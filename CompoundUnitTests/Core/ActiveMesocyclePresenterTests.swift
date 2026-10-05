@@ -28,7 +28,18 @@ struct ActiveMesocyclePresenterTests {
         var workoutSessions: [WorkoutSessionModel] = []
         var activeMesocycleRun: MesocycleSchedule.Run?
         var currentMacrocycle: Macrocycle?
+        var currentUser: UserModel? = .mock
         private(set) var skippedSlotIds: [String] = []
+        private(set) var savedSessions: [WorkoutSessionModel] = []
+        private(set) var deletedSessionIds: [String] = []
+
+        func saveWorkoutSession(_ session: WorkoutSessionModel) async throws {
+            savedSessions.append(session)
+        }
+
+        func deleteWorkoutSession(id: String) async throws {
+            deletedSessionIds.append(id)
+        }
         private(set) var didDeleteActiveSession = false
 
         func skipScheduledWorkout(_ slot: MesocycleSchedule.Slot) async throws {
@@ -382,6 +393,77 @@ struct ActiveMesocyclePresenterTests {
         screen.presenter.onSkipPressed(first)
 
         #expect(await TestManagers.eventually { screen.interactor.skippedSlotIds == [first.id] })
+    }
+
+    // MARK: - Rest days
+
+    private func rest(id: String, day: WorkoutTemplateModel, on date: Date) -> WorkoutSessionModel {
+        WorkoutSessionModel(
+            id: id, authorId: "author-1", name: day.name, workoutTemplateId: day.id, mesocycleId: "program-1",
+            dateCreated: date, endedAt: date, exercises: [], isRestDay: true
+        )
+    }
+
+    @Test("Test Tapping An Open Rest Day Logs It As Taken Today")
+    func testTappingAnOpenRestDayLogsItAsTakenToday() async throws {
+        let days = [day("Upper"), day("Rest", hasExercises: false), day("Lower")]
+        let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1)])
+        let restItem = try #require(screen.presenter.microcycleItems(mesocycle: mesocycle(days: days)).first { $0.isRest })
+        #expect(restItem.canToggleRest)
+        #expect(!restItem.isCompleted)
+
+        screen.presenter.onItemPressed(restItem)
+
+        #expect(await TestManagers.eventually { screen.interactor.savedSessions.count == 1 })
+        let saved = try #require(screen.interactor.savedSessions.first)
+        #expect(saved.isRestDay)
+        #expect(saved.workoutTemplateId == "rest")
+        #expect(saved.mesocycleId == "program-1")
+        #expect(abs(saved.dateCreated.timeIntervalSinceNow) < 60)
+        #expect(screen.router.shown.isEmpty)
+    }
+
+    @Test("Test Tapping A Taken Rest Day Unticks It")
+    func testTappingATakenRestDayUnticksIt() async throws {
+        let days = [day("Upper"), day("Rest", hasExercises: false), day("Lower")]
+        let taken = rest(id: "r1", day: days[1], on: Date().addingTimeInterval(-60))
+        let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1), taken])
+        let restItem = try #require(screen.presenter.microcycleItems(mesocycle: mesocycle(days: days)).first { $0.isRest })
+        #expect(restItem.completedSessionId == "r1")
+
+        screen.presenter.onItemPressed(restItem)
+
+        #expect(await TestManagers.eventually { screen.interactor.deletedSessionIds == ["r1"] })
+    }
+
+    /// Finishing Upper pre-logs tomorrow's rest. Taking it today moves that one rather than adding
+    /// a second, which would tick the next microcycle's rest when tomorrow came.
+    @Test("Test Taking A Pre-Logged Rest Early Moves It To Today")
+    func testTakingAPreLoggedRestEarlyMovesItToToday() async throws {
+        let days = [day("Upper"), day("Rest", hasExercises: false), day("Lower")]
+        let tomorrow = rest(id: "pre", day: days[1], on: Date().addingTimeInterval(86_400))
+        let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1), tomorrow])
+        let restItem = try #require(screen.presenter.microcycleItems(mesocycle: mesocycle(days: days)).first { $0.isRest })
+        #expect(!restItem.isCompleted)
+
+        screen.presenter.onItemPressed(restItem)
+
+        #expect(await TestManagers.eventually { screen.interactor.savedSessions.count == 1 })
+        #expect(screen.interactor.savedSessions.first?.id == "pre")
+        #expect(try #require(screen.interactor.savedSessions.first).dateCreated < Date().addingTimeInterval(1))
+    }
+
+    @Test("Test A Rest Day Trained Through Shows Skipped And Cannot Be Ticked")
+    func testARestDayTrainedThroughShowsSkippedAndCannotBeTicked() async throws {
+        let days = [day("Upper"), day("Rest", hasExercises: false), day("Lower"), day("Arms")]
+        let screen = makeScreen(sessions: [session(id: "s1", day: days[0], order: 1), session(id: "s2", day: days[2], order: 2)])
+        let restItem = try #require(screen.presenter.microcycleItems(mesocycle: mesocycle(days: days)).first { $0.isRest })
+
+        #expect(restItem.isSkipped)
+        #expect(!restItem.canToggleRest)
+        screen.presenter.onItemPressed(restItem)
+        #expect(screen.interactor.savedSessions.isEmpty)
+        #expect(screen.router.shown.isEmpty)
     }
 
     // MARK: - Deload

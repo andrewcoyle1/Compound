@@ -23,6 +23,16 @@ struct MicrocycleItem: Identifiable {
         completedSessionId != nil
     }
 
+    var isRest: Bool {
+        workoutTemplate.exercises.isEmpty
+    }
+
+    /// A rest day in the microcycle under way is ticked by tapping it, and unticked the same way.
+    /// One trained through stays skipped.
+    var canToggleRest: Bool {
+        isRest && timing == .current && !isSkipped && !isBeforeStart
+    }
+
     /// Only an open workout in the microcycle under way can be skipped.
     var canSkip: Bool {
         timing == .current && !isCompleted && !isSkipped && !workoutTemplate.exercises.isEmpty && slot != nil
@@ -157,7 +167,9 @@ class ActiveMesocyclePresenter {
     }
 
     func onItemPressed(_ item: MicrocycleItem) {
-        if let sessionId = item.completedSessionId {
+        if item.isRest {
+            onRestDayPressed(item)
+        } else if let sessionId = item.completedSessionId {
             openCompletedSession(sessionId: sessionId)
         } else if item.timing == .current && !item.isSkipped {
             startWorkoutTemplateModelWorkout(item.workoutTemplate, in: item.mesocycleId)
@@ -172,6 +184,45 @@ class ActiveMesocyclePresenter {
                     allowsStart: false
                 )
             )
+        }
+    }
+
+    /// Ticks the rest day as taken today, or unticks it. A rest the last workout pre-logged for a
+    /// later day is moved to today rather than duplicated, or it would tick a later rest when its
+    /// day came.
+    func onRestDayPressed(_ item: MicrocycleItem) {
+        guard item.canToggleRest, let userId = interactor.currentUser?.userId else { return }
+        let ticking = !item.isCompleted
+        interactor.trackEvent(event: Event.toggleRestStart(ticking: ticking))
+        Task {
+            do {
+                if let sessionId = item.completedSessionId {
+                    try await interactor.deleteWorkoutSession(id: sessionId)
+                } else {
+                    let now = Date()
+                    let preLogged = workoutSessions.first { session in
+                        session.isRestDay && session.deletedAt == nil && session.mesocycleId == item.mesocycleId
+                            && session.workoutTemplateId == item.workoutTemplate.id && session.dateCreated > now
+                    }
+                    try await interactor.saveWorkoutSession(WorkoutSessionModel(
+                        id: preLogged?.id ?? UUID().uuidString,
+                        authorId: userId,
+                        name: item.workoutTemplate.name,
+                        workoutTemplateId: item.workoutTemplate.id,
+                        mesocycleId: item.mesocycleId,
+                        dateCreated: now,
+                        endedAt: now,
+                        exercises: [],
+                        isRestDay: true
+                    ))
+                }
+                interactor.playHaptic(option: .success)
+                interactor.trackEvent(event: Event.toggleRestSuccess(ticking: ticking))
+            } catch {
+                interactor.playHaptic(option: .error)
+                interactor.trackEvent(event: Event.toggleRestFail(error: error))
+                router.showAlert(title: String(localized: "Unable to Update Rest Day"), error: error)
+            }
         }
     }
 
@@ -311,6 +362,9 @@ extension ActiveMesocyclePresenter {
         case skipStart
         case skipSuccess
         case skipFail(error: Error)
+        case toggleRestStart(ticking: Bool)
+        case toggleRestSuccess(ticking: Bool)
+        case toggleRestFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -321,6 +375,9 @@ extension ActiveMesocyclePresenter {
             case .skipStart:                     return "ActiveTrainingProgramView_Skip_Start"
             case .skipSuccess:                   return "ActiveTrainingProgramView_Skip_Success"
             case .skipFail:                      return "ActiveTrainingProgramView_Skip_Fail"
+            case .toggleRestStart:               return "ActiveTrainingProgramView_ToggleRest_Start"
+            case .toggleRestSuccess:             return "ActiveTrainingProgramView_ToggleRest_Success"
+            case .toggleRestFail:                return "ActiveTrainingProgramView_ToggleRest_Fail"
             case .openCompletedSessionStart:     return "ActiveTrainingProgramView_OpenCompletedSession_Start"
             case .openCompletedSessionSuccess:   return "ActiveTrainingProgramView_OpenCompletedSession_Success"
             case .openCompletedSessionFail:      return "ActiveTrainingProgramView_OpenCompletedSession_Fail"
@@ -329,8 +386,11 @@ extension ActiveMesocyclePresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .deleteMesocycleFail(error: let error), .skipFail(error: let error), .deleteActiveSessionFail(error: let error):
+            case .deleteMesocycleFail(error: let error), .skipFail(error: let error), .deleteActiveSessionFail(error: let error),
+                 .toggleRestFail(error: let error):
                 return error.eventParameters
+            case .toggleRestStart(ticking: let ticking), .toggleRestSuccess(ticking: let ticking):
+                return ["ticking": ticking]
             case .openCompletedSessionFail(error: let error):
                 return error.eventParameters
             default:
@@ -340,7 +400,7 @@ extension ActiveMesocyclePresenter {
 
         var type: LogType {
             switch self {
-            case .deleteMesocycleFail, .skipFail: return .severe
+            case .deleteMesocycleFail, .skipFail, .toggleRestFail: return .severe
             case .openCompletedSessionFail:
                 return .severe
             case .deleteActiveSessionFail:

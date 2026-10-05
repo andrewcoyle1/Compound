@@ -71,6 +71,9 @@ struct AppShellAppPresenterTests {
         func applyLocalReminderSettings() async { didApplyLocalReminderSettings = true }
 
         func syncAllRemoteDataIfLoggedIn() async { }
+
+        private(set) var widgetRefreshes = 0
+        func refreshWidgetSnapshot(weeklyGoal: Int?) { widgetRefreshes += 1 }
     }
 
     private struct Screen {

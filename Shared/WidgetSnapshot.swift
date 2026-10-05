@@ -21,6 +21,9 @@ struct WidgetSnapshot: Codable, Equatable {
 
     /// Today's day plan, for `day` only.
     var todaysWorkout: TodaysWorkout?
+    /// What the queue holds for any later day: the schedule only moves when a workout is logged,
+    /// so this stays right until the app writes again. Nil in snapshots from before it existed.
+    var upcomingWorkout: TodaysWorkout?
     /// Start of the day `todaysWorkout` belongs to.
     var day: Date
     var currentStreak: Int
@@ -29,10 +32,11 @@ struct WidgetSnapshot: Codable, Equatable {
     var weeklyGoal: Int
     var updatedAt: Date
 
-    /// Today's workout as of `date`: nil once the day it was written for has passed, rather than
-    /// showing yesterday's plan until the app next opens.
+    /// Today's workout as of `date`: the day it was written for shows `todaysWorkout`, any later
+    /// day the upcoming one, rather than yesterday's plan or nothing until a workout is logged.
     func todaysWorkout(on date: Date, calendar: Calendar = .current) -> TodaysWorkout? {
-        calendar.isDate(date, inSameDayAs: day) ? todaysWorkout : nil
+        if calendar.isDate(date, inSameDayAs: day) { return todaysWorkout }
+        return date > day ? upcomingWorkout : nil
     }
 
     /// Sessions this week as of `date`: zero once a new week has started.
@@ -48,13 +52,14 @@ struct WidgetSnapshot: Codable, Equatable {
 
     /// Nothing written yet: signed out, or the app has not finished a session since install.
     static func empty(now: Date = Date()) -> WidgetSnapshot {
-        WidgetSnapshot(todaysWorkout: nil, day: now, currentStreak: 0, sessionsThisWeek: 0, weeklyGoal: 3, updatedAt: now)
+        WidgetSnapshot(todaysWorkout: nil, upcomingWorkout: nil, day: now, currentStreak: 0, sessionsThisWeek: 0, weeklyGoal: 3, updatedAt: now)
     }
 
     /// Gallery and placeholder data.
     static func placeholder(now: Date = Date()) -> WidgetSnapshot {
         WidgetSnapshot(
             todaysWorkout: TodaysWorkout(name: "Push Day", exerciseCount: 6, isRestDay: false, isCompleted: false),
+            upcomingWorkout: nil,
             day: now,
             currentStreak: 12,
             sessionsThisWeek: 2,
@@ -91,6 +96,13 @@ enum WidgetSnapshotStore {
             WidgetCenter.shared.reloadAllTimelines()
         }
     }
+
+    /// On sign-out, so the home screen stops showing the previous account.
+    static func clear(from defaults: UserDefaults? = SharedWorkoutStorage.sharedDefaults) {
+        guard let defaults, defaults.data(forKey: key) != nil else { return }
+        defaults.removeObject(forKey: key)
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 }
 
 struct WidgetSnapshotEntry: TimelineEntry {
@@ -100,8 +112,8 @@ struct WidgetSnapshotEntry: TimelineEntry {
 
 enum WidgetSnapshotTimeline {
 
-    /// One entry now and one at the next midnight, where the views drop today's workout and, on a
-    /// new week, the session count. Reloaded with `.atEnd`, so the provider runs again after
+    /// One entry now and one at the next midnight, where the views move on to the upcoming workout
+    /// and, on a new week, drop the session count. Reloaded with `.atEnd`, so the provider runs again after
     /// midnight and every write from the app reloads it sooner.
     static func entries(
         snapshot: WidgetSnapshot?,

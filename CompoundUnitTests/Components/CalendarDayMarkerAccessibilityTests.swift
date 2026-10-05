@@ -23,6 +23,16 @@ struct CalendarDayMarkerAccessibilityTests {
         #expect(CalendarDayMarker.count(3).accessibilityDescription == "3 logged")
     }
 
+    /// One stroke per workout says how many, so there is no badge, and the strokes' colours are
+    /// spoken as a count like any other.
+    @Test("Test Workouts By Mesocycle Are Counted Without A Badge")
+    func testWorkoutsByMesocycleAreCountedWithoutABadge() {
+        #expect(CalendarDayMarker.sessions(colours: []).accessibilityDescription == nil)
+        #expect(CalendarDayMarker.sessions(colours: ["#FF0000"]).accessibilityDescription == "Logged")
+        #expect(CalendarDayMarker.sessions(colours: ["#FF0000", nil]).accessibilityDescription == "2 logged")
+        #expect(CalendarDayMarker.sessions(colours: ["#FF0000", nil]).badgeCount == nil)
+    }
+
     @Test("Test Progress Says How Far Toward The Goal")
     func testProgressSaysHowFarTowardTheGoal() {
         let description = CalendarDayMarker.goalProgress(value: 1100, goal: 2200, grace: 100).accessibilityDescription

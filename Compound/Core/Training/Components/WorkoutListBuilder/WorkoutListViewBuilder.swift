@@ -33,7 +33,7 @@ struct WorkoutListViewBuilder: View {
                 ContentUnavailableView.search(text: presenter.searchText)
             }
         }
-        .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search workouts"))
+        .searchable(text: $presenter.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: Text("Search workouts"))
         .navigationTitle("Workouts")
         .navigationSubtitle("\(presenter.workoutsCount) workouts")
         .navigationBarTitleDisplayMode(.inline)

@@ -68,12 +68,13 @@ struct PrebuiltMesocycleDetailView: View {
 }
 
 extension CoreBuilder {
-    func prebuiltMesocycleDetailView(router: AnyRouter, mesocycle: Mesocycle) -> some View {
+    func prebuiltMesocycleDetailView(router: AnyRouter, mesocycle: Mesocycle, onStarted: (@Sendable () -> Void)? = nil) -> some View {
         PrebuiltMesocycleDetailView(
             presenter: PrebuiltMesocycleDetailPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                mesocycle: mesocycle
+                mesocycle: mesocycle,
+                onStarted: onStarted
             )
         )
     }
@@ -81,8 +82,12 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle) {
+        showPrebuiltMesocycleDetailView(mesocycle: mesocycle, onStarted: nil)
+    }
+
+    func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle, onStarted: (@Sendable () -> Void)?) {
         router.showScreen(.push) { router in
-            builder.prebuiltMesocycleDetailView(router: router, mesocycle: mesocycle)
+            builder.prebuiltMesocycleDetailView(router: router, mesocycle: mesocycle, onStarted: onStarted)
         }
     }
 }

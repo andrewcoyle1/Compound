@@ -81,6 +81,7 @@ struct WorkoutListBuilderPresenterTests {
         var userWorkoutTemplates: [WorkoutTemplateModel] = []
         var systemWorkoutTemplates: [WorkoutTemplateModel] = []
         var allWorkoutTemplates: [WorkoutTemplateModel] = []
+        var mesocycles: [Mesocycle] = []
     }
 
     private final class Router: WorkoutListRouterBuilder {
@@ -105,7 +106,7 @@ struct WorkoutListBuilderPresenterTests {
         let workout = WorkoutTemplateModel(id: "wo-1", authorId: "user-1", name: "Push Day")
         var selected: [WorkoutTemplateModel] = []
 
-        presenter.onWorkoutPressed(workout: workout, onWorkoutPressed: { selected.append($0) })
+        presenter.onWorkoutPressed(workout: workout, onWorkoutPressed: { workout, _ in selected.append(workout) })
 
         #expect(selected.map(\.id) == ["wo-1"])
         #expect(interactor.trackedEventNames == ["WorkoutsView_Workout_Selected"])
@@ -118,6 +119,48 @@ struct WorkoutListBuilderPresenterTests {
         presenter.onWorkoutPressed(workout: WorkoutTemplateModel(id: "wo-1", authorId: "user-1", name: "Push Day"))
 
         #expect(interactor.trackedEventNames == ["WorkoutsView_Workout_Selected"])
+    }
+
+    private func day(_ name: String, exercises: Int) -> WorkoutTemplateModel {
+        WorkoutTemplateModel(
+            id: name.lowercased(),
+            authorId: "user-1",
+            name: name,
+            exercises: Array(repeating: WorkoutTemplateExercise(exercise: .mock, setRestTimers: false), count: exercises)
+        )
+    }
+
+    /// A mesocycle's days are listed from the mesocycle itself rather than as library copies,
+    /// in its own order, without its rest days; a mesocycle of rest days alone is not listed.
+    @Test("Test A Mesocycle's Workout Days Are Listed In Its Own Order")
+    func testAMesocyclesWorkoutDaysAreListedInItsOwnOrder() {
+        let (presenter, interactor) = makePresenter()
+        let block = Mesocycle(id: "m1", authorId: "user-1", name: "Block", icon: "flag", colour: "#FF0000",
+                              workoutTemplates: [day("Push", exercises: 1), day("Rest", exercises: 0), day("Legs", exercises: 2)])
+        let rest = Mesocycle(id: "m2", authorId: "user-1", name: "Rest", icon: "flag", colour: "#FF0000",
+                             workoutTemplates: [day("Rest", exercises: 0)])
+        interactor.mesocycles = [block, rest]
+
+        #expect(presenter.mesocycles.map(\.id) == ["m1"])
+        #expect(presenter.days(of: block).map(\.name) == ["Push", "Legs"])
+        #expect(presenter.workoutsCount == 2)
+
+        presenter.searchText = "leg"
+        #expect(presenter.days(of: block).map(\.name) == ["Legs"])
+        presenter.searchText = "pull"
+        #expect(presenter.mesocycles.isEmpty)
+    }
+
+    @Test("Test Picking A Mesocycle Day Hands On Its Mesocycle")
+    func testPickingAMesocycleDayHandsOnItsMesocycle() {
+        let (presenter, _) = makePresenter()
+        let block = Mesocycle(id: "m1", authorId: "user-1", name: "Block", icon: "flag", colour: "#FF0000",
+                              workoutTemplates: [day("Push", exercises: 1)])
+        var picked: [String?] = []
+
+        presenter.onWorkoutPressed(workout: block.workoutTemplates[0], mesocycle: block) { _, mesocycle in picked.append(mesocycle?.id) }
+
+        #expect(picked == ["m1"])
     }
 }
 

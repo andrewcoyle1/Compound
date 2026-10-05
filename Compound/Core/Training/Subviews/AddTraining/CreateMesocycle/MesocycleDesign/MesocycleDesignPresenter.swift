@@ -151,50 +151,12 @@ class MesocycleDesignPresenter {
         router.showMesocycleSettingsView(mesocycle: mesocycle)
     }
     
-    /// A choice that follows the person's own tap, so an action sheet, answered with verbs.
+    /// Activates straight away. It used to offer to save each day to the workout library as well,
+    /// which made a second copy of every day that then drifted from the mesocycle's own. The
+    /// library lists the mesocycle's days instead (`WorkoutListViewBuilder`).
     func onActivatePressed(delegate: MesocycleDesignDelegate) {
         guard canSave else { return }
-        router.showConfirmationDialog(
-            title: String(localized: "Save Workout Templates?"),
-            subtitle: String(localized: "Each workout day can also be saved to your library, to start on its own.")
-        ) {
-            AnyView(
-                VStack {
-                    Button("Save Templates") {
-                        Task { await self.saveTemplatesAndActivate(delegate: delegate) }
-                    }
-                    Button("Don't Save") {
-                        Task { await self.activateMesocycle(delegate: delegate) }
-                    }
-                    Button("Cancel", role: .cancel) { }
-                }
-            )
-        }
-    }
-
-    /// Saves each workout day as a standalone template, then activates. A failure here
-    /// used to be swallowed by an unstructured `Task`, leaving the mesocycle un-activated with
-    /// no feedback; now it surfaces and activation is skipped.
-    ///
-    /// Rest days are skipped: an empty template in the library is nothing anyone would start.
-    /// ponytail: sequential saves; a failure part-way leaves the earlier templates saved.
-    func saveTemplatesAndActivate(delegate: MesocycleDesignDelegate) async {
-        isSaving = true
-        defer { isSaving = false }
-        interactor.trackEvent(event: Event.saveTemplatesStart)
-        do {
-            for workoutTemplate in dayPlans where !workoutTemplate.exercises.isEmpty {
-                try await interactor.saveWorkoutTemplate(workoutTemplate: workoutTemplate, image: nil)
-            }
-            interactor.trackEvent(event: Event.saveTemplatesSuccess)
-        } catch {
-            interactor.trackEvent(event: Event.saveTemplatesFail(error: error))
-            interactor.playHaptic(option: .error)
-            router.showAlert(title: String(localized: "Unable to Save Templates"), error: error)
-            return
-        }
-
-        await activateMesocycle(delegate: delegate)
+        Task { await activateMesocycle(delegate: delegate) }
     }
 
     /// This was declared `async throws` while wrapping its whole body in a nested `Task`, so
@@ -351,9 +313,6 @@ extension MesocycleDesignPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
-        case saveTemplatesStart
-        case saveTemplatesSuccess
-        case saveTemplatesFail(error: Error)
         case activateStart
         case activateSuccess
         case activateFail(error: Error)
@@ -368,9 +327,6 @@ extension MesocycleDesignPresenter {
             switch self {
             case .onAppear: return "ProgramDesignView_Appear"
             case .onDisappear: return "ProgramDesignView_Disappear"
-            case .saveTemplatesStart: return "ProgramDesignView_SaveTemplates_Start"
-            case .saveTemplatesSuccess: return "ProgramDesignView_SaveTemplates_Success"
-            case .saveTemplatesFail: return "ProgramDesignView_SaveTemplates_Fail"
             case .activateStart: return "ProgramDesignView_Activate_Start"
             case .activateSuccess: return "ProgramDesignView_Activate_Success"
             case .activateFail: return "ProgramDesignView_Activate_Fail"
@@ -385,7 +341,7 @@ extension MesocycleDesignPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .saveTemplatesFail(let error), .activateFail(let error), .deleteFail(let error), .saveFail(let error):
+            case .activateFail(let error), .deleteFail(let error), .saveFail(let error):
                 return error.eventParameters
             default:
                 return nil
@@ -394,7 +350,7 @@ extension MesocycleDesignPresenter {
 
         var type: LogType {
             switch self {
-            case .saveTemplatesFail, .activateFail, .deleteFail, .saveFail:
+            case .activateFail, .deleteFail, .saveFail:
                 return .severe
             default:
                 return .analytic

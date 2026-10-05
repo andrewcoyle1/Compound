@@ -84,8 +84,6 @@ final class OnboardingUITests: XCTestCase {
         app.tap("ExerciseList.Plank")
         app.tap("ExercisesPicker.confirm")
         app.tapWhenEnabled("ProgramDesign.activate")
-        // Activating offers to keep the mesocycle's days as standalone workout templates.
-        app.waitFor(app.buttons["Don't Save"].firstMatch).tap()
     }
 
     private func setUpDiet(_ app: XCUIApplication) {

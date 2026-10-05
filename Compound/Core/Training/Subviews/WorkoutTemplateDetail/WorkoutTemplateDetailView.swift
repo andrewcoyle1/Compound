@@ -15,6 +15,9 @@ struct WorkoutTemplateDetailDelegate {
     var periodisationPhase: PeriodisationPhase?
     /// False for a preview of a later microcycle's day, which is not started from there.
     var allowsStart: Bool = true
+    /// The mesocycle this workout is a day of, when the library opens one to start on its own
+    /// (so `mesocycleId` is nil). Opened from the mesocycle itself, `mesocycleId` says the same.
+    var mesocycle: Mesocycle?
 }
 
 struct WorkoutTemplateDetailView: View {
@@ -25,6 +28,10 @@ struct WorkoutTemplateDetailView: View {
 
     private var isAuthor: Bool {
         presenter.currentUser?.userId == delegate.workoutTemplate.authorId
+    }
+
+    private var owningMesocycle: Mesocycle? {
+        presenter.owningMesocycle(delegate: delegate)
     }
     
     var body: some View {
@@ -60,7 +67,32 @@ struct WorkoutTemplateDetailView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        if isAuthor {
+        if let mesocycle = owningMesocycle {
+            // A day lives in its mesocycle, not the library: it is changed there, and kept apart
+            // from it only as a copy the user asks for.
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        presenter.onEditMesocyclePressed(mesocycle)
+                    } label: {
+                        Label("Edit Mesocycle", systemImage: Symbol.edit)
+                    }
+                    Button {
+                        presenter.onSaveCopyPressed(template: delegate.workoutTemplate)
+                    } label: {
+                        Label("Save a Copy to Workouts", systemImage: Symbol.add)
+                    }
+                    Button {
+                        presenter.onSharePressed(template: delegate.workoutTemplate)
+                    } label: {
+                        Label("Share with Friends", systemImage: Symbol.share)
+                    }
+                } label: {
+                    Image(systemName: Symbol.more)
+                }
+                .accessibilityLabel("Workout options")
+            }
+        } else if isAuthor {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {

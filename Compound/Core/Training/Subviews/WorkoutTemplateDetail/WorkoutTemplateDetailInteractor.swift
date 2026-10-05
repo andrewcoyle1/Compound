@@ -8,6 +8,9 @@
 @MainActor
 protocol WorkoutTemplateDetailInteractor: GlobalInteractor, WorkoutStartInteractor {
     var currentUser: UserModel? { get }
+    var mesocycles: [Mesocycle] { get }
+    var allWorkoutTemplates: [WorkoutTemplateModel] { get }
+    func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws
     func deleteActiveSession() throws
     func deleteWorkoutTemplate(id: String) async throws
     func getPreference(templateId: String) -> ExerciseUnitPreference

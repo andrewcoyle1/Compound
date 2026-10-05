@@ -634,18 +634,32 @@ struct TrainingWorkoutsLibraryPresenterTests {
         let router = Router()
         let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
 
-        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"))
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: nil)
 
         #expect(router.detailDelegates.first?.workoutTemplate.name == "Push")
         #expect(router.detailDelegates.first?.mesocycleId == nil)
         #expect(router.detailDelegates.first?.isDeloadCycle == false)
     }
 
+    /// A mesocycle's day picked from the library starts on its own, but the detail screen is told
+    /// whose day it is, so editing goes to the mesocycle rather than into the library.
+    @Test("Test A Mesocycle Day Opens On Its Own But Knows Its Mesocycle")
+    func testAMesocycleDayOpensOnItsOwnButKnowsItsMesocycle() {
+        let router = Router()
+        let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
+        let block = TrainingTabFixture.mesocycle("Block", id: "m1")
+
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: block)
+
+        #expect(router.detailDelegates.first?.mesocycleId == nil)
+        #expect(router.detailDelegates.first?.mesocycle?.id == "m1")
+    }
+
     @Test("Test Starting The Opened Workout Shows The Tracker")
     func testStartingTheOpenedWorkoutShowsTheTracker() async {
         let router = Router()
         let presenter = WorkoutsPresenter(interactor: Interactor(), router: router)
-        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"))
+        presenter.onWorkoutPressed(workout: TrainingTabFixture.template("Push"), mesocycle: nil)
 
         router.detailDelegates.first?.onStartWorkoutPressed?()
         await TestManagers.eventually { router.shown.contains("tracker") }

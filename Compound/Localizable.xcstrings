@@ -4,12 +4,42 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%@ (copy)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (copia)"
+          }
+        }
+      }
+    },
     ".%lld" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ",%lld"
+          }
+        }
+      }
+    },
+    "Days of this mesocycle. Change them by editing the mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días de este mesociclo. Cámbialos editando el mesociclo."
+          }
+        }
+      }
+    },
+    "Save a Copy to Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar una copia en entrenamientos"
           }
         }
       }

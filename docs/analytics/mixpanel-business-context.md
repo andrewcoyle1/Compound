@@ -66,6 +66,7 @@ existing reports keep working.
   - The device and app (`utility_*`).
   - `push_is_authorised`.
   - Active A/B test arms: `test_20241205_PaywallTest` and `test_20251205_notifications_test`.
+- Every event carries `build_configuration` (`dev` or `prod`), a super property.
 - The distinct id is the Firebase Auth uid. An anonymous user who later links Apple or Google
   keeps the same uid.
 
@@ -77,9 +78,10 @@ existing reports keep working.
   summary), diet program (8: preferred diet, calorie floor, distribution, protein, plan), and
   Completed (9). Build the funnel from each step's `…View_Appear`; leaving a step logs
   `…_Navigate`.
-  - The goal and diet steps can also be opened from Settings after onboarding. Those
-    `_Appear` events have no property marking them as Settings, so limit an onboarding funnel to
-    users created in the window.
+  - The goal and diet steps (objective, target weight, weight rate, goal summary, preferred
+    diet, calorie floor, distribution, protein, diet plan) can also be opened after onboarding,
+    from Settings, Profile or Progress. Their `_Appear` and `_Disappear` carry `is_onboarding`
+    (`true` in onboarding): filter on `is_onboarding = true` for the funnel.
 - **Workout.**
   - The flow runs from `WorkoutTrackerView_Appear` (a workout started from Today, Training or a
     template) to `WorkoutTrackerView_FinishWorkout_Success`, then to
@@ -97,9 +99,11 @@ existing reports keep working.
 
 ## Caveats
 
-- **Development builds send to this project too.** Dev and prod builds use the same token, so
-  testers' and the developer's activity is mixed in, and no property marks the build. Exclude
-  internal users by distinct id, or exclude by app version during a TestFlight period.
+- **Development builds send to this project too.** Dev and prod builds use the same token. From
+  October 2026 every event carries the super property `build_configuration` (`dev` or `prod`):
+  filter on `build_configuration = prod` for real usage. Events from before it shipped have no
+  value; treat them as unknown. TestFlight builds are `prod` too, so internal testers still need
+  excluding by distinct id.
 - **Coverage is uneven before October 2026.**
   - Screen and operation events were filled in across the app in October 2026. Before that,
     about 40% of screens logged no `_Appear`, onboarding logged only `_Navigate`, and much of

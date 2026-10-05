@@ -32,6 +32,26 @@ tables below are the **before** state, kept for reference.
 
 Event names for analysts are in `docs/analytics/mixpanel-business-context.md`.
 
+### How the result was verified
+
+- **Statically, every screen.** For all 172 routed screens: the presenter's `onViewAppear` and
+  `onViewDisappear` each send an event, and the screen's view calls both. The 16 chart-detail
+  screens call them from the shared `MetricDetailView`, which their protocol requires.
+- **Exactly, every `Event` enum** (962 event names): no event name is sent by two presenters,
+  so nothing is double counted; every `_Start` that can fail has a `_Fail`. The eight `_Start` events
+  without a full set are taps (`TodayView_CheckIn_Start`, `Settings_DeleteAccount_Start`),
+  work that cannot throw (`WorkoutHistoryView_SyncSessions_Start`), a record logged after the
+  save succeeded (`MacrocycleMan_Start`), or pairs that share one Fail
+  (`SharedItemView_Accept_Start` and `_Dismiss_Start` with `SharedItemView_Answer_Fail`).
+- **At runtime, 60 screens.** The app was launched on each `STARTSCREEN_*` screen in the
+  simulator and its console log read. 57 logged their own `_Appear` exactly once. The other three
+  correctly logged none: `ActiveMesocycle` and `MealDescribe` are embedded components and the
+  share card is an image renderer. Tab roots logged once (`TodayView_Appear` under
+  `TabBarView_Appear`), and no screen logged a `_Fail` on opening.
+- **Not verified at runtime:** `_Disappear` (same wiring as `_Appear`, checked statically), and
+  the Start/Success/Fail events, which need each operation driven. Those are covered by the
+  presenters' unit tests where they exist, and otherwise by reading the code.
+
 ## Summary (before)
 
 | | Covered | Total |

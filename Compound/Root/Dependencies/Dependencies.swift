@@ -333,7 +333,20 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: MockHealthService(canRequestAuthorisation: false))
             commentsManager = CommentsManager(service: MockCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
-            stravaManager = StravaManager(service: MockStravaService(), clientId: "")
+            stravaManager = StravaManager(
+                service: MockStravaService(),
+                clientId: "",
+                activitySyncEngine: CollectionSyncEngine<StravaImportedActivity>(
+                    remote: MockRemoteCollectionService(collection: StravaImportedActivity.mocks),
+                    managerKey: StravaManager.importedActivitiesManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                sessions: workoutSessionManager,
+                exercises: exerciseModelManager,
+                users: userManager,
+                logger: logManager
+            )
             openFoodFactsService = MockOpenFoodFactsService()
 
         case .dev:
@@ -682,7 +695,25 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
+            stravaManager = StravaManager(
+                service: ProductionStravaService(),
+                clientId: Keys.stravaClientId,
+                activitySyncEngine: CollectionSyncEngine<StravaImportedActivity>(
+                    remote: FirebaseRemoteCollectionService(
+                        collectionPath: { [weak authManager] in
+                            guard let uid = authManager?.auth?.uid else { return nil }
+                            return "users/\(uid)/strava_activities"
+                        }
+                    ),
+                    managerKey: StravaManager.importedActivitiesManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                sessions: workoutSessionManager,
+                exercises: exerciseModelManager,
+                users: userManager,
+                logger: logManager
+            )
             openFoodFactsService = ProductionOpenFoodFactsService()
 
         case .prod:
@@ -1025,7 +1056,25 @@ struct Dependencies {
             healthKitManager = HealthKitManager(service: HealthKitService())
             commentsManager = CommentsManager(service: FirebaseCommentsService())
             activityNotificationManager = ActivityNotificationManager(service: FirebaseActivityNotificationService())
-            stravaManager = StravaManager(service: ProductionStravaService(), clientId: Keys.stravaClientId)
+            stravaManager = StravaManager(
+                service: ProductionStravaService(),
+                clientId: Keys.stravaClientId,
+                activitySyncEngine: CollectionSyncEngine<StravaImportedActivity>(
+                    remote: FirebaseRemoteCollectionService(
+                        collectionPath: { [weak authManager] in
+                            guard let uid = authManager?.auth?.uid else { return nil }
+                            return "users/\(uid)/strava_activities"
+                        }
+                    ),
+                    managerKey: StravaManager.importedActivitiesManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                sessions: workoutSessionManager,
+                exercises: exerciseModelManager,
+                users: userManager,
+                logger: logManager
+            )
             openFoodFactsService = ProductionOpenFoodFactsService()
         }
         hapticManager = HapticManager(logger: logManager)

@@ -27,6 +27,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                 case .progress:
                     thisWeekSection
                     consistencySection
+                    stravaSection
                 case .activities:
                     sessionsSection
                 }
@@ -251,13 +252,62 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
         .listSectionSeparator(.hidden)
     }
 
-    // A "Data" section sat here: Activities, Statistics, Routes, Segments, Best Efforts, Posts and
-    // Gear — seven rows, every action an empty closure, with invented subtitles ("This year: 93.0 km",
-    // "Puma Deviate Nitro", "Yesterday"). It needs the Strava *read* API, and `StravaManager` is
-    // upload-only: authenticate, uploadActivity, disconnect, and no fetch of any kind. Showing
-    // someone else's mileage as fact is the worst version of this, so the section is gone rather than
-    // emptied. "Posts" was the one row that maps to data the app owns; it is the sessions list
-    // below now.
+    /// The owner's year on Strava and their latest activities. Empty, and so absent, on anyone
+    /// else's profile: Strava's terms keep an athlete's data to the athlete.
+    @ViewBuilder
+    private var stravaSection: some View {
+        if let year = presenter.stravaYear {
+            Section {
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    HStack(spacing: Spacing.xxl) {
+                        Stat(value: year.count.formatted(), label: String(localized: "Activities"), size: .small)
+                        Stat(value: Format.distance(meters: year.distanceMeters, unit: presenter.distanceUnit), label: String(localized: "Distance"), size: .small)
+                        Stat(value: Format.duration(year.movingTime), label: String(localized: "Time"), size: .small)
+                        Spacer(minLength: 0)
+                    }
+                    ForEach(presenter.recentStravaActivities) { activity in
+                        stravaActivityRow(activity)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .cardSurface()
+                .padding(.horizontal)
+                .padding(.bottom, Spacing.m)
+                .removeListRowFormatting()
+            } header: {
+                SectionHeaderView(title: String(localized: "Strava This Year"))
+            }
+            .listSectionMargins(.vertical, 0)
+            .listSectionMargins(.horizontal, 0)
+            .listSectionSeparator(.hidden)
+        }
+    }
+
+    /// Strava's brand guidelines ask for "View on Strava" on a link to an activity.
+    @ViewBuilder
+    private func stravaActivityRow(_ activity: StravaImportedActivity) -> some View {
+        let detail = [
+            activity.startDate.formatted(date: .abbreviated, time: .omitted),
+            activity.distance > 0 ? Format.distance(meters: activity.distance, unit: presenter.distanceUnit) : nil,
+            Format.duration(TimeInterval(activity.movingTime))
+        ].compactMap { $0 }.joined(separator: " · ")
+        if let url = activity.stravaURL {
+            Link(destination: url) {
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(activity.name)
+                        .font(.rowTitle)
+                    Text(detail)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                    Text("View on Strava")
+                        .font(.label)
+                        .foregroundStyle(.tint)
+                }
+            }
+            .foregroundStyle(.primary)
+        }
+    }
 
     /// Training days over the last twelve weeks, a square per day.
     private var consistencySection: some View {

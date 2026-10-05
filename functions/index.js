@@ -12,7 +12,9 @@ import {
     buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
     isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
     offCountryTag, offSearchLangs, mergeSearchHits,
-    stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL,
+    stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL, STRAVA_API, STRAVA_REVOKE_URL, grantsUpload,
+    isCompoundUpload, stravaAthlete, stravaActivityDoc, parseStravaWebhook, isDeauthorization, basicAuthHeader,
+    stravaTokenNeedsRefresh,
 } from "./lib.js";
 import { genkit } from "genkit";
 import { vertexAI, gemini, imagen3Fast } from "@genkit-ai/vertexai";
@@ -27,6 +29,12 @@ const REGION = "us-central1";
 // functions spend Vertex AI quota and write with Admin SDK privileges, which bypass
 // Firestore rules, so they cannot be left open to arbitrary HTTPS callers.
 const CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true };
+
+// Strava's token endpoint needs the client secret, so it stays here rather than in the app, where
+// it could be read out of the binary. Defined up here because onUserDeleted needs it too.
+const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
+const STRAVA_WEBHOOK_VERIFY_TOKEN = defineSecret("STRAVA_WEBHOOK_VERIFY_TOKEN");
+const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
 
 
 // ---------------------------------------------------------------------------
@@ -690,7 +698,7 @@ import { planUserDeletion } from "./lib.js";
 // their sessions), notifications they caused, username reservations, exercises, diet plan and Storage
 // uploads. What to write is decided by planUserDeletion in lib.js.
 export const onUserDeleted = onDocumentDeleted(
-    { document: "users/{uid}", region: REGION, timeoutSeconds: 540, memory: "512MiB" },
+    { document: "users/{uid}", region: REGION, timeoutSeconds: 540, memory: "512MiB", secrets: [STRAVA_CLIENT_SECRET] },
     async (event) => {
         const uid = event.params.uid;
         const db = getFirestore();
@@ -719,6 +727,8 @@ export const onUserDeleted = onDocumentDeleted(
         ]);
 
         await db.recursiveDelete(userRef);
+        // The strava_activities went with the user document; the tokens live outside it.
+        await forgetStrava(uid, { revoke: true });
 
         const plan = planUserDeletion(uid, {
             followers, blockers, followRequests, likedSessions,
@@ -923,11 +933,14 @@ export const sessionPage = onRequest({ region: REGION }, async (req, res) => {
     res.set("Cache-Control", "public, max-age=300, s-maxage=600").send(html);
 });
 
-// Strava's token endpoint needs the client secret, so the code exchange and every refresh come
-// through here rather than from the app, where the secret could be read out of the binary.
-const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
-const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
+// Strava
+// ---------------------------------------------------------------------------
+// The tokens live in strava_connections/{uid}, which no client can read. The app asks for a
+// short-lived access token when it uploads; the refresh token and the client secret never leave
+// the server. A webhook keeps imported activities current and drops a revoked connection.
 
+// Older builds exchange and refresh here and keep the tokens themselves. Unchanged for them;
+// remove once no build older than the server-held tokens is in use.
 export const stravaToken = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
     requireAuth(request);
     const form = stravaTokenForm(request.data, STRAVA_CLIENT_SECRET.value());
@@ -946,3 +959,195 @@ export const stravaToken = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
     const body = await response.json();
     return { access_token: body.access_token, refresh_token: body.refresh_token, expires_at: body.expires_at };
 });
+
+const stravaConnections = () => getFirestore().collection("strava_connections");
+const stravaActivities = (uid) => getFirestore().collection("users").doc(uid).collection("strava_activities");
+
+async function postStravaToken(form) {
+    return fetch(STRAVA_TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(form),
+    });
+}
+
+const stravaGet = (path, accessToken) => fetch(`${STRAVA_API}${path}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+
+// Drops a connection and everything imported through it. Revoking is best-effort: the tokens are
+// gone from here either way. Strava's terms ask for the data to go when access does.
+async function forgetStrava(uid, { revoke }) {
+    const ref = stravaConnections().doc(uid);
+    const snap = await ref.get();
+    if (revoke && snap.exists) {
+        const { client_id: clientId, refresh_token: refreshToken } = snap.data();
+        try {
+            await fetch(STRAVA_REVOKE_URL, {
+                method: "POST",
+                headers: {
+                    Authorization: basicAuthHeader(clientId, STRAVA_CLIENT_SECRET.value()),
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({ token: refreshToken }),
+            });
+        } catch (error) {
+            console.warn(`Strava revoke for ${uid} failed: ${error.message}`);
+        }
+    }
+    await Promise.all([ref.delete(), getFirestore().recursiveDelete(stravaActivities(uid))]);
+}
+
+// A current access token for uid, refreshed and stored when it is within a minute of expiring
+// (or always, with `force`). A refresh Strava refuses means access was revoked: the connection
+// is dropped and permission-denied thrown. No connection is not-found.
+async function validStravaToken(uid, { force = false } = {}) {
+    const ref = stravaConnections().doc(uid);
+    const snap = await ref.get();
+    if (!snap.exists) throw new HttpsError("not-found", "Strava is not connected");
+    const connection = snap.data();
+    if (!force && !stravaTokenNeedsRefresh(connection.expires_at, Date.now() / 1000)) {
+        return { access_token: connection.access_token, expires_at: connection.expires_at };
+    }
+    const form = stravaTokenForm({ clientId: connection.client_id, refreshToken: connection.refresh_token }, STRAVA_CLIENT_SECRET.value());
+    const response = await postStravaToken(form);
+    if (!response.ok) {
+        const code = stravaTokenErrorCode(response.status);
+        if (code === "permission-denied") await forgetStrava(uid, { revoke: false });
+        throw new HttpsError(code, `Strava refresh returned ${response.status}`);
+    }
+    const body = await response.json();
+    await ref.update({ access_token: body.access_token, refresh_token: body.refresh_token, expires_at: body.expires_at });
+    return { access_token: body.access_token, expires_at: body.expires_at };
+}
+
+// Connects with a code from Strava's consent page, or with a refresh token an older build kept in
+// the Keychain. One Compound account per athlete: another account holding this athlete loses it.
+export const stravaConnect = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    const form = stravaTokenForm(request.data, STRAVA_CLIENT_SECRET.value());
+    if (!form) throw new HttpsError("invalid-argument", "clientId and either code or refreshToken are required");
+    const response = await postStravaToken(form);
+    if (!response.ok) {
+        console.warn(`Strava connect ${form.grant_type} failed: ${response.status}`);
+        throw new HttpsError(stravaTokenErrorCode(response.status), `Strava returned ${response.status}`);
+    }
+    const body = await response.json();
+    if (form.grant_type === "authorization_code" && !grantsUpload(body.scope)) {
+        throw new HttpsError("failed-precondition", "Strava did not grant activity:write");
+    }
+    let athlete = body.athlete;
+    if (!athlete) {
+        const athleteResponse = await stravaGet("/athlete", body.access_token);
+        if (!athleteResponse.ok) throw new HttpsError("unavailable", `Strava athlete returned ${athleteResponse.status}`);
+        athlete = await athleteResponse.json();
+    }
+    athlete = stravaAthlete(athlete);
+
+    const others = await stravaConnections().where("athlete_id", "==", athlete.id).get();
+    await Promise.all(others.docs.filter((doc) => doc.id !== uid).map((doc) => forgetStrava(doc.id, { revoke: false })));
+    await stravaConnections().doc(uid).set({
+        client_id: form.client_id,
+        athlete_id: athlete.id,
+        access_token: body.access_token,
+        refresh_token: body.refresh_token,
+        expires_at: body.expires_at,
+        scope: body.scope ?? "",
+        athlete,
+        connected_at: FieldValue.serverTimestamp(),
+    });
+    await getFirestore().collection("strava_events").add({ type: "import", uid, created_at: FieldValue.serverTimestamp() });
+    return { access_token: body.access_token, expires_at: body.expires_at, athlete };
+});
+
+export const stravaAccessToken = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    return validStravaToken(uid);
+});
+
+export const stravaConnection = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    const snap = await stravaConnections().doc(uid).get();
+    return snap.exists ? { connected: true, athlete: snap.data().athlete } : { connected: false };
+});
+
+export const stravaDisconnect = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
+    const uid = requireAuth(request);
+    await forgetStrava(uid, { revoke: true });
+    return {};
+});
+
+// Strava's push subscription calls this. It only queues the event: Strava wants an answer within
+// two seconds, and onStravaEventCreated does the work.
+export const stravaWebhook = onRequest({ region: REGION, secrets: [STRAVA_WEBHOOK_VERIFY_TOKEN] }, async (req, res) => {
+    if (req.method === "GET") {
+        const verified = req.query["hub.mode"] === "subscribe"
+            && req.query["hub.verify_token"] === STRAVA_WEBHOOK_VERIFY_TOKEN.value();
+        return verified ? res.json({ "hub.challenge": req.query["hub.challenge"] }) : res.status(403).send("");
+    }
+    if (req.method !== "POST") return res.status(405).send("");
+    const event = parseStravaWebhook(req.body);
+    if (!event) return res.status(400).send("");
+    await getFirestore().collection("strava_events").add({ type: "webhook", event, created_at: FieldValue.serverTimestamp() });
+    return res.status(200).send("");
+});
+
+// The last year of activities, on connecting.
+async function importStravaActivities(uid) {
+    const { access_token: accessToken } = await validStravaToken(uid);
+    const after = Math.floor(Date.now() / 1000) - 365 * 86_400;
+    for (let page = 1; page <= 5; page++) {
+        const response = await stravaGet(`/athlete/activities?after=${after}&per_page=200&page=${page}`, accessToken);
+        if (!response.ok) throw new Error(`Strava activities returned ${response.status}`);
+        const activities = await response.json();
+        const batch = getFirestore().batch();
+        for (const activity of activities.filter((a) => !isCompoundUpload(a))) {
+            batch.set(stravaActivities(uid).doc(String(activity.id)), stravaActivityDoc(activity));
+        }
+        await batch.commit();
+        if (activities.length < 200) break;
+    }
+}
+
+async function handleStravaWebhook(event) {
+    const owners = await stravaConnections().where("athlete_id", "==", event.owner_id).limit(1).get();
+    if (owners.empty) return;
+    const uid = owners.docs[0].id;
+
+    if (isDeauthorization(event)) {
+        // Webhooks are unsigned, so the event alone is not believed: a forced refresh that Strava
+        // refuses is what drops the connection (inside validStravaToken).
+        try {
+            await validStravaToken(uid, { force: true });
+        } catch (error) {
+            if (error.code !== "permission-denied") throw error;
+        }
+        return;
+    }
+    if (event.object_type !== "activity") return;
+
+    const ref = stravaActivities(uid).doc(String(event.object_id));
+    if (event.aspect_type === "delete") return ref.delete();
+    const { access_token: accessToken } = await validStravaToken(uid);
+    const response = await stravaGet(`/activities/${event.object_id}`, accessToken);
+    if (response.status === 404) return ref.delete();
+    if (!response.ok) throw new Error(`Strava activity returned ${response.status}`);
+    const activity = await response.json();
+    if (isCompoundUpload(activity)) return ref.delete();
+    await ref.set(stravaActivityDoc(activity));
+}
+
+// ponytail: a failed event is logged and dropped, not retried; the next import or webhook for
+// the activity puts it right. Turn on `retry` here if dropped events show up in the logs.
+export const onStravaEventCreated = onDocumentCreated(
+    { document: "strava_events/{eventId}", region: REGION, secrets: [STRAVA_CLIENT_SECRET] },
+    async (event) => {
+        const data = event.data?.data();
+        if (!data) return;
+        try {
+            if (data.type === "import") await importStravaActivities(data.uid);
+            else if (data.type === "webhook") await handleStravaWebhook(data.event);
+        } catch (error) {
+            console.error(`Strava ${data.type} event failed: ${error.message}`);
+        }
+        await event.data.ref.delete();
+    }
+);

@@ -442,7 +442,7 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `StreakManager` / `ProgressManager` / `ExperiencePointsManager` *(package)* | Gamification |
 | `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |
 | `LiveActivityManager` | Dynamic Island / Lock Screen workout tracking |
-| `StravaManager` | Strava OAuth and activity import |
+| `StravaManager` | Strava, with the tokens on the server (see Backend). Each finished workout is queued and uploaded with its sets (JSON strength format, so Strava draws its muscle map) and a set summary in its description; the queue is kept per account and sent at sign-in and after each finish, like a sync engine's pending writes, and past workouts can be queued from Integrations. The activity id is stamped on the session as `strava_activity_id`. Imported runs and rides (`importedActivities`) show on the owner's own screens only — Integrations, the weekly review, their own profile — never anywhere followers see, per Strava's terms. Built-in exercises map to Strava types in `StravaExerciseType`; add a line there for each new one |
 | `PurchaseManager` *(package)* | RevenueCat in dev and prod, each with its own SDK key; StoreKit config files for local testing |
 | `LogManager` *(package)* | Multi-service analytics (Console, Firebase, Mixpanel, Crashlytics) |
 | `ABTestManager` | A/B tests via Firebase Remote Config (prod) or local (dev) |
@@ -588,14 +588,42 @@ actually checked.
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
-Nine `onCall` callables, all in `us-central1`: `foodAnalyze`, `mealDescribe`,
+Thirteen `onCall` callables, all in `us-central1`: `foodAnalyze`, `mealDescribe`,
 `nutritionLabelAnalyze`, `chatGenerate`, `imageGenerate`, `foodSearch`, `removeFollower`,
-`acceptInvite` and `stravaToken`. `stravaToken` does Strava's code exchange and refresh, because
-both need the client secret, which lives only in the `STRAVA_CLIENT_SECRET` Functions secret
-(`firebase functions:secrets:set` per project) and never in the app. It answers
-`permission-denied` when Strava refuses the grant, and the app disconnects on that.
+`acceptInvite`, and five for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection`,
+`stravaDisconnect` and `stravaToken`. Strava's client secret lives only in the
+`STRAVA_CLIENT_SECRET` Functions secret (`firebase functions:secrets:set` per project).
 
-All six share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` and call
+**Strava.** The tokens live server-side in `strava_connections/{uid}`, which no client can read,
+so a connection belongs to the Compound account, not the device: signing out keeps it.
+- `stravaConnect({clientId, code | refreshToken})` connects. The refresh-token form migrates an
+  older build's Keychain token; a code without `activity:write` is refused with
+  `failed-precondition`. One Compound account per athlete: connecting takes the athlete from any
+  other account.
+- `stravaAccessToken` hands the app a short-lived token, which it uses to call Strava directly. It
+  answers `not-found` when not connected, and `permission-denied` when Strava refuses the
+  refresh, which also drops the connection.
+- `stravaConnection` answers the status and athlete; `stravaDisconnect` revokes at `/oauth/revoke`
+  with Basic client credentials.
+- Imported activities live in `users/{uid}/strava_activities` (owner read-only). Compound's own
+  uploads (`external_id` "compound-…") are never imported. Connecting queues a 365-day import.
+- `stravaWebhook` (HTTP; verify token in the `STRAVA_WEBHOOK_VERIFY_TOKEN` secret) only queues
+  events in `strava_events`; `onStravaEventCreated` processes them: activity create, update and
+  delete, and a deauthorization, believed only after a forced refresh fails, because webhooks are
+  unsigned.
+- Disconnecting, a refused refresh, deauthorization and account deletion all remove the
+  connection and every imported activity.
+- `stravaToken` remains only for builds older than the server-held tokens; remove it once none
+  are in use.
+- One-time setup per project: set `STRAVA_WEBHOOK_VERIFY_TOKEN`, deploy, then create Strava's
+  push subscription (`POST https://www.strava.com/api/v3/push_subscriptions` with `client_id`,
+  `client_secret`, `callback_url` = the deployed `stravaWebhook` URL, `verify_token`). Strava
+  allows one subscription per app, so dev and prod need separate Strava apps.
+- Strava's rate limits (200 requests per 15 minutes, 2,000 a day by default) are per **app**, not
+  per athlete: every user's uploads, backfills and imports share them.
+
+All of them share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` (the Strava ones
+extend it as `STRAVA_CALLABLE_OPTIONS` with the secret) and call
 `requireAuth(request)`, which throws `unauthenticated` when `request.auth` is missing. Keep both
 on any new callable — they are the only thing stopping an arbitrary rebuilt client from calling
 the backend, since the API keys in the bundled plists are public by design.

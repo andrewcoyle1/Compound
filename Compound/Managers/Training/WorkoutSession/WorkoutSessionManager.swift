@@ -113,6 +113,15 @@ class WorkoutSessionManager {
     func deleteWorkoutSession(id: String) async throws {
         try await userWorkoutSessionSyncEngine.deleteDocument(id: id)
     }
+
+    /// A field write rather than a save of the whole session, so it cannot undo an edit made on
+    /// the summary while Strava was still processing.
+    func setStravaActivityId(_ activityId: Int, sessionId: String) async throws {
+        try await userWorkoutSessionSyncEngine.updateDocument(
+            id: sessionId,
+            data: [WorkoutSessionModel.CodingKeys.stravaActivityId.rawValue: activityId]
+        )
+    }
     
     // MARK: - Read
 

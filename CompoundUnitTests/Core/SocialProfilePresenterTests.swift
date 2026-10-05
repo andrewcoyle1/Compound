@@ -27,6 +27,7 @@ struct SocialProfilePresenterTests {
         var followError: Error?
         var workoutSessions: [WorkoutSessionModel] = []
         var activeMesocycle: Mesocycle?
+        var stravaImportedActivities: [StravaImportedActivity] = []
         var remoteSessions: [WorkoutSessionModel] = []
         private(set) var fetchedFollowerIds: [String] = []
         private(set) var fetchedSessionAuthorIds: [String] = []
@@ -292,6 +293,26 @@ struct SocialProfilePresenterTests {
         screen.presenter.onViewAppear(delegate: profile("me", following: []))
 
         #expect(screen.presenter.isOwnProfile)
+    }
+
+    /// Strava's terms keep an athlete's data to the athlete, so only the owner sees it.
+    @Test("Test Strava Activities Show On The Owners Profile Only")
+    func testStravaActivitiesShowOnTheOwnersProfileOnly() {
+        let screen = makeScreen()
+        screen.interactor.stravaImportedActivities = (0..<4).map { day in
+            StravaImportedActivity(
+                id: "\(day)", name: "Run", sportType: "Run", startDate: Date().addingTimeInterval(-Double(day) * 3_600),
+                elapsedTime: 1_000, movingTime: 900, distance: 5_000, totalElevationGain: nil, averageHeartrate: nil
+            )
+        }
+
+        screen.presenter.onViewAppear(delegate: profile("me", following: []))
+        #expect(screen.presenter.stravaYear?.count ?? 0 >= 1)
+        #expect(screen.presenter.recentStravaActivities.map(\.id) == ["0", "1", "2"])
+
+        screen.presenter.onViewAppear(delegate: profile("someone", following: []))
+        #expect(screen.presenter.stravaYear == nil)
+        #expect(screen.presenter.recentStravaActivities.isEmpty)
     }
 
     /// A failed follow leaves the button where it was and says so, rather than silently pretending.

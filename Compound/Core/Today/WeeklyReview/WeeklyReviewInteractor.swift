@@ -8,6 +8,9 @@ protocol WeeklyReviewInteractor: GlobalInteractor {
     var userMeals: [MealLogModel] { get }
     var currentDietPlan: DietPlan? { get }
     var allExercises: [ExerciseModel] { get }
+    var stravaImportedActivities: [StravaImportedActivity] { get }
 }
 
-extension CoreInteractor: WeeklyReviewInteractor { }
+extension CoreInteractor: WeeklyReviewInteractor {
+    var stravaImportedActivities: [StravaImportedActivity] { stravaManager.importedActivities }
+}

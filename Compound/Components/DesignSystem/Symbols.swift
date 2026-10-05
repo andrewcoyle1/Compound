@@ -98,6 +98,8 @@ enum Symbol {
     static let delete = "trash"
     static let close = "xmark"
     static let share = "square.and.arrow.up"
+    /// Opening something in another app or the browser, such as a workout's Strava activity.
+    static let openExternally = "arrow.up.forward.app"
     static let search = "magnifyingglass"
     static let filter = "line.3.horizontal.decrease"
     static let more = "ellipsis"

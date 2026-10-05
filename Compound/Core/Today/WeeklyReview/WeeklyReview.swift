@@ -35,6 +35,9 @@ struct WeeklyReview: Equatable {
     let latestWeightKg: Double?
     let weightChangeKg: Double?
     let nutrition: NutritionAdherence?
+    /// Activities imported from Strava that week, `nil` with none. On this screen only, never the
+    /// share card: Strava's terms keep an athlete's data to the athlete.
+    let strava: StravaTotals?
 
     /// Fraction of last week's volume, e.g. 0.12 for 12% more; nil when last week had none.
     var volumeChange: Double? {
@@ -54,6 +57,7 @@ struct WeeklyReview: Equatable {
         goal: Int = CircleWeek.defaultGoal,
         templates: [String: ExerciseModel] = [:],
         dailyTargets: [DailyMacroTarget] = [],
+        stravaActivities: [StravaImportedActivity] = [],
         calendar: Calendar = .current
     ) -> WeeklyReview {
         let interval = calendar.dateInterval(of: .weekOfYear, for: week) ?? DateInterval(start: week, duration: 7 * 86_400)
@@ -72,7 +76,8 @@ struct WeeklyReview: Equatable {
             averageRPE: averageRPE(weekSessions),
             latestWeightKg: weight.latest,
             weightChangeKg: weight.change,
-            nutrition: adherence(meals, in: interval, dailyTargets: dailyTargets, calendar: calendar)
+            nutrition: adherence(meals, in: interval, dailyTargets: dailyTargets, calendar: calendar),
+            strava: StravaTotals(stravaActivities, in: interval)
         )
     }
 

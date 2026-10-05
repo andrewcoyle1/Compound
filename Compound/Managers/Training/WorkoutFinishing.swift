@@ -119,14 +119,6 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
         in: managers.mesocycles.activeMesocycle(for: managers.users.currentUser),
         sessions: managers.sessions
     )
-    // Only a saved workout: one that failed to save would be on Strava and nowhere in Compound.
-    if outcome == .saved, let strava = managers.strava, strava.isConnected {
-        do {
-            try await strava.uploadWorkout(session)
-        } catch {
-            logger.trackEvent(eventName: "strava_upload_error", parameters: ["error": error.localizedDescription], type: .warning)
-        }
-    }
     let sessionsIncludingThis = managers.sessions.workoutSessions.filter { $0.id != session.id } + [session]
     if outcome == .saved {
         await advanceMacrocycle(using: managers, sessions: sessionsIncludingThis)
@@ -144,6 +136,9 @@ func finishWorkout(_ session: WorkoutSessionModel, using managers: WorkoutFinish
                 weeklyGoal: CircleWeek.goal(for: user)
             ))
         }
+        // Last, because Strava is polled until it has made the activity. Only a saved workout: one
+        // that failed to save would be on Strava and nowhere in Compound.
+        await managers.strava?.queueUpload(session)
     }
     return outcome
 }

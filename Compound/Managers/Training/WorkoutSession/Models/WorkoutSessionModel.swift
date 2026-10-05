@@ -28,6 +28,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// only. Absent on sessions saved before pausing was recorded and on ones never paused, which
     /// then read exactly as before.
     private(set) var pausedSeconds: TimeInterval?
+    /// The Strava activity this session was uploaded as, stamped once Strava has made it. Absent
+    /// on sessions never uploaded.
+    var stravaActivityId: Int?
 
     init(
         id: String = UUID().uuidString,
@@ -77,6 +80,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case likedByUserIds = "liked_by_user_ids"
         case streakCount = "streak_count"
         case pausedSeconds = "paused_seconds"
+        case stravaActivityId = "strava_activity_id"
         case hidden
     }
 

@@ -274,6 +274,12 @@ service cloud.firestore {
           (request.resource.data.actor_id == request.auth.uid && !isBlockedBy(user_id))
         );
       }
+
+      // Activities imported from Strava. Only the Strava functions write them.
+      match /strava_activities/{activity_id} {
+        allow read: if isAuthed() && request.auth.uid == user_id;
+        allow write: if false;
+      }
     }
     
     // ---------------- STREAKS ----------------
@@ -296,6 +302,15 @@ service cloud.firestore {
     match /food_search_cache/{doc} {
       allow read: if false;
       allow write: if false;
+    }
+
+    // ---------------- STRAVA ----------------
+    // Tokens and the webhook event queue. Only the Strava functions (admin SDK) touch these.
+    match /strava_connections/{user_id} {
+      allow read, write: if false;
+    }
+    match /strava_events/{event_id} {
+      allow read, write: if false;
     }
 
     // ---------------- WORKOUT SESSIONS (collection group) ----------------

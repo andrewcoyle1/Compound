@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 protocol ExpenditureDetailRouter: GlobalRouter {
-    func showAccountView(delegate: AccountDelegate)
+    func showEditProfileView(delegate: EditProfileDelegate)
 }
 
 extension CoreRouter: ExpenditureDetailRouter { }

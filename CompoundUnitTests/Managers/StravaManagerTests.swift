@@ -9,330 +9,449 @@ import Testing
 import Foundation
 @testable import Compound
 
-/// Pushing a finished session to Strava.
+/// The connection, its tokens and the upload queue.
 ///
-/// Two parts of this manager are out of a unit test's reach and are left to manual testing rather
-/// than faked here:
-///
-/// - `authenticate()` drives an `ASWebAuthenticationSession`, which needs a foreground window
-///   scene and a real browser redirect. Nothing about the code exchange runs without it.
-/// - Token state lives in the real Keychain through `KeychainHelper`, not behind an injectable
-///   store, so `isConnected`, `disconnect()` and the refresh inside `validAccessToken()` can only
-///   be exercised by writing to the test host's keychain. The tests below that do so write the
-///   three `strava_*` keys and delete them again in a `defer`, and `testHostHasKeychainAccess`
-///   fails loudly if the write did not land — a silently unavailable keychain would otherwise
-///   turn those tests into no-ops. They clear any Strava tokens the test host's keychain already
-///   held, which matters only if the same simulator was used to connect a real account.
-///
-/// What is left — the workout-to-activity mapping, the payload shape Strava decodes, and the
-/// token response it returns — is what these cover.
+/// `authenticate()` drives an `ASWebAuthenticationSession`, which needs a foreground window scene
+/// and a real browser redirect, so it is left to manual testing; what it does with the redirect is
+/// covered through `authorizationCode(from:)`. Everything else runs against a capturing service,
+/// with the session and exercise managers on mock engines and a scratch `UserDefaults`.
+/// One activity edit `CapturingStravaService` was asked to send.
+struct StravaActivityUpdate {
+    let id: Int
+    let name: String
+    let description: String?
+}
+
 @MainActor
 struct StravaManagerTests {
 
-    private static let accessKey = "strava_access_token"
-    private static let refreshKey = "strava_refresh_token"
-    private static let expiresKey = "strava_expires_at"
-
-    /// Captures the activity uploaded and the refresh it was asked for. `rejectedTokens` answers
-    /// an upload with those access tokens as Strava answers a revoked one; `refreshRevoked` refuses
-    /// the refresh the same way.
-    private final class CapturingStravaService: StravaService {
-        private(set) var uploaded: [StravaActivity] = []
-        private(set) var refreshTokensUsed: [String] = []
-        private(set) var codesExchanged: [String] = []
-        private(set) var deauthorized: [String] = []
+    /// Captures what was sent. `rejectedTokens` answers a request with those access tokens as
+    /// Strava answers a revoked one. `statuses` are answered in turn, the first by the upload
+    /// itself; `uploadErrors` are thrown by uploads in turn before any status is answered.
+    final class CapturingStravaService: StravaService {
+        var athlete: StravaAthlete? = StravaAthlete(id: 7, firstname: "Alex", lastname: "Runner", profile: nil)
+        var tokens = ["token-1", "token-2", "token-3"]
+        var tokenLifetime = 3_600
         var rejectedTokens: Set<String> = []
-        var refreshRevoked = false
-        var refreshResponse = StravaTokenResponse(
-            accessToken: "refreshed_access",
-            refreshToken: "refreshed_refresh",
-            expiresAt: Int(Date().timeIntervalSince1970) + 21_600
-        )
+        var statuses = [StravaUploadStatus(id: 7, error: nil, activityId: 42)]
+        var uploadErrors: [Error] = []
+        var disconnectError: Error?
+        var connectError: Error?
+        private(set) var uploaded: [StravaUpload] = []
+        private(set) var polledIds: [Int] = []
+        private(set) var updates: [StravaActivityUpdate] = []
+        private(set) var issuedTokens: [String] = []
+        private(set) var connects: [(code: String?, refreshToken: String?)] = []
+        private(set) var disconnectCount = 0
 
-        func exchangeCodeForToken(code: String, clientId: String) async throws -> StravaTokenResponse {
-            codesExchanged.append(code)
-            return refreshResponse
+        func connect(code: String?, refreshToken: String?, clientId: String) async throws -> StravaConnectResult {
+            connects.append((code, refreshToken))
+            if let connectError { throw connectError }
+            let athlete = StravaAthlete(id: 7, firstname: "Alex", lastname: "Runner", profile: nil)
+            self.athlete = athlete
+            return StravaConnectResult(accessToken: "connect-token", expiresAt: Int(Date().timeIntervalSince1970) + tokenLifetime, athlete: athlete)
         }
 
-        func refreshToken(refreshToken: String, clientId: String) async throws -> StravaTokenResponse {
-            refreshTokensUsed.append(refreshToken)
-            if refreshRevoked { throw StravaError.authorizationRevoked }
-            return refreshResponse
+        func connection() async throws -> StravaAthlete? { athlete }
+
+        func accessToken() async throws -> StravaAccessToken {
+            guard athlete != nil else { throw StravaError.notConnected }
+            let token = tokens.isEmpty ? "token-last" : tokens.removeFirst()
+            issuedTokens.append(token)
+            return StravaAccessToken(accessToken: token, expiresAt: Int(Date().timeIntervalSince1970) + tokenLifetime)
         }
 
-        func uploadActivity(_ activity: StravaActivity, accessToken: String) async throws {
+        func disconnect() async throws {
+            if let disconnectError { throw disconnectError }
+            disconnectCount += 1
+            athlete = nil
+        }
+
+        func upload(_ upload: StravaUpload, accessToken: String) async throws -> StravaUploadStatus {
             if rejectedTokens.contains(accessToken) { throw StravaError.authorizationRevoked }
-            uploaded.append(activity)
+            if !uploadErrors.isEmpty { throw uploadErrors.removeFirst() }
+            uploaded.append(upload)
+            return nextStatus()
         }
 
-        func deauthorize(accessToken: String) async throws {
-            deauthorized.append(accessToken)
+        func uploadStatus(id: Int, accessToken: String) async throws -> StravaUploadStatus {
+            polledIds.append(id)
+            return nextStatus()
+        }
+
+        func updateActivity(id: Int, name: String, description: String?, accessToken: String) async throws {
+            if rejectedTokens.contains(accessToken) { throw StravaError.authorizationRevoked }
+            updates.append(StravaActivityUpdate(id: id, name: name, description: description))
+        }
+
+        private func nextStatus() -> StravaUploadStatus {
+            statuses.count > 1 ? statuses.removeFirst() : statuses[0]
         }
     }
 
-    private func makeManager(service: StravaService) -> StravaManager {
-        StravaManager(service: service, clientId: "client-id")
+    struct Fixture {
+        let manager: StravaManager
+        let service: CapturingStravaService
+        let sessions: WorkoutSessionManager
+        let defaults: UserDefaults
     }
 
-    /// Writes the three token keys the manager reads, and removes them again afterwards.
-    private func withStravaTokens(
-        accessToken: String = "stored_access",
-        refreshToken: String = "stored_refresh",
-        expiresAt: Int,
-        _ body: () async throws -> Void
-    ) async rethrows {
-        defer {
-            KeychainHelper.delete(forKey: Self.accessKey)
-            KeychainHelper.delete(forKey: Self.refreshKey)
-            KeychainHelper.delete(forKey: Self.expiresKey)
-        }
-        KeychainHelper.save(accessToken, forKey: Self.accessKey, synchronizable: true)
-        KeychainHelper.save(refreshToken, forKey: Self.refreshKey, synchronizable: true)
-        KeychainHelper.save(String(expiresAt), forKey: Self.expiresKey, synchronizable: true)
-        try await body()
-    }
-
-    private func session(
-        name: String = "Push Day",
-        dateCreated: Date,
-        endedAt: Date?,
-        notes: String? = nil
-    ) -> WorkoutSessionModel {
-        WorkoutSessionModel(
-            authorId: "author-1",
-            name: name,
-            dateCreated: dateCreated,
-            endedAt: endedAt,
-            notes: notes,
-            exercises: []
+    /// A manager signed in as `author-1`, its sessions loaded. `signIn` sends the queue, so a
+    /// session is only queued by what the test does next.
+    func makeFixture(
+        sessions: [WorkoutSessionModel] = [],
+        service: CapturingStravaService? = nil,
+        defaults: UserDefaults? = nil,
+        pollAttempts: Int = 10
+    ) async -> Fixture {
+        let service = service ?? CapturingStravaService()
+        let defaults = defaults ?? TestManagers.scratchDefaults("strava")
+        let sessionManager = await TestManagers.signedInWorkoutSessionManager(sessions: sessions)
+        let manager = StravaManager(
+            service: service,
+            clientId: "client-id",
+            activitySyncEngine: TestManagers.collectionEngine([StravaImportedActivity](), key: "strava-activities"),
+            sessions: sessionManager,
+            exercises: TestManagers.exerciseModelManager(),
+            users: TestManagers.userManager(user: nil),
+            logger: LogManager(services: []),
+            defaults: defaults,
+            pollInterval: .zero,
+            pollAttempts: pollAttempts
         )
+        Self.clearDeviceTokens()
+        await manager.signIn(userId: "author-1")
+        return Fixture(manager: manager, service: service, sessions: sessionManager, defaults: defaults)
     }
 
-    // MARK: - The keychain these tests depend on
-
-    /// The tests that write tokens are only meaningful if the write lands. The unit-test bundle is
-    /// hosted in the app, so it shares the app's keychain access — if that ever stops being true
-    /// this fails rather than letting the upload tests quietly pass on an unreachable path.
-    @Test("Test The Test Host Has Keychain Access")
-    func testHostHasKeychainAccess() async {
-        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            #expect(KeychainHelper.read(forKey: Self.accessKey, synchronizable: true) == "stored_access")
+    static func clearDeviceTokens() {
+        for key in ["strava_access_token", "strava_refresh_token", "strava_expires_at"] {
+            KeychainHelper.delete(forKey: key)
         }
-
-        #expect(KeychainHelper.read(forKey: Self.accessKey, synchronizable: true) == nil)
     }
 
-    // MARK: - Mapping a workout to an activity
+    // MARK: - The connection
 
-    /// The activity is all Strava ever sees of the session, so every field it carries comes from
-    /// somewhere in the workout: the name shown in the feed, the sport that decides which stats
-    /// Strava keeps, and an elapsed time measured from the session's own two timestamps rather
-    /// than from when the upload happened.
-    @Test("Test Uploading A Workout Maps Its Name Sport And Duration")
-    func testUploadingAWorkoutMapsItsNameSportAndDuration() async throws {
+    @Test("Test Signing In Reads The Connection From The Server")
+    func testSigningInReadsTheConnectionFromTheServer() async {
+        let fixture = await makeFixture()
+
+        #expect(fixture.manager.isConnected)
+        #expect(fixture.manager.athlete?.name == "Alex Runner")
+    }
+
+    /// The connection belongs to the account: signing out forgets it here and nothing more, and the
+    /// last answer is remembered per account so the next launch knows before the server answers.
+    @Test("Test Signing Out Forgets The Connection Here Only")
+    func testSigningOutForgetsTheConnectionHereOnly() async {
+        let fixture = await makeFixture()
+
+        fixture.manager.signOut()
+
+        #expect(!fixture.manager.isConnected)
+        #expect(fixture.service.disconnectCount == 0)
+        #expect(fixture.defaults.data(forKey: StravaManager.athleteKey("author-1")) != nil)
+    }
+
+    @Test("Test An Account Not Connected On The Server Is Not Connected")
+    func testAnAccountNotConnectedOnTheServerIsNotConnected() async {
         let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-        let workout = session(
-            name: "Upper Body A",
-            dateCreated: start,
-            endedAt: start.addingTimeInterval(3_600),
-            notes: "Felt strong"
+        service.athlete = nil
+
+        let fixture = await makeFixture(service: service)
+
+        #expect(!fixture.manager.isConnected)
+    }
+
+    @Test("Test Disconnecting Clears The Connection And The Queue")
+    func testDisconnectingClearsTheConnectionAndTheQueue() async throws {
+        let fixture = await makeFixture()
+        fixture.manager.pendingSessionIds = ["s"]
+
+        try await fixture.manager.disconnect()
+
+        #expect(fixture.service.disconnectCount == 1)
+        #expect(!fixture.manager.isConnected)
+        #expect(fixture.manager.pendingSessionIds.isEmpty)
+    }
+
+    /// The server did not disconnect, so neither does the app.
+    @Test("Test A Failed Disconnect Leaves The Account Connected")
+    func testAFailedDisconnectLeavesTheAccountConnected() async {
+        let service = CapturingStravaService()
+        service.disconnectError = URLError(.notConnectedToInternet)
+        let fixture = await makeFixture(service: service)
+
+        await #expect(throws: URLError.self) { try await fixture.manager.disconnect() }
+
+        #expect(fixture.manager.isConnected)
+    }
+
+    /// Older builds kept the refresh token in the iCloud Keychain. The first sign-in hands it to
+    /// the server and forgets it here.
+    @Test("Test A Device Token Is Moved To The Server")
+    func testADeviceTokenIsMovedToTheServer() async {
+        let service = CapturingStravaService()
+        service.athlete = nil
+        let manager = StravaManager(
+            service: service, clientId: "client-id",
+            activitySyncEngine: TestManagers.collectionEngine([StravaImportedActivity](), key: "strava-activities"),
+            sessions: TestManagers.workoutSessionManager(), exercises: TestManagers.exerciseModelManager(),
+            users: TestManagers.userManager(user: nil), logger: LogManager(services: []),
+            defaults: TestManagers.scratchDefaults("strava")
         )
+        KeychainHelper.save("old-refresh", forKey: "strava_refresh_token", synchronizable: true)
+        defer { Self.clearDeviceTokens() }
 
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(workout)
-        }
+        await manager.signIn(userId: "author-1")
 
-        let activity = try #require(service.uploaded.first)
-        #expect(activity.name == "Upper Body A")
-        #expect(activity.sportType == "WeightTraining")
-        #expect(activity.elapsedTime == 3_600)
-        #expect(activity.startDateLocal == StravaManager.localDateString(start))
-        #expect(activity.description == "Felt strong")
-    }
-
-    /// The elapsed time is truncated to whole seconds, and a session's timestamps rarely land on
-    /// one — the `Int` conversion has to round down rather than trap on a fractional interval.
-    @Test("Test Elapsed Time Truncates A Fractional Duration")
-    func testElapsedTimeTruncatesAFractionalDuration() async throws {
-        let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-        let workout = session(dateCreated: start, endedAt: start.addingTimeInterval(1_805.9))
-
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(workout)
-        }
-
-        #expect(service.uploaded.first?.elapsedTime == 1_805)
-    }
-
-    /// An in-progress session has no end, so there is no duration to send — uploading one would
-    /// put a zero-length activity on the athlete's feed.
-    @Test("Test An Unfinished Workout Is Not Uploaded")
-    func testAnUnfinishedWorkoutIsNotUploaded() async throws {
-        let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-
-        try await manager.uploadWorkout(session(dateCreated: Date(), endedAt: nil))
-
-        // The end date is checked before the token is, so this path needs no keychain at all.
-        #expect(service.uploaded.isEmpty)
-    }
-
-    @Test("Test A Workout Without Notes Sends No Description")
-    func testAWorkoutWithoutNotesSendsNoDescription() async throws {
-        let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
-        }
-
-        #expect(service.uploaded.first?.description == nil)
+        #expect(service.connects.map(\.refreshToken) == ["old-refresh"])
+        #expect(manager.isConnected)
+        #expect(KeychainHelper.read(forKey: "strava_refresh_token", synchronizable: true) == nil)
     }
 
     // MARK: - Tokens
 
-    /// With no stored tokens there is nothing to upload with, and the manager has to say so rather
-    /// than send an unauthenticated request.
-    @Test("Test Uploading Without Tokens Reports Not Connected")
-    func testUploadingWithoutTokensReportsNotConnected() async throws {
-        let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        // Clears whatever this simulator's keychain held, so the test does not depend on it.
-        manager.disconnect()
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
+    /// A token is asked for once and reused until it is within a minute of expiring.
+    @Test("Test A Token Is Reused Until It Nearly Expires")
+    func testATokenIsReusedUntilItNearlyExpires() async throws {
+        let fixture = await makeFixture()
 
-        // `notConnected` is the only `StravaError` `uploadWorkout` can reach — the other two come
-        // from the auth session.
-        await #expect(throws: StravaError.self) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+        try await fixture.manager.updateActivity(1, from: StravaFixture.session())
+        try await fixture.manager.updateActivity(1, from: StravaFixture.session())
+        #expect(fixture.service.issuedTokens == ["token-1"])
+
+        let shortLived = CapturingStravaService()
+        shortLived.tokenLifetime = 30
+        let other = await makeFixture(service: shortLived)
+        try await other.manager.updateActivity(1, from: StravaFixture.session())
+        try await other.manager.updateActivity(1, from: StravaFixture.session())
+        #expect(shortLived.issuedTokens == ["token-1", "token-2"])
+    }
+
+    /// A 401 gets one fresh token and one retry.
+    @Test("Test A Rejected Token Is Replaced Once And The Request Retried")
+    func testARejectedTokenIsReplacedOnceAndTheRequestRetried() async throws {
+        let service = CapturingStravaService()
+        service.rejectedTokens = ["token-1"]
+        let fixture = await makeFixture(service: service)
+
+        try await fixture.manager.updateActivity(1, from: StravaFixture.session())
+
+        #expect(service.issuedTokens == ["token-1", "token-2"])
+        #expect(service.updates.count == 1)
+        #expect(fixture.manager.isConnected)
+    }
+
+    /// Strava refusing a fresh token too means the athlete revoked Compound.
+    @Test("Test A Token Refused Twice Disconnects")
+    func testATokenRefusedTwiceDisconnects() async {
+        let service = CapturingStravaService()
+        service.rejectedTokens = ["token-1", "token-2"]
+        let fixture = await makeFixture(service: service)
+
+        await #expect(throws: StravaError.notConnected) {
+            try await fixture.manager.updateActivity(1, from: StravaFixture.session())
         }
 
+        #expect(!fixture.manager.isConnected)
+    }
+
+    @Test("Test An Edit Sends The Name And Description")
+    func testAnEditSendsTheNameAndDescription() async throws {
+        let fixture = await makeFixture()
+
+        try await fixture.manager.updateActivity(42, from: StravaFixture.session(name: "Pull Day", notes: "Felt strong"))
+
+        #expect(fixture.service.updates.first?.id == 42)
+        #expect(fixture.service.updates.first?.name == "Pull Day")
+        #expect(fixture.service.updates.first?.description?.hasPrefix("Felt strong\n\n") == true)
+    }
+
+    // MARK: - Sending one workout
+
+    /// The external id is what makes a second upload of the same session a duplicate rather than
+    /// a second activity.
+    @Test("Test A Workout Is Sent With Its Name Description And Session Id")
+    func testAWorkoutIsSentWithItsNameDescriptionAndSessionId() async throws {
+        let fixture = await makeFixture()
+
+        let outcome = try await fixture.manager.upload(StravaFixture.session(name: "Upper Body A", notes: "Felt strong"))
+
+        let upload = try #require(fixture.service.uploaded.first)
+        #expect(upload.name == "Upper Body A")
+        #expect(upload.description?.hasPrefix("Felt strong") == true)
+        #expect(upload.externalId == "compound-session-1")
+        #expect(outcome == .linked(activityId: 42))
+    }
+
+    @Test("Test A Workout With No Completed Set Has Nothing To Send")
+    func testAWorkoutWithNoCompletedSetHasNothingToSend() async throws {
+        let fixture = await makeFixture()
+        let workout = StravaFixture.session(exercises: [StravaFixture.exercise(sets: [StravaFixture.row("a", completed: false)])])
+
+        #expect(try await fixture.manager.upload(workout) == .nothingToSend)
+        #expect(fixture.service.uploaded.isEmpty)
+    }
+
+    @Test("Test A Processing Upload Is Polled Until Its Activity Exists")
+    func testAProcessingUploadIsPolledUntilItsActivityExists() async throws {
+        let service = CapturingStravaService()
+        service.statuses = [
+            StravaUploadStatus(id: 7, error: nil, activityId: nil),
+            StravaUploadStatus(id: 7, error: nil, activityId: nil),
+            StravaUploadStatus(id: 7, error: nil, activityId: 99)
+        ]
+        let fixture = await makeFixture(service: service)
+
+        #expect(try await fixture.manager.upload(StravaFixture.session()) == .linked(activityId: 99))
+        #expect(service.polledIds == [7, 7])
+    }
+
+    /// The second upload of a session is refused as a duplicate of the first, which is the
+    /// activity it already became.
+    @Test("Test A Duplicate Upload Answers The Existing Activity")
+    func testADuplicateUploadAnswersTheExistingActivity() async throws {
+        let service = CapturingStravaService()
+        service.statuses = [StravaUploadStatus(id: 7, error: "compound-session-1 duplicate of activity 21234316", activityId: nil)]
+        let fixture = await makeFixture(service: service)
+
+        #expect(try await fixture.manager.upload(StravaFixture.session()) == .linked(activityId: 21_234_316))
+    }
+
+    @Test("Test A Processing Error Is Thrown With Stravas Reason")
+    func testAProcessingErrorIsThrownWithStravasReason() async {
+        let service = CapturingStravaService()
+        service.statuses = [StravaUploadStatus(id: 7, error: "Unrecognized exercise", activityId: nil)]
+        let fixture = await makeFixture(service: service)
+
+        await #expect(throws: StravaError.processingFailed("Unrecognized exercise")) {
+            _ = try await fixture.manager.upload(StravaFixture.session())
+        }
+    }
+
+    @Test("Test An Upload Still Processing After The Wait Is Processing")
+    func testAnUploadStillProcessingAfterTheWaitIsProcessing() async throws {
+        let service = CapturingStravaService()
+        service.statuses = [StravaUploadStatus(id: 7, error: nil, activityId: nil)]
+        let fixture = await makeFixture(service: service, pollAttempts: 3)
+
+        #expect(try await fixture.manager.upload(StravaFixture.session()) == .processing)
+        #expect(service.polledIds.count == 3)
+    }
+
+    // MARK: - The queue
+
+    /// A finished workout goes up and its session is stamped with the activity.
+    @Test("Test A Queued Workout Is Sent And Linked")
+    func testAQueuedWorkoutIsSentAndLinked() async {
+        let workout = StravaFixture.session()
+        let fixture = await makeFixture(sessions: [workout])
+
+        await fixture.manager.queueUpload(workout)
+
+        #expect(fixture.manager.pendingSessionIds.isEmpty)
+        #expect(await TestManagers.eventually { fixture.sessions.workoutSessions.first?.stravaActivityId == 42 })
+    }
+
+    /// Offline at the gym: the workout stays queued, across launches, and goes at the next sign-in.
+    @Test("Test A Failed Upload Stays Queued Across Launches")
+    func testAFailedUploadStaysQueuedAcrossLaunches() async {
+        let workout = StravaFixture.session()
+        let offline = CapturingStravaService()
+        offline.uploadErrors = [URLError(.notConnectedToInternet)]
+        let defaults = TestManagers.scratchDefaults("strava")
+        let first = await makeFixture(sessions: [workout], service: offline, defaults: defaults)
+
+        await first.manager.queueUpload(workout)
+        #expect(first.manager.pendingSessionIds == ["session-1"])
+
+        let relaunch = await makeFixture(sessions: [workout], defaults: defaults)
+
+        #expect(relaunch.service.uploaded.map(\.externalId) == ["compound-session-1"])
+        #expect(relaunch.manager.pendingSessionIds.isEmpty)
+    }
+
+    /// Over Strava's limit, every later upload would fail too: the queue stops and keeps them all.
+    @Test("Test Hitting Stravas Limit Stops The Queue And Keeps It")
+    func testHittingStravasLimitStopsTheQueueAndKeepsIt() async {
+        let sessions = [StravaFixture.session(id: "a"), StravaFixture.session(id: "b")]
+        let service = CapturingStravaService()
+        service.uploadErrors = [StravaError.rateLimited]
+        let fixture = await makeFixture(sessions: sessions, service: service)
+        fixture.manager.pendingSessionIds = ["a", "b"]
+
+        await fixture.manager.syncPendingUploads()
+
+        #expect(fixture.manager.pendingSessionIds == ["a", "b"])
         #expect(service.uploaded.isEmpty)
-        #expect(!manager.isConnected)
     }
 
-    /// Strava access tokens last six hours. The manager refreshes anything expiring within the next
-    /// minute, so an upload that starts just before the deadline does not fail mid-flight.
-    @Test("Test An Almost Expired Token Is Refreshed Before Uploading")
-    func testAnAlmostExpiredTokenIsRefreshedBeforeUploading() async throws {
+    /// A workout Strava will never take is dropped rather than retried forever, and the rest go on.
+    @Test("Test A Workout Strava Refuses Is Dropped And The Rest Sent")
+    func testAWorkoutStravaRefusesIsDroppedAndTheRestSent() async {
+        let sessions = [StravaFixture.session(id: "a"), StravaFixture.session(id: "b")]
         let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        service.uploadErrors = [StravaError.uploadFailed(status: 400)]
+        let fixture = await makeFixture(sessions: sessions, service: service)
+        fixture.manager.pendingSessionIds = ["a", "b"]
 
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 30) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+        await fixture.manager.syncPendingUploads()
 
-            #expect(service.refreshTokensUsed == ["stored_refresh"])
-            // The refreshed pair replaces what was stored, or the next upload refreshes again.
-            #expect(KeychainHelper.read(forKey: Self.accessKey, synchronizable: true) == "refreshed_access")
-            #expect(KeychainHelper.read(forKey: Self.refreshKey, synchronizable: true) == "refreshed_refresh")
-        }
-
-        #expect(service.uploaded.count == 1)
+        #expect(fixture.manager.pendingSessionIds.isEmpty)
+        #expect(service.uploaded.map(\.externalId) == ["compound-b"])
     }
 
-    @Test("Test A Valid Token Is Used Without Refreshing")
-    func testAValidTokenIsUsedWithoutRefreshing() async throws {
+    /// Still processing: kept, because sending again answers the activity as a duplicate.
+    @Test("Test A Workout Still Processing Stays Queued")
+    func testAWorkoutStillProcessingStaysQueued() async {
+        let workout = StravaFixture.session()
         let service = CapturingStravaService()
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        service.statuses = [StravaUploadStatus(id: 7, error: nil, activityId: nil)]
+        let fixture = await makeFixture(sessions: [workout], service: service, pollAttempts: 1)
 
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
+        await fixture.manager.queueUpload(workout)
 
-            #expect(service.refreshTokensUsed.isEmpty)
-            #expect(KeychainHelper.read(forKey: Self.accessKey, synchronizable: true) == "stored_access")
-        }
+        #expect(fixture.manager.pendingSessionIds == ["session-1"])
     }
 
-    /// `isConnected` is what the settings screen reads, and disconnecting has to clear all three
-    /// keys — a leftover access token would leave the app claiming a connection it cannot refresh.
-    @Test("Test Disconnecting Clears The Stored Tokens")
-    func testDisconnectingClearsTheStoredTokens() async throws {
-        let manager = makeManager(service: CapturingStravaService())
-
-        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            #expect(manager.isConnected)
-
-            manager.disconnect()
-
-            #expect(!manager.isConnected)
-            #expect(KeychainHelper.read(forKey: Self.refreshKey, synchronizable: true) == nil)
-            #expect(KeychainHelper.read(forKey: Self.expiresKey, synchronizable: true) == nil)
-        }
-    }
-
-    /// Disconnecting also revokes the token at Strava, so Compound leaves the athlete's authorized
-    /// apps instead of lingering there.
-    @Test("Test Disconnecting Revokes The Token At Strava")
-    func testDisconnectingRevokesTheTokenAtStrava() async throws {
+    @Test("Test Nothing Is Queued Without A Connection")
+    func testNothingIsQueuedWithoutAConnection() async {
         let service = CapturingStravaService()
-        let manager = makeManager(service: service)
+        service.athlete = nil
+        let fixture = await makeFixture(service: service)
 
-        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            manager.disconnect()
-        }
+        await fixture.manager.queueUpload(StravaFixture.session())
 
-        #expect(await TestManagers.eventually { service.deauthorized == ["stored_access"] })
-    }
-
-    /// A 401 on a token that had not expired gets one forced refresh, and the upload goes through
-    /// with the new token.
-    @Test("Test A Rejected Token Is Refreshed Once And The Upload Retried")
-    func testARejectedTokenIsRefreshedOnceAndTheUploadRetried() async throws {
-        let service = CapturingStravaService()
-        service.rejectedTokens = ["stored_access"]
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-
-        try await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
-            #expect(manager.isConnected)
-        }
-
-        #expect(service.refreshTokensUsed == ["stored_refresh"])
-        #expect(service.uploaded.count == 1)
-    }
-
-    /// The athlete revoked Compound in Strava. Every upload would now fail, so the manager drops
-    /// the connection rather than keep claiming it.
-    @Test("Test A Revoked Authorization Disconnects")
-    func testARevokedAuthorizationDisconnects() async throws {
-        let service = CapturingStravaService()
-        service.rejectedTokens = ["stored_access"]
-        service.refreshRevoked = true
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
-
-        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            await #expect(throws: StravaError.notConnected) {
-                try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
-            }
-            #expect(!manager.isConnected)
-        }
-
+        #expect(fixture.manager.pendingSessionIds.isEmpty)
         #expect(service.uploaded.isEmpty)
     }
 
-    /// A refresh that succeeds but whose token is still refused means the upload permission is gone.
-    @Test("Test A Token Refused After Refreshing Disconnects")
-    func testATokenRefusedAfterRefreshingDisconnects() async throws {
-        let service = CapturingStravaService()
-        service.rejectedTokens = ["stored_access", "refreshed_access"]
-        let manager = makeManager(service: service)
-        let start = Date(timeIntervalSince1970: 1_700_000_000)
+    // MARK: - Past workouts
 
-        await withStravaTokens(expiresAt: Int(Date().timeIntervalSince1970) + 3_600) {
-            await #expect(throws: StravaError.notConnected) {
-                try await manager.uploadWorkout(session(dateCreated: start, endedAt: start.addingTimeInterval(600)))
-            }
-            #expect(!manager.isConnected)
-        }
+    /// Finished, own, not rest days, not deleted, not already on Strava, with something to send —
+    /// oldest first so Strava's feed fills in order.
+    @Test("Test Past Workouts To Upload Are The Ones Strava Could Take")
+    func testPastWorkoutsToUploadAreTheOnesStravaCouldTake() async {
+        var linked = StravaFixture.session(id: "linked", dateCreated: StravaFixture.start)
+        linked.stravaActivityId = 1
+        var deleted = StravaFixture.session(id: "deleted")
+        deleted.deletedAt = StravaFixture.start
+        let fixture = await makeFixture(sessions: [
+            StravaFixture.session(id: "newer", dateCreated: StravaFixture.start.addingTimeInterval(86_400)),
+            StravaFixture.session(id: "older", dateCreated: StravaFixture.start),
+            linked,
+            deleted,
+            StravaFixture.session(id: "rest", isRestDay: true),
+            StravaFixture.session(id: "running", endedAt: .some(nil)),
+            StravaFixture.session(id: "friend", authorId: "someone-else"),
+            StravaFixture.session(id: "empty", exercises: [StravaFixture.exercise(sets: [StravaFixture.row("a", completed: false)])])
+        ])
+
+        #expect(fixture.manager.backfillCandidates.map(\.id) == ["older", "newer"])
+        #expect(fixture.manager.queueBackfill() == 2)
+        #expect(fixture.manager.pendingSessionIds == ["older", "newer"])
+        #expect(fixture.manager.queueBackfill() == 0)
     }
 
     // MARK: - The redirect
@@ -340,6 +459,14 @@ struct StravaManagerTests {
     @Test("Test The Redirect Yields The Code When Upload Permission Was Granted")
     func testTheRedirectYieldsTheCodeWhenUploadPermissionWasGranted() throws {
         let url = try #require(URL(string: "compoundstrava://localhost/exchange_token?state=&code=abc&scope=read,activity:write"))
+        #expect(try StravaManager.authorizationCode(from: url) == "abc")
+    }
+
+    /// Strava documents the granted scopes as comma- or space-delimited. Split on commas alone, a
+    /// space-delimited grant read as missing the upload permission and refused every connection.
+    @Test("Test A Space Delimited Grant Is Read")
+    func testASpaceDelimitedGrantIsRead() throws {
+        let url = try #require(URL(string: "compoundstrava://localhost/exchange_token?state=&code=abc&scope=read%20activity:write"))
         #expect(try StravaManager.authorizationCode(from: url) == "abc")
     }
 
@@ -353,83 +480,6 @@ struct StravaManagerTests {
         #expect(throws: StravaError.missingAuthCode) { try StravaManager.authorizationCode(from: noCode) }
     }
 
-    // MARK: - The start time
-
-    /// `start_date_local` is wall-clock time where the athlete is. Sent as UTC, a 09:00 London
-    /// workout in summer showed on Strava at 08:00.
-    @Test("Test The Start Time Is Wall Clock Time In The Device Zone")
-    func testTheStartTimeIsWallClockTimeInTheDeviceZone() throws {
-        let london = try #require(TimeZone(identifier: "Europe/London"))
-        // 2026-07-01 08:00 UTC is 09:00 in London.
-        let date = Date(timeIntervalSince1970: 1_782_892_800)
-        #expect(StravaManager.localDateString(date, in: london) == "2026-07-01T09:00:00")
-    }
-
-    // MARK: - The wire format
-
-    /// Strava's API is snake_case and rejects anything else, and these keys are hand-written rather
-    /// than derived from a strategy.
-    @Test("Test An Activity Encodes With Stravas Keys")
-    func testAnActivityEncodesWithStravasKeys() throws {
-        let activity = StravaActivity(
-            name: "Leg Day",
-            sportType: "WeightTraining",
-            startDateLocal: "2026-09-22T08:00:00Z",
-            elapsedTime: 2_700,
-            description: "Squats"
-        )
-
-        let encoded = try JSONEncoder().encode(activity)
-        let object = try JSONSerialization.jsonObject(with: encoded)
-        let json = try #require(object as? [String: Any])
-
-        #expect(json["name"] as? String == "Leg Day")
-        #expect(json["sport_type"] as? String == "WeightTraining")
-        #expect(json["start_date_local"] as? String == "2026-09-22T08:00:00Z")
-        #expect(json["elapsed_time"] as? Int == 2_700)
-        #expect(json["description"] as? String == "Squats")
-    }
-
-    @Test("Test An Activity With No Description Omits The Key")
-    func testAnActivityWithNoDescriptionOmitsTheKey() throws {
-        let activity = StravaActivity(
-            name: "Leg Day",
-            sportType: "WeightTraining",
-            startDateLocal: "2026-09-22T08:00:00Z",
-            elapsedTime: 2_700,
-            description: nil
-        )
-
-        let encoded = try JSONEncoder().encode(activity)
-        let object = try JSONSerialization.jsonObject(with: encoded)
-        let json = try #require(object as? [String: Any])
-
-        #expect(json["description"] == nil)
-        #expect(json.keys.count == 4)
-    }
-
-    /// The token response is decoded straight off Strava's JSON, and `expires_at` is a Unix
-    /// timestamp rather than a duration — reading it as seconds-from-now would make every token
-    /// look decades stale.
-    @Test("Test A Token Response Decodes From Stravas JSON")
-    func testATokenResponseDecodesFromStravasJSON() throws {
-        let json = """
-        {
-          "token_type": "Bearer",
-          "access_token": "a1b2c3",
-          "refresh_token": "d4e5f6",
-          "expires_at": 1893456000,
-          "expires_in": 21600
-        }
-        """
-
-        let response = try JSONDecoder().decode(StravaTokenResponse.self, from: Data(json.utf8))
-
-        #expect(response.accessToken == "a1b2c3")
-        #expect(response.refreshToken == "d4e5f6")
-        #expect(response.expiresAt == 1_893_456_000)
-    }
-
     // MARK: - Errors
 
     /// These strings are shown in the alert the connect flow puts up, and are the only explanation
@@ -441,6 +491,8 @@ struct StravaManagerTests {
         #expect(StravaError.notConnected.errorDescription == "Not connected to Strava.")
         #expect(StravaError.missingUploadPermission.errorDescription == "Allow Compound to upload your activities to connect Strava.")
         #expect(StravaError.uploadFailed(status: 500).errorDescription == "Strava did not accept the upload (500).")
+        #expect(StravaError.processingFailed("x").errorDescription == "Strava could not process the workout.")
+        #expect(StravaError.rateLimited.errorDescription == "Strava is busy. Your workouts will upload later.")
     }
 
     @Test("Test A Strava Error Is Readable Through Localized Description")

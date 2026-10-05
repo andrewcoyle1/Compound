@@ -13,6 +13,14 @@ class SocialProfilePresenter {
     var followers: [UserModel] = []
     private var fetchedSessions: [WorkoutSessionModel] = []
 
+    var selectedTab: Tab = .progress
+
+    /// The profile as shown. The reader's own reads live off `currentUser`, so the header changes
+    /// when Edit Profile saves rather than showing the copy the screen opened with.
+    var user: UserModel? {
+        isOwnProfile ? interactor.currentUser ?? profileUser : profileUser
+    }
+
     var followersCount: Int { followers.count }
 
     var followingCount: Int {
@@ -68,8 +76,15 @@ class SocialProfilePresenter {
         isBlocked ? String(localized: "Unblock") : String(localized: "Block \(displayName)")
     }
 
+    /// The handle, as Instagram heads a profile with it; "Profile" until one is chosen.
+    var navigationTitle: String {
+        guard let username = user?.username, !username.isEmpty else { return String(localized: "Profile") }
+        return "@\(username)"
+    }
+
+    /// On the reader's own profile this would be everyone they follow, so it is left out there.
     var mutualFollowers: [UserModel] {
-        guard let profileFollowingIds = profileUser?.followingIds else { return [] }
+        guard !isOwnProfile, let profileFollowingIds = profileUser?.followingIds else { return [] }
         return interactor.followingUsers.filter { profileFollowingIds.contains($0.userId) }
     }
 
@@ -80,6 +95,35 @@ class SocialProfilePresenter {
         return (isOwnProfile ? interactor.workoutSessions : fetchedSessions)
             .filter { $0.endedAt != nil && !$0.isRestDay }
             .sorted { $0.dateCreated > $1.dateCreated }
+    }
+
+    /// Every finished workout, on the reader's own profile only: anyone else's is the last 30
+    /// fetched, so a total would understate it.
+    var workoutCount: Int? {
+        isOwnProfile ? sessions.count : nil
+    }
+
+    /// This calendar week's sessions, through the one weekly rule the feed and circle goals use.
+    private var thisWeekSessions: [WorkoutSessionModel] {
+        guard let userId = profileUser?.userId else { return [] }
+        return WorkoutSessionHighlights.sessions(of: userId, inWeekOf: .now, history: sessions)
+    }
+
+    var thisWeekWorkouts: Int { thisWeekSessions.count }
+
+    var thisWeekDuration: TimeInterval {
+        thisWeekSessions.compactMap(\.activeDuration).reduce(0, +)
+    }
+
+    /// Working sets' weight × reps, in the reader's own unit like the session detail screen.
+    var thisWeekVolumeText: String {
+        let kilograms = thisWeekSessions
+            .flatMap { $0.exercises.flatMap(\.sets) }
+            .filter { !$0.isWarmup }
+            .compactMap(\.volumeKg)
+            .reduce(0, +)
+        let unit = interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
+        return Format.weight(kg: kilograms, unit: unit)
     }
 
     /// The streak stamped on the author's most recent session that carries one, from two days on.
@@ -103,6 +147,23 @@ class SocialProfilePresenter {
             name: "Training Days",
             data: days.map { TimeSeriesDatapoint(id: $0.ISO8601Format(), date: $0, value: 1) }
         )
+    }
+
+    /// The owner's Strava activities this calendar year, on their own profile only: Strava's terms
+    /// keep an athlete's data to the athlete. `nil` elsewhere, or with none.
+    var stravaYear: StravaTotals? {
+        guard isOwnProfile, let year = Calendar.current.dateInterval(of: .year, for: .now) else { return nil }
+        return StravaTotals(interactor.stravaImportedActivities, in: year)
+    }
+
+    /// The owner's three latest Strava activities, on their own profile only.
+    var recentStravaActivities: [StravaImportedActivity] {
+        guard isOwnProfile else { return [] }
+        return Array(interactor.stravaImportedActivities.sorted { $0.startDate > $1.startDate }.prefix(3))
+    }
+
+    var distanceUnit: DistanceUnitPreference {
+        interactor.currentUser?.submittedDistanceUnitPreference ?? .kilometers
     }
 
     /// Only the reader's own mesocycle resolves without fetching someone else's mesocycles, which
@@ -259,6 +320,27 @@ class SocialProfilePresenter {
         reportFlow.start(ReportedContent(type: .user, id: profileUser.userId, authorUserId: profileUser.userId, noun: "profile"))
     }
 
+    func onSettingsPressed() {
+        interactor.trackEvent(event: Event.settingsPressed)
+        router.showSettingsView()
+    }
+
+    func onEditProfilePressed() {
+        interactor.trackEvent(event: Event.editProfilePressed)
+        router.showEditProfileView(delegate: EditProfileDelegate())
+    }
+
+    /// The invite link is the profile's shareable link: accepting it opens the inviter's profile.
+    func onShareProfilePressed() async {
+        guard interactor.ensureOnline(or: router) else { return }
+        interactor.trackEvent(event: Event.shareProfilePressed)
+        await InviteShareFlow(interactor: interactor, router: router).share()
+    }
+
+    func onDismissPressed() {
+        router.dismissScreen()
+    }
+
     func onViewDisappear(delegate: SocialProfileDelegate) {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
@@ -272,7 +354,18 @@ class SocialProfilePresenter {
 }
 
 extension SocialProfilePresenter {
-    
+
+    enum Tab: CaseIterable {
+        case progress, activities
+
+        var title: String {
+            switch self {
+            case .progress: String(localized: "Progress")
+            case .activities: String(localized: "Activities")
+            }
+        }
+    }
+
     enum Event: LoggableEvent {
         case onAppear(delegate: SocialProfileDelegate)
         case onDisappear(delegate: SocialProfileDelegate)
@@ -290,6 +383,9 @@ extension SocialProfilePresenter {
         case loadSessionsFail(error: Error)
         case loadFollowersFail(error: Error)
         case loadFollowingFail(error: Error)
+        case settingsPressed
+        case editProfilePressed
+        case shareProfilePressed
 
         var eventName: String {
             switch self {
@@ -309,6 +405,9 @@ extension SocialProfilePresenter {
             case .loadSessionsFail:         return "SocialProfileView_LoadSessions_Fail"
             case .loadFollowersFail:        return "SocialProfileView_LoadFollowers_Fail"
             case .loadFollowingFail:        return "SocialProfileView_LoadFollowing_Fail"
+            case .settingsPressed:          return "SocialProfileView_Settings_Pressed"
+            case .editProfilePressed:       return "SocialProfileView_EditProfile_Pressed"
+            case .shareProfilePressed:      return "SocialProfileView_ShareProfile_Pressed"
             }
         }
         

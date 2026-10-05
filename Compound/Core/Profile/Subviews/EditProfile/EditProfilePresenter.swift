@@ -3,10 +3,10 @@ import PhotosUI
 
 @Observable
 @MainActor
-class AccountPresenter {
+class EditProfilePresenter {
     
-    private let interactor: AccountInteractor
-    private let router: AccountRouter
+    private let interactor: EditProfileInteractor
+    private let router: EditProfileRouter
 
     private(set) var isSaving: Bool = false
 
@@ -72,16 +72,16 @@ class AccountPresenter {
         !firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    init(interactor: AccountInteractor, router: AccountRouter) {
+    init(interactor: EditProfileInteractor, router: EditProfileRouter) {
         self.interactor = interactor
         self.router = router
     }
     
-    func onViewAppear(delegate: AccountDelegate) {
+    func onViewAppear(delegate: EditProfileDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
     }
     
-    func onViewDisappear(delegate: AccountDelegate) {
+    func onViewDisappear(delegate: EditProfileDelegate) {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
     
@@ -210,75 +210,26 @@ class AccountPresenter {
     /// Google or anonymous (`SignInOption` has no email case), so the address belongs to the identity
     /// provider and there is no password in the first place.
 
-    /// An anonymous account has no credential behind it, so signing out of one destroys everything
-    /// logged against it with no way back in. Those users are offered the upgrade instead.
-    var isAnonymousUser: Bool {
-        interactor.auth?.isAnonymous == true
-    }
-
-    /// How this account signs in, so the person can confirm it from Account.
-    var signInMethod: String {
-        guard let auth = interactor.auth, !auth.isAnonymous else { return String(localized: "Not saved") }
-        if auth.authProviders.contains(.apple) { return String(localized: "Apple") }
-        if auth.authProviders.contains(.google) { return String(localized: "Google") }
-        return Format.placeholder
-    }
-
-    /// An anonymous account's only route to keeping its data.
-    ///
-    /// Routes to the existing `AuthView` rather than reimplementing sign-in: `FirebaseAuthService`
-    /// already links an Apple or Google credential to the signed-in anonymous user, and
-    /// `CoreInteractor.logIn` already handles the migration and cleanup around it, so the upgrade
-    /// keeps the account rather than replacing it.
     func onUsernamePressed() {
         interactor.trackEvent(eventName: "AccountView_Username_Press", parameters: [:], type: .analytic)
         router.showEditUsernameView()
     }
 
-    func onSaveAccountPressed() {
-        interactor.trackEvent(event: Event.saveAccountPressed)
-        router.showAuthView()
-    }
-
-    func onSignOutPressed() {
-        interactor.trackEvent(event: Event.signOutStart)
-
-        Task {
-            do {
-                try await interactor.signOut()
-                interactor.trackEvent(event: Event.signOutSuccess)
-                dismissEnvironment()
-                try await Task.sleep(for: .seconds(1))
-                router.switchToOnboardingModule()
-            } catch {
-                router.showAlert(title: String(localized: "Unable to Sign Out"), error: error)
-                interactor.trackEvent(event: Event.signOutFail(error: error))
-            }
-        }
-    }
-
-    private func dismissEnvironment() {
-        router.dismissEnvironment()
-    }
-
-    /// Opens the confirmation screen, which says what deleting does before anything is deleted.
-    func onDeleteAccountPressed() {
-        interactor.trackEvent(event: Event.deleteAccountStart)
-        router.showDeleteAccountView()
-    }
-
 }
 
-extension AccountPresenter {
+extension EditProfilePresenter {
+
+    func onCancelPressed() {
+        interactor.trackEvent(event: Event.cancelPressed)
+        router.dismissScreen()
+    }
+}
+
+extension EditProfilePresenter {
     
     enum Event: LoggableEvent {
-        case signOutStart
-        case signOutSuccess
-        case signOutFail(error: Error)
-        case deleteAccountStart
-        case saveAccountPressed
-        case onAppear(delegate: AccountDelegate)
-        case onDisappear(delegate: AccountDelegate)
+        case onAppear(delegate: EditProfileDelegate)
+        case onDisappear(delegate: EditProfileDelegate)
         case updatePrivacyStart(isPrivate: Bool)
         case updatePrivacySuccess(isPrivate: Bool)
         case updatePrivacyFail(error: Error)
@@ -286,14 +237,10 @@ extension AccountPresenter {
         case saveProfileSuccess
         case saveProfileFail(error: Error)
         case queuedUpdateUserFail(error: Error)
+        case cancelPressed
 
         var eventName: String {
             switch self {
-            case .signOutStart:                 return "Settings_SignOut_Start"
-            case .signOutSuccess:               return "Settings_SignOut_Success"
-            case .signOutFail:                  return "Settings_SignOut_Fail"
-            case .deleteAccountStart:           return "Settings_DeleteAccount_Start"
-            case .saveAccountPressed:           return "Settings_SaveAccount_Press"
             case .onAppear:                 return "AccountView_Appear"
             case .onDisappear:              return "AccountView_Disappear"
             case .updatePrivacyStart:       return "AccountView_UpdatePrivacy_Start"
@@ -303,12 +250,13 @@ extension AccountPresenter {
             case .saveProfileSuccess:       return "AccountView_SaveProfile_Success"
             case .saveProfileFail:          return "AccountView_SaveProfile_Fail"
             case .queuedUpdateUserFail:     return "AccountView_QueuedUpdateUser_Fail"
+            case .cancelPressed:            return "AccountView_Cancel_Pressed"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
-            case .signOutFail(error: let error), .updatePrivacyFail(error: let error),
+            case .updatePrivacyFail(error: let error),
                  .saveProfileFail(error: let error), .queuedUpdateUserFail(error: let error):
                 return error.eventParameters
             case .updatePrivacyStart(isPrivate: let isPrivate), .updatePrivacySuccess(isPrivate: let isPrivate):
@@ -322,7 +270,7 @@ extension AccountPresenter {
         
         var type: LogType {
             switch self {
-            case .signOutFail, .updatePrivacyFail, .saveProfileFail:
+            case .updatePrivacyFail, .saveProfileFail:
                 return .severe
             case .queuedUpdateUserFail:
                 return .warning

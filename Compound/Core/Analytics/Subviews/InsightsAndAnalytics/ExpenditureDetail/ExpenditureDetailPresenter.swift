@@ -121,7 +121,7 @@ extension ExpenditureDetailPresenter: @MainActor MetricDetailPresenter {
     func onAddPressed() {
         // TDEE is estimated from height, weight, age and activity level — all of which live on
         // the account screen, which is where this now goes.
-        router.showAccountView(delegate: AccountDelegate())
+        router.showEditProfileView(delegate: EditProfileDelegate())
     }
 
 }

@@ -13,17 +13,14 @@ struct AnalyticsDelegate {
     }
 }
 
-/// Gutter between the analytics header cards, and between a card and the screen edge.
-private let headerCardSpacing = Spacing.l
-
-struct AnalyticsView<NutritionChart: View>: View {
+struct AnalyticsView<HeaderCarousel: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
 
     @State var presenter: AnalyticsPresenter
     let delegate: AnalyticsDelegate
     let profileButtonTransition: String = "profile_button_transition"
-    @ViewBuilder var nutritionTargetChartView: () -> NutritionChart
+    @ViewBuilder var headerCarousel: () -> HeaderCarousel
 
     @Namespace private var namespace
     
@@ -79,47 +76,22 @@ struct AnalyticsView<NutritionChart: View>: View {
         }
     }
     
+    /// The carousel at the top: the week against its targets, then today's nutrition, energy
+    /// balance, this week's training and recent records.
     private var headerSection: some View {
-        // There is only ever one header card today, so this used to be a `ScrollView(.horizontal)`
-        // around a single item: nothing to scroll to, and in split view the card took half the
-        // width with the other half left empty.
         Section {
-            HStack(spacing: headerCardSpacing) {
-                nutritionTargetSection
-            }
-            .padding(.horizontal, headerCardSpacing)
-            .frame(maxWidth: .infinity)
-            .topFillEdge()
-            // Edge to edge and up to the navigation bar, on the colour `topFill` carries above it.
-            .listRowInsets(EdgeInsets())
-            .listRowBackground(Color.surface)
+            headerCarousel()
+                .padding(.bottom, Spacing.m)
+                .frame(maxWidth: .infinity)
+                .topFillEdge()
+                // Edge to edge and up to the navigation bar, on the colour `topFill` carries above it.
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.surface)
         }
         .listSectionMargins(.all, 0)
         .listSectionSeparator(.hidden)
     }
-    
-    // A `carouselSection` was rendered here as `Section { } header: { }` — an empty section with an
-    // empty header, which draws as a stray gap under the header cards. Removed; the header cards
-    // above it already carry the carousel this was presumably meant to hold.
 
-    /// Header cards share the padded row's width. `containerRelativeFrame` sized them from the
-    /// whole list row, which outside the old scroll view made each card as wide as the screen
-    /// before the row's padding was added, so the grid ran off both edges. The height is a
-    /// minimum, so the grid's labels can grow with Dynamic Type.
-    @ViewBuilder
-    private func headerCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .frame(maxWidth: .infinity, minHeight: 300)
-            // The week's target chart reads as bars, not a wall of tiles, at reading width.
-            .frame(maxWidth: ContentWidth.readable)
-    }
-
-    private var nutritionTargetSection: some View {
-        headerCard {
-            nutritionTargetChartView()
-        }
-    }
-    
     private var moreSection: some View {
         Section {
             ForEach(presenter.hiddenSections) { section in
@@ -486,8 +458,8 @@ extension CoreBuilder {
                 router: CoreRouter(router: router, builder: self)
             ),
             delegate: delegate,
-            nutritionTargetChartView: {
-                self.nutritionTargetChartView(router: router)
+            headerCarousel: {
+                self.progressCarouselView(router: router)
             }
         )
     }

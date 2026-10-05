@@ -248,6 +248,8 @@ class WorkoutSessionDetailPresenter {
             // pushed session to its list, and the summary to the finished tracker behind it.
             lastSavedSession = session.wrappedValue
             isEditMode = false
+            // The description lists the sets as well as the notes, so any saved edit can change it.
+            pushToStrava(session.wrappedValue)
         } catch {
             interactor.trackEvent(event: Event.saveChangesFail(error: error))
             interactor.playHaptic(option: .error)
@@ -494,6 +496,37 @@ class WorkoutSessionDetailPresenter {
         }
     }
 
+    // MARK: - Strava
+
+    /// The session's Strava activity, for its author. Read from the stored session: the summary
+    /// opens before the upload has finished, and the id lands there, not on this screen's copy.
+    func stravaLink(session: WorkoutSessionModel) -> URL? {
+        guard isAuthor(sessionAuthorId: session.authorId),
+              let id = storedStravaActivityId(session) else { return nil }
+        return URL(string: "https://www.strava.com/activities/\(id)")
+    }
+
+    func onViewOnStravaPressed(session: WorkoutSessionModel) {
+        interactor.trackEvent(event: Event.viewOnStrava(sessionId: session.id))
+    }
+
+    private func storedStravaActivityId(_ session: WorkoutSessionModel) -> Int? {
+        interactor.workoutSessions(authoredBy: session.authorId).first { $0.id == session.id }?.stravaActivityId
+            ?? session.stravaActivityId
+    }
+
+    /// Best-effort: the edit is saved in Compound either way, and Strava keeps the old description.
+    private func pushToStrava(_ session: WorkoutSessionModel) {
+        guard interactor.stravaIsConnected, let activityId = storedStravaActivityId(session) else { return }
+        Task {
+            do {
+                try await interactor.stravaUpdateActivity(activityId, from: session)
+            } catch {
+                interactor.trackEvent(event: Event.stravaUpdateFail(error: error))
+            }
+        }
+    }
+
     // MARK: - Copy Link
 
     /// The session's public web page, absent where that page would refuse it — including while
@@ -525,6 +558,8 @@ extension WorkoutSessionDetailPresenter {
         case deleteSessionSuccess
         case deleteSessionFail(error: Error)
         case copyLink(sessionId: String)
+        case viewOnStrava(sessionId: String)
+        case stravaUpdateFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -541,6 +576,8 @@ extension WorkoutSessionDetailPresenter {
             case .deleteSessionSuccess: return "WorkoutSessionDetailView_DeleteSession_Success"
             case .deleteSessionFail: return "WorkoutSessionDetailView_DeleteSession_Fail"
             case .copyLink: return "WorkoutSessionDetailView_CopyLink"
+            case .viewOnStrava: return "WorkoutSessionDetailView_ViewOnStrava"
+            case .stravaUpdateFail: return "WorkoutSessionDetailView_StravaUpdate_Fail"
             }
         }
 
@@ -548,9 +585,10 @@ extension WorkoutSessionDetailPresenter {
             switch self {
             case .onAppear(let delegate), .onDisappear(let delegate):
                 return ["session_id": delegate.initialSession.id, "is_workout_summary": delegate.isWorkoutSummary]
-            case .loadAuthorFail(error: let error), .saveTimingFail(error: let error), .saveChangesFail(error: let error), .deleteSessionFail(error: let error):
+            case .loadAuthorFail(error: let error), .saveTimingFail(error: let error), .saveChangesFail(error: let error),
+                 .deleteSessionFail(error: let error), .stravaUpdateFail(error: let error):
                 return error.eventParameters
-            case .copyLink(let sessionId): return ["session_id": sessionId]
+            case .copyLink(let sessionId), .viewOnStrava(let sessionId): return ["session_id": sessionId]
             default: return nil
             }
         }
@@ -558,7 +596,7 @@ extension WorkoutSessionDetailPresenter {
         var type: LogType {
             switch self {
             case .saveTimingFail, .saveChangesFail, .deleteSessionFail: return .severe
-            case .loadAuthorFail: return .warning
+            case .loadAuthorFail, .stravaUpdateFail: return .warning
             default: return .analytic
             }
         }

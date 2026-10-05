@@ -14,6 +14,12 @@ protocol WorkoutSessionDetailInteractor: GlobalInteractor {
     func setPreference(weightUnit: ExerciseWeightUnit?, distanceUnit: ExerciseDistanceUnit?, for templateId: String)
     func deleteWorkoutSession(id: String) async throws
     func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel]
+    var stravaIsConnected: Bool { get }
+    func stravaUpdateActivity(_ activityId: Int, from session: WorkoutSessionModel) async throws
 }
 
-extension CoreInteractor: WorkoutSessionDetailInteractor { }
+extension CoreInteractor: WorkoutSessionDetailInteractor {
+    func stravaUpdateActivity(_ activityId: Int, from session: WorkoutSessionModel) async throws {
+        try await stravaManager.updateActivity(activityId, from: session)
+    }
+}

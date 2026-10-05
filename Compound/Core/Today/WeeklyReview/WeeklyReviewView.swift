@@ -58,6 +58,16 @@ struct WeeklyReviewView: View {
                 }
             }
 
+            if let strava = review.strava {
+                Section("From Strava") {
+                    LabeledContent("Activities", value: strava.count.formatted())
+                    if strava.distanceMeters > 0 {
+                        LabeledContent("Distance", value: Format.distance(meters: strava.distanceMeters, unit: presenter.distanceUnit))
+                    }
+                    LabeledContent("Moving Time", value: Format.duration(strava.movingTime))
+                }
+            }
+
             if review.weightText != nil || review.nutritionText != nil {
                 Section("Body & Nutrition") {
                     if let weight = review.weightText {

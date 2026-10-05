@@ -113,6 +113,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
                     }
                     .accessibilityIdentifier("SessionDetail.edit")
                 }
+                stravaRow
             } else {
                 ListRow(
                     title: String(localized: "Start Time"),
@@ -127,6 +128,25 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
             notesEditor()
         } header: {
             Text("Workout Details")
+        }
+    }
+
+    /// Strava's brand guidelines ask for this wording on a link to an activity.
+    @ViewBuilder
+    private var stravaRow: some View {
+        if let url = presenter.stravaLink(session: session) {
+            Link(destination: url) {
+                ListRow(title: String(localized: "View on Strava"), systemImage: Symbol.openExternally, accessory: .custom(AnyView(
+                    Image(systemName: "arrow.up.right")
+                        .font(.label)
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                )))
+            }
+            .foregroundStyle(.primary)
+            .simultaneousGesture(TapGesture().onEnded {
+                presenter.onViewOnStravaPressed(session: session)
+            })
         }
     }
 

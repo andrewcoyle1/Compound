@@ -4,12 +4,292 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%lld left" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld left"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Queda %lld"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Quedan %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld target" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo: %lld"
+          }
+        }
+      }
+    },
     ".%lld" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ",%lld"
+          }
+        }
+      }
+    },
+    "1-RM" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1RM"
+          }
+        }
+      }
+    },
+    "Active Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programa activo"
+          }
+        }
+      }
+    },
+    "Activities" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividades"
+          }
+        }
+      }
+    },
+    "All Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los entrenamientos"
+          }
+        }
+      }
+    },
+    "Consumed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consumido"
+          }
+        }
+      }
+    },
+    "Daily Nutrition" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutrición diaria"
+          }
+        }
+      }
+    },
+    "Difference" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diferencia"
+          }
+        }
+      }
+    },
+    "Edit Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar perfil"
+          }
+        }
+      }
+    },
+    "Finish a workout and your best lifts appear here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina un entrenamiento y tus mejores levantamientos aparecerán aquí."
+          }
+        }
+      }
+    },
+    "Last %lld Days" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last %lld Day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Last %lld Days"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Último %lld día"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Últimos %lld días"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Muscles" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Músculos"
+          }
+        }
+      }
+    },
+    "No Records Yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay récords"
+          }
+        }
+      }
+    },
+    "Remaining" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restante"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Share Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir perfil"
+          }
+        }
+      }
+    },
+    "Shows the week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra la semana"
+          }
+        }
+      }
+    },
+    "Shows this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra este día"
+          }
+        }
+      }
+    },
+    "Strava could not process the workout." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava no pudo procesar el entrenamiento."
+          }
+        }
+      }
+    },
+    "View on Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver en Strava"
+          }
+        }
+      }
+    },
+    "Weekly Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos semanales"
           }
         }
       }
@@ -3621,16 +3901,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir entrenamiento"
-          }
-        }
-      }
-    },
-    "Add your name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade tu nombre"
           }
         }
       }
@@ -26754,6 +27024,266 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zinc"
+          }
+        }
+      }
+    },
+    "Strava is busy. Your workouts will upload later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava está ocupado. Tus entrenamientos se subirán más tarde."
+          }
+        }
+      }
+    },
+    "Connected as %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectado como %@"
+          }
+        }
+      }
+    },
+    "%lld workouts waiting to upload" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout waiting to upload"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts waiting to upload"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento pendiente de subir"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos pendientes de subir"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld workouts not on Strava" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout not on Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts not on Strava"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento que no está en Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos que no están en Strava"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Upload %lld past workouts to Strava?" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Upload %lld past workout to Strava?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Upload %lld past workouts to Strava?"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Subir %lld entrenamiento anterior a Strava?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Subir %lld entrenamientos anteriores a Strava?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld workouts queued for Strava" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout queued for Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts queued for Strava"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento en cola para Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos en cola para Strava"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Each one goes up with its sets. A long history can take a while." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada uno se sube con sus series. Un historial largo puede tardar un rato."
+          }
+        }
+      }
+    },
+    "Upload Past Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir entrenamientos anteriores"
+          }
+        }
+      }
+    },
+    "Workouts will stop uploading to Strava, and activities imported from it are removed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los entrenamientos dejarán de subirse a Strava y se eliminarán las actividades importadas de allí."
+          }
+        }
+      }
+    },
+    "Unable to Disconnect Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo desconectar Strava"
+          }
+        }
+      }
+    },
+    "From Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Strava"
+          }
+        }
+      }
+    },
+    "Distance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distancia"
+          }
+        }
+      }
+    },
+    "Moving Time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo en movimiento"
+          }
+        }
+      }
+    },
+    "Strava This Year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava este año"
           }
         }
       }

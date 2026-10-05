@@ -201,12 +201,21 @@ for (const [name, path] of [
 // ---------------- ADMIN-ONLY ----------------
 // No client allow exists for these; the deny is the whole contract.
 
-for (const path of ["food_search_cache/q", "moderation_queue/t"]) {
+for (const path of ["food_search_cache/q", "moderation_queue/t", `strava_connections/${ALICE}`, "strava_events/e"]) {
     t(`${path.split("/")[0]}: closed to every client`, async () => {
         await assertFails(getDoc(doc(db(ALICE), path)));
         await assertFails(setDoc(doc(db(ALICE), path), { a: 1 }));
     });
 }
+
+t("users/strava_activities: the owner reads them; nobody writes them", async () => {
+    const path = `users/${ALICE}/strava_activities/1`;
+    await seed(path, { id: "1", name: "Morning Run" });
+    await assertSucceeds(getDoc(doc(db(ALICE), path)));
+    await assertFails(getDoc(doc(db(BOB), path)));
+    await assertFails(setDoc(doc(db(ALICE), path), { id: "1", name: "Faster Run" }));
+    await assertFails(deleteDoc(doc(db(ALICE), path)));
+});
 
 // ---------------- TOP-LEVEL AUTHORED LIBRARIES ----------------
 

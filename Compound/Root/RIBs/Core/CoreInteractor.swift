@@ -195,6 +195,9 @@ struct CoreInteractor: GlobalInteractor {
         try? workoutTemplateManager.seedWorkoutTemplatesIfNeeded(exercises: exerciseModelManager.allExercises)
         try? mesocycleManager.seedMesocyclesIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
         await migrateActiveMesocycleToMacrocycleIfNeeded()
+        // After the sessions and exercises: the upload queue is sent from them. Not awaited, so a
+        // backlog going to Strava never holds up sign-in.
+        Task { await stravaManager.signIn(userId: user.uid) }
 
         // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
         routePendingDeepLinkAfterLogIn()
@@ -219,9 +222,8 @@ struct CoreInteractor: GlobalInteractor {
 
     func signOut() async throws {
         try authManager.signOut()
-        // The tokens are per device, not per account: the next person to sign in must not upload
-        // to this one's Strava.
-        stravaManager.disconnect()
+        // The connection stays with the account, on the server; this only forgets it here.
+        stravaManager.signOut()
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
@@ -251,7 +253,8 @@ struct CoreInteractor: GlobalInteractor {
             try await userManager.deleteCurrentUser(userId: auth.uid)
         }
 
-        stravaManager.disconnect()
+        // onUserDeleted revokes Compound at Strava and deletes the connection.
+        stravaManager.signOut()
         WidgetSnapshotStore.clear()
 
         // Delete Purchases (RevenueCat)

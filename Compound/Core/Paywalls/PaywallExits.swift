@@ -14,7 +14,7 @@ protocol PaywallExitsInteractor: GlobalInteractor {
 
 @MainActor
 protocol PaywallExitsRouter: GlobalRouter {
-    func showAccountView(delegate: AccountDelegate)
+    func showEditProfileView(delegate: EditProfileDelegate)
     func switchToOnboardingModule()
 }
 
@@ -27,7 +27,7 @@ struct PaywallExits {
 
     func onAccountPressed() {
         interactor.trackEvent(eventName: "\(screenName)_Account_Press", parameters: nil, type: .analytic)
-        router.showAccountView(delegate: AccountDelegate())
+        router.showEditProfileView(delegate: EditProfileDelegate())
     }
 
     /// Signs out and starts onboarding again from Welcome.

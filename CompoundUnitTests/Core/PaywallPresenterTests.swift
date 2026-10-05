@@ -94,7 +94,7 @@ struct PaywallPurchasePresenterTests {
         func showOnboardingMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("trainingProgramSetup") }
         func showCustomisingDietProgramView() { shown.append("customisingDietProgram") }
         func showOnboardingCompletedView() { shown.append("onboardingCompleted") }
-        func showAccountView(delegate: AccountDelegate) { shown.append("account") }
+        func showEditProfileView(delegate: EditProfileDelegate) { shown.append("account") }
         func switchToOnboardingModule() { shown.append("onboardingModule") }
     }
 

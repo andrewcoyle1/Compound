@@ -28,6 +28,8 @@ struct MuscleGroupDetailPresenterTests {
     }
 
     private final class Router: MuscleGroupDetailRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
 
         func showWorkoutsView(delegate: WorkoutsDelegate) { }

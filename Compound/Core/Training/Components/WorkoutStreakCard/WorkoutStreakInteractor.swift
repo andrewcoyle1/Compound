@@ -8,6 +8,7 @@
 @MainActor
 protocol WorkoutStreakInteractor: GlobalInteractor {
     var workoutSessions: [WorkoutSessionModel] { get }
+    var weeklyStreak: WeeklyStreak { get }
 }
 
 extension CoreInteractor: WorkoutStreakInteractor { }

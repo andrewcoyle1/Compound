@@ -84,7 +84,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             mesocycleManager: container.resolve(MesocycleManager.self)!,
             userManager: container.resolve(UserManager.self)!,
             macrocycleManager: container.resolve(MacrocycleManager.self),
-            streakManager: container.resolve(StreakManager.self),
             stravaManager: container.resolve(StravaManager.self),
             logManager: container.resolve(LogManager.self)!
         )

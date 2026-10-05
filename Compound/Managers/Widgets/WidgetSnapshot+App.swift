@@ -18,7 +18,6 @@ extension WidgetSnapshot {
         userId: String,
         run: MesocycleSchedule.Run?,
         sessions: [WorkoutSessionModel],
-        streak: Int?,
         weeklyGoal: Int,
         now: Date = Date(),
         calendar: Calendar = .current
@@ -38,7 +37,7 @@ extension WidgetSnapshot {
             todaysWorkout: workout(on: now),
             upcomingWorkout: tomorrow.flatMap(workout(on:)),
             day: calendar.startOfDay(for: now),
-            currentStreak: streak ?? 0,
+            currentStreak: WeeklyStreak.make(sessions: sessions, userId: userId, goal: weeklyGoal, now: now, calendar: calendar).weeks,
             sessionsThisWeek: CircleWeek.sessionCount(of: userId, inWeekOf: now, sessions: sessions, calendar: calendar),
             weeklyGoal: weeklyGoal,
             updatedAt: now
@@ -53,7 +52,6 @@ func refreshWidgetSnapshot(
     mesocycles: MesocycleManager,
     macrocycles: MacrocycleManager?,
     sessions: [WorkoutSessionModel],
-    streak: Int?,
     weeklyGoal: Int? = nil
 ) {
     guard let user = users.currentUser else { return }
@@ -62,7 +60,6 @@ func refreshWidgetSnapshot(
         run: macrocycles?.run(for: mesocycles.activeMesocycle(for: user), sessions: sessions)
             ?? mesocycles.activeMesocycle(for: user).map { MesocycleSchedule.legacyRun(mesocycle: $0, sessions: sessions) },
         sessions: sessions,
-        streak: streak,
         weeklyGoal: weeklyGoal ?? CircleWeek.goal(for: user)
     ))
 }
@@ -79,7 +76,6 @@ extension CoreInteractor {
             mesocycles: mesocycleManager,
             macrocycles: macrocycleManager,
             sessions: workoutSessionManager.workoutSessions,
-            streak: streakManager.currentStreakData.currentStreak,
             weeklyGoal: weeklyGoal
         )
     }

@@ -11,20 +11,29 @@ import SwiftUI
 @MainActor
 class TodayPresenter {
 
-    private let interactor: TodayInteractor
-    private let router: TodayRouter
+    let interactor: TodayInteractor
+    let router: TodayRouter
+    let defaults: UserDefaults
     private let reminderOfferFlow: ReminderOfferFlow
 
-    private(set) var nutritionTotals: DailyMacroTarget?
+    /// Read live from the meal log, so a meal logged anywhere shows here as soon as Today is drawn.
+    var nutritionTotals: DailyMacroTarget? {
+        try? interactor.getDailyTotals(dayKey: Date().dayKey)
+    }
     private(set) var nutritionTarget: DailyMacroTarget?
+
+    /// Bumped after a write to `defaults`, which Observation cannot see, so the cards it decides
+    /// (getting started, the weekly review) redraw.
+    var defaultsRevision = 0
 
     /// Held rather than read through, so starting or skipping takes the card away in the same
     /// frame instead of waiting for Firestore.
     private(set) var checkInState: CheckInState = .notDue
 
-    init(interactor: TodayInteractor, router: TodayRouter) {
+    init(interactor: TodayInteractor, router: TodayRouter, defaults: UserDefaults = .standard) {
         self.interactor = interactor
         self.router = router
+        self.defaults = defaults
         self.reminderOfferFlow = ReminderOfferFlow(interactor: interactor, router: router)
     }
 
@@ -35,7 +44,11 @@ class TodayPresenter {
     func onViewAppear(delegate: TodayDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         checkInState = interactor.checkInState
-        loadNutrition()
+        loadNutritionTarget()
+        // Health only hands over new steps when asked; a connected account is asked on each visit.
+        if !interactor.stepsHistory.isEmpty {
+            Task { await interactor.syncStepsFromHealthKit(fromScratch: false) }
+        }
         reminderOfferFlow.offerStreakReminderIfNeeded()
     }
 
@@ -159,17 +172,10 @@ class TodayPresenter {
         )
     }
 
-    private func loadNutrition() {
-        // Silent to the user: local read; a missing total shows as no data on the card.
-        do {
-            nutritionTotals = try interactor.getDailyTotals(dayKey: Date().dayKey)
-        } catch {
-            nutritionTotals = nil
-            interactor.trackEvent(event: Event.loadNutritionTotalsFail(error: error))
-        }
+    private func loadNutritionTarget() {
         guard let userId = interactor.userId else { return }
         Task {
-            // Silent to the user: background read; the card shows no target until one loads.
+            // Silent to the user: background read; the checklist shows no target until one loads.
             do {
                 nutritionTarget = try await interactor.getDailyTarget(for: Date(), userId: userId)
             } catch {
@@ -181,7 +187,7 @@ class TodayPresenter {
 
     // MARK: - Weigh-in
 
-    private var weightUnit: WeightUnitPreference {
+    var weightUnit: WeightUnitPreference {
         interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
     }
 
@@ -246,19 +252,6 @@ class TodayPresenter {
             }
         }
     }
-
-    // MARK: - Weekly review
-
-    /// The way in to last week's review, on the first day of the week only. Past reviews stay
-    /// reachable from Progress.
-    var showsWeeklyReviewCard: Bool {
-        interactor.currentUser != nil && CircleWeek.isFirstDayOfWeek(.now)
-    }
-
-    func onWeeklyReviewPressed() {
-        interactor.trackEvent(event: Event.weeklyReviewPressed)
-        router.showWeeklyReviewView()
-    }
 }
 
 extension TodayPresenter {
@@ -282,10 +275,18 @@ extension TodayPresenter {
         case startBlankWorkoutFail(error: Error)
         case deleteActiveSessionFail(error: Error)
         case deleteDraftMealFail(error: Error)
-        case loadNutritionTotalsFail(error: Error)
         case loadNutritionTargetFail(error: Error)
         case skipCheckInSuccess
         case skipCheckInFail(error: Error)
+        case checklistItemPressed(kind: TodayChecklist.Kind)
+        case dayComplete(itemCount: Int)
+        case stepGoalChanged(goal: Int)
+        case stepGoalSaveFail(error: Error)
+        case starterStepPressed(step: TodayStarter.Step)
+        case starterDismissed(remaining: Int)
+        case connectHealthFail(error: Error)
+        case proteinGapLogMealPressed
+        case socialPulsePressed
 
         var eventName: String {
             switch self {
@@ -307,10 +308,18 @@ extension TodayPresenter {
             case .startBlankWorkoutFail:    return "TodayView_StartBlankWorkout_Fail"
             case .deleteActiveSessionFail:  return "TodayView_DeleteActiveSession_Fail"
             case .deleteDraftMealFail:      return "TodayView_DeleteDraftMeal_Fail"
-            case .loadNutritionTotalsFail:  return "TodayView_LoadNutritionTotals_Fail"
             case .loadNutritionTargetFail:  return "TodayView_LoadNutritionTarget_Fail"
             case .skipCheckInSuccess:       return "TodayView_CheckIn_Skip_Success"
             case .skipCheckInFail:          return "TodayView_CheckIn_Skip_Fail"
+            case .checklistItemPressed:     return "TodayView_ChecklistItem_Press"
+            case .dayComplete:              return "TodayView_DayComplete"
+            case .stepGoalChanged:          return "TodayView_StepGoal_Start"
+            case .stepGoalSaveFail:         return "TodayView_StepGoal_Fail"
+            case .starterStepPressed:       return "TodayView_StarterStep_Press"
+            case .starterDismissed:         return "TodayView_Starter_Dismiss"
+            case .connectHealthFail:        return "TodayView_ConnectHealth_Fail"
+            case .proteinGapLogMealPressed: return "TodayView_ProteinGap_LogMeal_Press"
+            case .socialPulsePressed:       return "TodayView_SocialPulse_Press"
             }
         }
 
@@ -319,9 +328,19 @@ extension TodayPresenter {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             case .repeatMacrocycleFail(let error), .startBlankWorkoutFail(let error), .deleteActiveSessionFail(let error),
-                 .deleteDraftMealFail(let error), .loadNutritionTotalsFail(let error), .loadNutritionTargetFail(let error),
-                 .skipCheckInFail(let error):
+                 .deleteDraftMealFail(let error), .loadNutritionTargetFail(let error),
+                 .skipCheckInFail(let error), .stepGoalSaveFail(let error), .connectHealthFail(let error):
                 return error.eventParameters
+            case .checklistItemPressed(let kind):
+                return ["item": kind.rawValue]
+            case .dayComplete(let itemCount):
+                return ["item_count": itemCount]
+            case .stepGoalChanged(let goal):
+                return ["goal": goal]
+            case .starterStepPressed(let step):
+                return ["step": step.rawValue]
+            case .starterDismissed(let remaining):
+                return ["remaining": remaining]
             default:
                 return nil
             }
@@ -329,9 +348,9 @@ extension TodayPresenter {
 
         var type: LogType {
             switch self {
-            case .repeatMacrocycleFail, .startBlankWorkoutFail, .skipCheckInFail:
+            case .repeatMacrocycleFail, .startBlankWorkoutFail, .skipCheckInFail, .stepGoalSaveFail:
                 return .severe
-            case .deleteActiveSessionFail, .deleteDraftMealFail, .loadNutritionTotalsFail, .loadNutritionTargetFail:
+            case .deleteActiveSessionFail, .deleteDraftMealFail, .loadNutritionTargetFail, .connectHealthFail:
                 return .warning
             default:
                 return .analytic

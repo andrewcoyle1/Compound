@@ -28,12 +28,6 @@ struct MockAIService: AIService {
         return UIImage(systemName: "star.fill")!
     }
     
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        try await Task.sleep(for: .seconds(delay))
-        try tryShowError()
-        return AIChatModel(role: .assistant, content: "This is returned text from the AI.")
-    }
-
     func analyzeFood(imageData: Data) async throws -> String {
         try await Task.sleep(for: .seconds(delay))
         try tryShowError()

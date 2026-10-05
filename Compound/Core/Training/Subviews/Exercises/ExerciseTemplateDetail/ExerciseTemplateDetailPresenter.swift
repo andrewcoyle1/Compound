@@ -208,3 +208,11 @@ enum CustomSection: Hashable {
     case charts
     case records
 }
+
+// MARK: - Coach
+
+extension ExerciseModelDetailPresenter {
+    func onAskCoachPressed(exercise: ExerciseModel) {
+        router.showCoach(context: CoachContext(kind: .exercise, id: exercise.id, title: exercise.name))
+    }
+}

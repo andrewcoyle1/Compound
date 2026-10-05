@@ -50,7 +50,7 @@ class WorkoutSessionRowPresenter {
     }
 
     var streakText: String? {
-        WorkoutSessionHighlights.streakText(session.streakCount)
+        WorkoutSessionHighlights.streakText(session.weekStreakCount)
     }
 
     // MARK: - Stats

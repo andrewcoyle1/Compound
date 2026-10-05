@@ -147,7 +147,6 @@ struct WidgetSnapshotTests {
             userId: "user-1",
             run: MesocycleSchedule.Run(mesocycle: mesocycle(template: template), startedAt: .distantPast),
             sessions: [finished, someoneElse],
-            streak: 9,
             weeklyGoal: 4,
             now: Self.wednesday,
             calendar: Self.calendar
@@ -157,14 +156,15 @@ struct WidgetSnapshotTests {
         // A one-day mesocycle comes round again tomorrow, not yet done.
         #expect(built.upcomingWorkout == .init(name: template.name, exerciseCount: template.exercises.count, isRestDay: false, isCompleted: false))
         #expect(built.day == Self.calendar.startOfDay(for: Self.wednesday))
-        #expect(built.currentStreak == 9)
+        // One session against a goal of four: no week met, so no streak yet.
+        #expect(built.currentStreak == 0)
         #expect(built.sessionsThisWeek == 1)
         #expect(built.weeklyGoal == 4)
     }
 
     @Test("Test No Program Means No Workout Today")
     func testNoMesocycleMeansNoWorkoutToday() {
-        let built = WidgetSnapshot.make(userId: "user-1", run: nil, sessions: [], streak: nil, weeklyGoal: 3, now: Self.wednesday, calendar: Self.calendar)
+        let built = WidgetSnapshot.make(userId: "user-1", run: nil, sessions: [], weeklyGoal: 3, now: Self.wednesday, calendar: Self.calendar)
         #expect(built.todaysWorkout == nil)
         #expect(built.currentStreak == 0)
         #expect(built.sessionsThisWeek == 0)

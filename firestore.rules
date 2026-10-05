@@ -280,6 +280,12 @@ service cloud.firestore {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow write: if false;
       }
+
+      // Coach conversations. Only coachChat writes them; the owner may read and delete.
+      match /coach_chats/{chat_id} {
+        allow read, delete: if isAuthed() && request.auth.uid == user_id;
+        allow create, update: if false;
+      }
     }
     
     // ---------------- STREAKS ----------------
@@ -310,6 +316,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
     match /strava_events/{event_id} {
+      allow read, write: if false;
+    }
+
+    // ---------------- COACH ----------------
+    // The coach's per-user message count. Only coachChat (admin SDK) touches it.
+    match /coach_usage/{user_id} {
       allow read, write: if false;
     }
 

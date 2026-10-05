@@ -17,7 +17,7 @@ struct WorkoutStreakCard: View {
     let delegate: WorkoutStreakDelegate
     
     var body: some View {
-        Section("Workout Streak") {
+        Section("Weekly Streak") {
             VStack(alignment: .leading, spacing: Spacing.l) {
                 streakHeader
                 weeklyDotsRow
@@ -33,11 +33,11 @@ struct WorkoutStreakCard: View {
                 .iconSize(.medium)
                 .foregroundStyle(streakAccentColor)
                 .accessibilityHidden(true)
-            HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
-                Text("\(presenter.workoutStreakCount)")
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(presenter.weeksText)
                     .font(.display)
                     .foregroundStyle(streakAccentColor)
-                Text(presenter.workoutStreakCount == 1 ? String(localized: "day") : String(localized: "days"))
+                Text(presenter.thisWeekText)
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             }
@@ -49,20 +49,19 @@ struct WorkoutStreakCard: View {
 
     @ViewBuilder
     private var streakBadge: some View {
-        if presenter.isStreakAtRisk {
+        switch presenter.streak.state {
+        case .atRisk:
             Chip("At Risk", systemImage: Symbol.warning, tint: .warning)
-        } else if presenter.isStreakActive {
-            Chip("Active", systemImage: Symbol.streak, tint: Color.Metric.workouts)
+        case .met:
+            Chip("Goal Met", systemImage: Symbol.success, tint: Color.Metric.workouts)
+        case .onTrack, .none:
+            EmptyView()
         }
     }
 
     private var streakAccentColor: Color {
-        if presenter.isStreakAtRisk {
-            return .warning
-        } else if presenter.isStreakActive {
-            return Color.Metric.workouts
-        }
-        return .secondary
+        if presenter.streak.state == .atRisk { return .warning }
+        return presenter.streak.weeks > 0 ? Color.Metric.workouts : .secondary
     }
 
     private var weeklyDotsRow: some View {
@@ -106,7 +105,7 @@ struct WorkoutStreakCard: View {
 
     private var streakStats: some View {
         HStack {
-            Stat(value: String(AttributedString(localized: "^[\(presenter.longestStreak) day](inflect: true)").characters), label: String(localized: "Best streak"), size: .small)
+            Stat(value: presenter.bestText, label: String(localized: "Best streak"), size: .small)
             Spacer()
             Stat(value: presenter.totalWorkouts.formatted(), label: String(localized: "Total workouts"), size: .small, alignment: .trailing)
         }

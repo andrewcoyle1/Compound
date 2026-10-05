@@ -40,6 +40,8 @@ struct ExerciseModelDetailPresenterTests {
     /// router does would leave nothing here in some configurations and a missing requirement in
     /// others.
     private final class Router: ExerciseModelDetailRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
 
         func showDevSettingsView() { }

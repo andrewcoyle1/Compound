@@ -126,11 +126,12 @@ class SocialProfilePresenter {
         return Format.weight(kg: kilograms, unit: unit)
     }
 
-    /// The streak stamped on the author's most recent session that carries one, from two days on.
+    /// The weekly streak stamped on the author's most recent session that carries one, from two
+    /// weeks on.
     /// The reader cannot see anyone else's streak directly, so this is as fresh as their last
     /// finished workout.
     var latestStreak: Int? {
-        guard let count = sessions.first(where: { $0.streakCount != nil })?.streakCount, count > 1 else { return nil }
+        guard let count = sessions.first(where: { $0.weekStreakCount != nil })?.weekStreakCount, count > 1 else { return nil }
         return count
     }
 

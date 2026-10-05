@@ -143,3 +143,11 @@ extension ExpenditureDetailPresenter {
         var type: LogType { .analytic }
     }
 }
+
+// MARK: - Coach
+
+extension ExpenditureDetailPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .expenditure, title: String(localized: "Expenditure")))
+    }
+}

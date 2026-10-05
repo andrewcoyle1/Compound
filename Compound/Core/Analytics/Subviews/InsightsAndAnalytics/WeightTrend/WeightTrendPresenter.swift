@@ -183,3 +183,11 @@ extension WeightTrendPresenter {
         }
     }
 }
+
+// MARK: - Coach
+
+extension WeightTrendPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .weightTrend, title: String(localized: "Weight Trend")))
+    }
+}

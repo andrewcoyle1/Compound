@@ -34,6 +34,9 @@ struct ActiveMesocycleView: View {
                     Button("Info", systemImage: Symbol.info) {
                         presenter.onMesocyclePressed(mesocycle: delegate.mesocycle)
                     }
+                    Button("Ask Coach", systemImage: Symbol.coach) {
+                        presenter.onAskCoachPressed(mesocycle: delegate.mesocycle)
+                    }
                 }
             }
         } header: {

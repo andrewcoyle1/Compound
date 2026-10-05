@@ -201,7 +201,7 @@ for (const [name, path] of [
 // ---------------- ADMIN-ONLY ----------------
 // No client allow exists for these; the deny is the whole contract.
 
-for (const path of ["food_search_cache/q", "moderation_queue/t", `strava_connections/${ALICE}`, "strava_events/e"]) {
+for (const path of ["food_search_cache/q", "moderation_queue/t", `strava_connections/${ALICE}`, "strava_events/e", `coach_usage/${ALICE}`]) {
     t(`${path.split("/")[0]}: closed to every client`, async () => {
         await assertFails(getDoc(doc(db(ALICE), path)));
         await assertFails(setDoc(doc(db(ALICE), path), { a: 1 }));
@@ -215,6 +215,17 @@ t("users/strava_activities: the owner reads them; nobody writes them", async () 
     await assertFails(getDoc(doc(db(BOB), path)));
     await assertFails(setDoc(doc(db(ALICE), path), { id: "1", name: "Faster Run" }));
     await assertFails(deleteDoc(doc(db(ALICE), path)));
+});
+
+t("users/coach_chats: the owner reads and deletes them; nobody writes them", async () => {
+    const path = `users/${ALICE}/coach_chats/c1`;
+    await seed(path, { id: "c1", title: "Bench", messages: [] });
+    await assertSucceeds(getDoc(doc(db(ALICE), path)));
+    await assertFails(getDoc(doc(db(BOB), path)));
+    await assertFails(setDoc(doc(db(ALICE), path), { id: "c1", title: "Edited", messages: [] }));
+    await assertFails(setDoc(doc(db(ALICE), `users/${ALICE}/coach_chats/c2`), { id: "c2", messages: [] }));
+    await assertFails(deleteDoc(doc(db(BOB), path)));
+    await assertSucceeds(deleteDoc(doc(db(ALICE), path)));
 });
 
 // ---------------- TOP-LEVEL AUTHORED LIBRARIES ----------------

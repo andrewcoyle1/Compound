@@ -29,13 +29,12 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     private let exerciseSettingsManager: ExerciseSettingsManager
     private let exerciseModelManager: ExerciseModelManager
 
-    /// What finishing needs beyond the session: see `WorkoutFinishManagers`. The streak and
-    /// Strava are optional so a test can build the handler without them.
+    /// What finishing needs beyond the session: see `WorkoutFinishManagers`. Strava is optional so
+    /// a test can build the handler without it.
     private let gymProfileManager: GymProfileManager
     private let mesocycleManager: MesocycleManager
     private let userManager: UserManager
     private let macrocycleManager: MacrocycleManager?
-    private let streakManager: StreakManager?
     private let stravaManager: StravaManager?
     private let logManager: LogManager
 
@@ -50,7 +49,6 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         mesocycleManager: MesocycleManager,
         userManager: UserManager,
         macrocycleManager: MacrocycleManager? = nil,
-        streakManager: StreakManager? = nil,
         stravaManager: StravaManager? = nil,
         logManager: LogManager = LogManager(services: [])
     ) {
@@ -64,7 +62,6 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         self.mesocycleManager = mesocycleManager
         self.userManager = userManager
         self.macrocycleManager = macrocycleManager
-        self.streakManager = streakManager
         self.stravaManager = stravaManager
         self.logManager = logManager
     }
@@ -163,7 +160,6 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
             mesocycles: mesocycleManager,
             users: userManager,
             macrocycles: macrocycleManager,
-            streak: streakManager,
             strava: stravaManager,
             logger: logManager
         ))

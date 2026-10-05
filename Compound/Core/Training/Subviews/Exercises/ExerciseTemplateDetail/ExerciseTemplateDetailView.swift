@@ -115,6 +115,7 @@ struct ExerciseModelDetailView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        AskCoachToolbarItem { presenter.onAskCoachPressed(exercise: delegate.exerciseModel) }
         if presenter.canDelete(exercise: delegate.exerciseModel) {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

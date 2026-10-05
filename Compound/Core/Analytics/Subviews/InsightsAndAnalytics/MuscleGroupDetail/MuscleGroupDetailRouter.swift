@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol MuscleGroupDetailRouter: GlobalRouter {
+protocol MuscleGroupDetailRouter: GlobalRouter, AskCoachRouter {
     func showWorkoutsView(delegate: WorkoutsDelegate)
 }
 

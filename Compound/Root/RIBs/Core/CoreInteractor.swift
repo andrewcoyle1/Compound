@@ -52,10 +52,10 @@ struct CoreInteractor: GlobalInteractor {
     let hkWorkoutManager: HKWorkoutManager
     let liveActivityManager: LiveActivityManager
     #endif
-    let streakManager: StreakManager
     let commentsManager: CommentsManager
     let activityNotificationManager: ActivityNotificationManager
     let stravaManager: StravaManager
+    let coachManager: CoachManager
     let openFoodFactsService: any OpenFoodFactsService
     let appState: AppState
     let premiumEntitlementResolution: PremiumEntitlementResolution
@@ -107,10 +107,10 @@ struct CoreInteractor: GlobalInteractor {
         self.hkWorkoutManager = container.resolve(HKWorkoutManager.self)!
         self.liveActivityManager = container.resolve(LiveActivityManager.self)!
         #endif
-        self.streakManager = container.resolve(StreakManager.self)!
         self.commentsManager = container.resolve(CommentsManager.self)!
         self.activityNotificationManager = container.resolve(ActivityNotificationManager.self)!
         self.stravaManager = container.resolve(StravaManager.self)!
+        self.coachManager = container.resolve(CoachManager.self)!
         self.openFoodFactsService = container.resolve(OpenFoodFactsServiceContainer.self)!.service
         self.appState = container.resolve(AppState.self)!
         self.premiumEntitlementResolution = container.resolve(PremiumEntitlementResolution.self)!
@@ -163,7 +163,6 @@ struct CoreInteractor: GlobalInteractor {
         async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let bodyMeasurementsSignIn: () = bodyMeasurementsManager.signIn(userId: user.uid)
         async let goalSignIn: () = goalManager.signIn(userId: user.uid)
-        async let streakSignIn: () = streakManager.logIn(userId: user.uid)
 
         try await workoutSettingsSignIn
         try await foodLogSettingsSignIn
@@ -186,7 +185,6 @@ struct CoreInteractor: GlobalInteractor {
         await foodsSignIn
         await mealLogSignIn
         await bodyMeasurementsSignIn
-        try await streakSignIn
 
         // Seed system content after all sync engines have started listening,
         // so local persistence is loaded and allExercises is populated before
@@ -198,6 +196,10 @@ struct CoreInteractor: GlobalInteractor {
         // After the sessions and exercises: the upload queue is sent from them. Not awaited, so a
         // backlog going to Strava never holds up sign-in.
         Task { await stravaManager.signIn(userId: user.uid) }
+        Task { await coachManager.signIn() }
+        // Once the sessions are in: the evening streak reminder reads this copy, and a new week may
+        // have started since the last finish.
+        Task { await recordWeeklyStreak() }
 
         // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
         routePendingDeepLinkAfterLogIn()
@@ -224,6 +226,7 @@ struct CoreInteractor: GlobalInteractor {
         try authManager.signOut()
         // The connection stays with the account, on the server; this only forgets it here.
         stravaManager.signOut()
+        coachManager.signOut()
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
@@ -255,6 +258,7 @@ struct CoreInteractor: GlobalInteractor {
 
         // onUserDeleted revokes Compound at Strava and deletes the connection.
         stravaManager.signOut()
+        coachManager.signOut()
         WidgetSnapshotStore.clear()
 
         // Delete Purchases (RevenueCat)
@@ -265,6 +269,17 @@ struct CoreInteractor: GlobalInteractor {
     }
     
     func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+        let session = try await plannedSession(for: template, in: mesocycleId)
+        try self.updateActiveSession(session)
+        #if !targetEnvironment(macCatalyst)
+        hkWorkoutManager.startWorkout(workout: session)
+        ensureLiveActivity(session: session)
+        #endif
+    }
+
+    /// The session starting `template` would begin, prefilled as the tracker prefills it, without
+    /// starting anything. Today's card reads its targets from this, so they are the tracker's own.
+    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel {
         guard let userId = self.userId else { throw CoreError.noCurrentUser }
         var unitPreferences: [String: ExerciseUnitPreference] = [:]
         for exerciseModel in template.exercises {
@@ -279,7 +294,7 @@ struct CoreInteractor: GlobalInteractor {
             unitPreferences: unitPreferences
         )
 
-        let session = WorkoutSessionModel(
+        return WorkoutSessionModel(
             authorId: userId,
             template: template,
             notes: nil,
@@ -288,12 +303,6 @@ struct CoreInteractor: GlobalInteractor {
             unitPreferences: unitPreferences,
             prefill: prefill
         )
-        
-        try self.updateActiveSession(session)
-        #if !targetEnvironment(macCatalyst)
-        hkWorkoutManager.startWorkout(workout: session)
-        ensureLiveActivity(session: session)
-        #endif
     }
     
     /// A session with no template and no exercises; the tracker adds exercises as it goes.

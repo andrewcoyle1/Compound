@@ -43,6 +43,9 @@ struct SettingsView: View {
             ListRowButton(title: String(localized: "Integrations"), systemImage: "app.connected.to.app.below.fill") {
                 presenter.onIntegrationsPressed()
             }
+            ListRowButton(title: String(localized: "Coach"), systemImage: Symbol.coach) {
+                presenter.onCoachPressed()
+            }
             ListRowButton(title: String(localized: "Units"), systemImage: "base.unit") {
                 presenter.onUnitsPressed()
             }

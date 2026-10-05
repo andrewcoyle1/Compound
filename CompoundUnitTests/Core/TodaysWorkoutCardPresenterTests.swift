@@ -25,26 +25,39 @@ struct TodaysWorkoutCardPresenterTests {
 
         func deleteActiveSession() throws { activeSession = nil }
 
-        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+        var currentUser: UserModel? = UserModel(userId: "author-1")
+        var preferences: [String: ExerciseUnitPreference] = [:]
+        /// What the planned session's exercises are; one 100 kg × 8 bench press by default.
+        var plannedExercises: [WorkoutExerciseModel] = [WorkoutExerciseModel(
+            id: "e1",
+            authorId: "author-1",
+            templateId: "ex",
+            name: "Bench Press",
+            trackingMode: .weightReps,
+            index: 1,
+            sets: [WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 8, weightKg: 100, isWarmup: false, dateCreated: Date())]
+        )]
+
+        func getPreference(templateId: String) -> ExerciseUnitPreference {
+            preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
+        }
+
+        func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel {
             if let startError { throw startError }
-            startedTemplateIds.append(template.id)
-            activeSession = WorkoutSessionModel(
+            return WorkoutSessionModel(
                 id: "started",
                 authorId: "author-1",
                 name: template.name,
                 workoutTemplateId: template.id,
                 mesocycleId: mesocycleId,
                 dateCreated: Date(),
-                exercises: [WorkoutExerciseModel(
-                    id: "e1",
-                    authorId: "author-1",
-                    templateId: "ex",
-                    name: "Bench Press",
-                    trackingMode: .weightReps,
-                    index: 1,
-                    sets: [WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 8, weightKg: 100, isWarmup: false, dateCreated: Date())]
-                )]
+                exercises: plannedExercises
             )
+        }
+
+        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+            activeSession = try await plannedSession(for: template, in: mesocycleId)
+            startedTemplateIds.append(template.id)
         }
 
         func updateActiveSession(_ session: WorkoutSessionModel) throws {
@@ -62,6 +75,11 @@ struct TodaysWorkoutCardPresenterTests {
         func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) {
             shown.append("templateDetail")
             detailDelegates.append(delegate)
+        }
+        private(set) var openedSessionIds: [String] = []
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) {
+            shown.append("sessionDetail")
+            openedSessionIds.append(delegate.initialSession.id)
         }
         func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
             dialogTitles.append(title)
@@ -185,5 +203,152 @@ struct TodaysWorkoutCardPresenterTests {
         screen.presenter.onStartPressed()
 
         #expect(await TestManagers.eventually { screen.router.shown == ["alert"] })
+    }
+
+    // MARK: - Before the workout
+
+    private func set(reps: Int? = nil, weightKg: Double? = nil, seconds: Int? = nil, meters: Double? = nil) -> WorkoutSetModel {
+        WorkoutSetModel(
+            id: UUID().uuidString, authorId: "author-1", index: 1, reps: reps, weightKg: weightKg,
+            durationSec: seconds, distanceMeters: meters, isWarmup: false, completedAt: Date(), dateCreated: Date()
+        )
+    }
+
+    /// Each target reads in the exercise's own units, whatever it tracks.
+    @Test("Test A Target Reads In The Exercises Units")
+    func testATargetReadsInTheExercisesUnits() {
+        let kilograms = ExerciseUnitPreference(exerciseModelId: "x")
+        let imperial = ExerciseUnitPreference(exerciseModelId: "x", weightUnit: .pounds, distanceUnit: .miles)
+        let detail = TodaysWorkoutCardPresenter.targetDetail
+
+        #expect(detail(set(reps: 8, weightKg: 102.5), .weightReps, kilograms) == "102.5 kg × 8")
+        #expect(detail(set(reps: 8, weightKg: 100), .weightReps, imperial) == "220.5 lb × 8")
+        #expect(detail(set(reps: 12, weightKg: 0), .weightReps, kilograms) == "12 reps")
+        #expect(detail(set(reps: 15), .repsOnly, kilograms) == "15 reps")
+        #expect(detail(set(seconds: 90), .timeOnly, kilograms) == "1:30")
+        #expect(detail(set(meters: 1_609.34), .distanceTime, imperial) == "1 mi")
+        #expect(detail(set(), .weightReps, kilograms) == nil)
+        #expect(detail(nil, .weightReps, kilograms) == nil)
+    }
+
+    /// The targets are what Start would prefill, cut in a deload week as Start cuts them, and an
+    /// exercise with nothing prefilled shows its name alone.
+    @Test("Test Targets Are The Trackers Prefill")
+    func testTargetsAreTheTrackersPrefill() async {
+        let screen = makeScreen(deload: .start)
+        screen.interactor.plannedExercises.append(WorkoutExerciseModel(
+            id: "e2", authorId: "author-1", templateId: "fly", name: "Dumbbell Fly", trackingMode: .weightReps, index: 2,
+            sets: [WorkoutSetModel(id: "s2", authorId: "author-1", index: 1, isWarmup: false, dateCreated: Date())]
+        ))
+
+        await screen.presenter.loadTargets()
+
+        #expect(screen.presenter.targets == ["Bench Press · 65 kg × 8", "Dumbbell Fly"])
+    }
+
+    @Test("Test A Failed Prefill Leaves No Targets")
+    func testAFailedPrefillLeavesNoTargets() async {
+        let screen = makeScreen()
+        screen.interactor.startError = URLError(.notConnectedToInternet)
+
+        await screen.presenter.loadTargets()
+
+        #expect(screen.presenter.targets.isEmpty)
+        #expect(screen.interactor.trackedEventNames.contains("TodaysWorkoutCard_LoadTargets_Fail"))
+    }
+
+    @Test("Test The Block Position Reads Week And Day")
+    func testTheBlockPositionReadsWeekAndDay() {
+        let screen = makeScreen(cycles: 5)
+
+        #expect(screen.presenter.mesocyclePositionText == "Week 1 of 5 · Day 1")
+    }
+
+    private func finished(_ templateId: String, minutes: Double, daysAgo: Double) -> WorkoutSessionModel {
+        let start = Date().addingTimeInterval(-daysAgo * 86_400)
+        return WorkoutSessionModel(
+            authorId: "author-1", name: "Push", workoutTemplateId: templateId,
+            dateCreated: start, endedAt: start.addingTimeInterval(minutes * 60), exercises: []
+        )
+    }
+
+    /// The median of the last five times, so one long session does not set the estimate.
+    @Test("Test The Duration Is The Median Of Recent Sessions")
+    func testTheDurationIsTheMedianOfRecentSessions() {
+        let history = [
+            finished("push", minutes: 50, daysAgo: 1),
+            finished("push", minutes: 120, daysAgo: 2),
+            finished("push", minutes: 55, daysAgo: 3),
+            finished("push", minutes: 10, daysAgo: 40),
+            finished("pull", minutes: 90, daysAgo: 1)
+        ]
+
+        let seconds = TodaysWorkoutCardPresenter.estimatedDuration(of: day, history: history)
+
+        #expect(seconds == 55 * 60)
+    }
+
+    /// Never done before: each working set at 2.5 minutes, rest included.
+    @Test("Test A New Workout Is Estimated From Its Sets")
+    func testANewWorkoutIsEstimatedFromItsSets() {
+        var template = day
+        template.exercises[0].setTargets = (1...4).map { SetTarget(setNumber: $0, setType: .standard) }
+
+        #expect(TodaysWorkoutCardPresenter.estimatedDuration(of: template, history: []) == 4 * 2.5 * 60)
+        let screen = makeScreen()
+        #expect(screen.presenter.estimatedDurationText == "~5 min")
+        #expect(screen.presenter.startSubtitle == "Week 1 of 4 · Day 1 · ~5 min")
+    }
+
+    // MARK: - After the workout
+
+    /// Today's session, its duration, sets (a left/right pair once), volume and records.
+    @Test("Test The Finished Workout Shows What It Came To")
+    func testTheFinishedWorkoutShowsWhatItCameTo() {
+        let screen = makeScreen()
+        // Early today, so the session is today's whenever the test runs.
+        let start = Calendar.current.startOfDay(for: Date()).addingTimeInterval(60)
+        let earlier = Date().addingTimeInterval(-7 * 86_400)
+        let bench = { (id: String, kilograms: Double, done: Date) in
+            WorkoutExerciseModel(
+                id: id, authorId: "author-1", templateId: "bench", name: "Bench Press", trackingMode: .weightReps, index: 1,
+                sets: [WorkoutSetModel(id: "\(id)-1", authorId: "author-1", index: 1, reps: 5, weightKg: kilograms, isWarmup: false, completedAt: done, dateCreated: done)]
+            )
+        }
+        let row = WorkoutExerciseModel(
+            id: "row", authorId: "author-1", templateId: "row", name: "Row", trackingMode: .weightReps, index: 2,
+            sets: [
+                WorkoutSetModel(id: "l", authorId: "author-1", index: 1, reps: 10, weightKg: 20, side: .left, isWarmup: false, completedAt: start, dateCreated: start),
+                WorkoutSetModel(id: "r", authorId: "author-1", index: 2, reps: 10, weightKg: 20, side: .right, isWarmup: false, completedAt: start, dateCreated: start)
+            ]
+        )
+        let today = WorkoutSessionModel(
+            id: "today", authorId: "author-1", name: "Push", workoutTemplateId: "push", mesocycleId: "meso-1",
+            dateCreated: start, endedAt: start.addingTimeInterval(52 * 60), exercises: [bench("b2", 100, start), row]
+        )
+        let lastWeek = WorkoutSessionModel(
+            id: "before", authorId: "author-1", name: "Other", dateCreated: earlier,
+            endedAt: earlier.addingTimeInterval(3_600), exercises: [bench("b1", 90, earlier)]
+        )
+        screen.interactor.workoutSessions = [lastWeek, today]
+
+        #expect(screen.presenter.isTodayCompleted)
+        let summary = screen.presenter.completedSummary
+        #expect(summary?.figures == "52:00 · 2 sets · 900 kg")
+        // The count's own wording comes from the catalog's plural rules.
+        #expect(summary?.records?.hasSuffix(" · Bench Press 100 kg × 5") == true)
+
+        screen.presenter.onCompletedSessionPressed()
+
+        #expect(screen.router.openedSessionIds == ["today"])
+    }
+
+    @Test("Test A Session Not Synced Yet Has No Summary")
+    func testASessionNotSyncedYetHasNoSummary() {
+        let screen = makeScreen()
+
+        #expect(screen.presenter.completedSummary == nil)
+        screen.presenter.onCompletedSessionPressed()
+        #expect(screen.router.openedSessionIds.isEmpty)
     }
 }

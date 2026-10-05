@@ -602,3 +602,17 @@ extension WorkoutSessionDetailPresenter {
         }
     }
 }
+
+// MARK: - Coach
+
+extension WorkoutSessionDetailPresenter {
+    /// The author's own workouts only: the coach reads the asker's data, never someone else's.
+    func canAskCoach(session: WorkoutSessionModel) -> Bool {
+        isAuthor(sessionAuthorId: session.authorId) && session.endedAt != nil
+    }
+
+    func onAskCoachPressed(session: WorkoutSessionModel) {
+        guard canAskCoach(session: session) else { return }
+        router.showCoach(context: CoachContext(kind: .session, id: session.id, title: session.name))
+    }
+}

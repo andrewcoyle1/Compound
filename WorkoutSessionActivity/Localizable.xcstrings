@@ -4,7 +4,7 @@
     "%lld" : {
       "shouldTranslate" : false
     },
-    "%lld day streak" : {
+    "%lld week streak" : {
       "localizations" : {
         "es" : {
           "variations" : {
@@ -12,13 +12,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Racha de %lld día"
+                  "value" : "Racha de %lld semana"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Racha de %lld días"
+                  "value" : "Racha de %lld semanas"
                 }
               }
             }
@@ -498,12 +498,12 @@
         }
       }
     },
-    "Track your training streak." : {
+    "Weeks in a row you have hit your weekly goal." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sigue tu racha de entrenamiento."
+            "value" : "Semanas seguidas cumpliendo tu objetivo semanal."
           }
         }
       }
@@ -558,28 +558,28 @@
         }
       }
     },
-    "day streak" : {
+    "week streak" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "día de racha"
+            "value" : "semana de racha"
           }
         }
       }
     },
-    "days streak" : {
+    "weeks streak" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "day streak"
+            "value" : "week streak"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "días de racha"
+            "value" : "semanas de racha"
           }
         }
       }

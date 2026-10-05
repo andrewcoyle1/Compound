@@ -445,3 +445,15 @@ extension NutritionPresenter {
         }
     }
 }
+
+// MARK: - Coach
+
+extension NutritionPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(
+            kind: .nutritionDay,
+            date: selectedDate.dayKey,
+            title: selectedDate.formatted(date: .abbreviated, time: .omitted)
+        ))
+    }
+}

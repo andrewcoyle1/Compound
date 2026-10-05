@@ -15,7 +15,7 @@ struct ReminderOfferFlowTests {
 
     private final class Interactor: SpyGlobalInteractor, ReminderOfferInteractor {
         var privateUserSettings = PrivateUserSettings()
-        var currentStreakData = CurrentStreakData.mockEmpty()
+        var weeklyStreak = WeeklyStreak.fixture(weeks: 0)
         var canRequest = true
         private(set) var requestCount = 0
         private(set) var mealWrites: [Bool] = []
@@ -116,15 +116,16 @@ struct ReminderOfferFlowTests {
 
     // MARK: - Streak reminder
 
-    @Test("Test The Streak Reminder Waits For A Three Day Streak")
-    func testTheStreakReminderWaitsForAThreeDayStreak() {
+    /// One week is only this week's goal; the offer waits for a second.
+    @Test("Test The Streak Reminder Waits For A Two Week Streak")
+    func testTheStreakReminderWaitsForATwoWeekStreak() {
         let screen = makeScreen()
 
-        screen.interactor.currentStreakData = .mockActive(currentStreak: 2)
+        screen.interactor.weeklyStreak = .fixture(weeks: 1)
         screen.flow.offerStreakReminderIfNeeded()
         #expect(screen.router.dialogTitles.isEmpty)
 
-        screen.interactor.currentStreakData = .mockActive(currentStreak: 3)
+        screen.interactor.weeklyStreak = .fixture(weeks: 2)
         screen.flow.offerStreakReminderIfNeeded()
         screen.flow.offerStreakReminderIfNeeded()
         #expect(screen.router.dialogTitles == ["Streak Reminder"])

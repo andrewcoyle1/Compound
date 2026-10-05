@@ -11,8 +11,8 @@ struct TodayDelegate {
     }
 }
 
-/// The user's own day, as a list of sections: what is due this week, then workout, food, weigh-in
-/// and streak.
+/// The user's own day: a checklist to complete, then what is next — the check-in, today's workout,
+/// an evening protein reminder, last week's review — then the week's streak and friends who trained.
 struct TodayView<TodaysCard: View, StreakCard: View>: View {
 
     @State var presenter: TodayPresenter
@@ -26,21 +26,46 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     @Namespace private var namespace
 
     var body: some View {
+        let checklist = presenter.checklist
         Dashboard {
+            if presenter.showsStarter {
+                StarterCard(
+                    starter: presenter.starter,
+                    onStepPressed: { presenter.onStarterStepPressed($0) },
+                    onDismissed: { presenter.onStarterDismissed() }
+                )
+            }
+            DayChecklistCard(
+                checklist: checklist,
+                stepGoal: presenter.stepGoal,
+                onItemPressed: { presenter.onChecklistItemPressed($0) },
+                onStepGoalSelected: { presenter.onStepGoalSelected($0) }
+            )
             if presenter.dueCheckInWeekStart != nil {
                 Section { checkInCard }
             }
+            workoutCard
+            if let gap = presenter.proteinGapText {
+                proteinGapCard(gap)
+            }
             if presenter.showsWeeklyReviewCard {
                 Section {
-                    ListRowButton(title: "Your weekly review is ready", systemImage: "chart.bar.doc.horizontal") {
+                    ListRowButton(title: String(localized: "Your weekly review is ready"), systemImage: "chart.bar.doc.horizontal") {
                         presenter.onWeeklyReviewPressed()
                     }
                 }
             }
-            workoutCard
-            nutritionCard
-            weighInCard
             workoutStreakCard(WorkoutStreakDelegate())
+            if let pulse = presenter.socialPulseText {
+                Section {
+                    ListRowButton(title: pulse, systemImage: Symbol.friends) {
+                        presenter.onSocialPulsePressed()
+                    }
+                }
+            }
+        }
+        .onChange(of: checklist.isComplete, initial: true) { _, isComplete in
+            presenter.onChecklistCompletionChanged(isComplete: isComplete)
         }
         .scrollIndicators(.hidden)
         // No subtitle: it shrinks the large title, which every other tab root shows full size.
@@ -110,52 +135,23 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         }
     }
 
-    // MARK: - Nutrition
+    // MARK: - Evening protein
 
-    /// No invented defaults: a target of 0 reads as "no target" throughout `NutritionCard`.
-    private var nutritionCard: some View {
-        NutritionCard(
-            calories: presenter.nutritionTotals?.calories ?? 0,
-            calorieTarget: presenter.nutritionTarget?.calories ?? 0,
-            proteinGrams: presenter.nutritionTotals?.proteinGrams ?? 0,
-            proteinTarget: presenter.nutritionTarget?.proteinGrams ?? 0,
-            carbGrams: presenter.nutritionTotals?.carbGrams ?? 0,
-            carbTarget: presenter.nutritionTarget?.carbGrams ?? 0,
-            fatGrams: presenter.nutritionTotals?.fatGrams ?? 0,
-            fatTarget: presenter.nutritionTarget?.fatGrams ?? 0,
-            onLogMealTapped: { presenter.onLogMealPressed() }
-        )
-    }
-
-    // MARK: - Weigh-in
-
-    private var weighInCard: some View {
+    private func proteinGapCard(_ gap: String) -> some View {
         Section {
-            if let weight = presenter.latestWeightText, let date = presenter.latestWeighInDate {
-                // Tappable as the workout card is: the trend behind the number is one tap away
-                // rather than a trip through the Progress tab.
-                Stat(value: weight, label: presenter.hasWeighedInToday
-                    ? String(localized: "Logged today")
-                    : String(localized: "Last logged \(date.formatted(.relative(presentation: .named)))"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .anyButton(.press) {
-                        presenter.onWeighInPressed()
-                    }
-                    .accessibilityHint("Opens your weight history")
-            } else {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("No weigh-ins yet.")
-                        .font(.rowTitle)
-                    Text("A weigh-in a day keeps your trend and targets accurate.")
-                        .font(.rowDetail)
-                        .foregroundStyle(.secondary)
+            HStack {
+                Label(gap, systemImage: Symbol.protein)
+                    .font(.rowTitle)
+                Spacer()
+                Button("Ask Coach", systemImage: Symbol.coach) {
+                    presenter.onProteinGapAskCoachPressed()
                 }
-            }
-        } header: {
-            // The action in the header, as the Progress tab's sections carry theirs, rather than a
-            // full-width button inside the card.
-            SectionHeaderView(title: "Weigh-In", actionTitle: "Log Weight", padsEdges: false) {
-                presenter.onLogWeightPressed()
+                .labelStyle(.iconOnly)
+                .buttonStyle(.bordered)
+                Button("Log Meal") {
+                    presenter.onProteinGapLogMealPressed()
+                }
+                .buttonStyle(.bordered)
             }
         }
     }
@@ -200,6 +196,9 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         }
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         #endif
+
+        AskCoachToolbarItem { presenter.onAskCoachPressed() }
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
         // The same quick actions the other tabs keep behind their add button.
         ToolbarItem(placement: .topBarTrailing) {

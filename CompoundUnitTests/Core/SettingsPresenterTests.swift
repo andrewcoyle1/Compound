@@ -41,6 +41,8 @@ struct SettingsPresenterTests {
     }
 
     private final class Router: SettingsRouter {
+        private(set) var coachChatsShown = 0
+        func showCoachChatsView(delegate: CoachChatsDelegate) { coachChatsShown += 1 }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 

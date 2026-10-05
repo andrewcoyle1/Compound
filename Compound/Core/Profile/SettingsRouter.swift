@@ -7,6 +7,7 @@
 
 @MainActor
 protocol SettingsRouter: GlobalRouter, ShareSheetRouter {
+    func showCoachChatsView(delegate: CoachChatsDelegate)
     func showWeightGoalFlow()
     func switchToOnboardingModule()
     /// For upgrading an anonymous account — the same screen onboarding uses.

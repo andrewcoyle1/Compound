@@ -207,3 +207,11 @@ extension EnergyBalancePresenter {
         }
     }
 }
+
+// MARK: - Coach
+
+extension EnergyBalancePresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .expenditure, title: String(localized: "Energy Balance")))
+    }
+}

@@ -6,7 +6,7 @@
 import SwiftUI
 
 @MainActor
-protocol CheckInRouter: GlobalRouter {
+protocol CheckInRouter: GlobalRouter, AskCoachRouter {
 
 }
 

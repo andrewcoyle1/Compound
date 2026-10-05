@@ -144,7 +144,7 @@ class NotificationSettingsPresenter {
 
     /// The streak reminder, its hour, and the Sunday digest. Like the Social switches, each writes
     /// the moment it changes and reads back from the private settings document. The streak
-    /// reminder is off until chosen; `ReminderOfferFlow` offers it at a 3-day streak.
+    /// reminder is off until chosen; `ReminderOfferFlow` offers it at a two-week streak.
     var isStreakReminderEnabled: Bool {
         get { interactor.privateUserSettings.isStreakReminderEnabled }
         set { updateScheduledPush(.streakReminder(isEnabled: newValue)) { $0.socialPushStreakReminder = newValue } }

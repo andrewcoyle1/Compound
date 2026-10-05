@@ -256,6 +256,7 @@ struct NutritionView<
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        AskCoachToolbarItem { presenter.onAskCoachPressed() }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onLogMealPressed()

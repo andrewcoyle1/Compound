@@ -22,10 +22,17 @@ struct AnalyticsSettings: DataSyncModelProtocol {
     /// existed.
     var hiddenSectionIds: [String] = []
 
+    /// The daily step goal on Today's checklist. Optional so documents saved before it existed
+    /// still decode; `nil` reads as `TodayChecklist.defaultStepGoal`.
+    var dailyStepGoal: Int?
+
+    var stepGoal: Int { dailyStepGoal ?? TodayChecklist.defaultStepGoal }
+
     enum CodingKeys: String, CodingKey {
         case id
         case authorId = "author_id"
         case hiddenSectionIds = "hidden_section_ids"
+        case dailyStepGoal = "daily_step_goal"
     }
 
     var eventParameters: [String: Any] {

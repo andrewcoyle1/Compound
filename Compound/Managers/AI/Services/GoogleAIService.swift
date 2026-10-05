@@ -32,29 +32,6 @@ struct GoogleAIService: AIService {
         return image
     }
     
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        let messages: [[String: Any]] = chats.map { chat in
-            [
-                "role": chat.role.rawValue,
-                "message": chat.message
-            ]
-        }
-        let payload: [String: Any] = [
-            "messages": messages,
-            "temperature": 0.7,
-            "maxOutputTokens": 512
-        ]
-        let callable = functions.httpsCallable("chatGenerate")
-        let result = try await callable.call(payload)
-        guard let dict = result.data as? [String: Any],
-              let role = dict["role"] as? String,
-              let message = dict["message"] as? String,
-              let aiRole = AIChatRole(rawValue: role) else {
-            throw GoogleAIError.invalidResponse
-        }
-        return AIChatModel(role: aiRole, content: message)
-    }
-    
     func analyzeNutritionLabel(text: String) async throws -> String {
         let payload: [String: Any] = ["labelText": text]
         let result = try await functions.httpsCallable("nutritionLabelAnalyze").call(payload)

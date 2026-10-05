@@ -27287,6 +27287,1296 @@
           }
         }
       }
+    },
+    "%@ / %@ protein" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / %@ de proteína"
+          }
+        }
+      }
+    },
+    "%@ / %@ steps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / %@ pasos"
+          }
+        }
+      }
+    },
+    "%@ and %@ trained today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ y %@ entrenaron hoy"
+          }
+        }
+      }
+    },
+    "%@, %@ and %@ trained today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@ y %@ entrenaron hoy"
+          }
+        }
+      }
+    },
+    "%@ kcal logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal registradas"
+          }
+        }
+      }
+    },
+    "%@ more sessions this week keep your %@-week streak." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sesiones más esta semana mantienen tu racha de %@ semanas."
+          }
+        }
+      }
+    },
+    "%@ protein to go today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan %@ de proteína hoy"
+          }
+        }
+      }
+    },
+    "%@ trained today" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ entrenó hoy"
+          }
+        }
+      }
+    },
+    "%lld of %lld done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld de %lld hechos"
+          }
+        }
+      }
+    },
+    "%lld of %lld this week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld de %lld esta semana"
+          }
+        }
+      }
+    },
+    "Activities imported from Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividades importadas de Strava"
+          }
+        }
+      }
+    },
+    "Allow and Continue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitir y continuar"
+          }
+        }
+      }
+    },
+    "Allow the coach to read your data to continue." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite que el entrenador lea tus datos para continuar."
+          }
+        }
+      }
+    },
+    "Am I losing at the rate I planned?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Estoy perdiendo al ritmo que planeé?"
+          }
+        }
+      }
+    },
+    "Am I on track for my goal?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Voy bien para mi objetivo?"
+          }
+        }
+      }
+    },
+    "Am I recovering well enough?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Me estoy recuperando lo suficiente?"
+          }
+        }
+      }
+    },
+    "Am I training this muscle enough?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Entreno este músculo lo suficiente?"
+          }
+        }
+      }
+    },
+    "Answers come from your logs and can be wrong. Not medical advice." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las respuestas salen de tus registros y pueden equivocarse. No es consejo médico."
+          }
+        }
+      }
+    },
+    "Anything about the people you follow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada sobre las personas que sigues"
+          }
+        }
+      }
+    },
+    "Ask Coach" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntar al entrenador"
+          }
+        }
+      }
+    },
+    "Ask Coach About This Workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preguntar al entrenador sobre este entrenamiento"
+          }
+        }
+      }
+    },
+    "Ask about your training, food and progress. Answers come from what you've logged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta sobre tu entrenamiento, tu alimentación y tu progreso. Las respuestas salen de lo que has registrado."
+          }
+        }
+      }
+    },
+    "Ask about your training, nutrition and progress, answered from your own logs." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta sobre tu entrenamiento, tu nutrición y tu progreso, con respuestas basadas en tus propios registros."
+          }
+        }
+      }
+    },
+    "Ask your coach" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pregunta a tu entrenador"
+          }
+        }
+      }
+    },
+    "Before You Ask" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antes de preguntar"
+          }
+        }
+      }
+    },
+    "Chats" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chats"
+          }
+        }
+      }
+    },
+    "Coach" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenador"
+          }
+        }
+      }
+    },
+    "Coach Chats" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chats con el entrenador"
+          }
+        }
+      }
+    },
+    "Coach Is Part of Premium" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenador es parte de Premium"
+          }
+        }
+      }
+    },
+    "Coach: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenador: %@"
+          }
+        }
+      }
+    },
+    "Connect Apple Health" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectar Apple Salud"
+          }
+        }
+      }
+    },
+    "Data Sharing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso compartido de datos"
+          }
+        }
+      }
+    },
+    "Day Complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día completado"
+          }
+        }
+      }
+    },
+    "Did I set any records?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Batí algún récord?"
+          }
+        }
+      }
+    },
+    "Eat to Target" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comer según el objetivo"
+          }
+        }
+      }
+    },
+    "Finish your first workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina tu primer entrenamiento"
+          }
+        }
+      }
+    },
+    "Get Started · %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primeros pasos · %lld de %lld"
+          }
+        }
+      }
+    },
+    "Goal Met" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo cumplido"
+          }
+        }
+      }
+    },
+    "Google doesn't use your data to train its models. Your chats are saved so you can come back to them, and you can delete them, or withdraw this permission, from Settings at any time. The coach can make mistakes and isn't medical advice." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google no usa tus datos para entrenar sus modelos. Tus chats se guardan para que puedas volver a ellos, y puedes eliminarlos o retirar este permiso desde Ajustes en cualquier momento. El entrenador puede equivocarse y no es consejo médico."
+          }
+        }
+      }
+    },
+    "Hide" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar"
+          }
+        }
+      }
+    },
+    "How did I do against my targets?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo me fue frente a mis objetivos?"
+          }
+        }
+      }
+    },
+    "How did my training go this week?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo fue mi entrenamiento esta semana?"
+          }
+        }
+      }
+    },
+    "How did this week go?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo fue esta semana?"
+          }
+        }
+      }
+    },
+    "How did this workout compare to last time?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo se compara este entrenamiento con el anterior?"
+          }
+        }
+      }
+    },
+    "How has its volume changed?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo ha cambiado su volumen?"
+          }
+        }
+      }
+    },
+    "How is my expenditure estimated?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo se estima mi gasto?"
+          }
+        }
+      }
+    },
+    "How is this block going?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo va este bloque?"
+          }
+        }
+      }
+    },
+    "Is this lift still progressing?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Sigue progresando este ejercicio?"
+          }
+        }
+      }
+    },
+    "Log your first meal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra tu primera comida"
+          }
+        }
+      }
+    },
+    "Log your weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra tu peso"
+          }
+        }
+      }
+    },
+    "Meals, foods and nutrition targets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comidas, alimentos y objetivos nutricionales"
+          }
+        }
+      }
+    },
+    "New Chat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo chat"
+          }
+        }
+      }
+    },
+    "No Chats Yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay chats"
+          }
+        }
+      }
+    },
+    "No weigh-ins yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay pesajes"
+          }
+        }
+      }
+    },
+    "Not done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin hacer"
+          }
+        }
+      }
+    },
+    "Nothing logged yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay nada registrado"
+          }
+        }
+      }
+    },
+    "One more session this week keeps your %@-week streak." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una sesión más esta semana mantiene tu racha de %@ semanas."
+          }
+        }
+      }
+    },
+    "Opens the coach about what this screen shows" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre el entrenador sobre lo que muestra esta pantalla"
+          }
+        }
+      }
+    },
+    "Progress photos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos de progreso"
+          }
+        }
+      }
+    },
+    "Rest day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día de descanso"
+          }
+        }
+      }
+    },
+    "See Plans" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver planes"
+          }
+        }
+      }
+    },
+    "Should I deload this exercise?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Debería hacer una descarga en este ejercicio?"
+          }
+        }
+      }
+    },
+    "Step Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de pasos"
+          }
+        }
+      }
+    },
+    "Steps from Apple Health" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasos de Apple Salud"
+          }
+        }
+      }
+    },
+    "Summarise my week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume mi semana"
+          }
+        }
+      }
+    },
+    "Targets: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivos: %@"
+          }
+        }
+      }
+    },
+    "The coach couldn't answer. Try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenador no pudo responder. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "The coach is part of Premium." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenador es parte de Premium."
+          }
+        }
+      }
+    },
+    "The coach isn't available right now. Try again in a moment." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenador no está disponible ahora. Inténtalo de nuevo en un momento."
+          }
+        }
+      }
+    },
+    "The coach reads your workouts, nutrition, body data and steps to answer, through Google's Gemini model in the EU. It never reads progress photos, people you follow, or Strava activities." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para responder, el entrenador lee tus entrenamientos, tu nutrición, tus datos corporales y tus pasos, mediante el modelo Gemini de Google en la UE. Nunca lee fotos de progreso, las personas que sigues ni actividades de Strava."
+          }
+        }
+      }
+    },
+    "The coach stops reading your data and every chat is deleted." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El entrenador deja de leer tus datos y se eliminan todos los chats."
+          }
+        }
+      }
+    },
+    "The streak reminder comes only when this week's goal needs a session that day. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El recordatorio de racha solo llega cuando el objetivo de la semana necesita una sesión ese día. El resumen semanal llega el domingo por la tarde. Los recordatorios de entrenamiento llegan uno, tres y cinco días después de abrir Compound por última vez. Los recordatorios de comidas llegan en el desayuno, el almuerzo y la cena."
+          }
+        }
+      }
+    },
+    "To answer, the coach reads your data in Compound and sends what each question needs to Google's Gemini model, running in the EU through Google Cloud." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para responder, el entrenador lee tus datos en Compound y envía lo que necesita cada pregunta al modelo Gemini de Google, que funciona en la UE mediante Google Cloud."
+          }
+        }
+      }
+    },
+    "Today's Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comida de hoy"
+          }
+        }
+      }
+    },
+    "Train" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenar"
+          }
+        }
+      }
+    },
+    "Unable to Delete Chat" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar el chat"
+          }
+        }
+      }
+    },
+    "Unable to Save Step Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el objetivo de pasos"
+          }
+        }
+      }
+    },
+    "Unable to Save Your Choice" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar tu elección"
+          }
+        }
+      }
+    },
+    "Unable to Withdraw Permission" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo retirar el permiso"
+          }
+        }
+      }
+    },
+    "Week %lld of %lld · Day %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana %lld de %lld · Día %lld"
+          }
+        }
+      }
+    },
+    "Weekly Streak" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Racha semanal"
+          }
+        }
+      }
+    },
+    "Weight, measurements and goals" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso, medidas y objetivos"
+          }
+        }
+      }
+    },
+    "What It Never Reads" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que nunca lee"
+          }
+        }
+      }
+    },
+    "What It Reads" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que lee"
+          }
+        }
+      }
+    },
+    "What can I eat to close my protein gap?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué puedo comer para alcanzar mi proteína?"
+          }
+        }
+      }
+    },
+    "What does my trend say about my calories?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué dice mi tendencia sobre mis calorías?"
+          }
+        }
+      }
+    },
+    "What should I aim for next session?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué debería buscar en la próxima sesión?"
+          }
+        }
+      }
+    },
+    "What should I change next time?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué debería cambiar la próxima vez?"
+          }
+        }
+      }
+    },
+    "What should I change next week?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué debería cambiar la próxima semana?"
+          }
+        }
+      }
+    },
+    "What should I eat today to hit my protein?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué debería comer hoy para alcanzar mi proteína?"
+          }
+        }
+      }
+    },
+    "What should I focus on next week?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿En qué debería centrarme la próxima semana?"
+          }
+        }
+      }
+    },
+    "What should my calories be?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cuántas calorías debería comer?"
+          }
+        }
+      }
+    },
+    "What should my next block focus on?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿En qué debería centrarse mi próximo bloque?"
+          }
+        }
+      }
+    },
+    "What went well and what didn't?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué fue bien y qué no?"
+          }
+        }
+      }
+    },
+    "Which exercises hit this muscle?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué ejercicios trabajan este músculo?"
+          }
+        }
+      }
+    },
+    "Which meal had the most calories?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué comida tuvo más calorías?"
+          }
+        }
+      }
+    },
+    "Why did my expenditure change?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué cambió mi gasto?"
+          }
+        }
+      }
+    },
+    "Why did my targets change?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué cambiaron mis objetivos?"
+          }
+        }
+      }
+    },
+    "Why has my weight changed this month?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué ha cambiado mi peso este mes?"
+          }
+        }
+      }
+    },
+    "Withdraw Permission and Delete Chats" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirar el permiso y eliminar los chats"
+          }
+        }
+      }
+    },
+    "Withdraw Permission?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Retirar el permiso?"
+          }
+        }
+      }
+    },
+    "Withdraw and Delete Chats" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirar y eliminar los chats"
+          }
+        }
+      }
+    },
+    "Workouts, plans and notes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamientos, planes y notas"
+          }
+        }
+      }
+    },
+    "You've used today's coach messages. More tomorrow." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has usado los mensajes de hoy con el entrenador. Habrá más mañana."
+          }
+        }
+      }
+    },
+    "You: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tú: %@"
+          }
+        }
+      }
+    },
+    "Your Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu día"
+          }
+        }
+      }
+    },
+    "Your conversations with the coach appear here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus conversaciones con el entrenador aparecen aquí."
+          }
+        }
+      }
+    },
+    "goal %@/wk" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "objetivo %@/sem"
+          }
+        }
+      }
+    },
+    "~%lld min" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "~%lld min"
+          }
+        }
+      }
+    },
+    "%lld coach messages left today" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld coach message left today"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld coach messages left today"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Te queda %lld mensaje con el entrenador hoy"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Te quedan %lld mensajes con el entrenador hoy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld-week streak" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-week streak"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-week streak"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Racha de %lld semana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Racha de %lld semanas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "You're on a %lld-week streak. Compound can remind you in the evening when this week's goal needs a session that day." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You're on a %lld-week streak. Compound can remind you in the evening when this week's goal needs a session that day."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You're on a %lld-week streak. Compound can remind you in the evening when this week's goal needs a session that day."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Llevas una racha de %lld semana. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Llevas una racha de %lld semanas. Compound puede recordártelo por la tarde cuando el objetivo de la semana necesite una sesión ese día."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld others" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld other"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld others"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld más"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld más"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld PRs" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld PR"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld PRs"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld récord"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld récords"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

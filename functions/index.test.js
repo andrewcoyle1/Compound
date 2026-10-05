@@ -6,7 +6,7 @@ import {
     planFollowAccepted, pushRecipientSettings, requireAuth, userDisplayName,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
-    isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
+    isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey, streakWeek,
     SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
     offCountryTag, offSearchLangs, mergeSearchHits,
     stravaTokenForm, stravaTokenErrorCode, grantsUpload, isCompoundUpload, stravaAthlete, stravaActivityDoc,
@@ -43,19 +43,21 @@ test("requireAuth returns the uid or throws unauthenticated", () => {
 test("every callable enforces App Check and requires auth", () => {
     const src = readFileSync(new URL("./index.js", import.meta.url), "utf8");
     assert.match(src, /const CALLABLE_OPTIONS = \{[^}]*enforceAppCheck: true/);
-    const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request\) => \{\s*([^\n]*)/g)];
+    const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request(?:, response)?\) => \{\s*([^\n]*)/g)];
     assert.match(src, /const STRAVA_CALLABLE_OPTIONS = \{ \.\.\.CALLABLE_OPTIONS,/);
+    assert.match(src, /const COACH_CALLABLE_OPTIONS = \{\s*\.\.\.CALLABLE_OPTIONS,/);
+    assert.equal((src.match(/= onCall\(/g) ?? []).length, callables.length, "every onCall is in the shape this test reads");
     assert.equal(callables.length, 13, "expected thirteen callables");
     for (const [, name, options, firstLine] of callables) {
-        assert.match(options.trim(), /^(STRAVA_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
+        assert.match(options.trim(), /^(STRAVA_|COACH_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
         assert.match(firstLine, /requireAuth\(request\)/, `${name} must call requireAuth first`);
     }
 });
 
 test("each deployed callable rejects an unauthenticated request before doing any work", async () => {
     const fns = await import("./index.js");
-    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
-        "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect"]) {
+    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
+        "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect", "coachChat"]) {
         await assert.rejects(fns[name].run({ data: {}, auth: null }), { code: "unauthenticated" }, name);
     }
 });
@@ -318,25 +320,55 @@ test("the streak reminder is due only in the user's reminder hour, defaulting to
     assert.equal(isStreakReminderDue(null, new Date()), false);
 });
 
-test("buildStreakReminderPush fires when the last workout was yesterday on the user's clock", () => {
-    const settings = { fcm_token: "tok", timezone: "Australia/Sydney", reminder_hour: 19, social_push_streak_reminder: true };
-    const now = new Date("2026-01-15T08:00:00Z"); // 19:00 AEDT on the 15th
-    const push = buildStreakReminderPush(settings, { current_streak: 5, date_last_event: new Date("2026-01-14T09:00:00Z") }, now);
-    assert.deepEqual(push.notification, { title: "Streak at Risk", body: "Your 5-day streak ends at midnight." });
+test("buildStreakReminderPush fires when the weekly streak needs a session today", () => {
+    // Sydney, Thursday 15 January 19:00 AEDT. The week (Monday first) ends Monday 19 January 00:00
+    // AEDT, so Thursday to Sunday is four days left, today included.
+    const now = new Date("2026-01-15T08:00:00Z");
+    const weekEnd = new Date("2026-01-18T13:00:00Z");
+    const settings = (overrides = {}) => ({
+        fcm_token: "tok", timezone: "Australia/Sydney", reminder_hour: 19, social_push_streak_reminder: true,
+        week_streak: 6, week_sessions: 1, week_goal: 5, week_ends_at: weekEnd,
+        last_trained_at: new Date("2026-01-13T09:00:00Z"), ...overrides,
+    });
+
+    // Four owed, four days left: every day is needed, starting today.
+    const push = buildStreakReminderPush(settings(), now);
+    assert.deepEqual(push.notification, { title: "Streak at Risk", body: "4 more sessions this week keep your 6-week streak." });
     assert.equal(push.apns.payload.aps.alert.titleLocKey, "Streak at Risk");
-    assert.equal(push.apns.payload.aps.alert.locKey, "Your %@-day streak ends at midnight.");
+    assert.equal(push.apns.payload.aps.alert.locKey, "%@ more sessions this week keep your %@-week streak.");
     assert.deepEqual(push.data, { tab: "training", type: "streakReminder" });
     assert.equal(push.token, "tok");
-    // A Firestore Timestamp is read through toDate().
-    assert.ok(buildStreakReminderPush(settings, { current_streak: 5, date_last_event: { toDate: () => new Date("2026-01-14T09:00:00Z") } }, now));
 
-    // Trained today (the 15th local, although still the 14th in UTC): no push.
-    assert.equal(buildStreakReminderPush(settings, { current_streak: 5, date_last_event: new Date("2026-01-14T22:00:00Z") }, now), null);
-    // Last workout two days ago: the streak has already gone.
-    assert.equal(buildStreakReminderPush(settings, { current_streak: 5, date_last_event: new Date("2026-01-13T09:00:00Z") }, now), null);
-    assert.equal(buildStreakReminderPush(settings, { current_streak: 0, date_last_event: new Date("2026-01-14T09:00:00Z") }, now), null);
-    assert.equal(buildStreakReminderPush(settings, undefined, now), null);
-    assert.equal(buildStreakReminderPush(settings, { current_streak: 5, date_last_event: new Date("2026-01-14T09:00:00Z") }, new Date("2026-01-15T09:00:00Z")), null);
+    // Sunday evening, one owed: the singular copy.
+    const sunday = new Date("2026-01-18T08:00:00Z");
+    assert.equal(buildStreakReminderPush(settings({ week_sessions: 4 }), sunday).notification.body,
+        "One more session this week keeps your 6-week streak.");
+    // A Firestore Timestamp is read through toDate().
+    assert.ok(buildStreakReminderPush(settings({ week_sessions: 4, week_ends_at: { toDate: () => weekEnd } }), sunday));
+
+    // Trained today on the user's clock (the 15th local, still the 14th in UTC): no push.
+    assert.equal(buildStreakReminderPush(settings({ last_trained_at: new Date("2026-01-14T22:00:00Z") }), now), null);
+    // Days to spare: on track.
+    assert.equal(buildStreakReminderPush(settings({ week_sessions: 2 }), now), null);
+    // More owed than days left: already gone, so nothing to promise.
+    assert.equal(buildStreakReminderPush(settings({ week_sessions: 0 }), now), null);
+    // Goal met, no streak, nothing stored, or not the reminder hour.
+    assert.equal(buildStreakReminderPush(settings({ week_sessions: 5 }), now), null);
+    assert.equal(buildStreakReminderPush(settings({ week_streak: 0 }), now), null);
+    assert.equal(buildStreakReminderPush(settings({ week_ends_at: undefined }), now), null);
+    assert.equal(buildStreakReminderPush(settings(), new Date("2026-01-15T09:00:00Z")), null);
+});
+
+test("streakWeek rolls into a week the app has not been opened in only if the stored week was met", () => {
+    const weekEnd = new Date("2026-01-18T13:00:00Z");
+    const nextThursday = new Date("2026-01-22T08:00:00Z");
+    // The stored week met its goal of 4: the streak carries into the next, with four days left.
+    assert.deepEqual(streakWeek({ week_streak: 3, week_sessions: 4, week_goal: 4, week_ends_at: weekEnd }, nextThursday),
+        { weeks: 3, remaining: 4, daysLeft: 4 });
+    // It did not: the streak ended with it.
+    assert.equal(streakWeek({ week_streak: 3, week_sessions: 2, week_goal: 4, week_ends_at: weekEnd }, nextThursday), null);
+    // More than a week stale: nothing is known.
+    assert.equal(streakWeek({ week_streak: 3, week_sessions: 4, week_goal: 4, week_ends_at: weekEnd }, new Date("2026-01-29T08:00:00Z")), null);
 });
 
 test("the weekly digest is due at 18:00 on Sunday local time only", () => {
@@ -639,7 +671,7 @@ const sharePageFixture = () => {
     return {
         author: { first_name: "Ann", last_name: "Secret", photo_url: "https://img.example/a.png", is_private: false },
         session: {
-            id: "s2", author_id: "a", name: "Push Day", date_created: start, ended_at: new Date("2026-09-24T10:05:00Z"), streak_count: 12,
+            id: "s2", author_id: "a", name: "Push Day", date_created: start, ended_at: new Date("2026-09-24T10:05:00Z"), week_streak_count: 12,
             exercises: [bench([{ weight_kg: 40, reps: 10, isWarmup: true, completed_at: start }, set(100, 5), set(90, 8)])],
         },
         prior: [{ id: "s1", author_id: "a", date_created: new Date("2026-09-20T09:00:00Z"), ended_at: new Date("2026-09-20T10:00:00Z"), exercises: [bench([set(95, 5)])] }],
@@ -656,7 +688,7 @@ test("sessionPage: the page shows first name, stats, PRs and streak, with Open G
     assert.match(html, /1h 5m/);
     assert.match(html, /1,220 kg/); // 100×5 + 90×8, warm-up excluded
     assert.match(html, /<li>Bench Press 100 kg × 5<\/li>/);
-    assert.match(html, /12-day streak/);
+    assert.match(html, /12-week streak/);
     assert.match(html, /<meta property="og:url" content="https:\/\/p.web.app\/s\/a\/s2">/);
     assert.match(html, /<meta property="og:image" content="https:\/\/img.example\/a.png">/);
     assert.match(html, /App Store/);
@@ -716,8 +748,10 @@ test("likes and the weekly digest are passive; comments, mentions, follows, nudg
     const digest = buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 1, circle: 1, followingCount: 1 });
     assert.equal(digest.apns.payload.aps["interruption-level"], "passive");
     const streak = buildStreakReminderPush(
-        { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 19, social_push_streak_reminder: true },
-        { current_streak: 3, date_last_event: new Date("2026-01-14T09:00:00Z") },
+        {
+            fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 19, social_push_streak_reminder: true,
+            week_streak: 3, week_sessions: 1, week_goal: 5, week_ends_at: new Date("2026-01-19T00:00:00Z"),
+        },
         new Date("2026-01-15T19:00:00Z")
     );
     assert.equal(streak.apns.payload.aps["interruption-level"], "active");

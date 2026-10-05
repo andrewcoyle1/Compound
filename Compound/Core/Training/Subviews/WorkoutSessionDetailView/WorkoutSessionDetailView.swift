@@ -90,6 +90,11 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
                 accessory: .value(presenter.volumeFormatted(session: session))
             )
             if presenter.isAuthor(sessionAuthorId: session.authorId) {
+                if presenter.canAskCoach(session: session) && !presenter.isEditMode {
+                    ListRowButton(title: String(localized: "Ask Coach About This Workout"), systemImage: Symbol.coach) {
+                        presenter.onAskCoachPressed(session: session)
+                    }
+                }
                 ListRowButton(
                     title: String(localized: "Start Time"),
                     subtitle: session.dateCreated.formatted(date: .long, time: .shortened),

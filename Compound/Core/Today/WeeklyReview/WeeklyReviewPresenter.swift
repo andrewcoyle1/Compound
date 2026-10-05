@@ -106,3 +106,11 @@ extension WeeklyReviewPresenter {
         var type: LogType { .analytic }
     }
 }
+
+// MARK: - Coach
+
+extension WeeklyReviewPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .weeklyReview, date: review.week.start.dayKey, title: String(localized: "Weekly Review")))
+    }
+}

@@ -60,7 +60,7 @@ struct ShareCardContent: Equatable {
             setCount: setCount,
             personalRecordLines: personalRecords.map { "\($0.exerciseName) \($0.detail)" },
             weeklyText: WorkoutSessionHighlights.weeklyWorkoutText(weeklyWorkoutNumber),
-            streakText: WorkoutSessionHighlights.streakText(session.streakCount)
+            streakText: WorkoutSessionHighlights.streakText(session.weekStreakCount)
         )
     }
 

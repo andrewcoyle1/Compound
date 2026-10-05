@@ -88,6 +88,8 @@ enum Symbol {
     static let roadmap = "map"
     static let knowledgeBase = "lightbulb"
     static let tutorials = "graduationcap"
+    /// The AI coach, and every "Ask Coach" way into it.
+    static let coach = "sparkles"
     static let legal = "doc.text"
 
     // Actions

@@ -8,6 +8,6 @@
 import SwiftUI
 
 @MainActor
-protocol WeightTrendRouter: ScaleWeightRouter { }
+protocol WeightTrendRouter: ScaleWeightRouter, AskCoachRouter { }
 
 extension CoreRouter: WeightTrendRouter { }

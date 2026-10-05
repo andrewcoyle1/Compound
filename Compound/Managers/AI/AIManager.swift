@@ -20,10 +20,6 @@ class AIManager {
         try await service.generateImage(input: input)
     }
     
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        try await service.generateText(chats: chats)
-    }
-
     func analyzeFood(imageData: Data) async throws -> String {
         try await service.analyzeFood(imageData: imageData)
     }
@@ -42,10 +38,6 @@ extension CoreInteractor {
 
     func generateImage(input: String) async throws -> UIImage {
         try await aiManager.generateImage(input: input)
-    }
-
-    func generateText(chats: [AIChatModel]) async throws -> AIChatModel {
-        try await aiManager.generateText(chats: chats)
     }
 
     func analyzeFood(imageData: Data) async throws -> String {

@@ -1,15 +1,16 @@
 import { initializeApp } from "firebase-admin/app";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
+import { defineSecret, defineString } from "firebase-functions/params";
+import { randomUUID } from "node:crypto";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getMessaging } from "firebase-admin/messaging";
 import {
     requireAuth, cleanJson, foodItems, normaliseName, buildActivityPush, newlyBlockedIds, pushRecipientSettings,
     planFollowAccepted, buildFollowAcceptedNotification,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
-    buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
+    buildStreakReminderPush, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
     isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
     offCountryTag, offSearchLangs, mergeSearchHits,
     stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL, STRAVA_API, STRAVA_REVOKE_URL, grantsUpload,
@@ -36,6 +37,15 @@ const STRAVA_CLIENT_SECRET = defineSecret("STRAVA_CLIENT_SECRET");
 const STRAVA_WEBHOOK_VERIFY_TOKEN = defineSecret("STRAVA_WEBHOOK_VERIFY_TOKEN");
 const STRAVA_CALLABLE_OPTIONS = { ...CALLABLE_OPTIONS, secrets: [STRAVA_CLIENT_SECRET] };
 
+// The coach runs in the EU beside Firestore (eur3), and so does its Vertex endpoint: nothing it
+// reads leaves the EU. RevenueCat's V2 key can read customer information and nothing else.
+const COACH_REGION = "europe-west4";
+const REVENUECAT_SECRET_KEY = defineSecret("REVENUECAT_SECRET_KEY");
+const REVENUECAT_PROJECT_ID = defineString("REVENUECAT_PROJECT_ID");
+const COACH_CALLABLE_OPTIONS = {
+    ...CALLABLE_OPTIONS, region: COACH_REGION, secrets: [REVENUECAT_SECRET_KEY], timeoutSeconds: 120, memory: "512MiB",
+};
+
 
 // ---------------------------------------------------------------------------
 // Genkit / Firebase AI Logic setup
@@ -47,8 +57,7 @@ const ai = genkit({
 });
 
 // gemini-2.0-flash was retired on Vertex AI, and every call to it answered 404, which reached the
-// app as INTERNAL. Thinking is off, as 2.0 Flash had none: it would add latency and count against
-// chatGenerate's maxOutputTokens.
+// app as INTERNAL. Thinking is off, as 2.0 Flash had none: these callables want a fast JSON answer.
 const TEXT_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 0 } });
 
 
@@ -238,34 +247,6 @@ ${labelText.trim()}`;
     });
 
     return { result: cleanJson(text) };
-});
-
-// ---------------------------------------------------------------------------
-// AI: General chat (Gemini)
-// ---------------------------------------------------------------------------
-
-export const chatGenerate = onCall(CALLABLE_OPTIONS, async (request) => {
-    requireAuth(request);
-    const { messages, temperature = 0.7, maxOutputTokens = 512 } = request.data;
-    if (!Array.isArray(messages) || messages.length === 0) {
-        throw new HttpsError("invalid-argument", "messages array is required");
-    }
-
-    // Build Genkit message history
-    const history = messages.slice(0, -1).map((m) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        content: [{ text: m.message }],
-    }));
-    const last = messages[messages.length - 1];
-
-    const { text } = await ai.generate({
-        model: TEXT_MODEL,
-        messages: history,
-        prompt: last.message,
-        config: { temperature, maxOutputTokens },
-    });
-
-    return { role: "assistant", message: text.trim() };
 });
 
 // ---------------------------------------------------------------------------
@@ -643,19 +624,14 @@ async function sendAll(label, messages) {
     console.log(`${label}: sent ${messages.length - failed.length} of ${messages.length}.`);
 }
 
-// Hourly, on the hour. In each user's reminder hour (local), a user with a live streak who has not
-// trained today is told it ends at midnight. The streak is StreakManager's document at
-// user_streaks/{uid}/workout/current_streak (SwiftfulGamification's FirebaseRemoteStreakService).
+// Hourly, on the hour. In each user's reminder hour (local), a user whose weekly streak needs a
+// session today and who has not trained today is told so. The streak is the app's WeeklyStreak
+// copy in the same private settings doc, so nothing else is read.
 export const streakReminder = onSchedule(
     { schedule: "0 * * * *", timeZone: "Etc/UTC", region: REGION },
     async () => {
         const now = new Date();
-        const db = getFirestore();
-        const messages = await Promise.all((await allPrivateSettings()).map(async ({ uid, settings }) => {
-            if (!isStreakReminderDue(settings, now)) return null;
-            const streak = await db.collection("user_streaks").doc(uid).collection("workout").doc("current_streak").get();
-            return buildStreakReminderPush(settings, streak.data(), now);
-        }));
+        const messages = (await allPrivateSettings()).map(({ settings }) => buildStreakReminderPush(settings, now));
         await sendAll("Streak reminder", messages.filter(Boolean));
     }
 );
@@ -727,8 +703,10 @@ export const onUserDeleted = onDocumentDeleted(
         ]);
 
         await db.recursiveDelete(userRef);
-        // The strava_activities went with the user document; the tokens live outside it.
+        // The strava_activities and coach_chats went with the user document; the tokens and the
+        // coach's usage count live outside it.
         await forgetStrava(uid, { revoke: true });
+        await db.collection("coach_usage").doc(uid).delete();
 
         const plan = planUserDeletion(uid, {
             followers, blockers, followRequests, likedSessions,
@@ -1151,3 +1129,75 @@ export const onStravaEventCreated = onDocumentCreated(
         await event.data.ref.delete();
     }
 );
+
+// ---------------------------------------------------------------------------
+// AI coach
+// ---------------------------------------------------------------------------
+// A read-only chat about the caller's own data: docs/specs/ai-coach.md and coach.js. Gated on
+// consent, premium (skipped on the dev project, as dev builds are premium) and a daily quota, in
+// that order, so a refusal never costs a message. Replies stream when the app asks for it.
+
+import {
+    validateCoachRequest, hasCoachConsent, isCoachPremium, consumeCoachQuota, firestoreSource, coachEnvironment,
+    historyForModel, appendChatMessages, chatTitle, defineCoachTools, runCoach, coachRuntime,
+} from "./coach.js";
+
+const DEV_PROJECT_ID = "compound-development";
+
+const coachAI = genkit({ plugins: [vertexAI({ location: COACH_REGION })] });
+// A small thinking budget: choosing which tools to call and reconciling their figures is where a
+// coach goes wrong, and 1k thinking tokens buys that for about a second.
+const COACH_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 1024 } });
+const COACH_CONFIG = { temperature: 0.3, maxOutputTokens: 4096 };
+const coachTools = defineCoachTools(coachAI);
+coachRuntime.reply ??= (args) => runCoach({ ai: coachAI, model: COACH_MODEL, tools: coachTools, config: COACH_CONFIG, ...args });
+
+export const coachChat = onCall(COACH_CALLABLE_OPTIONS, async (request, response) => {
+    const uid = requireAuth(request);
+    const { chatId, message, context } = validateCoachRequest(request.data);
+    const db = getFirestore();
+    const source = firestoreSource(db, uid);
+
+    if (!hasCoachConsent(await source.privateSettings())) {
+        throw new HttpsError("failed-precondition", "The coach needs the user's consent", { reason: "consent" });
+    }
+    if (process.env.GCLOUD_PROJECT !== DEV_PROJECT_ID) {
+        const premium = await isCoachPremium(uid, { projectId: REVENUECAT_PROJECT_ID.value(), apiKey: REVENUECAT_SECRET_KEY.value() });
+        if (!premium) throw new HttpsError("permission-denied", "The coach is a premium feature", { reason: "premium" });
+    }
+
+    const chats = db.collection("users").doc(uid).collection("coach_chats");
+    const chatRef = chatId ? chats.doc(chatId) : chats.doc();
+    const existing = chatId ? await chatRef.get() : null;
+    if (existing && !existing.exists) throw new HttpsError("not-found", "No such chat");
+
+    const env = await coachEnvironment(source);
+    const remainingToday = await consumeCoachQuota(db, uid, { day: env.today, nowMs: env.now.getTime() });
+
+    const text = await coachRuntime.reply({
+        source,
+        env,
+        history: historyForModel(existing?.data()?.messages),
+        message,
+        context,
+        onChunk: request.acceptsStreaming ? (delta) => response.sendChunk({ text: delta }) : null,
+    });
+    if (!text) throw new HttpsError("internal", "The coach had no answer");
+
+    const now = Timestamp.now();
+    const reply = { id: randomUUID(), role: "assistant", text, created_at: now };
+    // Appended in a transaction: two replies landing together must not drop each other's turns.
+    await db.runTransaction(async (tx) => {
+        const current = (await tx.get(chatRef)).data();
+        tx.set(chatRef, {
+            id: chatRef.id,
+            title: current?.title ?? chatTitle(message),
+            created_at: current?.created_at ?? now,
+            updated_at: now,
+            context_kind: current?.context_kind ?? context?.kind ?? null,
+            messages: appendChatMessages(current?.messages, [{ id: randomUUID(), role: "user", text: message, created_at: now }, reply]),
+        });
+    });
+    return { chatId: chatRef.id, messageId: reply.id, text, remainingToday };
+});
+

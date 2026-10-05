@@ -41,7 +41,7 @@ struct TodayPresenterTests {
 
         // MARK: - ReminderOfferInteractor
         var privateUserSettings = PrivateUserSettings()
-        var currentStreakData = CurrentStreakData(streakKey: "workout")
+        var weeklyStreak = WeeklyStreak.fixture(weeks: 0)
         func canRequestNotificationAuthorisation() async -> Bool { false }
         func requestPushAuthorisation() async throws -> Bool { true }
         func setMealReminders(isEnabled: Bool) async throws { }
@@ -63,10 +63,30 @@ struct TodayPresenterTests {
             if let skipError { throw skipError }
             skippedWeeks.append(weekStart)
         }
+
+        // MARK: - Checklist
+        var userMeals: [MealLogModel] = []
+        var currentGoal: WeightGoal?
+        var stepsHistory: [StepsModel] = []
+        private(set) var stepSyncCount = 0
+        func syncStepsFromHealthKit(fromScratch: Bool) async { stepSyncCount += 1 }
+        func canRequestHealthDataAuthorisation() -> Bool { false }
+        func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
+        var analyticsSettings = AnalyticsSettings(authorId: "me")
+        private(set) var savedAnalyticsSettings: [AnalyticsSettings] = []
+        func saveAnalyticsSettings(_ settings: AnalyticsSettings) async throws {
+            savedAnalyticsSettings.append(settings)
+            analyticsSettings = settings
+        }
+        var stravaIsConnected = false
+        var followingWorkoutSessions: [WorkoutSessionModel] = []
+        var followingUsers: [UserModel] = []
     }
 
     /// `showDevSettingsView()` is declared unguarded: the test target builds without `-DDEV`.
     final class Router: TodayRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []
@@ -80,6 +100,10 @@ struct TodayPresenterTests {
         func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?) { shown.append("scaleWeight") }
         func showCheckInView(delegate: CheckInDelegate) { shown.append("checkIn") }
         func showWeeklyReviewView() { shown.append("weeklyReview") }
+        func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("sessionDetail") }
+        func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { shown.append("templateDetail") }
+        func showStepsView(delegate: StepsDelegate, themeColor: Color?) { shown.append("steps") }
+        func showIntegrationsView(delegate: IntegrationsDelegate) { shown.append("integrations") }
         func showAddMealView(delegate: AddMealDelegate) {
             shown.append("addMeal")
             addMealDelegates.append(delegate)
@@ -155,7 +179,8 @@ struct TodayPresenterTests {
 
     // MARK: Nutrition
 
-    /// Filled on appear, so opening the tab after logging breakfast shows breakfast.
+    /// Totals are read live from the meal log, so a meal logged anywhere shows at once; the
+    /// target loads on appear.
     @Test("Test Appearing Loads Todays Nutrition Totals And Target")
     func testAppearingLoadsTodaysNutritionTotalsAndTarget() async {
         let screen = makeScreen()
@@ -167,7 +192,7 @@ struct TodayPresenterTests {
 
         #expect(screen.presenter.nutritionTotals?.calories == 900)
         #expect(screen.presenter.nutritionTarget?.calories == DailyMacroTarget.mock.calories)
-        #expect(screen.interactor.totalsDayKeys == [Date().dayKey])
+        #expect(Set(screen.interactor.totalsDayKeys) == [Date().dayKey])
     }
 
     @Test("Test A Failed Totals Read Leaves The Card Empty")
@@ -291,29 +316,29 @@ struct TodayPresenterTests {
         screen.presenter.onViewDisappear(delegate: screen.delegate)
 
         #expect(screen.interactor.trackedScreenEventNames == ["TodayView_Appear"])
-        // The double has no totals, so appearing also logs the failed nutrition read.
-        #expect(screen.interactor.trackedEventNames == ["TodayView_LoadNutritionTotals_Fail", "TodayView_Disappear"])
+        // Totals are read live rather than loaded on appear, so a missing total logs nothing.
+        #expect(screen.interactor.trackedEventNames == ["TodayView_Disappear"])
     }
 
     // MARK: Streak reminder offer
 
     /// `ReminderOfferFlow.offerStreakReminderIfNeeded()` had no caller before this — decision 7c
     /// wires it to Today's appear, which is where the streak is seen to have grown.
-    @Test("Test Reaching A Three Day Streak Offers The Reminder On Appear")
-    func testReachingAThreeDayStreakOffersTheReminderOnAppear() {
+    @Test("Test Reaching A Two Week Streak Offers The Reminder On Appear")
+    func testReachingATwoWeekStreakOffersTheReminderOnAppear() {
         let key = ReminderOfferFlow.Offer.streakReminder.shownKey
         UserDefaults.standard.removeObject(forKey: key)
         defer { UserDefaults.standard.removeObject(forKey: key) }
 
         let screen = makeScreen()
-        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 3)
+        screen.interactor.weeklyStreak = .fixture(weeks: 2)
 
         screen.presenter.onViewAppear(delegate: screen.delegate)
 
         #expect(screen.router.alertTitles == [String(localized: "Streak Reminder")])
     }
 
-    /// Below the 3-day threshold, or already answered, nothing is offered.
+    /// Below the two-week threshold, or already answered, nothing is offered.
     @Test("Test Below Threshold Or Already Answered Offers Nothing")
     func testBelowThresholdOrAlreadyAnsweredOffersNothing() {
         let key = ReminderOfferFlow.Offer.streakReminder.shownKey
@@ -321,12 +346,12 @@ struct TodayPresenterTests {
         defer { UserDefaults.standard.removeObject(forKey: key) }
 
         let screen = makeScreen()
-        screen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 2)
+        screen.interactor.weeklyStreak = .fixture(weeks: 1)
         screen.presenter.onViewAppear(delegate: screen.delegate)
         #expect(screen.router.alertTitles.isEmpty)
 
         let answeredScreen = makeScreen()
-        answeredScreen.interactor.currentStreakData = CurrentStreakData(streakKey: "workout", currentStreak: 5)
+        answeredScreen.interactor.weeklyStreak = .fixture(weeks: 5)
         answeredScreen.interactor.privateUserSettings.socialPushStreakReminder = false
         answeredScreen.presenter.onViewAppear(delegate: answeredScreen.delegate)
         #expect(answeredScreen.router.alertTitles.isEmpty)

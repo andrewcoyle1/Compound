@@ -404,7 +404,6 @@ packages directly:
 | `Managers/Purchases/SwiftfulPurchasing+Alias.swift` | `PurchaseManager`, `AnyProduct`, `PurchasedEntitlement` |
 | `Managers/Routing/SwiftfulRouting+Alias.swift` | `AnyRouter`, `RouterView`, `ResizableSheetConfig` |
 | `Managers/DataManagers/SwiftfulDataManagers+Alias.swift` | `CollectionSyncEngine`, `DocumentSyncEngine`, `DataSyncModelProtocol`, the persistence types |
-| `Managers/Gamification/SwiftfulGamification+Alias.swift` | `StreakManager`, `ProgressManager`, `ExperiencePointsManager` |
 | `Managers/Haptics`, `Managers/SoundEffects`, `Utilities/SwiftfulUtilities+Alias.swift` | `HapticManager`, `SoundEffectManager`, `Utilities` |
 | `Components/Views/Charts/QuickCharts+Alias.swift` | `TimeSeries`, `TimeSeriesDatapoint`, `ChartScreen`, `LineChart`, `BarChart`, `StackedBarChart`, `ComboChart`, `ChartConfiguration`, `ContributionChart` and its pieces (`ContributionGrid`, `ContributionGridView`, `ContributionLegend`, `ContributionStyle`, `ContributionLayout`, `ContributionCell`) (from `andrewcoyle1/QuickCharts`) |
 
@@ -439,14 +438,15 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `BodyMeasurementsManager` | Body measurements and scale weight |
 | `StepsManager` | Daily step history |
 | `GoalManager` | User goals |
-| `StreakManager` / `ProgressManager` / `ExperiencePointsManager` *(package)* | Gamification |
+| `WeeklyStreak` (`Core/Social/CircleGoals`) | The one streak: consecutive weeks meeting the weekly session goal (`CircleWeek.goal`). Stamped on sessions as `week_streak_count`, and copied to `users/{uid}/private/settings` (`week_streak`, `week_sessions`, `week_goal`, `week_ends_at`, `last_trained_at`) for the streak reminder. SwiftfulGamification (+Firebase) is still linked in the project but nothing imports it; remove it from the project when convenient |
+| `CoachManager` | The AI coach (see Backend and `docs/specs/ai-coach.md`): streams answers from `coachChat`, reads the saved chats in `users/{uid}/coach_chats` (the function writes them; the app only reads and deletes), and holds consent in private settings (`coach_consent`, written `false` on withdrawal because saves merge). The coach screen checks premium, then consent, itself, so every way in behaves the same. A screen offers it by adopting `AskCoachRouter` and passing a `CoachContext` |
 | `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |
 | `LiveActivityManager` | Dynamic Island / Lock Screen workout tracking |
 | `StravaManager` | Strava, with the tokens on the server (see Backend). Each finished workout is queued and uploaded with its sets (JSON strength format, so Strava draws its muscle map) and a set summary in its description; the queue is kept per account and sent at sign-in and after each finish, like a sync engine's pending writes, and past workouts can be queued from Integrations. The activity id is stamped on the session as `strava_activity_id`. Imported runs and rides (`importedActivities`) show on the owner's own screens only — Integrations, the weekly review, their own profile — never anywhere followers see, per Strava's terms. Built-in exercises map to Strava types in `StravaExerciseType`; add a line there for each new one |
 | `PurchaseManager` *(package)* | RevenueCat in dev and prod, each with its own SDK key; StoreKit config files for local testing |
 | `LogManager` *(package)* | Multi-service analytics (Console, Firebase, Mixpanel, Crashlytics) |
 | `ABTestManager` | A/B tests via Firebase Remote Config (prod) or local (dev) |
-| `AIManager` | Google AI / OpenAI integration via Cloud Functions |
+| `AIManager` | Food photo, meal description and label analysis, and image generation, via Cloud Functions |
 | `PushManager` / `ImageUploadManager` / `ReportManager` | Notifications, image upload, reporting |
 | `WorkoutSettingsManager` / `ExerciseSettingsManager` / `FoodLogSettingsManager` | User-facing settings |
 | `HapticManager` / `SoundEffectManager` *(package)* | Feedback |
@@ -588,9 +588,9 @@ actually checked.
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
-Thirteen `onCall` callables, all in `us-central1`: `foodAnalyze`, `mealDescribe`,
-`nutritionLabelAnalyze`, `chatGenerate`, `imageGenerate`, `foodSearch`, `removeFollower`,
-`acceptInvite`, and five for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection`,
+Thirteen `onCall` callables, all in `us-central1` except `coachChat` (`europe-west4`): `foodAnalyze`,
+`mealDescribe`, `nutritionLabelAnalyze`, `imageGenerate`, `foodSearch`, `removeFollower`,
+`acceptInvite`, `coachChat`, and five for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection`,
 `stravaDisconnect` and `stravaToken`. Strava's client secret lives only in the
 `STRAVA_CLIENT_SECRET` Functions secret (`firebase functions:secrets:set` per project).
 
@@ -621,6 +621,32 @@ so a connection belongs to the Compound account, not the device: signing out kee
   allows one subscription per app, so dev and prod need separate Strava apps.
 - Strava's rate limits (200 requests per 15 minutes, 2,000 a day by default) are per **app**, not
   per athlete: every user's uploads, backfills and imports share them.
+
+**AI coach.** `coachChat` (options `COACH_CALLABLE_OPTIONS`) answers read-only questions about the
+caller's own data with Gemini 2.5 Flash on Vertex in `europe-west4`, beside Firestore's `eur3`. It
+streams `{ text }` chunks and returns `{ chatId, messageId, text, remainingToday }`. Checks run in
+order, so a refusal costs nothing:
+- Consent: `users/{uid}/private/settings.coach_consent === true`.
+- Premium: RevenueCat REST v2 `active_entitlements`, with a V2 key that can only read customer
+  information (`REVENUECAT_SECRET_KEY` secret; project id `REVENUECAT_PROJECT_ID` in
+  `functions/.env.<project>`). A yes is cached five minutes, a 404 means not premium, any other
+  failure answers `unavailable`, and `compound-development` skips the check.
+- Quota: 50 messages a day in the user's timezone plus 5 a minute, in the server-only
+  `coach_usage/{uid}`.
+
+The model reads data only through the ten tools in `functions/coach.js`, one allowed area each;
+there is no tool for Strava, progress photos or anything social, and tests enforce that. The
+app's expenditure engine, formula TDEE, weight trend, Epley 1RM and weekly muscle sets are copied
+in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`, generated from the
+Swift, is checked by both `CoachParityTests.swift` and `coach-maths.test.js`, so changing either
+copy without the other fails a test. `functions/data/PrebuiltExercises.json` must stay a
+byte-for-byte copy of the app's file, which a test checks. Run `node scripts/coach-eval.js` from
+`functions/` (application-default credentials, `GCLOUD_PROJECT=compound-development`) after
+changing the prompt, the tools or the model.
+
+**Streak reminder.** `streakReminder` reads the app's weekly streak from the private settings doc
+and pushes only when every remaining day of the week is needed and none is logged today.
+`user_streaks` is no longer read.
 
 All of them share `CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true }` (the Strava ones
 extend it as `STRAVA_CALLABLE_OPTIONS` with the secret) and call

@@ -58,6 +58,11 @@ class SettingsPresenter {
         router.showUnitsView(delegate: UnitsDelegate())
     }
 
+    /// The coach's chats and the permission behind them.
+    func onCoachPressed() {
+        router.showCoachChatsView(delegate: CoachChatsDelegate())
+    }
+
     func onIntegrationsPressed() {
         router.showIntegrationsView(delegate: IntegrationsDelegate())
     }

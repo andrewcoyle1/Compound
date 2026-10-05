@@ -272,6 +272,8 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             "exercise_templates/e1": { author_id: "u" },
             "exercise_templates/e2": { author_id: "f" },
             "diet_plans/u": { calories: 2000 },
+            "users/u/coach_chats/c1": { id: "c1", messages: [] },
+            "coach_usage/u": { day: "2026-10-05", count: 3 },
         });
         // onDocumentDeleted wants the pre-delete snapshot as its data; the handler does the delete.
         await run(fns.onUserDeleted, { data: await doc("users/u").get(), params: { uid: "u" } });
@@ -293,6 +295,8 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
         assert.equal(await exists("exercise_templates/e1"), false);
         assert.equal(await exists("exercise_templates/e2"), true);
         assert.equal(await exists("diet_plans/u"), false);
+        assert.equal(await exists("users/u/coach_chats/c1"), false);
+        assert.equal(await exists("coach_usage/u"), false);
         assert.deepEqual(storage.prefixes, ["users/u/"]);
         assert.deepEqual(storage.files.sort(), ["exercises/e1", "ingredient_templates/food1", "recipe_templates/rec1"]);
     });
@@ -414,20 +418,24 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
         beforeEach(() => mock.timers.enable({ apis: ["Date"], now: sunday }));
         after(() => mock.timers.reset());
 
-        test("streakReminder warns a user whose streak ends tonight, and no one else", async () => {
-            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18, social_push_streak_reminder: true };
+        test("streakReminder warns a user whose weekly streak needs a session today, and no one else", async () => {
+            // Sunday 18:00 UTC with the week ending at midnight: one day left, today.
+            const week = { week_streak: 4, week_goal: 3, week_ends_at: new Date(sunday.getTime() + 6 * HOUR) };
+            const settings = { fcm_token: "tok", timezone: "Etc/UTC", reminder_hour: 18, social_push_streak_reminder: true, ...week };
             await seed({
-                "users/a/private/settings": { ...settings, fcm_token: "tok-a" },
-                "user_streaks/a/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - 20 * HOUR) },
-                "users/b/private/settings": { ...settings, fcm_token: "tok-b" },
-                "user_streaks/b/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - HOUR) },
-                "users/c/private/settings": { ...settings, fcm_token: "tok-c", reminder_hour: 9 },
-                "user_streaks/c/workout/current_streak": { current_streak: 4, date_last_event: new Date(sunday.getTime() - 20 * HOUR) },
+                // Two of three, nothing today: the last session keeps it.
+                "users/a/private/settings": { ...settings, fcm_token: "tok-a", week_sessions: 2, last_trained_at: new Date(sunday.getTime() - 30 * HOUR) },
+                // Trained today.
+                "users/b/private/settings": { ...settings, fcm_token: "tok-b", week_sessions: 2, last_trained_at: new Date(sunday.getTime() - HOUR) },
+                // Not their reminder hour.
+                "users/c/private/settings": { ...settings, fcm_token: "tok-c", week_sessions: 2, reminder_hour: 9 },
+                // Goal already met.
+                "users/d/private/settings": { ...settings, fcm_token: "tok-d", week_sessions: 3 },
             });
             await run(fns.streakReminder, {});
             mock.timers.reset();
             assert.deepEqual(sent.map((m) => m.token), ["tok-a"]);
-            assert.equal(sent[0].notification.body, "Your 4-day streak ends at midnight.");
+            assert.equal(sent[0].notification.body, "One more session this week keeps your 4-week streak.");
         });
 
         test("weeklyDigest counts the user's and their circle's sessions over seven days", async () => {
@@ -602,6 +610,121 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             assert.equal(await exists("strava_connections/u"), false);
             assert.equal(await exists("users/u/strava_activities/1"), false);
             assert.deepEqual(await fns.stravaConnection.run({ data: {}, auth: { uid: "u" } }), { connected: false });
+        });
+    });
+
+    describe("Coach", () => {
+        const realFetch = globalThis.fetch;
+        let entitlements;
+        let rcCalls;
+        let replies;
+        let coach;
+        before(async () => {
+            process.env.REVENUECAT_SECRET_KEY = "sk_test";
+            process.env.REVENUECAT_PROJECT_ID = "proj_test";
+            coach = await import("./coach.js");
+            // The model is stubbed: it streams two pieces and records what it was given.
+            coach.coachRuntime.reply = async (args) => {
+                replies.push(args);
+                args.onChunk?.("Your bench ");
+                args.onChunk?.("is going up.");
+                return "Your bench is going up.";
+            };
+            globalThis.fetch = async (url, init = {}) => {
+                if (!String(url).includes("revenuecat.com")) return realFetch(url, init);
+                rcCalls.push(String(url));
+                return entitlements();
+            };
+        });
+        after(() => { globalThis.fetch = realFetch; });
+        beforeEach(() => {
+            rcCalls = [];
+            replies = [];
+            entitlements = () => new Response(JSON.stringify({ items: [{ entitlement_id: "premium" }] }), { status: 200 });
+        });
+
+        const consent = (over = {}) => ({ "users/u/private/settings": { timezone: "Europe/London", coach_consent: true, ...over } });
+        const ask = (data, { stream = false, uid = "u" } = {}) => {
+            const chunks = [];
+            const out = fns.coachChat.run({ data, auth: { uid }, acceptsStreaming: stream }, { sendChunk: async (chunk) => { chunks.push(chunk); } });
+            return out.then((result) => ({ result, chunks }));
+        };
+
+        test("no consent, or consent withdrawn, is refused before anything else", async () => {
+            await assert.rejects(ask({ message: "hi" }), (e) => e.code === "failed-precondition" && e.details?.reason === "consent");
+            await seed(consent({ coach_consent: false, coach_consent_at: new Date() }));
+            await assert.rejects(ask({ message: "hi" }), (e) => e.code === "failed-precondition" && e.details?.reason === "consent");
+            assert.equal(rcCalls.length, 0);
+            assert.equal(await exists("coach_usage/u"), false);
+        });
+
+        test("a customer RevenueCat does not know is not premium, and costs no message", async () => {
+            await seed(consent());
+            entitlements = () => new Response("{}", { status: 404 });
+            await assert.rejects(ask({ message: "hi" }), (e) => e.code === "permission-denied" && e.details?.reason === "premium");
+            assert.equal(rcCalls[0], "https://api.revenuecat.com/v2/projects/proj_test/customers/u/active_entitlements");
+            assert.equal(await exists("coach_usage/u"), false);
+            assert.equal(replies.length, 0);
+        });
+
+        test("a premium question streams, is answered and saved as a new chat", async () => {
+            await seed(consent());
+            const { result, chunks } = await ask({ message: "How is my bench going?", context: { kind: "exercise", id: "system-barbell-bench-press" } }, { stream: true, uid: "u" });
+            assert.deepEqual(chunks, [{ text: "Your bench " }, { text: "is going up." }]);
+            assert.equal(result.text, "Your bench is going up.");
+            assert.equal(result.remainingToday, 49);
+            const chat = await read(`users/u/coach_chats/${result.chatId}`);
+            assert.equal(chat.title, "How is my bench going?");
+            assert.equal(chat.context_kind, "exercise");
+            assert.deepEqual(chat.messages.map((m) => m.role), ["user", "assistant"]);
+            assert.equal(chat.messages[1].id, result.messageId);
+            assert.deepEqual(replies[0].context, { kind: "exercise", id: "system-barbell-bench-press", date: null });
+            assert.equal(replies[0].env.timeZone, "Europe/London");
+            assert.deepEqual(replies[0].history, []);
+            assert.equal((await read("coach_usage/u")).count, 1);
+        });
+
+        test("a follow-up carries the conversation; someone else's chat is not found", async () => {
+            await seed(consent());
+            const first = (await ask({ message: "First question" })).result;
+            const second = (await ask({ chatId: first.chatId, message: "And then?" })).result;
+            assert.equal(second.chatId, first.chatId);
+            assert.deepEqual(replies[1].history.map((m) => m.role), ["user", "model"]);
+            assert.equal((await read(`users/u/coach_chats/${first.chatId}`)).messages.length, 4);
+            assert.equal(second.remainingToday, 48);
+
+            await seed({ "users/v/private/settings": { coach_consent: true } });
+            await assert.rejects(ask({ chatId: first.chatId, message: "peek" }, { uid: "v" }), { code: "not-found" });
+        });
+
+        test("the daily limit is counted in the user's own day", async () => {
+            const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
+            await seed({ ...consent(), "coach_usage/u": { day: today, count: coach.COACH_DAILY_LIMIT, recent: [] } });
+            await assert.rejects(ask({ message: "one more" }), (e) => e.code === "resource-exhausted" && e.details?.reason === "quota" && e.details?.limit === 50);
+            assert.equal(replies.length, 0);
+            await seed({ "coach_usage/u": { day: "2000-01-01", count: coach.COACH_DAILY_LIMIT, recent: [] } });
+            assert.equal((await ask({ message: "new day" })).result.remainingToday, 49);
+        });
+
+        test("RevenueCat down fails closed", async () => {
+            await seed(consent());
+            entitlements = () => new Response("{}", { status: 503 });
+            await assert.rejects(ask({ message: "hi", }, { uid: "w" }), { code: "failed-precondition" });
+            await seed({ "users/w/private/settings": { coach_consent: true } });
+            await assert.rejects(ask({ message: "hi" }, { uid: "w" }), { code: "unavailable" });
+        });
+
+        test("the dev project skips the premium check", async () => {
+            await seed(consent());
+            entitlements = () => new Response("{}", { status: 404 });
+            const project = process.env.GCLOUD_PROJECT;
+            process.env.GCLOUD_PROJECT = "compound-development";
+            try {
+                assert.equal((await ask({ message: "hi" })).result.text, "Your bench is going up.");
+            } finally {
+                process.env.GCLOUD_PROJECT = project;
+            }
+            assert.equal(rcCalls.length, 0);
         });
     });
 });

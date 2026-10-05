@@ -6,7 +6,7 @@
 import SwiftUI
 
 @MainActor
-protocol TodayRouter: GlobalRouter {
+protocol TodayRouter: GlobalRouter, AskCoachRouter {
     #if DEV || MOCK
     func showDevSettingsView()
     #endif
@@ -18,6 +18,10 @@ protocol TodayRouter: GlobalRouter {
     func showScaleWeightView(delegate: ScaleWeightDelegate, themeColor: Color?)
     func showCheckInView(delegate: CheckInDelegate)
     func showWeeklyReviewView()
+    func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate)
+    func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate)
+    func showStepsView(delegate: StepsDelegate, themeColor: Color?)
+    func showIntegrationsView(delegate: IntegrationsDelegate)
 }
 
 extension CoreRouter: TodayRouter { }

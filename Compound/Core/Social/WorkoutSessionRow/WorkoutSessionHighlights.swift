@@ -67,11 +67,11 @@ enum WorkoutSessionHighlights {
         return String(localized: "\(String(describing: ordinal)) workout of the week")
     }
 
-    /// "12-day streak", stamped on the session when the author finished it. Only from two days
-    /// on, like the weekly count, and absent on sessions finished before streaks were stamped.
-    static func streakText(_ streakCount: Int?) -> String? {
-        guard let streakCount, streakCount > 1 else { return nil }
-        return String(localized: "\(streakCount)-day streak")
+    /// "6-week streak", the `WeeklyStreak` stamped on the session when the author finished it. Only
+    /// from two weeks on, like the weekly count; absent on sessions finished before weekly streaks.
+    static func streakText(_ weeks: Int?) -> String? {
+        guard let weeks, weeks > 1 else { return nil }
+        return String(localized: "\(weeks)-week streak")
     }
 
     /// `author`'s finished, non-rest sessions dated in the calendar week containing `date`. The one

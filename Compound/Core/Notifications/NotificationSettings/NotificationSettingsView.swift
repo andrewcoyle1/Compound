@@ -91,7 +91,7 @@ struct NotificationSettingsView: View {
         } header: {
             Text("Reminders")
         } footer: {
-            Text("The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner.")
+            Text("The streak reminder comes only when this week's goal needs a session that day. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner.")
         }
     }
 }

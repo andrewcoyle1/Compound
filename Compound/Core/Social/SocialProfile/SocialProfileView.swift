@@ -106,7 +106,7 @@ struct SocialProfileView<WorkoutSessionRow: View>: View {
                         }
                         // A date of birth sat here: personal data with no social value.
                         if let streak = presenter.latestStreak {
-                            Label("\(streak)-day streak", systemImage: Symbol.streak)
+                            Label("\(streak)-week streak", systemImage: Symbol.streak)
                                 .font(.label)
                                 .fontWeight(.medium)
                                 .foregroundStyle(Color.Metric.workouts)

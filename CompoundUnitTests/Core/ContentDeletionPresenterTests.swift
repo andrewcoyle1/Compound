@@ -52,7 +52,9 @@ struct ExerciseModelDetailDeletionTests {
         }
     }
 
-    private final class Router: AlertRecordingRouter, ExerciseModelDetailRouter { }
+    private final class Router: AlertRecordingRouter, ExerciseModelDetailRouter {
+        func showCoach(context: CoachContext) { }
+    }
 
     private func exercise(authorId: String = "user-1", isSystem: Bool = false) -> ExerciseModel {
         ExerciseModel(

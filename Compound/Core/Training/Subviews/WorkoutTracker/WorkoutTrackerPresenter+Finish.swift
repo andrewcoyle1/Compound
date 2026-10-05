@@ -58,8 +58,9 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - Finishing
 
-    /// The notes step was confirmed. A workout with nothing logged would go into the history, the
-    /// streak and Strava as an empty session, so the person is asked first.
+    /// The notes step was confirmed, or the quick-finish button skipped it. A workout with nothing
+    /// logged would go into the history, the streak and Strava as an empty session, so the person
+    /// is asked first.
     func onFinishConfirmed() {
         guard !hasLoggedSet else { return finishWorkout() }
         router.showConfirmationDialog(title: String(localized: "No Sets Logged"), subtitle: nil) {

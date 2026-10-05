@@ -15,11 +15,18 @@ struct CreateGymProfileView: View {
     
     @State var presenter: CreateGymProfilePresenter
     let delegate: CreateGymProfileDelegate
+    @FocusState private var isNameFocused: Bool
     
     var body: some View {
         Form {
             Section {
                 TextField("Name", text: $presenter.gymProfileName)
+                    .focused($isNameFocused)
+                    .submitLabel(.continue)
+                    .onSubmit {
+                        guard presenter.canSave else { return }
+                        presenter.onContinuePressed(oldDelegate: delegate)
+                    }
             } header: {
                 Text("What would you like to name this gym?")
             }
@@ -28,6 +35,7 @@ struct CreateGymProfileView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
+            isNameFocused = true
         }
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)

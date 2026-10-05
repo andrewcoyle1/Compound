@@ -14,7 +14,10 @@ struct OverarchingObjectiveView: View {
     var body: some View {
         OnboardingStepScaffold(
             title: "What Is Your Goal?",
-            subtitle: "Choose one",
+            // In onboarding this carries the sentence the removed "Ready to Set a Goal?" screen held.
+            subtitle: presenter.isStandaloneMode
+                ? "Choose one"
+                : "Your goal generates a custom plan to get you there. This can be changed later, and your plan will update accordingly.",
             progress: presenter.isStandaloneMode ? nil : OnboardingStep.goalSetting.progress,
             primary: .init(title: "Continue", isEnabled: presenter.canContinue, identifier: "Continue") { presenter.onContinuePressed() },
             onDevSettingsPressed: nil

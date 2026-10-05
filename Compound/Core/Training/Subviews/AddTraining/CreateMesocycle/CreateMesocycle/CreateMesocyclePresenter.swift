@@ -20,10 +20,6 @@ class CreateMesocyclePresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
 
-    func onDismissPressed() {
-        router.dismissEnvironment()
-    }
-    
     func onNextPressed(delegate: CreateMesocycleDelegate) {
         router.showNameMesocycleView(delegate: NameMesocycleDelegate(onComplete: delegate.onComplete))
     }

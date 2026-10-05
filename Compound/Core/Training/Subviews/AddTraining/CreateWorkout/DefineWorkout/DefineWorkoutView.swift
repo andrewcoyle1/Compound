@@ -29,7 +29,7 @@ struct DefineWorkoutView: View {
             exercisesSection
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(autoOpensPicker: delegate.topSectionStyle == .standaloneWorkout)
         }
         .onDisappear {
             presenter.onViewDisappear()

@@ -45,13 +45,29 @@ struct TodaysWorkoutCard: View {
                     presenter.onTodaysWorkoutPressed()
                 }
                 .accessibilityHint("Opens today's workout")
-            if presenter.canSkip {
-                Button("Skip Workout", systemImage: Symbol.skip) {
-                    presenter.onSkipPressed()
+            if presenter.canStart {
+                HStack(spacing: Spacing.m) {
+                    // Straight into the tracker; the card above still opens the preview.
+                    Button {
+                        presenter.onStartPressed()
+                    } label: {
+                        Label("Start Workout", systemImage: Symbol.start)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .foregroundStyle(.onAccent)
+                    .accessibilityIdentifier("TodaysWorkoutCard.start")
+
+                    if presenter.canSkip {
+                        Button("Skip Workout", systemImage: Symbol.skip) {
+                            presenter.onSkipPressed()
+                        }
+                        .font(.label)
+                        .buttonStyle(.borderless)
+                        .accessibilityHint("Counts this workout as done and moves the next one up")
+                    }
                 }
-                .font(.label)
-                .buttonStyle(.borderless)
-                .accessibilityHint("Counts this workout as done and moves the next one up")
             }
         }
         .contextMenu {

@@ -198,34 +198,48 @@ struct WorkoutEquipmentSheetPresenterTests {
         ))
     }
 
-    @Test("Test Choosing A Set Up And Pressing Done Hands It Back")
-    func testChoosingASetUpAndPressingDoneHandsItBack() async {
+    /// A tap on a row is the whole choice: no Done in between.
+    @Test("Test Choosing A Set Up Hands It Back At Once")
+    func testChoosingASetUpHandsItBackAtOnce() async {
         let screen = makeScreen()
         await screen.presenter.loadVariations(
             exercise: exercise(variations: [variation(id: "v1"), variation(id: "v2")])
         )
         var selected: [String?] = []
 
-        screen.presenter.onSelectVariation(id: "v2")
-        screen.presenter.onDonePressed { selected.append($0) }
+        screen.presenter.onSelectVariation(id: "v2") { selected.append($0) }
 
         #expect(selected == ["v2"])
+        #expect(screen.presenter.chosenVariationId == "v2")
+    }
+
+    /// Tapping the set-up already in use closes the sheet without handing anything back.
+    @Test("Test Choosing The Current Set Up Hands Nothing Back")
+    func testChoosingTheCurrentSetUpHandsNothingBack() async {
+        let screen = makeScreen()
+        await screen.presenter.loadVariations(
+            exercise: exercise(chosenVariationId: "v1", variations: [variation(id: "v1"), variation(id: "v2")])
+        )
+        var selected: [String?] = []
+
+        screen.presenter.onSelectVariation(id: "v1") { selected.append($0) }
+
+        #expect(selected.isEmpty)
     }
 
     /// Backing out changes nothing. Cancel only dismisses — a `GlobalRouter` extension this
-    /// double cannot see — so what the test holds is that the choice made on screen was never
-    /// handed anywhere, leaving the exercise on the set-up it arrived with.
-    @Test("Test Cancelling Keeps The Choice On The Sheet")
-    func testCancellingKeepsTheChoiceOnTheSheet() async {
+    /// double cannot see — so what the test holds is that the set-up the exercise arrived with
+    /// is still the one chosen.
+    @Test("Test Cancelling Keeps The Set Up It Arrived With")
+    func testCancellingKeepsTheSetUpItArrivedWith() async {
         let screen = makeScreen()
         await screen.presenter.loadVariations(
             exercise: exercise(chosenVariationId: "v1", variations: [variation(id: "v1"), variation(id: "v2")])
         )
 
-        screen.presenter.onSelectVariation(id: "v2")
         screen.presenter.onCancelPressed()
 
-        #expect(screen.presenter.chosenVariationId == "v2")
+        #expect(screen.presenter.chosenVariationId == "v1")
     }
 }
 

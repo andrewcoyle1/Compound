@@ -36,36 +36,6 @@ private func goalUser(
     )
 }
 
-// MARK: - The splash that starts goal setting
-
-@MainActor
-struct OnboardingGoalSettingPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, GoalSettingInteractor {
-        var currentUser: UserModel?
-    }
-
-    private final class Router: GoalSettingRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var shown: [String] = []
-
-        func showOverarchingObjectiveView() { shown.append("objective") }
-        func showDevSettingsView() { shown.append("devSettings") }
-    }
-
-    @Test("Starting goal setting opens the objective step")
-    func testStartingGoalSettingOpensTheObjectiveStep() {
-        let interactor = Interactor()
-        let router = Router()
-        let sut = GoalSettingPresenter(interactor: interactor, router: router)
-
-        sut.onContinuePressed()
-
-        #expect(router.shown == ["objective"])
-        #expect(interactor.trackedEventNames == ["GoalSetting_Navigate"])
-    }
-}
-
 // MARK: - Step 1: lose, maintain or gain
 
 /// The fork in the flow. Losing and gaining go on to pick a target and a rate; maintaining skips

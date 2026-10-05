@@ -531,6 +531,7 @@ class WorkoutTrackerPresenter {
 
     private func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
+        propagateEdit(comparedTo: oldSession)
         guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
 
         let exercise = workoutSession.exercises[exerciseIndex]
@@ -547,6 +548,43 @@ class WorkoutTrackerPresenter {
         }
 
         refreshLiveActivity()
+    }
+
+    /// The set rows write straight into `workoutSession` through their bindings, so a typed weight
+    /// or reps arrives here rather than through `updateSet`. Carries it onto the sibling sets the
+    /// same way `updateSet` does.
+    ///
+    /// Only when exactly one set's weight or reps changed: that is what a user's edit looks like.
+    /// A change to several at once is the screen's own (a progression re-suggestion, an adopted
+    /// save) and is not the user's to copy.
+    private func propagateEdit(comparedTo oldSession: WorkoutSessionModel) {
+        guard interactor.workoutSettings.propagateChanges else { return }
+
+        var edits: [(exerciseIndex: Int, original: WorkoutSetModel)] = []
+        for (exerciseIndex, exercise) in workoutSession.exercises.enumerated() {
+            guard let oldExercise = oldSession.exercises.first(where: { $0.id == exercise.id }) else { continue }
+            for set in exercise.sets {
+                guard let original = oldExercise.sets.first(where: { $0.id == set.id }),
+                      original.weightKg != set.weightKg || original.reps != set.reps else { continue }
+                edits.append((exerciseIndex, original))
+            }
+        }
+        guard edits.count == 1, let edit = edits.first,
+              let setIndex = workoutSession.exercises[edit.exerciseIndex].sets.firstIndex(where: { $0.id == edit.original.id })
+        else { return }
+
+        var updatedExercises = workoutSession.exercises
+        propagateChanges(
+            of: updatedExercises[edit.exerciseIndex].sets[setIndex],
+            replacing: edit.original,
+            at: setIndex,
+            in: &updatedExercises[edit.exerciseIndex].sets
+        )
+        guard updatedExercises != workoutSession.exercises else { return }
+
+        isProcessingUpdateSet = true
+        workoutSession.updateExercises(updatedExercises)
+        isProcessingUpdateSet = false
     }
 
     /// The first exercise holding a set that flipped incomplete → complete relative to

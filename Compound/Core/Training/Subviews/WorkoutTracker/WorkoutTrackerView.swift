@@ -43,8 +43,10 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         // Outside the rest pill's inset, so the button sits at the bottom edge and the pill above it.
         .bottomCTA {
             if presenter.canQuickFinish {
+                // Straight to the summary, where notes can still be added. The menu's Finish keeps
+                // the notes sheet.
                 CallToActionButton {
-                    presenter.onFinishPressed()
+                    presenter.onFinishConfirmed()
                 } label: {
                     Text("Finish Workout")
                 }

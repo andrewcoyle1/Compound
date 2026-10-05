@@ -132,9 +132,16 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
     private var weighInCard: some View {
         Section {
             if let weight = presenter.latestWeightText, let date = presenter.latestWeighInDate {
+                // Tappable as the workout card is: the trend behind the number is one tap away
+                // rather than a trip through the Progress tab.
                 Stat(value: weight, label: presenter.hasWeighedInToday
                     ? String(localized: "Logged today")
                     : String(localized: "Last logged \(date.formatted(.relative(presentation: .named)))"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .anyButton(.press) {
+                        presenter.onWeighInPressed()
+                    }
+                    .accessibilityHint("Opens your weight history")
             } else {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text("No weigh-ins yet.")

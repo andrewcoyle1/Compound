@@ -45,33 +45,6 @@ private func onePixelPNGData() -> Data {
     }.pngData() ?? Data()
 }
 
-// MARK: - The screen that starts account setup
-
-/// A single Continue button holding no state, so the only thing it can get wrong is going somewhere
-/// other than the first question.
-@MainActor
-struct OnboardingAccountSetupPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, CompleteAccountSetupInteractor { }
-
-    private final class Router: SpyOnboardingRouter, CompleteAccountSetupRouter {
-        func showNamePhotoView() { record("namePhoto") }
-        func showDevSettingsView() { record("devSettings") }
-    }
-
-    @Test("Starting account setup opens the name step")
-    func testStartingAccountSetupOpensTheNameStep() {
-        let interactor = Interactor()
-        let router = Router()
-        let sut = CompleteAccountSetupPresenter(interactor: interactor, router: router)
-
-        sut.handleNavigation()
-
-        #expect(router.shown == ["namePhoto"])
-        #expect(interactor.trackedEventNames == ["CompleteAccountSetup_Navigate"])
-    }
-}
-
 // MARK: - Step 1: name and photo
 
 /// The only free-text field in onboarding and the only account-setup answer written to the profile

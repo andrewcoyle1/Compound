@@ -94,6 +94,8 @@ struct PushManagerTests {
         #expect(hours == [8, 12, 18])
         let allRepeat = triggers.allSatisfy { $0.repeats }
         #expect(allRepeat)
+        let destinations = requests.map { DeepLink(pushUserInfo: $0.content.userInfo) }
+        #expect(destinations == [.tab(.nutrition), .tab(.nutrition), .tab(.nutrition)])
     }
 
     // MARK: - Foreground presentation

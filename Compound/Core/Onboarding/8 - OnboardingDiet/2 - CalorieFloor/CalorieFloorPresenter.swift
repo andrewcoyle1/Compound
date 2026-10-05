@@ -37,6 +37,12 @@ class CalorieFloorPresenter {
     /// So this is what it did, minus the parameter that changed nothing.
     private func prefillCalorieFloor() {
         guard selectedFloor == nil else { return }
+        // Rebuilding a plan opens on the floor it was built with.
+        if let current = interactor.currentDietPlan.flatMap({ CalorieFloor(rawValue: $0.calorieFloor) }) {
+            selectedFloor = current
+            interactor.trackEvent(event: Event.calorieFloorPrefilled(floor: current, reason: "current_plan"))
+            return
+        }
         selectedFloor = .standard
         interactor.trackEvent(event: Event.calorieFloorPrefilled(floor: .standard, reason: "default"))
     }

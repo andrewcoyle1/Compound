@@ -18,6 +18,7 @@ struct OnboardingSelectionHapticsTests {
         CalorieDistributionInteractor, ProteinIntakeInteractor {
         var currentUser: UserModel?
         var activeMesocycle: Mesocycle?
+        var currentDietPlan: DietPlan?
         var currentWeightKilograms: Double? { currentUser?.submittedWeightKilograms }
         func readSexFromAppleHealth() async -> Gender? { nil }
     }

@@ -346,7 +346,7 @@ test("the digest counts real sessions and needs someone followed", () => {
     const push = buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 3, circle: 11, followingCount: 2 });
     assert.equal(push.notification.body, "Workouts this week: you 3, your circle 11.");
     assert.equal(push.notification.title, "Your Week");
-    assert.deepEqual(push.data, { tab: "dashboard", type: "weeklyDigest" });
+    assert.deepEqual(push.data, { tab: "social", type: "weeklyDigest" });
     assert.equal(buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 1, circle: 0, followingCount: 1 }).notification.body,
         "Workouts this week: you 1, your circle 0.");
     assert.equal(buildWeeklyDigestPush({ fcm_token: "tok" }, { mine: 3, circle: 0, followingCount: 0 }), null);

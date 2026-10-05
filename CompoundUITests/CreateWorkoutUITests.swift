@@ -5,7 +5,7 @@
 
 import XCTest
 
-/// The workout template wizard: splash, name, gym, exercises, save.
+/// The workout template wizard: name, gym (skipped with the one mock gym), exercises, save.
 @MainActor
 final class CreateWorkoutUITests: XCTestCase {
 
@@ -13,18 +13,17 @@ final class CreateWorkoutUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// The wizard opens on the name, and the mock account has one gym, so Continue lands on the
+    /// define step with the exercise picker already open.
     private func reachTheDefineStep(_ app: XCUIApplication) {
-        app.tap("CreateWorkout.continue")
         app.type("Push Day", into: "NameWorkout.name")
         app.tap("NameWorkout.continue")
-        app.tap("ChooseGymProfile.profile")
     }
 
     func testAWorkoutWithTwoExercisesCanBeSaved() {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_CREATE_WORKOUT")
         reachTheDefineStep(app)
 
-        app.tap("DefineWorkout.addExercise")
         app.tap("ExerciseList.Plank")
         app.tap("ExerciseList.Push Up")
         app.tap("ExercisesPicker.confirm")
@@ -37,6 +36,7 @@ final class CreateWorkoutUITests: XCTestCase {
     func testSaveIsDisabledWithNoExercises() {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_CREATE_WORKOUT")
         reachTheDefineStep(app)
+        app.tap("ExercisesPicker.close")
 
         XCTAssertFalse(app.waitFor(app.button("DefineWorkoutWrapper.save")).isEnabled)
     }
@@ -47,7 +47,6 @@ final class CreateWorkoutUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_CREATE_WORKOUT")
         reachTheDefineStep(app)
 
-        app.tap("DefineWorkout.addExercise")
         app.tap("ExerciseList.Plank")
         app.tap("ExercisesPicker.confirm")
 

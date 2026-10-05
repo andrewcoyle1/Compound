@@ -8,12 +8,14 @@ import SwiftUI
 struct CreateChallengeView: View {
 
     @State var presenter: CreateChallengePresenter
+    @FocusState private var isNameFocused: Bool
 
     var body: some View {
         Form {
             Section {
                 TextField("Name", text: $presenter.title)
                     .textInputAutocapitalization(.words)
+                    .focused($isNameFocused)
                 Stepper(value: $presenter.targetSessions, in: ChallengeModel.targetRange) {
                     Text("Target: \(presenter.targetSessions) sessions")
                 }
@@ -69,7 +71,10 @@ struct CreateChallengeView: View {
                 }
             }
         }
-        .onAppear { presenter.onViewAppear() }
+        .onAppear {
+            presenter.onViewAppear()
+            isNameFocused = true
+        }
         .interactiveDismissDisabled(presenter.hasUnsavedChanges)
     }
 

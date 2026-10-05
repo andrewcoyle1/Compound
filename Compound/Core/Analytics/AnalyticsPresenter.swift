@@ -21,8 +21,8 @@ class AnalyticsPresenter {
     var workoutLast7Sessions: [WorkoutSessionModel] = []
 
     // Weigh-in data (set from AnalyticsPresenter+DataLoading)
-    var weighInContributionData: [Double] = []
-    var weighInCountThisWeek: Int = 0
+    var weighInContributionData: [Double] { weighInSummary.contribution }
+    var weighInCountThisWeek: Int { weighInSummary.countThisWeek }
 
     // Macros (last 7 days) (set from AnalyticsPresenter+DataLoading)
     var macrosLast7Days: [DailyMacroTarget] = []
@@ -95,7 +95,6 @@ class AnalyticsPresenter {
 
     func onFirstTask() async {
         loadWorkoutData()
-        loadWeighInData()
         loadMacrosData()
         await loadDailyTarget()
         loadMuscleGroupsData()
@@ -533,9 +532,19 @@ class AnalyticsPresenter {
         router.showLogWeightView()
     }
 
-    /// Body Metrics is where each measurement is logged from.
-    func onLogMeasurementPressed() {
-        router.showBodyMetricsView(delegate: BodyMetricsDelegate(isPushed: true))
+    /// The + menu's measurements, grouped as the Body Metrics screen groups their cards. Choosing
+    /// one opens its logger straight away; this used to open Body Metrics, where the user had to
+    /// find the card, open its detail screen and press Add.
+    var measurementMenuSections: [(header: String, kinds: [BodyMeasurementKind])] {
+        [
+            (String(localized: "Upper Body"), [.neck, .shoulders, .bust, .chest, .waist, .hips]),
+            (String(localized: "Arms"), [.leftBicep, .rightBicep, .leftForearm, .rightForearm, .leftWrist, .rightWrist]),
+            (String(localized: "Legs"), [.leftThigh, .rightThigh, .leftCalf, .rightCalf, .leftAnkle, .rightAnkle])
+        ]
+    }
+
+    func onLogMeasurementPressed(kind: BodyMeasurementKind) {
+        router.showLogMeasurementView(kind: kind)
     }
 
     enum Event: LoggableEvent {

@@ -45,7 +45,27 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     private let router: BodyMetricsRouter
     private let kind: BodyMeasurementKind
 
-    var entries: [BodyMeasurementDetailEntry]
+    /// Read live, like Scale Weight, so a reading logged from this screen's Add appears as soon as
+    /// the sync engine applies it. This was a stored array filled once in `onAppear`, so the screen
+    /// went on showing the old data until it was closed and reopened.
+    ///
+    /// Values are converted here, once, so `displayValue` and the chart agree with the
+    /// suffix in `configuration`.
+    var entries: [BodyMeasurementDetailEntry] {
+        let unit = interactor.lengthUnitPreference
+        return interactor.bodyMeasurements
+            .filter { $0.deletedAt == nil }
+            .compactMap { entry in
+                guard let value = entry[keyPath: kind.entryValue] else { return nil }
+                return BodyMeasurementDetailEntry(
+                    id: entry.id,
+                    date: entry.date,
+                    value: UnitConversion.convertLength(value, to: unit),
+                    kind: kind
+                )
+            }
+            .sorted { $0.date < $1.date }
+    }
 
     var timeSeries: [TimeSeries] {
         let data = entries.map { TimeSeriesDatapoint(id: $0.id, date: $0.date, value: $0.value) }
@@ -68,18 +88,14 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     init(
         kind: BodyMeasurementKind,
         interactor: BodyMetricsInteractor,
-        router: BodyMetricsRouter,
-        entries: [BodyMeasurementDetailEntry] = []
+        router: BodyMetricsRouter
     ) {
         self.kind = kind
         self.interactor = interactor
         self.router = router
-        self.entries = entries.sorted { $0.date < $1.date }
     }
 
-    func onAppear() async {
-        reload()
-    }
+    func onAppear() async { }
 
     func onAddPressed() {
         router.showLogMeasurementView(kind: kind)
@@ -102,25 +118,6 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
-        reload()
-    }
-
-    /// Values are converted here, once, so `displayValue` and the chart agree with the
-    /// suffix in `configuration`.
-    private func reload() {
-        let unit = interactor.lengthUnitPreference
-        entries = interactor.bodyMeasurements
-            .filter { $0.deletedAt == nil }
-            .compactMap { entry in
-                guard let value = entry[keyPath: kind.entryValue] else { return nil }
-                return BodyMeasurementDetailEntry(
-                    id: entry.id,
-                    date: entry.date,
-                    value: UnitConversion.convertLength(value, to: unit),
-                    kind: kind
-                )
-            }
-            .sorted { $0.date < $1.date }
     }
 }
 

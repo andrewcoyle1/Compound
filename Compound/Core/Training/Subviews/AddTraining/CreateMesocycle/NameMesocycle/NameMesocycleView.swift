@@ -2,9 +2,12 @@ import SwiftUI
 
 struct NameMesocycleDelegate {
     let onComplete: (@Sendable () -> Void)?
-    
-    init(onComplete: (@Sendable () -> Void)? = nil) {
+    /// True when this is the first screen of the cover, which then needs the close button.
+    var showsCloseButton: Bool
+
+    init(onComplete: (@Sendable () -> Void)? = nil, showsCloseButton: Bool = false) {
         self.onComplete = onComplete
+        self.showsCloseButton = showsCloseButton
     }
 }
 
@@ -12,11 +15,18 @@ struct NameMesocycleView: View {
     
     @State var presenter: NameMesocyclePresenter
     let delegate: NameMesocycleDelegate
-    
+
+    @FocusState private var isNameFocused: Bool
+
     var body: some View {
         Form {
             Section {
                 TextField("Enter mesocycle name", text: $presenter.mesocycleName)
+                    .focused($isNameFocused)
+                    .submitLabel(.continue)
+                    .onSubmit {
+                        presenter.onNextPressed(delegate: delegate)
+                    }
                     .accessibilityIdentifier("NameProgram.name")
             } header: {
                 Text("Mesocycle Name")
@@ -26,8 +36,19 @@ struct NameMesocycleView: View {
         }
         .navigationTitle("Create Mesocycle")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if delegate.showsCloseButton {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: .close) {
+                        presenter.onDismissPressed()
+                    }
+                    .accessibilityIdentifier("NameProgram.close")
+                }
+            }
+        }
         .onAppear {
             presenter.onViewAppear()
+            isNameFocused = true
         }
         .onDisappear {
             presenter.onViewDisappear()

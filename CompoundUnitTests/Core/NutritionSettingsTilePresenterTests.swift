@@ -9,12 +9,12 @@ import Testing
 import Foundation
 @testable import Compound
 
-/// The six sub-screens behind Food Log Settings. Each one edits a handful of fields of the single
+/// The four sub-screens behind Food Log Settings. Each one edits a handful of fields of the single
 /// food-log settings document and writes the whole document back on every change.
 ///
 /// They share one hazard, so they share one double: because the whole document is written, a
 /// sub-screen that saved the copy it opened with would reset everything the parent screen and the
-/// other five sub-screens had changed. Every suite below pins that.
+/// other three sub-screens had changed. Every suite below pins that.
 @MainActor
 enum NutritionSettingsTileSupport {
 
@@ -23,9 +23,7 @@ enum NutritionSettingsTileSupport {
                             TimelineFoodTilesInteractor,
                             LoggerFoodTilesInteractor,
                             LoggerBannerInteractor,
-                            TimeSelectionInteractor,
-                            FavouriteMeasurementsInteractor,
-                            OptimisationInteractor {
+                            FavouriteMeasurementsInteractor {
         var foodLogSettings = FoodLogSettings(authorId: "user-1")
         private(set) var savedSettings: [FoodLogSettings] = []
 
@@ -35,15 +33,13 @@ enum NutritionSettingsTileSupport {
         }
     }
 
-    /// None of the six routers declares a requirement of its own, so a double is just the
+    /// None of the four routers declares a requirement of its own, so a double is just the
     /// `AnyRouter` `GlobalRouter` needs.
     @MainActor
     final class Router: TimelineFoodTilesRouter,
                         LoggerFoodTilesRouter,
                         LoggerBannerRouter,
-                        TimeSelectionRouter,
-                        FavouriteMeasurementsRouter,
-                        OptimisationRouter {
+                        FavouriteMeasurementsRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
 
@@ -257,56 +253,6 @@ struct NutritionSettingsLoggerBannerTests {
     }
 }
 
-// MARK: - Time Selection
-
-/// A single switch: whether logging a food defaults to the current time.
-@MainActor
-struct NutritionSettingsTimeSelectionTests {
-
-    private typealias Support = NutritionSettingsTileSupport
-
-    private func makePresenter(
-        _ configure: (inout FoodLogSettings) -> Void = { _ in }
-    ) -> (TimeSelectionPresenter, Support.Interactor) {
-        let interactor = Support.Interactor()
-        configure(&interactor.foodLogSettings)
-        return (TimeSelectionPresenter(interactor: interactor, router: Support.Router()), interactor)
-    }
-
-    @Test("Test The Switch Is Saved Both Ways")
-    func testTheSwitchIsSavedBothWays() async {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.autoSetCurrentTime = true
-        await TestManagers.eventually { !interactor.savedSettings.isEmpty }
-        #expect(interactor.savedSettings.last?.autoSetCurrentTime == true)
-
-        presenter.autoSetCurrentTime = false
-        await TestManagers.eventually { interactor.savedSettings.count == 2 }
-        #expect(interactor.savedSettings.last?.autoSetCurrentTime == false)
-        #expect(presenter.autoSetCurrentTime == false)
-    }
-
-    @Test("Test Saving Keeps The Settings This Screen Does Not Show")
-    func testSavingKeepsTheSettingsThisScreenDoesNotShow() async {
-        let (presenter, interactor) = makePresenter(Support.untouchedFields)
-
-        presenter.autoSetCurrentTime = true
-        await TestManagers.eventually { !interactor.savedSettings.isEmpty }
-
-        Support.expectUntouchedFieldsSurvived(interactor.savedSettings.last)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.onViewAppear()
-
-        #expect(interactor.trackedScreenEventNames == ["TimeSelectionView_Appear"])
-    }
-}
-
 // MARK: - Favourite Measurements
 
 /// The units offered first when entering an amount. A list, so the hazard is the usual one for a
@@ -396,54 +342,5 @@ struct NutritionSettingsFavouriteUnitsTests {
         presenter.onViewAppear()
 
         #expect(interactor.trackedScreenEventNames == ["FavouriteMeasurementsView_Appear"])
-    }
-}
-
-// MARK: - Optimisation
-
-/// A single switch for the Quick Add shortcut.
-@MainActor
-struct NutritionSettingsOptimisationTests {
-
-    private typealias Support = NutritionSettingsTileSupport
-
-    private func makePresenter(
-        _ configure: (inout FoodLogSettings) -> Void = { _ in }
-    ) -> (OptimisationPresenter, Support.Interactor) {
-        let interactor = Support.Interactor()
-        configure(&interactor.foodLogSettings)
-        return (OptimisationPresenter(interactor: interactor, router: Support.Router()), interactor)
-    }
-
-    @Test("Test The Switch Is Saved Both Ways")
-    func testTheSwitchIsSavedBothWays() async {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.quickAddEnabled = true
-        await TestManagers.eventually { !interactor.savedSettings.isEmpty }
-        #expect(interactor.savedSettings.last?.quickAddEnabled == true)
-
-        presenter.quickAddEnabled = false
-        await TestManagers.eventually { interactor.savedSettings.count == 2 }
-        #expect(interactor.savedSettings.last?.quickAddEnabled == false)
-    }
-
-    @Test("Test Saving Keeps The Settings This Screen Does Not Show")
-    func testSavingKeepsTheSettingsThisScreenDoesNotShow() async {
-        let (presenter, interactor) = makePresenter(Support.untouchedFields)
-
-        presenter.quickAddEnabled = true
-        await TestManagers.eventually { !interactor.savedSettings.isEmpty }
-
-        Support.expectUntouchedFieldsSurvived(interactor.savedSettings.last)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.onViewAppear()
-
-        #expect(interactor.trackedScreenEventNames == ["OptimisationView_Appear"])
     }
 }

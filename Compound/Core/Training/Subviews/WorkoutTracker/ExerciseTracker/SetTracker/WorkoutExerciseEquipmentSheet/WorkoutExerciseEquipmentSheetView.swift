@@ -43,14 +43,10 @@ struct WorkoutExerciseEquipmentSheetView: View {
         .navigationTitle(delegate.exercise.wrappedValue.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // Picking a row applies it and closes; Close leaves the exercise as it was.
             ToolbarItem(placement: .cancellationAction) {
                 Button(role: .close) {
                     presenter.onCancelPressed()
-                }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button(role: .confirm) {
-                    presenter.onDonePressed(onSelect: delegate.onSelect)
                 }
             }
         }
@@ -71,7 +67,7 @@ struct WorkoutExerciseEquipmentSheetView: View {
             subtitle: presenter.detail(for: item),
             isSelected: presenter.chosenVariationId == item.id
         ) {
-            presenter.onSelectVariation(id: item.id)
+            presenter.onSelectVariation(id: item.id, onSelect: delegate.onSelect)
         }
     }
 }

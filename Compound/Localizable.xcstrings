@@ -14,6 +14,104 @@
         }
       }
     },
+    "Customize" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar"
+          }
+        }
+      }
+    },
+    "Bust" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busto"
+          }
+        }
+      }
+    },
+    "Hips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caderas"
+          }
+        }
+      }
+    },
+    "Left Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps izquierdo"
+          }
+        }
+      }
+    },
+    "Left Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla izquierda"
+          }
+        }
+      }
+    },
+    "Left Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca izquierda"
+          }
+        }
+      }
+    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -7230,16 +7328,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personaliza cómo aparecen los alimentos en tu cronología"
-          }
-        }
-      }
-    },
-    "Customize how you change time while logging" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza cómo cambias la hora al registrar"
           }
         }
       }
@@ -15115,6 +15203,82 @@
         }
       }
     },
+    "Opens your weight history" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tu historial de peso"
+          }
+        }
+      }
+    },
+    "Right Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo derecho"
+          }
+        }
+      }
+    },
+    "Right Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps derecho"
+          }
+        }
+      }
+    },
+    "Right Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla derecha"
+          }
+        }
+      }
+    },
+    "Right Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo derecho"
+          }
+        }
+      }
+    },
+    "Right Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo derecho"
+          }
+        }
+      }
+    },
+    "Right Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca derecha"
+          }
+        }
+      }
+    },
     "Not specified" : {
       "localizations" : {
         "es" : {
@@ -15866,26 +16030,6 @@
     },
     "Optimise for speed" : {
       "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimizar para velocidad"
-          }
-        }
-      }
-    },
-    "Optimization" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optimización"
-          }
-        }
-      }
-    },
-    "Optimize for speed" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17493,16 +17637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rojo"
-          }
-        }
-      }
-    },
-    "Reference Scope" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ámbito de referencia"
           }
         }
       }
@@ -19430,6 +19564,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fijar objetivo"
+          }
+        }
+      }
+    },
+    "Use Recommended Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar plan recomendado"
+          }
+        }
+      }
+    },
+    "Use the recommended plan, or answer a few questions to customize it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el plan recomendado o responde unas preguntas para personalizarlo."
+          }
+        }
+      }
+    },
+    "Shoulders" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombros"
+          }
+        }
+      }
+    },
+    "Take Back Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de espalda"
+          }
+        }
+      }
+    },
+    "Take Front Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de frente"
+          }
+        }
+      }
+    },
+    "Take Side Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de perfil"
+          }
+        }
+      }
+    },
+    "Waist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cintura"
           }
         }
       }
@@ -21795,16 +22001,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tiempo"
-          }
-        }
-      }
-    },
-    "Time Selection" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selección de hora"
           }
         }
       }

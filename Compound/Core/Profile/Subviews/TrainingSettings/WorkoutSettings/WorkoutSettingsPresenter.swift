@@ -36,13 +36,14 @@ class WorkoutSettingsPresenter {
         router.showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate())
     }
     
-    /// The Previous Reference row's subtitle: the option chosen, re-read with the settings on appear.
-    var previousWorkoutReferenceTitle: String {
-        settings.previousWorkoutReference.title
-    }
+    // MARK: - Previous Reference
 
-    func onPreviousReferenceSettingsPressed() {
-        router.showPreviousWorkoutReferenceSettingsView(delegate: PrevWORefSettingsDelegate())
+    /// Widest scope first; each carries the explanation the row shows beneath its title.
+    let previousWorkoutReferenceOptions = PreviousWorkoutReferenceOption.allCases
+
+    var previousWorkoutReference: PreviousWorkoutReferenceOption {
+        get { settings.previousWorkoutReference }
+        set { settings.previousWorkoutReference = newValue; save() }
     }
     
     func onExerciseAssessmentPressed() {

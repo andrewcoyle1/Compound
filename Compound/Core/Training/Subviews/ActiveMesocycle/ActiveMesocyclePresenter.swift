@@ -92,11 +92,7 @@ class ActiveMesocyclePresenter {
 
     /// `cycleIndex` is 1-based, as the header shows it.
     func isCurrentCycleDeload(cycleIndex: Int, mesocycle: Mesocycle) -> Bool {
-        switch mesocycle.deload {
-        case .none:  return false
-        case .start: return cycleIndex == 1
-        case .end:   return cycleIndex == mesocycle.numMicrocycles
-        }
+        MesocycleSchedule.isDeload(cycleIndex: cycleIndex, of: mesocycle)
     }
 
     /// `cycleIndex` is 1-based, as the header shows it.

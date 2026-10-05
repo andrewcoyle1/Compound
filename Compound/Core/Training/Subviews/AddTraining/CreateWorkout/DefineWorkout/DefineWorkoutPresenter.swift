@@ -36,8 +36,15 @@ class DefineWorkoutPresenter {
         self.exercises = exercises.wrappedValue
     }
     
-    func onViewAppear() {
+    private var hasAutoOpenedPicker = false
+
+    /// With `autoOpensPicker`, an empty workout opens the exercise picker on its own, once: adding
+    /// exercises is the only thing left to do. A mesocycle day passes false, as empty is a rest day.
+    func onViewAppear(autoOpensPicker: Bool = false) {
         interactor.trackScreenEvent(event: Event.onAppear)
+        guard autoOpensPicker, !hasAutoOpenedPicker, exercises.isEmpty else { return }
+        hasAutoOpenedPicker = true
+        onAddExercisePressed()
     }
     
     func onViewDisappear() {

@@ -11,10 +11,20 @@ class WeeklyGoalPresenter {
     var goal: Int
     private(set) var isSaving = false
 
+    /// The segment shown as chosen: nil until a goal has been saved. A segment that is already
+    /// selected does not fire when tapped, so pre-selecting the default 3 would leave no way to
+    /// pick it.
+    private(set) var selectedGoal: Int?
+    private let savedGoal: Int?
+
     init(interactor: WeeklyGoalInteractor, router: WeeklyGoalRouter) {
         self.interactor = interactor
         self.router = router
-        self.goal = interactor.currentUser.map(CircleWeek.goal(for:)) ?? CircleWeek.defaultGoal
+        let goal = interactor.currentUser.map(CircleWeek.goal(for:)) ?? CircleWeek.defaultGoal
+        let savedGoal = interactor.currentUser?.weeklySessionGoal == nil ? nil : goal
+        self.goal = goal
+        self.savedGoal = savedGoal
+        self.selectedGoal = savedGoal
     }
 
     func onViewAppear() {
@@ -23,6 +33,14 @@ class WeeklyGoalPresenter {
 
     func onCancelPressed() {
         router.dismissScreen()
+    }
+
+    /// Picking a segment is the whole interaction: it saves and closes the sheet.
+    func onGoalSelected(_ goal: Int) {
+        guard !isSaving else { return }
+        self.goal = goal
+        selectedGoal = goal
+        onSavePressed()
     }
 
     func onSavePressed() {
@@ -37,6 +55,7 @@ class WeeklyGoalPresenter {
                 interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
+                selectedGoal = savedGoal
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Goal"), subtitle: String(localized: "Please try again."))
             }

@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// The way into the app: the splash, the intro pitch and the subscription pitch.
+/// The way into the app: the splash and the subscription pitch.
 ///
 /// Onboarding runs once. Anyone who has finished it never sees these screens again, so a user
 /// sent to the wrong place here is stranded somewhere nobody with the app installed will look.
@@ -85,7 +85,6 @@ struct OnboardingWelcomePresenterTests {
         // requirement is present and has to be satisfied unguarded.
         func showDevSettingsView() { record("devSettings") }
         func showPaywall(isOnboarding: Bool) { record("paywall(onboarding: \(isOnboarding))") }
-        func showIntroView() { record("intro") }
         func showAuthView() { record("auth") }
         func showSubscriptionView() { record("subscription") }
         func switchToCoreModule() { record("coreModule") }
@@ -107,25 +106,26 @@ struct OnboardingWelcomePresenterTests {
         )
     }
 
-    /// Nobody signed in: the only sensible next screen is the pitch that leads to sign-in.
-    @Test("A visitor with no account is shown the intro")
-    func testAVisitorWithNoAccountIsShownTheIntro() {
+    /// Nobody signed in: Get Started goes straight to sign-in. The "Why Compound?" pitch that sat
+    /// between them is gone.
+    @Test("A visitor with no account goes straight to sign in")
+    func testAVisitorWithNoAccountGoesStraightToSignIn() {
         let screen = makeScreen(user: nil)
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["intro"])
+        #expect(screen.router.shown == ["auth"])
     }
 
     /// An anonymous account is not an account yet — sending one of these on into onboarding would
     /// collect a profile that is lost the moment the device is.
-    @Test("An anonymous user is shown the intro rather than resuming onboarding")
-    func testAnAnonymousUserIsShownTheIntro() {
+    @Test("An anonymous user is sent to sign in rather than resuming onboarding")
+    func testAnAnonymousUserIsSentToSignIn() {
         let screen = makeScreen(user: onboardingStageUser(upTo: .goalSetting, isAnonymous: true))
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["intro"])
+        #expect(screen.router.shown == ["auth"])
     }
 
     /// `isAnonymous` is optional on the model, and an unset flag means the document predates the
@@ -137,7 +137,7 @@ struct OnboardingWelcomePresenterTests {
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["intro"])
+        #expect(screen.router.shown == ["auth"])
     }
 
     /// A returning subscriber should never see onboarding again.
@@ -169,7 +169,7 @@ struct OnboardingWelcomePresenterTests {
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["goalSetting"])
+        #expect(screen.router.shown == ["objective"])
     }
 
     /// A signed-in user with nothing filled in resumes at the profile questions rather than at
@@ -180,7 +180,7 @@ struct OnboardingWelcomePresenterTests {
 
         screen.presenter.onContinuePressed()
 
-        #expect(screen.router.shown == ["completeAccountSetup"])
+        #expect(screen.router.shown == ["namePhoto"])
     }
 
     /// The gym step is reached through a delegate rather than a plain push, which makes it the one
@@ -244,47 +244,6 @@ struct OnboardingWelcomePresenterTests {
     }
 }
 
-// MARK: - The intro
-
-/// A single Continue button. The only thing it can get wrong is not reaching sign-in.
-@MainActor
-struct OnboardingIntroPresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, IntroInteractor { }
-
-    private final class Router: IntroRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var shown: [String] = []
-
-        func showDevSettingsView() { shown.append("devSettings") }
-        func showAuthView() { shown.append("auth") }
-    }
-
-    @Test("Continuing from the intro reaches sign in")
-    func testContinuingFromTheIntroReachesSignIn() {
-        let interactor = Interactor()
-        let router = Router()
-        let presenter = IntroPresenter(interactor: interactor, router: router)
-
-        presenter.navigateToAuth()
-
-        #expect(router.shown == ["auth"])
-        #expect(interactor.trackedEventNames == ["IntroView_Navigate"])
-    }
-
-    @Test("The intro tracks its appearance as a screen view")
-    func testTheIntroTracksItsAppearance() {
-        let interactor = Interactor()
-        let presenter = IntroPresenter(interactor: interactor, router: Router())
-
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-
-        #expect(interactor.trackedScreenEventNames == ["IntroView_Appear"])
-        #expect(interactor.trackedEventNames == ["IntroView_Disappear"])
-    }
-}
-
 // MARK: - The subscription pitch
 
 /// The screen that explains the subscription before the paywall itself is shown.
@@ -307,7 +266,6 @@ struct OnboardingSubscriptionPresenterTests {
 
         func showDevSettingsView() { shown.append("devSettings") }
         func showPaywall(isOnboarding: Bool) { paywallsShown.append(isOnboarding) }
-        func showCompleteAccountSetupView() { shown.append("completeAccountSetup") }
         func showAccountView(delegate: AccountDelegate) { shown.append("account") }
         func switchToOnboardingModule() { shown.append("onboardingModule") }
 

@@ -27,13 +27,10 @@ struct SaveFailureAlertTests {
                                     TimelineFoodTilesInteractor,
                                     LoggerFoodTilesInteractor,
                                     LoggerBannerInteractor,
-                                    TimeSelectionInteractor,
                                     FavouriteMeasurementsInteractor,
-                                    OptimisationInteractor,
                                     WorkoutSettingsInteractor,
                                     SmartProgressionSettingsInteractor,
                                     RestTimerSettingsInteractor,
-                                    PrevWORefSettingsInteractor,
                                     TimelineActionsInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var shortcutSettings = ShortcutSettings(authorId: "user-1")
@@ -68,13 +65,10 @@ struct SaveFailureAlertTests {
                                 TimelineFoodTilesRouter,
                                 LoggerFoodTilesRouter,
                                 LoggerBannerRouter,
-                                TimeSelectionRouter,
                                 FavouriteMeasurementsRouter,
-                                OptimisationRouter,
                                 WorkoutSettingsRouter,
                                 SmartProgressionSettingsRouter,
                                 RestTimerSettingsRouter,
-                                PreviousWorkoutReferenceSettingsRouter,
                                 TimelineActionsRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
@@ -87,12 +81,9 @@ struct SaveFailureAlertTests {
         func showTimelineFoodTilesView(delegate: TimelineFoodTilesDelegate) { }
         func showLoggerFoodTilesView(delegate: LoggerFoodTilesDelegate) { }
         func showLoggerBannerView(delegate: LoggerBannerDelegate) { }
-        func showTimeSelectionView(delegate: TimeSelectionDelegate) { }
         func showFavouriteMeasurementsView(delegate: FavouriteMeasurementsDelegate) { }
-        func showOptimisationView(delegate: OptimisationDelegate) { }
         func showRestTimerSettingsView(delegate: RestTimerSettingsDelegate) { }
         func showSmartProgressionSettingsView(delegate: SmartProgressionSettingsDelegate) { }
-        func showPreviousWorkoutReferenceSettingsView(delegate: PrevWORefSettingsDelegate) { }
         func showExerciseAssessmentView(delegate: ExerciseAssessmentDelegate) { }
         func showTimerDurationView(delegate: TimerDurationDelegate) { }
     }
@@ -176,10 +167,10 @@ struct SaveFailureAlertTests {
         }
     }
 
-    @Test("Test Time Selection Reports A Failed Save")
-    func testTimeSelectionReportsAFailedSave() async {
-        await expectOneFailure("TimeSelectionView_Save_Fail") { interactor, router in
-            TimeSelectionPresenter(interactor: interactor, router: router).autoSetCurrentTime.toggle()
+    @Test("Test Food Log Auto-set Current Time Reports A Failed Save")
+    func testFoodLogAutoSetCurrentTimeReportsAFailedSave() async {
+        await expectOneFailure("FoodLogSettingsView_Save_Fail") { interactor, router in
+            FoodLogSettingsPresenter(interactor: interactor, router: router).autoSetCurrentTime.toggle()
         }
     }
 
@@ -190,10 +181,10 @@ struct SaveFailureAlertTests {
         }
     }
 
-    @Test("Test Optimisation Reports A Failed Save")
-    func testOptimisationReportsAFailedSave() async {
-        await expectOneFailure("OptimisationView_Save_Fail") { interactor, router in
-            OptimisationPresenter(interactor: interactor, router: router).quickAddEnabled.toggle()
+    @Test("Test Food Log Quick Add Reports A Failed Save")
+    func testFoodLogQuickAddReportsAFailedSave() async {
+        await expectOneFailure("FoodLogSettingsView_Save_Fail") { interactor, router in
+            FoodLogSettingsPresenter(interactor: interactor, router: router).quickAddEnabled.toggle()
         }
     }
 
@@ -218,10 +209,10 @@ struct SaveFailureAlertTests {
         }
     }
 
-    @Test("Test Previous Workout Reference Settings Reports A Failed Save")
-    func testPreviousWorkoutReferenceSettingsReportsAFailedSave() async {
-        await expectOneFailure("PreviousWorkoutReferenceSettingsView_Save_Fail") { interactor, router in
-            let presenter = PrevWORefSettingsPresenter(interactor: interactor, router: router)
+    @Test("Test Workout Settings Previous Reference Reports A Failed Save")
+    func testWorkoutSettingsPreviousReferenceReportsAFailedSave() async {
+        await expectOneFailure("WorkoutSettingsView_Save_Fail") { interactor, router in
+            let presenter = WorkoutSettingsPresenter(interactor: interactor, router: router)
             presenter.previousWorkoutReference = PreviousWorkoutReferenceOption.allCases.last ?? presenter.previousWorkoutReference
         }
     }

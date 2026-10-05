@@ -3,6 +3,7 @@ import SwiftUI
 struct EditUsernameView: View {
 
     @State var presenter: EditUsernamePresenter
+    @FocusState private var isFieldFocused: Bool
 
     var body: some View {
         Form {
@@ -15,6 +16,12 @@ struct EditUsernameView: View {
                         .autocorrectionDisabled()
                         .textContentType(.username)
                         .accessibilityIdentifier("UsernameField")
+                        .focused($isFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            guard presenter.canSave else { return }
+                            Task { await presenter.onSavePressed() }
+                        }
                 }
             } footer: {
                 statusLabel
@@ -39,6 +46,7 @@ struct EditUsernameView: View {
         }
         .onAppear {
             presenter.onViewAppear()
+            isFieldFocused = true
         }
     }
 

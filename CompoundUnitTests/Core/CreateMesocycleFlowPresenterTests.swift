@@ -118,6 +118,9 @@ struct MesocycleFlowNameMesocyclePresenterTests {
         func showMesocycleIconView(delegate: MesocycleIconDelegate) {
             iconDelegates.append(delegate)
         }
+
+        private(set) var dismissCount = 0
+        func dismissEnvironment() { dismissCount += 1 }
     }
 
     private struct Screen {
@@ -196,6 +199,17 @@ struct MesocycleFlowNameMesocyclePresenterTests {
         screen.presenter.onViewAppear()
 
         #expect(screen.interactor.trackedScreenEventNames == ["NameProgramView_Appear"])
+    }
+
+    /// From the library the cover opens on this screen, so its close has to end the flow.
+    @Test("Test Close Ends The Flow")
+    func testCloseEndsTheFlow() {
+        let screen = makeScreen()
+
+        screen.presenter.onDismissPressed()
+
+        #expect(screen.router.dismissCount == 1)
+        #expect(screen.router.iconDelegates.isEmpty)
     }
 }
 

@@ -110,10 +110,15 @@ class WorkoutExerciseEquipmentSheetPresenter {
         }
     }
 
-    func onSelectVariation(id: String) {
-        guard chosenVariationId != id else { return }
-        chosenVariationId = id
-        interactor.playHaptic(option: .selection)
+    /// A tap on a row is the choice: it is applied and the sheet closes. Tapping the one already
+    /// chosen just closes.
+    func onSelectVariation(id: String, onSelect: (String?) -> Void) {
+        if chosenVariationId != id {
+            chosenVariationId = id
+            interactor.playHaptic(option: .selection)
+            onSelect(id)
+        }
+        dismissScreen()
     }
 
     /// The row's subtitle: what the variation loads with and what it is braced by, leaving out
@@ -127,11 +132,6 @@ class WorkoutExerciseEquipmentSheetPresenter {
     }
 
     func onCancelPressed() {
-        dismissScreen()
-    }
-
-    func onDonePressed(onSelect: @escaping (String?) -> Void) {
-        onSelect(chosenVariationId)
         dismissScreen()
     }
 

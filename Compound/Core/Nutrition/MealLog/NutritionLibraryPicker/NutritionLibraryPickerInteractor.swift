@@ -9,8 +9,6 @@
 protocol NutritionLibraryPickerInteractor: GlobalInteractor {
     var foodLogSettings: FoodLogSettings { get }
     func saveExternalFood(_ food: FoodModel) async
-    /// The most recent time this food was logged, so it can be logged again at the same amount.
-    func lastLoggedItem(forIngredientId ingredientId: String) -> MealItemModel?
 }
 
 extension CoreInteractor: NutritionLibraryPickerInteractor {
@@ -19,9 +17,5 @@ extension CoreInteractor: NutritionLibraryPickerInteractor {
         let owned = food.withAuthorId(uid)
         // Silent: caching an external food into the library is a side effect of logging it.
         try? await saveFood(owned, image: nil)
-    }
-
-    func lastLoggedItem(forIngredientId ingredientId: String) -> MealItemModel? {
-        userMeals.ingredientItemsNewestFirst.first { $0.sourceId == ingredientId }
     }
 }

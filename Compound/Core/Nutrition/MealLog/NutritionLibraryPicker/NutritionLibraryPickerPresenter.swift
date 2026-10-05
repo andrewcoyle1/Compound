@@ -40,29 +40,7 @@ class NutritionLibraryPickerPresenter {
             onPick(ingredient.mealItem(amount: ingredient.defaultPortionAmount))
             return
         }
-        // A food logged before opens at last time's amount, which is usually the one wanted again.
-        let last = lastLoggedAmount(of: ingredient)
-        router.showIngredientAmountView(delegate: IngredientAmountDelegate(
-            ingredient: ingredient,
-            onPick: onPick,
-            initialAmountText: last.map { NutritionScaling.rounded($0.amount).formatted(.number.grouping(.never)) },
-            initialUnit: last?.unit
-        ))
-    }
-
-    /// A row's "+": the food goes straight onto the plate, at last time's amount when it has been
-    /// logged before and its own portion otherwise. The row itself still opens the amount screen.
-    func quickAdd(_ food: FoodModel, onPick: (MealItemModel) -> Void) {
-        if food.authorId == nil {
-            Task { await interactor.saveExternalFood(food) }
-        }
-        let last = lastLoggedAmount(of: food)
-        interactor.playHaptic(option: .success)
-        onPick(food.mealItem(amount: last?.amount ?? food.defaultPortionAmount, unit: last?.unit))
-    }
-
-    private func lastLoggedAmount(of food: FoodModel) -> (amount: Double, unit: ServingUnit?)? {
-        interactor.lastLoggedItem(forIngredientId: food.ingredientId).flatMap { food.loggedAmount(of: $0) }
+        router.showIngredientAmountView(delegate: IngredientAmountDelegate(ingredient: ingredient, onPick: onPick))
     }
 
     func navToRecipeAmount(_ recipe: RecipeTemplateModel, onPick: @escaping (MealItemModel) -> Void) {

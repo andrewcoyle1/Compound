@@ -2,9 +2,6 @@ import SwiftUI
 
 struct FoodItemSearchDelegate {
     var onFoodSelected: ((FoodModel) -> Void)?
-    /// The row's "+": adds the food without the amount screen. Without one, "+" opens the amount
-    /// screen like the row does.
-    var onFoodQuickAdded: ((FoodModel) -> Void)?
     /// The plate's current items, so a row can show how many of this food are already on it.
     var mealItems: Binding<[MealItemModel]>?
     var eventParameters: [String: Any]? { nil }
@@ -107,7 +104,7 @@ struct FoodItemSearchView: View {
         return FoodLibraryPickerRowView(delegate: FoodLibraryPickerRowDelegate(
             item: food,
             onAdd: { delegate.onFoodSelected?(food) },
-            onQuickAdd: { (delegate.onFoodQuickAdded ?? delegate.onFoodSelected)?(food) },
+            onQuickAdd: { delegate.onFoodSelected?(food) },
             showImage: settings.showFoodImageInLogger,
             showCalories: settings.showCaloriesInLogger,
             showMacros: settings.showMacrosInLogger,

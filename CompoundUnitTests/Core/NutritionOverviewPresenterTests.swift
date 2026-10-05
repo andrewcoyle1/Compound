@@ -565,10 +565,6 @@ struct MealDetailPresenterTests {
     private final class Interactor: SpyGlobalInteractor, MealDetailInteractor {
         private(set) var deletedMealIds: [String] = []
         var deleteError: Error?
-        var currentUser: UserModel? = UserModel(userId: "user-1")
-        var draftMeal: MealLogModel?
-
-        func deleteDraftMeal() throws { }
 
         func deleteMealAndSync(id: String, dayKey: String, authorId: String) async throws {
             if let deleteError { throw deleteError }
@@ -578,13 +574,10 @@ struct MealDetailPresenterTests {
 
     private final class Router: MealDetailRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var addMealDelegates: [AddMealDelegate] = []
 
         // Declared unguarded: the test target builds without -DDEV, so matching the protocol's
         // `#if` here would leave the conformance short of a requirement the app module compiled.
         func showDevSettingsView() { }
-
-        func showAddMealView(delegate: AddMealDelegate) { addMealDelegates.append(delegate) }
     }
 
     private func item(name: String, calories: Double, protein: Double, carbs: Double, fat: Double) -> MealItemModel {
@@ -612,21 +605,6 @@ struct MealDetailPresenterTests {
 
     private func makePresenter() -> MealDetailPresenter {
         MealDetailPresenter(interactor: Interactor(), router: Router())
-    }
-
-    /// Log Again opens Add Meal on a copy of the meal, now: a new meal id, the same items.
-    @Test("Test Log Again Opens A Copy Of The Meal Now")
-    func testLogAgainOpensACopyOfTheMealNow() throws {
-        let router = Router()
-        let presenter = MealDetailPresenter(interactor: Interactor(), router: router)
-        let logged = meal(items: [item(name: "Rice", calories: 200, protein: 4, carbs: 45, fat: 1)])
-
-        presenter.onLogAgainPressed(meal: logged)
-
-        let copy = try #require(router.addMealDelegates.first?.mealLog)
-        #expect(copy.mealId != logged.mealId)
-        #expect(copy.items == logged.items)
-        #expect(copy.dayKey == Date().dayKey)
     }
 
     /// Item nutrients are stored at the amount logged, so the meal's totals are a plain sum.

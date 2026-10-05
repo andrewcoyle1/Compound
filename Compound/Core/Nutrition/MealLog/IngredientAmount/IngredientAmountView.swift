@@ -10,11 +10,9 @@ import SwiftUI
 struct IngredientAmountDelegate {
     var ingredient: FoodModel
     let onPick: (MealItemModel) -> Void
-    /// Prefills the amount, e.g. with an AI estimate's amount or last time's, so it can be
-    /// corrected rather than starting over. Nil opens on the food's own portion.
-    var initialAmountText: String?
-    /// The serving unit `initialAmountText` is counted in; nil for grams or millilitres.
-    var initialUnit: ServingUnit?
+    /// Prefills the amount, e.g. with an AI estimate's amount, so it can be corrected rather than
+    /// starting the field over at 100.
+    var initialAmountText: String = "100"
 }
 
 struct IngredientAmountView: View {
@@ -23,15 +21,12 @@ struct IngredientAmountView: View {
 
     var delegate: IngredientAmountDelegate
 
-    @FocusState private var isAmountFocused: Bool
-
     var body: some View {
         Form {
             Section("Amount") {
                 HStack {
                     TextField("Amount", text: $presenter.amountText)
                         .keyboardType(.decimalPad)
-                        .focused($isAmountFocused)
                     if delegate.ingredient.servingUnits.isEmpty {
                         Text(presenter.unitLabel(ingredient: delegate.ingredient))
                             .foregroundStyle(.secondary)
@@ -55,15 +50,7 @@ struct IngredientAmountView: View {
         }
         .navigationTitle(delegate.ingredient.name)
         .onAppear {
-            presenter.onViewAppear(
-                ingredient: delegate.ingredient,
-                initialAmountText: delegate.initialAmountText,
-                initialUnit: delegate.initialUnit
-            )
-        }
-        // The amount is the one thing this screen asks for.
-        .onFirstAppear {
-            isAmountFocused = true
+            presenter.onViewAppear(ingredient: delegate.ingredient)
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -79,11 +66,13 @@ struct IngredientAmountView: View {
 
 extension CoreBuilder {
     func ingredientAmountView(router: AnyRouter, delegate: IngredientAmountDelegate) -> some View {
-        IngredientAmountView(
-            presenter: IngredientAmountPresenter(
-                interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
-            ),
+        let presenter = IngredientAmountPresenter(
+            interactor: interactor,
+            router: CoreRouter(router: router, builder: self)
+        )
+        presenter.amountText = delegate.initialAmountText
+        return IngredientAmountView(
+            presenter: presenter,
             delegate: delegate
         )
     }

@@ -659,20 +659,6 @@ struct NutritionPresenterTests {
         #expect(screen.router.addMealDelegates.last?.mealLog.dayKey == Date().dayKey)
     }
 
-    /// Log Again opens Add Meal on a copy of the meal, now: a new meal id, the same items.
-    @Test("Test Log Again Opens A Copy Of The Meal Now")
-    func testLogAgainOpensACopyOfTheMealNow() throws {
-        let screen = makeScreen()
-        let logged = meal(id: "meal-1", at: monday, items: [item(id: "a", calories: 300)])
-
-        screen.presenter.onLogAgainPressed(logged)
-
-        let copy = try #require(screen.router.addMealDelegates.first?.mealLog)
-        #expect(copy.mealId != "meal-1")
-        #expect(copy.items == logged.items)
-        #expect(copy.dayKey == Date().dayKey)
-    }
-
     @Test("Test The Library Rows Open Foods And Recipes")
     func testTheLibraryRowsOpenFoodsAndRecipes() {
         let screen = makeScreen()

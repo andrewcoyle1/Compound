@@ -49,18 +49,6 @@ extension FoodModel {
             nutrients: nutrients.scaled(by: base / 100.0)
         )
     }
-
-    /// The amount and unit `item` was logged at, read back against this food, so logging it again
-    /// repeats last time's amount. A unit this food no longer has falls back to the grams or
-    /// millilitres the item resolved to; nil when there is nothing usable to read.
-    func loggedAmount(of item: MealItemModel) -> (amount: Double, unit: ServingUnit?)? {
-        guard item.amount.isFinite, item.amount > 0 else { return nil }
-        if item.unit == loggedUnitLabel { return (item.amount, nil) }
-        if let unit = servingUnits.first(where: { $0.name == item.unit }) { return (item.amount, unit) }
-        let base = measurementMethod == .weight ? item.resolvedGrams : item.resolvedMilliliters
-        guard let base, base.isFinite, base > 0 else { return nil }
-        return (base, nil)
-    }
 }
 
 extension Array where Element == MealItemModel {

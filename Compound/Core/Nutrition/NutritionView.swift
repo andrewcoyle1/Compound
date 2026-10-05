@@ -155,12 +155,6 @@ struct NutritionView<
             } label: {
                 Label("Meal", systemImage: Symbol.meal)
             }
-            Button {
-                presenter.onLogAgainPressed(meal)
-            } label: {
-                Label("Log Again", systemImage: Symbol.history)
-            }
-            .tint(.accentColor)
         }
         // The same actions for anyone who cannot swipe.
         .contextMenu {
@@ -168,11 +162,6 @@ struct NutritionView<
                 presenter.onViewMealPressed(meal)
             } label: {
                 Label("View Meal", systemImage: Symbol.meal)
-            }
-            Button {
-                presenter.onLogAgainPressed(meal)
-            } label: {
-                Label("Log Again", systemImage: Symbol.history)
             }
             Button(role: .destructive) {
                 presenter.deleteMealItem(item, from: meal)

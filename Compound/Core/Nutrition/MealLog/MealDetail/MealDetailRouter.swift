@@ -6,8 +6,6 @@
 //
 
 @MainActor
-protocol MealDetailRouter: GlobalRouter {
-    func showAddMealView(delegate: AddMealDelegate)
-}
+protocol MealDetailRouter: GlobalRouter { }
 
 extension CoreRouter: MealDetailRouter { }

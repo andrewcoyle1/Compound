@@ -531,22 +531,6 @@ struct IngredientAmountPresenterTests {
         #expect(recipeInteractor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
-    /// An amount handed in, such as an AI estimate or last time's, is what the screen opens on.
-    /// The food's default portion used to overwrite it on appear, so a 250 g estimate showed 100 g.
-    @Test("Test A Prefilled Amount Survives Appearing")
-    func testAPrefilledAmountSurvivesAppearing() {
-        let presenter = ingredientPresenter()
-
-        presenter.onViewAppear(ingredient: food(), initialAmountText: "250")
-
-        #expect(presenter.amountText == "250")
-        #expect(presenter.selectedUnit == nil)
-
-        let plain = ingredientPresenter()
-        plain.onViewAppear(ingredient: food())
-        #expect(plain.amountText == "100")
-    }
-
     @Test("Test An Ingredient Amount Scales From Per 100g")
     func testAnIngredientAmountScalesFromPer100g() {
         let presenter = ingredientPresenter()

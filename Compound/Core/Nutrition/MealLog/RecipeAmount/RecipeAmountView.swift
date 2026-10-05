@@ -17,14 +17,11 @@ struct RecipeAmountView: View {
 
     let delegate: RecipeAmountDelegate
 
-    @FocusState private var isServingsFocused: Bool
-
     var body: some View {
         Form {
             Section("Servings") {
                 TextField("Servings", text: $presenter.servingsText)
                     .keyboardType(.decimalPad)
-                    .focused($isServingsFocused)
             }
             EstimatedMacrosSection(
                 title: "Estimated Macros (per serving)",
@@ -36,9 +33,6 @@ struct RecipeAmountView: View {
         }
         .navigationTitle(delegate.recipe.name)
         .navigationBarTitleDisplayMode(.inline)
-        .onFirstAppear {
-            isServingsFocused = true
-        }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Add", role: .confirm) {

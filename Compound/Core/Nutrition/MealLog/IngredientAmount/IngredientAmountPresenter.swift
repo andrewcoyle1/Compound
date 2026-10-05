@@ -54,19 +54,13 @@ class IngredientAmountPresenter {
 
     private var hasStartedFromPortion = false
 
-    /// Opens on the amount it was handed — an AI estimate, or last time's — and otherwise on the
-    /// food's own portion, the one its row in the list and Quick Add describe, rather than a flat
-    /// 100 g: rolled oats listed at "0.5 cup" used to open at 100 g. The portion used to overwrite
-    /// a handed-in amount too, so a 250 g estimate opened at 100 g. Once only, so coming back from
-    /// the unit picker keeps what was typed.
-    func onViewAppear(ingredient: FoodModel, initialAmountText: String? = nil, initialUnit: ServingUnit? = nil) {
+    /// Opens on the food's own portion, the one its row in the list and Quick Add describe, rather
+    /// than a flat 100 g: rolled oats listed at "0.5 cup" used to open at 100 g. Once only, so
+    /// coming back from the unit picker keeps what was typed.
+    func onViewAppear(ingredient: FoodModel) {
         guard !hasStartedFromPortion else { return }
         hasStartedFromPortion = true
-        if let initialAmountText {
-            // The unit first: changing it rewrites the amount.
-            selectedUnit = initialUnit
-            amountText = initialAmountText
-        } else if let portion = ingredient.portionNameCalculated,
+        if let portion = ingredient.portionNameCalculated,
            let unit = ingredient.servingUnits.first(where: { $0.name == portion }) {
             selectedUnit = unit
             amountText = (ingredient.portionQuantityCalculated ?? 1).formatted(.number.grouping(.never))

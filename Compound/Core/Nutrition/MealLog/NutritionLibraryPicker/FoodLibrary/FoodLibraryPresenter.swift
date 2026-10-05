@@ -7,7 +7,7 @@ class FoodLibraryPresenter {
     private let interactor: FoodLibraryInteractor
     private let router: FoodLibraryRouter
     
-    var foodLibraryOption: FoodLibraryOption
+    var foodLibraryOption: FoodLibraryOption = .recipes
 
     /// The query in the library's search field. It filters the favourites drawn here and is handed
     /// to the recipes and foods lists, which had no search of their own despite this comment
@@ -17,11 +17,6 @@ class FoodLibraryPresenter {
     init(interactor: FoodLibraryInteractor, router: FoodLibraryRouter) {
         self.interactor = interactor
         self.router = router
-        // Favourites are what the user keeps coming back to, so they open first once there are any.
-        let settings = interactor.foodLogSettings
-        self.foodLibraryOption = settings.favouriteFoodIds.isEmpty && settings.favouriteRecipeIds.isEmpty
-            ? .recipes
-            : .favourites
     }
 
     var searchPrompt: String {
@@ -72,14 +67,8 @@ class FoodLibraryPresenter {
         )
     }
 
-    /// In the picker a favourite recipe is being logged, so it opens the servings step, as the
-    /// Recipes tab does; its detail screen had no way to add it. Elsewhere it opens the detail.
-    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel, onPick: ((MealItemModel) -> Void)? = nil) {
-        guard let onPick else {
-            router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
-            return
-        }
-        router.showRecipeAmountView(delegate: RecipeAmountDelegate(recipe: recipe, onPick: onPick))
+    func onFavouriteRecipePressed(_ recipe: RecipeTemplateModel) {
+        router.showRecipeDetailView(delegate: RecipeDetailDelegate(recipeTemplate: recipe))
     }
 
     /// The prompt and the list both change with the tab; a stale query would filter the new list

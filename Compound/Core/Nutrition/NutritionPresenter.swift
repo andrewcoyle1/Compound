@@ -294,18 +294,7 @@ final class NutritionPresenter {
         let date = calendar.isDateInToday(selectedDate)
             ? Date()
             : calendar.date(bySettingHour: 12, minute: 0, second: 0, of: selectedDate) ?? selectedDate
-        openAddMeal(MealLogModel(authorId: userId, dayKey: date.dayKey, date: date, items: []))
-    }
-
-    /// The same meal again, now: Add Meal opens on a copy so it can be adjusted before logging.
-    func onLogAgainPressed(_ meal: MealLogModel) {
-        guard let userId = interactor.currentUser?.userId else { return }
-        openAddMeal(meal.copy(at: Date(), authorId: userId))
-    }
-
-    /// Opens Add Meal on `newMeal`, asking first when a draft is in progress: logging deletes the
-    /// draft, so opening over it unasked would lose it.
-    private func openAddMeal(_ newMeal: MealLogModel) {
+        let newMeal = MealLogModel(authorId: userId, dayKey: date.dayKey, date: date, items: [])
         guard let draft = interactor.draftMeal else {
             router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
             return

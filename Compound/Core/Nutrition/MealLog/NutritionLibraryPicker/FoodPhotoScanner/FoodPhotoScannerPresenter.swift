@@ -25,27 +25,6 @@ struct FoodAnalysisItem: Identifiable, Decodable {
         if let fatGrams { nutrients[.fatTotal] = fatGrams * density }
         return FoodModel(ingredientId: ingredientId ?? UUID().uuidString, name: name, nutrients: nutrients)
     }
-
-    /// The estimate as a meal item, as is. The model's figures are absolute for the amount it
-    /// estimated, so they go through unscaled; a nutrient it did not give stays absent.
-    var mealItem: MealItemModel {
-        var nutrients = NutrientMap()
-        if let calories { nutrients[.calories] = calories }
-        if let proteinGrams { nutrients[.protein] = proteinGrams }
-        if let carbGrams { nutrients[.carbs] = carbGrams }
-        if let fatGrams { nutrients[.fatTotal] = fatGrams }
-        return MealItemModel(
-            itemId: UUID().uuidString,
-            sourceType: .ingredient,
-            sourceId: ingredientId ?? UUID().uuidString,
-            displayName: name,
-            amount: amountGrams,
-            unit: "g",
-            resolvedGrams: amountGrams,
-            resolvedMilliliters: nil,
-            nutrients: nutrients
-        )
-    }
 }
 
 @Observable
@@ -95,7 +74,6 @@ class FoodPhotoScannerPresenter {
         isAnalysing = true
         errorMessage = nil
         analysisResults = []
-        didAddAll = false
         interactor.trackEvent(event: Event.onCapture)
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
@@ -121,21 +99,26 @@ class FoodPhotoScannerPresenter {
         isAnalysing = false
         analysisResults = []
         errorMessage = nil
-        didAddAll = false
     }
 
-    /// Set once Add All has put this shot's results on the plate, so a second tap cannot add them
-    /// twice. A new shot clears it.
-    private(set) var didAddAll = false
-
-    /// Every result onto the plate at its estimate, in one tap. Correcting an amount is still a tap
-    /// on its row away.
-    func onAddAllPressed(onPick: (MealItemModel) -> Void) {
-        guard !didAddAll, !analysisResults.isEmpty else { return }
-        didAddAll = true
-        interactor.trackEvent(event: Event.onAddAll(count: analysisResults.count))
-        analysisResults.forEach { onPick($0.mealItem) }
-        interactor.playHaptic(option: .success)
+    func makeMealItem(from item: FoodAnalysisItem) -> MealItemModel {
+        interactor.trackEvent(event: Event.onAddItem(name: item.name))
+        var nutrients = NutrientMap()
+        if let val = item.calories { nutrients[.calories] = val }
+        if let val = item.proteinGrams { nutrients[.protein] = val }
+        if let val = item.carbGrams { nutrients[.carbs] = val }
+        if let val = item.fatGrams { nutrients[.fatTotal] = val }
+        return MealItemModel(
+            itemId: UUID().uuidString,
+            sourceType: .ingredient,
+            sourceId: item.ingredientId ?? UUID().uuidString,
+            displayName: item.name,
+            amount: item.amountGrams,
+            unit: "g",
+            resolvedGrams: item.amountGrams,
+            resolvedMilliliters: nil,
+            nutrients: nutrients
+        )
     }
 
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
@@ -156,7 +139,6 @@ extension FoodPhotoScannerPresenter {
         case onAppear
         case onCapture
         case onAddItem(name: String)
-        case onAddAll(count: Int)
         case onError(message: String)
         case onCameraDenied
         case onOpenSettings
@@ -166,7 +148,6 @@ extension FoodPhotoScannerPresenter {
             case .onAppear:   return "FoodPhotoScannerView_Appear"
             case .onCapture:  return "FoodPhotoScanner_Capture"
             case .onAddItem:  return "FoodPhotoScanner_AddItem"
-            case .onAddAll:   return "FoodPhotoScanner_AddAll"
             case .onError:    return "FoodPhotoScanner_Error"
             case .onCameraDenied: return "FoodPhotoScanner_CameraDenied"
             case .onOpenSettings: return "FoodPhotoScanner_OpenSettings"
@@ -176,7 +157,6 @@ extension FoodPhotoScannerPresenter {
         var parameters: [String: Any]? {
             switch self {
             case .onAddItem(let name):    return ["item_name": name]
-            case .onAddAll(let count):    return ["item_count": count]
             case .onError(let message):  return ["error": message]
             default:                     return nil
             }

@@ -1,26 +1,25 @@
 import SwiftUI
 import PhotosUI
 
-struct AccountDelegate {
+struct EditProfileDelegate {
     var eventParameters: [String: Any]? {
         nil
     }
 }
 
-struct AccountView: View {
+struct EditProfileView: View {
     
-    @State var presenter: AccountPresenter
-    let delegate: AccountDelegate
+    @State var presenter: EditProfilePresenter
+    let delegate: EditProfileDelegate
     
     var body: some View {
         List {
             imageSection
             profileSection
             privacySection
-            securitySection
         }
         .ignoresSafeArea(edges: .top)
-        .navigationTitle("Account")
+        .navigationTitle("Edit Profile")
         .navigationBarTitleDisplayMode(.inline)
         .photosPicker(isPresented: $presenter.isImagePickerPresented, selection: $presenter.selectedPhotoItem, matching: .images)
         .onAppear(perform: presenter.prefillFromCurrentUser)
@@ -171,36 +170,6 @@ struct AccountView: View {
         }
     }
 
-    private var securitySection: some View {
-        Section {
-            // Read-only, not an editor. Sign-in is Apple, Google or anonymous, so the address is the
-            // identity provider's and cannot be changed from here. A "Password ********" row used to
-            // sit below this one — removed, because there is no password to change: `SignInOption`
-            // has no email case anywhere in the app.
-            ListRow(title: String(localized: "Sign-In Method"), accessory: .value(presenter.signInMethod))
-            ListRow(title: String(localized: "Email"), accessory: .value(presenter.currentUser?.email ?? String(localized: "Not provided")))
-
-            // Signing an anonymous account out locks it away for good, so that account is offered
-            // the upgrade in place of Sign Out rather than alongside it.
-            if presenter.isAnonymousUser {
-                ListRowButton(title: String(localized: "Save Account"), accessory: .none) {
-                    presenter.onSaveAccountPressed()
-                }
-            } else {
-                ListRowButton(title: String(localized: "Sign Out"), accessory: .none) {
-                    presenter.onSignOutPressed()
-                }
-            }
-            Button(role: .destructive) {
-                presenter.onDeleteAccountPressed()
-            } label: {
-                Text("Delete Account")
-            }
-        } header: {
-            Text("Security")
-        }
-    }
-
     // A "Data Management" section sat here with two rows. Data Export was an empty closure and stays
     // unbuilt: it needs an export format and a Cloud Function, and `functions/` has no export
     // callable. Data Visibility routed to a screen that is still a template stub, and wants a privacy
@@ -209,6 +178,11 @@ struct AccountView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .cancellationAction) {
+            Button(role: .close) {
+                presenter.onCancelPressed()
+            }
+        }
         ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.presentImagePicker()
@@ -236,18 +210,18 @@ struct AccountView: View {
     let container = DevPreview.shared.container()
     let interactor = CoreInteractor(container: container)
     let builder = CoreBuilder(interactor: interactor)
-    let delegate = AccountDelegate()
+    let delegate = EditProfileDelegate()
     
     return RouterView { router in
-        builder.accountView(router: router, delegate: delegate)
+        builder.editProfileView(router: router, delegate: delegate)
     }
 }
 
 extension CoreBuilder {
     
-    func accountView(router: AnyRouter, delegate: AccountDelegate) -> some View {
-        AccountView(
-            presenter: AccountPresenter(
+    func editProfileView(router: AnyRouter, delegate: EditProfileDelegate) -> some View {
+        EditProfileView(
+            presenter: EditProfilePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self)
             ),
@@ -259,9 +233,9 @@ extension CoreBuilder {
 
 extension CoreRouter {
     
-    func showAccountView(delegate: AccountDelegate) {
-        router.showScreen(.push) { router in
-            builder.accountView(router: router, delegate: delegate)
+    func showEditProfileView(delegate: EditProfileDelegate) {
+        router.showScreen(.sheet) { router in
+            builder.editProfileView(router: router, delegate: delegate)
         }
     }
     

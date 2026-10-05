@@ -275,7 +275,7 @@ struct ExpenditureDetailPresenterTests {
     private final class Router: ExpenditureDetailRouter {
         let router: AnyRouter = TestRouting.anyRouter
 
-        func showAccountView(delegate: AccountDelegate) { }
+        func showEditProfileView(delegate: EditProfileDelegate) { }
     }
 
     private func makePresenter(tdee: Double = 2500) -> ExpenditureDetailPresenter {

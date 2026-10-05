@@ -172,8 +172,8 @@ extension AppViewForUITesting {
             ("STARTSCREEN_NUTRITION_ANALYTICS", {
                 builder.nutritionAnalyticsView(router: $0, delegate: NutritionAnalyticsDelegate()).any()
             }),
-            ("STARTSCREEN_PROFILE", { builder.profileView(router: $0).any() }),
-            ("STARTSCREEN_ACCOUNT", { builder.accountView(router: $0, delegate: AccountDelegate()).any() }),
+            ("STARTSCREEN_SETTINGS", { builder.settingsView(router: $0).any() }),
+            ("STARTSCREEN_EDIT_PROFILE", { builder.editProfileView(router: $0, delegate: EditProfileDelegate()).any() }),
             ("STARTSCREEN_DELETE_ACCOUNT", { builder.deleteAccountView(router: $0).any() }),
             ("STARTSCREEN_SIRI", { builder.siriView(router: $0, delegate: SiriDelegate()).any() }),
             ("STARTSCREEN_WHY_SUBSCRIBE", { builder.subscriptionView(router: $0).any() }),

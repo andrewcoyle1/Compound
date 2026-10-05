@@ -66,7 +66,7 @@ struct UnitConversion {
     //
     // `ExerciseWeightUnit` above is the per-exercise preference. `WeightUnitPreference` and
     // `LengthUnitPreference` are the user-level ones set during onboarding, and nothing here
-    // covered them — so `2.20462` was written out by hand in ProfilePresenter,
+    // covered them — so `2.20462` was written out by hand in SettingsPresenter,
     // ExerciseTemplateDetailPresenter and three onboarding presenters, and the Analytics tab
     // skipped conversion altogether.
 

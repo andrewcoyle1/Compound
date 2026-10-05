@@ -92,9 +92,9 @@ extension ScreenDeckSmokeTests {
 
     func testNutritionAnalytics() { smoke("STARTSCREEN_NUTRITION_ANALYTICS") }
 
-    func testProfile() { smoke("STARTSCREEN_PROFILE") }
+    func testSettings() { smoke("STARTSCREEN_SETTINGS") }
 
-    func testAccount() { smoke("STARTSCREEN_ACCOUNT") }
+    func testEditProfile() { smoke("STARTSCREEN_EDIT_PROFILE") }
 
     func testDeleteAccount() { smoke("STARTSCREEN_DELETE_ACCOUNT") }
 

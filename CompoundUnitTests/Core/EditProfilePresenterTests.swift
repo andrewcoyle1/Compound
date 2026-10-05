@@ -1,5 +1,5 @@
 //
-//  ProfileAccountPresenterTests.swift
+//  EditProfilePresenterTests.swift
 //  CompoundUnitTests
 //
 //  Created by Andrew Coyle on 21/09/2026.
@@ -11,39 +11,22 @@ import UIKit
 import SwiftUI
 @testable import Compound
 
-/// The Account screen: the profile the user edits about themselves, and the two irreversible
-/// buttons at the bottom of it — Sign Out and Delete Account.
-///
-/// Everything here is either a write to the one profile other screens read from, or a destruction
-/// of it. So the tests care about three things: that a save writes each field into the field it
-/// belongs in, that deletion cannot happen without the user confirming it, and that a failure
-/// leaves the user where they were rather than half signed out of an account that still exists.
+/// Edit Profile: the profile the user edits about themselves, which every other screen reads from.
+/// So the tests care that a save writes each field into the field it belongs in, and that a
+/// failure saves nothing.
 @MainActor
-struct ProfileAccountPresenterTests {
+struct EditProfilePresenterTests {
 
     // MARK: - Doubles
 
-    private final class Interactor: SpyGlobalInteractor, AccountInteractor {
-        var auth: UserAuthInfo?
+    private final class Interactor: SpyGlobalInteractor, EditProfileInteractor {
         var currentUser: UserModel?
 
-        private(set) var didSignOut = false
-        private(set) var didDeleteUserProfile = false
         private(set) var savedData: [[String: any DMCodableSendable]] = []
         private(set) var uploadedImageCount = 0
 
-        var signOutError: Error?
         var updateUserError: Error?
         var updateImageError: Error?
-
-        func signOut() async throws {
-            if let signOutError { throw signOutError }
-            didSignOut = true
-        }
-
-        func deleteUserProfile() {
-            didDeleteUserProfile = true
-        }
 
         func updateProfileImageUrl(image: PlatformImage) async throws {
             if let updateImageError { throw updateImageError }
@@ -59,34 +42,14 @@ struct ProfileAccountPresenterTests {
         }
     }
 
-    /// `switchToOnboardingModule()` and `showAuthView()` are the only methods `AccountRouter`
-    /// requires, so they are the only ones a double sees. `dismissScreen`, `dismissEnvironment` and
-    /// `showAlert(error:)` are
-    /// `GlobalRouter` extensions, dispatched statically, and never reach here — which is why the
-    /// failure tests below assert on "did not switch to onboarding" rather than "showed an alert".
-    private final class Router: AccountRouter {
+    /// `dismissScreen` and `showAlert(error:)` are `GlobalRouter` extensions, dispatched
+    /// statically, and never reach this double.
+    private final class Router: EditProfileRouter {
         let router: AnyRouter = TestRouting.anyRouter
-        private(set) var didSwitchToOnboarding = false
-        private(set) var authViewShownCount = 0
-
-        func switchToOnboardingModule() {
-            didSwitchToOnboarding = true
-        }
-
-        func showAuthView() {
-            authViewShownCount += 1
-        }
-
         private(set) var editUsernameShownCount = 0
 
         func showEditUsernameView() {
             editUsernameShownCount += 1
-        }
-
-        private(set) var deleteAccountShownCount = 0
-
-        func showDeleteAccountView() {
-            deleteAccountShownCount += 1
         }
 
         private(set) var alertTitles: [String] = []
@@ -102,19 +65,18 @@ struct ProfileAccountPresenterTests {
     }
 
     private struct Screen {
-        let presenter: AccountPresenter
+        let presenter: EditProfilePresenter
         let interactor: Interactor
         let router: Router
-        let delegate = AccountDelegate()
+        let delegate = EditProfileDelegate()
     }
 
-    private func makeScreen(user: UserModel? = UserModel(userId: "user-1"), isAnonymous: Bool = false) -> Screen {
+    private func makeScreen(user: UserModel? = UserModel(userId: "user-1")) -> Screen {
         let interactor = Interactor()
         interactor.currentUser = user
-        interactor.auth = UserAuthInfo(uid: user?.userId ?? "user-1", isAnonymous: isAnonymous)
         let router = Router()
         return Screen(
-            presenter: AccountPresenter(interactor: interactor, router: router),
+            presenter: EditProfilePresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )
@@ -264,19 +226,6 @@ struct ProfileAccountPresenterTests {
 
         let saved = screen.interactor.savedData.first?[UserModel.CodingKeys.submittedHeightCentimeters.rawValue] as? Double
         #expect(abs((saved ?? 0) - 177.8) < 0.001)
-    }
-
-    @Test("Test Account Says How The Person Signs In")
-    func testAccountSaysHowThePersonSignsIn() {
-        let apple = makeScreen()
-        apple.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.apple])
-        #expect(apple.presenter.signInMethod == "Apple")
-
-        let google = makeScreen()
-        google.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.google])
-        #expect(google.presenter.signInMethod == "Google")
-
-        #expect(makeScreen(isAnonymous: true).presenter.signInMethod == "Not saved")
     }
 
     /// Clearing the field does not clear the stored height — there is no "no height" state in the
@@ -473,79 +422,6 @@ struct ProfileAccountPresenterTests {
         screen.presenter.presentImagePicker()
 
         #expect(screen.presenter.isImagePickerPresented)
-    }
-
-    // MARK: - Upgrading an anonymous account
-
-    /// Signing an anonymous account out is irreversible — there is no credential to sign back in
-    /// with — so that account is offered the upgrade in place of Log Out. This was the only screen
-    /// in the app offering it, and it was on a screen nothing navigated to.
-    @Test("Test An Anonymous Account Is Offered The Upgrade Instead Of Log Out")
-    func testAnAnonymousAccountIsOfferedTheUpgradeInsteadOfLogOut() {
-        #expect(makeScreen(isAnonymous: true).presenter.isAnonymousUser)
-        #expect(!makeScreen(isAnonymous: false).presenter.isAnonymousUser)
-    }
-
-    /// The upgrade goes to the same `AuthView` onboarding uses, which links a credential to the
-    /// signed-in anonymous user rather than replacing it, so the data logged so far survives.
-    @Test("Test Saving An Anonymous Account Opens Sign In")
-    func testSavingAnAnonymousAccountOpensSignIn() {
-        let screen = makeScreen(isAnonymous: true)
-
-        screen.presenter.onSaveAccountPressed()
-
-        #expect(screen.router.authViewShownCount == 1)
-        #expect(!screen.interactor.didSignOut)
-        #expect(screen.interactor.trackedEventNames == ["Settings_SaveAccount_Press"])
-    }
-
-    // MARK: - Sign out
-
-    /// Signing out has to actually sign out and then put the user back on the onboarding module.
-    /// Leaving them on a settings screen belonging to an account they no longer hold is the
-    /// half-state this guards against.
-    @Test("Test Signing Out Signs Out And Returns To Onboarding")
-    func testSigningOutSignsOutAndReturnsToOnboarding() async {
-        let screen = makeScreen()
-
-        screen.presenter.onSignOutPressed()
-
-        await TestManagers.eventually { screen.router.didSwitchToOnboarding }
-        #expect(screen.interactor.didSignOut)
-        #expect(screen.interactor.trackedEventNames.contains("Settings_SignOut_Success"))
-    }
-
-    /// A sign-out that fails leaves the user signed in. Switching to onboarding anyway would show
-    /// the welcome flow to someone whose session is still live, and the next screen they reach
-    /// would be full of their data again.
-    @Test("Test A Failed Sign Out Leaves The User Signed In")
-    func testAFailedSignOutLeavesTheUserSignedIn() async {
-        let screen = makeScreen()
-        screen.interactor.signOutError = URLError(.networkConnectionLost)
-
-        screen.presenter.onSignOutPressed()
-
-        await TestManagers.eventually { screen.interactor.trackedEventNames.contains("Settings_SignOut_Fail") }
-        #expect(!screen.router.didSwitchToOnboarding)
-        #expect(!screen.interactor.didSignOut)
-        #expect(!screen.interactor.trackedEventNames.contains("Settings_SignOut_Success"))
-    }
-
-    // MARK: - Delete account
-
-    /// Delete Account opens the confirmation screen and deletes nothing. It used to raise an alert
-    /// that said nothing about the subscription, the sign-in or the timing; the deletion itself is
-    /// now `DeleteAccountPresenterTests`.
-    @Test("Test Pressing Delete Account Opens The Confirmation And Destroys Nothing")
-    func testPressingDeleteAccountOpensTheConfirmationAndDestroysNothing() {
-        let screen = makeScreen()
-
-        screen.presenter.onDeleteAccountPressed()
-
-        #expect(screen.router.deleteAccountShownCount == 1)
-        #expect(screen.router.alertTitles.isEmpty)
-        #expect(!screen.router.didSwitchToOnboarding)
-        #expect(screen.interactor.trackedEventNames == ["Settings_DeleteAccount_Start"])
     }
 
     // MARK: - Tracking

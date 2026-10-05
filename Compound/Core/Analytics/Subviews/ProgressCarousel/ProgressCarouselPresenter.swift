@@ -127,7 +127,7 @@ class ProgressCarouselPresenter {
             }
         }
 
-        var colour: Color {
+        @MainActor var colour: Color {
             switch self {
             case .expenditure: return EnergyBalanceChart.expenditureColor
             case .targets: return Color.Metric.goalProgress

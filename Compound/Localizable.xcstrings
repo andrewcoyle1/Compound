@@ -24,12 +24,32 @@
         }
       }
     },
+    "Both sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambos lados"
+          }
+        }
+      }
+    },
     "Days of this mesocycle. Change them by editing the mesocycle." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días de este mesociclo. Cámbialos editando el mesociclo."
+          }
+        }
+      }
+    },
+    "Logs each side as its own set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra cada lado como su propia serie"
           }
         }
       }
@@ -60,6 +80,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar una copia en entrenamientos"
+          }
+        }
+      }
+    },
+    "Split L/R" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar I/D"
+          }
+        }
+      }
+    },
+    "Split left and right" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar izquierda y derecha"
           }
         }
       }

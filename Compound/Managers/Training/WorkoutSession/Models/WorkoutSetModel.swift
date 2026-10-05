@@ -32,6 +32,13 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
     var completedAt: Date?
     var dateCreated: Date
 
+    /// Weight × reps, `nil` without both. A `both` row is two limbs' work logged once, so it
+    /// counts twice — the same as the left and right rows it stands for.
+    var volumeKg: Double? {
+        guard let weightKg, let reps else { return nil }
+        return weightKg * Double(reps) * (side == .both ? 2 : 1)
+    }
+
     init(
         id: String,
         authorId: String,

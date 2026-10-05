@@ -50,20 +50,19 @@ struct WorkingSetPrefill {
     /// Fills `workingSets` from the suggestion for this exercise, falling back per field to what
     /// was logged last time. A set with neither is left exactly as it was built.
     ///
-    /// Worked one limb at a time, an exercise has two rows per set: the previous session's rows
-    /// line up one-to-one, but a suggestion has one entry per set, so both rows of a set read the
-    /// same suggested entry.
+    /// `workingSets` has one row per set, a per-side exercise included (one `both` row each). Last
+    /// session may have been split into a left and a right row per set, so it is read one row per
+    /// set too, the left standing for the pair — otherwise set 2 would inherit set 1's right arm.
     @MainActor
     func apply(to workingSets: inout [WorkoutSetModel]) {
         guard prefill.fillsWorkingSets else { return }
 
-        let perSide = WorkoutSessionModel.isPerSide(exercise)
         let suggestion = prefill.suggestion(for: exercise.id)
-        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup }
+        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right }
         let preferredUnit = unitPreferences?[exercise.id]?.weightUnit
 
         for index in workingSets.indices {
-            let suggested = suggestion?.set(at: perSide ? index / 2 : index)
+            let suggested = suggestion?.set(at: index)
             let previous = index < previousWorkingSets.count ? previousWorkingSets[index] : nil
             guard suggested != nil || previous != nil else { continue }
 

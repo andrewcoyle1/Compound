@@ -40,7 +40,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             ForEach(delegate.exercise.sets.filter { $0.wrappedValue.completedAt == nil || !$0.wrappedValue.isWarmup }) { set in
                 // Matched on the side as well as the number: a left set inheriting the right
                 // arm's last weight sends the user chasing the other arm's numbers.
-                let lastSet = delegate.lastExercise?.matchingSet(for: set.wrappedValue)
+                let lastSet = delegate.lastExercise?.matchingSet(for: set.wrappedValue, in: delegate.exercise.wrappedValue)
                 let suggestedSet = delegate.progressionSuggestion?.suggestedSet(
                     for: set.wrappedValue,
                     in: delegate.exercise.wrappedValue
@@ -83,6 +83,20 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                     } label: {
                         Label("Warmup", systemImage: Symbol.warmup)
                             .tapTarget()
+                    }
+
+                    if delegate.exercise.wrappedValue.isPerSide {
+                        let isSplit = delegate.exercise.wrappedValue.isSplit
+                        Button {
+                            presenter.onSplitSidesPressed(delegate.exercise)
+                        } label: {
+                            Label("Split L/R", systemImage: Symbol.splitSides)
+                                .tapTarget()
+                        }
+                        .tint(isSplit ? .accentColor : .secondary)
+                        .accessibilityLabel("Split left and right")
+                        .accessibilityHint("Logs each side as its own set")
+                        .accessibilityAddTraits(isSplit ? .isSelected : [])
                     }
 
                     Button {

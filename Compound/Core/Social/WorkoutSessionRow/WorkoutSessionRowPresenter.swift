@@ -63,7 +63,7 @@ class WorkoutSessionRowPresenter {
 
     /// Working sets' weight × reps, `nil` when nothing was lifted. Tonnes from 1,000 kg up.
     var volumeText: String? {
-        let kilograms = workingSets.reduce(0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
+        let kilograms = workingSets.reduce(0) { $0 + ($1.volumeKg ?? 0) }
         guard kilograms > 0 else { return nil }
         // ponytail: tonnes have no `Format` function; add `Format.volume` if a second screen needs it.
         guard kilograms < 1000 else { return "\((kilograms / 1000).formatted(.number.precision(.fractionLength(1)))) t" }
@@ -133,7 +133,7 @@ class WorkoutSessionRowPresenter {
         let workingSets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
         // Every row counts towards the volume — both sides were lifted — but a left and a right
         // are one set, so the set count pairs them.
-        let volume = workingSets.reduce(0.0) { $0 + (($1.weightKg ?? 0) * Double($1.reps ?? 0)) }
+        let volume = workingSets.reduce(0.0) { $0 + ($1.volumeKg ?? 0) }
         let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
         var parts = [
             session.name,

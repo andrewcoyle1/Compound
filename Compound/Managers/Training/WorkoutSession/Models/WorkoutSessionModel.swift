@@ -216,8 +216,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         return .repsOnly
     }
 
-    /// Whether this exercise is worked one limb at a time, so each set is logged twice — once per
-    /// side — and the two rows are the one set.
+    /// Whether this exercise is worked one limb at a time, so its sets are logged for both sides
+    /// (`SetSide.both`), or split into a left and a right row that are the one set.
     ///
     /// Read off the metrics the exercise is tracked by, because that is the only field every
     /// exercise has. `laterality` would look like the obvious answer and is not: it is optional,
@@ -446,9 +446,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     
     /// The empty sets an exercise starts a session with.
     ///
-    /// `targetCount` is how many sets the user is being asked to do. For an exercise worked one
-    /// limb at a time that is twice as many rows, left then right, because each side is filled in
-    /// separately — but it is still that many sets, and everything that counts them says so.
+    /// `targetCount` is how many sets the user is being asked to do. An exercise worked one limb
+    /// at a time gets one `both` row per set, which the tracker's Split chip can turn into a left
+    /// and a right row when the sides differ.
     static func defaultSets(
         trackingMode: TrackingMode,
         authorId: String,
@@ -456,31 +456,22 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         perSide: Bool = false
     ) -> [WorkoutSetModel] {
         let count = max(targetCount, 1)
-        let sides: [SetSide?] = perSide ? SetSide.ordered.map { $0 } : [nil]
-        var sets: [WorkoutSetModel] = []
-
-        for _ in 0..<count {
-            for side in sides {
-                sets.append(
-                    WorkoutSetModel(
-                        id: UUID().uuidString,
-                        authorId: authorId,
-                        index: sets.count + 1,
-                        reps: nil,
-                        weightKg: nil,
-                        durationSec: defaultDurationSec(for: trackingMode),
-                        distanceMeters: defaultDistanceMeters(for: trackingMode),
-                        rpe: nil,
-                        side: side,
-                        isWarmup: false,
-                        completedAt: nil,
-                        dateCreated: .now
-                    )
-                )
-            }
+        return (1...count).map { index in
+            WorkoutSetModel(
+                id: UUID().uuidString,
+                authorId: authorId,
+                index: index,
+                reps: nil,
+                weightKg: nil,
+                durationSec: defaultDurationSec(for: trackingMode),
+                distanceMeters: defaultDistanceMeters(for: trackingMode),
+                rpe: nil,
+                side: perSide ? .both : nil,
+                isWarmup: false,
+                completedAt: nil,
+                dateCreated: .now
+            )
         }
-
-        return sets
     }
 
     /// Timed and distance work starts from a figure worth showing; weight and reps start empty.

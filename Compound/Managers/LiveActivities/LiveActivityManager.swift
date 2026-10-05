@@ -114,10 +114,7 @@ class LiveActivityManager: LiveActivityUpdating {
             let allSets = session.exercises.flatMap { $0.sets }
             // Sets pair; volume does not — both sides of a set are real work lifted.
             let completedSetsCount = session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
-            let totalVolume = allSets.compactMap { set -> Double? in
-                guard let weight = set.weightKg, let reps = set.reps else { return nil }
-                return weight * Double(reps)
-            }.reduce(0.0, +)
+            let totalVolume = allSets.compactMap(\.volumeKg).reduce(0.0, +)
             
             finalState.finalDurationSeconds = elapsedTime
             finalState.finalVolumeKg = totalVolume > 0 ? totalVolume : nil

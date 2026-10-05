@@ -107,6 +107,8 @@ class SetTrackerPresenter {
             : []
         var sets = logged + fresh
         for index in sets.indices { sets[index].index = index + 1 }
+        // Kept split if it was, so the fresh rows match the logged pairs above them.
+        if exercise.wrappedValue.isSplit && !logged.isEmpty { sets = sets.splittingSides() }
 
         exercise.wrappedValue.templateId = newExercise.id
         exercise.wrappedValue.name = newExercise.name
@@ -178,7 +180,15 @@ class SetTrackerPresenter {
         exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
     }
 
-    /// Adds one more set — which is two rows for an exercise worked a side at a time, so the user
+    /// Logs each side as its own row, or both sides as one again. Joining keeps the left side's
+    /// figures; the chip that calls this only shows for an exercise worked a side at a time.
+    func onSplitSidesPressed(_ exercise: Binding<WorkoutExerciseModel>) {
+        let sets = exercise.wrappedValue.sets
+        exercise.wrappedValue.sets = exercise.wrappedValue.isSplit ? sets.joiningSides() : sets.splittingSides()
+        interactor.playHaptic(option: .selection)
+    }
+
+    /// Adds one more set — which is two rows for an exercise whose sides are split, so the user
     /// is never handed a left with no right to follow it.
     func addSet(exercise: Binding<WorkoutExerciseModel>) {
         guard let userId = interactor.userId else { return }
@@ -188,9 +198,7 @@ class SetTrackerPresenter {
         // and this handed the new set an index another set already held. Warmup sets share the
         // same numbering, which makes it easier still to hit.
         var nextIndex = (existingSets.map(\.index).max() ?? 0) + 1
-        let sides: [SetSide?] = exercise.wrappedValue.isPerSide ? SetSide.ordered.map { $0 } : [nil]
-
-        for side in sides {
+        for side in exercise.wrappedValue.sidesPerSet {
             // Carry forward the figures of the last set on the same side, so a left set copies the
             // left arm's weight rather than the right one's.
             let lastSet = existingSets.last(where: { side == nil || $0.side == side }) ?? existingSets.last

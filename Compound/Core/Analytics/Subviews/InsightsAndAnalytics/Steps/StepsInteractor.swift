@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol StepsInteractor {
+protocol StepsInteractor: GlobalInteractor {
     var userId: String? { get }
     var stepsHistory: [StepsModel] { get }
     func syncStepsFromHealthKit(fromScratch: Bool) async

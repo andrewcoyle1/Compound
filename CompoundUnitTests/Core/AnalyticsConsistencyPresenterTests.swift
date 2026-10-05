@@ -271,7 +271,7 @@ struct AnalyticsWeighInConsistencyTests {
 @MainActor
 struct AnalyticsWorkoutConsistencyTests {
 
-    private final class Interactor: WorkoutInteractor {
+    private final class Interactor: SpyGlobalInteractor, WorkoutInteractor {
         var auth: UserAuthInfo?
         var workoutSessions: [WorkoutSessionModel] = []
     }

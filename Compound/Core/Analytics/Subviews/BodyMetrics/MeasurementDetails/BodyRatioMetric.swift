@@ -107,6 +107,14 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
 
     func onAppear() async { }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(kind: kind))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: kind))
+    }
+
     /// A ratio is computed rather than logged, but the waist is the input measurement both kinds
     /// need, and `kind.requirement` already tells the user to log one — so this does it.
     func onAddPressed() {
@@ -150,6 +158,29 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
             .sorted { $0.date < $1.date }
     }
 
+}
+
+extension BodyRatioPresenter {
+    enum Event: LoggableEvent {
+        case onAppear(kind: BodyRatioKind)
+        case onDisappear(kind: BodyRatioKind)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:    return "BodyRatioView_Appear"
+            case .onDisappear: return "BodyRatioView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let kind), .onDisappear(let kind):
+                return ["ratio": kind.rawValue]
+            }
+        }
+
+        var type: LogType { .analytic }
+    }
 }
 
 extension CoreRouter {

@@ -109,10 +109,11 @@ class NutritionTargetChartPresenter {
         for offset in 0..<Self.daysInWeek {
             let date = Calendar.current.date(byAdding: .day, value: offset, to: start) ?? start
             let key = date.dayKey
-            // Silent: local read for a chart; a missing day is a gap.
-            if let dayTotals = try? interactor.getDailyTotals(dayKey: key) {
-                totals.append(dayTotals)
-            } else {
+            // Local read for a chart; a missing day is a gap, so a failure is logged but not shown.
+            do {
+                totals.append(try interactor.getDailyTotals(dayKey: key))
+            } catch {
+                interactor.trackEvent(event: Event.loadWeekFail(error: error))
                 totals.append(DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0))
             }
         }
@@ -161,15 +162,27 @@ class NutritionTargetChartPresenter {
 
     enum Event: LoggableEvent {
         case createPlanPressed
+        case loadWeekFail(error: Error)
 
         var eventName: String {
             switch self {
             case .createPlanPressed: return "NutritionTargetChart_CreatePlan_Pressed"
+            case .loadWeekFail: return "NutritionTargetChartView_LoadWeek_Fail"
             }
         }
 
-        var parameters: [String: Any]? { nil }
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadWeekFail(let error): return error.eventParameters
+            default: return nil
+            }
+        }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .loadWeekFail: return .warning
+            default: return .analytic
+            }
+        }
     }
 }

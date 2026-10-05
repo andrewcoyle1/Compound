@@ -26,6 +26,7 @@ class StepsPresenter {
                 try await interactor.requestHealthKitAuthorisation(for: .steps)
             } catch {
                 // User denied or failed - continue to load; will show empty if no access
+                interactor.trackEvent(event: Event.loadAuthorisationFail(error: error))
             }
         }
         await interactor.syncStepsFromHealthKit(fromScratch: false)
@@ -85,6 +86,14 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         await loadData()
     }
@@ -94,10 +103,12 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
     /// an empty step history had nothing the user could do about it.
     func onAddPressed() {
         Task {
+            interactor.trackEvent(event: Event.syncStart)
             if interactor.canRequestHealthDataAuthorisation() {
                 do {
                     try await interactor.requestHealthKitAuthorisation(for: .steps)
                 } catch {
+                    interactor.trackEvent(event: Event.syncFail(error: error))
                     router.showSimpleAlert(
                         title: String(localized: "Unable to Access Apple Health"),
                         subtitle: String(localized: "Allow step access in the Apple Health app to sync your steps.")
@@ -106,7 +117,47 @@ extension StepsPresenter: @MainActor MetricDetailPresenter {
                 }
             }
             await interactor.syncStepsFromHealthKit(fromScratch: true)
+            interactor.trackEvent(event: Event.syncSuccess)
         }
     }
 
+}
+
+extension StepsPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case loadAuthorisationFail(error: Error)
+        case syncStart
+        case syncSuccess
+        case syncFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "StepsView_Appear"
+            case .onDisappear: return "StepsView_Disappear"
+            case .loadAuthorisationFail: return "StepsView_LoadAuthorisation_Fail"
+            case .syncStart: return "StepsView_Sync_Start"
+            case .syncSuccess: return "StepsView_Sync_Success"
+            case .syncFail: return "StepsView_Sync_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .loadAuthorisationFail(let error), .syncFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .syncFail: return .severe
+            case .loadAuthorisationFail: return .warning
+            default: return .analytic
+            }
+        }
+    }
 }

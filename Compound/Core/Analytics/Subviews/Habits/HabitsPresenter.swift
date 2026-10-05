@@ -236,6 +236,7 @@ class HabitsPresenter {
             self.foodLoggingContributionData = contributionData
             
         } catch {
+            interactor.trackEvent(event: Event.loadFoodLoggingFail(error: error))
             self.foodLoggingContributionData = Array(repeating: 0.0, count: 30)
             self.foodLoggingCountThisWeek = 0
         }
@@ -246,16 +247,20 @@ extension HabitsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case loadFoodLoggingFail(error: Error)
         
         var eventName: String {
             switch self {
             case .onAppear:     return "HabitsView_Appear"
             case .onDisappear:  return "HabitsView_Disappear"
+            case .loadFoodLoggingFail: return "HabitsView_LoadFoodLogging_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
+            case .loadFoodLoggingFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -263,9 +268,10 @@ extension HabitsPresenter {
         
         var type: LogType {
             switch self {
+            case .loadFoodLoggingFail:
+                return .warning
             default:
                 return .analytic
-                
             }
         }
     }

@@ -15,7 +15,7 @@ import {
     stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL,
 } from "./lib.js";
 import { genkit } from "genkit";
-import { vertexAI, gemini20Flash, imagen3Fast } from "@genkit-ai/vertexai";
+import { vertexAI, gemini, imagen3Fast } from "@genkit-ai/vertexai";
 
 initializeApp();
 
@@ -34,8 +34,14 @@ const CALLABLE_OPTIONS = { region: REGION, enforceAppCheck: true };
 // ---------------------------------------------------------------------------
 
 const ai = genkit({
-    plugins: [vertexAI({ projectId: PROJECT_ID, location: REGION })],
+    // The project comes from the runtime, so the dev deploy spends the dev project's Vertex quota.
+    plugins: [vertexAI({ location: REGION })],
 });
+
+// gemini-2.0-flash was retired on Vertex AI, and every call to it answered 404, which reached the
+// app as INTERNAL. Thinking is off, as 2.0 Flash had none: it would add latency and count against
+// chatGenerate's maxOutputTokens.
+const TEXT_MODEL = gemini("gemini-2.5-flash", { thinkingConfig: { thinkingBudget: 0 } });
 
 
 async function findOrCreateIngredient(uid, item) {
@@ -126,7 +132,7 @@ Include every distinct food item visible. Estimate realistic portion sizes in gr
 calculate macronutrients per portion. All numeric fields must be numbers, not strings.`;
 
     const { text } = await ai.generate({
-        model: gemini20Flash,
+        model: TEXT_MODEL,
         prompt: [
             {
                 media: {
@@ -175,7 +181,7 @@ Estimate realistic portion sizes in grams and calculate macronutrients per compo
 All numeric fields must be numbers, not strings.`;
 
     const { text } = await ai.generate({
-        model: gemini20Flash,
+        model: TEXT_MODEL,
         prompt,
         config: { responseMimeType: "application/json" },
     });
@@ -218,7 +224,7 @@ Label text:
 ${labelText.trim()}`;
 
     const { text } = await ai.generate({
-        model: gemini20Flash,
+        model: TEXT_MODEL,
         prompt,
         config: { responseMimeType: "application/json" },
     });
@@ -245,7 +251,7 @@ export const chatGenerate = onCall(CALLABLE_OPTIONS, async (request) => {
     const last = messages[messages.length - 1];
 
     const { text } = await ai.generate({
-        model: gemini20Flash,
+        model: TEXT_MODEL,
         messages: history,
         prompt: last.message,
         config: { temperature, maxOutputTokens },

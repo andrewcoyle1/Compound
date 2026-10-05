@@ -50,7 +50,14 @@ struct WorkoutSessionDetailPresenterTests {
             preferences[templateId] = preference
         }
 
-        func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { [] }
+        /// What the session manager holds, which is where an upload's Strava id lands.
+        var storedSessions: [WorkoutSessionModel] = []
+        func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { storedSessions }
+        var stravaIsConnected = false
+        private(set) var stravaUpdates: [(activityId: Int, session: WorkoutSessionModel)] = []
+        func stravaUpdateActivity(_ activityId: Int, from session: WorkoutSessionModel) async throws {
+            stravaUpdates.append((activityId, session))
+        }
         func deleteWorkoutSession(id: String) async throws {
             deletedSessionIds.append(id)
         }

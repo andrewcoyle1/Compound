@@ -36,6 +36,8 @@ struct WorkoutSessionAuthorTests {
         func setPreference(weightUnit: ExerciseWeightUnit?, distanceUnit: ExerciseDistanceUnit?, for templateId: String) { }
         func deleteWorkoutSession(id: String) async throws { }
         func workoutSessions(authoredBy authorId: String) -> [WorkoutSessionModel] { [] }
+        var stravaIsConnected: Bool { false }
+        func stravaUpdateActivity(_ activityId: Int, from session: WorkoutSessionModel) async throws { }
     }
 
     private final class Router: WorkoutSessionDetailRouter {

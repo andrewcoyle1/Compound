@@ -890,3 +890,67 @@ export function stravaTokenForm(data, clientSecret) {
 export function stravaTokenErrorCode(status) {
     return status === 400 || status === 401 ? "permission-denied" : "unavailable";
 }
+
+export const STRAVA_API = "https://www.strava.com/api/v3";
+export const STRAVA_REVOKE_URL = "https://www.strava.com/oauth/revoke";
+
+// Whether a token response's scope lets Compound upload. Strava has sent both comma- and
+// space-delimited lists; a response with no scope at all is taken at its word.
+export function grantsUpload(scope) {
+    if (scope == null) return true;
+    return String(scope).split(/[,\s]+/).includes("activity:write");
+}
+
+// Compound's own uploads carry external_id "compound-<session id>". Importing them would count
+// a workout twice: once as the session, once as the activity it became.
+export function isCompoundUpload(activity) {
+    return typeof activity?.external_id === "string" && activity.external_id.startsWith("compound-");
+}
+
+// What the app reads of an athlete: name and avatar for "Connected as".
+export function stravaAthlete(athlete) {
+    return { id: athlete.id, firstname: athlete.firstname ?? "", lastname: athlete.lastname ?? "", profile: athlete.profile ?? "" };
+}
+
+// A Strava activity as users/{uid}/strava_activities stores it. The Date becomes a Timestamp in
+// Firestore; absent optionals are left out rather than written as null.
+export function stravaActivityDoc(activity) {
+    const doc = {
+        id: String(activity.id),
+        name: activity.name ?? "",
+        sport_type: activity.sport_type ?? activity.type ?? "Workout",
+        start_date: new Date(activity.start_date),
+        elapsed_time: Math.trunc(activity.elapsed_time ?? 0),
+        moving_time: Math.trunc(activity.moving_time ?? 0),
+        distance: activity.distance ?? 0,
+        total_elevation_gain: activity.total_elevation_gain ?? 0,
+    };
+    if (typeof activity.average_heartrate === "number") doc.average_heartrate = activity.average_heartrate;
+    return doc;
+}
+
+// The webhook body, checked and reduced to the fields Compound uses, or null when it is not a
+// Strava event. Webhooks are unsigned, so nothing here is trusted beyond triggering a re-read.
+export function parseStravaWebhook(body) {
+    if (!body || typeof body !== "object") return null;
+    const { object_type: objectType, aspect_type: aspectType, object_id: objectId, owner_id: ownerId } = body;
+    if (!["activity", "athlete"].includes(objectType) || !["create", "update", "delete"].includes(aspectType)) return null;
+    if (!Number.isFinite(objectId) || !Number.isFinite(ownerId)) return null;
+    const updates = body.updates && typeof body.updates === "object" ? body.updates : {};
+    return { object_type: objectType, aspect_type: aspectType, object_id: objectId, owner_id: ownerId, updates };
+}
+
+// The athlete revoked Compound on strava.com. Strava sends "false" as a string.
+export function isDeauthorization(event) {
+    return event.object_type === "athlete" && event.aspect_type === "update"
+        && String(event.updates?.authorized) === "false";
+}
+
+export function basicAuthHeader(clientId, clientSecret) {
+    return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`;
+}
+
+// Strava tokens last six hours; one expiring within the minute is refreshed first.
+export function stravaTokenNeedsRefresh(expiresAt, nowSeconds) {
+    return !(expiresAt > nowSeconds + 60);
+}

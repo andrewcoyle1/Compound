@@ -67,11 +67,20 @@ struct WeeklyReviewTests {
         meals: [MealLogModel] = [],
         goal: Int = 3,
         templates: [String: ExerciseModel] = [:],
-        dailyTargets: [DailyMacroTarget] = []
+        dailyTargets: [DailyMacroTarget] = [],
+        stravaActivities: [StravaImportedActivity] = []
     ) -> WeeklyReview {
         WeeklyReview.build(
             sessions: sessions, measurements: measurements, meals: meals, week: week, userId: "me",
-            goal: goal, templates: templates, dailyTargets: dailyTargets, calendar: Self.calendar
+            goal: goal, templates: templates, dailyTargets: dailyTargets, stravaActivities: stravaActivities,
+            calendar: Self.calendar
+        )
+    }
+
+    private func run(_ id: String, day: Int, meters: Double, seconds: Int) -> StravaImportedActivity {
+        StravaImportedActivity(
+            id: id, name: "Run", sportType: "Run", startDate: Self.date(day: day), elapsedTime: seconds + 60,
+            movingTime: seconds, distance: meters, totalElevationGain: nil, averageHeartrate: nil
         )
     }
 
@@ -188,6 +197,26 @@ struct WeeklyReviewTests {
         #expect(build(meals: [meal(2000, day: 10)]).nutrition == nil)
     }
 
+    // MARK: - Strava
+
+    /// The week runs Monday 9 to Sunday 15 March; a run either side of it is another week's.
+    @Test("Test Strava Activities In The Week Are Totalled")
+    func testStravaActivitiesInTheWeekAreTotalled() {
+        let review = build(stravaActivities: [
+            run("before", day: 8, meters: 9_000, seconds: 3_000),
+            run("a", day: 9, meters: 5_000, seconds: 1_500),
+            run("b", day: 15, meters: 10_000, seconds: 3_100),
+            run("after", day: 16, meters: 9_000, seconds: 3_000)
+        ])
+
+        #expect(review.strava == StravaTotals(count: 2, distanceMeters: 15_000, movingTime: 4_600))
+    }
+
+    @Test("Test A Week Without Strava Activities Has No Strava Line")
+    func testAWeekWithoutStravaActivitiesHasNoStravaLine() {
+        #expect(build().strava == nil)
+    }
+
     // MARK: - Takeaway
 
     @Test("Test Takeaway")
@@ -220,6 +249,7 @@ struct WeeklyReviewTests {
         var userMeals: [MealLogModel] = []
         var currentDietPlan: DietPlan?
         var allExercises: [ExerciseModel] = []
+        var stravaImportedActivities: [StravaImportedActivity] = []
     }
 
     final class Router: WeeklyReviewRouter {

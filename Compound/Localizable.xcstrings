@@ -264,6 +264,26 @@
         }
       }
     },
+    "Strava could not process the workout." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava no pudo procesar el entrenamiento."
+          }
+        }
+      }
+    },
+    "View on Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver en Strava"
+          }
+        }
+      }
+    },
     "Weekly Workouts" : {
       "localizations" : {
         "es" : {
@@ -27004,6 +27024,266 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zinc"
+          }
+        }
+      }
+    },
+    "Strava is busy. Your workouts will upload later." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava está ocupado. Tus entrenamientos se subirán más tarde."
+          }
+        }
+      }
+    },
+    "Connected as %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectado como %@"
+          }
+        }
+      }
+    },
+    "%lld workouts waiting to upload" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout waiting to upload"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts waiting to upload"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento pendiente de subir"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos pendientes de subir"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld workouts not on Strava" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout not on Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts not on Strava"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento que no está en Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos que no están en Strava"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Upload %lld past workouts to Strava?" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Upload %lld past workout to Strava?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Upload %lld past workouts to Strava?"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Subir %lld entrenamiento anterior a Strava?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Subir %lld entrenamientos anteriores a Strava?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld workouts queued for Strava" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout queued for Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts queued for Strava"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamiento en cola para Strava"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld entrenamientos en cola para Strava"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Each one goes up with its sets. A long history can take a while." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada uno se sube con sus series. Un historial largo puede tardar un rato."
+          }
+        }
+      }
+    },
+    "Upload Past Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir entrenamientos anteriores"
+          }
+        }
+      }
+    },
+    "Workouts will stop uploading to Strava, and activities imported from it are removed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los entrenamientos dejarán de subirse a Strava y se eliminarán las actividades importadas de allí."
+          }
+        }
+      }
+    },
+    "Unable to Disconnect Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo desconectar Strava"
+          }
+        }
+      }
+    },
+    "From Strava" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De Strava"
+          }
+        }
+      }
+    },
+    "Distance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distancia"
+          }
+        }
+      }
+    },
+    "Moving Time" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo en movimiento"
+          }
+        }
+      }
+    },
+    "Strava This Year" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strava este año"
           }
         }
       }

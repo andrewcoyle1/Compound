@@ -6,6 +6,7 @@
 //
 
 import Testing
+import SwiftUI
 import AuthenticationServices
 import Foundation
 @testable import Compound
@@ -292,24 +293,41 @@ struct GeneralSettingsUnitsTests {
 struct GeneralSettingsIntegrationsTests {
 
     private final class Interactor: SpyGlobalInteractor, IntegrationsInteractor {
-        var stravaIsConnected = false
+        var stravaAthlete: StravaAthlete?
+        var stravaPendingUploadCount = 0
+        var stravaBackfillCount = 0
         private(set) var didDisconnect = false
         private(set) var authenticateCount = 0
         private(set) var testUploadCount = 0
+        private(set) var refreshCount = 0
+        private(set) var backfillQueued = 0
+        private(set) var syncCount = 0
 
         var authenticateError: Error?
+        var disconnectError: Error?
         var testUploadError: Error?
 
         func stravaAuthenticate() async throws {
             authenticateCount += 1
             if let authenticateError { throw authenticateError }
-            stravaIsConnected = true
+            stravaAthlete = StravaAthlete(id: 1, firstname: "Alex", lastname: "Runner", profile: nil)
         }
 
-        func stravaDisconnect() {
+        func stravaDisconnect() async throws {
+            if let disconnectError { throw disconnectError }
             didDisconnect = true
-            stravaIsConnected = false
+            stravaAthlete = nil
         }
+
+        func stravaRefreshConnection() async { refreshCount += 1 }
+
+        func stravaQueueBackfill() -> Int {
+            backfillQueued = stravaBackfillCount
+            stravaBackfillCount = 0
+            return backfillQueued
+        }
+
+        func stravaSyncPendingUploads() async { syncCount += 1 }
 
         func stravaTestUpload() async throws {
             testUploadCount += 1
@@ -322,9 +340,14 @@ struct GeneralSettingsIntegrationsTests {
     private final class Router: IntegrationsRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alerts: [String] = []
+        private(set) var dialogs: [String] = []
 
         func showSimpleAlert(title: String, subtitle: String?) {
             alerts.append(title)
+        }
+
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+            dialogs.append(title)
         }
     }
 
@@ -353,7 +376,55 @@ struct GeneralSettingsIntegrationsTests {
 
         #expect(screen.interactor.authenticateCount == 1)
         #expect(screen.presenter.stravaIsConnected)
+        #expect(screen.presenter.stravaSubtitle == "Connected as Alex Runner")
         #expect(screen.router.alerts.isEmpty)
+    }
+
+    /// Workouts already logged are the next question once connected — and only asked when there are some.
+    @Test("Test Connecting Offers To Upload Past Workouts When There Are Some")
+    func testConnectingOffersToUploadPastWorkoutsWhenThereAreSome() async {
+        let none = makeScreen()
+        none.presenter.onStravaConnectPressed()
+        await TestManagers.eventually { !none.presenter.isConnectingStrava }
+        #expect(none.router.dialogs.isEmpty)
+
+        let some = makeScreen()
+        some.interactor.stravaBackfillCount = 12
+        some.presenter.onStravaConnectPressed()
+        await TestManagers.eventually { !some.presenter.isConnectingStrava }
+        #expect(some.router.dialogs == ["Upload 12 past workouts to Strava?"])
+    }
+
+    @Test("Test Uploading Past Workouts Queues Them And Starts Sending")
+    func testUploadingPastWorkoutsQueuesThemAndStartsSending() async {
+        let screen = makeScreen()
+        screen.interactor.stravaBackfillCount = 3
+
+        screen.presenter.onStravaBackfillPressed()
+
+        #expect(screen.interactor.backfillQueued == 3)
+        #expect(screen.interactor.shownToasts.map(\.style) == [.success])
+        #expect(await TestManagers.eventually { screen.interactor.syncCount == 1 })
+    }
+
+    @Test("Test Pending Uploads Are Counted")
+    func testPendingUploadsAreCounted() {
+        let screen = makeScreen()
+        #expect(screen.presenter.pendingUploadsText == nil)
+
+        screen.interactor.stravaPendingUploadCount = 2
+
+        #expect(screen.presenter.pendingUploadsText == "2 workouts waiting to upload")
+    }
+
+    /// The connection can change elsewhere — another phone, or strava.com — so the screen asks.
+    @Test("Test Appearing Refreshes The Connection")
+    func testAppearingRefreshesTheConnection() async {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear()
+
+        #expect(await TestManagers.eventually { screen.interactor.refreshCount == 1 })
     }
 
     /// Refusing the authorisation, or losing the network partway through it, has to say so. The
@@ -385,22 +456,35 @@ struct GeneralSettingsIntegrationsTests {
         #expect(!screen.presenter.stravaIsConnected)
     }
 
-    /// Disconnect asks first, and once confirmed the row follows at once: the manager's state is
-    /// in the Keychain, which the screen cannot observe, so it used to keep saying "Connected".
+    /// Disconnect asks first, and once confirmed the row follows.
     @Test("Test Disconnecting Strava Asks First Then Drops The Connection")
-    func testDisconnectingStravaAsksFirstThenDropsTheConnection() {
+    func testDisconnectingStravaAsksFirstThenDropsTheConnection() async {
         let screen = makeScreen()
-        screen.interactor.stravaIsConnected = true
-        screen.presenter.onViewAppear()
-        #expect(screen.presenter.stravaIsConnected)
+        screen.interactor.stravaAthlete = StravaAthlete(id: 1, firstname: nil, lastname: nil, profile: nil)
+        #expect(screen.presenter.stravaSubtitle == "Connected")
 
         screen.presenter.onStravaDisconnectPressed()
+        #expect(screen.router.dialogs == ["Disconnect Strava?"])
         #expect(!screen.interactor.didDisconnect)
 
         screen.presenter.onStravaDisconnectConfirmed()
 
-        #expect(screen.interactor.didDisconnect)
+        #expect(await TestManagers.eventually { screen.interactor.didDisconnect })
         #expect(!screen.presenter.stravaIsConnected)
+    }
+
+    /// Disconnecting is a server call now; failing it must not claim the account is disconnected.
+    @Test("Test A Failed Disconnect Is Reported And Stays Connected")
+    func testAFailedDisconnectIsReportedAndStaysConnected() async {
+        let screen = makeScreen()
+        screen.interactor.stravaAthlete = StravaAthlete(id: 1, firstname: nil, lastname: nil, profile: nil)
+        screen.interactor.disconnectError = URLError(.notConnectedToInternet)
+
+        screen.presenter.onStravaDisconnectConfirmed()
+
+        #expect(await TestManagers.eventually { screen.router.alerts == ["Unable to Disconnect Strava"] })
+        #expect(screen.presenter.stravaIsConnected)
+        #expect(!screen.presenter.isDisconnectingStrava)
     }
 
     /// The test upload exists so the user can prove the connection works. Both outcomes have to be

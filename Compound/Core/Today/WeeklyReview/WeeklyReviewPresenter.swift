@@ -43,8 +43,13 @@ class WeeklyReviewPresenter {
             goal: user.map(CircleWeek.goal(for:)) ?? CircleWeek.defaultGoal,
             templates: Dictionary(interactor.allExercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }),
             dailyTargets: interactor.currentDietPlan?.days ?? [],
+            stravaActivities: interactor.stravaImportedActivities,
             calendar: calendar
         )
+    }
+
+    var distanceUnit: DistanceUnitPreference {
+        interactor.currentUser?.submittedDistanceUnitPreference ?? .kilometers
     }
 
     var canShowNextWeek: Bool {

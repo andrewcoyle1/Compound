@@ -14,12 +14,25 @@ struct IntegrationsView: View {
             Section {
                 ListRow(
                     title: String(localized: "Strava"),
-                    subtitle: presenter.stravaIsConnected ? String(localized: "Connected") : String(localized: "Not connected"),
+                    subtitle: presenter.stravaSubtitle,
                     systemImage: Symbol.cardio,
                     tint: .orange,
                     accessory: .custom(AnyView(stravaAction))
                 )
                 if presenter.stravaIsConnected {
+                    if presenter.backfillCount > 0 {
+                        ListRowButton(
+                            title: String(localized: "Upload Past Workouts"),
+                            subtitle: String(localized: "\(presenter.backfillCount) workouts not on Strava"),
+                            systemImage: Symbol.history,
+                            accessory: .none
+                        ) {
+                            presenter.onStravaBackfillPressed()
+                        }
+                    }
+                    if let pending = presenter.pendingUploadsText {
+                        ListRow(title: pending, systemImage: Symbol.duration)
+                    }
                     #if DEV || MOCK
                     // Posts a real activity to the person's Strava account, so development builds only.
                     HStack {
@@ -35,6 +48,7 @@ struct IntegrationsView: View {
                     }
                     #endif
                     Button("Disconnect Strava", role: .destructive) { presenter.onStravaDisconnectPressed() }
+                        .disabled(presenter.isDisconnectingStrava)
                 }
             } header: {
                 Text("Available Integrations")

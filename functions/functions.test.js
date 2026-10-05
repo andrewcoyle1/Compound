@@ -501,4 +501,107 @@ describe("Cloud Functions on the Firestore emulator", { skip: !HOST && "needs FI
             assert.doesNotMatch(bodies[0], /Pat|Push Day/);
         });
     });
+
+    describe("Strava", () => {
+        const calls = [];
+        let replies;
+        const realFetch = globalThis.fetch;
+        const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+        before(() => {
+            process.env.STRAVA_CLIENT_SECRET = "secret";
+            // Only Strava is stubbed; the emulator reset in beforeEach still needs the real fetch.
+            globalThis.fetch = async (url, init = {}) => {
+                if (!String(url).includes("strava.com")) return realFetch(url, init);
+                calls.push({ url: String(url), init });
+                const reply = replies.find(([match]) => String(url).includes(match));
+                return reply ? reply[1]() : json(500, {});
+            };
+        });
+        after(() => { globalThis.fetch = realFetch; });
+        beforeEach(() => { calls.length = 0; replies = []; });
+
+        const future = () => Math.floor(Date.now() / 1000) + 3600;
+        const connection = (over = {}) => ({
+            client_id: "42", athlete_id: 7, access_token: "at", refresh_token: "rt", expires_at: future(),
+            scope: "read,activity:write", athlete: { id: 7, firstname: "Ann", lastname: "Lee", profile: "" }, ...over,
+        });
+        const run1 = { id: 1, name: "Run", sport_type: "Run", start_date: "2026-10-01T06:00:00Z", elapsed_time: 1800, moving_time: 1700, distance: 5000, total_elevation_gain: 10 };
+        const upload = { ...run1, id: 2, sport_type: "WeightTraining", external_id: "compound-s1" };
+        const event = (path, data) => created(fns.onStravaEventCreated, path, data, { eventId: path.split("/")[1] });
+
+        test("an import stores the athlete's activities but not Compound's own uploads, then drops the event", async () => {
+            await seed({ "strava_connections/u": connection() });
+            replies = [["/athlete/activities", () => json(200, [run1, upload])]];
+            await event("strava_events/e1", { type: "import", uid: "u" });
+            assert.equal((await read("users/u/strava_activities/1")).sport_type, "Run");
+            assert.equal(await exists("users/u/strava_activities/2"), false);
+            assert.equal(await exists("strava_events/e1"), false);
+            assert.match(calls[0].init.headers.Authorization, /Bearer at/);
+        });
+
+        test("a webhook create fetches and stores the activity; a delete removes it", async () => {
+            await seed({ "strava_connections/u": connection() });
+            replies = [["/activities/1", () => json(200, run1)]];
+            const webhook = (aspect) => ({ type: "webhook", event: { object_type: "activity", aspect_type: aspect, object_id: 1, owner_id: 7, updates: {} } });
+            await event("strava_events/e2", webhook("create"));
+            assert.equal((await read("users/u/strava_activities/1")).name, "Run");
+            await event("strava_events/e3", webhook("delete"));
+            assert.equal(await exists("users/u/strava_activities/1"), false);
+        });
+
+        test("a deauthorization is believed only when Strava refuses a refresh", async () => {
+            const deauth = { type: "webhook", event: { object_type: "athlete", aspect_type: "update", object_id: 7, owner_id: 7, updates: { authorized: "false" } } };
+            await seed({ "strava_connections/u": connection(), "users/u/strava_activities/1": { id: "1" } });
+            replies = [["/oauth/token", () => json(200, { access_token: "at2", refresh_token: "rt2", expires_at: future() })]];
+            await event("strava_events/e4", deauth);
+            assert.equal((await read("strava_connections/u")).access_token, "at2");
+
+            replies = [["/oauth/token", () => json(400, { message: "Bad Request" })]];
+            await event("strava_events/e5", deauth);
+            assert.equal(await exists("strava_connections/u"), false);
+            assert.equal(await exists("users/u/strava_activities/1"), false);
+        });
+
+        test("stravaAccessToken refreshes an expiring token and stores the rotated pair", async () => {
+            await seed({ "strava_connections/u": connection({ expires_at: 0 }) });
+            replies = [["/oauth/token", () => json(200, { access_token: "at2", refresh_token: "rt2", expires_at: 99 })]];
+            const out = await fns.stravaAccessToken.run({ data: {}, auth: { uid: "u" } });
+            assert.deepEqual(out, { access_token: "at2", expires_at: 99 });
+            assert.equal((await read("strava_connections/u")).refresh_token, "rt2");
+            await assert.rejects(fns.stravaAccessToken.run({ data: {}, auth: { uid: "nobody" } }), { code: "not-found" });
+        });
+
+        test("stravaConnect migrates a refresh token, takes the athlete from another account and queues an import", async () => {
+            await seed({ "strava_connections/other": connection(), "users/other/strava_activities/1": { id: "1" } });
+            replies = [
+                ["/oauth/token", () => json(200, { access_token: "at3", refresh_token: "rt3", expires_at: 99 })],
+                ["/athlete", () => json(200, { id: 7, firstname: "Ann", lastname: "Lee", profile: "p", city: "x" })],
+            ];
+            const out = await fns.stravaConnect.run({ data: { clientId: "42", refreshToken: "old" }, auth: { uid: "u" } });
+            assert.deepEqual(out.athlete, { id: 7, firstname: "Ann", lastname: "Lee", profile: "p" });
+            assert.equal((await read("strava_connections/u")).athlete_id, 7);
+            assert.equal(await exists("strava_connections/other"), false);
+            assert.equal(await exists("users/other/strava_activities/1"), false);
+            const queued = await db.collection("strava_events").where("uid", "==", "u").get();
+            assert.equal(queued.docs[0].data().type, "import");
+        });
+
+        test("stravaConnect refuses a code granted without the upload permission", async () => {
+            replies = [["/oauth/token", () => json(200, { access_token: "a", refresh_token: "r", expires_at: 1, scope: "read", athlete: { id: 7 } })]];
+            await assert.rejects(fns.stravaConnect.run({ data: { clientId: "42", code: "c" }, auth: { uid: "u" } }), { code: "failed-precondition" });
+            assert.equal(await exists("strava_connections/u"), false);
+        });
+
+        test("stravaDisconnect revokes with the client credentials and forgets everything", async () => {
+            await seed({ "strava_connections/u": connection(), "users/u/strava_activities/1": { id: "1" } });
+            replies = [["/oauth/revoke", () => json(200, {})]];
+            assert.deepEqual(await fns.stravaDisconnect.run({ data: {}, auth: { uid: "u" } }), {});
+            const revoke = calls.find((c) => c.url.includes("/oauth/revoke"));
+            assert.equal(revoke.init.headers.Authorization, `Basic ${Buffer.from("42:secret").toString("base64")}`);
+            assert.equal(String(revoke.init.body), "token=rt");
+            assert.equal(await exists("strava_connections/u"), false);
+            assert.equal(await exists("users/u/strava_activities/1"), false);
+            assert.deepEqual(await fns.stravaConnection.run({ data: {}, auth: { uid: "u" } }), { connected: false });
+        });
+    });
 });

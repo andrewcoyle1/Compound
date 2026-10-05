@@ -324,7 +324,20 @@ class DevPreview {
         self.imageUploadManager = ImageUploadManager(service: MockImageUploadService())
         self.commentsManager = CommentsManager(service: MockCommentsService())
         self.activityNotificationManager = ActivityNotificationManager(service: MockActivityNotificationService())
-        self.stravaManager = StravaManager(service: MockStravaService(), clientId: "")
+        self.stravaManager = StravaManager(
+            service: MockStravaService(athlete: StravaAthlete(id: 1, firstname: "Alex", lastname: "Runner", profile: nil)),
+            clientId: "",
+            activitySyncEngine: CollectionSyncEngine<StravaImportedActivity>(
+                remote: MockRemoteCollectionService(collection: StravaImportedActivity.mocks),
+                managerKey: StravaManager.importedActivitiesManagerKey,
+                enableLocalPersistence: false,
+                logger: logManager
+            ),
+            sessions: workoutSessionManager,
+            exercises: exerciseModelManager,
+            users: userManager,
+            logger: logManager
+        )
         self.hapticManager = HapticManager()
         self.soundEffectManager = SoundEffectManager()
 

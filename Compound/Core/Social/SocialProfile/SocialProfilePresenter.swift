@@ -149,6 +149,23 @@ class SocialProfilePresenter {
         )
     }
 
+    /// The owner's Strava activities this calendar year, on their own profile only: Strava's terms
+    /// keep an athlete's data to the athlete. `nil` elsewhere, or with none.
+    var stravaYear: StravaTotals? {
+        guard isOwnProfile, let year = Calendar.current.dateInterval(of: .year, for: .now) else { return nil }
+        return StravaTotals(interactor.stravaImportedActivities, in: year)
+    }
+
+    /// The owner's three latest Strava activities, on their own profile only.
+    var recentStravaActivities: [StravaImportedActivity] {
+        guard isOwnProfile else { return [] }
+        return Array(interactor.stravaImportedActivities.sorted { $0.startDate > $1.startDate }.prefix(3))
+    }
+
+    var distanceUnit: DistanceUnitPreference {
+        interactor.currentUser?.submittedDistanceUnitPreference ?? .kilometers
+    }
+
     /// Only the reader's own mesocycle resolves without fetching someone else's mesocycles, which
     /// live under their own user document.
     var mesocycleName: String? {

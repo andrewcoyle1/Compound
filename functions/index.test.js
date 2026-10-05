@@ -9,7 +9,8 @@ import {
     isStreakReminderDue, isWeeklyDigestDue, localTime, INTERRUPTION_LEVELS, formatLocKey,
     SOCIAL_PUSH_PREFERENCE_KEYS as SOCIAL_PUSH_PREFERENCE_KEYS_FOR_LEVELS, sessionPageContent, offProductToFood,
     offCountryTag, offSearchLangs, mergeSearchHits,
-    stravaTokenForm, stravaTokenErrorCode,
+    stravaTokenForm, stravaTokenErrorCode, grantsUpload, isCompoundUpload, stravaAthlete, stravaActivityDoc,
+    parseStravaWebhook, isDeauthorization, basicAuthHeader, stravaTokenNeedsRefresh,
 } from "./lib.js";
 
 test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", () => {
@@ -44,7 +45,7 @@ test("every callable enforces App Check and requires auth", () => {
     assert.match(src, /const CALLABLE_OPTIONS = \{[^}]*enforceAppCheck: true/);
     const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request\) => \{\s*([^\n]*)/g)];
     assert.match(src, /const STRAVA_CALLABLE_OPTIONS = \{ \.\.\.CALLABLE_OPTIONS,/);
-    assert.equal(callables.length, 9, "expected nine callables");
+    assert.equal(callables.length, 13, "expected thirteen callables");
     for (const [, name, options, firstLine] of callables) {
         assert.match(options.trim(), /^(STRAVA_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
         assert.match(firstLine, /requireAuth\(request\)/, `${name} must call requireAuth first`);
@@ -53,7 +54,8 @@ test("every callable enforces App Check and requires auth", () => {
 
 test("each deployed callable rejects an unauthenticated request before doing any work", async () => {
     const fns = await import("./index.js");
-    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower", "stravaToken"]) {
+    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
+        "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect"]) {
         await assert.rejects(fns[name].run({ data: {}, auth: null }), { code: "unauthenticated" }, name);
     }
 });
@@ -812,4 +814,86 @@ test("mergeSearchHits puts the country first, drops repeats and products with no
     const global = [{ code: "1", name: "Tesco Gala Apples", calories: 53 }, { code: "3", name: "Chausson aux pommes", calories: 251 }];
     assert.deepEqual(mergeSearchHits(local, global).map((f) => f.code), ["1", "3"]);
     assert.equal(mergeSearchHits(local, global, 1).length, 1);
+});
+
+test("grantsUpload reads comma- or space-delimited scopes and trusts a response without one", () => {
+    assert.equal(grantsUpload("read,activity:write"), true);
+    assert.equal(grantsUpload("read activity:write"), true);
+    assert.equal(grantsUpload("read"), false);
+    assert.equal(grantsUpload("activity:write_all"), false);
+    assert.equal(grantsUpload(undefined), true);
+});
+
+test("isCompoundUpload spots Compound's own uploads so they are never imported", () => {
+    assert.equal(isCompoundUpload({ external_id: "compound-session-1" }), true);
+    assert.equal(isCompoundUpload({ external_id: "garmin_push_123" }), false);
+    assert.equal(isCompoundUpload({ external_id: null }), false);
+    assert.equal(isCompoundUpload({}), false);
+});
+
+test("stravaActivityDoc keeps what the app reads, with a string id and no nulls", () => {
+    const doc = stravaActivityDoc({
+        id: 12345678901, name: "Morning Run", sport_type: "Run", start_date: "2026-10-01T06:30:00Z",
+        elapsed_time: 1900.4, moving_time: 1800, distance: 5012.3, total_elevation_gain: 31, average_heartrate: 151.2,
+        map: { polyline: "x" },
+    });
+    assert.deepEqual(doc, {
+        id: "12345678901", name: "Morning Run", sport_type: "Run", start_date: new Date("2026-10-01T06:30:00Z"),
+        elapsed_time: 1900, moving_time: 1800, distance: 5012.3, total_elevation_gain: 31, average_heartrate: 151.2,
+    });
+    const bare = stravaActivityDoc({ id: 1, start_date: "2026-10-01T06:30:00Z", type: "Ride" });
+    assert.equal(bare.sport_type, "Ride");
+    assert.equal("average_heartrate" in bare, false);
+});
+
+test("stravaAthlete keeps the name and avatar", () => {
+    assert.deepEqual(stravaAthlete({ id: 7, firstname: "Ann", lastname: "Lee", profile: "https://a/p.jpg", city: "X" }),
+        { id: 7, firstname: "Ann", lastname: "Lee", profile: "https://a/p.jpg" });
+});
+
+test("parseStravaWebhook accepts Strava's events and nothing else", () => {
+    const event = { object_type: "activity", aspect_type: "create", object_id: 1, owner_id: 2, subscription_id: 3, event_time: 4, updates: {} };
+    assert.deepEqual(parseStravaWebhook(event), { object_type: "activity", aspect_type: "create", object_id: 1, owner_id: 2, updates: {} });
+    assert.deepEqual(parseStravaWebhook({ ...event, updates: undefined }).updates, {});
+    assert.equal(parseStravaWebhook({ ...event, object_type: "club" }), null);
+    assert.equal(parseStravaWebhook({ ...event, aspect_type: "patch" }), null);
+    assert.equal(parseStravaWebhook({ ...event, owner_id: "2" }), null);
+    assert.equal(parseStravaWebhook(null), null);
+});
+
+test("isDeauthorization is an athlete update with authorized false", () => {
+    const base = { object_type: "athlete", aspect_type: "update", object_id: 2, owner_id: 2 };
+    assert.equal(isDeauthorization({ ...base, updates: { authorized: "false" } }), true);
+    assert.equal(isDeauthorization({ ...base, updates: { authorized: false } }), true);
+    assert.equal(isDeauthorization({ ...base, updates: { title: "x" } }), false);
+    assert.equal(isDeauthorization({ ...base, object_type: "activity", updates: { authorized: "false" } }), false);
+});
+
+test("basicAuthHeader encodes client id and secret for Strava's revoke", () => {
+    assert.equal(basicAuthHeader("42", "s3cret"), `Basic ${Buffer.from("42:s3cret").toString("base64")}`);
+});
+
+test("stravaTokenNeedsRefresh refreshes within the last minute", () => {
+    assert.equal(stravaTokenNeedsRefresh(1000, 900), false);
+    assert.equal(stravaTokenNeedsRefresh(1000, 940), true);
+    assert.equal(stravaTokenNeedsRefresh(undefined, 0), true);
+});
+
+test("stravaWebhook answers Strava's challenge only with the verify token, and refuses junk", async () => {
+    process.env.STRAVA_WEBHOOK_VERIFY_TOKEN = "verify-me";
+    const { stravaWebhook } = await import("./index.js");
+    const call = (method, query = {}, body) => new Promise((resolve) => {
+        const res = {
+            code: 200,
+            status(code) { this.code = code; return this; },
+            json(value) { resolve({ code: this.code, value }); return this; },
+            send(value) { resolve({ code: this.code, value }); return this; },
+        };
+        stravaWebhook({ method, query, body, headers: {} }, res);
+    });
+    assert.deepEqual(await call("GET", { "hub.mode": "subscribe", "hub.verify_token": "verify-me", "hub.challenge": "abc" }),
+        { code: 200, value: { "hub.challenge": "abc" } });
+    assert.equal((await call("GET", { "hub.mode": "subscribe", "hub.verify_token": "wrong", "hub.challenge": "abc" })).code, 403);
+    assert.equal((await call("POST", {}, { object_type: "club" })).code, 400);
+    assert.equal((await call("PUT")).code, 405);
 });

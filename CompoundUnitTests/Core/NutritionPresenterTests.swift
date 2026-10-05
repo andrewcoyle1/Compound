@@ -46,7 +46,7 @@ struct NutritionPresenterTests {
 
         // MARK: ReminderOfferInteractor — the meal-reminder offer on this screen's first appear.
         var privateUserSettings = PrivateUserSettings()
-        var currentStreakData = CurrentStreakData.mockEmpty()
+        var weeklyStreak = WeeklyStreak.fixture(weeks: 0)
         func canRequestNotificationAuthorisation() async -> Bool { false }
         func requestPushAuthorisation() async throws -> Bool { true }
         func setMealReminders(isEnabled: Bool) async throws { }

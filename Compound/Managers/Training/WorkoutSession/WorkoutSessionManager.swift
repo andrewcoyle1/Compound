@@ -122,6 +122,14 @@ class WorkoutSessionManager {
             data: [WorkoutSessionModel.CodingKeys.stravaActivityId.rawValue: activityId]
         )
     }
+
+    /// The weekly streak as of finishing, for followers. A field write for the same reason.
+    func setWeekStreakCount(_ weeks: Int, sessionId: String) async throws {
+        try await userWorkoutSessionSyncEngine.updateDocument(
+            id: sessionId,
+            data: [WorkoutSessionModel.CodingKeys.weekStreakCount.rawValue: weeks]
+        )
+    }
     
     // MARK: - Read
 

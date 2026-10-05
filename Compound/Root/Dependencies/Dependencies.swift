@@ -56,7 +56,6 @@ struct Dependencies {
         let bodyMeasurementsManager: BodyMeasurementsManager
         let stepsManager: StepsManager
         let goalManager: GoalManager
-        let streakManager: StreakManager
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         let hkWorkoutManager: HKWorkoutManager
         let liveActivityManager: LiveActivityManager
@@ -314,11 +313,6 @@ struct Dependencies {
                 logger: logManager
             )
             goalManager = GoalManager(userGoalSyncEngine: userGoalSyncEngine)
-            streakManager = StreakManager(
-                services: MockStreakServices(),
-                configuration: StreakConfiguration(streakKey: "workout", leewayHours: 2),
-                logger: logManager
-            )
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
@@ -676,11 +670,6 @@ struct Dependencies {
                 logger: logManager
             )
             goalManager = GoalManager(userGoalSyncEngine: userGoalSyncEngine)
-            streakManager = StreakManager(
-                services: ProductionStreakServices(rootCollectionName: "user_streaks"),
-                configuration: StreakConfiguration(streakKey: "workout", leewayHours: 2),
-                logger: logManager
-            )
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
@@ -1037,11 +1026,6 @@ struct Dependencies {
                 logger: logManager
             )
             goalManager = GoalManager(userGoalSyncEngine: userGoalSyncEngine)
-            streakManager = StreakManager(
-                services: ProductionStreakServices(rootCollectionName: "user_streaks"),
-                configuration: StreakConfiguration(streakKey: "workout", leewayHours: 2),
-                logger: logManager
-            )
             #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
             liveActivityManager = LiveActivityManager(logger: logManager, weightUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
@@ -1115,7 +1099,6 @@ struct Dependencies {
         container.register(BodyMeasurementsManager.self, service: bodyMeasurementsManager)
         container.register(StepsManager.self, service: stepsManager)
         container.register(GoalManager.self, service: goalManager)
-        container.register(StreakManager.self, service: streakManager)
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         container.register(HKWorkoutManager.self, service: hkWorkoutManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)

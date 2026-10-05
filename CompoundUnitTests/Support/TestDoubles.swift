@@ -122,3 +122,13 @@ class SpyOnboardingRouter: OnboardingStepRouter {
     func showCustomisingDietProgramView() { record("customisingDietProgram") }
     func showOnboardingCompletedView() { record("onboardingCompleted") }
 }
+
+extension WeeklyStreak {
+    /// A streak of `weeks` with this week not yet under way, for doubles that only need a count.
+    static func fixture(weeks: Int) -> WeeklyStreak {
+        WeeklyStreak(
+            weeks: weeks, best: weeks, sessionsThisWeek: 0, goal: CircleWeek.defaultGoal, daysRemaining: 7,
+            trainedToday: false, weekEndsAt: Date(), lastTrainedAt: nil
+        )
+    }
+}

@@ -26,6 +26,8 @@ struct WidgetSnapshot: Codable, Equatable {
     var upcomingWorkout: TodaysWorkout?
     /// Start of the day `todaysWorkout` belongs to.
     var day: Date
+    /// The weekly streak, in weeks. Named from when it counted days; kept so snapshots already in
+    /// the App Group still decode.
     var currentStreak: Int
     /// Finished sessions in the calendar week containing `day`.
     var sessionsThisWeek: Int

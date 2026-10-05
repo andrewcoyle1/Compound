@@ -282,7 +282,7 @@ struct NotificationSettingsPresenterTests {
     // MARK: - Reminders
 
     /// Changed: the streak reminder used to default on. It is now off until chosen (offered once at
-    /// a 3-day streak), and the two local reminders have joined: come-back on, meals off.
+    /// a two-week streak), and the two local reminders have joined: come-back on, meals off.
     @Test("Test Reminder Defaults: Digest And Come-Back On, Streak And Meals Off, Hour Nineteen")
     func testReminderDefaults() {
         let screen = makeScreen()

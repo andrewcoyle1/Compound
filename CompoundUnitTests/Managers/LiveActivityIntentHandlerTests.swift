@@ -27,6 +27,7 @@ private struct Rig {
     let sessions: WorkoutSessionManager
     let hkWorkoutManager: HKWorkoutManager
     let activity: LiveActivityUpdaterSpy
+    let users: UserManager
 }
 
 extension WorkoutRestSharedStateTests {
@@ -87,6 +88,7 @@ struct LiveActivityIntentHandlerTests {
     private func makeRig(
         exercises: [WorkoutExerciseModel],
         mesocycle: Mesocycle? = nil,
+        weeklyGoal: Int? = nil,
         settings: (inout WorkoutSettings) -> Void = { _ in }
     ) async throws -> Rig {
         // A rest left behind by an earlier run would otherwise read back as one in progress.
@@ -96,13 +98,13 @@ struct LiveActivityIntentHandlerTests {
         workoutSettings.defaultRestDurationSeconds = 75
         settings(&workoutSettings)
 
-        let sessions = mesocycle == nil
+        let sessions = mesocycle == nil && weeklyGoal == nil
             ? TestManagers.workoutSessionManager()
             : await TestManagers.signedInWorkoutSessionManager(sessions: [])
         try sessions.updateActiveSession(session(exercises: exercises, mesocycle: mesocycle))
         let mesocycles = await TestManagers.signedInMesocycleManager(mesocycles: [mesocycle].compactMap { $0 })
         let users = try await TestManagers.signedInUserManager(
-            UserModel(userId: "author-1", submittedActiveMesocycleId: mesocycle?.id)
+            UserModel(userId: "author-1", submittedActiveMesocycleId: mesocycle?.id, weeklySessionGoal: weeklyGoal)
         )
 
         let settingsManager = try await TestManagers.signedInWorkoutSettingsManager(workoutSettings)
@@ -121,7 +123,7 @@ struct LiveActivityIntentHandlerTests {
             userManager: users
         )
 
-        return Rig(handler: handler, sessions: sessions, hkWorkoutManager: hkWorkoutManager, activity: activity)
+        return Rig(handler: handler, sessions: sessions, hkWorkoutManager: hkWorkoutManager, activity: activity, users: users)
     }
 
     /// The sets of the one exercise on the active session.
@@ -391,6 +393,21 @@ struct LiveActivityIntentHandlerTests {
         #expect(await TestManagers.eventually { rig.sessions.workoutSessions.filter(\.isRestDay).count == 2 })
         #expect(rig.sessions.activeSession == nil)
         #expect(Set(rig.sessions.workoutSessions.filter(\.isRestDay).map(\.workoutTemplateId)) == ["template-rest-1", "template-rest-2"])
+    }
+
+    /// Followers read the streak off the session, and the evening reminder off the private settings,
+    /// so finishing writes both. The session is from February 2026, long before "now", so no week is
+    /// current: the streak is 0, but it is stamped.
+    @Test("Test Completing The Workout Stamps The Weekly Streak")
+    func testCompletingTheWorkoutStampsTheWeeklyStreak() async throws {
+        let rig = try await makeRig(exercises: [exercise(sets: [set("s1", index: 1, done: true)])], weeklyGoal: 2)
+
+        await rig.handler.completeWorkout()
+
+        #expect(await TestManagers.eventually { rig.sessions.workoutSessions.first?.weekStreakCount == 0 })
+        #expect(await TestManagers.eventually { rig.users.privateSettings.weekGoal == 2 })
+        #expect(rig.users.privateSettings.weekStreak == 0)
+        #expect(rig.users.privateSettings.lastTrainedAt == Self.start)
     }
 
     /// Nothing to finish is not an error; the handler simply has no session to end.

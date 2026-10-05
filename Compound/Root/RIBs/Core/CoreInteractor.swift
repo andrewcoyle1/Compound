@@ -52,7 +52,6 @@ struct CoreInteractor: GlobalInteractor {
     let hkWorkoutManager: HKWorkoutManager
     let liveActivityManager: LiveActivityManager
     #endif
-    let streakManager: StreakManager
     let commentsManager: CommentsManager
     let activityNotificationManager: ActivityNotificationManager
     let stravaManager: StravaManager
@@ -107,7 +106,6 @@ struct CoreInteractor: GlobalInteractor {
         self.hkWorkoutManager = container.resolve(HKWorkoutManager.self)!
         self.liveActivityManager = container.resolve(LiveActivityManager.self)!
         #endif
-        self.streakManager = container.resolve(StreakManager.self)!
         self.commentsManager = container.resolve(CommentsManager.self)!
         self.activityNotificationManager = container.resolve(ActivityNotificationManager.self)!
         self.stravaManager = container.resolve(StravaManager.self)!
@@ -163,7 +161,6 @@ struct CoreInteractor: GlobalInteractor {
         async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let bodyMeasurementsSignIn: () = bodyMeasurementsManager.signIn(userId: user.uid)
         async let goalSignIn: () = goalManager.signIn(userId: user.uid)
-        async let streakSignIn: () = streakManager.logIn(userId: user.uid)
 
         try await workoutSettingsSignIn
         try await foodLogSettingsSignIn
@@ -186,7 +183,6 @@ struct CoreInteractor: GlobalInteractor {
         await foodsSignIn
         await mealLogSignIn
         await bodyMeasurementsSignIn
-        try await streakSignIn
 
         // Seed system content after all sync engines have started listening,
         // so local persistence is loaded and allExercises is populated before
@@ -198,6 +194,9 @@ struct CoreInteractor: GlobalInteractor {
         // After the sessions and exercises: the upload queue is sent from them. Not awaited, so a
         // backlog going to Strava never holds up sign-in.
         Task { await stravaManager.signIn(userId: user.uid) }
+        // Once the sessions are in: the evening streak reminder reads this copy, and a new week may
+        // have started since the last finish.
+        Task { await recordWeeklyStreak() }
 
         // A push tapped to launch the app waits for this point; see `PushManager.pendingDeepLink`.
         routePendingDeepLinkAfterLogIn()

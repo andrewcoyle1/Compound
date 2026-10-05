@@ -15,7 +15,7 @@ struct StreakVisibilityTests {
 
     private func session(id: String, day: Int, streak: Int?) -> WorkoutSessionModel {
         var session = DashboardFixture.session(id: id, author: "friend", on: DashboardFixture.date(day: day))
-        session.streakCount = streak
+        session.weekStreakCount = streak
         return session
     }
 
@@ -29,14 +29,14 @@ struct StreakVisibilityTests {
         ).streakText
     }
 
-    /// Older sessions have no count and render as before; a one-day streak is not news.
+    /// Older sessions have no count and render as before; a one-week streak is only this week's goal.
     @Test("Test The Streak Capsule Shows Only For A Stamped Count Above One")
     func testTheStreakCapsuleShowsOnlyForAStampedCountAboveOne() {
         #expect(rowStreakText(nil) == nil)
         #expect(rowStreakText(0) == nil)
         #expect(rowStreakText(1) == nil)
-        #expect(rowStreakText(2) == "2-day streak")
-        #expect(rowStreakText(12) == "12-day streak")
+        #expect(rowStreakText(2) == "2-week streak")
+        #expect(rowStreakText(12) == "12-week streak")
     }
 
     /// The field is optional on the wire, so a document written before it existed still decodes.
@@ -45,11 +45,14 @@ struct StreakVisibilityTests {
         let stamped = session(id: "s", day: 2, streak: 7)
         let data = try JSONEncoder().encode(stamped)
         var json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        #expect(json["streak_count"] as? Int == 7)
+        #expect(json["week_streak_count"] as? Int == 7)
 
-        json.removeValue(forKey: "streak_count")
+        // A session from before weekly streaks carries a day count under the old key, which means
+        // something else and is not read.
+        json.removeValue(forKey: "week_streak_count")
+        json["streak_count"] = 40
         let legacy = try JSONDecoder().decode(WorkoutSessionModel.self, from: JSONSerialization.data(withJSONObject: json))
-        #expect(legacy.streakCount == nil)
+        #expect(legacy.weekStreakCount == nil)
     }
 
     // MARK: Profile header

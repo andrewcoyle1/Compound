@@ -9,7 +9,7 @@ import {
     requireAuth, cleanJson, foodItems, normaliseName, buildActivityPush, newlyBlockedIds, pushRecipientSettings,
     planFollowAccepted, buildFollowAcceptedNotification,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
-    buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
+    buildStreakReminderPush, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
     isNudgeOnCooldown, toDate, offProductToFood, OFF_SEARCH_URL, OFF_SEARCH_FIELDS,
     offCountryTag, offSearchLangs, mergeSearchHits,
     stravaTokenForm, stravaTokenErrorCode, STRAVA_TOKEN_URL, STRAVA_API, STRAVA_REVOKE_URL, grantsUpload,
@@ -643,19 +643,14 @@ async function sendAll(label, messages) {
     console.log(`${label}: sent ${messages.length - failed.length} of ${messages.length}.`);
 }
 
-// Hourly, on the hour. In each user's reminder hour (local), a user with a live streak who has not
-// trained today is told it ends at midnight. The streak is StreakManager's document at
-// user_streaks/{uid}/workout/current_streak (SwiftfulGamification's FirebaseRemoteStreakService).
+// Hourly, on the hour. In each user's reminder hour (local), a user whose weekly streak needs a
+// session today and who has not trained today is told so. The streak is the app's WeeklyStreak
+// copy in the same private settings doc, so nothing else is read.
 export const streakReminder = onSchedule(
     { schedule: "0 * * * *", timeZone: "Etc/UTC", region: REGION },
     async () => {
         const now = new Date();
-        const db = getFirestore();
-        const messages = await Promise.all((await allPrivateSettings()).map(async ({ uid, settings }) => {
-            if (!isStreakReminderDue(settings, now)) return null;
-            const streak = await db.collection("user_streaks").doc(uid).collection("workout").doc("current_streak").get();
-            return buildStreakReminderPush(settings, streak.data(), now);
-        }));
+        const messages = (await allPrivateSettings()).map(({ settings }) => buildStreakReminderPush(settings, now));
         await sendAll("Streak reminder", messages.filter(Boolean));
     }
 );

@@ -204,6 +204,26 @@
         }
       }
     },
+    "Shows the week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra la semana"
+          }
+        }
+      }
+    },
+    "Shows this day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra este día"
+          }
+        }
+      }
+    },
     "Weekly Workouts" : {
       "localizations" : {
         "es" : {

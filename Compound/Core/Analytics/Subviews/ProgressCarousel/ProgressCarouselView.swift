@@ -76,6 +76,37 @@ struct ProgressCarouselView<WeeklyNutrition: View>: View {
     }
 }
 
+/// One page after the weekly grid: its title, the figures, and the toggle at the foot. The figures
+/// fill whatever height the tallest page sets, so each card lays its rows out over the whole page
+/// rather than leaving a gap above the toggle.
+struct CarouselPage<Content: View, Toggle: View>: View {
+    let title: String
+    @ViewBuilder var content: () -> Content
+    @ViewBuilder var toggle: () -> Toggle
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.l) {
+            SectionHeaderView(title: title)
+                .carouselTitleStyle()
+            VStack(spacing: 0) {
+                content()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // Figures count up and down when a toggle changes what they show.
+            .contentTransition(.numericText())
+            toggle()
+        }
+    }
+}
+
+extension View {
+    /// A carousel page's title, matching the list's section headers below the carousel.
+    func carouselTitleStyle() -> some View {
+        font(.title3.weight(.semibold))
+            .foregroundStyle(.secondary)
+    }
+}
+
 /// The segmented control at the foot of each page.
 struct CarouselToggle<Value: Hashable>: View {
     let title: String

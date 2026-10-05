@@ -41,3 +41,47 @@ struct TargetCellCaretTests {
         #expect(!TargetCellView.showsCaret(value: 500, target: 0))
     }
 }
+
+/// The grid opens on today, and the last column follows the selected day; tapping it again shows
+/// the week.
+@MainActor
+struct NutritionTargetChartSelectionTests {
+
+    private final class Interactor: SpyGlobalInteractor, NutritionTargetChartInteractor {
+        var currentDietPlan: DietPlan? { nil }
+        func getDailyTotals(dayKey: String) throws -> DailyMacroTarget { DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0) }
+    }
+
+    private final class Router: NutritionTargetChartRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+        func showPreferredDietView(isFromSettings: Bool) { }
+    }
+
+    private let logged = [1.0, 2, 3, 4, 5, 6, 7]
+    private let targets = [10.0, 20, 30, 40, 50, 60, 70]
+
+    @Test("Test The Grid Opens On Today")
+    func testTheGridOpensOnToday() {
+        let presenter = NutritionTargetChartPresenter(interactor: Interactor(), router: Router())
+        let today = presenter.todayIndexInWeek
+
+        #expect(presenter.selectedDayIndex == today)
+        #expect(presenter.summary(logged: logged, targets: targets) == (logged[today], targets[today]))
+    }
+
+    @Test("Test Tapping Another Day Shows It And Tapping It Again Shows The Week")
+    func testTappingAnotherDayShowsItAndTappingItAgainShowsTheWeek() {
+        let interactor = Interactor()
+        let presenter = NutritionTargetChartPresenter(interactor: interactor, router: Router())
+        let other = (presenter.todayIndexInWeek + 3) % 7
+
+        presenter.onDayPressed(other)
+        #expect(presenter.summary(logged: logged, targets: targets) == (logged[other], targets[other]))
+
+        presenter.onDayPressed(other)
+        #expect(presenter.selectedDayIndex == nil)
+        #expect(presenter.summary(logged: logged, targets: targets) == (28, 280))
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["selection", "selection"])
+        #expect(interactor.trackedEventNames == ["NutritionTargetChart_Day_Pressed", "NutritionTargetChart_Day_Pressed"])
+    }
+}

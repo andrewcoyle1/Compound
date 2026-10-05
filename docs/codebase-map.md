@@ -86,7 +86,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 
 | Area | Files | Lines | Purpose |
 |---|---:|---:|---|
-| `Compound/Core/Analytics` | 123 | 11,581 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
+| `Compound/Core/Analytics` | 123 | 11,679 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
 | `Compound/Core/AppView` | 7 | 737 | Root view: onboarding-or-tabbar switch, toasts, notification banner |
 | `Compound/Core/Challenges` | 11 | 837 | Group challenges (create, detail) |
 | `Compound/Core/Social` | 38 | 4,696 | Social tab: workout feed, circle goals, challenges, people search, invites, share card, profiles |
@@ -108,12 +108,12 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/SupportingFiles` | 318 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 612 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 264 | 2,523 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 277 | 74,743 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 278 | 74,787 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 8 | 608 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 10 | 17,196 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 49 | 10,763 | Specs, reviews, audits, this map |
+| `docs` | 49 | 10,764 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -154,8 +154,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **MuscleGroups** | [Subviews/MuscleGroups](Compound/Core/Analytics/Subviews/MuscleGroups) | 315 | MuscleBalance, MuscleGroupDetail | MuscleGroupsDelegate, `showMuscleGroupsView` | MuscleGroupSetsAggregator.swift |  |
 | **NutritionAnalytics** | [Subviews/NutritionAnalytics](Compound/Core/Analytics/Subviews/NutritionAnalytics) | 528 | AddMeal, NutritionMetricDetail | NutritionAnalyticsDelegate, `showNutritionAnalyticsView` |  |  |
 | **NutritionMetricDetail** | [Subviews/NutritionAnalytics/NutritionMetricDetail](Compound/Core/Analytics/Subviews/NutritionAnalytics/NutritionMetricDetail) | 626 |  | NutritionMetricDetailDelegate, `showNutritionMetricDetailView` | NutritionMetric.swift, NutritionMetricEntry.swift |  |
-| **NutritionTargetChart** | [Subviews/NutritionTargetChart](Compound/Core/Analytics/Subviews/NutritionTargetChart) | 363 | PreferredDiet |  |  |  |
-| **ProgressCarousel** | [Subviews/ProgressCarousel](Compound/Core/Analytics/Subviews/ProgressCarousel) | 860 |  |  | ProgressCarouselCards.swift, ProgressCarouselMetrics.swift |  |
+| **NutritionTargetChart** | [Subviews/NutritionTargetChart](Compound/Core/Analytics/Subviews/NutritionTargetChart) | 430 | PreferredDiet |  |  |  |
+| **ProgressCarousel** | [Subviews/ProgressCarousel](Compound/Core/Analytics/Subviews/ProgressCarousel) | 891 |  |  | ProgressCarouselCards.swift, ProgressCarouselMetrics.swift |  |
 | **WeighInConsistency** | [Subviews/WeighInConsistency](Compound/Core/Analytics/Subviews/WeighInConsistency) | 209 |  | WeighInConsistencyDelegate, `showWeighInConsistencyView` |  |  |
 | **WorkoutConsistency** | [Subviews/WorkoutConsistency](Compound/Core/Analytics/Subviews/WorkoutConsistency) | 186 |  | WorkoutConsistencyDelegate, `showWorkoutConsistencyView` |  |  |
 

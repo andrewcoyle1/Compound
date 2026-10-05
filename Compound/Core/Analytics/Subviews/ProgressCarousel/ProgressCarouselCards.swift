@@ -20,9 +20,7 @@ struct DailyNutritionCard: View {
     private var showsRemaining: Bool { presenter.dailyShowsRemaining }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.l) {
-            SectionHeaderView(title: String(localized: "Daily Nutrition"))
-
+        CarouselPage(title: String(localized: "Daily Nutrition")) {
             HStack {
                 Stat(
                     value: showsRemaining ? whole(presenter.caloriesConsumed) : presenter.caloriesRemaining.map(whole) ?? Format.placeholder,
@@ -46,17 +44,18 @@ struct DailyNutritionCard: View {
                 .frame(maxWidth: .infinity)
             }
 
+            Spacer(minLength: Spacing.l)
             HStack(spacing: Spacing.l) {
                 ForEach(presenter.macroRows) { row in
                     macroBar(row)
                 }
             }
-
-            Spacer(minLength: 0)
+        } toggle: {
             CarouselToggle(title: String(localized: "Daily Nutrition"), selection: $presenter.dailyShowsRemaining, options: [false, true]) {
                 $0 ? String(localized: "Remaining") : String(localized: "Consumed")
             }
         }
+        .reducedMotionAnimation(.standard, value: presenter.dailyShowsRemaining)
     }
 
     /// Consumed fills from the left; remaining is the rest of the bar, so the two read as halves of
@@ -119,7 +118,7 @@ private struct CalorieGauge: View {
             }
             .padding(Spacing.l)
         }
-        .frame(width: 140, height: 140)
+        .frame(width: 170, height: 170)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
         .accessibilityValue(value)
@@ -141,16 +140,15 @@ struct EnergyBalanceCard: View {
     var body: some View {
         let comparison = presenter.energyComparison
         let averages = presenter.energyAverages
-        VStack(alignment: .leading, spacing: Spacing.l) {
-            SectionHeaderView(title: String(localized: "Energy Balance"))
-
+        CarouselPage(title: String(localized: "Energy Balance")) {
             VStack(alignment: .trailing, spacing: Spacing.xs) {
                 ChartThumbnail(
                     data: [presenter.energyIntakeSeries, presenter.energyComparisonSeries],
                     style: .combo(lineSeries: [presenter.energyComparisonSeries.name]),
                     colors: [EnergyBalanceChart.intakeColor, comparison.colour]
                 )
-                .frame(height: ChartHeight.compact)
+                // The chart takes whatever height the page has spare.
+                .frame(minHeight: ChartHeight.compact, maxHeight: .infinity)
                 .accessibilityHidden(true)
                 Text("Last \(ProgressCarouselPresenter.energyDayCount) Days")
                     .font(.label)
@@ -182,8 +180,8 @@ struct EnergyBalanceCard: View {
                 )
             }
             .frame(maxWidth: .infinity)
-
-            Spacer(minLength: 0)
+            .padding(.top, Spacing.l)
+        } toggle: {
             CarouselToggle(
                 title: String(localized: "Energy Balance"),
                 selection: $presenter.energyComparison,
@@ -191,6 +189,7 @@ struct EnergyBalanceCard: View {
                 label: \.title
             )
         }
+        .reducedMotionAnimation(.standard, value: presenter.energyComparison)
     }
 
     private func operatorSign(_ sign: String) -> some View {
@@ -209,16 +208,18 @@ struct WeeklyWorkoutsCard: View {
     var body: some View {
         let tally = presenter.workoutTally
         let target = presenter.workoutTarget
-        VStack(alignment: .leading, spacing: Spacing.l) {
-            SectionHeaderView(title: String(localized: "Weekly Workouts"))
-
-            HStack(alignment: .top, spacing: Spacing.s) {
-                TallyRing(value: tally.muscles, target: target?.muscles, title: String(localized: "Muscles"), colour: Color.Metric.muscleGroups, diameter: 84)
-                TallyRing(value: tally.sets, target: target?.sets, title: String(localized: "Sets"), colour: Color.Metric.workouts, diameter: 116)
-                TallyRing(value: tally.exercises, target: target?.exercises, title: String(localized: "Exercises"), colour: Color.Metric.exercises, diameter: 84)
-            }
-
+        CarouselPage(title: String(localized: "Weekly Workouts")) {
             Spacer(minLength: 0)
+            // The middle ring keeps its size; the outer two share what width is left.
+            HStack(alignment: .top, spacing: Spacing.s) {
+                TallyRing(value: tally.muscles, target: target?.muscles, title: String(localized: "Muscles"), colour: Color.Metric.muscleGroups, diameter: 92)
+                    .frame(maxWidth: .infinity)
+                TallyRing(value: tally.sets, target: target?.sets, title: String(localized: "Sets"), colour: Color.Metric.workouts, diameter: 136)
+                TallyRing(value: tally.exercises, target: target?.exercises, title: String(localized: "Exercises"), colour: Color.Metric.exercises, diameter: 92)
+                    .frame(maxWidth: .infinity)
+            }
+            Spacer(minLength: 0)
+        } toggle: {
             // Without a mesocycle there is no program to narrow to, and nothing to aim at.
             if presenter.hasActiveProgram {
                 CarouselToggle(
@@ -229,6 +230,7 @@ struct WeeklyWorkoutsCard: View {
                 )
             }
         }
+        .reducedMotionAnimation(.standard, value: presenter.workoutScope)
     }
 }
 
@@ -277,7 +279,6 @@ private struct TallyRing: View {
                 }
             }
         }
-        .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue(target.map { String(localized: "\(value) of \($0)") } ?? value.formatted())
@@ -295,9 +296,7 @@ struct RecentRecordsCard: View {
 
     var body: some View {
         let rows = presenter.recordRows
-        VStack(alignment: .leading, spacing: Spacing.l) {
-            SectionHeaderView(title: String(localized: "Recent Records"))
-
+        CarouselPage(title: String(localized: "Recent Records")) {
             if rows.isEmpty {
                 ContentUnavailableView(
                     "No Records Yet",
@@ -330,8 +329,8 @@ struct RecentRecordsCard: View {
                 }
                 .font(.rowDetail)
             }
-
             Spacer(minLength: 0)
+        } toggle: {
             CarouselToggle(
                 title: String(localized: "Recent Records"),
                 selection: $presenter.recordKind,
@@ -339,5 +338,6 @@ struct RecentRecordsCard: View {
                 label: \.title
             )
         }
+        .reducedMotionAnimation(.standard, value: presenter.recordKind)
     }
 }

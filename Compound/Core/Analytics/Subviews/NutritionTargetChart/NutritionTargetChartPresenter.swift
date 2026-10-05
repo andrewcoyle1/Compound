@@ -73,12 +73,31 @@ class NutritionTargetChartPresenter {
         return (weekday - calendar.firstWeekday + 7) % 7
     }
 
+    /// The day whose figures the last column shows; nil shows the week's totals. Opens on today.
+    private(set) var selectedDayIndex: Int?
+
     init(
         interactor: NutritionTargetChartInteractor,
         router: NutritionTargetChartRouter
     ) {
         self.interactor = interactor
         self.router = router
+        selectedDayIndex = todayIndexInWeek
+    }
+
+    /// Tapping a day shows it in the last column; tapping it again goes back to the week.
+    func onDayPressed(_ index: Int) {
+        selectedDayIndex = selectedDayIndex == index ? nil : index
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.dayPressed(isWeek: selectedDayIndex == nil))
+    }
+
+    /// The last column's figures for one metric: the selected day's, or the week's.
+    func summary(logged: [Double], targets: [Double]) -> (logged: Double, target: Double) {
+        if let selectedDayIndex, logged.indices.contains(selectedDayIndex), targets.indices.contains(selectedDayIndex) {
+            return (logged[selectedDayIndex], targets[selectedDayIndex])
+        }
+        return (logged.reduce(0, +), targets.reduce(0, +))
     }
 
     func value(for metric: Metric, day: DailyMacroTarget) -> Double {
@@ -162,11 +181,13 @@ class NutritionTargetChartPresenter {
 
     enum Event: LoggableEvent {
         case createPlanPressed
+        case dayPressed(isWeek: Bool)
         case loadWeekFail(error: Error)
 
         var eventName: String {
             switch self {
             case .createPlanPressed: return "NutritionTargetChart_CreatePlan_Pressed"
+            case .dayPressed: return "NutritionTargetChart_Day_Pressed"
             case .loadWeekFail: return "NutritionTargetChartView_LoadWeek_Fail"
             }
         }
@@ -174,6 +195,7 @@ class NutritionTargetChartPresenter {
         var parameters: [String: Any]? {
             switch self {
             case .loadWeekFail(let error): return error.eventParameters
+            case .dayPressed(let isWeek): return ["is_week": isWeek]
             default: return nil
             }
         }

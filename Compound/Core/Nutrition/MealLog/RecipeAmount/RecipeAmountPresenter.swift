@@ -31,6 +31,14 @@ class RecipeAmountPresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// A per-serving figure for the servings entered.
     func forServings(_ perServing: Double?) -> Double? {
         perServing.map { $0 * servings }
@@ -70,5 +78,27 @@ class RecipeAmountPresenter {
             onConfirm(recipe.mealItem(servings: servings))
         }
         onLog()
+    }
+}
+
+extension RecipeAmountPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "RecipeAmountView_Appear"
+            case .onDisappear:  return "RecipeAmountView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
     }
 }

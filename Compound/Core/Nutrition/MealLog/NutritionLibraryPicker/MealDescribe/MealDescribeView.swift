@@ -5,9 +5,6 @@ struct MealDescribeDelegate {
     /// The plate's Log, handed on to the amount screen.
     var onLog: (() -> Void)?
 
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct MealDescribeView: View {
@@ -63,12 +60,6 @@ struct MealDescribeView: View {
                     Text("Estimates can be wrong. Check amounts before logging.")
                 }
             }
-        }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
         .bottomCTA {
             CallToActionButton(isLoading: presenter.isAnalysing) {

@@ -44,14 +44,6 @@ class RecipeListBuilderPresenter {
         self.router = router
     }
     
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-    
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
-    }
-    
     func onAddRecipePressed() {
         router.showCreateRecipeView()
     }
@@ -75,31 +67,4 @@ class RecipeListBuilderPresenter {
         interactor.playHaptic(option: .success)
         delegate.onMealItemConfirmed?(recipe.quickAddItem(lastLoggedIn: interactor.userMeals))
     }
-
-    enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
-
-        var eventName: String {
-            switch self {
-            case .onAppear:     return "RecipeListBuilderView_Appear"
-            case .onDisappear:  return "RecipeListBuilderView_Disappear"
-            }
-        }
-
-        var parameters: [String: Any]? {
-            switch self {
-            default:
-                return nil
-            }
-        }
-
-        var type: LogType {
-            switch self {
-            default:
-                return .analytic
-            }
-        }
-    }
-
 }

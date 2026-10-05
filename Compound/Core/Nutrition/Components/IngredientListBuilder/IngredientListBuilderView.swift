@@ -14,6 +14,9 @@ struct IngredientListBuilderDelegate {
     var selectedFoods: [FoodModel]?
     /// A query typed into a search field the host owns. `nil` means the list shows its own.
     var searchText: String?
+    /// Set by a parent that shows this list as part of its own screen (Foods, the food picker's
+    /// Library): the parent logs the screen, so the list logs Appear and Disappear only when routed.
+    var isEmbedded: Bool
 
     init(
         mealItems: Binding<[MealItemModel]>? = nil,
@@ -22,7 +25,8 @@ struct IngredientListBuilderDelegate {
         onRecipeIngredientConfirmed: ((RecipeIngredientModel) -> Void)? = nil,
         selectedFoods: [FoodModel]? = nil,
         searchText: String? = nil,
-        onLog: (() -> Void)? = nil
+        onLog: (() -> Void)? = nil,
+        isEmbedded: Bool = false
     ) {
         self.mealItems = mealItems
         self.onIngredientSelectionChanged = onIngredientSelectionChanged
@@ -31,6 +35,7 @@ struct IngredientListBuilderDelegate {
         self.selectedFoods = selectedFoods
         self.searchText = searchText
         self.onLog = onLog
+        self.isEmbedded = isEmbedded
     }
 }
 
@@ -81,10 +86,10 @@ struct IngredientListBuilderView: View {
             if let newValue { presenter.searchText = newValue }
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(delegate: delegate)
         }
         .onDisappear {
-            presenter.onViewDisappear()
+            presenter.onViewDisappear(delegate: delegate)
         }
         .scrollIndicators(.hidden)
         .toolbar {

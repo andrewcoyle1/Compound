@@ -98,8 +98,14 @@ class CheckInPresenter {
         weekDays = (0..<7).compactMap { offset in
             guard let date = calendar.date(byAdding: .day, value: offset - 6, to: yesterday) else { return nil }
             let dayKey = date.dayKey
-            // Silent: local read for the week summary; a missing day counts as unlogged.
-            let meals = (try? interactor.getMeals(for: dayKey)) ?? []
+            // Local read for the week summary; a missing day counts as unlogged.
+            let meals: [MealLogModel]
+            do {
+                meals = try interactor.getMeals(for: dayKey)
+            } catch {
+                interactor.trackEvent(event: Event.loadMealsFail(error: error))
+                meals = []
+            }
             let annotation = interactor.nutritionDayAnnotation(dayKey: dayKey)
             return CheckInDayRow(
                 dayKey: dayKey,
@@ -259,6 +265,7 @@ class CheckInPresenter {
         guard !isSaving, let user = interactor.currentUser else { return }
         interactor.trackEvent(event: Event.stepCompleted(step: .weighIn, outcome: "logged"))
         isSaving = true
+        interactor.trackEvent(event: Event.logWeightStart)
         Task {
             do {
                 let entry = BodyMeasurementEntry(authorId: user.userId, weightKg: weightKg, date: Date())
@@ -268,11 +275,13 @@ class CheckInPresenter {
                     weight: weightKg,
                     weightUnitPreference: unit == .kilograms ? .kilograms : .pounds
                 )
+                interactor.trackEvent(event: Event.logWeightSuccess)
                 interactor.playHaptic(option: .success)
                 isSaving = false
                 advance()
             } catch {
                 isSaving = false
+                interactor.trackEvent(event: Event.logWeightFail(error: error))
                 router.showFailure(String(localized: "Unable to Log Weight"), error: error)
             }
         }
@@ -287,26 +296,26 @@ class CheckInPresenter {
     func onStartLoggingBreakPressed() {
         guard !isSaving else { return }
         interactor.trackEvent(event: Event.stepCompleted(step: .loggingBreak, outcome: "started"))
-        perform { try await self.interactor.startLoggingBreak() }
+        perform(action: "start_logging_break") { try await self.interactor.startLoggingBreak() }
     }
 
     func onEndLoggingBreakPressed() {
         guard !isSaving else { return }
         interactor.trackEvent(event: Event.stepCompleted(step: .loggingBreak, outcome: "ended"))
-        perform { try await self.interactor.endLoggingBreak() }
+        perform(action: "end_logging_break") { try await self.interactor.endLoggingBreak() }
     }
 
     /// Accepting the proposal is the last thing the flow does, so it completes the check-in too.
     func onAcceptProposalPressed() {
         guard !isSaving, let accepted = proposal else { return }
         interactor.trackEvent(event: Event.proposalAccepted(proposal: accepted))
-        perform { try await self.interactor.acceptTargetProposal() }
+        perform(action: "accept_proposal") { try await self.interactor.acceptTargetProposal() }
     }
 
     func onDonePressed() {
         guard !isSaving else { return }
         interactor.trackEvent(event: Event.stepCompleted(step: .programUpdate, outcome: "done"))
-        perform { }
+        perform(action: nil) { }
     }
 
     // MARK: - Saving
@@ -342,22 +351,27 @@ class CheckInPresenter {
     }
 
     private func save(annotations: [NutritionDayAnnotation]) {
-        perform { try await self.interactor.saveNutritionDayAnnotations(annotations) }
+        perform(action: "save_annotations") { try await self.interactor.saveNutritionDayAnnotations(annotations) }
     }
 
     /// Runs the step's work and moves on, or stays put with an alert.
     ///
     /// Staying put matters: a failed save that advanced anyway would leave the user looking at the
     /// next question believing the last answer was recorded.
-    private func perform(_ work: @escaping () async throws -> Void) {
+    ///
+    /// `action` names the write for analytics; nil when there is nothing to write.
+    private func perform(action: String?, _ work: @escaping () async throws -> Void) {
         isSaving = true
+        if let action { interactor.trackEvent(event: Event.saveAnswerStart(action: action)) }
         Task {
             do {
                 try await work()
+                if let action { interactor.trackEvent(event: Event.saveAnswerSuccess(action: action)) }
                 isSaving = false
                 advance()
             } catch {
                 isSaving = false
+                if let action { interactor.trackEvent(event: Event.saveAnswerFail(action: action, error: error)) }
                 router.showFailure(String(localized: "Unable to Save Your Answer"), error: error)
             }
         }
@@ -387,6 +401,7 @@ class CheckInPresenter {
         Task {
             do {
                 try await interactor.markCheckInCompleted(weekStart: weekStart)
+                interactor.trackEvent(event: Event.completeSuccess)
                 router.dismissScreen()
             } catch {
                 isCompleted = false

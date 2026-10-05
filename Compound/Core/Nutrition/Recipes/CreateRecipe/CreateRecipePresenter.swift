@@ -55,7 +55,15 @@ class CreateRecipePresenter {
         self.interactor = interactor
         self.router = router
     }
-        
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// Closing asks first when there is something to lose.
     func onDismissPressed() {
         guard hasUnsavedChanges else {
@@ -109,5 +117,27 @@ class CreateRecipePresenter {
                 selectedFoods: ingredients.map { $0.ingredient }
             )
         )
+    }
+}
+
+extension CreateRecipePresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "CreateRecipeView_Appear"
+            case .onDisappear:  return "CreateRecipeView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
     }
 }

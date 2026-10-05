@@ -6,6 +6,9 @@ import VisionKit
 struct BarcodeScannerDelegate {
     var onFoodFound: ((FoodModel) -> Void)?
     var onBarcodeScanned: ((String) -> Void)?
+    /// Set by the food picker, which shows the scanner as one of its modes: the picker logs the
+    /// screen, so the scanner logs its own Appear and Disappear only when it is routed on its own.
+    var isEmbedded: Bool = false
     var eventParameters: [String: Any]? { nil }
 }
 

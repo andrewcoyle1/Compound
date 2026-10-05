@@ -62,6 +62,7 @@ struct IngredientAmountView: View {
             presenter.onViewAppear(ingredient: delegate.ingredient, initialAmountText: delegate.initialAmountText)
             isAmountFocused = true
         }
+        .onDisappear { presenter.onViewDisappear() }
         // Selected once the field has focus: taking focus puts the caret at the end, which
         // replaced a selection made any earlier, and typing then appended to the amount.
         .onChange(of: isAmountFocused) { _, focused in

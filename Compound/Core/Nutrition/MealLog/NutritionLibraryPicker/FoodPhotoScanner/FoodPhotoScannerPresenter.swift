@@ -46,10 +46,6 @@ class FoodPhotoScannerPresenter {
         self.router = router
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-
     /// Asks for the camera the first time the AI tab is opened. A refusal used to leave a capture
     /// button over a black preview, with nothing to say why.
     func onCameraNeeded(isSupported: Bool) async {
@@ -88,6 +84,7 @@ class FoodPhotoScannerPresenter {
             let json = try await interactor.analyzeFood(imageData: data)
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
+            interactor.trackEvent(event: Event.analyseSuccess(count: decoded.items.count))
         } catch {
             errorMessage = String(localized: "Couldn't recognize the food in this photo. Retake it in good light, or use Search or Describe.")
             interactor.playHaptic(option: .error)
@@ -138,8 +135,8 @@ class FoodPhotoScannerPresenter {
 extension FoodPhotoScannerPresenter {
 
     enum Event: LoggableEvent {
-        case onAppear
         case onCapture
+        case analyseSuccess(count: Int)
         case onAddItem(name: String)
         case onAddAll(count: Int)
         case onError(message: String)
@@ -148,7 +145,7 @@ extension FoodPhotoScannerPresenter {
 
         var eventName: String {
             switch self {
-            case .onAppear:   return "FoodPhotoScannerView_Appear"
+            case .analyseSuccess: return "FoodPhotoScannerView_Analyse_Success"
             case .onCapture:  return "FoodPhotoScanner_Capture"
             case .onAddItem:  return "FoodPhotoScanner_AddItem"
             case .onAddAll:   return "FoodPhotoScanner_AddAll"
@@ -161,7 +158,7 @@ extension FoodPhotoScannerPresenter {
         var parameters: [String: Any]? {
             switch self {
             case .onAddItem(let name):    return ["item_name": name]
-            case .onAddAll(let count):    return ["item_count": count]
+            case .onAddAll(let count), .analyseSuccess(let count):    return ["item_count": count]
             case .onError(let message):  return ["error": message]
             default:                     return nil
             }

@@ -177,7 +177,11 @@ final class NutritionPresenter {
     /// first time; a refusal leaves the import reading nothing.
     private func importFromAppleHealth() async {
         if interactor.canRequestHealthDataAuthorisation() {
-            try? await interactor.requestHealthKitAuthorisation(for: .nutrition)
+            do {
+                try await interactor.requestHealthKitAuthorisation(for: .nutrition)
+            } catch {
+                interactor.trackEvent(event: Event.healthAuthorisationFail(error: error))
+            }
         }
         await interactor.syncNutritionFromHealthKit()
     }
@@ -329,7 +333,11 @@ final class NutritionPresenter {
             },
             onStartNew: { [weak self] in
                 Task { @MainActor in
-                    try? self?.interactor.deleteDraftMeal()
+                    do {
+                        try self?.interactor.deleteDraftMeal()
+                    } catch {
+                        self?.interactor.trackEvent(event: Event.discardDraftFail(error: error))
+                    }
                     self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
                 }
             }
@@ -399,7 +407,9 @@ extension NutritionPresenter {
         case saveMealStart
         case saveMealSuccess
         case saveMealFail(error: Error)
-        
+        case healthAuthorisationFail(error: Error)
+        case discardDraftFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear:         return "NutritionView_Appear"
@@ -407,6 +417,8 @@ extension NutritionPresenter {
             case .saveMealStart:    return "NutritionView_SaveMeal_Start"
             case .saveMealSuccess:  return "NutritionView_SaveMeal_Success"
             case .saveMealFail:     return "NutritionView_SaveMeal_Fail"
+            case .healthAuthorisationFail:  return "NutritionView_HealthAuthorisation_Fail"
+            case .discardDraftFail:         return "NutritionView_DiscardDraft_Fail"
             }
         }
         
@@ -414,7 +426,7 @@ extension NutritionPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .saveMealFail(error: let error):
+            case .saveMealFail(error: let error), .healthAuthorisationFail(error: let error), .discardDraftFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -425,6 +437,8 @@ extension NutritionPresenter {
             switch self {
             case .saveMealFail:
                 return .severe
+            case .healthAuthorisationFail, .discardDraftFail:
+                return .warning
             default:
                 return .analytic
             }

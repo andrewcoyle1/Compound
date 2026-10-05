@@ -19,6 +19,14 @@ class RecipeIngredientAmountPresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func unitLabel(food: FoodModel) -> String {
         food.measurementMethod == .volume ? String(localized: "ml") : String(localized: "g")
     }
@@ -45,3 +53,25 @@ protocol RecipeIngredientAmountRouter: GlobalRouter { }
 
 extension CoreInteractor: RecipeIngredientAmountInteractor { }
 extension CoreRouter: RecipeIngredientAmountRouter { }
+
+extension RecipeIngredientAmountPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "RecipeIngredientAmountView_Appear"
+            case .onDisappear:  return "RecipeIngredientAmountView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
+    }
+}

@@ -253,11 +253,26 @@ struct IngredientListBuilderPresenterTests {
     func testTheScreenIsTrackedUnderItsOwnName() {
         let screen = makeScreen()
 
-        screen.presenter.onViewAppear()
-        screen.presenter.onViewDisappear()
+        let delegate = IngredientListBuilderDelegate()
+        screen.presenter.onViewAppear(delegate: delegate)
+        screen.presenter.onViewDisappear(delegate: delegate)
 
         #expect(screen.interactor.trackedScreenEventNames == ["IngredientsView_Appear"])
         #expect(screen.interactor.trackedEventNames == ["IngredientsView_Disappear"])
+    }
+
+    /// Inside Foods and the food picker's Library the list is part of the parent's screen, which
+    /// logs the screen view itself.
+    @Test("Test The Embedded List Logs No Screen Events")
+    func testTheEmbeddedListLogsNoScreenEvents() {
+        let screen = makeScreen()
+
+        let delegate = IngredientListBuilderDelegate(isEmbedded: true)
+        screen.presenter.onViewAppear(delegate: delegate)
+        screen.presenter.onViewDisappear(delegate: delegate)
+
+        #expect(screen.interactor.trackedScreenEventNames.isEmpty)
+        #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 }
 

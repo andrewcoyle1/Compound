@@ -91,4 +91,32 @@ struct OnboardingSelectionHapticsTests {
 
         #expect(haptics(interactor) == Array(repeating: "selection", count: 4))
     }
+
+    // The goal and diet steps also open after onboarding, from Settings, Profile or Progress. Their
+    // screen events say which, so the onboarding funnel can leave those visits out.
+
+    @Test("Goal and diet steps report whether they are part of onboarding")
+    func testScreenEventsCarryIsOnboarding() {
+        func isOnboarding(_ interactor: Interactor, _ event: String) -> Bool? {
+            interactor.lastParameters[event]?["is_onboarding"] as? Bool
+        }
+
+        let inOnboarding = Interactor()
+        OverarchingObjectivePresenter(interactor: inOnboarding, router: Router()).onViewAppear()
+        CalorieFloorPresenter(interactor: inOnboarding, router: Router()).onViewAppear(isFromSettings: false)
+        #expect(isOnboarding(inOnboarding, "OverarchingObjectiveView_Appear") == true)
+        #expect(isOnboarding(inOnboarding, "CalorieFloorView_Appear") == true)
+
+        let afterOnboarding = Interactor()
+        let objective = OverarchingObjectivePresenter(interactor: afterOnboarding, router: Router(), isStandaloneMode: true)
+        objective.onViewAppear()
+        objective.onViewDisappear()
+        let floor = CalorieFloorPresenter(interactor: afterOnboarding, router: Router())
+        floor.onViewAppear(isFromSettings: true)
+        floor.onViewDisappear(isFromSettings: true)
+        #expect(isOnboarding(afterOnboarding, "OverarchingObjectiveView_Appear") == false)
+        #expect(isOnboarding(afterOnboarding, "OverarchingObjectiveView_Disappear") == false)
+        #expect(isOnboarding(afterOnboarding, "CalorieFloorView_Appear") == false)
+        #expect(isOnboarding(afterOnboarding, "CalorieFloorView_Disappear") == false)
+    }
 }

@@ -552,6 +552,8 @@ class AnalyticsPresenter {
         case onDisappear(delegate: AnalyticsDelegate)
         case onDevSettings
         case onDevSettingsFail
+        case loadMacrosFail(error: Error)
+        case loadDailyTargetFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -559,6 +561,8 @@ class AnalyticsPresenter {
             case .onDisappear:              return "AnalyticsView_Disappear"
             case .onDevSettings:            return "AnalyticsView_DevSettings"
             case .onDevSettingsFail:        return "AnalyticsView_DevSettings_Fail"
+            case .loadMacrosFail:           return "AnalyticsView_LoadMacros_Fail"
+            case .loadDailyTargetFail:      return "AnalyticsView_LoadDailyTarget_Fail"
 
             }
         }
@@ -567,6 +571,8 @@ class AnalyticsPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .loadMacrosFail(let error), .loadDailyTargetFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -576,6 +582,8 @@ class AnalyticsPresenter {
             switch self {
             case .onDevSettingsFail:
                 return .severe
+            case .loadMacrosFail, .loadDailyTargetFail:
+                return .warning
             default:
                 return .analytic
             }

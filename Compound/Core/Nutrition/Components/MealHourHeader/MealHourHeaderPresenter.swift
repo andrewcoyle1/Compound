@@ -73,7 +73,11 @@ class MealHourHeaderPresenter {
                                 )
                             }
                             Button("Discard and Start New", role: .destructive) {
-                                try? self.interactor.deleteDraftMeal()
+                                do {
+                                    try self.interactor.deleteDraftMeal()
+                                } catch {
+                                    self.interactor.trackEvent(event: Event.discardDraftFail(error: error))
+                                }
                                 self.router.showAddMealView(
                                     delegate: AddMealDelegate(
                                         mealLog: MealLogModel(
@@ -104,4 +108,23 @@ class MealHourHeaderPresenter {
         }
     }
 
+    enum Event: LoggableEvent {
+        case discardDraftFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .discardDraftFail: return "MealHourHeaderView_DiscardDraft_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .discardDraftFail(error: let error): return error.eventParameters
+            }
+        }
+
+        var type: LogType {
+            .warning
+        }
+    }
 }

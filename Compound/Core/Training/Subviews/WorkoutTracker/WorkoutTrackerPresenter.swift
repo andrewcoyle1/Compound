@@ -152,7 +152,13 @@ class WorkoutTrackerPresenter {
     
     func onTask() async {
         guard let gymProfileId = self.workoutTemplate?.gymProfileId else { return }
-        let profile = try? await interactor.getGymProfile(gymProfileId: gymProfileId)
+        let profile: GymProfileModel?
+        do {
+            profile = try await interactor.getGymProfile(gymProfileId: gymProfileId)
+        } catch {
+            profile = nil
+            interactor.trackEvent(event: Event.loadGymProfileFail(error: error))
+        }
         self.gymProfile = profile
         interactor.setActiveWorkoutGymProfile(profile)
     }
@@ -217,7 +223,9 @@ class WorkoutTrackerPresenter {
         if interactor.canRequestHealthDataAuthorisation() {
             do {
                 try await interactor.requestHealthKitAuthorisation(for: .workouts)
-            } catch { }
+            } catch {
+                interactor.trackEvent(event: Event.healthKitAuthorisationFail(error: error))
+            }
         }
 
         guard !interactor.needsAuthorisationForRequiredTypes() else { return }
@@ -257,9 +265,15 @@ class WorkoutTrackerPresenter {
     // MARK: - Workout Actions
     
     func discardWorkout() {
+        interactor.trackEvent(event: Event.discardWorkoutStart)
         isDone = true
         interactor.setActiveWorkoutGymProfile(nil)
-        try? interactor.deleteActiveSession()
+        do {
+            try interactor.deleteActiveSession()
+            interactor.trackEvent(event: Event.discardWorkoutSuccess)
+        } catch {
+            interactor.trackEvent(event: Event.discardWorkoutFail(error: error))
+        }
         UIApplication.shared.isIdleTimerDisabled = false
         SharedWorkoutStorage.clearHKStartedSessionId()
         router.dismissScreen()
@@ -318,6 +332,7 @@ class WorkoutTrackerPresenter {
         do {
             try interactor.updateActiveSession(workoutSession)
         } catch {
+            interactor.trackEvent(event: Event.saveProgressFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your workout. Please try again."))
         }
     }

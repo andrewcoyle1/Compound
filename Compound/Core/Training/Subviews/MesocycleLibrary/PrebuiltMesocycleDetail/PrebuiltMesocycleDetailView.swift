@@ -32,6 +32,9 @@ struct PrebuiltMesocycleDetailView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private var overviewSection: some View {

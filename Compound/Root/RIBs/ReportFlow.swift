@@ -98,6 +98,7 @@ final class ReportFlow {
         guard let reason else { return false }
         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
         pending = nil
+        interactor.trackEvent(event: Event.reportStart(type: content.type, reason: reason))
         Task {
             do {
                 try await interactor.report(
@@ -107,12 +108,14 @@ final class ReportFlow {
                     reason: reason,
                     notes: trimmed.isEmpty ? nil : trimmed
                 )
+                interactor.trackEvent(event: Event.reportSuccess(type: content.type, reason: reason))
                 // Informative only, so a toast rather than an alert to tap away.
                 interactor.showAppToast(AppToast(
                     style: .success,
                     message: String(localized: "Report sent. Thanks — we will take a look at this \(content.noun).")
                 ))
             } catch {
+                interactor.trackEvent(event: Event.reportFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Send Report"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -124,6 +127,36 @@ final class ReportFlow {
         reason = nil
         note = ""
         validationMessage = nil
+    }
+
+    enum Event: LoggableEvent {
+        case reportStart(type: ReportContentType, reason: ReportReason)
+        case reportSuccess(type: ReportContentType, reason: ReportReason)
+        case reportFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .reportStart:   return "ReportFlow_Report_Start"
+            case .reportSuccess: return "ReportFlow_Report_Success"
+            case .reportFail:    return "ReportFlow_Report_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .reportStart(let type, let reason), .reportSuccess(let type, let reason):
+                return ["content_type": type.rawValue, "reason": reason.rawValue]
+            case .reportFail(let error):
+                return error.eventParameters
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .reportFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }
 

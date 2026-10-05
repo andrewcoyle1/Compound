@@ -54,10 +54,15 @@ class NotificationsPresenter {
         } catch {
             // Only surfaced as an empty-inbox misread before this: a real failure and "no
             // notifications yet" read identically to the person looking at the screen.
+            interactor.trackEvent(event: Event.loadNotificationsFail(error: error))
             loadFailed = true
         }
         // Silent: a stale unread badge is the right fallback for this one, not an alert.
-        try? await interactor.markActivityNotificationsRead()
+        do {
+            try await interactor.markActivityNotificationsRead()
+        } catch {
+            interactor.trackEvent(event: Event.markReadFail(error: error))
+        }
         interactor.clearAllDeliveredNotifications()
         isLoading = false
         hasLoadedOnce = true
@@ -71,14 +76,20 @@ class NotificationsPresenter {
     /// refresh control is the indicator here, so this never sets `isLoading` and tears the list down.
     func onPullToRefresh() async {
         // Silent: the live listener still owns this list; the refresh is only a backstop.
-        try? await interactor.fetchIncomingFollowRequests()
+        do {
+            try await interactor.fetchIncomingFollowRequests()
+        } catch {
+            interactor.trackEvent(event: Event.loadFollowRequestsFail(error: error))
+        }
         await loadNotifications()
     }
 
     func onNotificationDeleted(_ notification: ActivityNotificationModel) {
+        interactor.trackEvent(event: Event.deleteNotificationStart)
         Task {
             do {
                 try await interactor.deleteActivityNotification(id: notification.id)
+                interactor.trackEvent(event: Event.deleteNotificationSuccess)
             } catch {
                 interactor.trackEvent(event: Event.deleteNotificationFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Delete Notification"), subtitle: String(localized: "Please try again."))
@@ -107,6 +118,7 @@ class NotificationsPresenter {
                 let actor = try await interactor.getUser(userId: notification.actorId)
                 followFlow.onButtonPressed(user: actor)
             } catch {
+                interactor.trackEvent(event: Event.followBackFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Follow User"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -122,11 +134,14 @@ class NotificationsPresenter {
 
     private func respond(to request: FollowRequestModel, accept: Bool) {
         interactor.trackEvent(event: Event.followRequestAnswered(accept: accept))
+        interactor.trackEvent(event: Event.respondStart(accept: accept))
         Task {
             do {
                 try await interactor.respondToFollowRequest(requesterId: request.requesterId, accept: accept)
+                interactor.trackEvent(event: Event.respondSuccess(accept: accept))
                 if accept { interactor.playHaptic(option: .success) }
             } catch {
+                interactor.trackEvent(event: Event.respondFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Answer Request"), subtitle: String(localized: "Please try again."))
             }
@@ -172,6 +187,7 @@ class NotificationsPresenter {
                     router.showChallengeDetailView(delegate: ChallengeDetailDelegate(challenge: challenge))
                 }
             } catch {
+                interactor.trackEvent(event: Event.openNotificationFail(type: notification.type, error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Open"), subtitle: String(localized: "It may have been deleted. Please try again."))
             }
         }
@@ -189,11 +205,33 @@ extension NotificationsPresenter {
         case notificationPressed(type: ActivityNotificationModel.ActivityType)
         case followBackPressed
         case followRequestAnswered(accept: Bool)
+        case deleteNotificationStart
+        case deleteNotificationSuccess
         case deleteNotificationFail(error: Error)
+        case loadNotificationsFail(error: Error)
+        case markReadFail(error: Error)
+        case loadFollowRequestsFail(error: Error)
+        case followBackFail(error: Error)
+        case respondStart(accept: Bool)
+        case respondSuccess(accept: Bool)
+        case respondFail(error: Error)
+        case openNotificationFail(type: ActivityNotificationModel.ActivityType, error: Error)
+        case loadMoreFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .deleteNotificationStart: return "NotificationsView_DeleteNotification_Start"
+            case .deleteNotificationSuccess: return "NotificationsView_DeleteNotification_Success"
             case .deleteNotificationFail: return "NotificationsView_DeleteNotification_Fail"
+            case .loadNotificationsFail: return "NotificationsView_LoadNotifications_Fail"
+            case .markReadFail: return "NotificationsView_MarkRead_Fail"
+            case .loadFollowRequestsFail: return "NotificationsView_LoadFollowRequests_Fail"
+            case .followBackFail: return "NotificationsView_FollowBack_Fail"
+            case .respondStart: return "NotificationsView_RespondToFollowRequest_Start"
+            case .respondSuccess: return "NotificationsView_RespondToFollowRequest_Success"
+            case .respondFail: return "NotificationsView_RespondToFollowRequest_Fail"
+            case .openNotificationFail: return "NotificationsView_OpenNotification_Fail"
+            case .loadMoreFail: return "NotificationsView_LoadMore_Fail"
             case .onAppear:     return "NotificationsView_Appear"
             case .onDisappear:  return "NotificationsView_Disappear"
             case .notificationPressed: return "NotificationsView_Notification_Pressed"
@@ -204,10 +242,15 @@ extension NotificationsPresenter {
         
         var parameters: [String: Any]? {
             switch self {
-            case .deleteNotificationFail(error: let error): return error.eventParameters
+            case .deleteNotificationFail(error: let error), .loadNotificationsFail(error: let error),
+                 .markReadFail(error: let error), .loadFollowRequestsFail(error: let error),
+                 .followBackFail(error: let error), .respondFail(error: let error), .loadMoreFail(error: let error):
+                return error.eventParameters
+            case .openNotificationFail(let type, let error):
+                return error.eventParameters.merging(["type": type.rawValue]) { current, _ in current }
             case .notificationPressed(let type):
                 return ["type": type.rawValue]
-            case .followRequestAnswered(let accept):
+            case .followRequestAnswered(let accept), .respondStart(let accept), .respondSuccess(let accept):
                 return ["accept": accept]
             default:
                 return nil
@@ -216,7 +259,10 @@ extension NotificationsPresenter {
         
         var type: LogType {
             switch self {
-            case .deleteNotificationFail: return .severe
+            case .deleteNotificationFail, .loadNotificationsFail, .followBackFail, .respondFail, .openNotificationFail, .loadMoreFail:
+                return .severe
+            case .markReadFail, .loadFollowRequestsFail:
+                return .warning
             default:
                 return .analytic
                 
@@ -242,7 +288,13 @@ extension NotificationsPresenter {
         let unreadIds = group.unreadIds
         if !unreadIds.isEmpty {
             // Silent: a row left looking unread is the fallback, not an alert over the tap-through.
-            Task { try? await interactor.markActivityNotificationsRead(ids: unreadIds) }
+            Task {
+                do {
+                    try await interactor.markActivityNotificationsRead(ids: unreadIds)
+                } catch {
+                    interactor.trackEvent(event: Event.markReadFail(error: error))
+                }
+            }
         }
         onNotificationPressed(group.newest)
     }
@@ -258,6 +310,7 @@ extension NotificationsPresenter {
             do {
                 try await interactor.fetchMoreActivityNotifications()
             } catch {
+                interactor.trackEvent(event: Event.loadMoreFail(error: error))
                 router.showAlert(title: String(localized: "Unable to Load More"), error: error)
             }
         }

@@ -20,6 +20,14 @@ class SubscriptionPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     private var exits: PaywallExits {
         PaywallExits(interactor: interactor, router: router, screenName: "SubscriptionInfoView")
@@ -48,16 +56,22 @@ func onDevSettingsPressed() {
 #endif
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "SubscriptionView_Appear"
+            case .onDisappear: return "SubscriptionView_Disappear"
             case .navigate: return "SubscriptionInfoView_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -65,6 +79,8 @@ func onDevSettingsPressed() {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

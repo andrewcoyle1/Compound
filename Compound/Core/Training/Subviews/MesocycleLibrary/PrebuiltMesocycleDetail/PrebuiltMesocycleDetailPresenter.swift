@@ -31,6 +31,10 @@ class PrebuiltMesocycleDetailPresenter {
         interactor.trackScreenEvent(event: Event.onAppear(mesocycleId: mesocycle.id))
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(mesocycleId: mesocycle.id))
+    }
+
     /// Copies the template under the user, makes the copy active, and returns to the library,
     /// where it now shows as the active mesocycle.
     func onStartPressed() async {
@@ -54,6 +58,7 @@ class PrebuiltMesocycleDetailPresenter {
 extension PrebuiltMesocycleDetailPresenter {
     enum Event: LoggableEvent {
         case onAppear(mesocycleId: String)
+        case onDisappear(mesocycleId: String)
         case startStart(mesocycleId: String)
         case startSuccess(mesocycleId: String)
         case startFail(mesocycleId: String, error: Error)
@@ -61,6 +66,7 @@ extension PrebuiltMesocycleDetailPresenter {
         var eventName: String {
             switch self {
             case .onAppear:     return "PrebuiltProgramDetailView_Appear"
+            case .onDisappear:  return "PrebuiltProgramDetailView_Disappear"
             case .startStart:   return "PrebuiltProgramDetailView_Start_Start"
             case .startSuccess: return "PrebuiltProgramDetailView_Start_Success"
             case .startFail:    return "PrebuiltProgramDetailView_Start_Fail"
@@ -69,7 +75,7 @@ extension PrebuiltMesocycleDetailPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(let mesocycleId), .startStart(let mesocycleId), .startSuccess(let mesocycleId):
+            case .onAppear(let mesocycleId), .onDisappear(let mesocycleId), .startStart(let mesocycleId), .startSuccess(let mesocycleId):
                 return ["program_id": mesocycleId]
             case .startFail(let mesocycleId, let error):
                 var params = error.eventParameters

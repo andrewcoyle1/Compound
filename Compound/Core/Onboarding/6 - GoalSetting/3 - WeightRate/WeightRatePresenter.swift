@@ -79,6 +79,14 @@ class WeightRatePresenter {
         self.isStandaloneMode = isStandaloneMode
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isStandaloneMode))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isStandaloneMode))
+    }
+
     func onAppear(delegate: WeightRateDelegate) {
         let user = interactor.currentUser
         currentWeight = interactor.currentWeightKilograms ?? 70
@@ -185,16 +193,24 @@ class WeightRatePresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "WeightRateView_Appear"
+            case .onDisappear: return "WeightRateView_Disappear"
             case .navigate: return "Onboarding_WeightRate_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .navigate:
                 return nil
             }
@@ -202,6 +218,8 @@ class WeightRatePresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol WorkoutInteractor {
+protocol WorkoutInteractor: GlobalInteractor {
     var auth: UserAuthInfo? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
 }

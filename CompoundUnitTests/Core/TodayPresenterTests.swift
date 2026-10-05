@@ -291,7 +291,8 @@ struct TodayPresenterTests {
         screen.presenter.onViewDisappear(delegate: screen.delegate)
 
         #expect(screen.interactor.trackedScreenEventNames == ["TodayView_Appear"])
-        #expect(screen.interactor.trackedEventNames == ["TodayView_Disappear"])
+        // The double has no totals, so appearing also logs the failed nutrition read.
+        #expect(screen.interactor.trackedEventNames == ["TodayView_LoadNutritionTotals_Fail", "TodayView_Disappear"])
     }
 
     // MARK: Streak reminder offer

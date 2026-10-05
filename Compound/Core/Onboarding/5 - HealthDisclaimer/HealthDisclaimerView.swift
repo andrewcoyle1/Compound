@@ -39,6 +39,8 @@ struct HealthDisclaimerView: View {
             }
         }
         .scrollIndicators(.hidden)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     /// The document a toggle accepts, one row under it, so nobody is asked to accept a text the

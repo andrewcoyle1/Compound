@@ -440,6 +440,7 @@ struct OnboardingDietPlanScreenTests {
         }
 
         func trackEvent(event: LoggableEvent) { trackedEventNames.append(event.eventName) }
+        func trackScreenEvent(event: LoggableEvent) { trackedEventNames.append(event.eventName) }
         func playHaptic(option: HapticOption) { playedHaptics.append(option) }
     }
 

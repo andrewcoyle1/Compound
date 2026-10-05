@@ -20,6 +20,14 @@ class CustomisingDietProgramPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func navigateToPreferredDiet() {
         interactor.trackEvent(event: Event.navigate)
@@ -40,11 +48,15 @@ class CustomisingDietProgramPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
         case useRecommended
 
         var eventName: String {
             switch self {
+            case .onAppear: return "CustomisingDietProgramView_Appear"
+            case .onDisappear: return "CustomisingDietProgramView_Disappear"
             case .navigate: return "Onboarding_CustProgram_Navigate"
             case .useRecommended: return "Onboarding_CustProgram_UseRecommended"
             }
@@ -55,7 +67,12 @@ class CustomisingDietProgramPresenter {
         }
         
         var type: LogType {
-            .info
+            switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
+            default:
+                return .info
+            }
         }
     }
 }

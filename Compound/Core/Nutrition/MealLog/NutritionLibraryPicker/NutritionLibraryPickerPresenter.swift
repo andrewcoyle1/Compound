@@ -22,11 +22,20 @@ class NutritionLibraryPickerPresenter {
         self.interactor = interactor
         self.router = router
     }
-        
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onModePressed(_ mode: NutritionPickerMode) {
         guard mode != self.mode else { return }
         interactor.playHaptic(option: .selection)
         self.mode = mode
+        interactor.trackEvent(event: Event.tabSelected(mode: mode))
     }
     
     /// A row tap: the amount screen, unless the Quick Add setting asks for the one-tap add here
@@ -72,6 +81,35 @@ class NutritionLibraryPickerPresenter {
 
     func dismissScreen() {
         router.dismissScreen()
+    }
+}
+
+extension NutritionLibraryPickerPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case tabSelected(mode: NutritionPickerMode)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "NutritionLibraryPickerView_Appear"
+            case .onDisappear:  return "NutritionLibraryPickerView_Disappear"
+            case .tabSelected:  return "NutritionLibraryPickerView_Tab_Selected"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .tabSelected(mode: let mode):
+                return ["tab": mode.rawValue]
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            .analytic
+        }
     }
 }
 

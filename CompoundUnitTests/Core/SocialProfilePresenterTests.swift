@@ -267,9 +267,13 @@ struct SocialProfilePresenterTests {
         screen.presenter.onFollowButtonPressed()
         await TestManagers.eventually { !screen.presenter.isFollowing }
 
-        #expect(screen.interactor.trackedEventNames == [
+        #expect(screen.interactor.trackedEventNames.filter { $0.hasPrefix("SocialProfileView_") } == [
             "SocialProfileView_Follow_Pressed", "SocialProfileView_Unfollow_Pressed"
         ])
+        let flowEvents = ["FollowFlow_Follow_Start", "FollowFlow_Follow_Success", "FollowFlow_Unfollow_Start", "FollowFlow_Unfollow_Success"]
+        #expect(await TestManagers.eventually {
+            Set(screen.interactor.trackedEventNames.filter { $0.hasPrefix("FollowFlow_") }) == Set(flowEvents)
+        })
         #expect(screen.router.alertTitles.isEmpty)
     }
 
@@ -355,9 +359,13 @@ struct SocialProfilePresenterTests {
         await TestManagers.eventually { screen.presenter.followState == .follow }
 
         #expect(screen.interactor.sentFollowRequestIds.isEmpty)
-        #expect(screen.interactor.trackedEventNames == [
+        #expect(screen.interactor.trackedEventNames.filter { $0.hasPrefix("SocialProfileView_") } == [
             "SocialProfileView_Follow_Pressed", "SocialProfileView_CancelRequest_Pressed"
         ])
+        let flowEvents = ["FollowFlow_RequestFollow_Start", "FollowFlow_RequestFollow_Success", "FollowFlow_CancelRequest_Start", "FollowFlow_CancelRequest_Success"]
+        #expect(await TestManagers.eventually {
+            Set(screen.interactor.trackedEventNames.filter { $0.hasPrefix("FollowFlow_") }) == Set(flowEvents)
+        })
     }
 
     @Test("Test Following A Public Profile Is Immediate")

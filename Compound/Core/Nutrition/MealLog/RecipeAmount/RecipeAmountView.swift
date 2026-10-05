@@ -42,7 +42,11 @@ struct RecipeAmountView: View {
         }
         .navigationTitle(delegate.recipe.name)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { isServingsFocused = true }
+        .onAppear {
+            presenter.onViewAppear()
+            isServingsFocused = true
+        }
+        .onDisappear { presenter.onViewDisappear() }
         .onChange(of: isServingsFocused) { _, focused in
             guard focused else { return }
             let text = presenter.servingsText

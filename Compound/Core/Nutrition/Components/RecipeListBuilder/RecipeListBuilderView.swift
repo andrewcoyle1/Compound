@@ -64,12 +64,6 @@ struct RecipeListBuilderView: View {
         .onChange(of: delegate.searchText, initial: true) { _, newValue in
             if let newValue { presenter.searchText = newValue }
         }
-        .onAppear {
-            presenter.onViewAppear()
-        }
-        .onDisappear {
-            presenter.onViewDisappear()
-        }
         .scrollIndicators(.hidden)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

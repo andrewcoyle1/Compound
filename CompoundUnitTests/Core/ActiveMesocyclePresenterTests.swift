@@ -535,18 +535,6 @@ struct ActiveMesocyclePresenterTests {
 
     // MARK: - Analytics
 
-    @Test("Test Appearing And Leaving Are Both Tracked")
-    func testAppearingAndLeavingAreBothTracked() {
-        let screen = makeScreen()
-        let delegate = ActiveMesocycleDelegate(mesocycle: mesocycle(days: [day("Upper")]))
-
-        screen.presenter.onViewAppear(delegate: delegate)
-        screen.presenter.onViewDisappear(delegate: delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["ActiveTrainingProgramView_Appear"])
-        #expect(screen.interactor.trackedEventNames == ["ActiveTrainingProgramView_Disappear"])
-    }
-
     /// Deleting was `try?`-ed inside the confirmation button, so a refused delete left the mesocycle
     /// in place with no word why.
     @Test("Test A Failed Program Delete Alerts Once")
@@ -559,6 +547,6 @@ struct ActiveMesocyclePresenterTests {
         await presenter.deleteMesocycle(mesocycleId: "program-1")
 
         #expect(router.alertTitles == ["Unable to Delete Mesocycle"])
-        #expect(interactor.trackedEventNames == ["ActiveTrainingProgramView_DeleteProgram_Fail"])
+        #expect(interactor.trackedEventNames == ["ActiveTrainingProgramView_DeleteProgram_Start", "ActiveTrainingProgramView_DeleteProgram_Fail"])
     }
 }

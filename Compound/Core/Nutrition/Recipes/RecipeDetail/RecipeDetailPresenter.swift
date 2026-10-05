@@ -32,17 +32,25 @@ class RecipeDetailPresenter {
         
     func onViewAppear(delegate: RecipeDetailDelegate) {
         isFavourited = interactor.isFavouriteRecipe(id: delegate.recipeTemplate.id)
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
     }
 
     /// Favourites live on the food log settings, which is what the library's Favourites tab reads.
     func onFavouritePressed(delegate: RecipeDetailDelegate) {
         let newValue = !isFavourited
         isFavourited = newValue
+        interactor.trackEvent(event: Event.favouriteStart)
         Task {
             do {
                 try await interactor.setFavouriteRecipe(id: delegate.recipeTemplate.id, isFavourite: newValue)
+                interactor.trackEvent(event: Event.favouriteSuccess)
             } catch {
                 isFavourited = !newValue
+                interactor.trackEvent(event: Event.favouriteFail(error: error))
                 router.showFailure(String(localized: "Unable to Update Favorites"), error: error)
             }
         }
@@ -110,14 +118,61 @@ class RecipeDetailPresenter {
     /// `onDismiss` is the router's dismiss in the app; a parameter so a test can see it happen.
     func deleteRecipe(_ recipe: RecipeTemplateModel, onDismiss: @escaping () -> Void) async {
         isDeleting = true
+        interactor.trackEvent(event: Event.deleteStart)
         do {
             try await interactor.deleteRecipeTemplate(id: recipe.id)
+            interactor.trackEvent(event: Event.deleteSuccess)
             interactor.playHaptic(option: .success)
             onDismiss()
         } catch {
             isDeleting = false
+            interactor.trackEvent(event: Event.deleteFail(error: error))
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Failed to delete recipe"), subtitle: String(localized: "Please try again later"))
+        }
+    }
+}
+
+extension RecipeDetailPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case favouriteStart
+        case favouriteSuccess
+        case favouriteFail(error: Error)
+        case deleteStart
+        case deleteSuccess
+        case deleteFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:          return "RecipeDetailView_Appear"
+            case .onDisappear:       return "RecipeDetailView_Disappear"
+            case .favouriteStart:    return "RecipeDetailView_Favourite_Start"
+            case .favouriteSuccess:  return "RecipeDetailView_Favourite_Success"
+            case .favouriteFail:     return "RecipeDetailView_Favourite_Fail"
+            case .deleteStart:       return "RecipeDetailView_Delete_Start"
+            case .deleteSuccess:     return "RecipeDetailView_Delete_Success"
+            case .deleteFail:        return "RecipeDetailView_Delete_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .favouriteFail(error: let error), .deleteFail(error: let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .favouriteFail, .deleteFail:
+                return .severe
+            default:
+                return .analytic
+            }
         }
     }
 }

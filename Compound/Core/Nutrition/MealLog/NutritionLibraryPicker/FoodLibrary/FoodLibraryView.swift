@@ -17,9 +17,6 @@ struct FoodLibraryDelegate {
         self.onLog = onLog
     }
     
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct FoodLibraryView<
@@ -95,7 +92,8 @@ struct FoodLibraryView<
                         mealItems: delegate.mealItems,
                         onMealItemConfirmed: { item in delegate.onItemPick?(item) },
                         searchText: presenter.searchText,
-                        onLog: delegate.onLog
+                        onLog: delegate.onLog,
+                        isEmbedded: true
                     )
                 )
             case .favourites:
@@ -113,14 +111,8 @@ struct FoodLibraryView<
             .padding(.bottom, Spacing.s)
         }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text(presenter.searchPrompt))
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
         .onChange(of: presenter.foodLibraryOption) {
             presenter.onLibraryOptionChanged()
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
     }
 }

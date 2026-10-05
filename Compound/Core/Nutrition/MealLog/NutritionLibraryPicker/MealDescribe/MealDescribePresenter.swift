@@ -26,14 +26,6 @@ class MealDescribePresenter {
         self.router = router
     }
 
-    func onViewAppear(delegate: MealDescribeDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-    }
-
-    func onViewDisappear(delegate: MealDescribeDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
-    }
-
     var canAnalyse: Bool {
         !descriptionText.trimmingCharacters(in: .whitespaces).isEmpty && !isAnalysing
     }
@@ -58,6 +50,7 @@ class MealDescribePresenter {
             let decoded = try JSONDecoder().decode(FoodAnalysisResponse.self, from: Data(json.utf8))
             analysisResults = decoded.items
             didAnalyse = true
+            interactor.trackEvent(event: Event.analyseSuccess(count: decoded.items.count))
         } catch {
             errorMessage = String(localized: "Couldn't work out the foods in that description. Try naming each food and its amount, then try again.")
             interactor.playHaptic(option: .error)
@@ -96,18 +89,16 @@ class MealDescribePresenter {
 extension MealDescribePresenter {
 
     enum Event: LoggableEvent {
-        case onAppear(delegate: MealDescribeDelegate)
-        case onDisappear(delegate: MealDescribeDelegate)
         case onSubmit(text: String)
+        case analyseSuccess(count: Int)
         case onAddItem(name: String)
         case onAddAll(count: Int)
         case onError(message: String)
 
         var eventName: String {
             switch self {
-            case .onAppear:    return "MealDescribeView_Appear"
-            case .onDisappear: return "MealDescribeView_Disappear"
             case .onSubmit:    return "MealDescribe_Submit"
+            case .analyseSuccess: return "MealDescribeView_Analyse_Success"
             case .onAddItem:   return "MealDescribe_AddItem"
             case .onAddAll:    return "MealDescribe_AddAll"
             case .onError:     return "MealDescribe_Error"
@@ -116,13 +107,11 @@ extension MealDescribePresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
-                return delegate.eventParameters
             case .onSubmit(let text):
                 return ["text_length": text.count]
             case .onAddItem(let name):
                 return ["item_name": name]
-            case .onAddAll(let count):
+            case .onAddAll(let count), .analyseSuccess(let count):
                 return ["item_count": count]
             case .onError(let message):
                 return ["error": message]

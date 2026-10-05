@@ -87,6 +87,14 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
         self.metric = metric
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(metric: metric))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(metric: metric))
+    }
+
     func onAppear() async {
         let endDate = Date()
         guard let startDate = calendar.date(byAdding: .year, value: -1, to: endDate) else { return }
@@ -96,9 +104,8 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
         var newEntries: [NutritionMetricEntry] = []
 
         if metric == .macros {
-            // Silent: local reads for a chart; no data draws an empty chart.
-            let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
-            for item in totalsData {
+            // Local reads for a chart; no data draws an empty chart, so a failure is logged but not shown.
+            for item in loadDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey) {
                 guard let date = Date(dayKey: item.dayKey) else { continue }
                 let totals = item.totals
                 let total = totals.proteinGrams + totals.carbGrams + totals.fatGrams
@@ -113,16 +120,14 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
                 ))
             }
         } else if metric.usesTotals {
-            let totalsData = (try? interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
-            for item in totalsData {
+            for item in loadDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey) {
                 guard let date = Date(dayKey: item.dayKey),
                       let value = metric.extractValue(totals: item.totals, breakdown: nil),
                       value > 0 else { continue }
                 newEntries.append(NutritionMetricEntry(date: date, value: value, metric: metric))
             }
         } else {
-            let breakdownData = (try? interactor.getDailyNutritionBreakdown(startDayKey: startDayKey, endDayKey: endDayKey)) ?? []
-            for item in breakdownData {
+            for item in loadDailyBreakdown(startDayKey: startDayKey, endDayKey: endDayKey) {
                 guard let date = Date(dayKey: item.dayKey),
                       let value = metric.extractValue(totals: nil, breakdown: item.breakdown),
                       value > 0 else { continue }
@@ -131,6 +136,24 @@ final class NutritionMetricDetailPresenter: @MainActor MetricDetailPresenter {
         }
 
         entries = newEntries.sorted { $0.date < $1.date }
+    }
+
+    private func loadDailyTotals(startDayKey: String, endDayKey: String) -> [(dayKey: String, totals: DailyMacroTarget)] {
+        do {
+            return try interactor.getDailyTotals(startDayKey: startDayKey, endDayKey: endDayKey)
+        } catch {
+            interactor.trackEvent(event: Event.loadFail(metric: metric, error: error))
+            return []
+        }
+    }
+
+    private func loadDailyBreakdown(startDayKey: String, endDayKey: String) -> [(dayKey: String, breakdown: DailyNutritionBreakdown)] {
+        do {
+            return try interactor.getDailyNutritionBreakdown(startDayKey: startDayKey, endDayKey: endDayKey)
+        } catch {
+            interactor.trackEvent(event: Event.loadFail(metric: metric, error: error))
+            return []
+        }
     }
 
     /// These values are derived from logged meals, so the action is to log one. Mirrors
@@ -178,5 +201,38 @@ extension CoreBuilder {
             ),
             themeColor: themeColor
         )
+    }
+}
+
+extension NutritionMetricDetailPresenter {
+    /// One set of names for every metric, told apart by the `metric` parameter.
+    enum Event: LoggableEvent {
+        case onAppear(metric: NutritionMetric)
+        case onDisappear(metric: NutritionMetric)
+        case loadFail(metric: NutritionMetric, error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "NutritionMetricDetailView_Appear"
+            case .onDisappear: return "NutritionMetricDetailView_Disappear"
+            case .loadFail: return "NutritionMetricDetailView_Load_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let metric), .onDisappear(let metric):
+                return ["metric": "\(metric)"]
+            case .loadFail(let metric, let error):
+                return error.eventParameters.merging(["metric": "\(metric)"]) { $1 }
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .loadFail: return .warning
+            default: return .analytic
+            }
+        }
     }
 }

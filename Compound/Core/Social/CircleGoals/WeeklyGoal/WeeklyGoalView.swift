@@ -45,6 +45,9 @@ struct WeeklyGoalView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private var goalSelection: Binding<Int?> {

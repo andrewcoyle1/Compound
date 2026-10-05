@@ -8,7 +8,6 @@ struct FoodItemSearchDelegate {
     var onRecipeQuickAdded: ((RecipeTemplateModel) -> Void)?
     /// The plate's current items, so a row can show how many of this food are already on it.
     var mealItems: Binding<[MealItemModel]>?
-    var eventParameters: [String: Any]? { nil }
 }
 
 struct FoodItemSearchView: View {

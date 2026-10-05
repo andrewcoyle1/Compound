@@ -84,6 +84,14 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear() async {
         loadLocalWeightEntries()
     }
@@ -96,14 +104,53 @@ extension WeighInConsistencyPresenter: @MainActor MetricDetailPresenter {
 
     func onDeleteEntry(_ entry: BodyMeasurementEntry) async {
         let updatedEntry = entry.withCleared(.weightKg)
+        interactor.trackEvent(event: Event.deleteEntryStart)
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess)
         } catch {
+            interactor.trackEvent(event: Event.deleteEntryFail(error: error))
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
         }
         rebuildCaches()
+    }
+}
+
+extension WeighInConsistencyPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case deleteEntryStart
+        case deleteEntrySuccess
+        case deleteEntryFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "WeighInConsistencyView_Appear"
+            case .onDisappear: return "WeighInConsistencyView_Disappear"
+            case .deleteEntryStart: return "WeighInConsistencyView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "WeighInConsistencyView_DeleteEntry_Success"
+            case .deleteEntryFail: return "WeighInConsistencyView_DeleteEntry_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .deleteEntryFail(let error):
+                return error.eventParameters
+            default:
+                return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteEntryFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }

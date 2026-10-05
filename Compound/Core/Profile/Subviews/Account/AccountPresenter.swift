@@ -56,10 +56,13 @@ class AccountPresenter {
 
     private func onPrivacyChanged(isPrivate: Bool) {
         interactor.trackEvent(eventName: "AccountView_Privacy_Toggle", parameters: ["is_private": isPrivate], type: .analytic)
+        interactor.trackEvent(event: Event.updatePrivacyStart(isPrivate: isPrivate))
         Task {
             do {
                 try await interactor.updatePrivacy(isPrivate: isPrivate)
+                interactor.trackEvent(event: Event.updatePrivacySuccess(isPrivate: isPrivate))
             } catch {
+                interactor.trackEvent(event: Event.updatePrivacyFail(error: error))
                 router.showAlert(title: String(localized: "Unable to Change Privacy"), error: error)
             }
         }
@@ -119,6 +122,7 @@ class AccountPresenter {
             guard interactor.ensureOnline(or: router) else { return }
         }
         isSaving = true
+        interactor.trackEvent(event: Event.saveProfileStart)
 
         do {
 
@@ -136,10 +140,12 @@ class AccountPresenter {
             #endif
 
             interactor.trackEvent(eventName: "profile_edit_save_success", parameters: [:], type: .analytic)
+            interactor.trackEvent(event: Event.saveProfileSuccess)
             interactor.playHaptic(option: .success)
             router.dismissScreen()
         } catch {
             interactor.trackEvent(eventName: "profile_edit_save_failed", parameters: ["error": String(describing: error)], type: .analytic)
+            interactor.trackEvent(event: Event.saveProfileFail(error: error))
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Unable to Save Profile"),
@@ -187,7 +193,13 @@ class AccountPresenter {
         guard interactor.isOffline else {
             return try await interactor.updateUser(data: data)
         }
-        Task { [interactor] in try? await interactor.updateUser(data: data) }
+        Task { [interactor] in
+            do {
+                try await interactor.updateUser(data: data)
+            } catch {
+                interactor.trackEvent(event: Event.queuedUpdateUserFail(error: error))
+            }
+        }
     }
 
     /// Name, height, cardio fitness and lifting experience are all edited in place in the Profile
@@ -267,6 +279,13 @@ extension AccountPresenter {
         case saveAccountPressed
         case onAppear(delegate: AccountDelegate)
         case onDisappear(delegate: AccountDelegate)
+        case updatePrivacyStart(isPrivate: Bool)
+        case updatePrivacySuccess(isPrivate: Bool)
+        case updatePrivacyFail(error: Error)
+        case saveProfileStart
+        case saveProfileSuccess
+        case saveProfileFail(error: Error)
+        case queuedUpdateUserFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -277,13 +296,23 @@ extension AccountPresenter {
             case .saveAccountPressed:           return "Settings_SaveAccount_Press"
             case .onAppear:                 return "AccountView_Appear"
             case .onDisappear:              return "AccountView_Disappear"
+            case .updatePrivacyStart:       return "AccountView_UpdatePrivacy_Start"
+            case .updatePrivacySuccess:     return "AccountView_UpdatePrivacy_Success"
+            case .updatePrivacyFail:        return "AccountView_UpdatePrivacy_Fail"
+            case .saveProfileStart:         return "AccountView_SaveProfile_Start"
+            case .saveProfileSuccess:       return "AccountView_SaveProfile_Success"
+            case .saveProfileFail:          return "AccountView_SaveProfile_Fail"
+            case .queuedUpdateUserFail:     return "AccountView_QueuedUpdateUser_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
-            case .signOutFail(error: let error):
+            case .signOutFail(error: let error), .updatePrivacyFail(error: let error),
+                 .saveProfileFail(error: let error), .queuedUpdateUserFail(error: let error):
                 return error.eventParameters
+            case .updatePrivacyStart(isPrivate: let isPrivate), .updatePrivacySuccess(isPrivate: let isPrivate):
+                return ["is_private": isPrivate]
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
             default:
@@ -293,8 +322,10 @@ extension AccountPresenter {
         
         var type: LogType {
             switch self {
-            case .signOutFail:
+            case .signOutFail, .updatePrivacyFail, .saveProfileFail:
                 return .severe
+            case .queuedUpdateUserFail:
+                return .warning
             default:
                 return .analytic
             }

@@ -314,6 +314,22 @@ struct NutritionPickerPresenterTests {
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["selection"])
     }
 
+    /// The picker is the screen; its modes are tabs of it, logged as a tab change rather than
+    /// as screen views of their own.
+    @Test("Test The Picker Logs Its Screen And Each Tab Change")
+    func testThePickerLogsItsScreenAndEachTabChange() {
+        let screen = makeScreen()
+
+        screen.presenter.onViewAppear()
+        screen.presenter.onModePressed(.describe)
+        screen.presenter.onModePressed(.describe)
+        screen.presenter.onViewDisappear()
+
+        #expect(screen.interactor.trackedScreenEventNames == ["NutritionLibraryPickerView_Appear"])
+        #expect(screen.interactor.trackedEventNames == ["NutritionLibraryPickerView_Tab_Selected", "NutritionLibraryPickerView_Disappear"])
+        #expect(NutritionLibraryPickerPresenter.Event.tabSelected(mode: .describe).parameters?["tab"] as? String == "describe")
+    }
+
     @Test("Test Every Mode Has A Title And An Icon")
     func testEveryModeHasATitleAndAnIcon() {
         for mode in NutritionPickerMode.allCases {

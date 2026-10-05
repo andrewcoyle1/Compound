@@ -24,6 +24,10 @@ protocol MetricDetailPresenter {
     func displayValue(for entry: Entry) -> String
 
     func onAppear() async
+    /// Screen analytics. Every one of these screens is routed, so each conformer logs its own
+    /// `…_Appear` / `…_Disappear`; there is deliberately no default.
+    func onViewAppear()
+    func onViewDisappear()
     func onAddPressed()
     func onDismissPressed()
     func onDeleteEntry(_ entry: Entry) async
@@ -93,6 +97,8 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
         .onFirstTask {
             await presenter.onAppear()
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
     
     /// Whether the chart is `MetricChart`, rather than the contribution grid or a custom chart.

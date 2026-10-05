@@ -47,6 +47,14 @@ class NamePhotoPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func prefillFromCurrentUser() {
         guard let user = interactor.currentUser else { return }
@@ -122,6 +130,8 @@ class NamePhotoPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
 
         case profilePhotoSelected
         case profilePhotoNotSelected
@@ -135,6 +145,8 @@ class NamePhotoPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "NamePhotoView_Appear"
+            case .onDisappear: return "NamePhotoView_Disappear"
             case .profilePhotoSelected:     return "NamePhoto_PhotoSelected"
             case .profilePhotoNotSelected:  return "NamePhoto_PhotoNotSelected"
             case .profilePhotoLoadStart:    return "NamePhoto_PhotoLoad_Start"

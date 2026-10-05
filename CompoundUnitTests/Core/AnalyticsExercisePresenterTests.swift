@@ -296,7 +296,7 @@ struct AnalyticsExerciseAnalyticsTests {
 @MainActor
 struct AnalyticsExerciseDetailTests {
 
-    private final class Interactor: ExerciseDetailInteractor {
+    private final class Interactor: SpyGlobalInteractor, ExerciseDetailInteractor {
         var auth: UserAuthInfo?
         var workoutSessions: [WorkoutSessionModel] = []
         var preferences: [String: ExerciseUnitPreference] = [:]

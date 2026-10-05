@@ -1,7 +1,6 @@
 import SwiftUI
 
 @MainActor
-protocol RenameWorkoutTemplateModelInteractor {
-}
+protocol RenameWorkoutTemplateModelInteractor: GlobalInteractor { }
 
 extension CoreInteractor: RenameWorkoutTemplateModelInteractor { }

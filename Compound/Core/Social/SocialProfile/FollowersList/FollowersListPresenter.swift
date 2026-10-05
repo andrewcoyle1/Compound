@@ -20,6 +20,14 @@ class FollowersListPresenter {
         self.followFlow = FollowFlow(interactor: interactor, router: router)
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// The reader's own row carries no follow button.
     func showsFollowButton(for user: UserModel) -> Bool {
         user.userId != interactor.currentUser?.userId
@@ -68,11 +76,48 @@ class FollowersListPresenter {
     func removeFollower(_ user: UserModel) async {
         guard interactor.ensureOnline(or: router) else { return }
         interactor.trackEvent(eventName: "FollowersListView_RemoveFollower", parameters: nil, type: .analytic)
+        interactor.trackEvent(event: Event.removeFollowerStart)
         do {
             try await interactor.removeFollower(userId: user.userId)
+            interactor.trackEvent(event: Event.removeFollowerSuccess)
             removedFollowerIds.insert(user.userId)
         } catch {
+            interactor.trackEvent(event: Event.removeFollowerFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to remove follower"), subtitle: String(localized: "Please try again."))
+        }
+    }
+}
+
+extension FollowersListPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case removeFollowerStart
+        case removeFollowerSuccess
+        case removeFollowerFail(error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:                 return "FollowersListView_Appear"
+            case .onDisappear:              return "FollowersListView_Disappear"
+            case .removeFollowerStart:      return "FollowersListView_RemoveFollower_Start"
+            case .removeFollowerSuccess:    return "FollowersListView_RemoveFollower_Success"
+            case .removeFollowerFail:       return "FollowersListView_RemoveFollower_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .removeFollowerFail(let error): return error.eventParameters
+            default: return nil
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .removeFollowerFail: return .severe
+            default: return .analytic
+            }
         }
     }
 }

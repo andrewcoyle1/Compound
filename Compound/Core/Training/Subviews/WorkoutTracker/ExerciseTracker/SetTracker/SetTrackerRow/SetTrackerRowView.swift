@@ -67,12 +67,6 @@ struct SetTrackerRowView: View {
             deleteSetButton
         }
         .moveDisabled(true)
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
-        }
     }
     
     /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.

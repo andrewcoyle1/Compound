@@ -49,6 +49,10 @@ class MacrocyclesPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onNewMacrocyclePressed() {
         router.showMacrocycleDetailView(delegate: MacrocycleDetailDelegate())
     }
@@ -61,10 +65,12 @@ class MacrocyclesPresenter {
 extension MacrocyclesPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
 
         var eventName: String {
             switch self {
-            case .onAppear: return "MacrocyclesView_Appear"
+            case .onAppear:    return "MacrocyclesView_Appear"
+            case .onDisappear: return "MacrocyclesView_Disappear"
             }
         }
 

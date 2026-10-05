@@ -76,4 +76,27 @@ class NameWorkoutPresenter {
         router.dismissEnvironment()
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "NameWorkoutView_Appear"
+            case .onDisappear:  return "NameWorkoutView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
 }

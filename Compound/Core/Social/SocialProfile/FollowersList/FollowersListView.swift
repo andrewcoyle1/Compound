@@ -55,6 +55,8 @@ struct FollowersListView: View {
         .navigationTitle(delegate.title)
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 }
 

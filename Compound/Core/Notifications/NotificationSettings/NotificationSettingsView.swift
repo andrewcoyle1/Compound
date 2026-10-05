@@ -33,6 +33,7 @@ struct NotificationSettingsView: View {
         .navigationTitle("Notification Settings")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .task { await presenter.checkPermissions() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { presenter.onSceneBecameActive() }

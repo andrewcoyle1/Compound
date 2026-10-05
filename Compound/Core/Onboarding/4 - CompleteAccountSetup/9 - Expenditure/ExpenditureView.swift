@@ -55,6 +55,8 @@ struct ExpenditureView: View {
         .onFirstAppear {
             presenter.estimateExpenditure(delegate: delegate)
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var overviewSection: some View {

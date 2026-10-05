@@ -97,6 +97,14 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
 
     func onAppear() async { }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(kind: kind))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: kind))
+    }
+
     func onAddPressed() {
         router.showLogMeasurementView(kind: kind)
     }
@@ -110,13 +118,53 @@ final class BodyMeasurementDetailPresenter: @MainActor MetricDetailPresenter {
     func onDeleteEntry(_ entry: BodyMeasurementDetailEntry) async {
         guard let baseEntry = interactor.bodyMeasurements.first(where: { $0.id == entry.id }) else { return }
         let updatedEntry = baseEntry.withCleared(kind.clearedField)
+        interactor.trackEvent(event: Event.deleteEntryStart(kind: kind))
         do {
             try await interactor.saveBodyMeasurement(bodyMeasurement: updatedEntry)
+            interactor.trackEvent(event: Event.deleteEntrySuccess(kind: kind))
         } catch {
+            interactor.trackEvent(event: Event.deleteEntryFail(kind: kind, error: error))
             // Was `try?`. The refresh below re-reads unchanged data, so a failed delete put the row
             // straight back with nothing said about why.
             router.showSimpleAlert(title: String(localized: "Unable to Delete Entry"), subtitle: String(localized: "Please try again."))
             return
+        }
+    }
+}
+
+extension BodyMeasurementDetailPresenter {
+    /// One set of names for all eighteen measurements, told apart by the `measurement` parameter.
+    enum Event: LoggableEvent {
+        case onAppear(kind: BodyMeasurementKind)
+        case onDisappear(kind: BodyMeasurementKind)
+        case deleteEntryStart(kind: BodyMeasurementKind)
+        case deleteEntrySuccess(kind: BodyMeasurementKind)
+        case deleteEntryFail(kind: BodyMeasurementKind, error: Error)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:           return "BodyMeasurementDetailView_Appear"
+            case .onDisappear:        return "BodyMeasurementDetailView_Disappear"
+            case .deleteEntryStart:   return "BodyMeasurementDetailView_DeleteEntry_Start"
+            case .deleteEntrySuccess: return "BodyMeasurementDetailView_DeleteEntry_Success"
+            case .deleteEntryFail:    return "BodyMeasurementDetailView_DeleteEntry_Fail"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let kind), .onDisappear(let kind), .deleteEntryStart(let kind), .deleteEntrySuccess(let kind):
+                return ["measurement": kind.rawValue]
+            case .deleteEntryFail(let kind, let error):
+                return error.eventParameters.merging(["measurement": kind.rawValue]) { $1 }
+            }
+        }
+
+        var type: LogType {
+            switch self {
+            case .deleteEntryFail: return .severe
+            default:               return .analytic
+            }
         }
     }
 }

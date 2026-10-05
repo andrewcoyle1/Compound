@@ -194,6 +194,6 @@ struct NotificationsFollowRequestTests {
         #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
         for _ in 0..<10 { await Task.yield() }
         #expect(router.alertTitles == ["Unable to Delete Notification"])
-        #expect(interactor.trackedEventNames == ["NotificationsView_DeleteNotification_Fail"])
+        #expect(interactor.trackedEventNames == ["NotificationsView_DeleteNotification_Start", "NotificationsView_DeleteNotification_Fail"])
     }
 }

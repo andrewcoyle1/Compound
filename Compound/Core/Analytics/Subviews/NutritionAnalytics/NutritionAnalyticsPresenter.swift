@@ -40,6 +40,7 @@ class NutritionAnalyticsPresenter {
         do {
             dailyTotals = try interactor.getDailyTotals(dayKey: dayKey)
         } catch {
+            interactor.trackEvent(event: Event.loadDailyTotalsFail(error: error))
             dailyTotals = nil
         }
         
@@ -48,6 +49,7 @@ class NutritionAnalyticsPresenter {
             do {
                 dailyTarget = try await interactor.getDailyTarget(for: selectedDate, userId: userId)
             } catch {
+                interactor.trackEvent(event: Event.loadDailyTargetFail(error: error))
                 dailyTarget = nil
             }
         } else {
@@ -61,6 +63,7 @@ class NutritionAnalyticsPresenter {
         do {
             dailyBreakdown = try interactor.getDailyNutritionBreakdown(dayKey: dayKey)
         } catch {
+            interactor.trackEvent(event: Event.loadBreakdownFail(error: error))
             dailyBreakdown = nil
         }
     }
@@ -78,6 +81,7 @@ class NutritionAnalyticsPresenter {
                 let dayTotals = try interactor.getDailyTotals(dayKey: key)
                 totals.append(dayTotals)
             } catch {
+                interactor.trackEvent(event: Event.loadMacrosFail(error: error))
                 totals.append(DailyMacroTarget(calories: 0, proteinGrams: 0, carbGrams: 0, fatGrams: 0))
             }
         }
@@ -171,16 +175,26 @@ extension NutritionAnalyticsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case loadDailyTotalsFail(error: Error)
+        case loadDailyTargetFail(error: Error)
+        case loadBreakdownFail(error: Error)
+        case loadMacrosFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:    return "NutritionAnalyticsView_Appear"
             case .onDisappear: return "NutritionAnalyticsView_Disappear"
+            case .loadDailyTotalsFail: return "NutritionAnalyticsView_LoadDailyTotals_Fail"
+            case .loadDailyTargetFail: return "NutritionAnalyticsView_LoadDailyTarget_Fail"
+            case .loadBreakdownFail: return "NutritionAnalyticsView_LoadBreakdown_Fail"
+            case .loadMacrosFail: return "NutritionAnalyticsView_LoadMacros_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
+            case .loadDailyTotalsFail(let error), .loadDailyTargetFail(let error), .loadBreakdownFail(let error), .loadMacrosFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -188,9 +202,10 @@ extension NutritionAnalyticsPresenter {
         
         var type: LogType {
             switch self {
+            case .loadDailyTotalsFail, .loadDailyTargetFail, .loadBreakdownFail, .loadMacrosFail:
+                return .warning
             default:
                 return .analytic
-                
             }
         }
     }

@@ -32,6 +32,14 @@ class ActivityPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate: ActivityDelegate) {
         guard let activityLevel = selectedActivityLevel else { return }
@@ -41,16 +49,22 @@ class ActivityPresenter {
     }
     
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "ActivityView_Appear"
+            case .onDisappear: return "ActivityView_Disappear"
             case .navigate: return "ActivityLevel_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -58,6 +72,8 @@ class ActivityPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

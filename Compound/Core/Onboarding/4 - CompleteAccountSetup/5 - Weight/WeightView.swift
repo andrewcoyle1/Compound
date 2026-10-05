@@ -47,7 +47,11 @@ struct WeightView: View {
                 imperialSection
             }
         }
-        .onAppear { presenter.onAppear(delegate: delegate) }
+        .onAppear {
+            presenter.onViewAppear()
+            presenter.onAppear(delegate: delegate)
+        }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var pickerSection: some View {

@@ -112,7 +112,11 @@ class TrainingPresenter {
                 },
                 onReplace: { [weak self] in
                     Task { @MainActor in
-                        try? self?.interactor.deleteActiveSession()
+                        do {
+                            try self?.interactor.deleteActiveSession()
+                        } catch {
+                            self?.interactor.trackEvent(event: Event.deleteActiveSessionFail(error: error))
+                        }
                         await self?.startThenShowTracker(start)
                     }
                 }
@@ -123,10 +127,13 @@ class TrainingPresenter {
     }
 
     private func startThenShowTracker(_ start: @MainActor () async throws -> Void) async {
+        interactor.trackEvent(event: Event.startWorkoutStart)
         do {
             try await start()
+            interactor.trackEvent(event: Event.startWorkoutSuccess)
             router.showWorkoutTrackerView()
         } catch {
+            interactor.trackEvent(event: Event.startWorkoutFail(error: error))
             router.showSimpleAlert(title: String(localized: "Could Not Start Workout"), subtitle: String(localized: "Please try again."))
         }
     }
@@ -290,6 +297,10 @@ extension TrainingPresenter {
         case openCompletedSessionStart
         case openCompletedSessionSuccess
         case openCompletedSessionFail(error: Error)
+        case startWorkoutStart
+        case startWorkoutSuccess
+        case startWorkoutFail(error: Error)
+        case deleteActiveSessionFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -298,6 +309,10 @@ extension TrainingPresenter {
             case .openCompletedSessionStart:     return "TrainingView_OpenCompletedSession_Start"
             case .openCompletedSessionSuccess:   return "TrainingView_OpenCompletedSession_Success"
             case .openCompletedSessionFail:      return "TrainingView_OpenCompletedSession_Fail"
+            case .startWorkoutStart:             return "TrainingView_StartWorkout_Start"
+            case .startWorkoutSuccess:           return "TrainingView_StartWorkout_Success"
+            case .startWorkoutFail:              return "TrainingView_StartWorkout_Fail"
+            case .deleteActiveSessionFail:       return "TrainingView_DeleteActiveSession_Fail"
             }
         }
 
@@ -305,7 +320,7 @@ extension TrainingPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .openCompletedSessionFail(error: let error):
+            case .openCompletedSessionFail(error: let error), .startWorkoutFail(error: let error), .deleteActiveSessionFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -314,8 +329,10 @@ extension TrainingPresenter {
 
         var type: LogType {
             switch self {
-            case .openCompletedSessionFail:
+            case .openCompletedSessionFail, .startWorkoutFail:
                 return .severe
+            case .deleteActiveSessionFail:
+                return .warning
             default:
                 return .analytic
             }

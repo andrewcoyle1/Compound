@@ -27,6 +27,14 @@ class GoalSummaryPresenter {
         self.router = router
         self.isStandaloneMode = isStandaloneMode
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isStandaloneMode))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isStandaloneMode))
+    }
     
     /// Standalone mode, where the flow is a sheet of its own rather than a step of onboarding.
     ///
@@ -188,6 +196,10 @@ class GoalSummaryPresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case goalSaveStart
         case goalSaveSuccess
         case goalSaveFail(error: Error)
@@ -195,6 +207,8 @@ class GoalSummaryPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "GoalSummaryView_Appear"
+            case .onDisappear: return "GoalSummaryView_Disappear"
             case .goalSaveStart:    return "Onboarding_Goal_Save_Start"
             case .goalSaveSuccess:  return "Onboarding_Goal_Save_Success"
             case .goalSaveFail:     return "Onboarding_Goal_Save_Fail"
@@ -204,6 +218,8 @@ class GoalSummaryPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case let .goalSaveFail(error):
                 return error.eventParameters
             default:

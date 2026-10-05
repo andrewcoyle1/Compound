@@ -539,7 +539,7 @@ struct ExerciseTrackerPresenterTests {
 @MainActor
 struct WorkoutNotesPresenterTests {
 
-    private final class Interactor: WorkoutNotesInteractor { }
+    private final class Interactor: SpyGlobalInteractor, WorkoutNotesInteractor { }
 
     /// `WorkoutNotesRouter` adds nothing to `GlobalRouter`, so `dismissScreen()` is an extension
     /// method and never reaches this double. What the test can hold is that closing the sheet does

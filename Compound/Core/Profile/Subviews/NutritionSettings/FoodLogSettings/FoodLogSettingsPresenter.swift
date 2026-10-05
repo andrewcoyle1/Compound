@@ -104,8 +104,10 @@ class FoodLogSettingsPresenter {
 
     private func save() {
         Task {
+            interactor.trackEvent(event: Event.saveStart)
             do {
                 try await interactor.saveFoodLogSettings(settings)
+                interactor.trackEvent(event: Event.saveSuccess)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
@@ -149,10 +151,14 @@ extension FoodLogSettingsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
+        case saveStart
+        case saveSuccess
         case saveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .saveStart: return "FoodLogSettingsView_Save_Start"
+            case .saveSuccess: return "FoodLogSettingsView_Save_Success"
             case .saveFail: return "FoodLogSettingsView_Save_Fail"
             case .onAppear: return "FoodLogSettingsView_Appear"
             case .onDisappear: return "FoodLogSettingsView_Disappear"

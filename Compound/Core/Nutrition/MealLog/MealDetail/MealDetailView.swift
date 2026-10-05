@@ -34,6 +34,9 @@ struct MealDetailView: View {
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private var summarySection: some View {

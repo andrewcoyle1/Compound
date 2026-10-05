@@ -48,6 +48,9 @@ struct EditUsernameView: View {
             presenter.onViewAppear()
             isFieldFocused = true
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     @ViewBuilder

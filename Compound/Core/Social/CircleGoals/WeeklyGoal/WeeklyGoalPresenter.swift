@@ -31,6 +31,10 @@ class WeeklyGoalPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onCancelPressed() {
         router.dismissScreen()
     }
@@ -48,13 +52,16 @@ class WeeklyGoalPresenter {
         let goal = min(max(goal, CircleWeek.goalRange.lowerBound), CircleWeek.goalRange.upperBound)
         interactor.trackEvent(event: Event.savePressed(goal: goal))
         isSaving = true
+        interactor.trackEvent(event: Event.saveStart)
         Task {
             defer { isSaving = false }
             do {
                 try await interactor.updateWeeklySessionGoal(goal)
+                interactor.trackEvent(event: Event.saveSuccess(goal: goal))
                 interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
+                interactor.trackEvent(event: Event.saveFail(error: error))
                 selectedGoal = savedGoal
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Goal"), subtitle: String(localized: "Please try again."))
@@ -67,22 +74,36 @@ extension WeeklyGoalPresenter {
 
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case savePressed(goal: Int)
+        case saveStart
+        case saveSuccess(goal: Int)
+        case saveFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:     return "WeeklyGoalView_Appear"
+            case .onDisappear:  return "WeeklyGoalView_Disappear"
             case .savePressed:  return "WeeklyGoalView_Save_Pressed"
+            case .saveStart:    return "WeeklyGoalView_Save_Start"
+            case .saveSuccess:  return "WeeklyGoalView_Save_Success"
+            case .saveFail:     return "WeeklyGoalView_Save_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear: return nil
-            case .savePressed(goal: let goal): return ["weekly_session_goal": goal]
+            case .savePressed(goal: let goal), .saveSuccess(goal: let goal): return ["weekly_session_goal": goal]
+            case .saveFail(error: let error): return error.eventParameters
+            default: return nil
             }
         }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .saveFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }

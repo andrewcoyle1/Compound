@@ -44,6 +44,8 @@ struct CalorieDistributionView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear(isFromSettings: delegate.isFromSettings) }
+        .onDisappear { presenter.onViewDisappear(isFromSettings: delegate.isFromSettings) }
     }
 }
 

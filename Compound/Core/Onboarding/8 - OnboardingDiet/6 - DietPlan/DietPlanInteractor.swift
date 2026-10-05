@@ -12,6 +12,7 @@ protocol DietPlanInteractor {
     func saveDietPlan(_ plan: DietPlan) async throws
     func saveOnboardingComplete() async throws
     func trackEvent(event: LoggableEvent)
+    func trackScreenEvent(event: LoggableEvent)
     func playHaptic(option: HapticOption)
 }
 

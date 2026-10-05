@@ -22,6 +22,14 @@ class OnboardingCompletedPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onFinishButtonPressed() {
         isCompletingProfileSetup = true
@@ -46,12 +54,16 @@ class OnboardingCompletedPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case finishStart
         case finishSuccess
         case finishFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "OnboardingCompletedView_Appear"
+            case .onDisappear: return "OnboardingCompletedView_Disappear"
             case .finishStart:   return "OnboardingCompletedView_Finish_Start"
             case .finishSuccess: return "OnboardingCompletedView_Finish_Success"
             case .finishFail:    return "OnboardingCompletedView_Finish_Fail"

@@ -27,9 +27,6 @@ struct FoodPhotoScannerView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            presenter.onViewAppear()
-        }
         .task {
             await presenter.onCameraNeeded(isSupported: UIImagePickerController.isSourceTypeAvailable(.camera))
         }

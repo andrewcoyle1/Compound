@@ -536,15 +536,16 @@ struct WorkoutBuildDefinePresenterTests {
         #expect(screen.presenter.targetMuscleSummaries.map(\.muscle.name) == ["Chest", "Front Delts", "Triceps"])
     }
 
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
+    /// Built inline by the wrapper and the mesocycle designer, which log the screen; logging here
+    /// too counted every visit twice.
+    @Test("Test Appearing Logs No Screen Event")
+    func testAppearingLogsNoScreenEvent() {
         let screen = makeScreen()
 
         screen.presenter.onViewAppear()
-        screen.presenter.onViewDisappear()
 
-        #expect(screen.interactor.trackedScreenEventNames == ["DefineWorkoutView_Appear"])
-        #expect(screen.interactor.trackedEventNames == ["DefineWorkoutView_Disappear"])
+        #expect(screen.interactor.trackedScreenEventNames.isEmpty)
+        #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 }
 

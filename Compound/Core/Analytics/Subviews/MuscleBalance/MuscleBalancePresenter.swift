@@ -59,6 +59,10 @@ class MuscleBalancePresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func loadData(endDate: Date = Date()) {
         self.endDate = endDate
         let completed = interactor.workoutSessions.filter { $0.endedAt != nil }
@@ -96,11 +100,13 @@ class MuscleBalancePresenter {
 extension MuscleBalancePresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case onMusclePressed(muscle: Muscles)
 
         var eventName: String {
             switch self {
             case .onAppear:        return "MuscleBalanceView_Appear"
+            case .onDisappear:     return "MuscleBalanceView_Disappear"
             case .onMusclePressed: return "MuscleBalanceView_Muscle_Press"
             }
         }
@@ -108,7 +114,7 @@ extension MuscleBalancePresenter {
         var parameters: [String: Any]? {
             switch self {
             case .onMusclePressed(let muscle): return ["muscle": muscle.rawValue]
-            case .onAppear:                    return nil
+            case .onAppear, .onDisappear:      return nil
             }
         }
 

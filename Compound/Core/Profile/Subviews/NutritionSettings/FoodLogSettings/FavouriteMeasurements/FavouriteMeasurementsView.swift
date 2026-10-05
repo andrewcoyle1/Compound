@@ -24,6 +24,9 @@ struct FavouriteMeasurementsView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 }
 

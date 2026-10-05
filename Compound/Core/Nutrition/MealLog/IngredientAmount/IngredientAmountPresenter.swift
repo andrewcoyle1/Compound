@@ -61,6 +61,7 @@ class IngredientAmountPresenter {
     /// An amount handed in — an AI estimate — wins: the portion used to overwrite it, so a 250 g
     /// estimate opened at 100 g.
     func onViewAppear(ingredient: FoodModel, initialAmountText: String? = nil) {
+        interactor.trackScreenEvent(event: Event.onAppear)
         guard !hasStartedFromPortion else { return }
         hasStartedFromPortion = true
         if let initialAmountText {
@@ -99,8 +100,34 @@ class IngredientAmountPresenter {
         onLog()
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func dismissScreen() {
         router.dismissScreen()
     }
 
+}
+
+extension IngredientAmountPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "IngredientAmountView_Appear"
+            case .onDisappear:  return "IngredientAmountView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            nil
+        }
+
+        var type: LogType {
+            .analytic
+        }
+    }
 }

@@ -90,6 +90,14 @@ class WeightPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate: WeightDelegate) {
         let delegate = ExerciseFrequencyDelegate(delegate: delegate, weightInKilograms: weight, weightUnitPreference: preference)
@@ -98,11 +106,15 @@ class WeightPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
         case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "WeightView_Appear"
+            case .onDisappear: return "WeightView_Disappear"
             case .navigate: return "WeightView_Navigate"
             case .fillFromHealth: return "WeightView_FillFromHealth"
             }
@@ -110,6 +122,8 @@ class WeightPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             case .fillFromHealth(let found):
@@ -119,6 +133,8 @@ class WeightPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             case .fillFromHealth:

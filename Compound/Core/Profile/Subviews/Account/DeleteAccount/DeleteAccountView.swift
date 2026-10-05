@@ -28,6 +28,9 @@ struct DeleteAccountView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private var confirmationList: some View {

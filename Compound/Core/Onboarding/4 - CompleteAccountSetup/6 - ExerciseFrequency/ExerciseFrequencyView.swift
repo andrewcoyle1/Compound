@@ -51,6 +51,8 @@ struct ExerciseFrequencyView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

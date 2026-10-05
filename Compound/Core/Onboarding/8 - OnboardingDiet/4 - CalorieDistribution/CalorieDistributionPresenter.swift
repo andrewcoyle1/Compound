@@ -35,6 +35,14 @@ class CalorieDistributionPresenter {
         }
         loadTrainingContext()
     }
+
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
+    }
+
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
+    }
     
     /// The body of this was commented out against a `plan.weeks.first.scheduledWorkouts` shape that
     /// `Mesocycle` no longer has, so it did nothing: `hasMesocycle` stayed false,
@@ -65,12 +73,18 @@ class CalorieDistributionPresenter {
     }
 
     enum Event: LoggableEvent {
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case trainingContextLoaded(daysPerWeek: Int?)
         case calorieDistributionPrefilled(distribution: CalorieDistribution, reason: String)
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "CalorieDistributionView_Appear"
+            case .onDisappear: return "CalorieDistributionView_Disappear"
             case .trainingContextLoaded: return "Onboarding_CalDist_TrainingContextLoaded"
             case .calorieDistributionPrefilled: return "Onboarding_CalDist_Prefilled"
             case .navigate: return "Onboarding_CalDist_Navigate"
@@ -79,6 +93,8 @@ class CalorieDistributionPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .trainingContextLoaded(daysPerWeek: let days):
                 return ["daysPerWeek": days as Any]
             case .calorieDistributionPrefilled(distribution: let dist, reason: let reason):
@@ -90,6 +106,8 @@ class CalorieDistributionPresenter {
         
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate, .trainingContextLoaded, .calorieDistributionPrefilled:
                 return .info
             }

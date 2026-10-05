@@ -25,6 +25,9 @@ struct MuscleBalanceView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private func section(_ region: BodyRegion) -> some View {

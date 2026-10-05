@@ -41,18 +41,26 @@ struct NutritionLibraryPickerView<
     @ViewBuilder var mealDescribe: (MealDescribeDelegate) -> MealDescribe
 
     var body: some View {
+        // The modifiers on `picker` reach each mode's content separately (its Group is rebuilt per
+        // mode), so the screen's own Appear and Disappear sit on a wrapper that persists across them.
+        ZStack { picker }
+            .onAppear { presenter.onViewAppear() }
+            .onDisappear { presenter.onViewDisappear() }
+    }
+
+    @ViewBuilder private var picker: some View {
         // Read through the getter on every render. A Binding made once by Add Meal and stored in
         // this delegate kept answering with the plate as it was when the sheet opened, so the
         // count, the rows' checkmarks and Log never moved however much was added.
         let plate = delegate.plate()
-        let plateBinding = Binding(get: delegate.plate, set: { _ in })
+        let plateBinding = Binding(get: { delegate.plate() }, set: { _ in })
         Group {
             switch presenter.mode {
 #if !targetEnvironment(macCatalyst)
             case .barcode:
                 barcodeScanner(BarcodeScannerDelegate(onFoodFound: { food in
                     presenter.navToIngredientAmount(food, onPick: delegate.onPick, onLog: delegate.onLog)
-                }))
+                }, isEmbedded: true))
 #endif
             case .search:
                 foodItemSearch(FoodItemSearchDelegate(

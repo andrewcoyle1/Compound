@@ -12,6 +12,8 @@ struct EditDeloadView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationTitle("Deload")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -32,6 +34,7 @@ extension CoreBuilder {
             presenter: EditDeloadPresenter(
                 selected: selected,
                 onSave: onSave,
+                interactor: interactor,
                 router: coreRouter
             )
         )

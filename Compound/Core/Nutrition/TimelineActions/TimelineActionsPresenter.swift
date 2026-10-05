@@ -35,8 +35,10 @@ class TimelineActionsPresenter {
 
     private func save() {
         Task {
+            interactor.trackEvent(event: Event.saveStart)
             do {
                 try await interactor.saveFoodLogSettings(settings)
+                interactor.trackEvent(event: Event.saveSuccess)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
                 interactor.playHaptic(option: .error)
@@ -57,8 +59,8 @@ class TimelineActionsPresenter {
 
     func onCopyDayConfirmed(delegate: TimelineActionsDelegate) {
         guard !isWorking, let authorId = interactor.currentUser?.userId else { return }
-        // Silent: local read; a failure falls through to the "Nothing to Copy" alert below.
-        let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
+        // A failed local read falls through to the "Nothing to Copy" alert below.
+        let meals = loggedMeals(on: delegate.date)
         guard !meals.isEmpty else {
             isChoosingCopyDestination = false
             router.showSimpleAlert(title: String(localized: "Nothing to Copy"), subtitle: String(localized: "This day has no meals logged."))
@@ -74,6 +76,7 @@ class TimelineActionsPresenter {
                 for meal in meals {
                     try await interactor.saveMeal(copy(of: meal, to: destination, authorId: authorId))
                 }
+                interactor.trackEvent(event: Event.copyDaySuccess(count: meals.count))
                 interactor.playHaptic(option: .success)
                 isChoosingCopyDestination = false
                 router.dismissScreen()
@@ -82,6 +85,16 @@ class TimelineActionsPresenter {
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Copy Day"), subtitle: String(localized: "Please try again."))
             }
+        }
+    }
+
+    /// The day's meals, or none if the local read fails.
+    private func loggedMeals(on date: Date) -> [MealLogModel] {
+        do {
+            return try interactor.getMeals(for: date.dayKey)
+        } catch {
+            interactor.trackEvent(event: Event.getMealsFail(error: error))
+            return []
         }
     }
 
@@ -105,8 +118,8 @@ class TimelineActionsPresenter {
     }
 
     func onClearDayPressed(delegate: TimelineActionsDelegate) {
-        // Silent: local read; a failure falls through to the empty-day guard below.
-        let meals = (try? interactor.getMeals(for: delegate.date.dayKey)) ?? []
+        // A failed local read falls through to the empty-day guard below.
+        let meals = loggedMeals(on: delegate.date)
         guard !meals.isEmpty else {
             router.showSimpleAlert(title: String(localized: "Nothing to Clear"), subtitle: String(localized: "This day has no meals logged."))
             return
@@ -144,6 +157,7 @@ class TimelineActionsPresenter {
                         authorId: meal.authorId
                     )
                 }
+                interactor.trackEvent(event: Event.clearDaySuccess(count: meals.count))
                 interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
@@ -177,10 +191,20 @@ extension TimelineActionsPresenter {
         case onClearDay(count: Int)
         case onActionFail(error: Error)
         case saveFail(error: Error)
+        case saveStart
+        case saveSuccess
+        case copyDaySuccess(count: Int)
+        case clearDaySuccess(count: Int)
+        case getMealsFail(error: Error)
 
         var eventName: String {
             switch self {
             case .saveFail: return "TimelineActionsView_Save_Fail"
+            case .saveStart:                return "TimelineActionsView_Save_Start"
+            case .saveSuccess:              return "TimelineActionsView_Save_Success"
+            case .copyDaySuccess:           return "TimelineActionsView_CopyDay_Success"
+            case .clearDaySuccess:          return "TimelineActionsView_ClearDay_Success"
+            case .getMealsFail:             return "TimelineActionsView_GetMeals_Fail"
             case .onAppear:                 return "TimelineActionsView_Appear"
             case .onDisappear:              return "TimelineActionsView_Disappear"
             case .onCopyDay:                return "TimelineActionsView_CopyDay"
@@ -194,10 +218,13 @@ extension TimelineActionsPresenter {
             case .saveFail(error: let error): return error.eventParameters
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .onCopyDay(count: let count), .onClearDay(count: let count):
+            case .onCopyDay(count: let count), .onClearDay(count: let count),
+                 .copyDaySuccess(count: let count), .clearDaySuccess(count: let count):
                 return ["meal_count": count]
-            case .onActionFail(error: let error):
+            case .onActionFail(error: let error), .getMealsFail(error: let error):
                 return error.eventParameters
+            case .saveStart, .saveSuccess:
+                return nil
             }
         }
         
@@ -206,6 +233,8 @@ extension TimelineActionsPresenter {
             case .saveFail: return .severe
             case .onActionFail:
                 return .severe
+            case .getMealsFail:
+                return .warning
             default:
                 return .analytic
             }

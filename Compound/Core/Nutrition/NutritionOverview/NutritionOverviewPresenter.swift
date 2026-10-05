@@ -56,14 +56,28 @@ class NutritionOverviewPresenter {
         self.dayKey = dayKey
         proposal = interactor.targetProposal
         checkInState = interactor.checkInState
-        // Silent: local reads on appear; the previous or empty value is the right fallback.
-        totals = (try? interactor.getDailyTotals(dayKey: dayKey)) ?? totals
-        breakdown = (try? interactor.getDailyNutritionBreakdown(dayKey: dayKey)) ?? .empty
+        // Local reads on appear; the previous or empty value is the right fallback.
+        do {
+            totals = try interactor.getDailyTotals(dayKey: dayKey)
+        } catch {
+            interactor.trackEvent(event: Event.loadFail(error: error))
+        }
+        do {
+            breakdown = try interactor.getDailyNutritionBreakdown(dayKey: dayKey)
+        } catch {
+            breakdown = .empty
+            interactor.trackEvent(event: Event.loadFail(error: error))
+        }
         guard let userId = interactor.userId else { return }
         let date = Date(dayKey: dayKey) ?? Date()
         Task {
-            // Silent: background read; the rings show no target until one loads.
-            target = try? await interactor.getDailyTarget(for: date, userId: userId)
+            // Background read; the rings show no target until one loads.
+            do {
+                target = try await interactor.getDailyTarget(for: date, userId: userId)
+            } catch {
+                target = nil
+                interactor.trackEvent(event: Event.loadFail(error: error))
+            }
         }
     }
 
@@ -95,8 +109,10 @@ class NutritionOverviewPresenter {
         Task {
             do {
                 try await interactor.markCheckInSkipped(weekStart: weekStart)
+                interactor.trackEvent(event: Event.checkInSkipSuccess)
             } catch {
                 checkInState = .due(weekStart: weekStart)
+                interactor.trackEvent(event: Event.checkInSkipFail(error: error))
                 router.showFailure(String(localized: "Unable to Skip Check-In"), error: error)
             }
         }
@@ -124,6 +140,7 @@ class NutritionOverviewPresenter {
         Task {
             do {
                 try await interactor.acceptTargetProposal()
+                interactor.trackEvent(event: Event.proposalAcceptSuccess)
             } catch {
                 proposal = accepted
                 router.showFailure(String(localized: "Unable to Update Your Targets"), error: error)
@@ -199,6 +216,10 @@ extension NutritionOverviewPresenter {
         case proposalAcceptFailed(error: Error)
         case checkInStarted(weekStart: Date)
         case checkInSkipped(weekStart: Date)
+        case proposalAcceptSuccess
+        case checkInSkipSuccess
+        case checkInSkipFail(error: Error)
+        case loadFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -209,6 +230,10 @@ extension NutritionOverviewPresenter {
             case .proposalAcceptFailed: return "NutritionOverviewView_Proposal_Accept_Fail"
             case .checkInStarted:      return "NutritionOverviewView_CheckIn_Start"
             case .checkInSkipped:      return "NutritionOverviewView_CheckIn_Skip"
+            case .proposalAcceptSuccess: return "NutritionOverviewView_Proposal_Accept_Success"
+            case .checkInSkipSuccess:  return "NutritionOverviewView_CheckIn_Skip_Success"
+            case .checkInSkipFail:     return "NutritionOverviewView_CheckIn_Skip_Fail"
+            case .loadFail:            return "NutritionOverviewView_Load_Fail"
             }
         }
 
@@ -227,12 +252,17 @@ extension NutritionOverviewPresenter {
                 return ["error": error.localizedDescription]
             case .checkInStarted(let weekStart), .checkInSkipped(let weekStart):
                 return ["check_in_week_start": weekStart]
+            case .checkInSkipFail(let error), .loadFail(let error):
+                return error.eventParameters
+            case .proposalAcceptSuccess, .checkInSkipSuccess:
+                return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .proposalAcceptFailed: return .severe
+            case .proposalAcceptFailed, .checkInSkipFail: return .severe
+            case .loadFail:             return .warning
             default:                    return .analytic
             }
         }

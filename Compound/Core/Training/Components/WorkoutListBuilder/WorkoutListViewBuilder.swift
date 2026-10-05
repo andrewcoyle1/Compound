@@ -34,12 +34,6 @@ struct WorkoutListViewBuilder: View {
             }
         }
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search workouts"))
-        .onAppear {
-            presenter.onViewAppear()
-        }
-        .onDisappear {
-            presenter.onViewDisappear()
-        }
         .navigationTitle("Workouts")
         .navigationSubtitle("\(presenter.workoutsCount) workouts")
         .navigationBarTitleDisplayMode(.inline)

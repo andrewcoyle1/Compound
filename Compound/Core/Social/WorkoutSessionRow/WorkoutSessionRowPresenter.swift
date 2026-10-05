@@ -105,6 +105,8 @@ class WorkoutSessionRowPresenter {
         let wasLiked = isLiked
         isLiked.toggle()
         likeCount += isLiked ? 1 : -1
+        let liking = isLiked
+        interactor.trackEvent(event: Event.likeStart(liking: liking))
         Task {
             do {
                 if isLiked {
@@ -112,7 +114,9 @@ class WorkoutSessionRowPresenter {
                 } else {
                     try await interactor.unlikeSession(sessionId: session.id, authorId: sessionAuthorId, userId: userId)
                 }
+                interactor.trackEvent(event: Event.likeSuccess(liking: liking))
             } catch {
+                interactor.trackEvent(event: Event.likeFail(liking: liking, error: error))
                 isLiked = wasLiked
                 likeCount += wasLiked ? 1 : -1
                 interactor.playHaptic(option: .error)
@@ -180,12 +184,15 @@ class WorkoutSessionRowPresenter {
     func onShareImagePressed(format: WorkoutShareCardView.Format) {
         let content = shareCardContent
         isRenderingShareImage = true
+        interactor.trackEvent(event: Event.shareImageStart)
         Task {
             let image = await ShareCardRenderer.renderCard(content, format: format)
             isRenderingShareImage = false
             if let image {
+                interactor.trackEvent(event: Event.shareImageSuccess)
                 router.showShareSheet(items: [image])
             } else {
+                interactor.trackEvent(event: Event.shareImageFail)
                 router.showSimpleAlert(title: String(localized: "Unable to Create Image"), subtitle: String(localized: "Please try again."))
             }
         }
@@ -217,6 +224,7 @@ class WorkoutSessionRowPresenter {
             router.showSimpleAlert(title: String(localized: "None of these exercises are in your library"), subtitle: nil)
             return
         }
+        interactor.trackEvent(event: Event.saveAsTemplateStart)
         Task {
             do {
                 try await interactor.saveWorkoutTemplate(workoutTemplate: template, image: nil)
@@ -243,15 +251,29 @@ class WorkoutSessionRowPresenter {
     }
 
     enum Event: LoggableEvent {
+        case saveAsTemplateStart
         case saveAsTemplateSuccess(sessionId: String, exerciseCount: Int)
         case saveAsTemplateUnresolved(sessionId: String)
         case saveAsTemplateFail(error: Error)
+        case likeStart(liking: Bool)
+        case likeSuccess(liking: Bool)
+        case likeFail(liking: Bool, error: Error)
+        case shareImageStart
+        case shareImageSuccess
+        case shareImageFail
 
         var eventName: String {
             switch self {
+            case .saveAsTemplateStart: return "WorkoutSessionRow_SaveAsTemplate_Start"
             case .saveAsTemplateSuccess: return "WorkoutSessionRow_SaveAsTemplate_Success"
             case .saveAsTemplateUnresolved: return "WorkoutSessionRow_SaveAsTemplate_Unresolved"
             case .saveAsTemplateFail: return "WorkoutSessionRow_SaveAsTemplate_Fail"
+            case .likeStart(let liking): return liking ? "WorkoutSessionRow_Like_Start" : "WorkoutSessionRow_Unlike_Start"
+            case .likeSuccess(let liking): return liking ? "WorkoutSessionRow_Like_Success" : "WorkoutSessionRow_Unlike_Success"
+            case .likeFail(let liking, _): return liking ? "WorkoutSessionRow_Like_Fail" : "WorkoutSessionRow_Unlike_Fail"
+            case .shareImageStart: return "WorkoutSessionRow_ShareImage_Start"
+            case .shareImageSuccess: return "WorkoutSessionRow_ShareImage_Success"
+            case .shareImageFail: return "WorkoutSessionRow_ShareImage_Fail"
             }
         }
 
@@ -261,14 +283,16 @@ class WorkoutSessionRowPresenter {
                 return ["session_id": sessionId, "exercise_count": exerciseCount]
             case .saveAsTemplateUnresolved(let sessionId):
                 return ["session_id": sessionId]
-            case .saveAsTemplateFail(let error):
+            case .saveAsTemplateFail(let error), .likeFail(_, let error):
                 return error.eventParameters
+            default:
+                return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .saveAsTemplateFail: return .severe
+            case .saveAsTemplateFail, .likeFail, .shareImageFail: return .severe
             default: return .analytic
             }
         }

@@ -48,6 +48,14 @@ class DateOfBirthPresenter {
         self.router = router
 
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate: DateOfBirthDelegate) {
         let delegate = HeightDelegate(delegate: delegate, dateOfBirth: dateOfBirth)
@@ -56,11 +64,15 @@ class DateOfBirthPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
         case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "DateOfBirthView_Appear"
+            case .onDisappear: return "DateOfBirthView_Disappear"
             case .navigate: return "DateOfBirthView_Navigate"
             case .fillFromHealth: return "DateOfBirthView_FillFromHealth"
             }
@@ -68,6 +80,8 @@ class DateOfBirthPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             case .fillFromHealth(let found):
@@ -77,6 +91,8 @@ class DateOfBirthPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             case .fillFromHealth:

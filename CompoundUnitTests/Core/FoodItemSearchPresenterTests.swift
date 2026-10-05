@@ -319,12 +319,15 @@ struct FoodItemSearchPresenterTests {
         #expect(screen.presenter.openFoodFactsFoods.isEmpty)
     }
 
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
+    /// Search is a mode of the food picker, which logs the screen view itself.
+    @Test("Test Appearing Is Not Tracked As A Screen View")
+    func testAppearingIsNotTrackedAsAScreenView() {
         let screen = makeScreen()
 
         screen.presenter.onViewAppear(delegate: screen.delegate)
+        screen.presenter.onViewDisappear(delegate: screen.delegate)
 
-        #expect(screen.interactor.trackedScreenEventNames == ["FoodItemSearchView_Appear"])
+        #expect(screen.interactor.trackedScreenEventNames.isEmpty)
+        #expect(screen.interactor.trackedEventNames.isEmpty)
     }
 }

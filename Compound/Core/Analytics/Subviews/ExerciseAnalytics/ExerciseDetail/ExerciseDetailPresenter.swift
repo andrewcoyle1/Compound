@@ -131,6 +131,14 @@ extension ExerciseDetailPresenter: @MainActor MetricDetailPresenter {
         )
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear(templateId: templateId))
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(templateId: templateId))
+    }
+
     func onAppear() async {
         await loadData()
     }
@@ -138,5 +146,28 @@ extension ExerciseDetailPresenter: @MainActor MetricDetailPresenter {
     func onAddPressed() {
         // 1-RM is estimated from logged sets, so the way to add one is to train.
         router.showWorkoutsView(delegate: WorkoutsDelegate())
+    }
+}
+
+extension ExerciseDetailPresenter {
+    enum Event: LoggableEvent {
+        case onAppear(templateId: String)
+        case onDisappear(templateId: String)
+
+        var eventName: String {
+            switch self {
+            case .onAppear: return "ExerciseDetailView_Appear"
+            case .onDisappear: return "ExerciseDetailView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .onAppear(let templateId), .onDisappear(let templateId):
+                return ["exercise_template_id": templateId]
+            }
+        }
+
+        var type: LogType { .analytic }
     }
 }

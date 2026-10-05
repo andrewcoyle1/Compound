@@ -35,6 +35,8 @@ struct DateOfBirthView: View {
                     .datePickerStyle(.wheel)
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

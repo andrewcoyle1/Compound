@@ -47,14 +47,6 @@ class ExerciseListBuilderPresenter {
         self.router = router
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-    
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
-    }
-
     // MARK: - Filtering
 
     var gymProfiles: [GymProfileModel] {
@@ -129,8 +121,6 @@ class ExerciseListBuilderPresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
         case onAddExercisePressed
         case filtersReset
         case filterChanged(name: String)
@@ -138,8 +128,6 @@ class ExerciseListBuilderPresenter {
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "ExercisesView_Appear"
-            case .onDisappear:          return "ExercisesView_Disappear"
             case .onAddExercisePressed: return "ExercisesView_AddExercisePressed"
             case .filtersReset:         return "ExercisesView_Filters_Reset"
             case .filterChanged:        return "ExercisesView_Filter_Changed"

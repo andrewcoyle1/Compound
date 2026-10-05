@@ -6,9 +6,6 @@ struct FoodItemQuickAddDelegate {
     /// The plate's Log: adds these macros and logs the meal in one step.
     var onLog: (() -> Void)?
 
-    var eventParameters: [String: Any]? {
-        nil
-    }
 }
 
 struct FoodItemQuickAddView: View {
@@ -48,12 +45,6 @@ struct FoodItemQuickAddView: View {
                 Text("Add to Plate")
             }
             .disabled(!presenter.canSubmit)
-        }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
         }
     }
 

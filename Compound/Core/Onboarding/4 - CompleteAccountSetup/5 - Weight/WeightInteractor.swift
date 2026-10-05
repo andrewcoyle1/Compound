@@ -8,6 +8,7 @@
 @MainActor
 protocol WeightInteractor {
     func trackEvent(event: LoggableEvent)
+    func trackScreenEvent(event: LoggableEvent)
     func readWeightKilogramsFromAppleHealth() async -> Double?
 }
 

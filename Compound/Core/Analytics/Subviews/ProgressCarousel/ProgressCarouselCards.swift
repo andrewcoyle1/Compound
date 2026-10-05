@@ -142,13 +142,19 @@ struct EnergyBalanceCard: View {
         let averages = presenter.energyAverages
         CarouselPage(title: String(localized: "Energy Balance")) {
             VStack(alignment: .trailing, spacing: Spacing.xs) {
-                ChartThumbnail(
-                    data: [presenter.energyIntakeSeries, presenter.energyComparisonSeries],
-                    style: .combo(lineSeries: [presenter.energyComparisonSeries.name]),
-                    colors: [EnergyBalanceChart.intakeColor, comparison.colour]
-                )
-                // The chart takes whatever height the page has spare.
+                // `ChartThumbnail` draws at a fixed height (36 pt unless told otherwise), so it is
+                // handed whatever height the page has spare.
+                GeometryReader { geo in
+                    ChartThumbnail(
+                        data: [presenter.energyIntakeSeries, presenter.energyComparisonSeries],
+                        style: .combo(lineSeries: [presenter.energyComparisonSeries.name]),
+                        colors: [EnergyBalanceChart.intakeColor, comparison.colour],
+                        height: geo.size.height
+                    )
+                }
                 .frame(minHeight: ChartHeight.compact, maxHeight: .infinity)
+                // The highest value sits on the chart's top edge; this keeps it off the title.
+                .padding(.top, Spacing.s)
                 .accessibilityHidden(true)
                 Text("Last \(ProgressCarouselPresenter.energyDayCount) Days")
                     .font(.label)

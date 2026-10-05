@@ -309,7 +309,11 @@ struct NotificationSettingsPresenterTests {
         #expect(!screen.presenter.isComeBackRemindersEnabled)
         #expect(screen.presenter.isMealRemindersEnabled)
         let expectedEvents = ["NotificationSettingsView_ComeBackReminders_Toggle", "NotificationSettingsView_MealReminders_Toggle"]
-        #expect(screen.interactor.trackedEventNames == expectedEvents)
+        // Each write also logs SaveSetting Start and Success, which can interleave with the next toggle.
+        #expect(screen.interactor.trackedEventNames.filter { !$0.contains("_SaveSetting_") } == expectedEvents)
+        #expect(await TestManagers.eventually {
+            screen.interactor.trackedEventNames.filter { $0 == "NotificationSettingsView_SaveSetting_Success" }.count == 2
+        })
     }
 
     @Test("Test Each Reminder Control Writes The Key The Cloud Function Reads And Keeps The Rest")
@@ -335,7 +339,10 @@ struct NotificationSettingsPresenterTests {
         #expect(screen.presenter.streakReminderHour == 7)
         #expect(!screen.presenter.isWeeklyDigestEnabled)
         let expectedEvents = ["NotificationsView_StreakReminder_Toggle", "NotificationsView_ReminderHour_Changed", "NotificationsView_WeeklyDigest_Toggle"]
-        #expect(interactor.trackedEventNames == expectedEvents)
+        #expect(interactor.trackedEventNames.filter { !$0.contains("_SaveSetting_") } == expectedEvents)
+        #expect(await TestManagers.eventually {
+            interactor.trackedEventNames.filter { $0 == "NotificationSettingsView_SaveSetting_Success" }.count == 3
+        })
     }
 
     @Test("Test Timezone Is Stored Under The Key The Cloud Function Reads")

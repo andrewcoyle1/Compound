@@ -36,6 +36,8 @@ struct ProfileView: View {
         .toolbar {
             toolbarContent
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
     
     private var profileHeaderSection: some View {

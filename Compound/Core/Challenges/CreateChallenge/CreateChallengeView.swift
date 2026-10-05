@@ -75,6 +75,9 @@ struct CreateChallengeView: View {
             presenter.onViewAppear()
             isNameFocused = true
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
         .interactiveDismissDisabled(presenter.hasUnsavedChanges)
     }
 

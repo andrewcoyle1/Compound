@@ -150,7 +150,7 @@ struct TimerDurationExerciseOverrideTests {
         #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
         for _ in 0..<10 { await Task.yield() }
         #expect(router.alertTitles == ["Unable to Save Settings"])
-        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Fail"])
+        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Start", "TimerDurationView_Save_Fail"])
     }
 
     /// Reset used to act on the tap. It asks now, and nothing changes until it is confirmed.
@@ -180,6 +180,6 @@ struct TimerDurationExerciseOverrideTests {
         #expect(await TestManagers.eventually(timeout: .seconds(5)) { !router.alertTitles.isEmpty })
         for _ in 0..<10 { await Task.yield() }
         #expect(router.alertTitles == ["Unable to Save Settings"])
-        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Fail"])
+        #expect(interactor.trackedEventNames == ["TimerDurationView_Save_Start", "TimerDurationView_Save_Fail"])
     }
 }

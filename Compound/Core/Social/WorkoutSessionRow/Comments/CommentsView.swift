@@ -83,6 +83,9 @@ struct CommentsView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
         // Reply already means "I'm about to type".
         .onChange(of: presenter.replyingTo?.id) { _, parentId in
             if parentId != nil { isInputFocused = true }

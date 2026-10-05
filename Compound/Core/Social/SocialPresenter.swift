@@ -100,10 +100,13 @@ class SocialPresenter {
         interactor.trackEvent(event: Event.nudgePressed)
         interactor.playHaptic(option: .light)
         nudgedUserIds.insert(userId)
+        interactor.trackEvent(event: Event.nudgeStart)
         Task {
             do {
                 try await interactor.nudgeUser(userId: userId)
+                interactor.trackEvent(event: Event.nudgeSuccess)
             } catch {
+                interactor.trackEvent(event: Event.nudgeFail(error: error))
                 nudgedUserIds.remove(userId)
                 router.showSimpleAlert(title: String(localized: "Unable to nudge \(member.name)"), subtitle: String(localized: "Please try again."))
             }
@@ -126,7 +129,12 @@ class SocialPresenter {
     func loadSuggestedUsers() async {
         guard feedSessions.isEmpty else { return }
         // Silent: suggestions are a background extra; none is the right fallback.
-        suggestedUsers = (try? await interactor.fetchSuggestedUsers()) ?? []
+        do {
+            suggestedUsers = try await interactor.fetchSuggestedUsers()
+        } catch {
+            interactor.trackEvent(event: Event.loadSuggestedUsersFail(error: error))
+            suggestedUsers = []
+        }
     }
 
     /// A push tap about a session, relayed by the tab bar once it has selected this tab. Best
@@ -138,7 +146,13 @@ class SocialPresenter {
         else { return }
         Task {
             // Silent: best-effort push tap-through, documented above.
-            guard let session = try? await interactor.fetchWorkoutSession(id: id, authorId: authorId) else { return }
+            let session: WorkoutSessionModel
+            do {
+                session = try await interactor.fetchWorkoutSession(id: id, authorId: authorId)
+            } catch {
+                interactor.trackEvent(event: Event.openSessionNotificationFail(error: error))
+                return
+            }
             let delegate = WorkoutSessionDetailDelegate(workoutSession: session)
             if openComments {
                 router.showWorkoutSessionThread(delegate: delegate)
@@ -206,7 +220,11 @@ class SocialPresenter {
     
     func loadNotifications() async {
         // Silent: background refresh of the unread badge.
-        try? await interactor.fetchActivityNotifications()
+        do {
+            try await interactor.fetchActivityNotifications()
+        } catch {
+            interactor.trackEvent(event: Event.loadNotificationsFail(error: error))
+        }
     }
 
     // MARK: - CircleGoals
@@ -227,13 +245,27 @@ extension SocialPresenter {
         case onDisappear(delegate: SocialDelegate)
         case circleMemberPressed
         case nudgePressed
+        case nudgeStart
+        case nudgeSuccess
+        case nudgeFail(error: Error)
+        case loadSuggestedUsersFail(error: Error)
+        case openSessionNotificationFail(error: Error)
+        case loadNotificationsFail(error: Error)
+        case loadChallengesFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:                 return "SocialView_Appear"
-            case .onDisappear:              return "SocialView_Disappear"
-            case .circleMemberPressed:      return "SocialView_CircleMember_Press"
-            case .nudgePressed:             return "SocialView_Nudge_Press"
+            case .onAppear:                     return "SocialView_Appear"
+            case .onDisappear:                  return "SocialView_Disappear"
+            case .circleMemberPressed:          return "SocialView_CircleMember_Press"
+            case .nudgePressed:                 return "SocialView_Nudge_Press"
+            case .nudgeStart:                   return "SocialView_Nudge_Start"
+            case .nudgeSuccess:                 return "SocialView_Nudge_Success"
+            case .nudgeFail:                    return "SocialView_Nudge_Fail"
+            case .loadSuggestedUsersFail:       return "SocialView_LoadSuggestedUsers_Fail"
+            case .openSessionNotificationFail:  return "SocialView_OpenSessionNotification_Fail"
+            case .loadNotificationsFail:        return "SocialView_LoadNotifications_Fail"
+            case .loadChallengesFail:           return "SocialView_LoadChallenges_Fail"
             }
         }
         
@@ -241,13 +273,21 @@ extension SocialPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
-            case .circleMemberPressed, .nudgePressed:
+            case .nudgeFail(error: let error), .loadSuggestedUsersFail(error: let error),
+                 .openSessionNotificationFail(error: let error), .loadNotificationsFail(error: let error),
+                 .loadChallengesFail(error: let error):
+                return error.eventParameters
+            default:
                 return nil
             }
         }
         
         var type: LogType {
             switch self {
+            case .nudgeFail:
+                return .severe
+            case .loadSuggestedUsersFail, .openSessionNotificationFail, .loadNotificationsFail, .loadChallengesFail:
+                return .warning
             default:
                 return .analytic
             }
@@ -378,7 +418,11 @@ extension SocialPresenter {
 
     func loadChallenges() async {
         // Silent: background refresh; the section keeps what it had.
-        try? await interactor.refreshChallenges()
+        do {
+            try await interactor.refreshChallenges()
+        } catch {
+            interactor.trackEvent(event: Event.loadChallengesFail(error: error))
+        }
     }
 
     func onChallengePressed(_ card: ChallengeCard) {

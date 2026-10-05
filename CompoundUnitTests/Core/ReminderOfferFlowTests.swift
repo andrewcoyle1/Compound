@@ -138,7 +138,7 @@ struct ReminderOfferFlowTests {
 
         #expect(screen.interactor.streakWrites == [true])
         #expect(screen.interactor.privateUserSettings.isStreakReminderEnabled)
-        #expect(screen.interactor.trackedEventNames == ["ReminderOffer_Answered"])
+        #expect(screen.interactor.trackedEventNames == ["ReminderOffer_Answered", "ReminderOffer_Save_Start", "ReminderOffer_Save_Success"])
     }
 
     // MARK: - Defaults

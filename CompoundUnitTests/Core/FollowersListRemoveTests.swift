@@ -62,7 +62,9 @@ struct FollowersListRemoveTests {
 
         #expect(interactor.removed == ["a"])
         #expect(presenter.visibleFollowers(followers).map(\.userId) == ["b"])
-        #expect(interactor.trackedEventNames == ["FollowersListView_RemoveFollower"])
+        #expect(interactor.trackedEventNames == [
+            "FollowersListView_RemoveFollower", "FollowersListView_RemoveFollower_Start", "FollowersListView_RemoveFollower_Success"
+        ])
     }
 
     @Test("Test Offline Remove Says You're Offline And Keeps The Row")

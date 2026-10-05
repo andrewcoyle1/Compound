@@ -115,14 +115,21 @@ final class ReminderOfferFlow {
     func answer(_ offer: Offer, accepted: Bool) async {
         interactor.trackEvent(event: Event.answered(offer: offer, accepted: accepted))
         if accepted, await interactor.canRequestNotificationAuthorisation() {
-            _ = try? await interactor.requestPushAuthorisation()
+            do {
+                _ = try await interactor.requestPushAuthorisation()
+            } catch {
+                interactor.trackEvent(event: Event.requestPermissionFail(offer: offer, error: error))
+            }
         }
+        interactor.trackEvent(event: Event.saveStart(offer: offer, accepted: accepted))
         do {
             switch offer {
             case .mealReminders: try await interactor.setMealReminders(isEnabled: accepted)
             case .streakReminder: try await interactor.setStreakReminder(isEnabled: accepted)
             }
+            interactor.trackEvent(event: Event.saveSuccess(offer: offer, accepted: accepted))
         } catch {
+            interactor.trackEvent(event: Event.saveFail(offer: offer, error: error))
             router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
         }
     }
@@ -130,21 +137,38 @@ final class ReminderOfferFlow {
     enum Event: LoggableEvent {
         case shown(offer: Offer)
         case answered(offer: Offer, accepted: Bool)
+        case requestPermissionFail(offer: Offer, error: Error)
+        case saveStart(offer: Offer, accepted: Bool)
+        case saveSuccess(offer: Offer, accepted: Bool)
+        case saveFail(offer: Offer, error: Error)
 
         var eventName: String {
             switch self {
             case .shown: return "ReminderOffer_Shown"
             case .answered: return "ReminderOffer_Answered"
+            case .requestPermissionFail: return "ReminderOffer_RequestPermission_Fail"
+            case .saveStart: return "ReminderOffer_Save_Start"
+            case .saveSuccess: return "ReminderOffer_Save_Success"
+            case .saveFail: return "ReminderOffer_Save_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
             case .shown(let offer): return ["offer": offer.rawValue]
-            case .answered(let offer, let accepted): return ["offer": offer.rawValue, "accepted": accepted]
+            case .answered(let offer, let accepted), .saveStart(let offer, let accepted), .saveSuccess(let offer, let accepted):
+                return ["offer": offer.rawValue, "accepted": accepted]
+            case .requestPermissionFail(let offer, let error), .saveFail(let offer, let error):
+                return error.eventParameters.merging(["offer": offer.rawValue]) { current, _ in current }
             }
         }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .saveFail: return .severe
+            case .requestPermissionFail: return .warning
+            default: return .analytic
+            }
+        }
     }
 }

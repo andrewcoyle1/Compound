@@ -12,6 +12,13 @@ import FirebaseFunctions
 /// The AI coach on the app's side: the gate (premium, then consent), the streamed answer, what a
 /// refusal does, the saved chats, and the ways into it from other screens. The function itself is
 /// tested in `functions/`.
+/// One message `CoachTests.Interactor` was asked to send.
+struct CoachSentMessage {
+    let message: String
+    let chatId: String?
+    let context: CoachContext?
+}
+
 @MainActor
 struct CoachTests {
 
@@ -25,7 +32,7 @@ struct CoachTests {
         var events: [CoachStreamEvent] = [.text("Hello "), .text("there"), .finished(chatId: "c1", messageId: "a1", text: "Hello there", remainingToday: 49)]
         var sendError: Error?
         var consentError: Error?
-        private(set) var sent: [(message: String, chatId: String?, context: CoachContext?)] = []
+        private(set) var sent: [CoachSentMessage] = []
         private(set) var consentGiven = 0
         private(set) var consentWithdrawn = 0
         private(set) var deletedChatIds: [String] = []
@@ -46,7 +53,7 @@ struct CoachTests {
         func coachDeleteChat(id: String) async throws { deletedChatIds.append(id) }
 
         func coachSend(message: String, chatId: String?, context: CoachContext?) -> AsyncThrowingStream<CoachStreamEvent, Error> {
-            sent.append((message, chatId, context))
+            sent.append(CoachSentMessage(message: message, chatId: chatId, context: context))
             let events = events
             let error = sendError
             return AsyncThrowingStream { continuation in

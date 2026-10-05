@@ -14,7 +14,7 @@ import Foundation
 @MainActor
 struct WeeklyStreakTests {
 
-    private static let calendar: Calendar = {
+    nonisolated private static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
         calendar.firstWeekday = 2
@@ -22,12 +22,12 @@ struct WeeklyStreakTests {
     }()
 
     /// 18:00 on `day` March 2026; days before 1 reach back into February.
-    private static func date(_ day: Int, hour: Int = 18) -> Date {
+    nonisolated private static func date(_ day: Int, hour: Int = 18) -> Date {
         let first = calendar.date(from: DateComponents(year: 2026, month: 3, day: 1, hour: hour)) ?? .distantPast
         return calendar.date(byAdding: .day, value: day - 1, to: first) ?? first
     }
 
-    private static let now = date(14)
+    nonisolated private static let now = date(14)
 
     private func session(
         day: Int,

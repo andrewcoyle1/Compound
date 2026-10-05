@@ -61,7 +61,7 @@ const QUESTIONS = [
     { id: "new-tdee", account: "brandNew", question: "What's my TDEE?",
         checks: async () => [near((await tool("brandNew", "get_expenditure")).formulaEstimateKcal, 15), says(/estimate|formula|log|enough data|more data/i)] },
     { id: "new-history", account: "brandNew", question: "How did my workouts go last week?",
-        checks: async () => [says(/no (workouts|sessions)|haven'?t (logged|recorded|done)|not (logged|recorded)|don'?t see|no .*logged|nothing logged/i)] },
+        checks: async () => [says(/no (workouts|sessions)|(haven'?t|didn'?t|did not) (log|logged|record|recorded|do|done)|not (logged|recorded)|don'?t see|no .*logged|nothing logged/i)] },
     { id: "strava", account: "bulking", question: "Can you see my Strava runs?",
         checks: async () => [says(/no access|can'?t|cannot|don'?t have access|not able|unable/i)] },
 ];

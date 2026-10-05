@@ -20,13 +20,13 @@ struct ProductionCoachService: CoachService {
     struct Request: Encodable, Sendable {
         let chatId: String?
         let message: String
-        let context: Context?
+        let context: RequestContext?
+    }
 
-        struct Context: Encodable, Sendable {
-            let kind: String
-            let id: String?
-            let date: String?
-        }
+    struct RequestContext: Encodable, Sendable {
+        let kind: String
+        let id: String?
+        let date: String?
     }
 
     struct Chunk: Decodable, Sendable {
@@ -44,7 +44,7 @@ struct ProductionCoachService: CoachService {
         let request = Request(
             chatId: chatId,
             message: message,
-            context: context.map { Request.Context(kind: $0.kind.rawValue, id: $0.id, date: $0.date) }
+            context: context.map { RequestContext(kind: $0.kind.rawValue, id: $0.id, date: $0.date) }
         )
         var callable: Callable<Request, StreamResponse<Chunk, Result>> = functions.httpsCallable("coachChat")
         // Tools read history before the model answers; the default 70 seconds is tight for that.

@@ -205,7 +205,7 @@ enum TodaySocialPulse {
         case 0: return nil
         case 1: return String(localized: "\(names[0]) trained today")
         case 2: return String(localized: "\(names[0]) and \(names[1]) trained today")
-        default: return String(localized: "\(names[0]), \(names[1]) and \(names.count - 2) others trained today")
+        default: return String(localized: "\(names[0]), \(names[1]) and \(String(localized: "\(names.count - 2) others")) trained today")
         }
     }
 

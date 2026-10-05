@@ -276,7 +276,8 @@ class TodaysWorkoutCardPresenter {
             volumeKg > 0 ? Format.weight(kg: volumeKg, unit: unit) : nil
         ].compactMap { $0 }
         let records = WorkoutSessionHighlights.personalRecords(in: session, priorSessions: interactor.workoutSessions, limit: .max)
-        let recordsText = records.first.map { String(localized: "\(records.count) PRs · \($0.exerciseName) \($0.detail)") }
+        // The count is its own string so the catalog can give it plural forms.
+        let recordsText = records.first.map { "\(String(localized: "\(records.count) PRs")) · \($0.exerciseName) \($0.detail)" }
         return SessionSummary(figures: figures.joined(separator: " · "), records: recordsText)
     }
 

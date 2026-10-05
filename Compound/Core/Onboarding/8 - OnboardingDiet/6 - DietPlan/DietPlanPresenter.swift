@@ -27,12 +27,12 @@ class DietPlanPresenter {
 
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
     }
 
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
     
     var currentUser: UserModel? {
@@ -76,8 +76,10 @@ class DietPlanPresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case saveDietPlanStart
         case saveDietPlanSuccess
         case saveDietPlanFail(error: Error)
@@ -96,6 +98,8 @@ class DietPlanPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .saveDietPlanFail(error: let error):
                 return error.eventParameters
             default:

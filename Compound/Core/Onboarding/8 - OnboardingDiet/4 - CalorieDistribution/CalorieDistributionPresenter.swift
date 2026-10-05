@@ -36,12 +36,12 @@ class CalorieDistributionPresenter {
         loadTrainingContext()
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
     }
 
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
     
     /// The body of this was commented out against a `plan.weeks.first.scheduledWorkouts` shape that
@@ -73,8 +73,10 @@ class CalorieDistributionPresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case trainingContextLoaded(daysPerWeek: Int?)
         case calorieDistributionPrefilled(distribution: CalorieDistribution, reason: String)
         case navigate
@@ -91,8 +93,8 @@ class CalorieDistributionPresenter {
         
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear, .onDisappear:
-                return nil
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .trainingContextLoaded(daysPerWeek: let days):
                 return ["daysPerWeek": days as Any]
             case .calorieDistributionPrefilled(distribution: let dist, reason: let reason):

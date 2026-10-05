@@ -40,11 +40,11 @@ class OverarchingObjectivePresenter {
     }
 
     func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isStandaloneMode))
     }
 
     func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isStandaloneMode))
     }
     
     func onDismissPressed() {
@@ -71,8 +71,10 @@ class OverarchingObjectivePresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case navigate
 
         var eventName: String {
@@ -85,8 +87,8 @@ class OverarchingObjectivePresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear, .onDisappear:
-                return nil
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .navigate:
                 return nil
             }

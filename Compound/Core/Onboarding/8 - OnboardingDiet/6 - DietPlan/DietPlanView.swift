@@ -66,10 +66,10 @@ struct DietPlanView: View {
             }
         }
         .onAppear {
-            presenter.onViewAppear()
+            presenter.onViewAppear(isFromSettings: delegate.isFromSettings)
             presenter.createPlan(delegate: delegate)
         }
-        .onDisappear { presenter.onViewDisappear() }
+        .onDisappear { presenter.onViewDisappear(isFromSettings: delegate.isFromSettings) }
     }
 
     private func chartSection(_ plan: DietPlan) -> some View {

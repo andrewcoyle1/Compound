@@ -37,8 +37,8 @@ struct CalorieFloorView: View {
                 }
             }
         }
-        .onAppear { presenter.onViewAppear() }
-        .onDisappear { presenter.onViewDisappear() }
+        .onAppear { presenter.onViewAppear(isFromSettings: delegate.isFromSettings) }
+        .onDisappear { presenter.onViewDisappear(isFromSettings: delegate.isFromSettings) }
     }
 }
 

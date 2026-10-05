@@ -30,12 +30,12 @@ class CalorieFloorPresenter {
         prefillCalorieFloor()
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
     }
 
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
 
     /// `loadTrainingContext()` used to be called here and was empty, so `prefillCalorieFloor` — which
@@ -64,8 +64,10 @@ class CalorieFloorPresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case calorieFloorPrefilled(floor: CalorieFloor, reason: String)
         case navigate(skipReason: String? = nil)
 
@@ -80,8 +82,8 @@ class CalorieFloorPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear, .onDisappear:
-                return nil
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .calorieFloorPrefilled(floor: let floor, reason: let reason):
                 return ["floor": floor.rawValue, "reason": reason]
             case .navigate(skipReason: let skipReason):

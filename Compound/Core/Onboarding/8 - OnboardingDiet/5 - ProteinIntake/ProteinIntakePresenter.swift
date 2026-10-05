@@ -32,12 +32,12 @@ class ProteinIntakePresenter {
         selectedProteinIntake = interactor.currentDietPlan.flatMap { ProteinIntake(rawValue: $0.proteinIntake) } ?? .moderate
     }
 
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
+    func onViewAppear(isFromSettings: Bool) {
+        interactor.trackScreenEvent(event: Event.onAppear(isOnboarding: !isFromSettings))
     }
 
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
+    func onViewDisappear(isFromSettings: Bool) {
+        interactor.trackEvent(event: Event.onDisappear(isOnboarding: !isFromSettings))
     }
     
     func onContinuePressed(delegate oldDelegate: ProteinIntakeDelegate) {
@@ -49,8 +49,10 @@ class ProteinIntakePresenter {
     }
 
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
+        /// `isOnboarding` is false when the step was opened after onboarding, from Settings, Profile
+        /// or Progress, so the onboarding funnel can leave those visits out.
+        case onAppear(isOnboarding: Bool)
+        case onDisappear(isOnboarding: Bool)
         case navigate
 
         var eventName: String {
@@ -63,8 +65,8 @@ class ProteinIntakePresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear, .onDisappear:
-                return nil
+            case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
+                return ["is_onboarding": isOnboarding]
             case .navigate:
                 return nil
             }

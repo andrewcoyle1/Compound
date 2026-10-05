@@ -31,10 +31,9 @@ struct NamePhotoView: View {
         // This is the first screen after the paywall, which back must not return to.
         .navigationBarBackButtonHidden()
         .onAppear {
+            // No focus on appear: with the field focused as the push lands, Continue's loading modal
+            // swallowed the push to the next step and the screen stayed put (OnboardingUITests).
             presenter.prefillFromCurrentUser()
-            if presenter.firstName.isEmpty {
-                focusedField = .firstName
-            }
         }
         .onChange(of: presenter.selectedPhotoItem) {
             Task {

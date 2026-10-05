@@ -38,6 +38,14 @@ class OverarchingObjectivePresenter {
         self.router = router
         self.isStandaloneMode = isStandaloneMode
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onDismissPressed() {
         router.dismissEnvironment()
@@ -63,16 +71,22 @@ class OverarchingObjectivePresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "OverarchingObjectiveView_Appear"
+            case .onDisappear: return "OverarchingObjectiveView_Disappear"
             case .navigate: return "OverarchingObjecting_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -80,6 +94,8 @@ class OverarchingObjectivePresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate: return .info
             }
         }

@@ -35,6 +35,14 @@ class CalorieDistributionPresenter {
         }
         loadTrainingContext()
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     /// The body of this was commented out against a `plan.weeks.first.scheduledWorkouts` shape that
     /// `Mesocycle` no longer has, so it did nothing: `hasMesocycle` stayed false,
@@ -65,12 +73,16 @@ class CalorieDistributionPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case trainingContextLoaded(daysPerWeek: Int?)
         case calorieDistributionPrefilled(distribution: CalorieDistribution, reason: String)
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "CalorieDistributionView_Appear"
+            case .onDisappear: return "CalorieDistributionView_Disappear"
             case .trainingContextLoaded: return "Onboarding_CalDist_TrainingContextLoaded"
             case .calorieDistributionPrefilled: return "Onboarding_CalDist_Prefilled"
             case .navigate: return "Onboarding_CalDist_Navigate"
@@ -79,6 +91,8 @@ class CalorieDistributionPresenter {
         
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .trainingContextLoaded(daysPerWeek: let days):
                 return ["daysPerWeek": days as Any]
             case .calorieDistributionPrefilled(distribution: let dist, reason: let reason):
@@ -90,6 +104,8 @@ class CalorieDistributionPresenter {
         
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate, .trainingContextLoaded, .calorieDistributionPrefilled:
                 return .info
             }

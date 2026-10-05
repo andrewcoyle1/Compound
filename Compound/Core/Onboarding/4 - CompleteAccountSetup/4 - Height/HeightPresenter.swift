@@ -83,6 +83,14 @@ class HeightPresenter {
         self.router = router
 
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate: HeightDelegate) {
         let delegate = WeightDelegate(delegate: delegate, heightInCentimeters: heightInCentimeters, lengthUnitPreference: preference)
@@ -105,11 +113,15 @@ class HeightPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
         case fillFromHealth(found: Bool)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "HeightView_Appear"
+            case .onDisappear: return "HeightView_Disappear"
             case .navigate: return "HeightView_Navigate"
             case .fillFromHealth: return "HeightView_FillFromHealth"
             }
@@ -117,6 +129,8 @@ class HeightPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             case .fillFromHealth(let found):
@@ -126,6 +140,8 @@ class HeightPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             case .fillFromHealth:

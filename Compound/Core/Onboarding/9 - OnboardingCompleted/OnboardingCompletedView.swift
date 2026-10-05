@@ -38,6 +38,8 @@ struct OnboardingCompletedView: View {
             }
             .accessibilityIdentifier("Continue")
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         #if !DEBUG && !MOCK
         .navigationBarBackButtonHidden(true)
         #endif

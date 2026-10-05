@@ -33,6 +33,14 @@ class HealthDisclaimerPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     /// Two toggles and Continue record the choice. A confirmation alert that repeated both
     /// statements used to follow, making consent four presses; the owner dropped it (decision 2a).
@@ -71,6 +79,8 @@ class HealthDisclaimerPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case consentHealthConfirmStart(disclaimerVersion: String, privacyVersion: String)
         case consentHealthConfirmSuccess(disclaimerVersion: String, privacyVersion: String, acceptedAt: Date)
         case consentHealthConfirmFail(disclaimerVersion: String, privacyVersion: String, error: Error)
@@ -78,6 +88,8 @@ class HealthDisclaimerPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "HealthDisclaimerView_Appear"
+            case .onDisappear: return "HealthDisclaimerView_Disappear"
             case .consentHealthConfirmStart:    return "consent_health_confirm_start"
             case .consentHealthConfirmSuccess:  return "consent_health_confirm_success"
             case .consentHealthConfirmFail:     return "consent_health_confirm_fail"

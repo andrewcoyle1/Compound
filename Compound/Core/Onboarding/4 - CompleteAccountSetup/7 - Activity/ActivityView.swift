@@ -53,6 +53,8 @@ struct ActivityView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

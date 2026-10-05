@@ -46,6 +46,8 @@ struct ProteinIntakeView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

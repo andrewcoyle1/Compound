@@ -30,6 +30,14 @@ class CalorieFloorPresenter {
         prefillCalorieFloor()
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// `loadTrainingContext()` used to be called here and was empty, so `prefillCalorieFloor` — which
     /// it was the only caller of — never ran and the screen opened with nothing selected. Its two
     /// properties, `trainingDaysPerWeek` and `hasMesocycle`, were written by nothing and read by
@@ -56,11 +64,15 @@ class CalorieFloorPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case calorieFloorPrefilled(floor: CalorieFloor, reason: String)
         case navigate(skipReason: String? = nil)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "CalorieFloorView_Appear"
+            case .onDisappear: return "CalorieFloorView_Disappear"
             case .calorieFloorPrefilled: return "Onboarding_CalFloor_Prefilled"
             case .navigate: return "Onboarding_CalFloor_Navigate"
             }
@@ -68,6 +80,8 @@ class CalorieFloorPresenter {
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .calorieFloorPrefilled(floor: let floor, reason: let reason):
                 return ["floor": floor.rawValue, "reason": reason]
             case .navigate(skipReason: let skipReason):
@@ -81,6 +95,8 @@ class CalorieFloorPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate, .calorieFloorPrefilled:
                 return .info
             }

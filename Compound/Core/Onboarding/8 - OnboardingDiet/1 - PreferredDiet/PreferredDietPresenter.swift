@@ -34,6 +34,14 @@ class PreferredDietPresenter {
         selectedDiet = interactor.currentDietPlan.flatMap { PreferredDiet(rawValue: $0.preferredDiet) } ?? .balanced
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func navigateToCalorieFloor() {
         if let diet = selectedDiet {
             let delegate = CalorieFloorDelegate(preferredDiet: diet, isFromSettings: isFromSettings)
@@ -49,16 +57,22 @@ class PreferredDietPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "PreferredDietView_Appear"
+            case .onDisappear: return "PreferredDietView_Disappear"
             case .navigate: return "Onboarding_PrefDiet_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -66,6 +80,8 @@ class PreferredDietPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

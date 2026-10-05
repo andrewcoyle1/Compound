@@ -10,6 +10,7 @@ import Foundation
 @MainActor
 protocol DateOfBirthInteractor {
     func trackEvent(event: LoggableEvent)
+    func trackScreenEvent(event: LoggableEvent)
     func readDateOfBirthFromAppleHealth() async -> Date?
 }
 

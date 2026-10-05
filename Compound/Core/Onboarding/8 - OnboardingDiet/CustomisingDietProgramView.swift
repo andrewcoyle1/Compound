@@ -27,6 +27,8 @@ struct CustomisingDietProgramView: View {
                 Text("Use the recommended plan, or answer a few questions to customize it.")
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

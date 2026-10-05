@@ -37,6 +37,8 @@ struct OverarchingObjectiveView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
 }

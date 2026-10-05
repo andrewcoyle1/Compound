@@ -27,6 +27,14 @@ class AuthPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func endTask() {
         router.dismissModal()
@@ -218,6 +226,8 @@ func onDevSettingsPressed() {
 
     // MARK: Events
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case appleAuthStart
         case appleAuthSuccess
         case appleAuthFail(error: Error)
@@ -236,6 +246,8 @@ func onDevSettingsPressed() {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "AuthView_Appear"
+            case .onDisappear: return "AuthView_Disappear"
             case .appleAuthStart:    return "Auth_AppleAuth_Start"
             case .appleAuthSuccess:  return "Auth_AppleAuth_Success"
             case .appleAuthFail:     return "Auth_AppleAuth_Fail"

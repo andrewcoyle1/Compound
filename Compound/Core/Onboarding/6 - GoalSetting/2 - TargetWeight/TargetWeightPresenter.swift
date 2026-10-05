@@ -32,6 +32,14 @@ class TargetWeightPresenter {
         self.router = router
         self.isStandaloneMode = isStandaloneMode
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     var canContinue: Bool {
         guard targetWeight != 0 && targetWeight != currentWeight else { return false }
@@ -192,16 +200,22 @@ class TargetWeightPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "TargetWeightView_Appear"
+            case .onDisappear: return "TargetWeightView_Disappear"
             case .navigate: return "Onboarding_TargetWeight_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -209,6 +223,8 @@ class TargetWeightPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

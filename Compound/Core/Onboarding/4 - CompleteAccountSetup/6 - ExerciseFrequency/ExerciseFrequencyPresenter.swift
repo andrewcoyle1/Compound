@@ -32,6 +32,14 @@ class ExerciseFrequencyPresenter {
         self.interactor = interactor
         self.router = router
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate: ExerciseFrequencyDelegate) {
         guard let frequency = selectedFrequency else { return }
@@ -41,16 +49,22 @@ class ExerciseFrequencyPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "ExerciseFrequencyView_Appear"
+            case .onDisappear: return "ExerciseFrequencyView_Disappear"
             case .navigate: return "OnboardingExerciseFreqView_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -58,6 +72,8 @@ class ExerciseFrequencyPresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate: 
                 return .info
             }

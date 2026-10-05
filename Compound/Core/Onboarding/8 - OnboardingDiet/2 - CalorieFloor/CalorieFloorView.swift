@@ -37,6 +37,8 @@ struct CalorieFloorView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 }
 

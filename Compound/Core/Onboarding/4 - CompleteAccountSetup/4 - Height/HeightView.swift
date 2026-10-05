@@ -45,6 +45,8 @@ struct HeightView: View {
                 imperialSection
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private var pickerSection: some View {

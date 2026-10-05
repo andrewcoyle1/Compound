@@ -44,6 +44,8 @@ struct CalorieDistributionView: View {
                 }
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 }
 

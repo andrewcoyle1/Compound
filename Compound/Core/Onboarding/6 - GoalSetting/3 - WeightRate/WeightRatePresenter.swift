@@ -79,6 +79,14 @@ class WeightRatePresenter {
         self.isStandaloneMode = isStandaloneMode
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func onAppear(delegate: WeightRateDelegate) {
         let user = interactor.currentUser
         currentWeight = interactor.currentWeightKilograms ?? 70
@@ -185,16 +193,22 @@ class WeightRatePresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "WeightRateView_Appear"
+            case .onDisappear: return "WeightRateView_Disappear"
             case .navigate: return "Onboarding_WeightRate_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -202,6 +216,8 @@ class WeightRatePresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

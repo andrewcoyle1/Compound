@@ -29,6 +29,14 @@ class ExpenditurePresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     struct ExpenditureContext {
         let weight: Double
         let height: Double
@@ -262,12 +270,16 @@ class ExpenditurePresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case profileSaveStart
         case profileSaveSuccess
         case profileSaveFail(error: Error)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "ExpenditureView_Appear"
+            case .onDisappear: return "ExpenditureView_Disappear"
             case .profileSaveStart: return "Expenditure_SaveProfile_Start"
             case .profileSaveSuccess: return "Expenditure_SaveProfile_Success"
             case .profileSaveFail: return "Expenditure_SaveProfile_Fail"

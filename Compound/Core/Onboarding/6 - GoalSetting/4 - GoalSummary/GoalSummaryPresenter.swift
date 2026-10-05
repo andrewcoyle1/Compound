@@ -27,6 +27,14 @@ class GoalSummaryPresenter {
         self.router = router
         self.isStandaloneMode = isStandaloneMode
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     /// Standalone mode, where the flow is a sheet of its own rather than a step of onboarding.
     ///
@@ -188,6 +196,8 @@ class GoalSummaryPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case goalSaveStart
         case goalSaveSuccess
         case goalSaveFail(error: Error)
@@ -195,6 +205,8 @@ class GoalSummaryPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "GoalSummaryView_Appear"
+            case .onDisappear: return "GoalSummaryView_Disappear"
             case .goalSaveStart:    return "Onboarding_Goal_Save_Start"
             case .goalSaveSuccess:  return "Onboarding_Goal_Save_Success"
             case .goalSaveFail:     return "Onboarding_Goal_Save_Fail"

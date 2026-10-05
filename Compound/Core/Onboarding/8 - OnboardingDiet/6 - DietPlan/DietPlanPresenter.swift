@@ -26,6 +26,14 @@ class DietPlanPresenter {
         self.router = router
 
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     var currentUser: UserModel? {
         interactor.currentUser
@@ -68,6 +76,8 @@ class DietPlanPresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case saveDietPlanStart
         case saveDietPlanSuccess
         case saveDietPlanFail(error: Error)
@@ -75,6 +85,8 @@ class DietPlanPresenter {
 
         var eventName: String {
             switch self {
+            case .onAppear: return "DietPlanView_Appear"
+            case .onDisappear: return "DietPlanView_Disappear"
             case .saveDietPlanStart:            return "DietView_SaveDietPlan_Start"
             case .saveDietPlanSuccess:          return "DietView_SaveDietPlan_Success"
             case .saveDietPlanFail:             return "DietView_SaveDietPlan_Fail"

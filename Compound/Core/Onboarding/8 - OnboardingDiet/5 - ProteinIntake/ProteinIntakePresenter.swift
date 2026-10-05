@@ -31,6 +31,14 @@ class ProteinIntakePresenter {
         // Opens on the current plan's answer when rebuilding it, otherwise on the recommendation.
         selectedProteinIntake = interactor.currentDietPlan.flatMap { ProteinIntake(rawValue: $0.proteinIntake) } ?? .moderate
     }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
     
     func onContinuePressed(delegate oldDelegate: ProteinIntakeDelegate) {
         if let proteinIntake = selectedProteinIntake {
@@ -41,16 +49,22 @@ class ProteinIntakePresenter {
     }
 
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case navigate
 
         var eventName: String {
             switch self {
+            case .onAppear: return "ProteinIntakeView_Appear"
+            case .onDisappear: return "ProteinIntakeView_Disappear"
             case .navigate: return "Onboarding_ProteinIntake_Navigate"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .onAppear, .onDisappear:
+                return nil
             case .navigate:
                 return nil
             }
@@ -58,6 +72,8 @@ class ProteinIntakePresenter {
 
         var type: LogType {
             switch self {
+            case .onAppear, .onDisappear:
+                return .analytic
             case .navigate:
                 return .info
             }

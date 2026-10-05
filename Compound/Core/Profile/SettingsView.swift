@@ -1,5 +1,5 @@
 //
-//  ProfileView.swift
+//  SettingsView.swift
 //  Compound
 //
 //  Created by Andrew Coyle on 25/09/2025.
@@ -8,18 +8,12 @@
 import SwiftUI
 import StoreKit
 
-struct ProfileView: View {
+struct SettingsView: View {
     
-    @State var presenter: ProfilePresenter
-    @ScaledMetric(relativeTo: .title3) private var avatarSide: CGFloat = 80
+    @State var presenter: SettingsPresenter
 
     var body: some View {
-        // Every section shows whatever the profile holds: gating them on a first name left the
-        // sheet blank, Sign Out and Delete Account included, until the user document arrived.
         List {
-            profileHeaderSection
-                .listSectionMargins(.top, 0)
-
             generalSection
             nutritionSettingsSection
             trainingSettingsSection
@@ -27,61 +21,17 @@ struct ProfileView: View {
             communityAndSupportSection
 
             otherSection
+
+            securitySection
         }
         .manageSubscriptionsSheet(isPresented: $presenter.isManageSubscriptionsPresented)
-        .navigationTitle("Profile")
+        .navigationTitle("Settings")
         .toolbarTitleDisplayMode(.inline)
-        .toolbarRole(.browser)
         .scrollIndicators(.hidden)
-        .toolbar {
-            toolbarContent
-        }
         .onAppear { presenter.onViewAppear() }
         .onDisappear { presenter.onViewDisappear() }
     }
     
-    private var profileHeaderSection: some View {
-        Section {
-            let user = presenter.currentUser
-            Button {
-                presenter.onProfileEditPressed()
-            } label: {
-                HStack(spacing: Spacing.l) {
-                    ZStack {
-                        Image(systemName: Symbol.profile)
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundStyle(.secondary)
-                        if let urlString = user?.profileImageNameCalculated {
-                            ImageLoaderView(urlString: urlString, clipShape: AnyShape(Circle()))
-                        }
-                    }
-                    .frame(width: avatarSide, height: avatarSide)
-                    .accessibilityHidden(true)
-
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(presenter.fullName.isEmpty ? String(localized: "Add your name") : presenter.fullName)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(presenter.fullName.isEmpty ? .secondary : .primary)
-                        if let email = user?.emailCalculated {
-                            Text(email)
-                                .font(.rowDetail)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Image(systemName: "chevron.forward")
-                        .font(.rowDetail.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                        .accessibilityHidden(true)
-                }
-                .contentShape(.rect)
-            }
-        }
-    }
-
     private var generalSection: some View {
         Section {
             ListRowButton(title: String(localized: "Subscription"), systemImage: "tag", accessory: .value(presenter.subscriptionStatus)) {
@@ -179,84 +129,60 @@ struct ProfileView: View {
         }
     }
 
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button(role: .close) {
-                presenter.onDismissPressed()
+    private var securitySection: some View {
+        Section {
+            // Read-only, not an editor. Sign-in is Apple, Google or anonymous, so the address is the
+            // identity provider's and cannot be changed from here. A "Password ********" row used to
+            // sit below this one — removed, because there is no password to change: `SignInOption`
+            // has no email case anywhere in the app.
+            ListRow(title: String(localized: "Sign-In Method"), accessory: .value(presenter.signInMethod))
+            ListRow(title: String(localized: "Email"), accessory: .value(presenter.email ?? String(localized: "Not provided")))
+
+            // Signing an anonymous account out locks it away for good, so that account is offered
+            // the upgrade in place of Sign Out rather than alongside it.
+            if presenter.isAnonymousUser {
+                ListRowButton(title: String(localized: "Save Account"), accessory: .none) {
+                    presenter.onSaveAccountPressed()
+                }
+            } else {
+                ListRowButton(title: String(localized: "Sign Out"), accessory: .none) {
+                    presenter.onSignOutPressed()
+                }
             }
+            Button(role: .destructive) {
+                presenter.onDeleteAccountPressed()
+            } label: {
+                Text("Delete Account")
+            }
+        } header: {
+            Text("Security")
         }
     }
 }
 
 extension CoreBuilder {
-    func profileView(router: AnyRouter) -> some View {
-        ProfileView(
-            presenter: ProfilePresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
+    func settingsView(router: AnyRouter) -> some View {
+        SettingsView(
+            presenter: SettingsPresenter(interactor: interactor, router: CoreRouter(router: router, builder: self))
         )
     }
 }
 
 extension CoreRouter {
-    
-    func showProfileView() {
-        router.showScreen(.sheet) { router in
-            builder.profileView(router: router)
+
+    func showSettingsView() {
+        router.showScreen(.push) { router in
+            builder.settingsView(router: router)
         }
-    }
-    
-    func showProfileViewZoom(transitionId: String?, namespace: Namespace.ID) {
-        router.showScreenWithZoomTransition(
-            .fullScreenCover,
-            transitionID: transitionId,
-            namespace: namespace) { router in
-                builder.profileView(router: router)
-            }
     }
 }
 
 // MARK: - Previews
-#Preview("User Has Profile") {
+#Preview {
     let container = DevPreview.shared.container()
     let interactor = CoreInteractor(container: container)
     let builder = CoreBuilder(interactor: interactor)
     RouterView { router in
-        builder.profileView(router: router)
+        builder.settingsView(router: router)
     }
-    
-}
-
-#Preview("User No Profile") {
-    let container = DevPreview.shared.container()
-    
-    let userSyncEngine = DocumentSyncEngine<UserModel>(
-        remote: MockRemoteDocumentService(),
-        managerKey: "user",
-        enableLocalPersistence: true,
-        logger: nil
-    )
-    let followingUsersSyncEngine = CollectionSyncEngine<UserModel>(
-        remote: MockRemoteCollectionService(),
-        managerKey: "followingUsers",
-        enableLocalPersistence: true,
-        logger: nil
-    )
-    let userQueryService = MockUserQueryService()
-    let privateSettingsSyncEngine = DocumentSyncEngine<PrivateUserSettings>(
-        remote: MockRemoteDocumentService(),
-        managerKey: "private_user_settings",
-        enableLocalPersistence: true,
-        logger: nil
-    )
-    container.register(UserManager.self, service: UserManager(
-        queryService: userQueryService,
-        userSyncEngine: userSyncEngine,
-        followingUsersSyncEngine: followingUsersSyncEngine,
-        privateSettingsSyncEngine: privateSettingsSyncEngine
-    ))
-    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    return RouterView { router in
-        builder.profileView(router: router)
-    }
-    
 }

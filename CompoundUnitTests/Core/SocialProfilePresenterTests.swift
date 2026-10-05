@@ -31,6 +31,10 @@ struct SocialProfilePresenterTests {
         private(set) var fetchedFollowerIds: [String] = []
         private(set) var fetchedSessionAuthorIds: [String] = []
 
+        func myInvite() async throws -> InviteModel {
+            InviteModel(code: "PUSH2345", inviterId: "me")
+        }
+
         func fetchWorkoutSessions(authorId: String, limit: Int) async throws -> [WorkoutSessionModel] {
             fetchedSessionAuthorIds.append(authorId)
             return remoteSessions
@@ -111,6 +115,11 @@ struct SocialProfilePresenterTests {
 
         private(set) var weeklyGoalShownCount = 0
         func showWeeklyGoalView() { weeklyGoalShownCount += 1 }
+
+        private(set) var shown: [String] = []
+        func showSettingsView() { shown.append("settings") }
+        func showEditProfileView(delegate: EditProfileDelegate) { shown.append("editProfile") }
+        func showShareSheet(items: [Any]) { shown.append("share") }
 
         func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
             alertTitles.append(title)
@@ -572,102 +581,87 @@ struct SocialProfilePresenterTests {
     }
 }
 
-// MARK: - Followers list
+// MARK: - Own profile
 
-/// The people and the title travel in the delegate; the presenter only answers who the reader
-/// already follows and forwards the button presses.
-@MainActor
-struct SocialFollowersListTests {
+extension SocialProfilePresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, FollowersListInteractor {
-        var currentUser: UserModel? = UserModel(userId: "me", followingIds: ["a"])
-        var followError: Error?
-        private(set) var followed: [String] = []
-        private(set) var unfollowed: [String] = []
-        var sentFollowRequestIds: Set<String> = ["pending"]
-        private(set) var requested: [String] = []
-        private(set) var cancelled: [String] = []
-
-        func sendFollowRequest(to user: UserModel) async throws { requested.append(user.userId) }
-        func cancelFollowRequest(userId: String) async throws { cancelled.append(userId) }
-
-        func followUser(userId: String) async throws {
-            if let followError { throw followError }
-            followed.append(userId)
-        }
-        func unfollowUser(userId: String) async throws {
-            if let followError { throw followError }
-            unfollowed.append(userId)
-        }
-        func removeFollower(userId: String) async throws { }
+    @Test("Test The Profile Opens On The Progress Tab")
+    func testTheProfileOpensOnTheProgressTab() {
+        #expect(makeScreen().presenter.selectedTab == .progress)
     }
 
-    private final class Router: FollowersListRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-        private(set) var alertTitles: [String] = []
-        private(set) var profileUserIds: [String] = []
+    /// Edit Profile saves to `currentUser`; the header must show that, not the copy it opened with.
+    @Test("Test The Readers Own Profile Shows The Live User")
+    func testTheReadersOwnProfileShowsTheLiveUser() {
+        let screen = makeScreen()
+        screen.presenter.onViewAppear(delegate: SocialProfileDelegate(user: DashboardFixture.user("me", firstName: "Old")))
 
-        func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
-            alertTitles.append(title)
-        }
-        func showSimpleAlert(title: String, subtitle: String?) {
-            alertTitles.append(title)
-        }
-        func showSocialProfileView(delegate: SocialProfileDelegate) {
-            profileUserIds.append(delegate.user.userId)
-        }
+        screen.interactor.currentUser = DashboardFixture.user("me", firstName: "New")
+
+        #expect(screen.presenter.user?.submittedFirstName == "New")
     }
 
-    @Test("Test The Followers List Defaults To The Followers Title")
-    func testTheFollowersListDefaultsToTheFollowersTitle() {
-        let delegate = FollowersListDelegate(followers: [DashboardFixture.user("a")])
+    @Test("Test The Owners Buttons Open Settings, Edit Profile And The Share Sheet")
+    func testTheOwnersButtonsOpenSettingsEditProfileAndTheShareSheet() async {
+        let screen = makeScreen()
+        screen.presenter.onViewAppear(delegate: profile("me", following: []))
 
-        #expect(delegate.title == "Followers")
-        #expect(delegate.followers.map(\.userId) == ["a"])
+        screen.presenter.onSettingsPressed()
+        screen.presenter.onEditProfilePressed()
+        await screen.presenter.onShareProfilePressed()
+
+        #expect(screen.router.shown == ["settings", "editProfile", "share"])
     }
 
-    /// Each row's button reads the reader's list, and the reader's own row has none.
-    @Test("Test Rows Know Who The Reader Follows And Skip The Reader")
-    func testRowsKnowWhoTheReaderFollowsAndSkipTheReader() {
-        let presenter = FollowersListPresenter(interactor: Interactor(), router: Router())
+    /// Everyone the reader follows would count as "people you both follow" on their own profile.
+    @Test("Test The Readers Own Profile Has No People You Both Follow")
+    func testTheReadersOwnProfileHasNoPeopleYouBothFollow() {
+        let screen = makeScreen()
+        screen.interactor.followingUsers = [DashboardFixture.user("friend")]
+        screen.presenter.onViewAppear(delegate: profile("me", following: ["friend"]))
 
-        #expect(presenter.followState(for: DashboardFixture.user("a")) == .following)
-        #expect(presenter.followState(for: DashboardFixture.user("b")) == .follow)
-        #expect(presenter.followState(for: DashboardFixture.user("pending")) == .requested)
-        #expect(presenter.showsFollowButton(for: DashboardFixture.user("b")))
-        #expect(!presenter.showsFollowButton(for: DashboardFixture.user("me")))
+        #expect(screen.presenter.mutualFollowers.isEmpty)
     }
 
-    @Test("Test Each Button State Reaches The Interactor And A Row Opens The Profile")
-    func testEachButtonStateReachesTheInteractorAndARowOpensTheProfile() async {
-        let interactor = Interactor()
-        let router = Router()
-        let presenter = FollowersListPresenter(interactor: interactor, router: router)
+    @Test("Test The Title Is The Username When There Is One")
+    func testTheTitleIsTheUsernameWhenThereIsOne() {
+        let screen = makeScreen()
+        var friend = UserModel(userId: "friend")
+        friend.username = "bob_lifts"
+        screen.presenter.onViewAppear(delegate: SocialProfileDelegate(user: friend))
+        #expect(screen.presenter.navigationTitle == "@bob_lifts")
 
-        presenter.onFollowButtonPressed(user: DashboardFixture.user("b"))
-        presenter.onFollowButtonPressed(user: DashboardFixture.user("a"))
-        presenter.onFollowButtonPressed(user: UserModel(userId: "private", isPrivate: true))
-        presenter.onFollowButtonPressed(user: DashboardFixture.user("pending"))
-        presenter.onUserPressed(user: DashboardFixture.user("b"))
-        await TestManagers.eventually { !interactor.unfollowed.isEmpty && !interactor.cancelled.isEmpty && !interactor.requested.isEmpty }
-
-        #expect(interactor.followed == ["b"])
-        #expect(interactor.unfollowed == ["a"])
-        #expect(interactor.requested == ["private"])
-        #expect(interactor.cancelled == ["pending"])
-        #expect(router.profileUserIds == ["b"])
+        let unnamed = makeScreen()
+        unnamed.presenter.onViewAppear(delegate: profile("friend", following: []))
+        #expect(unnamed.presenter.navigationTitle == "Profile")
     }
 
-    @Test("Test A Failed Follow From The List Shows An Alert")
-    func testAFailedFollowFromTheListShowsAnAlert() async {
-        let interactor = Interactor()
-        interactor.followError = DashboardTestError.failed
-        let router = Router()
-        let presenter = FollowersListPresenter(interactor: interactor, router: router)
+    /// Only 30 of someone else's sessions are fetched, so a total would understate it.
+    @Test("Test The Workout Count Shows On The Readers Own Profile Only")
+    func testTheWorkoutCountShowsOnTheReadersOwnProfileOnly() async {
+        let screen = makeScreen()
+        screen.interactor.workoutSessions = [DashboardFixture.session(id: "mine", on: DashboardFixture.date(day: 3))]
+        screen.presenter.onViewAppear(delegate: profile("me", following: []))
+        #expect(screen.presenter.workoutCount == 1)
 
-        presenter.onFollowButtonPressed(user: DashboardFixture.user("b"))
-        await TestManagers.eventually { !router.alertTitles.isEmpty }
+        let other = makeScreen()
+        other.interactor.remoteSessions = [DashboardFixture.session(id: "s1", author: "friend", on: DashboardFixture.date(day: 2))]
+        other.presenter.onViewAppear(delegate: profile("friend", following: []))
+        await TestManagers.eventually { !other.presenter.sessions.isEmpty }
+        #expect(other.presenter.workoutCount == nil)
+    }
 
-        #expect(router.alertTitles == ["Unable to follow user"])
+    @Test("Test This Week Counts Only The Current Weeks Sessions")
+    func testThisWeekCountsOnlyTheCurrentWeeksSessions() {
+        let screen = makeScreen()
+        let lastMonth = Calendar.current.date(byAdding: .month, value: -1, to: .now) ?? .distantPast
+        screen.interactor.workoutSessions = [
+            DashboardFixture.session(id: "now", on: .now.addingTimeInterval(-3600)),
+            DashboardFixture.session(id: "old", on: lastMonth)
+        ]
+        screen.presenter.onViewAppear(delegate: profile("me", following: []))
+
+        #expect(screen.presenter.thisWeekWorkouts == 1)
+        #expect(screen.presenter.thisWeekDuration == 3600)
     }
 }

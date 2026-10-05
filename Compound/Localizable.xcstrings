@@ -84,6 +84,16 @@
         }
       }
     },
+    "Activities" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividades"
+          }
+        }
+      }
+    },
     "All Workouts" : {
       "localizations" : {
         "es" : {
@@ -120,6 +130,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diferencia"
+          }
+        }
+      }
+    },
+    "Edit Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar perfil"
           }
         }
       }
@@ -200,6 +220,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restante"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
+          }
+        }
+      }
+    },
+    "Share Profile" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir perfil"
           }
         }
       }
@@ -3841,16 +3881,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir entrenamiento"
-          }
-        }
-      }
-    },
-    "Add your name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añade tu nombre"
           }
         }
       }

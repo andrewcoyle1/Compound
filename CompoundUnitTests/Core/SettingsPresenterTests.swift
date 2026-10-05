@@ -1,5 +1,5 @@
 //
-//  ProfilePresenterTests.swift
+//  SettingsPresenterTests.swift
 //  CompoundUnitTests
 //
 //  Created by Andrew Coyle on 22/09/2026.
@@ -10,18 +10,25 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// The Profile screen, which is the app's settings root: every per-area settings screen is reached
+/// The Settings screen, pushed from the profile's gear: the app's settings root: every per-area settings screen is reached
 /// from one of its rows, and a row that goes nowhere is a setting the user simply cannot change.
 ///
 /// So the tests here are about reachability rather than presentation — each row is asserted to open
 /// the screen it names, because the alternative failure is silent.
 @MainActor
-struct ProfilePresenterTests {
+struct SettingsPresenterTests {
 
     // MARK: - Doubles
 
-    private final class Interactor: SpyGlobalInteractor, ProfileInteractor {
+    private final class Interactor: SpyGlobalInteractor, SettingsInteractor {
         var currentUser: UserModel?
+        var auth: UserAuthInfo?
+        private(set) var didSignOut = false
+        var signOutError: Error?
+        func signOut() async throws {
+            if let signOutError { throw signOutError }
+            didSignOut = true
+        }
         var currentGoal: WeightGoal?
         var currentDietPlan: DietPlan?
         var isPremium: Bool = false
@@ -33,13 +40,14 @@ struct ProfilePresenterTests {
         }
     }
 
-    private final class Router: ProfileRouter {
+    private final class Router: SettingsRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 
         func showWeightGoalFlow() { shown.append("weightGoal") }
-
-        func showAccountView(delegate: AccountDelegate) { shown.append("account") }
+        func switchToOnboardingModule() { shown.append("onboarding") }
+        func showAuthView() { shown.append("auth") }
+        func showDeleteAccountView() { shown.append("deleteAccount") }
         func showNotificationsView() { shown.append("notifications") }
         func showNotificationSettingsView(delegate: NotificationSettingsDelegate) { shown.append("notificationSettings") }
         func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate) { shown.append("workoutSettings") }
@@ -62,17 +70,18 @@ struct ProfilePresenterTests {
     }
 
     private struct Screen {
-        let presenter: ProfilePresenter
+        let presenter: SettingsPresenter
         let interactor: Interactor
         let router: Router
     }
 
-    private func makeScreen(user: UserModel? = UserModel(userId: "user-1")) -> Screen {
+    private func makeScreen(user: UserModel? = UserModel(userId: "user-1"), isAnonymous: Bool = false) -> Screen {
         let interactor = Interactor()
         interactor.currentUser = user
+        interactor.auth = UserAuthInfo(uid: user?.userId ?? "user-1", isAnonymous: isAnonymous)
         let router = Router()
         return Screen(
-            presenter: ProfilePresenter(interactor: interactor, router: router),
+            presenter: SettingsPresenter(interactor: interactor, router: router),
             interactor: interactor,
             router: router
         )
@@ -182,7 +191,7 @@ struct ProfilePresenterTests {
     /// another app ("Are you enjoying AIChat?") first.
     @Test("Test The Ratings Row Opens No Modal Of Its Own")
     func testTheRatingsRowOpensNoModalOfItsOwn() {
-        #expect(ProfilePresenter.Event.ratingsPressed.eventName == "ProfileView_Ratings_Pressed")
+        #expect(SettingsPresenter.Event.ratingsPressed.eventName == "ProfileView_Ratings_Pressed")
     }
 
     // MARK: - Invites
@@ -218,5 +227,91 @@ struct ProfilePresenterTests {
         await screen.presenter.onInviteFriendPressed()
 
         #expect(screen.router.shown == ["alert: Couldn't create invite"])
+    }
+
+    // MARK: - Security
+
+    @Test("Test Settings Says How The Person Signs In")
+    func testSettingsSaysHowThePersonSignsIn() {
+        let apple = makeScreen()
+        apple.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.apple])
+        #expect(apple.presenter.signInMethod == "Apple")
+
+        let google = makeScreen()
+        google.interactor.auth = UserAuthInfo(uid: "user-1", isAnonymous: false, authProviders: [.google])
+        #expect(google.presenter.signInMethod == "Google")
+
+        #expect(makeScreen(isAnonymous: true).presenter.signInMethod == "Not saved")
+    }
+
+    // MARK: - Upgrading an anonymous account
+
+    /// Signing an anonymous account out is irreversible — there is no credential to sign back in
+    /// with — so that account is offered the upgrade in place of Log Out. This was the only screen
+    /// in the app offering it, and it was on a screen nothing navigated to.
+    @Test("Test An Anonymous Account Is Offered The Upgrade Instead Of Log Out")
+    func testAnAnonymousAccountIsOfferedTheUpgradeInsteadOfLogOut() {
+        #expect(makeScreen(isAnonymous: true).presenter.isAnonymousUser)
+        #expect(!makeScreen(isAnonymous: false).presenter.isAnonymousUser)
+    }
+
+    /// The upgrade goes to the same `AuthView` onboarding uses, which links a credential to the
+    /// signed-in anonymous user rather than replacing it, so the data logged so far survives.
+    @Test("Test Saving An Anonymous Account Opens Sign In")
+    func testSavingAnAnonymousAccountOpensSignIn() {
+        let screen = makeScreen(isAnonymous: true)
+
+        screen.presenter.onSaveAccountPressed()
+
+        #expect(screen.router.shown == ["auth"])
+        #expect(!screen.interactor.didSignOut)
+        #expect(screen.interactor.trackedEventNames == ["Settings_SaveAccount_Press"])
+    }
+
+    // MARK: - Sign out
+
+    /// Signing out has to actually sign out and then put the user back on the onboarding module.
+    /// Leaving them on a settings screen belonging to an account they no longer hold is the
+    /// half-state this guards against.
+    @Test("Test Signing Out Signs Out And Returns To Onboarding")
+    func testSigningOutSignsOutAndReturnsToOnboarding() async {
+        let screen = makeScreen()
+
+        screen.presenter.onSignOutPressed()
+
+        await TestManagers.eventually { screen.router.shown.contains("onboarding") }
+        #expect(screen.interactor.didSignOut)
+        #expect(screen.interactor.trackedEventNames.contains("Settings_SignOut_Success"))
+    }
+
+    /// A sign-out that fails leaves the user signed in. Switching to onboarding anyway would show
+    /// the welcome flow to someone whose session is still live, and the next screen they reach
+    /// would be full of their data again.
+    @Test("Test A Failed Sign Out Leaves The User Signed In")
+    func testAFailedSignOutLeavesTheUserSignedIn() async {
+        let screen = makeScreen()
+        screen.interactor.signOutError = URLError(.networkConnectionLost)
+
+        screen.presenter.onSignOutPressed()
+
+        await TestManagers.eventually { screen.interactor.trackedEventNames.contains("Settings_SignOut_Fail") }
+        #expect(!screen.router.shown.contains("onboarding"))
+        #expect(!screen.interactor.didSignOut)
+        #expect(!screen.interactor.trackedEventNames.contains("Settings_SignOut_Success"))
+    }
+
+    // MARK: - Delete account
+
+    /// Delete Account opens the confirmation screen and deletes nothing. It used to raise an alert
+    /// that said nothing about the subscription, the sign-in or the timing; the deletion itself is
+    /// now `DeleteAccountPresenterTests`.
+    @Test("Test Pressing Delete Account Opens The Confirmation And Destroys Nothing")
+    func testPressingDeleteAccountOpensTheConfirmationAndDestroysNothing() {
+        let screen = makeScreen()
+
+        screen.presenter.onDeleteAccountPressed()
+
+        #expect(screen.router.shown == ["deleteAccount"])
+                #expect(screen.interactor.trackedEventNames == ["Settings_DeleteAccount_Start"])
     }
 }

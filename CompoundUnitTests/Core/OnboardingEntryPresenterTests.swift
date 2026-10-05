@@ -266,7 +266,7 @@ struct OnboardingSubscriptionPresenterTests {
 
         func showDevSettingsView() { shown.append("devSettings") }
         func showPaywall(isOnboarding: Bool) { paywallsShown.append(isOnboarding) }
-        func showAccountView(delegate: AccountDelegate) { shown.append("account") }
+        func showEditProfileView(delegate: EditProfileDelegate) { shown.append("account") }
         func switchToOnboardingModule() { shown.append("onboardingModule") }
 
         private(set) var alertTitles: [String] = []

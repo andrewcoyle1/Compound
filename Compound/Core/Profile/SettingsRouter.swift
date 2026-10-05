@@ -1,14 +1,17 @@
 //
-//  ProfileRouter.swift
+//  SettingsRouter.swift
 //  Compound
 //
 //  Created by Andrew Coyle on 27/11/2025.
 //
 
 @MainActor
-protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
-    func showAccountView(delegate: AccountDelegate)
+protocol SettingsRouter: GlobalRouter, ShareSheetRouter {
     func showWeightGoalFlow()
+    func switchToOnboardingModule()
+    /// For upgrading an anonymous account — the same screen onboarding uses.
+    func showAuthView()
+    func showDeleteAccountView()
     func showNotificationsView()
     func showNotificationSettingsView(delegate: NotificationSettingsDelegate)
     func showWorkoutSettingsView(delegate: WorkoutSettingsDelegate)
@@ -28,4 +31,4 @@ protocol ProfileRouter: GlobalRouter, ShareSheetRouter {
     func showPreferredDietView(isFromSettings: Bool)
 }
 
-extension CoreRouter: ProfileRouter { }
+extension CoreRouter: SettingsRouter { }

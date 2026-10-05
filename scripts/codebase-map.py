@@ -115,7 +115,7 @@ AREA_PURPOSE = {
     "Compound/Core/Nutrition": "Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners",
     "Compound/Core/Onboarding": "Numbered onboarding steps 0–9 (see OnboardingStepRouter)",
     "Compound/Core/Paywalls": "Paywall screens",
-    "Compound/Core/Profile": "Profile tab and every settings screen (training, nutrition, general, account, legal)",
+    "Compound/Core/Profile": "Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal)",
     "Compound/Core/Sharing": "Share-to-follower and shared-item viewer",
     "Compound/Core/SplitViewContainer": "iPad sidebar container",
     "Compound/Core/TabBar": "Tab bar, DeepLink parsing, tab selection",

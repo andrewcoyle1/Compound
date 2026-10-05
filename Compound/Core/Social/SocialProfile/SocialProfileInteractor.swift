@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol SocialProfileInteractor: ReportInteractor, FollowInteractor {
+protocol SocialProfileInteractor: ReportInteractor, FollowInteractor, InviteLinkInteractor {
     var followingUsers: [UserModel] { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var activeMesocycle: Mesocycle? { get }

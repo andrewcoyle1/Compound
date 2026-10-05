@@ -1,5 +1,5 @@
 //
-//  ProfilePresenter.swift
+//  SettingsPresenter.swift
 //  Compound
 //
 //  Created by Andrew Coyle on 21/10/2025.
@@ -9,20 +9,9 @@ import SwiftUI
 
 @Observable
 @MainActor
-class ProfilePresenter {
-    private let interactor: ProfileInteractor
-    private let router: ProfileRouter
-
-    var currentUser: UserModel? {
-        interactor.currentUser
-    }
-
-    var fullName: String {
-        guard let user = currentUser else { return "" }
-        let first = user.firstNameCalculated ?? ""
-        let last = user.lastNameCalculated ?? ""
-        return "\(first) \(last)".trimmingCharacters(in: .whitespaces)
-    }
+class SettingsPresenter {
+    private let interactor: SettingsInteractor
+    private let router: SettingsRouter
 
     var currentGoal: WeightGoal? {
         interactor.currentGoal
@@ -33,8 +22,8 @@ class ProfilePresenter {
     }
     
     init(
-        interactor: ProfileInteractor,
-        router: ProfileRouter
+        interactor: SettingsInteractor,
+        router: SettingsRouter
     ) {
         self.interactor = interactor
         self.router = router
@@ -77,10 +66,6 @@ class ProfilePresenter {
         router.showSiriView(delegate: SiriDelegate())
     }
     
-    func onProfileEditPressed() {
-        router.showAccountView(delegate: AccountDelegate())
-    }
-
     func onNotificationsPressed() {
         router.showNotificationsView()
     }
@@ -134,7 +119,7 @@ class ProfilePresenter {
     }
 
     /// Knowledge Base and Roadmap have nowhere to go yet — neither site exists, and `Constants` has
-    /// no URL for either — so their rows are hidden (see the markers in `ProfileView`). These stay
+    /// no URL for either — so their rows are hidden (see the markers in `SettingsView`). These stay
     /// for when they come back.
     func onKnowledgeBasePressed() {
         interactor.trackEvent(eventName: "ProfileView_KnowledgeBase_Press", parameters: nil, type: .analytic)
@@ -205,25 +190,87 @@ class ProfilePresenter {
         router.showAboutView(delegate: AboutDelegate())
     }
 
-    func onDismissPressed() {
-        router.dismissScreen()
+    // MARK: - Account
+
+    /// An anonymous account has no credential behind it, so signing out of one destroys everything
+    /// logged against it with no way back in. Those users are offered the upgrade instead.
+    var isAnonymousUser: Bool {
+        interactor.auth?.isAnonymous == true
     }
-    
+
+    /// How this account signs in, so the person can confirm it.
+    var signInMethod: String {
+        guard let auth = interactor.auth, !auth.isAnonymous else { return String(localized: "Not saved") }
+        if auth.authProviders.contains(.apple) { return String(localized: "Apple") }
+        if auth.authProviders.contains(.google) { return String(localized: "Google") }
+        return Format.placeholder
+    }
+
+    var email: String? {
+        interactor.currentUser?.email
+    }
+
+    /// An anonymous account's only route to keeping its data.
+    ///
+    /// Routes to the existing `AuthView` rather than reimplementing sign-in: `FirebaseAuthService`
+    /// already links an Apple or Google credential to the signed-in anonymous user, and
+    /// `CoreInteractor.logIn` already handles the migration and cleanup around it, so the upgrade
+    /// keeps the account rather than replacing it.
+    func onSaveAccountPressed() {
+        interactor.trackEvent(event: Event.saveAccountPressed)
+        router.showAuthView()
+    }
+
+    func onSignOutPressed() {
+        interactor.trackEvent(event: Event.signOutStart)
+
+        Task {
+            do {
+                try await interactor.signOut()
+                interactor.trackEvent(event: Event.signOutSuccess)
+                router.dismissEnvironment()
+                try await Task.sleep(for: .seconds(1))
+                router.switchToOnboardingModule()
+            } catch {
+                router.showAlert(title: String(localized: "Unable to Sign Out"), error: error)
+                interactor.trackEvent(event: Event.signOutFail(error: error))
+            }
+        }
+    }
+
+    /// Opens the confirmation screen, which says what deleting does before anything is deleted.
+    func onDeleteAccountPressed() {
+        interactor.trackEvent(event: Event.deleteAccountStart)
+        router.showDeleteAccountView()
+    }
+
     enum Event: LoggableEvent {
         case onAppear
         case onDisappear
         case ratingsPressed
+        case signOutStart
+        case signOutSuccess
+        case signOutFail(error: Error)
+        case deleteAccountStart
+        case saveAccountPressed
 
         var eventName: String {
             switch self {
             case .onAppear:                     return "ProfileView_Appear"
             case .onDisappear:                  return "ProfileView_Disappear"
             case .ratingsPressed:               return "ProfileView_Ratings_Pressed"
+            case .signOutStart:                 return "Settings_SignOut_Start"
+            case .signOutSuccess:               return "Settings_SignOut_Success"
+            case .signOutFail:                  return "Settings_SignOut_Fail"
+            case .deleteAccountStart:           return "Settings_DeleteAccount_Start"
+            case .saveAccountPressed:           return "Settings_SaveAccount_Press"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
+            case .signOutFail(error: let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -231,7 +278,9 @@ class ProfilePresenter {
 
         var type: LogType {
             switch self {
-            case .onAppear, .onDisappear, .ratingsPressed:
+            case .signOutFail:
+                return .severe
+            default:
                 return .analytic
             }
         }

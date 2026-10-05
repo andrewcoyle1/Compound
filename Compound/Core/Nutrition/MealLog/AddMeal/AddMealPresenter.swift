@@ -125,6 +125,7 @@ class AddMealPresenter {
         do {
             try interactor.updateDraftMeal(mealLog)
         } catch {
+            interactor.trackEvent(event: Event.saveDraftFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your meal. Please try again."))
         }
     }
@@ -179,7 +180,11 @@ class AddMealPresenter {
 
     func dismissScreen() {
         if self.mealLog.items.isEmpty {
-            try? self.interactor.deleteDraftMeal()
+            do {
+                try self.interactor.deleteDraftMeal()
+            } catch {
+                interactor.trackEvent(event: Event.deleteDraftFail(error: error))
+            }
         }
         router.dismissScreen()
     }
@@ -315,7 +320,9 @@ extension AddMealPresenter {
         case saveMealStart
         case saveMealSuccess
         case saveMealFail(error: Error)
-        
+        case saveDraftFail(error: Error)
+        case deleteDraftFail(error: Error)
+
         var eventName: String {
             switch self {
             case .onAppear:         return "AddMealView_Appear"
@@ -323,12 +330,14 @@ extension AddMealPresenter {
             case .saveMealStart:    return "AddMealView_SaveMeal_Start"
             case .saveMealSuccess:  return "AddMealView_SaveMeal_Success"
             case .saveMealFail:     return "AddMealView_SaveMeal_Fail"
+            case .saveDraftFail:    return "AddMealView_SaveDraft_Fail"
+            case .deleteDraftFail:  return "AddMealView_DeleteDraft_Fail"
             }
         }
         
         var parameters: [String: Any]? {
             switch self {
-            case .saveMealFail(error: let error):
+            case .saveMealFail(error: let error), .saveDraftFail(error: let error), .deleteDraftFail(error: let error):
                 return error.eventParameters
             default:
                 return nil
@@ -337,8 +346,10 @@ extension AddMealPresenter {
         
         var type: LogType {
             switch self {
-            case .saveMealFail:
+            case .saveMealFail, .saveDraftFail:
                 return .severe
+            case .deleteDraftFail:
+                return .warning
             default:
                 return .analytic
             }

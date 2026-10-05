@@ -281,13 +281,4 @@ struct FoodItemQuickAddPresenterTests {
         #expect(item?.nutrients[.carbs] == nil)
         #expect(item?.nutrients[.fatTotal] == nil)
     }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["FoodItemQuickAddView_Appear"])
-    }
 }

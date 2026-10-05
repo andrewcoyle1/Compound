@@ -25,6 +25,10 @@ class MealDetailPresenter {
         interactor.trackScreenEvent(event: Event.onAppear(itemCount: delegate.meal.items.count))
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// Item nutrients are stored at the amount logged, so a meal's totals are a plain sum — no
     /// scaling, and no need to resolve the underlying foods.
     func macroSummary(for meal: MealLogModel) -> [MacroSummaryItem] {
@@ -88,6 +92,7 @@ extension MealDetailPresenter {
 
     enum Event: LoggableEvent {
         case onAppear(itemCount: Int)
+        case onDisappear
         case onDeleteStart
         case onDeleteSuccess
         case onDeleteFail(error: Error)
@@ -95,6 +100,7 @@ extension MealDetailPresenter {
         var eventName: String {
             switch self {
             case .onAppear:         return "MealDetailView_Appear"
+            case .onDisappear:      return "MealDetailView_Disappear"
             case .onDeleteStart:    return "MealDetailView_Delete_Start"
             case .onDeleteSuccess:  return "MealDetailView_Delete_Success"
             case .onDeleteFail:     return "MealDetailView_Delete_Fail"

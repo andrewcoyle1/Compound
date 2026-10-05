@@ -151,6 +151,21 @@ struct BarcodeScannerPresenterTests {
         #expect(screen.interactor.trackedScreenEventNames == ["BarcodeScannerView_Appear"])
     }
 
+    /// As a mode of the food picker the scanner is part of the picker's screen, which logs the
+    /// screen view itself. The camera still follows it.
+    @Test("Test Appearing Embedded Is Not Tracked As A Screen View")
+    func testAppearingEmbeddedIsNotTrackedAsAScreenView() {
+        let screen = makeScreen()
+        let delegate = BarcodeScannerDelegate(isEmbedded: true)
+
+        screen.presenter.onViewAppear(delegate: delegate)
+        #expect(screen.presenter.isScanning)
+        screen.presenter.onViewDisappear(delegate: delegate)
+
+        #expect(screen.interactor.trackedScreenEventNames.isEmpty)
+        #expect(!screen.interactor.trackedEventNames.contains("BarcodeScannerView_Disappear"))
+    }
+
     /// The two modes read different things, and the scanner is told which through this set.
     @Test("Test Changing Mode Retargets The Scanner And Starts Over")
     func testChangingModeRetargetsTheScannerAndStartsOver() {

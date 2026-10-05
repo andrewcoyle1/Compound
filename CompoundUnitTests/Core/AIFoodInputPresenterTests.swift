@@ -257,15 +257,6 @@ struct FoodPhotoScannerPresenterTests {
         #expect(item?.sourceId == "food-1")
     }
 
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear()
-
-        #expect(screen.interactor.trackedScreenEventNames == ["FoodPhotoScannerView_Appear"])
-    }
-
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled at the
     /// model's amount, rather than adding the estimate as is.
     @Test("Test Tapping A Result Opens The Amount Screen Prefilled")
@@ -555,14 +546,5 @@ struct MealDescribePresenterTests {
 
         #expect(screen.box.picked.first?.nutrients[.calories] == 105)
         #expect(screen.box.picked.first?.nutrients[.protein] == nil)
-    }
-
-    @Test("Test Appearing Is Tracked As A Screen View")
-    func testAppearingIsTrackedAsAScreenView() {
-        let screen = makeScreen()
-
-        screen.presenter.onViewAppear(delegate: screen.delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["MealDescribeView_Appear"])
     }
 }

@@ -28,6 +28,8 @@ struct RecipeIngredientAmountView: View {
             )
         }
         .navigationTitle(delegate.food.name)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // Adding to a recipe is not logging, so this keeps its own verb.

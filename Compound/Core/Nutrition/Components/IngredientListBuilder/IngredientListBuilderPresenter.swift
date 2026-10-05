@@ -46,11 +46,13 @@ class IngredientListBuilderPresenter {
         self.router = router
     }
     
-    func onViewAppear() {
+    func onViewAppear(delegate: IngredientListBuilderDelegate) {
+        guard !delegate.isEmbedded else { return }
         interactor.trackScreenEvent(event: Event.onAppear)
     }
-    
-    func onViewDisappear() {
+
+    func onViewDisappear(delegate: IngredientListBuilderDelegate) {
+        guard !delegate.isEmbedded else { return }
         interactor.trackEvent(event: Event.onDisappear)
     }
         

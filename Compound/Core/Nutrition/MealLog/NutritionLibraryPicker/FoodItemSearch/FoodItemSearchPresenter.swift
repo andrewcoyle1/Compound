@@ -76,12 +76,10 @@ class FoodItemSearchPresenter {
     }
 
     func onViewAppear(delegate: FoodItemSearchDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
         history = interactor.recentPicks
     }
 
     func onViewDisappear(delegate: FoodItemSearchDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
         searchTask?.cancel()
         isSearching = false
     }
@@ -136,32 +134,23 @@ class FoodItemSearchPresenter {
 extension FoodItemSearchPresenter {
 
     enum Event: LoggableEvent {
-        case onAppear(delegate: FoodItemSearchDelegate)
-        case onDisappear(delegate: FoodItemSearchDelegate)
         case searchError(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:    return "FoodItemSearchView_Appear"
-            case .onDisappear: return "FoodItemSearchView_Disappear"
             case .searchError: return "FoodItemSearchView_SearchError"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(let delegate), .onDisappear(let delegate):
-                return delegate.eventParameters
             case .searchError(error: let error):
                 return error.eventParameters
             }
         }
 
         var type: LogType {
-            switch self {
-            case .searchError: return .severe
-            default: return .analytic
-            }
+            .severe
         }
     }
 }

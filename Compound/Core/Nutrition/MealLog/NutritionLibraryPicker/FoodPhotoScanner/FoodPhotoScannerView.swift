@@ -2,6 +2,8 @@ import SwiftUI
 
 struct FoodPhotoScannerDelegate {
     let onPick: (MealItemModel) -> Void
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
 }
 
 struct FoodPhotoScannerView: View {
@@ -112,7 +114,7 @@ struct FoodPhotoScannerView: View {
                 Section {
                     ForEach(presenter.analysisResults) { item in
                         FoodAnalysisResultRow(item: item) {
-                            presenter.onResultTapped(item, onPick: delegate.onPick)
+                            presenter.onResultTapped(item, onPick: delegate.onPick, onLog: delegate.onLog)
                         }
                     }
                 } header: {

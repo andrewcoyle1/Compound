@@ -87,6 +87,30 @@ struct RecipeAmountPresenterTests {
         #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
     }
 
+    /// Log adds the recipe and logs the plate. A second Log, after a failed save, does not add it
+    /// twice.
+    @Test("Test Log Adds The Recipe Once And Logs Each Time")
+    func testLogAddsTheRecipeOnceAndLogsEachTime() {
+        let presenter = presenter()
+        var added = 0
+        var logged = 0
+
+        presenter.log(recipe: recipe(servings: 4), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+        presenter.log(recipe: recipe(servings: 4), onConfirm: { _ in added += 1 }, onLog: { logged += 1 })
+
+        #expect(added == 1)
+        #expect(logged == 2)
+    }
+
+    /// The figures follow the servings entered, so they confirm the amount being logged.
+    @Test("Test The Preview Follows The Servings Entered")
+    func testThePreviewFollowsTheServingsEntered() {
+        let presenter = presenter()
+        presenter.servingsText = "2"
+
+        #expect(presenter.forServings(presenter.baseCalories(recipe: recipe(servings: 4))) == 300)
+    }
+
     @Test("Test Logging Two Servings Logs Twice As Much")
     func testLoggingTwoServingsLogsTwiceAsMuch() {
         let presenter = presenter()
@@ -585,6 +609,7 @@ struct RecipeDetailPresenterTests {
 private final class ListBuilderInteractor: SpyGlobalInteractor, RecipeListBuilderInteractor {
     var currentUser: UserModel? = UserModel(userId: "user-1")
     var userRecipeTemplates: [RecipeTemplateModel] = []
+    var userMeals: [MealLogModel] = []
     var foodLogSettings: FoodLogSettings = FoodLogSettings(authorId: "user-1")
 }
 

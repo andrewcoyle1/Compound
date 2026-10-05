@@ -75,6 +75,21 @@ class FoodItemQuickAddPresenter {
         router.dismissScreen()
     }
 
+    /// Set once Log has put the item on the plate, so a second Log after a failed save does not
+    /// add it twice.
+    private var hasAddedForLog = false
+
+    /// Adds the typed macros and logs the plate; logging closes the logger with the picker in it.
+    func onLogPressed(delegate: FoodItemQuickAddDelegate, onLog: () -> Void) {
+        guard canSubmit else { return }
+        if !hasAddedForLog {
+            hasAddedForLog = true
+            interactor.trackEvent(event: Event.onQuickAdd(name: trimmedName))
+            delegate.onPick(quickAddItem())
+        }
+        onLog()
+    }
+
     private var trimmedName: String {
         quickAddName.trimmingCharacters(in: .whitespacesAndNewlines)
     }

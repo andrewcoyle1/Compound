@@ -40,6 +40,24 @@ extension BarcodeScannerPresenterTests {
         #expect(screen.interactor.savedFoods.first?.authorId == "user-1")
     }
 
+    /// Logging, a found product goes straight to its amount screen; the card's "Use This Food"
+    /// was one more tap for a product the amount screen names anyway. Browsing, the card waits.
+    @Test("Test A Product Found While Logging Goes Straight On")
+    func testAProductFoundWhileLoggingGoesStraightOn() async {
+        var handedOn: [String] = []
+        let logging = makeScreen(delegate: BarcodeScannerDelegate(onFoodFound: { handedOn.append($0.name) }))
+        logging.interactor.remoteFood = FoodModel(name: "Vendor Oat Milk", barcode: "5012345678900")
+        await detect("5012345678900", on: logging)
+
+        let browsing = makeScreen()
+        browsing.interactor.remoteFood = FoodModel(name: "Vendor Oat Milk", barcode: "5012345678900")
+        await detect("5012345678900", on: browsing)
+
+        #expect(handedOn == ["Vendor Oat Milk"])
+        #expect(logging.presenter.parsedIngredient?.name == "Vendor Oat Milk")
+        #expect(browsing.presenter.parsedIngredient?.name == "Vendor Oat Milk")
+    }
+
     /// The view feeds every `scannedCode` change back into `onBarcodeDetected`, and typing a
     /// barcode sets the code *and* calls through itself, so the lookup used to run twice. Each run
     /// files its own copy of the product in the library under a fresh id, so the user ends up with
@@ -99,6 +117,22 @@ extension BarcodeScannerPresenterTests {
         #expect(!screen.presenter.isLookingUpBarcode)
         #expect(screen.interactor.trackedEventNames.contains("BarcodeScanner_BarcodeError"))
         #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["error"])
+    }
+
+    /// Open Food Facts rate-limits bursts of lookups with a 429 page. That, or no connection, is
+    /// not "this product doesn't exist", and saying so sends people to re-type a good barcode.
+    @Test("Test Only A Missing Product Is Reported As Not Found")
+    func testOnlyAMissingProductIsReportedAsNotFound() async {
+        let missing = makeScreen()
+        missing.interactor.lookupError = OFFError.productNotFound
+        await detect("5012345678900", on: missing)
+
+        let unreachable = makeScreen()
+        unreachable.interactor.lookupError = URLError(.badServerResponse)
+        await detect("5012345678900", on: unreachable)
+
+        #expect(missing.presenter.barcodeError?.hasPrefix("Couldn't find") == true)
+        #expect(unreachable.presenter.barcodeError?.hasPrefix("Couldn't reach") == true)
     }
 
     /// The camera fires repeatedly as it moves across a shelf, so a new code has to displace the

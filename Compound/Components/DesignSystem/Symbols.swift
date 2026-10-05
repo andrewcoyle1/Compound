@@ -104,6 +104,7 @@ enum Symbol {
     /// A menu that picks one of several, such as which microcycle of a mesocycle to show.
     static let choose = "chevron.up.chevron.down"
     static let repeatMacrocycle = "arrow.counterclockwise"
+    static let logAgain = "arrow.counterclockwise"
 
     // Status
     static let info = "info.circle"

@@ -7,7 +7,6 @@ class MealItemAmountViewPresenter {
     private let interactor: MealItemAmountViewInteractor
     private let router: MealItemAmountViewRouter
     private let onConfirm: (MealItemModel) -> Void
-    private let isAddFoodMode: Bool
     private let unitNutrients: NutrientMap
 
     var amountText: String
@@ -15,42 +14,19 @@ class MealItemAmountViewPresenter {
     init(interactor: MealItemAmountViewInteractor, router: MealItemAmountViewRouter, delegate: MealItemAmountViewDelegate) {
         self.interactor = interactor
         self.router = router
-        self.amountText = delegate.initialAmountText
+        self.amountText = delegate.item.amount.formatted(.number.grouping(.never))
         self.unitNutrients = delegate.unitNutrients
         self.onConfirm = delegate.onConfirm
-        if case .addFood = delegate.mode {
-            self.isAddFoodMode = true
-        } else {
-            self.isAddFoodMode = false
-        }
     }
 
-    /// How much is being added or corrected. Sanitised for the reason given on
+    /// The corrected amount. Sanitised for the reason given on
     /// `IngredientAmountPresenter.amountValue` — this one is the worse of the pair, because the
     /// amount and the nutrients scaled from it are written straight onto the meal item.
     var amountValue: Double { .enteredAmount(amountText) }
 
-    /// What a new food's amount is counted in: a serving unit such as a slice, or nil for the
-    /// food's grams/ml. Only offered when adding a food — an edit keeps the unit it was logged in.
-    /// Changing it rewrites the amount the way `IngredientAmountPresenter.selectedUnit` does.
-    var selectedUnit: ServingUnit? {
-        didSet {
-            guard selectedUnit != oldValue else { return }
-            let previous = NutritionScaling.baseAmount(amountValue, in: oldValue)
-            amountText = selectedUnit == nil ? NutritionScaling.rounded(previous).formatted(.number.grouping(.never)) : "1"
-        }
-    }
-
-    func unitLabel(delegate: MealItemAmountViewDelegate) -> String {
-        selectedUnit?.name ?? delegate.unit
-    }
-
-    private var scale: Double {
-        isAddFoodMode ? NutritionScaling.baseAmount(amountValue, in: selectedUnit) / 100 : amountValue
-    }
-
+    /// The stored figures are already divided back to one unit, so the amount is the scale itself.
     func scaledValue(for key: NutrientKey) -> Double {
-        (unitNutrients[key] ?? 0) * scale
+        (unitNutrients[key] ?? 0) * amountValue
     }
 
     var calories: Double { scaledValue(for: .calories) }
@@ -67,24 +43,19 @@ class MealItemAmountViewPresenter {
     }
     
     func onConfirmPressed(delegate: MealItemAmountViewDelegate) {
-        let item: MealItemModel
-        switch delegate.mode {
-        case .addFood(let food):
-            item = food.mealItem(amount: amountValue, unit: selectedUnit)
-        case .editItem(let existing):
-            let ratio = existing.amount > 0 ? amountValue / existing.amount : 0
-            item = MealItemModel(
-                itemId: existing.itemId,
-                sourceType: existing.sourceType,
-                sourceId: existing.sourceId,
-                displayName: existing.displayName,
-                amount: amountValue,
-                unit: existing.unit,
-                resolvedGrams: existing.resolvedGrams.map { $0 * ratio },
-                resolvedMilliliters: existing.resolvedMilliliters.map { $0 * ratio },
-                nutrients: unitNutrients.mapValues { $0 * scale }
-            )
-        }
+        let existing = delegate.item
+        let ratio = existing.amount > 0 ? amountValue / existing.amount : 0
+        let item = MealItemModel(
+            itemId: existing.itemId,
+            sourceType: existing.sourceType,
+            sourceId: existing.sourceId,
+            displayName: existing.displayName,
+            amount: amountValue,
+            unit: existing.unit,
+            resolvedGrams: existing.resolvedGrams.map { $0 * ratio },
+            resolvedMilliliters: existing.resolvedMilliliters.map { $0 * ratio },
+            nutrients: unitNutrients.mapValues { $0 * amountValue }
+        )
         interactor.playHaptic(option: .success)
         onConfirm(item)
         router.dismissScreen()

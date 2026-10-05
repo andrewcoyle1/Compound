@@ -158,7 +158,7 @@ extension AppViewForUITesting {
             ("STARTSCREEN_NUTRITION_LIBRARY_PICKER", { router in
                 builder.nutritionLibraryPickerView(
                     router: router,
-                    delegate: NutritionLibraryPickerDelegate(items: .constant([.mock]), onPick: { _ in })
+                    delegate: NutritionLibraryPickerDelegate(plate: { [.mock] }, onPick: { _ in })
                 ).any()
             }),
             ("STARTSCREEN_ANALYTICS", { builder.analyticsView(delegate: AnalyticsDelegate(), router: $0).any() }),

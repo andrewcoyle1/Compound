@@ -7,7 +7,7 @@ class FoodItemSearchPresenter {
     private let interactor: FoodItemSearchInteractor
     private let router: FoodItemSearchRouter
 
-    private(set) var historyFoods: [FoodModel] = []
+    private(set) var history: [RecentPick] = []
     private(set) var openFoodFactsFoods: [FoodModel] = []
     private(set) var isSearching: Bool = false
 
@@ -32,6 +32,14 @@ class FoodItemSearchPresenter {
         return Array(interactor.foods.filter {
             $0.name.localizedStandardContains(query) || ($0.brandName?.localizedStandardContains(query) ?? false)
         }.prefix(20))
+    }
+
+    /// The user's recipes matching the query, by name. Recipes used to be reachable only from the
+    /// Library tab, so searching for one's own chilli found nothing.
+    var recipeResults: [RecipeTemplateModel] {
+        let query = trimmedQuery
+        guard !query.isEmpty else { return [] }
+        return Array(interactor.userRecipeTemplates.filter { $0.name.localizedStandardContains(query) }.prefix(20))
     }
 
     /// The Logger Food Tiles settings, which the library's rows already honoured and these ignored.
@@ -69,7 +77,7 @@ class FoodItemSearchPresenter {
 
     func onViewAppear(delegate: FoodItemSearchDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-        historyFoods = interactor.recentFoods
+        history = interactor.recentPicks
     }
 
     func onViewDisappear(delegate: FoodItemSearchDelegate) {

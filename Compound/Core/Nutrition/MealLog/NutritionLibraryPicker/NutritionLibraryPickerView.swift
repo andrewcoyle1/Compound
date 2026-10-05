@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct NutritionLibraryPickerDelegate {
-    var items: Binding<[MealItemModel]>
+    /// The plate as it stands, read fresh each time.
+    var plate: () -> [MealItemModel]
     var onPick: (MealItemModel) -> Void
+    /// Logs the plate as it stands and closes the logger, from here or from an amount screen.
+    var onLog: () -> Void = {}
+    /// Called once the picker is on screen. A presentation the system drops never calls it, but
+    /// is still reported to `onDidDismiss`.
+    var onAppear: () -> Void = {}
+    /// Called once the picker has gone, however it was closed.
+    var onDidDismiss: () -> Void = {}
 }
 
 struct NutritionLibraryPickerView<
@@ -33,51 +41,76 @@ struct NutritionLibraryPickerView<
     @ViewBuilder var mealDescribe: (MealDescribeDelegate) -> MealDescribe
 
     var body: some View {
+        // Read through the getter on every render. A Binding made once by Add Meal and stored in
+        // this delegate kept answering with the plate as it was when the sheet opened, so the
+        // count, the rows' checkmarks and Log never moved however much was added.
+        let plate = delegate.plate()
+        let plateBinding = Binding(get: delegate.plate, set: { _ in })
         Group {
             switch presenter.mode {
 #if !targetEnvironment(macCatalyst)
             case .barcode:
                 barcodeScanner(BarcodeScannerDelegate(onFoodFound: { food in
-                    presenter.navToIngredientAmount(food, onPick: delegate.onPick)
+                    presenter.navToIngredientAmount(food, onPick: delegate.onPick, onLog: delegate.onLog)
                 }))
 #endif
             case .search:
                 foodItemSearch(FoodItemSearchDelegate(
                     onFoodSelected: { food in
-                        presenter.navToIngredientAmount(food, onPick: delegate.onPick)
+                        presenter.navToIngredientAmount(food, onPick: delegate.onPick, onLog: delegate.onLog)
                     },
-                    mealItems: delegate.items
+                    onFoodQuickAdded: { food in
+                        presenter.quickAdd(food, onPick: delegate.onPick)
+                    },
+                    onRecipeSelected: { recipe in
+                        presenter.navToRecipeAmount(recipe, onPick: delegate.onPick, onLog: delegate.onLog)
+                    },
+                    onRecipeQuickAdded: { recipe in
+                        presenter.quickAdd(recipe, onPick: delegate.onPick)
+                    },
+                    mealItems: plateBinding
                 ))
             case .aiScanner:
-                foodPhotoScanner(FoodPhotoScannerDelegate(onPick: delegate.onPick))
+                foodPhotoScanner(FoodPhotoScannerDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             case .quickAdd:
-                foodQuickAdd(FoodItemQuickAddDelegate(onPick: delegate.onPick))
+                foodQuickAdd(FoodItemQuickAddDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             case .library:
                 foodLibrary(
                     FoodLibraryDelegate(
-                        mealItems: delegate.items,
-                        onItemPick: { item in
-                            delegate.items.wrappedValue.append(item)
-                        }
+                        mealItems: plateBinding,
+                        onItemPick: delegate.onPick,
+                        onLog: delegate.onLog
                     )
                 )
             case .describe:
-                mealDescribe(MealDescribeDelegate(onPick: delegate.onPick))
+                mealDescribe(MealDescribeDelegate(onPick: delegate.onPick, onLog: delegate.onLog))
             }
         }
+        .onAppear { delegate.onAppear() }
         .navigationTitle("Add Item")
         // A count, not a control: as a toolbar item it drew as a greyed-out button.
-        .navigationSubtitle(Text("\(delegate.items.wrappedValue.count) on plate"))
+        .navigationSubtitle(Text("\(plate.count) on plate"))
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaBar(edge: .top) {
             modeChips
         }
         .toolbar {
-            // Picks land on the plate as they are made, so there is nothing to confirm or cancel:
-            // closing is the one honest action.
+            // Picks land on the plate as they are made, so there is nothing to cancel: Close goes
+            // back to the plate to review it.
             ToolbarItem(placement: .cancellationAction) {
                 Button(role: .close) {
                     presenter.dismissScreen()
+                }
+            }
+        }
+        // Log logs the plate without going back to it first. Pinned to the bottom rather than in
+        // the toolbar, which search hides while it is active — right when "+" has just added.
+        .bottomCTA {
+            if !plate.isEmpty {
+                CallToActionButton {
+                    delegate.onLog()
+                } label: {
+                    Text("Log")
                 }
             }
         }
@@ -170,7 +203,7 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showNutritionLibraryPickerView(delegate: NutritionLibraryPickerDelegate) {
-        router.showScreen(.sheet) { router in
+        router.showScreen(.sheet, onDidDismiss: delegate.onDidDismiss) { router in
             builder.nutritionLibraryPickerView(router: router, delegate: delegate)
         }
     }
@@ -182,7 +215,7 @@ extension CoreRouter {
     let interactor = CoreInteractor(container: container)
     let builder = CoreBuilder(interactor: interactor)
     let delegate = NutritionLibraryPickerDelegate(
-        items: $items,
+        plate: { items },
         onPick: { item in
             print(item.displayName)
         }

@@ -235,7 +235,7 @@ final class NutritionPresenter {
     func onEditMealItem(_ item: MealItemModel, in meal: MealLogModel) {
         router.showMealItemAmountViewView(
             delegate: MealItemAmountViewDelegate(
-                mode: .editItem(item),
+                item: item,
                 onConfirm: { [weak self] updated in
                     self?.saveEditedItem(updated, in: meal)
                 }
@@ -255,6 +255,30 @@ final class NutritionPresenter {
             } catch {
                 interactor.playHaptic(option: .error)
                 router.showFailure(String(localized: "Unable to Update Food"), error: error)
+                interactor.trackEvent(event: Event.saveMealFail(error: error))
+            }
+        }
+    }
+
+    /// Logs the same foods again as a new meal at the current time, from whichever day the
+    /// original is on. Copy Day does this for a whole day; most repeats are one meal.
+    func onLogAgainPressed(_ meal: MealLogModel) {
+        guard let authorId = interactor.currentUser?.userId else { return }
+        let now = Date()
+        let copy = MealLogModel(authorId: authorId, dayKey: now.dayKey, date: now, items: meal.items, notes: meal.notes)
+        Task {
+            interactor.trackEvent(event: Event.saveMealStart)
+            do {
+                try await interactor.addMeal(copy)
+                interactor.trackEvent(event: Event.saveMealSuccess)
+                interactor.playHaptic(option: .success)
+                // From another day the copy lands out of sight, on today; say where it went.
+                if !Calendar.current.isDateInToday(selectedDate) {
+                    interactor.showAppToast(AppToast(style: .success, message: String(localized: "Logged again today.")))
+                }
+            } catch {
+                interactor.playHaptic(option: .error)
+                router.showFailure(String(localized: "Unable to Log Meal"), error: error)
                 interactor.trackEvent(event: Event.saveMealFail(error: error))
             }
         }

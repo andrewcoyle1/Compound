@@ -13,6 +13,9 @@ struct IngredientAmountDelegate {
     /// Prefills the amount, e.g. with an AI estimate's amount, so it can be corrected rather than
     /// starting the field over at 100.
     var initialAmountText: String = "100"
+    /// The plate's Log. When set, the screen offers Log beside Add to Plate, so a single food can be
+    /// logged from here without going back through the picker and the plate.
+    var onLog: (() -> Void)?
 }
 
 struct IngredientAmountView: View {
@@ -21,12 +24,17 @@ struct IngredientAmountView: View {
 
     var delegate: IngredientAmountDelegate
 
+    /// The amount opens focused and selected, so typing replaces it rather than appending to it.
+    @FocusState private var isAmountFocused: Bool
+    @State private var amountSelection: TextSelection?
+
     var body: some View {
         Form {
             Section("Amount") {
                 HStack {
-                    TextField("Amount", text: $presenter.amountText)
+                    TextField("Amount", text: $presenter.amountText, selection: $amountSelection)
                         .keyboardType(.decimalPad)
+                        .focused($isAmountFocused)
                     if delegate.ingredient.servingUnits.isEmpty {
                         Text(presenter.unitLabel(ingredient: delegate.ingredient))
                             .foregroundStyle(.secondary)
@@ -51,15 +59,31 @@ struct IngredientAmountView: View {
         .navigationTitle(delegate.ingredient.name)
         .onAppear {
             presenter.onViewAppear(ingredient: delegate.ingredient)
+            isAmountFocused = true
+        }
+        // Selected once the field has focus: taking focus puts the caret at the end, which
+        // replaced a selection made any earlier, and typing then appended to the amount.
+        .onChange(of: isAmountFocused) { _, focused in
+            guard focused else { return }
+            let text = presenter.amountText
+            amountSelection = TextSelection(range: text.startIndex..<text.endIndex)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Add", role: .confirm) {
-                    presenter.add(ingredient: delegate.ingredient, onConfirm: delegate.onPick)
+        .bottomCTA {
+            if let onLog = delegate.onLog {
+                CallToActionButton {
+                    presenter.log(ingredient: delegate.ingredient, onConfirm: delegate.onPick, onLog: onLog)
+                } label: {
+                    Text("Log")
                 }
                 .disabled(presenter.amountValue <= 0)
             }
+            CallToActionButton(isPrimaryAction: delegate.onLog == nil) {
+                presenter.add(ingredient: delegate.ingredient, onConfirm: delegate.onPick)
+            } label: {
+                Text("Add to Plate")
+            }
+            .disabled(presenter.amountValue <= 0)
         }
     }
 }

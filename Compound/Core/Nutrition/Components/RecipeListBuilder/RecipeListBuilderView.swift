@@ -3,6 +3,10 @@ import SwiftUI
 struct RecipeListBuilderDelegate {
     var onRecipeSelectionChanged: ((RecipeTemplateModel) -> Void)?
     var onMealItemConfirmed: ((MealItemModel) -> Void)?
+    /// The plate's Log, handed on to the amount screen.
+    var onLog: (() -> Void)?
+    /// The plate, so a row can show how many of this recipe are on it.
+    var mealItems: Binding<[MealItemModel]>?
     /// Optional list of recipe templates that should display as "selected" in the UI.
     /// If `nil`, no selection state is shown.
     var selectedRecipeTemplates: [RecipeTemplateModel]?
@@ -125,7 +129,8 @@ struct RecipeListBuilderView: View {
                     showImage: presenter.showFoodImageInLogger,
                     showCalories: presenter.showCaloriesInLogger,
                     showMacros: presenter.showMacrosInLogger,
-                    showPortion: presenter.showPortionInLogger
+                    showPortion: presenter.showPortionInLogger,
+                    addedCount: delegate.mealItems?.wrappedValue.addedCount(forRecipeId: recipe.recipeId) ?? 0
                 )
             )
         } else {

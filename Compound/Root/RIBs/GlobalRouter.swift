@@ -36,6 +36,11 @@ extension GlobalRouter {
     func dismissEnvironment() {
         router.dismissEnvironment()
     }
+
+    /// Dismiss the topmost .sheet or .fullScreenCover, with whatever is pushed inside it.
+    func dismissLastEnvironment() {
+        router.dismissLastEnvironment()
+    }
     
     /// Prefer `showAlert(title:error:)` with a title that says what failed ("Unable to Save
     /// Weight"). This one is for callers that have not been given one yet.

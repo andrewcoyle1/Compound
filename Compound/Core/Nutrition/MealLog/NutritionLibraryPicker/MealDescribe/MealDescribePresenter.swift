@@ -72,7 +72,8 @@ class MealDescribePresenter {
         router.showIngredientAmountView(delegate: IngredientAmountDelegate(
             ingredient: item.estimatedFood,
             onPick: delegate.onPick,
-            initialAmountText: item.amountGrams.formatted(.number.grouping(.never))
+            initialAmountText: item.amountGrams.formatted(.number.grouping(.never)),
+            onLog: delegate.onLog
         ))
     }
 }

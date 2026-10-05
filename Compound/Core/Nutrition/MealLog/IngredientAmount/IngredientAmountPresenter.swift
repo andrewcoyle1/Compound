@@ -60,12 +60,12 @@ class IngredientAmountPresenter {
     func onViewAppear(ingredient: FoodModel) {
         guard !hasStartedFromPortion else { return }
         hasStartedFromPortion = true
-        if let portion = ingredient.portionNameCalculated,
-           let unit = ingredient.servingUnits.first(where: { $0.name == portion }) {
+        let portion = ingredient.defaultPortion
+        if let unit = portion.unit {
             selectedUnit = unit
-            amountText = (ingredient.portionQuantityCalculated ?? 1).formatted(.number.grouping(.never))
+            amountText = portion.amount.formatted(.number.grouping(.never))
         } else {
-            amountText = NutritionScaling.rounded(ingredient.defaultPortionAmount).formatted(.number.grouping(.never))
+            amountText = NutritionScaling.rounded(portion.amount).formatted(.number.grouping(.never))
         }
     }
 
@@ -75,6 +75,21 @@ class IngredientAmountPresenter {
         interactor.playHaptic(option: .success)
         onConfirm(ingredient.mealItem(amount: amountValue, unit: selectedUnit))
         router.dismissScreen()
+    }
+
+    /// Set once Log has put the food on the plate, so a second Log after a failed save logs the
+    /// plate again without adding the food twice.
+    private var hasAddedForLog = false
+
+    /// Adds the food and logs the plate in one step. Logging closes the whole logger, this screen
+    /// included; popping this screen as well started a second transition in the same instant and
+    /// the system dropped the dismissal, leaving the logger open over a logged meal.
+    func log(ingredient: FoodModel, onConfirm: (MealItemModel) -> Void, onLog: () -> Void) {
+        if !hasAddedForLog {
+            hasAddedForLog = true
+            onConfirm(ingredient.mealItem(amount: amountValue, unit: selectedUnit))
+        }
+        onLog()
     }
 
     func dismissScreen() {

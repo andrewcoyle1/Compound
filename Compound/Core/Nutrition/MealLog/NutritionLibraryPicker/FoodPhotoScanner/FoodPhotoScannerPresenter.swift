@@ -123,12 +123,13 @@ class FoodPhotoScannerPresenter {
 
     /// Estimates can be wrong, so a tapped result opens the amount screen prefilled rather than
     /// adding it as is — the amount and, through it, the macros can be corrected first.
-    func onResultTapped(_ item: FoodAnalysisItem, onPick: @escaping (MealItemModel) -> Void) {
+    func onResultTapped(_ item: FoodAnalysisItem, onPick: @escaping (MealItemModel) -> Void, onLog: (() -> Void)? = nil) {
         interactor.trackEvent(event: Event.onAddItem(name: item.name))
         router.showIngredientAmountView(delegate: IngredientAmountDelegate(
             ingredient: item.estimatedFood,
             onPick: onPick,
-            initialAmountText: item.amountGrams.formatted(.number.grouping(.never))
+            initialAmountText: item.amountGrams.formatted(.number.grouping(.never)),
+            onLog: onLog
         ))
     }
 }

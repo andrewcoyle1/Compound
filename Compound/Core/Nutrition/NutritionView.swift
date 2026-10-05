@@ -154,6 +154,12 @@ struct NutritionView<
         }
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             Button {
+                presenter.onLogAgainPressed(meal)
+            } label: {
+                Label("Log Again", systemImage: Symbol.logAgain)
+            }
+            .tint(.accentColor)
+            Button {
                 presenter.onViewMealPressed(meal)
             } label: {
                 Label("Meal", systemImage: Symbol.meal)
@@ -165,6 +171,11 @@ struct NutritionView<
                 presenter.onViewMealPressed(meal)
             } label: {
                 Label("View Meal", systemImage: Symbol.meal)
+            }
+            Button {
+                presenter.onLogAgainPressed(meal)
+            } label: {
+                Label("Log Meal Again", systemImage: Symbol.logAgain)
             }
             Button(role: .destructive) {
                 presenter.deleteMealItem(item, from: meal)

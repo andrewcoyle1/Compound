@@ -144,6 +144,15 @@ struct PrebuiltMesocycleTests {
 
 // MARK: - Detail screen
 
+/// Records that onboarding's completion handler ran.
+private final class CompletionFlag: @unchecked Sendable {
+    private(set) var fired = false
+
+    func fire() {
+        fired = true
+    }
+}
+
 @MainActor
 struct PrebuiltMesocycleDetailPresenterTests {
 
@@ -186,6 +195,20 @@ struct PrebuiltMesocycleDetailPresenterTests {
         #expect(router.dismissed == 1)
         #expect(!presenter.isStarting)
         #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// From onboarding, starting hands back to onboarding instead of leaving the screen.
+    @Test("Test A Start From Onboarding Resumes It")
+    func testAStartFromOnboardingResumesIt() async {
+        let interactor = Interactor()
+        let router = Router()
+        let flag = CompletionFlag()
+        let presenter = PrebuiltMesocycleDetailPresenter(interactor: interactor, router: router, mesocycle: .mock, onStarted: { flag.fire() })
+
+        await presenter.onStartPressed()
+
+        #expect(flag.fired)
+        #expect(router.dismissed == 0)
     }
 
     @Test("Test A Failed Start Stays On The Screen And Says So")

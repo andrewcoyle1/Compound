@@ -26,21 +26,29 @@ private final class CompletionFlag: @unchecked Sendable {
     }
 }
 
-/// The first screen of creating a training mesocycle: an explainer with a Next button.
+/// Onboarding's training step: the shipped programs to start from, or Build My Own.
 ///
-/// It holds nothing, so the only thing it can get wrong is losing the caller's completion handler
-/// — the one that returns an onboarding user to where they left off once the mesocycle is saved.
+/// It decides which program to suggest, and must hand on the caller's completion handler — the
+/// one that returns an onboarding user to where they left off once a mesocycle is active.
 @MainActor
 struct CreateMesocycleFlowTests {
 
-    private final class Interactor: SpyGlobalInteractor, CreateMesocycleInteractor { }
+    private final class Interactor: SpyGlobalInteractor, CreateMesocycleInteractor {
+        var currentUser: UserModel?
+        var prebuiltMesocycles: [Mesocycle] = []
+    }
 
     private final class Router: CreateMesocycleRouter {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var nameDelegates: [NameMesocycleDelegate] = []
+        private(set) var previewed: [(id: String, onStarted: (@Sendable () -> Void)?)] = []
 
         func showNameMesocycleView(delegate: NameMesocycleDelegate) {
             nameDelegates.append(delegate)
+        }
+
+        func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle, onStarted: (@Sendable () -> Void)?) {
+            previewed.append((mesocycle.id, onStarted))
         }
     }
 
@@ -58,6 +66,73 @@ struct CreateMesocycleFlowTests {
             interactor: interactor,
             router: router
         )
+    }
+
+    // MARK: - Choosing a program
+
+    private func program(_ id: String, workouts: Int) -> Mesocycle {
+        let days = (0..<7).map { index in
+            WorkoutTemplateModel(
+                id: "\(id)-day-\(index)",
+                authorId: "official",
+                name: index < workouts ? "Day \(index)" : "Rest",
+                exercises: index < workouts ? [WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)] : []
+            )
+        }
+        return Mesocycle(id: id, authorId: "official", name: id, icon: "flag", colour: "#FF0000", workoutTemplates: days)
+    }
+
+    private var shippedPrograms: [Mesocycle] {
+        [program("program-push-pull-legs", workouts: 6), program("program-531", workouts: 4),
+         program("program-upper-lower", workouts: 4), program("program-full-body", workouts: 3)]
+    }
+
+    /// The suggestion follows the onboarding answer to how often the user exercises; 5/3/1 is never
+    /// it, and no answer means no suggestion.
+    @Test("Test The Recommended Program Follows Exercise Frequency")
+    func testTheRecommendedProgramFollowsExerciseFrequency() {
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: .never) == "program-full-body")
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: .oneToTwo) == "program-full-body")
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: .threeToFour) == "program-upper-lower")
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: .fiveToSix) == "program-push-pull-legs")
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: .daily) == "program-push-pull-legs")
+        #expect(CreateMesocyclePresenter.recommendedProgramId(for: nil) == nil)
+    }
+
+    /// The recommended program is shown on its own, the rest fewest workouts a week first.
+    @Test("Test The Recommendation Leads And The Rest Follow By Workouts A Week")
+    func testTheRecommendationLeadsAndTheRestFollowByWorkoutsAWeek() {
+        let screen = makeScreen()
+        screen.interactor.prebuiltMesocycles = shippedPrograms
+        screen.interactor.currentUser = UserModel(userId: "user-1", submittedExerciseFrequency: .threeToFour)
+
+        #expect(screen.presenter.recommendedProgram?.id == "program-upper-lower")
+        #expect(screen.presenter.otherPrograms.map(\.id) == ["program-full-body", "program-531", "program-push-pull-legs"])
+
+        screen.interactor.currentUser = UserModel(userId: "user-1")
+        #expect(screen.presenter.recommendedProgram == nil)
+        #expect(screen.presenter.otherPrograms.count == 4)
+    }
+
+    @Test("Test A Program Is Summarised By Its Week")
+    func testAProgramIsSummarisedByItsWeek() {
+        let screen = makeScreen()
+
+        #expect(screen.presenter.summary(of: program("program-full-body", workouts: 3)) == "3 workouts a week · 8 weeks")
+    }
+
+    /// Picking a program previews it, and the preview's Start must resume onboarding.
+    @Test("Test Picking A Program Previews It With Onboarding's Handler")
+    func testPickingAProgramPreviewsItWithOnboardingsHandler() {
+        let screen = makeScreen()
+        let flag = CompletionFlag()
+
+        screen.presenter.onProgramPressed(program("program-full-body", workouts: 3), delegate: CreateMesocycleDelegate(onComplete: { flag.fire() }))
+        screen.router.previewed.first?.onStarted?()
+
+        #expect(screen.router.previewed.map(\.id) == ["program-full-body"])
+        #expect(flag.fired)
+        #expect(screen.interactor.trackedEventNames == ["CreateProgramView_Program_Pressed"])
     }
 
     @Test("Test Next Opens The Naming Step")

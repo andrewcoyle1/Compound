@@ -4,132 +4,12 @@
     "" : {
       "shouldTranslate" : false
     },
-    "%@ (copy)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ (copia)"
-          }
-        }
-      }
-    },
     ".%lld" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : ",%lld"
-          }
-        }
-      }
-    },
-    "Both sides" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ambos lados"
-          }
-        }
-      }
-    },
-    "Days of this mesocycle. Change them by editing the mesocycle." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Días de este mesociclo. Cámbialos editando el mesociclo."
-          }
-        }
-      }
-    },
-    "Logs each side as its own set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registra cada lado como su propia serie"
-          }
-        }
-      }
-    },
-    "Marks the rest day not taken" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Desmarca el día de descanso"
-          }
-        }
-      }
-    },
-    "Marks the rest day taken" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Marca el día de descanso como hecho"
-          }
-        }
-      }
-    },
-    "Save a Copy to Workouts" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guardar una copia en entrenamientos"
-          }
-        }
-      }
-    },
-    "Split L/R" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Separar I/D"
-          }
-        }
-      }
-    },
-    "Split left and right" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Separar izquierda y derecha"
-          }
-        }
-      }
-    },
-    "Start %@ Instead" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empezar %@ en su lugar"
-          }
-        }
-      }
-    },
-    "Trains today and marks the rest day skipped" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrenas hoy y el día de descanso queda omitido"
-          }
-        }
-      }
-    },
-    "Unable to Update Rest Day" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo actualizar el día de descanso"
           }
         }
       }
@@ -331,6 +211,16 @@
         }
       }
     },
+    "%@ (copy)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (copia)"
+          }
+        }
+      }
+    },
     "%@ / %@" : {
       "localizations" : {
         "es" : {
@@ -403,6 +293,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ × %2$lld"
+          }
+        }
+      }
+    },
+    "%@ a week · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a la semana · %@"
           }
         }
       }
@@ -555,6 +455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ de déficit"
+          }
+        }
+      }
+    },
+    "%@ every %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ cada %@"
           }
         }
       }
@@ -1984,10 +1894,40 @@
     },
     "%lld weeks" : {
       "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld week"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld weeks"
+                }
+              }
+            }
+          }
+        },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld semanas"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld semana"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld semanas"
+                }
+              }
+            }
           }
         }
       }
@@ -4818,6 +4758,16 @@
         }
       }
     },
+    "Based on how often you said you exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según la frecuencia con la que dijiste que haces ejercicio."
+          }
+        }
+      }
+    },
     "Based on lean mass, so it needs a body fat percentage to mean anything." : {
       "localizations" : {
         "es" : {
@@ -5185,6 +5135,16 @@
         }
       }
     },
+    "Both sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambos lados"
+          }
+        }
+      }
+    },
     "Both sides of the body work together at the same time." : {
       "localizations" : {
         "es" : {
@@ -5241,6 +5201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desayuno"
+          }
+        }
+      }
+    },
+    "Build My Own" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear el mío"
           }
         }
       }
@@ -5892,6 +5862,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Colina"
+          }
+        }
+      }
+    },
+    "Choose a Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un programa"
           }
         }
       }
@@ -7655,6 +7635,16 @@
         }
       }
     },
+    "Days of this mesocycle. Change them by editing the mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días de este mesociclo. Cámbialos editando el mesociclo."
+          }
+        }
+      }
+    },
     "Days per microcycle" : {
       "localizations" : {
         "es" : {
@@ -8660,6 +8650,7 @@
       }
     },
     "Don't Save" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8782,6 +8773,7 @@
       }
     },
     "Each workout day can also be saved to your library, to start on its own." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11984,6 +11976,7 @@
       }
     },
     "It's time to create a custom mesocycle." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13187,6 +13180,16 @@
         }
       }
     },
+    "Logs each side as its own set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra cada lado como su propia serie"
+          }
+        }
+      }
+    },
     "Looking up product..." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13490,6 +13493,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marca la serie actual como completada e inicia el descanso"
+          }
+        }
+      }
+    },
+    "Marks the rest day not taken" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desmarca el día de descanso"
+          }
+        }
+      }
+    },
+    "Marks the rest day taken" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca el día de descanso como hecho"
           }
         }
       }
@@ -14107,6 +14130,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Más acciones"
+          }
+        }
+      }
+    },
+    "More Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más programas"
           }
         }
       }
@@ -17281,6 +17314,16 @@
         }
       }
     },
+    "Programs" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programas"
+          }
+        }
+      }
+    },
     "Progress" : {
       "localizations" : {
         "es" : {
@@ -17684,6 +17727,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recomendado: %@ series por semana"
+          }
+        }
+      }
+    },
+    "Recommended for You" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recomendado para ti"
           }
         }
       }
@@ -18854,6 +18907,16 @@
         }
       }
     },
+    "Save a Copy to Workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar una copia en entrenamientos"
+          }
+        }
+      }
+    },
     "Save Account" : {
       "localizations" : {
         "es" : {
@@ -18926,6 +18989,7 @@
       }
     },
     "Save Templates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18957,6 +19021,7 @@
       }
     },
     "Save Workout Templates?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20490,6 +20555,26 @@
         }
       }
     },
+    "Split L/R" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar I/D"
+          }
+        }
+      }
+    },
+    "Split left and right" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separar izquierda y derecha"
+          }
+        }
+      }
+    },
     "Square" : {
       "localizations" : {
         "es" : {
@@ -20597,6 +20682,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "INICIO"
+          }
+        }
+      }
+    },
+    "Start %@ Instead" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar %@ en su lugar"
           }
         }
       }
@@ -20769,6 +20864,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hora de inicio"
+          }
+        }
+      }
+    },
+    "Start with a ready-made mesocycle, or build your own." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza con un mesociclo ya preparado o crea el tuyo."
           }
         }
       }
@@ -22750,6 +22855,16 @@
         }
       }
     },
+    "Trains today and marks the rest day skipped" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenas hoy y el día de descanso queda omitido"
+          }
+        }
+      }
+    },
     "Trans Fat" : {
       "localizations" : {
         "es" : {
@@ -23780,6 +23895,7 @@
       }
     },
     "Unable to Save Templates" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23999,6 +24115,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo actualizar el alimento"
+          }
+        }
+      }
+    },
+    "Unable to Update Rest Day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar el día de descanso"
           }
         }
       }

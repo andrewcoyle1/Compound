@@ -116,6 +116,8 @@ extension AppViewForUITesting {
                 ).any()
             }),
             ("STARTSCREEN_PROGRAM_LIBRARY", { builder.mesocycleLibraryView(router: $0).any() }),
+            // Onboarding's program chooser, which only shows with onboarding's completion handler.
+            ("STARTSCREEN_CHOOSE_PROGRAM", { builder.createMesocycleView(router: $0, delegate: CreateMesocycleDelegate(onComplete: { })).any() }),
             ("STARTSCREEN_MACROCYCLES", { builder.macrocyclesView(router: $0).any() }),
             ("STARTSCREEN_MACROCYCLE_DETAIL", {
                 builder.macrocycleDetailView(router: $0, delegate: MacrocycleDetailDelegate(macrocycle: .mock)).any()

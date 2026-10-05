@@ -42,6 +42,7 @@ extension ScreenDeckSmokeTests {
     func testTemplateDetail() { smoke("STARTSCREEN_TEMPLATE_DETAIL") }
 
     func testMesocycleLibrary() { smoke("STARTSCREEN_PROGRAM_LIBRARY") }
+    func testChooseProgram() { smoke("STARTSCREEN_CHOOSE_PROGRAM") }
 
     func testWorkouts() { smoke("STARTSCREEN_WORKOUTS") }
 

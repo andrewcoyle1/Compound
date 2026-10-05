@@ -14,7 +14,25 @@ a script, which:
 
 It is a static read. A function whose events are logged by its caller shows up here as a gap.
 
-## Summary
+## Result (same day, after `feature/analytics-coverage`)
+
+| | Before | After |
+|---|---|---|
+| Screens logging Appear | 106 / 172 | 172 / 172 |
+| Screens logging Disappear | 87 / 172 | 172 / 172 |
+| Throwing operations with a Fail event | 44 / 170 | 187 / 202 |
+| Throwing operations with Start + Success + Fail | 42 / 170 | 116 / 202 |
+| Swallowed `try?` with no log | 31 | 0 |
+
+There are now 202 throwing operations because the `try?` sites became `do/catch`. Reads log Fail
+only by design, and the 15 operations without a Fail are covered by a caller or shared helper
+(`TrainingPresenter.startThenShowTracker`, `CheckInPresenter.perform`,
+`MacrocycleDetailPresenter.run`), or are script false positives (a "try again" string). The
+tables below are the **before** state, kept for reference.
+
+Event names for analysts are in `docs/analytics/mixpanel-business-context.md`.
+
+## Summary (before)
 
 | | Covered | Total |
 |---|---|---|

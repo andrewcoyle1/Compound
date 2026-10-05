@@ -63,9 +63,12 @@ that could actually fail:
 Repeat runs belong in **one** invocation with `-test-iterations`, never N invocations — the build
 and simulator boot dominate, so five separate calls cost five times the setup for the same tests.
 
-Add `-skip-testing:CompoundUITests` to anything routine. It is three tests, one of them
-chronically flaky, and it needs its own simulator clone; it is also what makes a run report
-`** TEST FAILED **` when every unit test passed.
+Add `-skip-testing:CompoundUITests` to anything routine. Its ten tests (plus a smoke deck that
+skips unless `TEST_RUNNER_SMOKE=1`) take about seven minutes serially and need their own simulator
+clone; a launch flake there is also what makes a run report `** TEST FAILED **` when every unit
+test passed. To run it on its own: `-only-testing:CompoundUITests -parallel-testing-enabled NO`.
+Until 4 Oct 2026 the target's `TEST_TARGET_NAME` still said `DialedIn`, so that run failed with
+"UITargetAppPath should be provided" and three tests had gone stale unnoticed; all ten pass now.
 
 **Simulator clones.** A parallel test run clones the destination simulator several times into
 `~/Library/Developer/XCTestDevices` and never removes the clones. On 29 Sep 2026 that had grown

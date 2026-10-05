@@ -3183,6 +3183,7 @@
       }
     },
     "Add Ingredients" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -5960,6 +5961,7 @@
       }
     },
     "Clear selection" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14898,6 +14900,7 @@
       }
     },
     "No shortcuts. The Search tab will show only recent searches until you add one." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15803,6 +15806,7 @@
       }
     },
     "On the Search Tab" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18332,6 +18336,7 @@
       }
     },
     "Restore Defaults" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19189,6 +19194,7 @@
       }
     },
     "Select one or more ingredients to add" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19799,6 +19805,7 @@
       }
     },
     "Shortcuts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20142,6 +20149,7 @@
       }
     },
     "Siri & Shortcuts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

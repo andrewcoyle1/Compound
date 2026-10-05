@@ -86,28 +86,22 @@ struct NutritionStrategyStaleSnapshotTests {
     }
 }
 
-/// Customise Analytics and Shortcuts each own their document outright, so no sibling screen can
-/// revert them — but the document is still a synced one, and a snapshot taken when the screen was
+/// Customise Analytics owns its document outright, so no sibling screen can
+/// revert it — but the document is still a synced one, and a snapshot taken when the screen was
 /// pushed reverts a change that arrived from another device while it sat there.
 @MainActor
 struct GeneralSettingsSnapshotRefreshTests {
 
     private final class Interactor: SpyGlobalInteractor,
-                                    CustomiseAnalyticsInteractor,
-                                    ShortcutsInteractor {
+                                    CustomiseAnalyticsInteractor {
         var analyticsSettings = AnalyticsSettings(authorId: "user-1")
-        var shortcutSettings = ShortcutSettings(authorId: "user-1")
 
         func saveAnalyticsSettings(_ settings: AnalyticsSettings) async throws {
             analyticsSettings = settings
         }
-
-        func saveShortcutSettings(_ settings: ShortcutSettings) async throws {
-            shortcutSettings = settings
-        }
     }
 
-    private final class Router: CustomiseAnalyticsRouter, ShortcutsRouter {
+    private final class Router: CustomiseAnalyticsRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
 
@@ -127,22 +121,5 @@ struct GeneralSettingsSnapshotRefreshTests {
             interactor.analyticsSettings.isVisible(.exercises) == false
         })
         #expect(interactor.analyticsSettings.isVisible(.habits) == false)
-    }
-
-    @Test("Test Shortcuts Picks Up A Change Made Elsewhere")
-    func testShortcutsPicksUpAChangeMadeElsewhere() async {
-        let interactor = Interactor()
-        let presenter = ShortcutsPresenter(interactor: interactor, router: Router())
-
-        var changedElsewhere = interactor.shortcutSettings
-        changedElsewhere.setQuickActions([.logMeal])
-        interactor.shortcutSettings = changedElsewhere
-
-        presenter.onViewAppear()
-        presenter.onAddPressed(.browseRecipes)
-
-        #expect(await TestManagers.eventually {
-            interactor.shortcutSettings.quickActions == [.logMeal, .browseRecipes]
-        })
     }
 }

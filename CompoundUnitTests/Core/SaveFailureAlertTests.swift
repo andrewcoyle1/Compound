@@ -19,7 +19,6 @@ struct SaveFailureAlertTests {
     /// One double serves every settings screen: each save throws.
     private final class Interactor: SpyGlobalInteractor,
                                     UnitsInteractor,
-                                    ShortcutsInteractor,
                                     CustomiseAnalyticsInteractor,
                                     StrategySettingsInteractor,
                                     ExpenditureSettingsInteractor,
@@ -33,7 +32,6 @@ struct SaveFailureAlertTests {
                                     RestTimerSettingsInteractor,
                                     TimelineActionsInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
-        var shortcutSettings = ShortcutSettings(authorId: "user-1")
         var analyticsSettings = AnalyticsSettings(authorId: "user-1")
         var nutritionStrategySettings = NutritionStrategySettings(authorId: "user-1")
         var currentExpenditure = ExpenditureEstimate.stub
@@ -45,7 +43,6 @@ struct SaveFailureAlertTests {
             weight: WeightUnitPreference,
             distance: DistanceUnitPreference
         ) async throws { throw SaveFailed() }
-        func saveShortcutSettings(_ settings: ShortcutSettings) async throws { throw SaveFailed() }
         func saveAnalyticsSettings(_ settings: AnalyticsSettings) async throws { throw SaveFailed() }
         func saveNutritionStrategySettings(_ settings: NutritionStrategySettings) async throws { throw SaveFailed() }
         func saveFoodLogSettings(_ settings: FoodLogSettings) async throws { throw SaveFailed() }
@@ -57,7 +54,6 @@ struct SaveFailureAlertTests {
     }
 
     private final class Router: UnitsRouter,
-                                ShortcutsRouter,
                                 CustomiseAnalyticsRouter,
                                 StrategySettingsRouter,
                                 ExpenditureSettingsRouter,
@@ -108,13 +104,6 @@ struct SaveFailureAlertTests {
     func testUnitsReportsAFailedSave() async {
         await expectOneFailure("UnitsView_Save_Fail") { interactor, router in
             UnitsPresenter(interactor: interactor, router: router).weightUnit = .pounds
-        }
-    }
-
-    @Test("Test Shortcuts Reports A Failed Save")
-    func testShortcutsReportsAFailedSave() async {
-        await expectOneFailure("ShortcutsView_Save_Fail") { interactor, router in
-            ShortcutsPresenter(interactor: interactor, router: router).onRestoreDefaultsPressed()
         }
     }
 

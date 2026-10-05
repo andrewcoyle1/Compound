@@ -86,78 +86,77 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 
 | Area | Files | Lines | Purpose |
 |---|---:|---:|---|
-| `Compound/Core/Analytics` | 118 | 9,980 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
+| `Compound/Core/Analytics` | 118 | 10,755 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
 | `Compound/Core/AppView` | 7 | 727 | Root view: onboarding-or-tabbar switch, toasts, notification banner |
-| `Compound/Core/Challenges` | 11 | 810 | Group challenges (create, detail) |
-| `Compound/Core/Social` | 38 | 4,443 | Social tab: workout feed, circle goals, challenges, people search, invites, share card, profiles |
-| `Compound/Core/Today` | 11 | 1,241 | Today tab: today's workout, nutrition, weigh-in, streak, weekly check-in and weekly review |
-| `Compound/Core/DevSettings` | 4 | 797 | DEV/MOCK-only developer tools screen |
-| `Compound/Core/Notifications` | 10 | 1,279 | Activity notifications inbox |
-| `Compound/Core/Nutrition` | 147 | 13,112 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
-| `Compound/Core/Onboarding` | 97 | 6,704 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
-| `Compound/Core/Paywalls` | 9 | 882 | Paywall screens |
-| `Compound/Core/Profile` | 189 | 12,275 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
-| `Compound/Core/Sharing` | 8 | 502 | Share-to-follower and shared-item viewer |
-| `Compound/Core/TabBar` | 5 | 473 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 223 | 19,322 | Training tab: workouts, tracker, programs, history, create flows |
-| `Compound/Components` | 74 | 6,676 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 251 | 31,396 | App-owned managers, models and services (see Managers table) |
-| `Compound/Root` | 22 | 3,353 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `Compound/Core/Challenges` | 11 | 837 | Group challenges (create, detail) |
+| `Compound/Core/Social` | 38 | 4,696 | Social tab: workout feed, circle goals, challenges, people search, invites, share card, profiles |
+| `Compound/Core/Today` | 11 | 1,310 | Today tab: today's workout, nutrition, weigh-in, streak, weekly check-in and weekly review |
+| `Compound/Core/DevSettings` | 4 | 809 | DEV/MOCK-only developer tools screen |
+| `Compound/Core/Notifications` | 10 | 1,389 | Activity notifications inbox |
+| `Compound/Core/Nutrition` | 142 | 13,376 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
+| `Compound/Core/Onboarding` | 97 | 7,084 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
+| `Compound/Core/Paywalls` | 9 | 888 | Paywall screens |
+| `Compound/Core/Profile` | 185 | 12,250 | Profile tab and every settings screen (training, nutrition, general, account, legal) |
+| `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
+| `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
+| `Compound/Core/Training` | 223 | 19,784 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Components` | 70 | 6,518 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
+| `Compound/Managers` | 252 | 31,410 | App-owned managers, models and services (see Managers table) |
+| `Compound/Root` | 22 | 3,434 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 190 | 3,258 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 600 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 136 | 1,787 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 276 | 74,317 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 276 | 74,022 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 8 | 609 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 10 | 17,196 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 47 | 10,157 | Specs, reviews, audits, this map |
+| `docs` | 49 | 10,740 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-198 presenter-backed modules.
+195 presenter-backed modules.
 
-### `Compound/Components` (4 modules)
+### `Compound/Components` (3 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
 | **CalendarHeader** | [Views/CalendarHeader](Compound/Components/Views/CalendarHeader) | 843 | CalendarViewZoom | CalendarHeaderDelegate | CalendarDayCell.swift, CalendarDayMarker.swift | CalendarHeaderPresenterTests.swift |
-| **Calendar** | [Views/CalendarHeader/Calendar](Compound/Components/Views/CalendarHeader/Calendar) | 372 |  | CalendarDelegate, `showCalendarView` |  | CalendarHeaderPresenterTests.swift |
-| **EnumPicker** | [Views/EnumPicker](Compound/Components/Views/EnumPicker) | 198 |  | EnumPickerDelegate |  |  |
+| **Calendar** | [Views/CalendarHeader/Calendar](Compound/Components/Views/CalendarHeader/Calendar) | 406 |  | CalendarDelegate, `showCalendarView` |  | CalendarHeaderPresenterTests.swift |
 | **AuthorHeader** | [Views/User](Compound/Components/Views/User) | 276 | SocialProfile | AuthorHeaderDelegate | UserRowView.swift, UsernameLabel.swift |  |
 
 ### `Compound/Core/Analytics` (25 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Analytics** | [Compound/Core/Analytics](Compound/Core/Analytics) | 1423 | BodyMetrics, CustomiseAnalytics, EnergyBalance, ExerciseAnalytics, ExerciseDetail, ExpenditureDetail, GoalProgress, Habits, InsightsAndAnalytics, LogMeasurement, LogWeight, MuscleGroupDetail, MuscleGroups, NutritionAnalytics, NutritionMetricDetail, Paywall, ProfileViewZoom, ScaleWeight, Steps, VisualBodyFat, WeeklyReview, WeighInConsistency, WeightTrend, Workout, WorkoutConsistency | AnalyticsDelegate | AnalyticsPresenter+DataLoading.swift, MuscleGroupCardItem.swift | AnalyticsPresenterTests.swift |
+| **Analytics** | [Compound/Core/Analytics](Compound/Core/Analytics) | 1433 | BodyMetrics, CustomiseAnalytics, EnergyBalance, ExerciseAnalytics, ExerciseDetail, ExpenditureDetail, GoalProgress, Habits, InsightsAndAnalytics, LogMeasurement, LogWeight, MuscleGroupDetail, MuscleGroups, NutritionAnalytics, NutritionMetricDetail, Paywall, ProfileViewZoom, ScaleWeight, Steps, VisualBodyFat, WeeklyReview, WeighInConsistency, WeightTrend, Workout, WorkoutConsistency | AnalyticsDelegate | AnalyticsPresenter+DataLoading.swift, MuscleGroupCardItem.swift | AnalyticsPresenterTests.swift |
 | **BodyMetrics** | [Subviews/BodyMetrics](Compound/Core/Analytics/Subviews/BodyMetrics) | 550 | BodyMeasurementDetail, BodyRatio, LogMeasurement, ProgressPhotos, ScaleWeight, VisualBodyFat | BodyMetricsDelegate, `showBodyMetricsView` | BodyMetricCardView.swift, BodyMetricsModels.swift |  |
-| **LogMeasurement** | [Subviews/BodyMetrics/LogMeasurement](Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement) | 419 |  | `showLogMeasurementView` | BodyMeasurementKind.swift, DecimalWheelValue.swift |  |
-| **LogWeight** | [Subviews/BodyMetrics/LogMeasurement/LogWeightView](Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogWeightView) | 340 |  | `showLogWeightView` | WeightPickerInput.swift |  |
-| **ProgressPhotos** | [Subviews/BodyMetrics/ProgressPhotos](Compound/Core/Analytics/Subviews/BodyMetrics/ProgressPhotos) | 656 | ProgressPhotoCompare | ProgressPhotoCompareDelegate, `showProgressPhotoCompareView`, `showProgressPhotosView` | ProgressPhotoCameraPicker.swift, ProgressPhotoCompareView.swift | ProgressPhotosPresenterTests.swift |
-| **ScaleWeight** | [Subviews/BodyMetrics/ScaleWeight](Compound/Core/Analytics/Subviews/BodyMetrics/ScaleWeight) | 205 | LogWeight | ScaleWeightDelegate, `showScaleWeightView` |  |  |
+| **LogMeasurement** | [Subviews/BodyMetrics/LogMeasurement](Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement) | 469 |  | `showLogMeasurementView` | BodyMeasurementKind.swift, DecimalWheelValue.swift |  |
+| **LogWeight** | [Subviews/BodyMetrics/LogMeasurement/LogWeightView](Compound/Core/Analytics/Subviews/BodyMetrics/LogMeasurement/LogWeightView) | 387 |  | `showLogWeightView` | WeightPickerInput.swift |  |
+| **ProgressPhotos** | [Subviews/BodyMetrics/ProgressPhotos](Compound/Core/Analytics/Subviews/BodyMetrics/ProgressPhotos) | 669 | ProgressPhotoCompare | ProgressPhotoCompareDelegate, `showProgressPhotoCompareView`, `showProgressPhotosView` | ProgressPhotoCameraPicker.swift, ProgressPhotoCompareView.swift | ProgressPhotosPresenterTests.swift |
+| **ScaleWeight** | [Subviews/BodyMetrics/ScaleWeight](Compound/Core/Analytics/Subviews/BodyMetrics/ScaleWeight) | 227 | LogWeight | ScaleWeightDelegate, `showScaleWeightView` |  |  |
 | **ExerciseAnalytics** | [Subviews/ExerciseAnalytics](Compound/Core/Analytics/Subviews/ExerciseAnalytics) | 311 | ExerciseDetail | ExerciseAnalyticsDelegate, `showExerciseAnalyticsView` | ExerciseCardItem.swift, ExerciseOneRMAggregator.swift |  |
-| **ExerciseDetail** | [Subviews/ExerciseAnalytics/ExerciseDetail](Compound/Core/Analytics/Subviews/ExerciseAnalytics/ExerciseDetail) | 265 | Workouts | ExerciseDetailDelegate, `showExerciseDetailView` | ExerciseDetailEntry.swift |  |
-| **FoodLoggingConsistency** | [Subviews/FoodLoggingConsistency](Compound/Core/Analytics/Subviews/FoodLoggingConsistency) | 146 |  | FoodLoggingConsistencyDelegate, `showFoodLoggingConsistencyView` |  |  |
-| **Habits** | [Subviews/Habits](Compound/Core/Analytics/Subviews/Habits) | 414 | FoodLoggingConsistency, NutritionMetricDetail, ScaleWeight, WeighInConsistency, Workout, WorkoutConsistency | HabitsDelegate, `showHabitsView` |  | HabitsPresenterTests.swift |
-| **InsightsAndAnalytics** | [Subviews/InsightsAndAnalytics](Compound/Core/Analytics/Subviews/InsightsAndAnalytics) | 498 | EnergyBalance, ExpenditureDetail, GoalProgress, WeightTrend, Workout | InsightsAndAnalyticsDelegate, `showInsightsAndAnalyticsView` |  |  |
-| **EnergyBalance** | [Subviews/InsightsAndAnalytics/EnergyBalance](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/EnergyBalance) | 301 | AddMeal | EnergyBalanceDelegate, `showEnergyBalanceView` | EnergyBalanceEntry.swift | EnergyBalancePresenterTests.swift |
-| **ExpenditureDetail** | [Subviews/InsightsAndAnalytics/ExpenditureDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/ExpenditureDetail) | 238 | Account | ExpenditureDetailDelegate, `showExpenditureDetailView` | ExpenditureDetailEntry.swift |  |
-| **GoalProgress** | [Subviews/InsightsAndAnalytics/GoalProgress](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress) | 282 | WeightGoalFlow | GoalProgressDelegate, `showGoalProgressView` | GoalProgressEntry.swift |  |
-| **MuscleGroupDetail** | [Subviews/InsightsAndAnalytics/MuscleGroupDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/MuscleGroupDetail) | 249 | Workouts | MuscleGroupDetailDelegate, `showMuscleGroupDetailView` | MuscleGroupDetailEntry.swift | MuscleGroupDetailPresenterTests.swift |
-| **Steps** | [Subviews/InsightsAndAnalytics/Steps](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Steps) | 232 |  | StepsDelegate, `showStepsView` | StepsEntry.swift |  |
-| **WeightTrend** | [Subviews/InsightsAndAnalytics/WeightTrend](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/WeightTrend) | 257 |  | WeightTrendDelegate, `showWeightTrendView` | WeightTrendEntry.swift | WeightTrendPresenterTests.swift |
-| **Workout** | [Subviews/InsightsAndAnalytics/Workouts](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Workouts) | 239 | Workouts | WorkoutDelegate, `showWorkoutView` | WorkoutEntry.swift | WorkoutPresenterTests.swift |
-| **MuscleBalance** | [Subviews/MuscleBalance](Compound/Core/Analytics/Subviews/MuscleBalance) | 269 |  | `showMuscleBalanceView`, `showsFooter` |  |  |
+| **ExerciseDetail** | [Subviews/ExerciseAnalytics/ExerciseDetail](Compound/Core/Analytics/Subviews/ExerciseAnalytics/ExerciseDetail) | 296 | Workouts | ExerciseDetailDelegate, `showExerciseDetailView` | ExerciseDetailEntry.swift |  |
+| **FoodLoggingConsistency** | [Subviews/FoodLoggingConsistency](Compound/Core/Analytics/Subviews/FoodLoggingConsistency) | 192 |  | FoodLoggingConsistencyDelegate, `showFoodLoggingConsistencyView` |  |  |
+| **Habits** | [Subviews/Habits](Compound/Core/Analytics/Subviews/Habits) | 420 | FoodLoggingConsistency, NutritionMetricDetail, ScaleWeight, WeighInConsistency, Workout, WorkoutConsistency | HabitsDelegate, `showHabitsView` |  | HabitsPresenterTests.swift |
+| **InsightsAndAnalytics** | [Subviews/InsightsAndAnalytics](Compound/Core/Analytics/Subviews/InsightsAndAnalytics) | 505 | EnergyBalance, ExpenditureDetail, GoalProgress, WeightTrend, Workout | InsightsAndAnalyticsDelegate, `showInsightsAndAnalyticsView` |  |  |
+| **EnergyBalance** | [Subviews/InsightsAndAnalytics/EnergyBalance](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/EnergyBalance) | 347 | AddMeal | EnergyBalanceDelegate, `showEnergyBalanceView` | EnergyBalanceEntry.swift | EnergyBalancePresenterTests.swift |
+| **ExpenditureDetail** | [Subviews/InsightsAndAnalytics/ExpenditureDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/ExpenditureDetail) | 264 | Account | ExpenditureDetailDelegate, `showExpenditureDetailView` | ExpenditureDetailEntry.swift |  |
+| **GoalProgress** | [Subviews/InsightsAndAnalytics/GoalProgress](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress) | 308 | WeightGoalFlow | GoalProgressDelegate, `showGoalProgressView` | GoalProgressEntry.swift |  |
+| **MuscleGroupDetail** | [Subviews/InsightsAndAnalytics/MuscleGroupDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/MuscleGroupDetail) | 280 | Workouts | MuscleGroupDetailDelegate, `showMuscleGroupDetailView` | MuscleGroupDetailEntry.swift | MuscleGroupDetailPresenterTests.swift |
+| **Steps** | [Subviews/InsightsAndAnalytics/Steps](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Steps) | 283 |  | StepsDelegate, `showStepsView` | StepsEntry.swift |  |
+| **WeightTrend** | [Subviews/InsightsAndAnalytics/WeightTrend](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/WeightTrend) | 304 |  | WeightTrendDelegate, `showWeightTrendView` | WeightTrendEntry.swift | WeightTrendPresenterTests.swift |
+| **Workout** | [Subviews/InsightsAndAnalytics/Workouts](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Workouts) | 265 | Workouts | WorkoutDelegate, `showWorkoutView` | WorkoutEntry.swift | WorkoutPresenterTests.swift |
+| **MuscleBalance** | [Subviews/MuscleBalance](Compound/Core/Analytics/Subviews/MuscleBalance) | 278 |  | `showMuscleBalanceView`, `showsFooter` |  |  |
 | **MuscleGroups** | [Subviews/MuscleGroups](Compound/Core/Analytics/Subviews/MuscleGroups) | 315 | MuscleBalance, MuscleGroupDetail | MuscleGroupsDelegate, `showMuscleGroupsView` | MuscleGroupSetsAggregator.swift |  |
-| **NutritionAnalytics** | [Subviews/NutritionAnalytics](Compound/Core/Analytics/Subviews/NutritionAnalytics) | 513 | AddMeal, NutritionMetricDetail | NutritionAnalyticsDelegate, `showNutritionAnalyticsView` |  |  |
-| **NutritionMetricDetail** | [Subviews/NutritionAnalytics/NutritionMetricDetail](Compound/Core/Analytics/Subviews/NutritionAnalytics/NutritionMetricDetail) | 570 |  | NutritionMetricDetailDelegate, `showNutritionMetricDetailView` | NutritionMetric.swift, NutritionMetricEntry.swift |  |
-| **NutritionTargetChart** | [Subviews/NutritionTargetChart](Compound/Core/Analytics/Subviews/NutritionTargetChart) | 350 | PreferredDiet |  |  |  |
-| **WeighInConsistency** | [Subviews/WeighInConsistency](Compound/Core/Analytics/Subviews/WeighInConsistency) | 162 |  | WeighInConsistencyDelegate, `showWeighInConsistencyView` |  |  |
-| **WorkoutConsistency** | [Subviews/WorkoutConsistency](Compound/Core/Analytics/Subviews/WorkoutConsistency) | 163 |  | WorkoutConsistencyDelegate, `showWorkoutConsistencyView` |  |  |
+| **NutritionAnalytics** | [Subviews/NutritionAnalytics](Compound/Core/Analytics/Subviews/NutritionAnalytics) | 528 | AddMeal, NutritionMetricDetail | NutritionAnalyticsDelegate, `showNutritionAnalyticsView` |  |  |
+| **NutritionMetricDetail** | [Subviews/NutritionAnalytics/NutritionMetricDetail](Compound/Core/Analytics/Subviews/NutritionAnalytics/NutritionMetricDetail) | 626 |  | NutritionMetricDetailDelegate, `showNutritionMetricDetailView` | NutritionMetric.swift, NutritionMetricEntry.swift |  |
+| **NutritionTargetChart** | [Subviews/NutritionTargetChart](Compound/Core/Analytics/Subviews/NutritionTargetChart) | 363 | PreferredDiet |  |  |  |
+| **WeighInConsistency** | [Subviews/WeighInConsistency](Compound/Core/Analytics/Subviews/WeighInConsistency) | 209 |  | WeighInConsistencyDelegate, `showWeighInConsistencyView` |  |  |
+| **WorkoutConsistency** | [Subviews/WorkoutConsistency](Compound/Core/Analytics/Subviews/WorkoutConsistency) | 189 |  | WorkoutConsistencyDelegate, `showWorkoutConsistencyView` |  |  |
 
 ### `Compound/Core/AppView` (1 modules)
 
@@ -169,118 +168,116 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **ChallengeDetail** | [ChallengeDetail](Compound/Core/Challenges/ChallengeDetail) | 306 | SocialProfile | ChallengeDetailDelegate, `showChallengeDetailView` |  |  |
-| **CreateChallenge** | [CreateChallenge](Compound/Core/Challenges/CreateChallenge) | 308 |  | `showCreateChallengeView` |  |  |
+| **ChallengeDetail** | [ChallengeDetail](Compound/Core/Challenges/ChallengeDetail) | 324 | SocialProfile | ChallengeDetailDelegate, `showChallengeDetailView` |  |  |
+| **CreateChallenge** | [CreateChallenge](Compound/Core/Challenges/CreateChallenge) | 317 |  | `showCreateChallengeView` |  |  |
 
 ### `Compound/Core/DevSettings` (1 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **DevSettings** | [Compound/Core/DevSettings](Compound/Core/DevSettings) | 797 |  | `showDevSettingsView` |  |  |
+| **DevSettings** | [Compound/Core/DevSettings](Compound/Core/DevSettings) | 809 |  | `showDevSettingsView` |  |  |
 
 ### `Compound/Core/Notifications` (2 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Notifications** | [Compound/Core/Notifications](Compound/Core/Notifications) | 891 | ChallengeDetail, NotificationSettings, SharedItem, SocialProfile, WorkoutSessionDetail, WorkoutSessionThreadPushed | `showNotificationsView`, `showWorkoutSessionThreadPushed`, `showsFollowBack` | NotificationGrouping.swift, ReminderOfferFlow.swift |  |
-| **NotificationSettings** | [NotificationSettings](Compound/Core/Notifications/NotificationSettings) | 388 |  | NotificationSettingsDelegate, `showNotificationSettingsView` |  | NotificationSettingsPresenterTests.swift |
+| **Notifications** | [Compound/Core/Notifications](Compound/Core/Notifications) | 968 | ChallengeDetail, NotificationSettings, SharedItem, SocialProfile, WorkoutSessionDetail, WorkoutSessionThreadPushed | `showNotificationsView`, `showWorkoutSessionThreadPushed`, `showsFollowBack` | NotificationGrouping.swift, ReminderOfferFlow.swift |  |
+| **NotificationSettings** | [NotificationSettings](Compound/Core/Notifications/NotificationSettings) | 421 |  | NotificationSettingsDelegate, `showNotificationSettingsView` |  | NotificationSettingsPresenterTests.swift |
 
-### `Compound/Core/Nutrition` (33 modules)
+### `Compound/Core/Nutrition` (32 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Nutrition** | [Compound/Core/Nutrition](Compound/Core/Nutrition) | 844 | AddMeal, FoodDetail, FoodLogSettings, Foods, MealDetail, MealItemAmountView, NutritionOverview, ProfileViewZoom, RecipeDetail, Recipes, TimelineActions | NutritionDelegate, `showNutritionView` |  | NutritionPresenterTests.swift |
-| **CheckIn** | [CheckIn](Compound/Core/Nutrition/CheckIn) | 803 |  | CheckInDelegate, `showCheckInView` | CheckInPresenter+Events.swift, CheckInStep.swift | CheckInPresenterTests.swift |
-| **IngredientListBuilder** | [Components/IngredientListBuilder](Compound/Core/Nutrition/Components/IngredientListBuilder) | 378 | CreateFood, IngredientAmount, RecipeIngredientAmount | IngredientListBuilderDelegate, `showIngredientListBuilderView` |  |  |
+| **Nutrition** | [Compound/Core/Nutrition](Compound/Core/Nutrition) | 858 | AddMeal, FoodDetail, FoodLogSettings, Foods, MealDetail, MealItemAmountView, NutritionOverview, ProfileViewZoom, RecipeDetail, Recipes, TimelineActions | NutritionDelegate, `showNutritionView` |  | NutritionPresenterTests.swift |
+| **CheckIn** | [CheckIn](Compound/Core/Nutrition/CheckIn) | 842 |  | CheckInDelegate, `showCheckInView` | CheckInPresenter+Events.swift, CheckInStep.swift | CheckInPresenterTests.swift |
+| **IngredientListBuilder** | [Components/IngredientListBuilder](Compound/Core/Nutrition/Components/IngredientListBuilder) | 385 | CreateFood, IngredientAmount, RecipeIngredientAmount | IngredientListBuilderDelegate, `showIngredientListBuilderView` |  |  |
 | **MealAccessory** | [Components/MealAccessory](Compound/Core/Nutrition/Components/MealAccessory) | 186 | AddMeal | MealAccessoryDelegate |  | MealAccessoryPresenterTests.swift |
-| **MealHourHeader** | [Components/MealHourHeader](Compound/Core/Nutrition/Components/MealHourHeader) | 259 | AddMeal | MealHourHeaderDelegate |  | MealHourHeaderPresenterTests.swift |
-| **RecipeListBuilder** | [Components/RecipeListBuilder](Compound/Core/Nutrition/Components/RecipeListBuilder) | 310 | CreateRecipe, RecipeAmount, RecipeDetail | RecipeListBuilderDelegate, `showRecipeListBuilderView` |  |  |
-| **Foods** | [Foods](Compound/Core/Nutrition/Foods) | 106 | FoodDetail, SimpleAlert | `showFoodsView` |  |  |
+| **MealHourHeader** | [Components/MealHourHeader](Compound/Core/Nutrition/Components/MealHourHeader) | 282 | AddMeal | MealHourHeaderDelegate |  | MealHourHeaderPresenterTests.swift |
+| **RecipeListBuilder** | [Components/RecipeListBuilder](Compound/Core/Nutrition/Components/RecipeListBuilder) | 269 | CreateRecipe, RecipeAmount, RecipeDetail | RecipeListBuilderDelegate, `showRecipeListBuilderView` |  |  |
+| **Foods** | [Foods](Compound/Core/Nutrition/Foods) | 138 | FoodDetail, SimpleAlert | `showFoodsView` |  |  |
 | **CreateFood** | [Foods/CreateFood](Compound/Core/Nutrition/Foods/CreateFood) | 441 | BarcodeScanner, FoodPackaging, PortionDefinition | CreateFoodDelegate, `showCreateFoodView` |  | CreateFoodFlowPresenterTests.swift |
 | **FoodDefinition** | [Foods/CreateFood/FoodDefinition](Compound/Core/Nutrition/Foods/CreateFood/FoodDefinition) | 625 |  | FoodDefinitionDelegate, `showFoodDefinitionView` |  | FoodDefinitionPresenterTests.swift |
 | **FoodPackaging** | [Foods/CreateFood/FoodPackaging](Compound/Core/Nutrition/Foods/CreateFood/FoodPackaging) | 261 | PortionDefinition | FoodPackagingDelegate, `showFoodPackagingView` |  |  |
 | **PortionDefinition** | [Foods/CreateFood/PortionDefinition](Compound/Core/Nutrition/Foods/CreateFood/PortionDefinition) | 357 | FoodDefinition | PortionDefinitionDelegate, `showPortionDefinitionView` |  |  |
-| **FoodDetail** | [Foods/FoodDetail](Compound/Core/Nutrition/Foods/FoodDetail) | 381 |  | FoodDetailDelegate, `showDeleteConfirmation`, `showFoodDetailView` |  |  |
-| **AddMeal** | [MealLog/AddMeal](Compound/Core/Nutrition/MealLog/AddMeal) | 722 | MealItemAmountView, NutritionLibraryPicker | AddMealDelegate, `showAddMealView` |  | AddMealPresenterTests.swift |
-| **IngredientAmount** | [MealLog/IngredientAmount](Compound/Core/Nutrition/MealLog/IngredientAmount) | 249 |  | IngredientAmountDelegate, `showIngredientAmountView` |  |  |
-| **MealDetail** | [MealLog/MealDetail](Compound/Core/Nutrition/MealLog/MealDetail) | 265 |  | MealDetailDelegate, `showMealDetailView` |  |  |
+| **FoodDetail** | [Foods/FoodDetail](Compound/Core/Nutrition/Foods/FoodDetail) | 390 |  | FoodDetailDelegate, `showDeleteConfirmation`, `showFoodDetailView` |  |  |
+| **AddMeal** | [MealLog/AddMeal](Compound/Core/Nutrition/MealLog/AddMeal) | 733 | MealItemAmountView, NutritionLibraryPicker | AddMealDelegate, `showAddMealView` |  | AddMealPresenterTests.swift |
+| **IngredientAmount** | [MealLog/IngredientAmount](Compound/Core/Nutrition/MealLog/IngredientAmount) | 283 |  | IngredientAmountDelegate, `showIngredientAmountView` |  |  |
+| **MealDetail** | [MealLog/MealDetail](Compound/Core/Nutrition/MealLog/MealDetail) | 274 |  | MealDetailDelegate, `showMealDetailView` |  |  |
 | **MealItemAmountView** | [MealLog/MealItemAmountView](Compound/Core/Nutrition/MealLog/MealItemAmountView) | 235 |  | MealItemAmountViewDelegate, `showMealItemAmountViewView` |  |  |
-| **NutritionLibraryPicker** | [MealLog/NutritionLibraryPicker](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker) | 379 | IngredientAmount, RecipeAmount | NutritionLibraryPickerDelegate, `showNutritionLibraryPickerView` |  |  |
-| **BarcodeScanner** | [MealLog/NutritionLibraryPicker/BarcodeScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/BarcodeScanner) | 935 |  | BarcodeScannerDelegate, `showBarcodeScannerView` |  | BarcodeScannerPresenterTests.swift |
-| **FoodItemQuickAdd** | [MealLog/NutritionLibraryPicker/FoodItemQuickAdd](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemQuickAdd) | 322 |  | FoodItemQuickAddDelegate |  | FoodItemQuickAddPresenterTests.swift |
-| **FoodItemSearch** | [MealLog/NutritionLibraryPicker/FoodItemSearch](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemSearch) | 393 |  | FoodItemSearchDelegate, `showFoodItemSearchView` |  | FoodItemSearchPresenterTests.swift |
-| **FoodLibrary** | [MealLog/NutritionLibraryPicker/FoodLibrary](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodLibrary) | 331 | IngredientAmount, RecipeAmount, RecipeDetail | FoodLibraryDelegate, `showFoodLibraryView` |  | FoodLibraryPresenterTests.swift |
-| **FoodPhotoScanner** | [MealLog/NutritionLibraryPicker/FoodPhotoScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodPhotoScanner) | 447 | IngredientAmount | FoodPhotoScannerDelegate |  |  |
-| **MealDescribe** | [MealLog/NutritionLibraryPicker/MealDescribe](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/MealDescribe) | 251 | IngredientAmount | MealDescribeDelegate, `showMealDescribeView` |  |  |
-| **RecipeAmount** | [MealLog/RecipeAmount](Compound/Core/Nutrition/MealLog/RecipeAmount) | 204 |  | RecipeAmountDelegate, `showRecipeAmountView` |  |  |
-| **NutritionOverview** | [NutritionOverview](Compound/Core/Nutrition/NutritionOverview) | 560 | CheckIn | NutritionOverviewDelegate, `showNutritionOverviewView` |  | NutritionOverviewPresenterTests.swift |
+| **NutritionLibraryPicker** | [MealLog/NutritionLibraryPicker](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker) | 425 | IngredientAmount, RecipeAmount | NutritionLibraryPickerDelegate, `showNutritionLibraryPickerView` |  |  |
+| **BarcodeScanner** | [MealLog/NutritionLibraryPicker/BarcodeScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/BarcodeScanner) | 961 |  | BarcodeScannerDelegate, `showBarcodeScannerView` |  | BarcodeScannerPresenterTests.swift |
+| **FoodItemQuickAdd** | [MealLog/NutritionLibraryPicker/FoodItemQuickAdd](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemQuickAdd) | 299 |  | FoodItemQuickAddDelegate |  | FoodItemQuickAddPresenterTests.swift |
+| **FoodItemSearch** | [MealLog/NutritionLibraryPicker/FoodItemSearch](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodItemSearch) | 381 |  | FoodItemSearchDelegate, `showFoodItemSearchView` |  | FoodItemSearchPresenterTests.swift |
+| **FoodLibrary** | [MealLog/NutritionLibraryPicker/FoodLibrary](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodLibrary) | 288 | IngredientAmount, RecipeAmount, RecipeDetail | FoodLibraryDelegate, `showFoodLibraryView` |  | FoodLibraryPresenterTests.swift |
+| **FoodPhotoScanner** | [MealLog/NutritionLibraryPicker/FoodPhotoScanner](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/FoodPhotoScanner) | 470 | IngredientAmount | FoodPhotoScannerDelegate |  |  |
+| **MealDescribe** | [MealLog/NutritionLibraryPicker/MealDescribe](Compound/Core/Nutrition/MealLog/NutritionLibraryPicker/MealDescribe) | 252 | IngredientAmount | MealDescribeDelegate, `showMealDescribeView` |  |  |
+| **RecipeAmount** | [MealLog/RecipeAmount](Compound/Core/Nutrition/MealLog/RecipeAmount) | 238 |  | RecipeAmountDelegate, `showRecipeAmountView` |  |  |
+| **NutritionOverview** | [NutritionOverview](Compound/Core/Nutrition/NutritionOverview) | 590 | CheckIn | NutritionOverviewDelegate, `showNutritionOverviewView` |  | NutritionOverviewPresenterTests.swift |
 | **Recipes** | [Recipes](Compound/Core/Nutrition/Recipes) | 150 | CreateRecipe, RecipeDetail, SimpleAlert | `showRecipesView` |  |  |
-| **AddFood** | [Recipes/AddFood](Compound/Core/Nutrition/Recipes/AddFood) | 160 |  | AddFoodDelegate, `showAddIngredientView` | AddFoodDelegate.swift |  |
-| **CreateRecipe** | [Recipes/CreateRecipe](Compound/Core/Nutrition/Recipes/CreateRecipe) | 316 | IngredientListBuilder, RecipePreparation | `showCreateRecipeView` |  |  |
-| **RecipeIngredientAmount** | [Recipes/CreateRecipe/RecipeIngredientAmount](Compound/Core/Nutrition/Recipes/CreateRecipe/RecipeIngredientAmount) | 124 |  | RecipeIngredientAmountDelegate, `showRecipeIngredientAmountView` |  |  |
+| **CreateRecipe** | [Recipes/CreateRecipe](Compound/Core/Nutrition/Recipes/CreateRecipe) | 348 | IngredientListBuilder, RecipePreparation | `showCreateRecipeView` |  |  |
+| **RecipeIngredientAmount** | [Recipes/CreateRecipe/RecipeIngredientAmount](Compound/Core/Nutrition/Recipes/CreateRecipe/RecipeIngredientAmount) | 156 |  | RecipeIngredientAmountDelegate, `showRecipeIngredientAmountView` |  |  |
 | **RecipePreparation** | [Recipes/CreateRecipe/RecipePreparation](Compound/Core/Nutrition/Recipes/CreateRecipe/RecipePreparation) | 395 |  | RecipePreparationDelegate, `showRecipePreparationView` |  | RecipePreparationPresenterTests.swift |
-| **RecipeDetail** | [Recipes/RecipeDetail](Compound/Core/Nutrition/Recipes/RecipeDetail) | 308 | StartRecipe | RecipeDetailDelegate, `showDeleteConfirmation`, `showRecipeDetailView` | RecipeDetailDelegate.swift |  |
-| **RecipeStart** | [Recipes/RecipeStart](Compound/Core/Nutrition/Recipes/RecipeStart) | 120 |  | RecipeStartDelegate, `showStartRecipeView` | RecipeStartDelegate.swift |  |
-| **TimelineActions** | [TimelineActions](Compound/Core/Nutrition/TimelineActions) | 365 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
+| **RecipeDetail** | [Recipes/RecipeDetail](Compound/Core/Nutrition/Recipes/RecipeDetail) | 366 | StartRecipe | RecipeDetailDelegate, `showDeleteConfirmation`, `showRecipeDetailView` | RecipeDetailDelegate.swift |  |
+| **RecipeStart** | [Recipes/RecipeStart](Compound/Core/Nutrition/Recipes/RecipeStart) | 150 |  | RecipeStartDelegate, `showStartRecipeView` | RecipeStartDelegate.swift |  |
+| **TimelineActions** | [TimelineActions](Compound/Core/Nutrition/TimelineActions) | 394 |  | TimelineActionsDelegate, `showTimelineActionsView` |  | TimelineActionsPresenterTests.swift |
 
 ### `Compound/Core/Onboarding` (23 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
 | **Welcome** | [0 - WelcomeView](Compound/Core/Onboarding/0%20-%20WelcomeView) | 258 | Auth, Paywall, Subscription | WelcomeDelegate |  |  |
-| **Auth** | [2 - AuthView](Compound/Core/Onboarding/2%20-%20AuthView) | 434 | Paywall, Subscription | `showAuthView` |  |  |
-| **Subscription** | [3 - Subscription](Compound/Core/Onboarding/3%20-%20Subscription) | 170 | Paywall | `showSubscriptionView` |  |  |
-| **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 350 | Gender | `showNamePhotoView` |  |  |
+| **Auth** | [2 - AuthView](Compound/Core/Onboarding/2%20-%20AuthView) | 449 | Paywall, Subscription | `showAuthView` |  |  |
+| **Subscription** | [3 - Subscription](Compound/Core/Onboarding/3%20-%20Subscription) | 188 | Paywall | `showSubscriptionView` |  |  |
+| **NamePhoto** | [4 - CompleteAccountSetup/1 - NamePhoto](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/1%20-%20NamePhoto) | 364 | Gender | `showNamePhotoView` |  |  |
 | **Gender** | [4 - CompleteAccountSetup/2 - Gender](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/2%20-%20Gender) | 197 | DateOfBirth | `showGenderView` |  |  |
-| **DateOfBirth** | [4 - CompleteAccountSetup/3 - DateOfBirth](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth) | 187 | Height | DateOfBirthDelegate, `showDateOfBirthView` |  |  |
-| **Height** | [4 - CompleteAccountSetup/4 - Height](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height) | 306 | Weight | HeightDelegate, `showHeightView` |  |  |
-| **Weight** | [4 - CompleteAccountSetup/5 - Weight](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight) | 308 | ExerciseFrequency | WeightDelegate, `showWeightView` |  | WeightTrendPresenterTests.swift |
-| **ExerciseFrequency** | [4 - CompleteAccountSetup/6 - ExerciseFrequency](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency) | 201 | Activity | ExerciseFrequencyDelegate, `showExerciseFrequencyView` |  |  |
-| **Activity** | [4 - CompleteAccountSetup/7 - Activity](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 218 | Expenditure | ActivityDelegate, `showActivityView` |  |  |
-| **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 563 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
-| **HealthDisclaimer** | [5 - HealthDisclaimer](Compound/Core/Onboarding/5%20-%20HealthDisclaimer) | 242 | OverarchingObjective | `showHealthDisclaimerView` |  |  |
-| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 224 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
-| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 385 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
-| **WeightRate** | [6 - GoalSetting/3 - WeightRate](Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 401 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
-| **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 445 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
-| **CustomisingDietProgram** | [8 - OnboardingDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet) | 151 | DietPlan, PreferredDiet | `showCustomisingDietProgramView` |  |  |
-| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 202 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
-| **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 210 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
-| **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 242 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
-| **ProteinIntake** | [8 - OnboardingDiet/5 - ProteinIntake](Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake) | 207 | DietPlan | ProteinIntakeDelegate, `showProteinIntakeView` |  |  |
-| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 291 |  | DietPlanDelegate, `showDietPlanView` |  |  |
-| **OnboardingCompleted** | [9 - OnboardingCompleted](Compound/Core/Onboarding/9%20-%20OnboardingCompleted) | 179 |  | `showOnboardingCompletedView` |  |  |
+| **DateOfBirth** | [4 - CompleteAccountSetup/3 - DateOfBirth](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/3%20-%20DateOfBirth) | 206 | Height | DateOfBirthDelegate, `showDateOfBirthView` |  |  |
+| **Height** | [4 - CompleteAccountSetup/4 - Height](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/4%20-%20Height) | 325 | Weight | HeightDelegate, `showHeightView` |  |  |
+| **Weight** | [4 - CompleteAccountSetup/5 - Weight](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/5%20-%20Weight) | 329 | ExerciseFrequency | WeightDelegate, `showWeightView` |  | WeightTrendPresenterTests.swift |
+| **ExerciseFrequency** | [4 - CompleteAccountSetup/6 - ExerciseFrequency](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/6%20-%20ExerciseFrequency) | 219 | Activity | ExerciseFrequencyDelegate, `showExerciseFrequencyView` |  |  |
+| **Activity** | [4 - CompleteAccountSetup/7 - Activity](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 236 | Expenditure | ActivityDelegate, `showActivityView` |  |  |
+| **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 577 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
+| **HealthDisclaimer** | [5 - HealthDisclaimer](Compound/Core/Onboarding/5%20-%20HealthDisclaimer) | 256 | OverarchingObjective | `showHealthDisclaimerView` |  |  |
+| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 244 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
+| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 405 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
+| **WeightRate** | [6 - GoalSetting/3 - WeightRate](Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 421 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
+| **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 463 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
+| **CustomisingDietProgram** | [8 - OnboardingDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet) | 170 | DietPlan, PreferredDiet | `showCustomisingDietProgramView` |  |  |
+| **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 222 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
+| **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 230 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
+| **CalorieDistribution** | [8 - OnboardingDiet/4 - CalorieDistribution](Compound/Core/Onboarding/8%20-%20OnboardingDiet/4%20-%20CalorieDistribution) | 262 | ProteinIntake | CalorieDistributionDelegate, `showCalorieDistributionView` |  |  |
+| **ProteinIntake** | [8 - OnboardingDiet/5 - ProteinIntake](Compound/Core/Onboarding/8%20-%20OnboardingDiet/5%20-%20ProteinIntake) | 227 | DietPlan | ProteinIntakeDelegate, `showProteinIntakeView` |  |  |
+| **DietPlan** | [8 - OnboardingDiet/6 - DietPlan](Compound/Core/Onboarding/8%20-%20OnboardingDiet/6%20-%20DietPlan) | 310 |  | DietPlanDelegate, `showDietPlanView` |  |  |
+| **OnboardingCompleted** | [9 - OnboardingCompleted](Compound/Core/Onboarding/9%20-%20OnboardingCompleted) | 193 |  | `showOnboardingCompletedView` |  |  |
 
 ### `Compound/Core/Paywalls` (1 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Paywall** | [Paywall](Compound/Core/Paywalls/Paywall) | 555 |  | `showPaywall` |  | PaywallPresenterTests.swift |
+| **Paywall** | [Paywall](Compound/Core/Paywalls/Paywall) | 561 |  | `showPaywall` |  | PaywallPresenterTests.swift |
 
-### `Compound/Core/Profile` (46 modules)
+### `Compound/Core/Profile` (45 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Profile** | [Compound/Core/Profile](Compound/Core/Profile) | 630 | About, Account, AppIcon, CustomiseAnalytics, ExpenditureSettings, FoodLogSettings, GymProfiles, Integrations, Legal, NotificationSettings, Notifications, Paywall, PreferredDiet, Siri, StrategySettings, Tutorials, Units, WeightGoalFlow, WorkoutSettings | `showProfileView`, `showProfileViewZoom` | ReviewMoment.swift, SignInCancellation.swift | ProfilePresenterTests.swift |
+| **Profile** | [Compound/Core/Profile](Compound/Core/Profile) | 644 | About, Account, AppIcon, CustomiseAnalytics, ExpenditureSettings, FoodLogSettings, GymProfiles, Integrations, Legal, NotificationSettings, Notifications, Paywall, PreferredDiet, Siri, StrategySettings, Tutorials, Units, WeightGoalFlow, WorkoutSettings | `showProfileView`, `showProfileViewZoom` | ReviewMoment.swift, SignInCancellation.swift | ProfilePresenterTests.swift |
 | **About** | [Subviews/About](Compound/Core/Profile/Subviews/About) | 149 | Licences | AboutDelegate, `showAboutView` |  |  |
 | **Licences** | [Subviews/About/Licences](Compound/Core/Profile/Subviews/About/Licences) | 246 |  | LicencesDelegate, `showLicencesView` | Licence.swift |  |
-| **Account** | [Subviews/Account](Compound/Core/Profile/Subviews/Account) | 598 | Auth, DeleteAccount, EditUsername | AccountDelegate, `showAccountView` |  |  |
-| **DeleteAccount** | [Subviews/Account/DeleteAccount](Compound/Core/Profile/Subviews/Account/DeleteAccount) | 255 |  | `showDeleteAccountView` |  | DeleteAccountPresenterTests.swift |
-| **EditUsername** | [Subviews/Account/EditUsername](Compound/Core/Profile/Subviews/Account/EditUsername) | 263 |  | `showEditUsernameView` |  |  |
+| **Account** | [Subviews/Account](Compound/Core/Profile/Subviews/Account) | 629 | Auth, DeleteAccount, EditUsername | AccountDelegate, `showAccountView` |  |  |
+| **DeleteAccount** | [Subviews/Account/DeleteAccount](Compound/Core/Profile/Subviews/Account/DeleteAccount) | 264 |  | `showDeleteAccountView` |  | DeleteAccountPresenterTests.swift |
+| **EditUsername** | [Subviews/Account/EditUsername](Compound/Core/Profile/Subviews/Account/EditUsername) | 290 |  | `showEditUsernameView` |  |  |
 | **AppIcon** | [Subviews/AppIcon](Compound/Core/Profile/Subviews/AppIcon) | 126 |  | AppIconDelegate, `showAppIconView` |  |  |
-| **CustomiseAnalytics** | [Subviews/GeneralSettings/CustomiseAnalytics](Compound/Core/Profile/Subviews/GeneralSettings/CustomiseAnalytics) | 222 |  | CustomiseAnalyticsDelegate, `showCustomiseAnalyticsView` |  |  |
-| **Integrations** | [Subviews/GeneralSettings/Integrations](Compound/Core/Profile/Subviews/GeneralSettings/Integrations) | 253 | SimpleAlert | IntegrationsDelegate, `showIntegrationsView` |  |  |
-| **Shortcuts** | [Subviews/GeneralSettings/Shortcuts](Compound/Core/Profile/Subviews/GeneralSettings/Shortcuts) | 259 |  | ShortcutsDelegate, `showShortcutsView` |  |  |
+| **CustomiseAnalytics** | [Subviews/GeneralSettings/CustomiseAnalytics](Compound/Core/Profile/Subviews/GeneralSettings/CustomiseAnalytics) | 228 |  | CustomiseAnalyticsDelegate, `showCustomiseAnalyticsView` |  |  |
+| **Integrations** | [Subviews/GeneralSettings/Integrations](Compound/Core/Profile/Subviews/GeneralSettings/Integrations) | 282 | SimpleAlert | IntegrationsDelegate, `showIntegrationsView` |  |  |
 | **Siri** | [Subviews/GeneralSettings/Siri](Compound/Core/Profile/Subviews/GeneralSettings/Siri) | 155 |  | SiriDelegate, `showSiriView` |  |  |
-| **Units** | [Subviews/GeneralSettings/Units](Compound/Core/Profile/Subviews/GeneralSettings/Units) | 236 |  | UnitsDelegate, `showUnitsView` |  |  |
+| **Units** | [Subviews/GeneralSettings/Units](Compound/Core/Profile/Subviews/GeneralSettings/Units) | 242 |  | UnitsDelegate, `showUnitsView` |  |  |
 | **Legal** | [Subviews/Legal](Compound/Core/Profile/Subviews/Legal) | 162 |  | LegalDelegate, `showLegalView` |  |  |
-| **ExpenditureSettings** | [Subviews/NutritionSettings/ExpenditureSettings](Compound/Core/Profile/Subviews/NutritionSettings/ExpenditureSettings) | 387 |  | ExpenditureSettingsDelegate, `showExpenditureSettingsView` |  |  |
-| **FoodLogSettings** | [Subviews/NutritionSettings/FoodLogSettings](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings) | 395 | FavouriteMeasurements, LoggerBanner, LoggerFoodTiles, TimelineFoodTiles | FoodLogSettingsDelegate, `showFavouriteMeasurementsView`, `showFoodLogSettingsView`, `showLoggerBannerView`, `showLoggerFoodTilesView`, `showTimelineFoodTilesView` |  |  |
-| **FavouriteMeasurements** | [Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements) | 150 |  | FavouriteMeasurementsDelegate |  |  |
-| **LoggerBanner** | [Subviews/NutritionSettings/FoodLogSettings/LoggerBanner](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerBanner) | 164 |  | LoggerBannerDelegate |  |  |
-| **LoggerFoodTiles** | [Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles) | 164 |  | LoggerFoodTilesDelegate |  |  |
-| **TimelineFoodTiles** | [Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles) | 154 |  | TimelineFoodTilesDelegate |  |  |
-| **StrategySettings** | [Subviews/NutritionSettings/StrategySettings](Compound/Core/Profile/Subviews/NutritionSettings/StrategySettings) | 280 |  | StrategySettingsDelegate, `showStrategySettingsView` |  |  |
+| **ExpenditureSettings** | [Subviews/NutritionSettings/ExpenditureSettings](Compound/Core/Profile/Subviews/NutritionSettings/ExpenditureSettings) | 393 |  | ExpenditureSettingsDelegate, `showExpenditureSettingsView` |  |  |
+| **FoodLogSettings** | [Subviews/NutritionSettings/FoodLogSettings](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings) | 401 | FavouriteMeasurements, LoggerBanner, LoggerFoodTiles, TimelineFoodTiles | FoodLogSettingsDelegate, `showFavouriteMeasurementsView`, `showFoodLogSettingsView`, `showLoggerBannerView`, `showLoggerFoodTilesView`, `showTimelineFoodTilesView` |  |  |
+| **FavouriteMeasurements** | [Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/FavouriteMeasurements) | 165 |  | FavouriteMeasurementsDelegate |  |  |
+| **LoggerBanner** | [Subviews/NutritionSettings/FoodLogSettings/LoggerBanner](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerBanner) | 179 |  | LoggerBannerDelegate |  |  |
+| **LoggerFoodTiles** | [Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/LoggerFoodTiles) | 179 |  | LoggerFoodTilesDelegate |  |  |
+| **TimelineFoodTiles** | [Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles](Compound/Core/Profile/Subviews/NutritionSettings/FoodLogSettings/TimelineFoodTiles) | 169 |  | TimelineFoodTilesDelegate |  |  |
+| **StrategySettings** | [Subviews/NutritionSettings/StrategySettings](Compound/Core/Profile/Subviews/NutritionSettings/StrategySettings) | 286 |  | StrategySettingsDelegate, `showStrategySettingsView` |  |  |
 | **ExerciseAssessment** | [Subviews/TrainingSettings/ExerciseAssessment](Compound/Core/Profile/Subviews/TrainingSettings/ExerciseAssessment) | 122 |  | ExerciseAssessmentDelegate, `showExerciseAssessmentView` |  |  |
 | **GymProfiles** | [Subviews/TrainingSettings/GymProfiles](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles) | 387 | GymProfile | `showGymProfilesView` | EquipmentColourPicker.swift, GymEquipmentFormat.swift | GymProfilesListPresenterTests.swift |
 | **GymProfile** | [Subviews/TrainingSettings/GymProfiles/GymProfile](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile) | 905 | EditBand, EditBodyWeight, EditCableMachine, EditFixedWeightBar, EditFreeWeight, EditLoadableAccessory, EditLoadableBar, EditPinLoadedMachine, EditPlateLoadedMachine | GymProfileDelegate, `showGymProfileView` |  | GymProfilePresenterTests.swift |
@@ -302,53 +299,53 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **AddPinLoadedMachineRange** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPinLoadedMachine/AddPinLoadedMachineRange](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPinLoadedMachine/AddPinLoadedMachineRange) | 271 |  | AddPinLoadedMachineRangeDelegate, `showAddPinLoadedMachineRangeView` |  |  |
 | **EditPlateLoadedMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine) | 166 |  | `showEditPlateLoadedMachineView` |  |  |
 | **EditWeightRange** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange) | 240 |  | EditWeightRangeDelegate |  |  |
-| **WorkoutSettings** | [Subviews/TrainingSettings/WorkoutSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings) | 367 | ExerciseAssessment, RestTimerSettings, SmartProgressionSettings | WorkoutSettingsDelegate, `showWorkoutSettingsView` |  |  |
-| **RestTimerSettings** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings) | 329 | TimerDuration | RestTimerSettingsDelegate, `showRestTimerSettingsView` |  |  |
-| **TimerDuration** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration) | 442 |  | TimerDurationDelegate, `showTimerDurationView` |  | TimerDurationPresenterTests.swift |
-| **SmartProgressionSettings** | [Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings) | 201 |  | SmartProgressionSettingsDelegate, `showSmartProgressionSettingsView` |  |  |
+| **WorkoutSettings** | [Subviews/TrainingSettings/WorkoutSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings) | 375 | ExerciseAssessment, RestTimerSettings, SmartProgressionSettings | WorkoutSettingsDelegate, `showWorkoutSettingsView` |  |  |
+| **RestTimerSettings** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings) | 336 | TimerDuration | RestTimerSettingsDelegate, `showRestTimerSettingsView` |  |  |
+| **TimerDuration** | [Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/RestTimerSettings/TimerDuration) | 455 |  | TimerDurationDelegate, `showTimerDurationView` |  | TimerDurationPresenterTests.swift |
+| **SmartProgressionSettings** | [Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings/SmartProgressionSettings) | 207 |  | SmartProgressionSettingsDelegate, `showSmartProgressionSettingsView` |  |  |
 | **Tutorials** | [Subviews/Tutorials](Compound/Core/Profile/Subviews/Tutorials) | 127 |  | TutorialsDelegate, `showTutorialsView` |  |  |
 
 ### `Compound/Core/Sharing` (2 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **ShareToFollower** | [ShareToFollower](Compound/Core/Sharing/ShareToFollower) | 237 |  | ShareToFollowerDelegate, `showShareToFollowerView` |  |  |
-| **SharedItem** | [SharedItem](Compound/Core/Sharing/SharedItem) | 265 |  | SharedItemDelegate, `showSharedItemView` |  |  |
+| **ShareToFollower** | [ShareToFollower](Compound/Core/Sharing/ShareToFollower) | 246 |  | ShareToFollowerDelegate, `showShareToFollowerView` |  |  |
+| **SharedItem** | [SharedItem](Compound/Core/Sharing/SharedItem) | 280 |  | SharedItemDelegate, `showSharedItemView` |  |  |
 
 ### `Compound/Core/Social` (6 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Social** | [Compound/Core/Social](Compound/Core/Social) | 1245 | ChallengeDetail, CreateChallenge, EditUsername, Notifications, ProfileViewZoom, SocialProfile, WeeklyGoal, WorkoutSessionDetail, WorkoutSessionThread | SocialDelegate | CircleActivityStripView.swift, InviteFriendCard.swift, PeopleSearch.swift, PeopleSearchResults.swift, UsernameBannerView.swift | SocialPresenterTests.swift |
-| **WeeklyGoal** | [CircleGoals/WeeklyGoal](Compound/Core/Social/CircleGoals/WeeklyGoal) | 192 |  | `showWeeklyGoalView` |  |  |
-| **SocialProfile** | [SocialProfile](Compound/Core/Social/SocialProfile) | 678 | FollowersList, WeeklyGoal | SocialProfileDelegate, `showSocialProfileView` |  | SocialProfilePresenterTests.swift |
-| **FollowersList** | [SocialProfile/FollowersList](Compound/Core/Social/SocialProfile/FollowersList) | 194 | SocialProfile | FollowersListDelegate, `showFollowersList`, `showsFollowButton` |  |  |
-| **WorkoutSessionRow** | [WorkoutSessionRow](Compound/Core/Social/WorkoutSessionRow) | 778 | Comments, ShareToFollower, SocialProfile, WorkoutSessionDetail, WorkoutTemplateDetail | WorkoutSessionRowDelegate | WorkoutSessionHighlights.swift, WorkoutSessionTemplateBuilder.swift |  |
-| **Comments** | [WorkoutSessionRow/Comments](Compound/Core/Social/WorkoutSessionRow/Comments) | 701 |  | CommentsDelegate |  |  |
+| **Social** | [Compound/Core/Social](Compound/Core/Social) | 1289 | ChallengeDetail, CreateChallenge, EditUsername, Notifications, ProfileViewZoom, SocialProfile, WeeklyGoal, WorkoutSessionDetail, WorkoutSessionThread | SocialDelegate | CircleActivityStripView.swift, InviteFriendCard.swift, PeopleSearch.swift, PeopleSearchResults.swift, UsernameBannerView.swift | SocialPresenterTests.swift |
+| **WeeklyGoal** | [CircleGoals/WeeklyGoal](Compound/Core/Social/CircleGoals/WeeklyGoal) | 216 |  | `showWeeklyGoalView` |  |  |
+| **SocialProfile** | [SocialProfile](Compound/Core/Social/SocialProfile) | 712 | FollowersList, WeeklyGoal | SocialProfileDelegate, `showSocialProfileView` |  | SocialProfilePresenterTests.swift |
+| **FollowersList** | [SocialProfile/FollowersList](Compound/Core/Social/SocialProfile/FollowersList) | 241 | SocialProfile | FollowersListDelegate, `showFollowersList`, `showsFollowButton` |  |  |
+| **WorkoutSessionRow** | [WorkoutSessionRow](Compound/Core/Social/WorkoutSessionRow) | 802 | Comments, ShareToFollower, SocialProfile, WorkoutSessionDetail, WorkoutTemplateDetail | WorkoutSessionRowDelegate | WorkoutSessionHighlights.swift, WorkoutSessionTemplateBuilder.swift |  |
+| **Comments** | [WorkoutSessionRow/Comments](Compound/Core/Social/WorkoutSessionRow/Comments) | 781 |  | CommentsDelegate |  |  |
 
 ### `Compound/Core/TabBar` (1 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **TabBar** | [Compound/Core/TabBar](Compound/Core/TabBar) | 473 | WorkoutTracker |  | DeepLink.swift |  |
+| **TabBar** | [Compound/Core/TabBar](Compound/Core/TabBar) | 518 | WorkoutTracker |  | DeepLink.swift |  |
 
 ### `Compound/Core/Today` (2 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Today** | [Compound/Core/Today](Compound/Core/Today) | 594 | AddMeal, CheckIn, LogWeight, MesocycleLibrary, ProfileViewZoom, ScaleWeight, WeeklyReview, WorkoutTracker | TodayDelegate |  | TodayPresenterTests.swift |
-| **WeeklyReview** | [WeeklyReview](Compound/Core/Today/WeeklyReview) | 553 |  | `showWeeklyReviewView` | WeeklyReview.swift, WeeklyReviewShareCardView.swift |  |
+| **Today** | [Compound/Core/Today](Compound/Core/Today) | 654 | AddMeal, CheckIn, LogWeight, MesocycleLibrary, ProfileViewZoom, ScaleWeight, WeeklyReview, WorkoutTracker | TodayDelegate |  | TodayPresenterTests.swift |
+| **WeeklyReview** | [WeeklyReview](Compound/Core/Today/WeeklyReview) | 562 |  | `showWeeklyReviewView` | WeeklyReview.swift, WeeklyReviewShareCardView.swift |  |
 
 ### `Compound/Core/Training` (49 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Training** | [Compound/Core/Training](Compound/Core/Training) | 629 | CreateExercise, CreateMesocycle, CreateWorkout, EditMesocycle, ExerciseDetail, Exercises, MacrocycleDetail, Macrocycles, MesocycleLibrary, ProfileViewZoom, WorkoutHistory, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker, Workouts | TrainingDelegate |  | TrainingHomePresenterTests.swift, TrainingLibraryPresenterTests.swift, TrainingSettingsPresenterTests.swift |
-| **ExerciseListBuilder** | [Components/ExerciseListBuilder](Compound/Core/Training/Components/ExerciseListBuilder) | 691 | CreateExercise | ExerciseListBuilderDelegate, `showExerciseListBuilderView` | ExerciseFilters.swift |  |
-| **TodaysWorkoutCard** | [Components/TodaysWorkoutCard](Compound/Core/Training/Components/TodaysWorkoutCard) | 530 | WorkoutTemplateDetail, WorkoutTracker | TodaysWorkoutCardDelegate | MesocycleSchedule.swift, TodaysWorkoutCard.swift | TodaysWorkoutCardPresenterTests.swift |
+| **Training** | [Compound/Core/Training](Compound/Core/Training) | 648 | CreateExercise, CreateMesocycle, CreateWorkout, EditMesocycle, ExerciseDetail, Exercises, MacrocycleDetail, Macrocycles, MesocycleLibrary, ProfileViewZoom, WorkoutHistory, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker, Workouts | TrainingDelegate |  | TrainingHomePresenterTests.swift, TrainingLibraryPresenterTests.swift, TrainingSettingsPresenterTests.swift |
+| **ExerciseListBuilder** | [Components/ExerciseListBuilder](Compound/Core/Training/Components/ExerciseListBuilder) | 673 | CreateExercise | ExerciseListBuilderDelegate, `showExerciseListBuilderView` | ExerciseFilters.swift |  |
+| **TodaysWorkoutCard** | [Components/TodaysWorkoutCard](Compound/Core/Training/Components/TodaysWorkoutCard) | 549 | WorkoutTemplateDetail, WorkoutTracker | TodaysWorkoutCardDelegate | MesocycleSchedule.swift, TodaysWorkoutCard.swift | TodaysWorkoutCardPresenterTests.swift |
 | **TrainingAccessory** | [Components/TrainingAccessory](Compound/Core/Training/Components/TrainingAccessory) | 287 | WorkoutTracker | TrainingAccessoryDelegate |  |  |
 | **WorkoutStreak** | [Components/WorkoutStreakCard](Compound/Core/Training/Components/WorkoutStreakCard) | 273 |  | WorkoutStreakDelegate | WorkoutStreakCard.swift |  |
-| **ActiveMesocycle** | [Subviews/ActiveMesocycle](Compound/Core/Training/Subviews/ActiveMesocycle) | 503 | EditMesocycle, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | ActiveMesocycleDelegate, `showActiveMesocycleView` |  | ActiveMesocyclePresenterTests.swift |
+| **ActiveMesocycle** | [Subviews/ActiveMesocycle](Compound/Core/Training/Subviews/ActiveMesocycle) | 504 | EditMesocycle, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | ActiveMesocycleDelegate, `showActiveMesocycleView` |  | ActiveMesocyclePresenterTests.swift |
 | **CreateExercise** | [Subviews/AddTraining/CreateExercise](Compound/Core/Training/Subviews/AddTraining/CreateExercise) | 302 | MuscleGroupPicker | `showCreateExerciseView` |  | CreateExerciseEquipmentPresenterTests.swift, CreateExerciseFlowPresenterTests.swift |
 | **EquipmentPicker** | [Subviews/AddTraining/CreateExercise/EquipmentPicker](Compound/Core/Training/Subviews/AddTraining/CreateExercise/EquipmentPicker) | 243 |  | EquipmentPickerDelegate, `showEquipmentPickerView` |  |  |
 | **ExerciseEquipment** | [Subviews/AddTraining/CreateExercise/ExerciseEquipment](Compound/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseEquipment) | 319 | EquipmentPicker, FinalExerciseDetails | ExerciseEquipmentDelegate, `showExerciseEquipmentView` |  |  |
@@ -356,42 +353,42 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **FinalExerciseDetails** | [Subviews/AddTraining/CreateExercise/FinalExerciseDetails](Compound/Core/Training/Subviews/AddTraining/CreateExercise/FinalExerciseDetails) | 302 | ExerciseSave | FinalExerciseDetailsDelegate, `showFinalExerciseDetailsView` |  |  |
 | **MuscleGroupPicker** | [Subviews/AddTraining/CreateExercise/MuscleGroupPicker](Compound/Core/Training/Subviews/AddTraining/CreateExercise/MuscleGroupPicker) | 300 | ExerciseEquipment | MuscleGroupPickerDelegate, `showMuscleGroupPickerView` |  |  |
 | **CreateMesocycle** | [Subviews/AddTraining/CreateMesocycle/CreateMesocycle](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/CreateMesocycle) | 185 | NameMesocycle | CreateMesocycleDelegate, `showCreateMesocycleView`, `showOnboardingMesocycleView` |  | CreateMesocycleFlowPresenterTests.swift |
-| **MesocycleDesign** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign) | 714 | MesocycleSettings, RenameWorkoutTemplateModel, ShareToFollower | EditMesocycleDelegate, MesocycleDesignDelegate, `showEditMesocycleView`, `showMesocycleDesignView`, `showRenameWorkoutTemplateModelView` |  | MesocycleDesignPresenterTests.swift |
-| **MesocycleSettings** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings) | 284 | EditDayOrder, EditDeload, EditMesocycleColourIcon, RenameMesocycle | `showEditDayOrderView`, `showEditDeloadView`, `showEditMesocycleColourIconView`, `showMesocycleSettingsView`, `showRenameMesocycleView` |  | MesocycleSettingsFlowPresenterTests.swift |
-| **EditDayOrder** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDayOrder](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDayOrder) | 107 |  |  |  |  |
-| **EditDeload** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDeload](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDeload) | 104 |  |  |  |  |
-| **EditMesocycleColourIcon** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditMesocycleColourIcon](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditMesocycleColourIcon) | 121 |  |  |  |  |
-| **RenameDayPlan** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/RenameDayPlan](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/RenameDayPlan) | 119 |  | RenameWorkoutTemplateModelDelegate |  |  |
+| **MesocycleDesign** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign) | 754 | MesocycleSettings, RenameWorkoutTemplateModel, ShareToFollower | EditMesocycleDelegate, MesocycleDesignDelegate, `showEditMesocycleView`, `showMesocycleDesignView`, `showRenameWorkoutTemplateModelView` |  | MesocycleDesignPresenterTests.swift |
+| **MesocycleSettings** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings) | 297 | EditDayOrder, EditDeload, EditMesocycleColourIcon, RenameMesocycle | `showEditDayOrderView`, `showEditDeloadView`, `showEditMesocycleColourIconView`, `showMesocycleSettingsView`, `showRenameMesocycleView` |  | MesocycleSettingsFlowPresenterTests.swift |
+| **EditDayOrder** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDayOrder](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDayOrder) | 136 |  |  |  |  |
+| **EditDeload** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDeload](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditDeload) | 133 |  |  |  |  |
+| **EditMesocycleColourIcon** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditMesocycleColourIcon](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/MesocycleSettings/EditMesocycleColourIcon) | 150 |  |  |  |  |
+| **RenameDayPlan** | [Subviews/AddTraining/CreateMesocycle/MesocycleDesign/RenameDayPlan](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleDesign/RenameDayPlan) | 144 |  | RenameWorkoutTemplateModelDelegate |  |  |
 | **MesocycleIcon** | [Subviews/AddTraining/CreateMesocycle/MesocycleIcon](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/MesocycleIcon) | 215 | MesocycleDesign | MesocycleIconDelegate, `showMesocycleIconView` |  |  |
 | **NameMesocycle** | [Subviews/AddTraining/CreateMesocycle/NameMesocycle](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/NameMesocycle) | 185 | MesocycleIcon | NameMesocycleDelegate, `showNameMesocycleView` |  |  |
 | **ChooseGymProfile** | [Subviews/AddTraining/CreateWorkout/ChooseGymProfile](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/ChooseGymProfile) | 201 | CreateGymProfile, DefineWorkoutWrapper | ChooseGymProfileDelegate, `showChooseGymProfileView` |  |  |
-| **DefineWorkout** | [Subviews/AddTraining/CreateWorkout/DefineWorkout](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/DefineWorkout) | 280 | ExercisesPicker, SetTarget | DefineWorkoutDelegate, `showDefineWorkoutView` |  |  |
-| **DefineWorkoutWrapper** | [Subviews/AddTraining/CreateWorkout/DefineWorkoutWrapper](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/DefineWorkoutWrapper) | 214 |  | DefineWorkoutWrapperDelegate, `showDefineWorkoutWrapperView` |  |  |
-| **ExercisesPicker** | [Subviews/AddTraining/CreateWorkout/ExercisesPicker](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/ExercisesPicker) | 181 |  | ExercisesPickerDelegate, `showExercisesPickerView` |  |  |
-| **NameWorkout** | [Subviews/AddTraining/CreateWorkout/NameWorkout](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/NameWorkout) | 194 | ChooseGymProfile, DefineWorkoutWrapper | NameWorkoutDelegate |  |  |
+| **DefineWorkout** | [Subviews/AddTraining/CreateWorkout/DefineWorkout](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/DefineWorkout) | 246 | ExercisesPicker, SetTarget | DefineWorkoutDelegate, `showDefineWorkoutView` |  |  |
+| **DefineWorkoutWrapper** | [Subviews/AddTraining/CreateWorkout/DefineWorkoutWrapper](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/DefineWorkoutWrapper) | 229 |  | DefineWorkoutWrapperDelegate, `showDefineWorkoutWrapperView` |  |  |
+| **ExercisesPicker** | [Subviews/AddTraining/CreateWorkout/ExercisesPicker](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/ExercisesPicker) | 206 |  | ExercisesPickerDelegate, `showExercisesPickerView` |  |  |
+| **NameWorkout** | [Subviews/AddTraining/CreateWorkout/NameWorkout](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/NameWorkout) | 219 | ChooseGymProfile, DefineWorkoutWrapper | NameWorkoutDelegate |  |  |
 | **SetTarget** | [Subviews/AddTraining/CreateWorkout/SetTarget](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/SetTarget) | 288 |  | SetTargetDelegate, `showSetTargetView` |  |  |
-| **ExerciseSettings** | [Subviews/ExerciseSettings](Compound/Core/Training/Subviews/ExerciseSettings) | 325 | ExerciseModelDetail, RestModal, RestTimerSettings, WorkoutNotes | ExerciseSettingsDelegate, `showExerciseSettingsView` |  |  |
-| **Exercises** | [Subviews/Exercises](Compound/Core/Training/Subviews/Exercises) | 110 | CreateExercise, ExerciseModelDetail | `showExercisesView` |  |  |
-| **ExerciseTemplateDetail** | [Subviews/Exercises/ExerciseTemplateDetail](Compound/Core/Training/Subviews/Exercises/ExerciseTemplateDetail) | 797 |  | ExerciseModelDetailDelegate, `showDeleteConfirmation`, `showExerciseModelDetailView` | ExerciseModelDetailStats.swift, ExerciseTemplateDetailDelegate.swift |  |
-| **Macrocycles** | [Subviews/Macrocycles](Compound/Core/Training/Subviews/Macrocycles) | 193 | MacrocycleDetail | `showMacrocyclesView` |  |  |
-| **MacrocycleDetail** | [Subviews/Macrocycles/MacrocycleDetail](Compound/Core/Training/Subviews/Macrocycles/MacrocycleDetail) | 404 |  | MacrocycleDetailDelegate, `showMacrocycleDetailView` |  | MacrocycleDetailPresenterTests.swift |
+| **ExerciseSettings** | [Subviews/ExerciseSettings](Compound/Core/Training/Subviews/ExerciseSettings) | 341 | ExerciseModelDetail, RestModal, RestTimerSettings, WorkoutNotes | ExerciseSettingsDelegate, `showExerciseSettingsView` |  |  |
+| **Exercises** | [Subviews/Exercises](Compound/Core/Training/Subviews/Exercises) | 135 | CreateExercise, ExerciseModelDetail | `showExercisesView` |  |  |
+| **ExerciseTemplateDetail** | [Subviews/Exercises/ExerciseTemplateDetail](Compound/Core/Training/Subviews/Exercises/ExerciseTemplateDetail) | 844 |  | ExerciseModelDetailDelegate, `showDeleteConfirmation`, `showExerciseModelDetailView` | ExerciseModelDetailStats.swift, ExerciseTemplateDetailDelegate.swift |  |
+| **Macrocycles** | [Subviews/Macrocycles](Compound/Core/Training/Subviews/Macrocycles) | 200 | MacrocycleDetail | `showMacrocyclesView` |  |  |
+| **MacrocycleDetail** | [Subviews/Macrocycles/MacrocycleDetail](Compound/Core/Training/Subviews/Macrocycles/MacrocycleDetail) | 426 |  | MacrocycleDetailDelegate, `showMacrocycleDetailView` |  | MacrocycleDetailPresenterTests.swift |
 | **MesocycleManagement** | [Subviews/MesocycleLibrary](Compound/Core/Training/Subviews/MesocycleLibrary) | 328 | CreateMesocycle, EditMesocycle, MesocycleSettings, PrebuiltMesocycleDetail | `showDeleteAlert`, `showMesocycleLibraryView` |  |  |
-| **InactiveMesocycle** | [Subviews/MesocycleLibrary/InactiveMesocycle](Compound/Core/Training/Subviews/MesocycleLibrary/InactiveMesocycle) | 155 |  | InactiveMesocycleDelegate, `showInactiveMesocycleView` |  |  |
-| **MesocycleDisclosureGroup** | [Subviews/MesocycleLibrary/MesocycleDisclosureGroup](Compound/Core/Training/Subviews/MesocycleLibrary/MesocycleDisclosureGroup) | 163 | EditMesocycle, ShareToFollower | MesocycleDisclosureGroupDelegate, `showMesocycleDisclosureGroupView` |  |  |
-| **PrebuiltMesocycleDetail** | [Subviews/MesocycleLibrary/PrebuiltMesocycleDetail](Compound/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail) | 209 |  | `showPrebuiltMesocycleDetailView` |  |  |
+| **InactiveMesocycle** | [Subviews/MesocycleLibrary/InactiveMesocycle](Compound/Core/Training/Subviews/MesocycleLibrary/InactiveMesocycle) | 110 |  | InactiveMesocycleDelegate, `showInactiveMesocycleView` |  |  |
+| **MesocycleDisclosureGroup** | [Subviews/MesocycleLibrary/MesocycleDisclosureGroup](Compound/Core/Training/Subviews/MesocycleLibrary/MesocycleDisclosureGroup) | 117 | EditMesocycle, ShareToFollower | MesocycleDisclosureGroupDelegate, `showMesocycleDisclosureGroupView` |  |  |
+| **PrebuiltMesocycleDetail** | [Subviews/MesocycleLibrary/PrebuiltMesocycleDetail](Compound/Core/Training/Subviews/MesocycleLibrary/PrebuiltMesocycleDetail) | 218 |  | `showPrebuiltMesocycleDetailView` |  |  |
 | **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 299 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
-| **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](Compound/Core/Training/Subviews/WorkoutSessionDetailView) | 1037 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
-| **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](Compound/Core/Training/Subviews/WorkoutTemplateDetail) | 360 | CreateWorkout, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
-| **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 1964 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | StravaOffer.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
+| **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](Compound/Core/Training/Subviews/WorkoutSessionDetailView) | 1087 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
+| **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](Compound/Core/Training/Subviews/WorkoutTemplateDetail) | 429 | CreateWorkout, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
+| **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 2043 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | StravaOffer.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
 | **ExerciseTracker** | [Subviews/WorkoutTracker/ExerciseTracker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker) | 269 | WorkoutNotes | ExerciseTrackerDelegate |  |  |
 | **SetTracker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker) | 740 | ExerciseSettings, RestModal, SetTarget, SwapExercisePicker, WarmupSetInfoModal, WarmupSets, WorkoutExerciseEquipmentSheet | SetTrackerDelegate |  | SetTrackerPresenterTests.swift |
-| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 846 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
+| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 826 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
 | **SetKeyboard** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard) | 1013 |  |  | PlateCalculator.swift, SetKeyboardTextField.swift, WeightStepper.swift | SetKeyboardPresenterTests.swift |
 | **SwapExercisePicker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker) | 121 |  | `showSwapExercisePickerView` |  |  |
 | **WarmupSets** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets) | 180 |  | WarmupSetsDelegate, `showWarmupSetsView` |  |  |
 | **WorkoutExerciseEquipmentSheet** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet) | 320 |  | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
-| **WorkoutNotes** | [Subviews/WorkoutTracker/WorkoutNotes](Compound/Core/Training/Subviews/WorkoutTracker/WorkoutNotes) | 158 |  | WorkoutNotesDelegate, `showWorkoutNotesView` |  |  |
-| **Workouts** | [Subviews/Workouts](Compound/Core/Training/Subviews/Workouts) | 124 | WorkoutTemplateDetail, WorkoutTracker | WorkoutsDelegate, `showWorkoutsView` |  |  |
+| **WorkoutNotes** | [Subviews/WorkoutTracker/WorkoutNotes](Compound/Core/Training/Subviews/WorkoutTracker/WorkoutNotes) | 183 |  | WorkoutNotesDelegate, `showWorkoutNotesView` |  |  |
+| **Workouts** | [Subviews/Workouts](Compound/Core/Training/Subviews/Workouts) | 149 | WorkoutTemplateDetail, WorkoutTracker | WorkoutsDelegate, `showWorkoutsView` |  |  |
 
 ## Managers
 
@@ -422,9 +419,9 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **CommentsManager** | [Compound/Managers/Social](Compound/Managers/Social/CommentsManager.swift) | 35 |  |  |  |  | CommentsManagerTests.swift |
 | **StepsManager** | [Compound/Managers/Steps](Compound/Managers/Steps/StepsManager.swift) | 188 | Collection<StepsModel> | StepsModel |  |  | StepsManagerTests.swift |
 | **StravaManager** | [Compound/Managers/Strava](Compound/Managers/Strava/StravaManager.swift) | 212 |  | StravaActivity, StravaTokenResponse | MockStravaService, ProductionStravaService, StravaService |  | StravaManagerTests.swift |
-| **ExerciseModelManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseModelManager.swift) | 195 | Collection<ExerciseModel> | BodyRegion, EquipmentVariation, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MuscleVolume, Muscles, SetTarget, SetTargetSetType, … +3 more |  |  |  |
+| **ExerciseModelManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseModelManager.swift) | 195 | Collection<ExerciseModel> | BodyRegion, EquipmentVariation, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MuscleVolume, Muscles, PickableItem, SetTarget, … +4 more |  |  |  |
 | **ExerciseSettingsManager** | [Compound/Managers/Training/Exercise/ExerciseSettings](Compound/Managers/Training/Exercise/ExerciseSettings/ExerciseSettingsManager.swift) | 76 | Collection<ExerciseSettingsModel> | ExerciseSettingsModel |  |  | ExerciseSettingsManagerTests.swift |
-| **ExerciseUnitPreferenceManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseUnitPreferenceManager.swift) | 161 |  | BodyRegion, EquipmentVariation, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MuscleVolume, Muscles, SetTarget, SetTargetSetType, … +3 more |  |  | ExerciseUnitPreferenceManagerTests.swift |
+| **ExerciseUnitPreferenceManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseUnitPreferenceManager.swift) | 161 |  | BodyRegion, EquipmentVariation, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MuscleVolume, Muscles, PickableItem, SetTarget, … +4 more |  |  | ExerciseUnitPreferenceManagerTests.swift |
 | **GymProfileManager** | [Compound/Managers/Training/GymProfile](Compound/Managers/Training/GymProfile/GymProfileManager.swift) | 110 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +22 more |  |  | GymProfileManagerTests.swift |
 | **MacrocycleManager** | [Compound/Managers/Training/Macrocycle](Compound/Managers/Training/Macrocycle/MacrocycleManager.swift) | 311 | Collection<Macrocycle> | Macrocycle |  |  | MacrocycleManagerTests.swift |
 | **MesocycleManager** | [Compound/Managers/Training/Mesocycle](Compound/Managers/Training/Mesocycle/MesocycleManager.swift) | 274 | Collection<Mesocycle> | Mesocycle |  |  | MesocycleManagerTests.swift |
@@ -646,9 +643,11 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [scripts/screenshots-diff.py](scripts/screenshots-diff.py) | 119 |
 | [scripts/screenshots.sh](scripts/screenshots.sh) | 95 |
 | [docs/AppPrivacy.md](docs/AppPrivacy.md) | 101 |
+| [docs/analytics/mixpanel-business-context.md](docs/analytics/mixpanel-business-context.md) | 109 |
 | [docs/dead-settings-audit.md](docs/dead-settings-audit.md) | 279 |
 | [docs/release-checklist.md](docs/release-checklist.md) | 64 |
 | [docs/reviews/2026-10-01-list-form-and-wide-layouts.md](docs/reviews/2026-10-01-list-form-and-wide-layouts.md) | 73 |
+| [docs/reviews/analytics-coverage.md](docs/reviews/analytics-coverage.md) | 474 |
 | [docs/reviews/hig-active-workout.md](docs/reviews/hig-active-workout.md) | 527 |
 | [docs/reviews/hig-analytics-charts.md](docs/reviews/hig-analytics-charts.md) | 474 |
 | [docs/reviews/hig-dashboard-social.md](docs/reviews/hig-dashboard-social.md) | 552 |

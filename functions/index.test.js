@@ -43,19 +43,21 @@ test("requireAuth returns the uid or throws unauthenticated", () => {
 test("every callable enforces App Check and requires auth", () => {
     const src = readFileSync(new URL("./index.js", import.meta.url), "utf8");
     assert.match(src, /const CALLABLE_OPTIONS = \{[^}]*enforceAppCheck: true/);
-    const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request\) => \{\s*([^\n]*)/g)];
+    const callables = [...src.matchAll(/export const (\w+) = onCall\(([^,]+),\s*async \(request(?:, response)?\) => \{\s*([^\n]*)/g)];
     assert.match(src, /const STRAVA_CALLABLE_OPTIONS = \{ \.\.\.CALLABLE_OPTIONS,/);
+    assert.match(src, /const COACH_CALLABLE_OPTIONS = \{\s*\.\.\.CALLABLE_OPTIONS,/);
+    assert.equal((src.match(/= onCall\(/g) ?? []).length, callables.length, "every onCall is in the shape this test reads");
     assert.equal(callables.length, 13, "expected thirteen callables");
     for (const [, name, options, firstLine] of callables) {
-        assert.match(options.trim(), /^(STRAVA_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
+        assert.match(options.trim(), /^(STRAVA_|COACH_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
         assert.match(firstLine, /requireAuth\(request\)/, `${name} must call requireAuth first`);
     }
 });
 
 test("each deployed callable rejects an unauthenticated request before doing any work", async () => {
     const fns = await import("./index.js");
-    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "chatGenerate", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
-        "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect"]) {
+    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
+        "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect", "coachChat"]) {
         await assert.rejects(fns[name].run({ data: {}, auth: null }), { code: "unauthenticated" }, name);
     }
 });

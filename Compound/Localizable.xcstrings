@@ -14,124 +14,6 @@
         }
       }
     },
-    "Add All (%lld)" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir todo (%lld)"
-          }
-        }
-      }
-    },
-    "Added" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadido"
-          }
-        }
-      }
-    },
-    "Customize" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personalizar"
-          }
-        }
-      }
-    },
-    "Bust" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Busto"
-          }
-        }
-      }
-    },
-    "Hips" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Caderas"
-          }
-        }
-      }
-    },
-    "Left Ankle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tobillo izquierdo"
-          }
-        }
-      }
-    },
-    "Left Bicep" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bíceps izquierdo"
-          }
-        }
-      }
-    },
-    "Left Calf" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pantorrilla izquierda"
-          }
-        }
-      }
-    },
-    "Left Forearm" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Antebrazo izquierdo"
-          }
-        }
-      }
-    },
-    "Left Thigh" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muslo izquierdo"
-          }
-        }
-      }
-    },
-    "Left Wrist" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muñeca izquierda"
-          }
-        }
-      }
-    },
     "“%@” will be deleted. This can't be undone." : {
       "localizations" : {
         "es" : {
@@ -3140,6 +3022,16 @@
         }
       }
     },
+    "Add All (%lld)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir todo (%lld)"
+          }
+        }
+      }
+    },
     "Add band" : {
       "localizations" : {
         "es" : {
@@ -3678,6 +3570,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade tu nombre"
+          }
+        }
+      }
+    },
+    "Added" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadido"
           }
         }
       }
@@ -5228,6 +5130,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ganar peso de forma saludable requiere tiempo y dedicación. Céntrate en alimentos ricos en nutrientes y en un entrenamiento de fuerza progresivo. Tu cuerpo agradecerá el esfuerzo constante."
+          }
+        }
+      }
+    },
+    "Bust" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busto"
           }
         }
       }
@@ -7094,6 +7007,7 @@
       }
     },
     "Create Workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7308,6 +7222,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personaliza la parte superior de tu plato"
+          }
+        }
+      }
+    },
+    "Customize" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar"
           }
         }
       }
@@ -8757,6 +8681,7 @@
       }
     },
     "Easily log meals, scan foods, and get AI-powered nutrition analysis. Set goals, track macros, and receive personalized recommendations to fuel your journey." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -8858,6 +8783,7 @@
       }
     },
     "Edit Notes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10878,6 +10804,7 @@
       }
     },
     "Goal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11295,6 +11222,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muy activo, movimiento constante, exigencia física"
+          }
+        }
+      }
+    },
+    "Hips" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caderas"
           }
         }
       }
@@ -12501,6 +12439,72 @@
         }
       }
     },
+    "Left Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps izquierdo"
+          }
+        }
+      }
+    },
+    "Left Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla izquierda"
+          }
+        }
+      }
+    },
+    "Left Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo izquierdo"
+          }
+        }
+      }
+    },
+    "Left Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca izquierda"
+          }
+        }
+      }
+    },
     "Legal" : {
       "localizations" : {
         "es" : {
@@ -12949,6 +12953,7 @@
       }
     },
     "Log your strength and cardio sessions, follow expert routines, and visualize your progress over time. Stay motivated with streaks and personal bests." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12970,6 +12975,7 @@
       }
     },
     "Log your weight over time and visualize your progress with interactive charts. Set goals, monitor trends, and stay accountable on your fitness journey." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13933,6 +13939,7 @@
       }
     },
     "Monitor Your Nutrition" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15223,82 +15230,6 @@
         }
       }
     },
-    "Opens your weight history" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abre tu historial de peso"
-          }
-        }
-      }
-    },
-    "Right Ankle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tobillo derecho"
-          }
-        }
-      }
-    },
-    "Right Bicep" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bíceps derecho"
-          }
-        }
-      }
-    },
-    "Right Calf" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pantorrilla derecha"
-          }
-        }
-      }
-    },
-    "Right Forearm" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Antebrazo derecho"
-          }
-        }
-      }
-    },
-    "Right Thigh" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muslo derecho"
-          }
-        }
-      }
-    },
-    "Right Wrist" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muñeca derecha"
-          }
-        }
-      }
-    },
     "Not specified" : {
       "localizations" : {
         "es" : {
@@ -16033,6 +15964,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abre el entrenamiento de hoy"
+          }
+        }
+      }
+    },
+    "Opens your weight history" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre tu historial de peso"
           }
         }
       }
@@ -17492,6 +17433,7 @@
       }
     },
     "Ready to Begin?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17512,6 +17454,7 @@
       }
     },
     "Ready to Set a Goal?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18572,6 +18515,72 @@
         }
       }
     },
+    "Right Ankle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tobillo derecho"
+          }
+        }
+      }
+    },
+    "Right Bicep" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bíceps derecho"
+          }
+        }
+      }
+    },
+    "Right Calf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pantorrilla derecha"
+          }
+        }
+      }
+    },
+    "Right Forearm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antebrazo derecho"
+          }
+        }
+      }
+    },
+    "Right Thigh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muslo derecho"
+          }
+        }
+      }
+    },
+    "Right Wrist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muñeca derecha"
+          }
+        }
+      }
+    },
     "RIR" : {
       "localizations" : {
         "es" : {
@@ -19588,78 +19597,6 @@
         }
       }
     },
-    "Use Recommended Plan" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar plan recomendado"
-          }
-        }
-      }
-    },
-    "Use the recommended plan, or answer a few questions to customize it." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa el plan recomendado o responde unas preguntas para personalizarlo."
-          }
-        }
-      }
-    },
-    "Shoulders" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hombros"
-          }
-        }
-      }
-    },
-    "Take Back Photo" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hacer foto de espalda"
-          }
-        }
-      }
-    },
-    "Take Front Photo" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hacer foto de frente"
-          }
-        }
-      }
-    },
-    "Take Side Photo" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hacer foto de perfil"
-          }
-        }
-      }
-    },
-    "Waist" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cintura"
-          }
-        }
-      }
-    },
     "Set Rest" : {
       "localizations" : {
         "es" : {
@@ -19867,6 +19804,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accesos directos"
+          }
+        }
+      }
+    },
+    "Shoulders" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hombros"
           }
         }
       }
@@ -21117,6 +21065,26 @@
         }
       }
     },
+    "Take Back Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de espalda"
+          }
+        }
+      }
+    },
+    "Take Front Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de frente"
+          }
+        }
+      }
+    },
     "Take photo" : {
       "localizations" : {
         "es" : {
@@ -21128,11 +21096,22 @@
       }
     },
     "Take Photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hacer foto"
+          }
+        }
+      }
+    },
+    "Take Side Photo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer foto de perfil"
           }
         }
       }
@@ -21485,6 +21464,7 @@
       }
     },
     "The Basics" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22464,6 +22444,7 @@
       }
     },
     "Track Your Weight" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22474,6 +22455,7 @@
       }
     },
     "Track Your Workouts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -24269,6 +24251,16 @@
         }
       }
     },
+    "Use Recommended Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar plan recomendado"
+          }
+        }
+      }
+    },
     "Use Rest Timers" : {
       "localizations" : {
         "es" : {
@@ -24295,6 +24287,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar temporizadores de descanso al pasar de un ejercicio a otro"
+          }
+        }
+      }
+    },
+    "Use the recommended plan, or answer a few questions to customize it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el plan recomendado o responde unas preguntas para personalizarlo."
           }
         }
       }
@@ -24682,6 +24684,17 @@
         }
       }
     },
+    "Waist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cintura"
+          }
+        }
+      }
+    },
     "Waist to Height" : {
       "localizations" : {
         "es" : {
@@ -24915,6 +24928,7 @@
       }
     },
     "We'll start with a few questions to get you started." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25197,6 +25211,7 @@
       }
     },
     "Weight Tracking" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25287,6 +25302,7 @@
       }
     },
     "Welcome to Compound." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25524,6 +25540,7 @@
       }
     },
     "Why Compound?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26096,6 +26113,7 @@
       }
     },
     "You will create a new workout for your library." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

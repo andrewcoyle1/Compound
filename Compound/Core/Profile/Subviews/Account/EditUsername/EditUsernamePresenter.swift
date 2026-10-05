@@ -44,6 +44,10 @@ class EditUsernamePresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// Validates at once, then checks availability once typing has paused for `debounce`.
     func onTextChanged() {
         checkTask?.cancel()
@@ -71,11 +75,11 @@ class EditUsernamePresenter {
             return
         }
         status = .checking
-        checkTask = Task { [debounce, interactor] in
+        checkTask = Task { [debounce] in
             try? await Task.sleep(for: debounce)
             guard !Task.isCancelled else { return }
             // Not silent: nil maps to `.failed`, which the field shows inline.
-            let available = try? await interactor.isUsernameAvailable(handle)
+            let available = await checkAvailability(handle)
             guard !Task.isCancelled else { return }
             switch available {
             case true?: status = .available
@@ -85,10 +89,23 @@ class EditUsernamePresenter {
         }
     }
 
+    /// Nil when the read failed. A check cancelled by further typing is not logged as a failure.
+    private func checkAvailability(_ handle: String) async -> Bool? {
+        do {
+            return try await interactor.isUsernameAvailable(handle)
+        } catch {
+            if !Task.isCancelled {
+                interactor.trackEvent(event: Event.checkAvailabilityFail(error: error))
+            }
+            return nil
+        }
+    }
+
     func onSavePressed() async {
         guard canSave, interactor.ensureOnline(or: router) else { return }
         isSaving = true
         defer { isSaving = false }
+        interactor.trackEvent(event: Event.saveStart)
         do {
             try await interactor.claimUsername(text)
             interactor.trackEvent(event: Event.saveSuccess)
@@ -111,20 +128,26 @@ extension EditUsernamePresenter {
 
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
+        case saveStart
         case saveSuccess
         case saveFail(error: Error)
+        case checkAvailabilityFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:    return "EditUsernameView_Appear"
+            case .onDisappear: return "EditUsernameView_Disappear"
+            case .saveStart:   return "EditUsernameView_Save_Start"
             case .saveSuccess: return "EditUsernameView_Save_Success"
             case .saveFail:    return "EditUsernameView_Save_Fail"
+            case .checkAvailabilityFail: return "EditUsernameView_CheckAvailability_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .saveFail(error: let error): return error.eventParameters
+            case .saveFail(error: let error), .checkAvailabilityFail(error: let error): return error.eventParameters
             default: return nil
             }
         }
@@ -132,6 +155,7 @@ extension EditUsernamePresenter {
         var type: LogType {
             switch self {
             case .saveFail: return .severe
+            case .checkAvailabilityFail: return .warning
             default: return .analytic
             }
         }

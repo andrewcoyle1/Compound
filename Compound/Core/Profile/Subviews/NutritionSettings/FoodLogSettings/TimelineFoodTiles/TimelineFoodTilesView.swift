@@ -32,6 +32,9 @@ struct TimelineFoodTilesView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 }
 

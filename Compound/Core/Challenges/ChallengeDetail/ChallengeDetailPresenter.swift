@@ -72,14 +72,24 @@ class ChallengeDetailPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func loadStandings() async {
         // Silent: the standings already on screen stay put if the refresh fails.
-        try? await interactor.refreshChallengeProgress(challengeId: challenge.id)
+        do {
+            try await interactor.refreshChallengeProgress(challengeId: challenge.id)
+        } catch {
+            interactor.trackEvent(event: Event.refreshProgressFail(error: error))
+        }
         let missing = challenge.memberIds.filter { knownUsers[$0] == nil }
         for userId in missing {
             // Silent: an unfetchable member stays "Member".
-            if let user = try? await interactor.getUser(userId: userId) {
-                fetchedUsers[userId] = user
+            do {
+                fetchedUsers[userId] = try await interactor.getUser(userId: userId)
+            } catch {
+                interactor.trackEvent(event: Event.loadMemberFail(error: error))
             }
         }
     }
@@ -121,22 +131,28 @@ class ChallengeDetailPresenter {
 extension ChallengeDetailPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case leaveStart
         case leaveSuccess
         case leaveFail(error: Error)
+        case refreshProgressFail(error: Error)
+        case loadMemberFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:     return "ChallengeDetailView_Appear"
+            case .onDisappear:  return "ChallengeDetailView_Disappear"
             case .leaveStart:   return "ChallengeDetailView_Leave_Start"
             case .leaveSuccess: return "ChallengeDetailView_Leave_Success"
             case .leaveFail:    return "ChallengeDetailView_Leave_Fail"
+            case .refreshProgressFail: return "ChallengeDetailView_RefreshProgress_Fail"
+            case .loadMemberFail: return "ChallengeDetailView_LoadMember_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .leaveFail(let error): return error.eventParameters
+            case .leaveFail(let error), .refreshProgressFail(let error), .loadMemberFail(let error): return error.eventParameters
             default: return nil
             }
         }
@@ -144,6 +160,7 @@ extension ChallengeDetailPresenter {
         var type: LogType {
             switch self {
             case .leaveFail: return .severe
+            case .refreshProgressFail, .loadMemberFail: return .warning
             default: return .analytic
             }
         }

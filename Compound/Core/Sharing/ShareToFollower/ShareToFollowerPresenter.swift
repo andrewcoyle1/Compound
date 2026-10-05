@@ -40,6 +40,10 @@ class ShareToFollowerPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func isSelected(_ user: UserModel) -> Bool {
         selectedIds.contains(user.userId)
     }
@@ -78,6 +82,7 @@ class ShareToFollowerPresenter {
 extension ShareToFollowerPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case sendStart(kind: String, count: Int)
         case sendSuccess
         case sendFail(error: Error)
@@ -85,6 +90,7 @@ extension ShareToFollowerPresenter {
         var eventName: String {
             switch self {
             case .onAppear:     return "ShareToFollowerView_Appear"
+            case .onDisappear:  return "ShareToFollowerView_Disappear"
             case .sendStart:    return "ShareToFollowerView_Send_Start"
             case .sendSuccess:  return "ShareToFollowerView_Send_Success"
             case .sendFail:     return "ShareToFollowerView_Send_Fail"

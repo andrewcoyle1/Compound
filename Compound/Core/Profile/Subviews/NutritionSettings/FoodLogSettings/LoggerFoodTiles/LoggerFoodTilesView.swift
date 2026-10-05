@@ -37,6 +37,9 @@ struct LoggerFoodTilesView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 }
 

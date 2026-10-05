@@ -54,6 +54,9 @@ struct ShareToFollowerView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private func recipientRow(_ user: UserModel) -> some View {

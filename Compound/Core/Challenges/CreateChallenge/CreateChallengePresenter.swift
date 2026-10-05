@@ -78,6 +78,10 @@ class CreateChallengePresenter {
         }
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     func isSelected(_ user: UserModel) -> Bool {
         selectedIds.contains(user.userId)
     }
@@ -127,6 +131,7 @@ class CreateChallengePresenter {
 extension CreateChallengePresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
         case createStart(target: Int, days: Int, members: Int)
         case createSuccess
         case createFail(error: Error)
@@ -134,6 +139,7 @@ extension CreateChallengePresenter {
         var eventName: String {
             switch self {
             case .onAppear:         return "CreateChallengeView_Appear"
+            case .onDisappear:      return "CreateChallengeView_Disappear"
             case .createStart:      return "CreateChallengeView_Create_Start"
             case .createSuccess:    return "CreateChallengeView_Create_Success"
             case .createFail:       return "CreateChallengeView_Create_Fail"

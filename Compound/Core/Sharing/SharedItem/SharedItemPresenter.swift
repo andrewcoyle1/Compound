@@ -38,12 +38,17 @@ class SharedItemPresenter {
         interactor.trackScreenEvent(event: Event.onAppear(kind: delegate.share.payload.kind))
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(kind: delegate.share.payload.kind))
+    }
+
     /// Custom exercises first, so the copy never points at an exercise the recipient does not have;
     /// the share is marked accepted last, so a failure part-way leaves it pending to try again.
     func onAddToLibraryPressed() {
         guard !isWorking, let userId = interactor.userId else { return }
         isWorking = true
         let share = delegate.share
+        interactor.trackEvent(event: Event.acceptStart(kind: share.payload.kind))
         Task {
             do {
                 let copy = SharedItemCopier.copy(share.payload, recipientId: userId, library: interactor.allExercises)
@@ -74,6 +79,7 @@ class SharedItemPresenter {
         guard !isWorking else { return }
         isWorking = true
         let id = delegate.share.id
+        interactor.trackEvent(event: Event.dismissStart)
         Task {
             do {
                 try await interactor.updateShareStatus(.dismissed, id: id)
@@ -96,14 +102,20 @@ class SharedItemPresenter {
 extension SharedItemPresenter {
     enum Event: LoggableEvent {
         case onAppear(kind: String)
+        case onDisappear(kind: String)
+        case acceptStart(kind: String)
         case acceptSuccess(kind: String)
+        case dismissStart
         case dismissSuccess
         case answerFail(error: Error)
 
         var eventName: String {
             switch self {
             case .onAppear:         return "SharedItemView_Appear"
+            case .onDisappear:      return "SharedItemView_Disappear"
+            case .acceptStart:      return "SharedItemView_Accept_Start"
             case .acceptSuccess:    return "SharedItemView_Accept_Success"
+            case .dismissStart:     return "SharedItemView_Dismiss_Start"
             case .dismissSuccess:   return "SharedItemView_Dismiss_Success"
             case .answerFail:       return "SharedItemView_Answer_Fail"
             }
@@ -111,7 +123,7 @@ extension SharedItemPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(let kind), .acceptSuccess(let kind):
+            case .onAppear(let kind), .onDisappear(let kind), .acceptStart(let kind), .acceptSuccess(let kind):
                 return ["kind": kind]
             case .answerFail(let error):
                 return error.eventParameters

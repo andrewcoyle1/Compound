@@ -40,6 +40,14 @@ class ProfilePresenter {
         self.router = router
     }
 
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     /// The goal's objective, or "Not Set" when there is none, which is the cue to set one.
     var weightGoalStatus: String {
         currentGoal?.objective.description ?? String(localized: "Not Set")
@@ -202,10 +210,14 @@ class ProfilePresenter {
     }
     
     enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
         case ratingsPressed
 
         var eventName: String {
             switch self {
+            case .onAppear:                     return "ProfileView_Appear"
+            case .onDisappear:                  return "ProfileView_Disappear"
             case .ratingsPressed:               return "ProfileView_Ratings_Pressed"
             }
         }
@@ -219,7 +231,7 @@ class ProfilePresenter {
 
         var type: LogType {
             switch self {
-            case .ratingsPressed:
+            case .onAppear, .onDisappear, .ratingsPressed:
                 return .analytic
             }
         }

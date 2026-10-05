@@ -132,6 +132,7 @@ class PaywallPresenter {
             let entitlements = try await interactor.restorePurchase()
 
             if entitlements.hasActiveEntitlement {
+                interactor.trackEvent(event: Event.restorePurchaseSuccess)
                 onPurchaseSuccess()
             } else {
                 // A restore that finds nothing does not throw, so this branch raised nothing
@@ -146,6 +147,7 @@ class PaywallPresenter {
                 )
             }
         } catch {
+            interactor.trackEvent(event: Event.restorePurchaseFail(error: error))
             interactor.playHaptic(option: .error)
             router.showAlert(title: String(localized: "Unable to Restore Purchases"), error: error)
         }
@@ -282,6 +284,8 @@ class PaywallPresenter {
         case loadProductsFail(error: Error, variant: PaywallTestOption)
         case restorePurchaseStart
         case restorePurchaseEmpty
+        case restorePurchaseSuccess
+        case restorePurchaseFail(error: Error)
         case backButtonPressed
 
         var eventName: String {
@@ -302,6 +306,8 @@ class PaywallPresenter {
             case .loadProductsFail:     return "PaywallView_Load_Fail"
             case .restorePurchaseStart: return "PaywallView_Restore_Start"
             case .restorePurchaseEmpty: return "PaywallView_Restore_Empty"
+            case .restorePurchaseSuccess: return "PaywallView_Restore_Success"
+            case .restorePurchaseFail:  return "PaywallView_Restore_Fail"
             case .backButtonPressed:    return "PaywallView_BackButton_Pressed"
             }
         }
@@ -312,7 +318,7 @@ class PaywallPresenter {
                 return product.eventParameters
             case .revenueCatPurchaseComplete(hasActiveEntitlement: let isActive), .revenueCatRestoreComplete(hasActiveEntitlement: let isActive):
                 return ["hasActiveEntitlement": isActive]
-            case .purchaseFail(error: let error):
+            case .purchaseFail(error: let error), .restorePurchaseFail(error: let error):
                 return error.eventParameters
             case .loadProductsStart(variant: let variant):
                 return [
@@ -335,7 +341,7 @@ class PaywallPresenter {
         
         var type: LogType {
             switch self {
-            case .purchaseFail:
+            case .purchaseFail, .restorePurchaseFail:
                 return .severe
             case .loadProductsFail:
                 return .severe

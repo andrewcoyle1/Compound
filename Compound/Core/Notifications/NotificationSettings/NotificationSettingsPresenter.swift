@@ -23,6 +23,10 @@ class NotificationSettingsPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
     // MARK: - Permission
 
     /// What stands between the switches and a delivered push, if anything.
@@ -55,6 +59,7 @@ class NotificationSettingsPresenter {
         do {
             _ = try await interactor.checkPushNotificationAuthorisation()
         } catch {
+            interactor.trackEvent(event: Event.checkPermissionsFail(error: error))
             router.showAlert(title: String(localized: "Unable to Check Notification Permission"), error: error)
         }
     }
@@ -65,13 +70,16 @@ class NotificationSettingsPresenter {
     }
 
     func onRequestNotificationsPressed() {
+        interactor.trackEvent(event: Event.requestPermissionStart)
         Task {
             do {
-                _ = try await interactor.requestPushAuthorisation()
+                let granted = try await interactor.requestPushAuthorisation()
+                interactor.trackEvent(event: Event.requestPermissionSuccess(granted: granted))
                 // The answer changes which rows show, so read the status back straight away.
                 await checkPermissions()
             } catch {
                 // A permission request the user asked for either works or says why.
+                interactor.trackEvent(event: Event.requestPermissionFail(error: error))
                 router.showAlert(title: String(localized: "Unable to Enable Notifications"), error: error)
             }
         }
@@ -127,13 +135,8 @@ class NotificationSettingsPresenter {
     }
 
     private func onSocialPushToggled(_ type: ActivityNotificationModel.ActivityType, isEnabled: Bool) {
-        interactor.trackEvent(event: Event.socialPushToggled(type: type, isEnabled: isEnabled))
-        Task {
-            do {
-                try await interactor.updateSocialNotificationPreferences(type: type, isEnabled: isEnabled)
-            } catch {
-                router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
-            }
+        save(.socialPushToggled(type: type, isEnabled: isEnabled)) {
+            try await self.interactor.updateSocialNotificationPreferences(type: type, isEnabled: isEnabled)
         }
     }
 
@@ -175,10 +178,14 @@ class NotificationSettingsPresenter {
 
     private func save(_ event: Event, _ write: @escaping () async throws -> Void) {
         interactor.trackEvent(event: event)
+        let setting = event.eventName
+        interactor.trackEvent(event: Event.saveStart(setting: setting))
         Task {
             do {
                 try await write()
+                interactor.trackEvent(event: Event.saveSuccess(setting: setting))
             } catch {
+                interactor.trackEvent(event: Event.saveFail(setting: setting, error: error))
                 router.showAlert(title: String(localized: "Unable to Save Setting"), error: error)
             }
         }
@@ -188,6 +195,14 @@ class NotificationSettingsPresenter {
     /// that screen, so the funnels built on them carry on.
     enum Event: LoggableEvent {
         case onAppear
+        case onDisappear
+        case checkPermissionsFail(error: Error)
+        case requestPermissionStart
+        case requestPermissionSuccess(granted: Bool)
+        case requestPermissionFail(error: Error)
+        case saveStart(setting: String)
+        case saveSuccess(setting: String)
+        case saveFail(setting: String, error: Error)
         case socialPushToggled(type: ActivityNotificationModel.ActivityType, isEnabled: Bool)
         case streakReminder(isEnabled: Bool)
         case reminderHour(hour: Int)
@@ -198,6 +213,14 @@ class NotificationSettingsPresenter {
         var eventName: String {
             switch self {
             case .onAppear: return "NotificationSettingsView_Appear"
+            case .onDisappear: return "NotificationSettingsView_Disappear"
+            case .checkPermissionsFail: return "NotificationSettingsView_CheckPermissions_Fail"
+            case .requestPermissionStart: return "NotificationSettingsView_RequestPermission_Start"
+            case .requestPermissionSuccess: return "NotificationSettingsView_RequestPermission_Success"
+            case .requestPermissionFail: return "NotificationSettingsView_RequestPermission_Fail"
+            case .saveStart: return "NotificationSettingsView_SaveSetting_Start"
+            case .saveSuccess: return "NotificationSettingsView_SaveSetting_Success"
+            case .saveFail: return "NotificationSettingsView_SaveSetting_Fail"
             case .socialPushToggled: return "NotificationsView_SocialPush_Toggle"
             case .streakReminder: return "NotificationsView_StreakReminder_Toggle"
             case .reminderHour: return "NotificationsView_ReminderHour_Changed"
@@ -209,7 +232,11 @@ class NotificationSettingsPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear: return nil
+            case .onAppear, .onDisappear, .requestPermissionStart: return nil
+            case .checkPermissionsFail(let error), .requestPermissionFail(let error): return error.eventParameters
+            case .requestPermissionSuccess(let granted): return ["granted": granted]
+            case .saveStart(let setting), .saveSuccess(let setting): return ["setting": setting]
+            case .saveFail(let setting, let error): return error.eventParameters.merging(["setting": setting]) { current, _ in current }
             case .socialPushToggled(let type, let isEnabled): return ["type": type.rawValue, "is_enabled": isEnabled]
             case .streakReminder(let isEnabled), .weeklyDigest(let isEnabled),
                  .comeBackReminders(let isEnabled), .mealReminders(let isEnabled):
@@ -218,6 +245,11 @@ class NotificationSettingsPresenter {
             }
         }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .checkPermissionsFail, .requestPermissionFail, .saveFail: return .severe
+            default: return .analytic
+            }
+        }
     }
 }

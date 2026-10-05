@@ -143,6 +143,11 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
                 Label(gap, systemImage: Symbol.protein)
                     .font(.rowTitle)
                 Spacer()
+                Button("Ask Coach", systemImage: Symbol.coach) {
+                    presenter.onProteinGapAskCoachPressed()
+                }
+                .labelStyle(.iconOnly)
+                .buttonStyle(.bordered)
                 Button("Log Meal") {
                     presenter.onProteinGapLogMealPressed()
                 }
@@ -191,6 +196,9 @@ struct TodayView<TodaysCard: View, StreakCard: View>: View {
         }
         ToolbarSpacer(.fixed, placement: .topBarTrailing)
         #endif
+
+        AskCoachToolbarItem { presenter.onAskCoachPressed() }
+        ToolbarSpacer(.fixed, placement: .topBarTrailing)
 
         // The same quick actions the other tabs keep behind their add button.
         ToolbarItem(placement: .topBarTrailing) {

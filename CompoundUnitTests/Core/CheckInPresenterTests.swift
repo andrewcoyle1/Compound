@@ -81,6 +81,8 @@ struct CheckInPresenterTests {
     }
 
     private final class Router: CheckInRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shownErrors: [Error] = []
 

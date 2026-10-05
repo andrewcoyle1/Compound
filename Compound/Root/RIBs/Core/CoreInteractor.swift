@@ -55,6 +55,7 @@ struct CoreInteractor: GlobalInteractor {
     let commentsManager: CommentsManager
     let activityNotificationManager: ActivityNotificationManager
     let stravaManager: StravaManager
+    let coachManager: CoachManager
     let openFoodFactsService: any OpenFoodFactsService
     let appState: AppState
     let premiumEntitlementResolution: PremiumEntitlementResolution
@@ -109,6 +110,7 @@ struct CoreInteractor: GlobalInteractor {
         self.commentsManager = container.resolve(CommentsManager.self)!
         self.activityNotificationManager = container.resolve(ActivityNotificationManager.self)!
         self.stravaManager = container.resolve(StravaManager.self)!
+        self.coachManager = container.resolve(CoachManager.self)!
         self.openFoodFactsService = container.resolve(OpenFoodFactsServiceContainer.self)!.service
         self.appState = container.resolve(AppState.self)!
         self.premiumEntitlementResolution = container.resolve(PremiumEntitlementResolution.self)!
@@ -194,6 +196,7 @@ struct CoreInteractor: GlobalInteractor {
         // After the sessions and exercises: the upload queue is sent from them. Not awaited, so a
         // backlog going to Strava never holds up sign-in.
         Task { await stravaManager.signIn(userId: user.uid) }
+        Task { await coachManager.signIn() }
         // Once the sessions are in: the evening streak reminder reads this copy, and a new week may
         // have started since the last finish.
         Task { await recordWeeklyStreak() }
@@ -223,6 +226,7 @@ struct CoreInteractor: GlobalInteractor {
         try authManager.signOut()
         // The connection stays with the account, on the server; this only forgets it here.
         stravaManager.signOut()
+        coachManager.signOut()
         try await purchaseManager.logOut()
         premiumEntitlementResolution.reset()
         userManager.signOut()
@@ -254,6 +258,7 @@ struct CoreInteractor: GlobalInteractor {
 
         // onUserDeleted revokes Compound at Strava and deletes the connection.
         stravaManager.signOut()
+        coachManager.signOut()
         WidgetSnapshotStore.clear()
 
         // Delete Purchases (RevenueCat)

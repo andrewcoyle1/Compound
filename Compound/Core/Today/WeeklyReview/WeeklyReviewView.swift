@@ -82,6 +82,7 @@ struct WeeklyReviewView: View {
         .navigationTitle("Weekly Review")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            AskCoachToolbarItem { presenter.onAskCoachPressed() }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Share", systemImage: Symbol.share) {
                     presenter.onSharePressed()

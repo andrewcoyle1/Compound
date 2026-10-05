@@ -29,6 +29,8 @@ struct WorkoutSessionDeleteFailureTests {
     }
 
     private final class Router: WorkoutSessionDetailRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var alertTitles: [String] = []
 

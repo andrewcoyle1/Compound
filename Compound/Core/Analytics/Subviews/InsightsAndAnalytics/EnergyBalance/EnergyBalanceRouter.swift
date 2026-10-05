@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol EnergyBalanceRouter: GlobalRouter {
+protocol EnergyBalanceRouter: GlobalRouter, AskCoachRouter {
     func showAddMealView(delegate: AddMealDelegate)
 }
 

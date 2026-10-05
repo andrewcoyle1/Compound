@@ -411,3 +411,11 @@ class CheckInPresenter {
         }
     }
 }
+
+// MARK: - Coach
+
+extension CheckInPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .checkIn, date: weekStart.dayKey, title: String(localized: "Weekly Check-In")))
+    }
+}

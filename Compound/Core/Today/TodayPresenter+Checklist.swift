@@ -248,3 +248,16 @@ extension TodayPresenter {
         router.showWeeklyReviewView()
     }
 }
+
+// MARK: - Coach
+
+extension TodayPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: .today)
+    }
+
+    /// From the evening protein reminder: what to eat to close it.
+    func onProteinGapAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .nutritionDay, date: Date().dayKey, title: String(localized: "Today's Food")))
+    }
+}

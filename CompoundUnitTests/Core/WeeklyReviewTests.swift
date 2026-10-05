@@ -253,6 +253,8 @@ struct WeeklyReviewTests {
     }
 
     final class Router: WeeklyReviewRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var sharedItems: [[Any]] = []
         private(set) var alertTitles: [String] = []

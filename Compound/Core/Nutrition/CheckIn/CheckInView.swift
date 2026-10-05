@@ -199,6 +199,7 @@ struct CheckInView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        AskCoachToolbarItem { presenter.onAskCoachPressed() }
         ToolbarItem(placement: .cancellationAction) {
             Button(role: .close) {
                 presenter.onDismissPressed()

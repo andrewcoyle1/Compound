@@ -64,6 +64,7 @@ struct Dependencies {
         let commentsManager: CommentsManager
         let activityNotificationManager: ActivityNotificationManager
         let stravaManager: StravaManager
+        let coachManager: CoachManager
         let openFoodFactsService: any OpenFoodFactsService
 
         switch config {
@@ -340,6 +341,16 @@ struct Dependencies {
                 exercises: exerciseModelManager,
                 users: userManager,
                 logger: logManager
+            )
+            coachManager = CoachManager(
+                service: MockCoachService(),
+                chatSyncEngine: CollectionSyncEngine<CoachChat>(
+                    remote: MockRemoteCollectionService(collection: CoachChat.mocks),
+                    managerKey: CoachManager.chatsManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                users: userManager
             )
             openFoodFactsService = MockOpenFoodFactsService()
 
@@ -703,6 +714,21 @@ struct Dependencies {
                 users: userManager,
                 logger: logManager
             )
+            coachManager = CoachManager(
+                service: ProductionCoachService(),
+                chatSyncEngine: CollectionSyncEngine<CoachChat>(
+                    remote: FirebaseRemoteCollectionService(
+                        collectionPath: { [weak authManager] in
+                            guard let uid = authManager?.auth?.uid else { return nil }
+                            return "users/\(uid)/coach_chats"
+                        }
+                    ),
+                    managerKey: CoachManager.chatsManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                users: userManager
+            )
             openFoodFactsService = ProductionOpenFoodFactsService()
 
         case .prod:
@@ -1059,6 +1085,21 @@ struct Dependencies {
                 users: userManager,
                 logger: logManager
             )
+            coachManager = CoachManager(
+                service: ProductionCoachService(),
+                chatSyncEngine: CollectionSyncEngine<CoachChat>(
+                    remote: FirebaseRemoteCollectionService(
+                        collectionPath: { [weak authManager] in
+                            guard let uid = authManager?.auth?.uid else { return nil }
+                            return "users/\(uid)/coach_chats"
+                        }
+                    ),
+                    managerKey: CoachManager.chatsManagerKey,
+                    enableLocalPersistence: true,
+                    logger: logManager
+                ),
+                users: userManager
+            )
             openFoodFactsService = ProductionOpenFoodFactsService()
         }
         hapticManager = HapticManager(logger: logManager)
@@ -1111,6 +1152,7 @@ struct Dependencies {
         container.register(CommentsManager.self, service: commentsManager)
         container.register(ActivityNotificationManager.self, service: activityNotificationManager)
         container.register(StravaManager.self, service: stravaManager)
+        container.register(CoachManager.self, service: coachManager)
         container.register(OpenFoodFactsServiceContainer.self, service: OpenFoodFactsServiceContainer(openFoodFactsService))
 
         // MARK: - Sharing

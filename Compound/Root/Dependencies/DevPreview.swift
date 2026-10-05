@@ -52,6 +52,7 @@ class DevPreview {
         container.register(CommentsManager.self, service: commentsManager)
         container.register(ActivityNotificationManager.self, service: activityNotificationManager)
         container.register(StravaManager.self, service: stravaManager)
+        container.register(CoachManager.self, service: coachManager)
         container.register(OpenFoodFactsServiceContainer.self, service: OpenFoodFactsServiceContainer(openFoodFactsService))
         container.register(ShareManager.self, service: ShareManager(service: MockShareService()))
         // MARK: - Challenges
@@ -109,6 +110,7 @@ class DevPreview {
     let commentsManager: CommentsManager
     let activityNotificationManager: ActivityNotificationManager
     let stravaManager: StravaManager
+    let coachManager: CoachManager
     let openFoodFactsService: any OpenFoodFactsService = MockOpenFoodFactsService()
 
     // swiftlint:disable:next function_body_length
@@ -330,6 +332,16 @@ class DevPreview {
             exercises: exerciseModelManager,
             users: userManager,
             logger: logManager
+        )
+        self.coachManager = CoachManager(
+            service: MockCoachService(),
+            chatSyncEngine: CollectionSyncEngine<CoachChat>(
+                remote: MockRemoteCollectionService(collection: CoachChat.mocks),
+                managerKey: CoachManager.chatsManagerKey,
+                enableLocalPersistence: false,
+                logger: logManager
+            ),
+            users: userManager
         )
         self.hapticManager = HapticManager()
         self.soundEffectManager = SoundEffectManager()

@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol ExpenditureDetailRouter: GlobalRouter {
+protocol ExpenditureDetailRouter: GlobalRouter, AskCoachRouter {
     func showEditProfileView(delegate: EditProfileDelegate)
 }
 

@@ -85,6 +85,8 @@ struct TodayPresenterTests {
 
     /// `showDevSettingsView()` is declared unguarded: the test target builds without `-DDEV`.
     final class Router: TodayRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var alertTitles: [String] = []

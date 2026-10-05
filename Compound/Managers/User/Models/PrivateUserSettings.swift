@@ -44,6 +44,13 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
     var pushComeBackReminders: Bool?
     /// Breakfast, lunch and dinner reminders. Absent means never answered: off, and offered once.
     var pushMealReminders: Bool?
+    // MARK: - Coach
+    /// Agreement to share this account's data with the AI coach's provider. `false` once withdrawn:
+    /// saves merge, so a withdrawal is written rather than the field removed. `coachChat` in
+    /// `functions/` gates on it being `true`.
+    var coachConsent: Bool?
+    /// When it was last given, kept for the record.
+    var coachConsentAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case fcmToken = "fcm_token"
@@ -69,6 +76,9 @@ struct PrivateUserSettings: DataSyncModelProtocol, Equatable {
         // MARK: - LocalReminders
         case pushComeBackReminders = "push_come_back_reminders"
         case pushMealReminders = "push_meal_reminders"
+        // MARK: - Coach
+        case coachConsent = "coach_consent"
+        case coachConsentAt = "coach_consent_at"
     }
 
     var eventParameters: [String: Any] {

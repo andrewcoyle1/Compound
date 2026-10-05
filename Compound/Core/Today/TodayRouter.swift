@@ -6,7 +6,7 @@
 import SwiftUI
 
 @MainActor
-protocol TodayRouter: GlobalRouter {
+protocol TodayRouter: GlobalRouter, AskCoachRouter {
     #if DEV || MOCK
     func showDevSettingsView()
     #endif

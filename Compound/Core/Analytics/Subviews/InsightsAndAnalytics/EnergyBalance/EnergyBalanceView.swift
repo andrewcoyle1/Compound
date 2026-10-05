@@ -17,6 +17,9 @@ struct EnergyBalanceView: View {
 
     var body: some View {
         MetricDetailView(presenter: presenter)
+            .toolbar {
+                AskCoachToolbarItem { presenter.onAskCoachPressed() }
+            }
     }
 }
 

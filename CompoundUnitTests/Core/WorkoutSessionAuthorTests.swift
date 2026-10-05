@@ -41,6 +41,8 @@ struct WorkoutSessionAuthorTests {
     }
 
     private final class Router: WorkoutSessionDetailRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
 
         // Unguarded on purpose: the test target has no `-DDEV`, so a `#if DEV || MOCK` stub

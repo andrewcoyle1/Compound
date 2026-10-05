@@ -157,3 +157,11 @@ extension MuscleGroupDetailPresenter {
         var type: LogType { .analytic }
     }
 }
+
+// MARK: - Coach
+
+extension MuscleGroupDetailPresenter {
+    func onAskCoachPressed() {
+        router.showCoach(context: CoachContext(kind: .muscleGroup, id: muscle.rawValue, title: muscle.name))
+    }
+}

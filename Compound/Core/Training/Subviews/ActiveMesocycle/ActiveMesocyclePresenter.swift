@@ -412,3 +412,11 @@ extension ActiveMesocyclePresenter {
     }
 
 }
+
+// MARK: - Coach
+
+extension ActiveMesocyclePresenter {
+    func onAskCoachPressed(mesocycle: Mesocycle) {
+        router.showCoach(context: CoachContext(kind: .mesocycle, id: mesocycle.id, title: mesocycle.name))
+    }
+}

@@ -61,6 +61,8 @@ struct ActiveMesocyclePresenterTests {
     }
 
     private final class Router: ActiveMesocycleRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 

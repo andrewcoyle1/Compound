@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-protocol NutritionRouter: GlobalRouter {
+protocol NutritionRouter: GlobalRouter, AskCoachRouter {
     func showAddMealView(delegate: AddMealDelegate)
     func showMealDetailView(delegate: MealDetailDelegate)
     func showMealItemAmountViewView(delegate: MealItemAmountViewDelegate)

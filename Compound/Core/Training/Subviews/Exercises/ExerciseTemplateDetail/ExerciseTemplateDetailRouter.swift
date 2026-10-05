@@ -6,7 +6,7 @@
 //
 
 @MainActor
-protocol ExerciseModelDetailRouter: GlobalRouter {
+protocol ExerciseModelDetailRouter: GlobalRouter, AskCoachRouter {
 #if DEV || MOCK
 func showDevSettingsView()
 #endif

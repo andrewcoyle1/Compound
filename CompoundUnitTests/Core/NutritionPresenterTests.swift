@@ -77,6 +77,8 @@ struct NutritionPresenterTests {
     }
 
     private final class Router: NutritionRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var amountDelegates: [MealItemAmountViewDelegate] = []

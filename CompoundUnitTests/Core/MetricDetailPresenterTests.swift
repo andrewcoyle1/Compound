@@ -273,6 +273,8 @@ struct ExpenditureDetailPresenterTests {
     }
 
     private final class Router: ExpenditureDetailRouter {
+        private(set) var coachContexts: [CoachContext] = []
+        func showCoach(context: CoachContext) { coachContexts.append(context) }
         let router: AnyRouter = TestRouting.anyRouter
 
         func showEditProfileView(delegate: EditProfileDelegate) { }

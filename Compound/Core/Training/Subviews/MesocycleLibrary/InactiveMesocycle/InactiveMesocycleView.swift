@@ -39,12 +39,6 @@ struct InactiveMesocycleView<MesocycleDisclosure: View>: View {
                 }
             }
         }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
-        }
     }
 }
 

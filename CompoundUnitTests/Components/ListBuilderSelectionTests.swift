@@ -69,17 +69,6 @@ struct ExerciseListBuilderPresenterTests {
 
         #expect(interactor.trackedEventNames == ["ExercisesView_Exercise_Selected"])
     }
-
-    @Test("Test The Screen Is Tracked Under Its Own Name")
-    func testTheScreenIsTrackedUnderItsOwnName() {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-
-        #expect(interactor.trackedScreenEventNames == ["ExercisesView_Appear"])
-        #expect(interactor.trackedEventNames == ["ExercisesView_Disappear"])
-    }
 }
 
 // MARK: - Workouts
@@ -129,17 +118,6 @@ struct WorkoutListBuilderPresenterTests {
         presenter.onWorkoutPressed(workout: WorkoutTemplateModel(id: "wo-1", authorId: "user-1", name: "Push Day"))
 
         #expect(interactor.trackedEventNames == ["WorkoutsView_Workout_Selected"])
-    }
-
-    @Test("Test The Screen Is Tracked Under Its Own Name")
-    func testTheScreenIsTrackedUnderItsOwnName() {
-        let (presenter, interactor) = makePresenter()
-
-        presenter.onViewAppear()
-        presenter.onViewDisappear()
-
-        #expect(interactor.trackedScreenEventNames == ["WorkoutsView_Appear"])
-        #expect(interactor.trackedEventNames == ["WorkoutsView_Disappear"])
     }
 }
 

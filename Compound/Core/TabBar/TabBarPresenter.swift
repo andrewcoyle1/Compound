@@ -123,10 +123,25 @@ class TabBarPresenter {
     }
 
     /// `restoredTab` is the tab the scene was on when the app last closed. A pending link, routed
-    /// after it, still wins.
+    /// after it, still wins. The Appear is the app shell's: each tab root logs its own, so this
+    /// counts arrivals in the main app rather than screens.
     func onViewAppear(restoredTab: DeepLink.Tab? = nil) {
+        interactor.trackScreenEvent(event: Event.onAppear)
         if let restoredTab { selectedTab = restoredTab }
         routePendingDeepLink()
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    /// A tab the user picked. Re-tapping the current tab (which pops it to its root) is not a
+    /// change of tab, so it is not counted.
+    func onTabSelected(_ tab: DeepLink.Tab) {
+        if tab != selectedTab {
+            interactor.trackEvent(event: Event.tabSelected(tab: tab))
+        }
+        selectedTab = tab
     }
 
     private func routePendingDeepLink() {
@@ -140,5 +155,30 @@ class TabBarPresenter {
     ) {
         self.interactor = interactor
         self.router = router
+    }
+}
+
+extension TabBarPresenter {
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+        case tabSelected(tab: DeepLink.Tab)
+
+        var eventName: String {
+            switch self {
+            case .onAppear:    return "TabBarView_Appear"
+            case .onDisappear: return "TabBarView_Disappear"
+            case .tabSelected: return "TabBarView_Tab_Selected"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .tabSelected(let tab): return ["tab": tab.rawValue]
+            default:                    return nil
+            }
+        }
+
+        var type: LogType { .analytic }
     }
 }

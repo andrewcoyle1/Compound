@@ -39,6 +39,8 @@ struct WorkoutTemplateDetailView: View {
         .toolbar {
             toolbarContent
         }
+        .onAppear { presenter.onViewAppear(delegate: delegate) }
+        .onDisappear { presenter.onViewDisappear(delegate: delegate) }
         .bottomCTA {
             if delegate.allowsStart {
                 CallToActionButton(isLoading: presenter.isStarting) {

@@ -45,9 +45,11 @@ struct NameWorkoutView: View {
             }
         }
         .onAppear {
+            presenter.onViewAppear()
             // A new workout's first job is its name, so the keyboard is already up.
             if delegate.workoutTemplate == nil { isNameFocused = true }
         }
+        .onDisappear { presenter.onViewDisappear() }
         .bottomCTA {
             CallToActionButton {
                 presenter.onContinuePressed(delegate: delegate)

@@ -52,6 +52,7 @@ struct MacrocyclesView: View {
             }
         }
         .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
     }
 
     private func row(_ macrocycle: Macrocycle) -> some View {

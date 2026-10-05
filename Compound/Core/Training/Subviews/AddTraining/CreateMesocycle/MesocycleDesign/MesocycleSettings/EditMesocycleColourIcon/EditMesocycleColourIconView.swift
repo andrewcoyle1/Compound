@@ -18,6 +18,8 @@ struct EditMesocycleColourIconView: View {
         }
         .padding(.top)
         .background(Color.canvas)
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationTitle("Color & Icon")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -39,6 +41,7 @@ extension CoreBuilder {
                 colour: colour,
                 icon: icon,
                 onSave: onSave,
+                interactor: interactor,
                 router: coreRouter
             )
         )

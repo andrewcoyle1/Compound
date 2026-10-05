@@ -63,6 +63,8 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .task {
             await presenter.onAppear()
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             presenter.onScenePhaseChange(oldPhase: oldPhase, newPhase: newPhase)
         }

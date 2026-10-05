@@ -16,6 +16,8 @@ struct ExercisesView<ExerciseList: View>: View {
     var body: some View {
         let delegate = ExerciseListBuilderDelegate(onExerciseSelectionChanged: presenter.onExercisePressed)
         exerciseListViewBuilder(delegate)
+            .onAppear { presenter.onViewAppear() }
+            .onDisappear { presenter.onViewDisappear() }
             .navigationTitle("Exercises")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarVisibility(.visible)

@@ -65,14 +65,6 @@ class ActiveMesocyclePresenter {
         self.router = router
     }
 
-    func onViewAppear(delegate: ActiveMesocycleDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-    }
-
-    func onViewDisappear(delegate: ActiveMesocycleDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
-    }
-
     func onMesocyclePressed(mesocycle: Mesocycle) {
         router.showEditMesocycleView(delegate: EditMesocycleDelegate(mesocycle: mesocycle))
     }
@@ -269,8 +261,10 @@ class ActiveMesocyclePresenter {
     }
 
     func deleteMesocycle(mesocycleId: String) async {
+        interactor.trackEvent(event: Event.deleteMesocycleStart)
         do {
             try await interactor.deleteMesocycle(mesocycleId: mesocycleId)
+            interactor.trackEvent(event: Event.deleteMesocycleSuccess)
         } catch {
             interactor.trackEvent(event: Event.deleteMesocycleFail(error: error))
             router.showSimpleAlert(title: String(localized: "Unable to Delete Mesocycle"), subtitle: String(localized: "Please try again."))
@@ -289,7 +283,11 @@ class ActiveMesocyclePresenter {
             onResume: onResumeWorkout,
             onReplace: { [weak self] in
                 Task { @MainActor in
-                    try? self?.interactor.deleteActiveSession()
+                    do {
+                        try self?.interactor.deleteActiveSession()
+                    } catch {
+                        self?.interactor.trackEvent(event: Event.deleteActiveSessionFail(error: error))
+                    }
                     onStartNewWorkout()
                 }
             }
@@ -303,24 +301,26 @@ class ActiveMesocyclePresenter {
 extension ActiveMesocyclePresenter {
 
     enum Event: LoggableEvent {
-        case onAppear(delegate: ActiveMesocycleDelegate)
-        case onDisappear(delegate: ActiveMesocycleDelegate)
         case openCompletedSessionStart
         case openCompletedSessionSuccess
         case openCompletedSessionFail(error: Error)
+        case deleteMesocycleStart
+        case deleteMesocycleSuccess
         case deleteMesocycleFail(error: Error)
+        case deleteActiveSessionFail(error: Error)
         case skipStart
         case skipSuccess
         case skipFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .deleteMesocycleFail: return "ActiveTrainingProgramView_DeleteProgram_Fail"
+            case .deleteMesocycleStart:          return "ActiveTrainingProgramView_DeleteProgram_Start"
+            case .deleteMesocycleSuccess:        return "ActiveTrainingProgramView_DeleteProgram_Success"
+            case .deleteMesocycleFail:           return "ActiveTrainingProgramView_DeleteProgram_Fail"
+            case .deleteActiveSessionFail:       return "ActiveTrainingProgramView_DeleteActiveSession_Fail"
             case .skipStart:                     return "ActiveTrainingProgramView_Skip_Start"
             case .skipSuccess:                   return "ActiveTrainingProgramView_Skip_Success"
             case .skipFail:                      return "ActiveTrainingProgramView_Skip_Fail"
-            case .onAppear:                      return "ActiveTrainingProgramView_Appear"
-            case .onDisappear:                   return "ActiveTrainingProgramView_Disappear"
             case .openCompletedSessionStart:     return "ActiveTrainingProgramView_OpenCompletedSession_Start"
             case .openCompletedSessionSuccess:   return "ActiveTrainingProgramView_OpenCompletedSession_Success"
             case .openCompletedSessionFail:      return "ActiveTrainingProgramView_OpenCompletedSession_Fail"
@@ -329,9 +329,8 @@ extension ActiveMesocyclePresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .deleteMesocycleFail(error: let error), .skipFail(error: let error): return error.eventParameters
-            case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
-                return delegate.eventParameters
+            case .deleteMesocycleFail(error: let error), .skipFail(error: let error), .deleteActiveSessionFail(error: let error):
+                return error.eventParameters
             case .openCompletedSessionFail(error: let error):
                 return error.eventParameters
             default:
@@ -344,6 +343,8 @@ extension ActiveMesocyclePresenter {
             case .deleteMesocycleFail, .skipFail: return .severe
             case .openCompletedSessionFail:
                 return .severe
+            case .deleteActiveSessionFail:
+                return .warning
             default:
                 return .analytic
             }

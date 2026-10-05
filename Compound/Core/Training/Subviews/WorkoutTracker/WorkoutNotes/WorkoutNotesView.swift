@@ -41,6 +41,8 @@ struct WorkoutNotesView: View {
                 .padding()
             Spacer()
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationTitle(delegate.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

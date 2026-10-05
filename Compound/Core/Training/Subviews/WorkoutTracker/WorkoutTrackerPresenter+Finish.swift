@@ -113,11 +113,15 @@ extension WorkoutTrackerPresenter {
             type: .info
         )
         // The finish itself is shared with the Live Activity's Finish button; only the retry and
-        // what the user is told about it are this screen's.
+        // what the user is told about it are this screen's. The shared path logs each attempt's
+        // own result; these three follow the finish as the user sees it, retries included.
+        interactor.trackEvent(event: Event.finishWorkoutStart)
         switch await interactor.finishWorkout(session) {
         case .saved:
+            interactor.trackEvent(event: Event.finishWorkoutSuccess)
             interactor.playHaptic(option: .success)
         case .failedPermanently:
+            interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
             interactor.showAppToast(SaveToast.failed)
         case .failedTransiently:
             await retrySave(session)
@@ -158,20 +162,26 @@ extension WorkoutTrackerPresenter {
                 try await Task.sleep(for: delay)
             } catch {
                 // Cancelled. Whoever called it off does not need to be told what they just did.
+                interactor.trackEvent(event: Event.finishWorkoutFail(reason: .cancelled))
                 return
             }
             waited += delay
 
             // A retry after sign-out would write this workout into whoever signed in next, so the
             // loop stops following the user rather than chasing them.
-            guard interactor.currentUser?.userId == session.authorId else { return }
+            guard interactor.currentUser?.userId == session.authorId else {
+                interactor.trackEvent(event: Event.finishWorkoutFail(reason: .signedOut))
+                return
+            }
 
             switch await attemptSave(session) {
             case .saved:
+                interactor.trackEvent(event: Event.finishWorkoutSuccess)
                 interactor.playHaptic(option: .success)
                 interactor.showAppToast(SaveToast.saved)
                 return
             case .failedPermanently:
+                interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
                 interactor.showAppToast(SaveToast.failed)
                 return
             case .failedTransiently:
@@ -179,6 +189,7 @@ extension WorkoutTrackerPresenter {
             }
         }
 
+        interactor.trackEvent(event: Event.finishWorkoutFail(reason: .retriesExhausted))
         interactor.showAppToast(SaveToast.failed)
     }
 }

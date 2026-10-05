@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 class EditMesocycleColourIconPresenter {
 
+    private let interactor: EditMesocycleColourIconInteractor
     private let router: EditMesocycleColourIconRouter
 
     var selectedColour: Color
@@ -14,10 +15,11 @@ class EditMesocycleColourIconPresenter {
 
     private let onSave: (String, String) -> Void
 
-    init(colour: String, icon: String, onSave: @escaping (String, String) -> Void, router: EditMesocycleColourIconRouter) {
+    init(colour: String, icon: String, onSave: @escaping (String, String) -> Void, interactor: EditMesocycleColourIconInteractor, router: EditMesocycleColourIconRouter) {
         self.selectedColour = Color(hex: colour)
         self.selectedIcon = icon
         self.onSave = onSave
+        self.interactor = interactor
         self.router = router
     }
 
@@ -36,5 +38,29 @@ class EditMesocycleColourIconPresenter {
 
     func onCancelPressed() {
         router.dismissScreen()
+    }
+
+    func onViewAppear() {
+        interactor.trackScreenEvent(event: Event.onAppear)
+    }
+
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear)
+    }
+
+    enum Event: LoggableEvent {
+        case onAppear
+        case onDisappear
+
+        var eventName: String {
+            switch self {
+            case .onAppear:     return "EditMesocycleColourIconView_Appear"
+            case .onDisappear:  return "EditMesocycleColourIconView_Disappear"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
     }
 }

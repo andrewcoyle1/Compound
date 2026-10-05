@@ -43,12 +43,6 @@ struct ExerciseListBuilderView: View {
         .searchable(text: $presenter.searchText, placement: .toolbar, prompt: Text("Search exercises"))
         .scrollIndicators(.hidden)
         .toolbarVisibility(.hidden)
-        .onAppear {
-            presenter.onViewAppear()
-        }
-        .onDisappear {
-            presenter.onViewDisappear()
-        }
         .safeAreaInset(edge: .top) {
             filterSection
         }

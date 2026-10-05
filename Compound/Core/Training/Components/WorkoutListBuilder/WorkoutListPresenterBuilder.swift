@@ -62,14 +62,6 @@ class WorkoutListPresenterBuilder {
         self.router = router
     }
     
-    func onViewAppear() {
-        interactor.trackScreenEvent(event: Event.onAppear)
-    }
-    
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
-    }
-    
     func onAddWorkoutPressed() {
         interactor.trackEvent(event: Event.onAddWorkoutPressed)
         router.showCreateWorkoutView(delegate: CreateWorkoutDelegate(workoutTemplate: nil))
@@ -88,15 +80,11 @@ class WorkoutListPresenterBuilder {
 
 extension WorkoutListPresenterBuilder {
     enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
         case onAddWorkoutPressed
         case workoutSelected(workout: WorkoutTemplateModel)
 
         var eventName: String {
             switch self {
-            case .onAppear:            return "WorkoutsView_Appear"
-            case .onDisappear:         return "WorkoutsView_Disappear"
             case .onAddWorkoutPressed: return "WorkoutsView_AddWorkoutPressed"
             case .workoutSelected:     return "WorkoutsView_Workout_Selected"
             }

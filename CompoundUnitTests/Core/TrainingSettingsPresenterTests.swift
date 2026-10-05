@@ -513,6 +513,19 @@ struct ExercisesPresenterTests {
         #expect(router.openedExercises.map(\.id) == ["squat"])
         #expect(router.shown.isEmpty)
     }
+
+    /// The screen logs itself; the list it embeds no longer does, so a visit counts once.
+    @Test("Test The Screen Is Tracked Under Its Own Name")
+    func testTheScreenIsTrackedUnderItsOwnName() {
+        let interactor = Interactor()
+        let presenter = ExercisesPresenter(interactor: interactor, router: Router())
+
+        presenter.onViewAppear()
+        presenter.onViewDisappear()
+
+        #expect(interactor.trackedScreenEventNames == ["ExercisesView_Appear"])
+        #expect(interactor.trackedEventNames == ["ExercisesView_Disappear"])
+    }
 }
 
 /// The exercise assessment, which is a static explainer at this point and only reports itself.

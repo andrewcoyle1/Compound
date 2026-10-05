@@ -681,24 +681,6 @@ struct SetTrackerRowPresenterTests {
 
         #expect(screen.interactor.trackedEventNames.contains("SetTrackerRow_SetCompleted"))
     }
-
-    @Test("Test The Row Records Appearing And Disappearing")
-    func testTheRowRecordsAppearingAndDisappearing() {
-        let screen = makeScreen()
-        let exerciseBox = Box(exercise())
-        let setBox = Box(set())
-        let delegate = SetTrackerRowDelegate(
-            exercise: exerciseBox.binding,
-            set: setBox.binding,
-            lastSet: nil
-        )
-
-        screen.presenter.onViewAppear(delegate: delegate)
-        screen.presenter.onViewDisappear(delegate: delegate)
-
-        #expect(screen.interactor.trackedScreenEventNames == ["SetTrackerRowView_Appear"])
-        #expect(screen.interactor.trackedEventNames == ["SetTrackerRowView_Disappear"])
-    }
 }
 
 extension SetTrackerRowPresenterTests {

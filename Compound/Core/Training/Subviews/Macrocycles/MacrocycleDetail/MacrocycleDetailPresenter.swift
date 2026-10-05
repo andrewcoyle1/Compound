@@ -81,6 +81,10 @@ class MacrocycleDetailPresenter {
         interactor.trackScreenEvent(event: Event.onAppear(isNew: isNew))
     }
 
+    func onViewDisappear() {
+        interactor.trackEvent(event: Event.onDisappear(isNew: isNew))
+    }
+
     func onAddMesocyclePressed(_ mesocycle: Mesocycle) {
         mesocycleIds.append(mesocycle.id)
         if name.isEmpty { name = mesocycle.name }
@@ -99,7 +103,7 @@ class MacrocycleDetailPresenter {
 
     func onSavePressed() {
         guard canSave else { return }
-        run(Event.saveFail) { [self] in
+        run(start: Event.saveStart, success: Event.saveSuccess, failure: Event.saveFail) { [self] in
             try await interactor.saveMacrocycle(edited())
         }
     }
@@ -135,7 +139,7 @@ class MacrocycleDetailPresenter {
                 AnyView(
                     Group {
                         Button("Delete", role: .destructive) {
-                            self.run(Event.deleteFail) { [self] in
+                            self.run(start: Event.deleteStart, success: Event.deleteSuccess, failure: Event.deleteFail) { [self] in
                                 try await interactor.deleteMacrocycle(existing)
                             }
                         }
@@ -151,18 +155,21 @@ class MacrocycleDetailPresenter {
         let mesocycleIndex = startMesocycleIndex
         let microcycleIndex = startMicrocycleIndex
         interactor.trackEvent(event: Event.start(mesocycleIndex: mesocycleIndex, microcycleIndex: microcycleIndex))
-        run(Event.startFail) { [self] in
+        run(start: nil, success: Event.startSuccess, failure: Event.startFail) { [self] in
             try await interactor.startMacrocycle(macrocycle, atMesocycle: mesocycleIndex, microcycle: microcycleIndex)
         }
     }
 
-    /// Runs a write, then leaves; on failure stays, with an alert.
-    private func run(_ failure: @escaping (Error) -> Event, _ write: @escaping () async throws -> Void) {
+    /// Runs a write, then leaves; on failure stays, with an alert. `start` is nil for starting the
+    /// macrocycle, whose `MacrocycleDetailView_Start` (with the start point) is logged by `start()`.
+    private func run(start: Event?, success: Event, failure: @escaping (Error) -> Event, _ write: @escaping () async throws -> Void) {
+        if let start { interactor.trackEvent(event: start) }
         isSaving = true
         Task {
             defer { isSaving = false }
             do {
                 try await write()
+                interactor.trackEvent(event: success)
                 interactor.playHaptic(option: .success)
                 router.dismissScreen()
             } catch {
@@ -193,29 +200,43 @@ class MacrocycleDetailPresenter {
 extension MacrocycleDetailPresenter {
     enum Event: LoggableEvent {
         case onAppear(isNew: Bool)
+        case onDisappear(isNew: Bool)
         case start(mesocycleIndex: Int, microcycleIndex: Int)
+        case startSuccess
         case startFail(error: Error)
+        case saveStart
+        case saveSuccess
         case saveFail(error: Error)
+        case deleteStart
+        case deleteSuccess
         case deleteFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:   return "MacrocycleDetailView_Appear"
-            case .start:      return "MacrocycleDetailView_Start"
-            case .startFail:  return "MacrocycleDetailView_Start_Fail"
-            case .saveFail:   return "MacrocycleDetailView_Save_Fail"
-            case .deleteFail: return "MacrocycleDetailView_Delete_Fail"
+            case .onAppear:      return "MacrocycleDetailView_Appear"
+            case .onDisappear:   return "MacrocycleDetailView_Disappear"
+            case .start:         return "MacrocycleDetailView_Start"
+            case .startSuccess:  return "MacrocycleDetailView_Start_Success"
+            case .startFail:     return "MacrocycleDetailView_Start_Fail"
+            case .saveStart:     return "MacrocycleDetailView_Save_Start"
+            case .saveSuccess:   return "MacrocycleDetailView_Save_Success"
+            case .saveFail:      return "MacrocycleDetailView_Save_Fail"
+            case .deleteStart:   return "MacrocycleDetailView_Delete_Start"
+            case .deleteSuccess: return "MacrocycleDetailView_Delete_Success"
+            case .deleteFail:    return "MacrocycleDetailView_Delete_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(let isNew):
+            case .onAppear(let isNew), .onDisappear(let isNew):
                 return ["is_new": isNew]
             case .start(let mesocycleIndex, let microcycleIndex):
                 return ["start_mesocycle_index": mesocycleIndex, "start_microcycle_index": microcycleIndex]
             case .startFail(let error), .saveFail(let error), .deleteFail(let error):
                 return error.eventParameters
+            default:
+                return nil
             }
         }
 

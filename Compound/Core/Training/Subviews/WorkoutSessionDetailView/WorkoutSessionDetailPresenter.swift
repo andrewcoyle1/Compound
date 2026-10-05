@@ -58,6 +58,14 @@ class WorkoutSessionDetailPresenter {
         self.router = router
         self.isWorkoutSummary = isWorkoutSummary
     }
+
+    func onViewAppear(delegate: WorkoutSessionDetailDelegate) {
+        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
+    }
+
+    func onViewDisappear(delegate: WorkoutSessionDetailDelegate) {
+        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
+    }
     
     func loadAuthor(for session: WorkoutSessionModel) async {
         let authorId = session.authorId
@@ -66,7 +74,12 @@ class WorkoutSessionDetailPresenter {
             return
         }
         // An author who cannot be read stays unknown: no header is better than someone else's name.
-        author = try? await interactor.getUser(userId: authorId)
+        do {
+            author = try await interactor.getUser(userId: authorId)
+        } catch {
+            author = nil
+            interactor.trackEvent(event: Event.loadAuthorFail(error: error))
+        }
     }
 
     func totalSets(session: WorkoutSessionModel) -> Int {
@@ -199,11 +212,14 @@ class WorkoutSessionDetailPresenter {
 
     private func persistTimingChange(_ session: WorkoutSessionModel) {
         Task {
+            interactor.trackEvent(event: Event.saveTimingStart)
             do {
                 try await interactor.saveWorkoutSession(session)
+                interactor.trackEvent(event: Event.saveTimingSuccess)
                 lastSavedSession = session
                 interactor.playHaptic(option: .success)
             } catch {
+                interactor.trackEvent(event: Event.saveTimingFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showSimpleAlert(
                     title: String(localized: "Unable to Save Workout"),
@@ -228,8 +244,10 @@ class WorkoutSessionDetailPresenter {
                 return
             }
             session.wrappedValue.updateExercises(session.wrappedValue.exercises)
-            
+
+            interactor.trackEvent(event: Event.saveChangesStart)
             try await interactor.saveWorkoutSession(session.wrappedValue)
+            interactor.trackEvent(event: Event.saveChangesSuccess)
             interactor.playHaptic(option: .success)
 
             // Stays on the screen, which already shows the saved workout. Leaving would return a
@@ -237,6 +255,7 @@ class WorkoutSessionDetailPresenter {
             lastSavedSession = session.wrappedValue
             isEditMode = false
         } catch {
+            interactor.trackEvent(event: Event.saveChangesFail(error: error))
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(
                 title: String(localized: "Unable to Save Workout"),
@@ -429,8 +448,10 @@ class WorkoutSessionDetailPresenter {
     /// Dismisses only once the delete has landed, so a failure can still be shown on this screen.
     func deleteSession(session: WorkoutSessionModel) {
         Task {
+            interactor.trackEvent(event: Event.deleteSessionStart)
             do {
                 try await interactor.deleteWorkoutSession(id: session.id)
+                interactor.trackEvent(event: Event.deleteSessionSuccess)
                 if isWorkoutSummary {
                     router.dismissEnvironment()
                 } else {
@@ -499,11 +520,33 @@ class WorkoutSessionDetailPresenter {
 
 extension WorkoutSessionDetailPresenter {
     enum Event: LoggableEvent {
+        case onAppear(delegate: WorkoutSessionDetailDelegate)
+        case onDisappear(delegate: WorkoutSessionDetailDelegate)
+        case loadAuthorFail(error: Error)
+        case saveTimingStart
+        case saveTimingSuccess
+        case saveTimingFail(error: Error)
+        case saveChangesStart
+        case saveChangesSuccess
+        case saveChangesFail(error: Error)
+        case deleteSessionStart
+        case deleteSessionSuccess
         case deleteSessionFail(error: Error)
         case copyLink(sessionId: String)
 
         var eventName: String {
             switch self {
+            case .onAppear: return "WorkoutSessionDetailView_Appear"
+            case .onDisappear: return "WorkoutSessionDetailView_Disappear"
+            case .loadAuthorFail: return "WorkoutSessionDetailView_LoadAuthor_Fail"
+            case .saveTimingStart: return "WorkoutSessionDetailView_SaveTiming_Start"
+            case .saveTimingSuccess: return "WorkoutSessionDetailView_SaveTiming_Success"
+            case .saveTimingFail: return "WorkoutSessionDetailView_SaveTiming_Fail"
+            case .saveChangesStart: return "WorkoutSessionDetailView_SaveChanges_Start"
+            case .saveChangesSuccess: return "WorkoutSessionDetailView_SaveChanges_Success"
+            case .saveChangesFail: return "WorkoutSessionDetailView_SaveChanges_Fail"
+            case .deleteSessionStart: return "WorkoutSessionDetailView_DeleteSession_Start"
+            case .deleteSessionSuccess: return "WorkoutSessionDetailView_DeleteSession_Success"
             case .deleteSessionFail: return "WorkoutSessionDetailView_DeleteSession_Fail"
             case .copyLink: return "WorkoutSessionDetailView_CopyLink"
             }
@@ -511,15 +554,20 @@ extension WorkoutSessionDetailPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .deleteSessionFail(error: let error): return error.eventParameters
+            case .onAppear(let delegate), .onDisappear(let delegate):
+                return ["session_id": delegate.initialSession.id, "is_workout_summary": delegate.isWorkoutSummary]
+            case .loadAuthorFail(error: let error), .saveTimingFail(error: let error), .saveChangesFail(error: let error), .deleteSessionFail(error: let error):
+                return error.eventParameters
             case .copyLink(let sessionId): return ["session_id": sessionId]
+            default: return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .deleteSessionFail: return .severe
-            case .copyLink: return .analytic
+            case .saveTimingFail, .saveChangesFail, .deleteSessionFail: return .severe
+            case .loadAuthorFail: return .warning
+            default: return .analytic
             }
         }
     }

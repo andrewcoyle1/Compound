@@ -652,6 +652,19 @@ struct TrainingWorkoutsLibraryPresenterTests {
 
         #expect(router.shown == ["templateDetail", "tracker"])
     }
+
+    /// The screen logs itself; the list it embeds no longer does, so a visit counts once.
+    @Test("Test The Screen Is Tracked Under Its Own Name")
+    func testTheScreenIsTrackedUnderItsOwnName() {
+        let interactor = Interactor()
+        let presenter = WorkoutsPresenter(interactor: interactor, router: Router())
+
+        presenter.onViewAppear()
+        presenter.onViewDisappear()
+
+        #expect(interactor.trackedScreenEventNames == ["WorkoutsView_Appear"])
+        #expect(interactor.trackedEventNames == ["WorkoutsView_Disappear"])
+    }
 }
 
 /// A row in the list of mesocycles the user is not currently running.
@@ -678,47 +691,5 @@ struct MesocycleGroupPresenterTests {
         presenter.onSavedMesocyclePressed(TrainingTabFixture.mesocycle("Upper Lower", id: "ul"))
 
         #expect(router.editDelegates.first?.mesocycle.id == "ul")
-    }
-
-    @Test("Test Appearing And Leaving Are Both Tracked")
-    func testAppearingAndLeavingAreBothTracked() {
-        let interactor = Interactor()
-        let presenter = MesocycleDisclosureGroupPresenter(interactor: interactor, router: Router())
-        let delegate = MesocycleDisclosureGroupDelegate(
-            mesocycle: TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
-        )
-
-        presenter.onViewAppear(delegate: delegate)
-        presenter.onViewDisappear(delegate: delegate)
-
-        #expect(interactor.trackedScreenEventNames == ["TrainingProgramDisclosureGroupView_Appear"])
-        #expect(interactor.trackedEventNames == ["TrainingProgramDisclosureGroupView_Disappear"])
-    }
-}
-
-/// The section listing mesocycles the user is not running. It owns no data of its own — the rows do —
-/// so all it is answerable for is reporting that it was seen.
-@MainActor
-struct TrainingInactiveMesocyclePresenterTests {
-
-    private final class Interactor: SpyGlobalInteractor, InactiveMesocycleInteractor { }
-
-    private final class Router: InactiveMesocycleRouter {
-        let router: AnyRouter = TestRouting.anyRouter
-    }
-
-    @Test("Test Appearing And Leaving Are Both Tracked")
-    func testAppearingAndLeavingAreBothTracked() {
-        let interactor = Interactor()
-        let presenter = InactiveMesocyclePresenter(interactor: interactor, router: Router())
-        let delegate = InactiveMesocycleDelegate(inactiveMesocycles: [
-            TrainingTabFixture.mesocycle("Upper Lower", id: "ul")
-        ])
-
-        presenter.onViewAppear(delegate: delegate)
-        presenter.onViewDisappear(delegate: delegate)
-
-        #expect(interactor.trackedScreenEventNames == ["InactiveTrainingProgramView_Appear"])
-        #expect(interactor.trackedEventNames == ["InactiveTrainingProgramView_Disappear"])
     }
 }

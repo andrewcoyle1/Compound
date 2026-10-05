@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-    buildActivityPush, buildFollowAcceptedNotification, cleanJson, newlyBlockedIds, normaliseName,
+    buildActivityPush, buildFollowAcceptedNotification, cleanJson, foodItems, newlyBlockedIds, normaliseName,
     planFollowAccepted, pushRecipientSettings, requireAuth, userDisplayName,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, buildWeeklyDigestPush, countTrainingSessions, digestWindowStart, isNudgeOnCooldown,
@@ -16,6 +16,14 @@ test("cleanJson strips the code fences Gemini adds and leaves bare JSON alone", 
     assert.equal(cleanJson('```json\n{"a":1}\n```'), '{"a":1}');
     assert.equal(cleanJson('```\n{"a":1}```'), '{"a":1}');
     assert.equal(cleanJson('  {"a":1}  '), '{"a":1}');
+});
+
+test("foodItems reads Gemini's items whether or not it wrapped them in an object", () => {
+    const item = { id: "1", name: "Thai Chilli Chips" };
+    assert.deepEqual(foodItems({ items: [item] }), [item]);
+    assert.deepEqual(foodItems([item, item]), [item, item]);
+    assert.equal(foodItems({ name: "x" }), null);
+    assert.equal(foodItems(null), null);
 });
 
 test("normaliseName folds case and whitespace so the same ingredient is found again", () => {

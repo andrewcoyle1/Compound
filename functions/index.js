@@ -6,7 +6,7 @@ import { defineSecret } from "firebase-functions/params";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { getMessaging } from "firebase-admin/messaging";
 import {
-    requireAuth, cleanJson, normaliseName, buildActivityPush, newlyBlockedIds, pushRecipientSettings,
+    requireAuth, cleanJson, foodItems, normaliseName, buildActivityPush, newlyBlockedIds, pushRecipientSettings,
     planFollowAccepted, buildFollowAcceptedNotification,
     buildFollowRequestPush, removedFollowingIds, planAutoAccept, removeFollowerTarget,
     buildStreakReminderPush, isStreakReminderDue, isWeeklyDigestDue, digestWindowStart, countTrainingSessions, buildWeeklyDigestPush,
@@ -145,11 +145,11 @@ calculate macronutrients per portion. All numeric fields must be numbers, not st
         config: { responseMimeType: "application/json" },
     });
 
-    const parsed = JSON.parse(cleanJson(text));
+    const items = foodItems(JSON.parse(cleanJson(text)));
 
-    if (Array.isArray(parsed.items)) {
+    if (items) {
         const resolvedItems = await Promise.all(
-            parsed.items.map(async (item) => ({
+            items.map(async (item) => ({
                 ...item,
                 ingredientId: await findOrCreateIngredient(uid, item),
             }))
@@ -186,11 +186,11 @@ All numeric fields must be numbers, not strings.`;
         config: { responseMimeType: "application/json" },
     });
 
-    const parsed = JSON.parse(cleanJson(text));
+    const items = foodItems(JSON.parse(cleanJson(text)));
 
-    if (Array.isArray(parsed.items)) {
+    if (items) {
         const resolvedItems = await Promise.all(
-            parsed.items.map(async (item) => ({
+            items.map(async (item) => ({
                 ...item,
                 ingredientId: await findOrCreateIngredient(uid, item),
             }))

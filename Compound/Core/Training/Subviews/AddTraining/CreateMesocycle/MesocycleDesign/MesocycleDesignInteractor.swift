@@ -7,7 +7,6 @@ protocol MesocycleDesignInteractor: GlobalInteractor {
     var activeMesocycle: Mesocycle? { get }
     func setActiveMesocycle(mesocycleId: String) async throws
     func saveMesocycle(mesocycle: Mesocycle) async throws
-    func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws
     func deleteMesocycle(mesocycleId: String) async throws
 }
 

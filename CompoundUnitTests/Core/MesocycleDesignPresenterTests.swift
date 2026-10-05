@@ -44,7 +44,6 @@ struct MesocycleDesignFlowTests {
         var saveMesocycleError: Error?
         var saveDelay: Duration = .zero
         private(set) var savedMesocycles: [Mesocycle] = []
-        private(set) var savedTemplates: [WorkoutTemplateModel] = []
         private(set) var activatedMesocycleIds: [String] = []
 
         func setActiveMesocycle(mesocycleId: String) async throws {
@@ -60,10 +59,6 @@ struct MesocycleDesignFlowTests {
             try? await Task.sleep(for: saveDelay)
             if let saveMesocycleError { throw saveMesocycleError }
             savedMesocycles.append(mesocycle)
-        }
-
-        func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws {
-            savedTemplates.append(workoutTemplate)
         }
     }
 
@@ -424,15 +419,16 @@ struct MesocycleDesignFlowTests {
         #expect(screen.interactor.activatedMesocycleIds == ["program-1"])
     }
 
-    /// "Yes" files each workout day as its own template; a rest day is not a workout.
-    @Test("Test Activating With Templates Skips The Rest Days")
-    func testActivatingWithTemplatesSkipsTheRestDays() async {
-        let screen = makeScreen(mesocycle: mesocycle(days: [day("Push", exercises: 1), day("Rest"), day("Pull", exercises: 2)]))
+    /// Activate used to stop on a "save workout templates?" sheet, whose copies then drifted from
+    /// the mesocycle. It now activates on the tap, with nothing in between.
+    @Test("Test Activating Asks Nothing First")
+    func testActivatingAsksNothingFirst() async {
+        let screen = makeScreen(mesocycle: mesocycle(days: [day("Push", exercises: 1), day("Rest")]))
 
-        await screen.presenter.saveTemplatesAndActivate(delegate: designDelegate())
+        screen.presenter.onActivatePressed(delegate: designDelegate())
 
-        #expect(screen.interactor.activatedMesocycleIds == ["program-1"])
-        #expect(Set(screen.interactor.savedTemplates.map(\.name)) == ["Push", "Pull"])
+        #expect(await TestManagers.eventually { screen.interactor.activatedMesocycleIds == ["program-1"] })
+        #expect(screen.router.alertTitles.isEmpty)
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

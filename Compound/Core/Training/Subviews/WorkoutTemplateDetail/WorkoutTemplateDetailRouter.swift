@@ -16,6 +16,7 @@ protocol WorkoutTemplateDetailRouter: GlobalRouter {
     func showWorkoutTrackerView()
     func showExerciseModelDetailView(delegate: ExerciseModelDetailDelegate)
     func showShareToFollowerView(delegate: ShareToFollowerDelegate)
+    func showEditMesocycleView(delegate: EditMesocycleDelegate)
 }
 
 extension CoreRouter: WorkoutTemplateDetailRouter { }

@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct WorkoutListDelegateBuilder {
-    var onWorkoutSelectionChanged: ((WorkoutTemplateModel) -> Void)?
+    /// The workout picked, and the mesocycle it is a day of when it is one.
+    var onWorkoutSelectionChanged: ((WorkoutTemplateModel, Mesocycle?) -> Void)?
 }
 
 struct WorkoutListViewBuilder: View {
@@ -23,13 +24,17 @@ struct WorkoutListViewBuilder: View {
                 if !presenter.userWorkoutTemplates.isEmpty {
                     userWorkoutTemplatesSection
                 }
+                mesocycleSections
                 systemWorkoutTemplatesSection
             } else {
-                filteredWorkoutTemplatesSection
+                if !presenter.filteredWorkoutTemplates.isEmpty {
+                    filteredWorkoutTemplatesSection
+                }
+                mesocycleSections
             }
         }
         .overlay {
-            if !presenter.searchText.isEmpty && presenter.filteredWorkoutTemplates.isEmpty {
+            if !presenter.searchText.isEmpty && presenter.filteredWorkoutTemplates.isEmpty && presenter.mesocycles.isEmpty {
                 ContentUnavailableView.search(text: presenter.searchText)
             }
         }
@@ -50,7 +55,7 @@ struct WorkoutListViewBuilder: View {
         }
     }
     
-    private func workoutRow(_ workout: WorkoutTemplateModel) -> some View {
+    private func workoutRow(_ workout: WorkoutTemplateModel, in mesocycle: Mesocycle? = nil) -> some View {
         HStack {
             WorkoutTemplateRow(workoutTemplate: workout)
             Image(systemName: "chevron.forward")
@@ -61,6 +66,7 @@ struct WorkoutListViewBuilder: View {
         .anyButton(.highlight) {
             presenter.onWorkoutPressed(
                 workout: workout,
+                mesocycle: mesocycle,
                 onWorkoutPressed: delegate.onWorkoutSelectionChanged
             )
         }
@@ -80,6 +86,28 @@ struct WorkoutListViewBuilder: View {
             }
         } footer: {
             Text("Professional workout templates designed for common training programs.")
+        }
+    }
+
+    /// One section per mesocycle, its days in the mesocycle's own order. They live in the
+    /// mesocycle, not the library, so they are edited there.
+    private var mesocycleSections: some View {
+        ForEach(presenter.mesocycles) { mesocycle in
+            let days = presenter.days(of: mesocycle)
+            Section {
+                ForEach(days) { workout in
+                    workoutRow(workout, in: mesocycle)
+                }
+            } header: {
+                HStack {
+                    Label(mesocycle.name, systemImage: mesocycle.icon)
+                    Spacer()
+                    Text("\(days.count)")
+                        .foregroundStyle(.secondary)
+                }
+            } footer: {
+                Text("Days of this mesocycle. Change them by editing the mesocycle.")
+            }
         }
     }
 
@@ -139,7 +167,7 @@ extension CoreBuilder {
                 )
             ),
             delegate: WorkoutListDelegateBuilder(
-                onWorkoutSelectionChanged: { template in
+                onWorkoutSelectionChanged: { template, _ in
                     print(template.name)
                 }
             )

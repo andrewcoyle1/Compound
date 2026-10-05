@@ -11,6 +11,7 @@ protocol WorkoutListInteractorBuilder: GlobalInteractor {
     var userWorkoutTemplates: [WorkoutTemplateModel] { get }
     var systemWorkoutTemplates: [WorkoutTemplateModel] { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
+    var mesocycles: [Mesocycle] { get }
 }
 
 extension CoreInteractor: WorkoutListInteractorBuilder { }

@@ -409,9 +409,16 @@ struct TrainingHomePresenterTests {
 @MainActor
 struct TrainingTemplateDetailPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, WorkoutTemplateDetailInteractor {
+    final class Interactor: SpyGlobalInteractor, WorkoutTemplateDetailInteractor {
         var currentUser: UserModel?
         var activeSession: WorkoutSessionModel?
+        var mesocycles: [Mesocycle] = []
+        var allWorkoutTemplates: [WorkoutTemplateModel] = []
+        private(set) var savedTemplates: [WorkoutTemplateModel] = []
+
+        func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws {
+            savedTemplates.append(workoutTemplate)
+        }
         var startWorkoutError: Error?
         var deleteError: Error?
         var sessionAfterStart: WorkoutSessionModel?
@@ -443,8 +450,10 @@ struct TrainingTemplateDetailPresenterTests {
         }
     }
 
-    private final class Router: WorkoutTemplateDetailRouter {
+    final class Router: WorkoutTemplateDetailRouter {
         func showShareToFollowerView(delegate: ShareToFollowerDelegate) { }
+        private(set) var editedMesocycleIds: [String] = []
+        func showEditMesocycleView(delegate: EditMesocycleDelegate) { editedMesocycleIds.append(delegate.mesocycle.id) }
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
         private(set) var exerciseDetailDelegates: [ExerciseModelDetailDelegate] = []
@@ -464,13 +473,13 @@ struct TrainingTemplateDetailPresenterTests {
         }
     }
 
-    private struct Screen {
+    struct Screen {
         let presenter: WorkoutTemplateDetailPresenter
         let interactor: Interactor
         let router: Router
     }
 
-    private func makeScreen(active: WorkoutSessionModel? = nil) -> Screen {
+    func makeScreen(active: WorkoutSessionModel? = nil) -> Screen {
         let interactor = Interactor()
         interactor.activeSession = active
         let router = Router()

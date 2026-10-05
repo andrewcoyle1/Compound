@@ -284,6 +284,8 @@ struct MesocycleSettingsFlowTests {
 @MainActor
 struct MesocycleFlowColourIconEditorTests {
 
+    private final class Interactor: SpyGlobalInteractor, EditMesocycleColourIconInteractor { }
+
     private final class Router: EditMesocycleColourIconRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
@@ -307,6 +309,7 @@ struct MesocycleFlowColourIconEditorTests {
             colour: colour,
             icon: icon,
             onSave: { recorder.record($0, $1) },
+            interactor: Interactor(),
             router: Router()
         )
         return (presenter, recorder)
@@ -370,6 +373,8 @@ struct MesocycleFlowColourIconEditorTests {
 @MainActor
 struct MesocycleFlowEditDeloadPresenterTests {
 
+    private final class Interactor: SpyGlobalInteractor, EditDeloadInteractor { }
+
     private final class Router: EditDeloadRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
@@ -389,6 +394,7 @@ struct MesocycleFlowEditDeloadPresenterTests {
         let presenter = EditDeloadPresenter(
             selected: selected,
             onSave: { recorder.record($0) },
+            interactor: Interactor(),
             router: Router()
         )
         return (presenter, recorder)
@@ -437,6 +443,8 @@ struct MesocycleFlowEditDeloadPresenterTests {
 @MainActor
 struct MesocycleFlowEditDayOrderPresenterTests {
 
+    private final class Interactor: SpyGlobalInteractor, EditDayOrderInteractor { }
+
     private final class Router: EditDayOrderRouter {
         let router: AnyRouter = TestRouting.anyRouter
     }
@@ -460,6 +468,7 @@ struct MesocycleFlowEditDayOrderPresenterTests {
         let presenter = EditDayOrderPresenter(
             dayPlans: names.map { day($0) },
             onSave: { recorder.record($0) },
+            interactor: Interactor(),
             router: Router()
         )
         return (presenter, recorder)
@@ -532,7 +541,7 @@ struct MesocycleFlowEditDayOrderPresenterTests {
 @MainActor
 struct MesocycleFlowRenameDayPlanPresenterTests {
 
-    private final class Interactor: RenameWorkoutTemplateModelInteractor { }
+    private final class Interactor: SpyGlobalInteractor, RenameWorkoutTemplateModelInteractor { }
 
     private final class Router: RenameWorkoutTemplateModelRouter {
         let router: AnyRouter = TestRouting.anyRouter

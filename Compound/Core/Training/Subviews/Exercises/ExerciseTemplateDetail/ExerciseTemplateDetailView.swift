@@ -36,6 +36,9 @@ struct ExerciseModelDetailView: View {
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
+        .onDisappear {
+            presenter.onViewDisappear(delegate: delegate)
+        }
     }
     
     private var aboutSection: some View {

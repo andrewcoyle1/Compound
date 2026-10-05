@@ -22,6 +22,8 @@ struct WorkoutsView<WorkoutList: View>: View {
             onWorkoutSelectionChanged: presenter.onWorkoutPressed,
         )
         workoutListViewBuilder(delegate)
+            .onAppear { presenter.onViewAppear() }
+            .onDisappear { presenter.onViewDisappear() }
     }
 }
 

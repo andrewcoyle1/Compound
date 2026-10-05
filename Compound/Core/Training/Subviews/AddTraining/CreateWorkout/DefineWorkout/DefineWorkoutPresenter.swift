@@ -40,15 +40,12 @@ class DefineWorkoutPresenter {
 
     /// With `autoOpensPicker`, an empty workout opens the exercise picker on its own, once: adding
     /// exercises is the only thing left to do. A mesocycle day passes false, as empty is a rest day.
+    /// No screen event: this is built inline by the wrapper and the mesocycle designer, which log
+    /// their own.
     func onViewAppear(autoOpensPicker: Bool = false) {
-        interactor.trackScreenEvent(event: Event.onAppear)
         guard autoOpensPicker, !hasAutoOpenedPicker, exercises.isEmpty else { return }
         hasAutoOpenedPicker = true
         onAddExercisePressed()
-    }
-    
-    func onViewDisappear() {
-        interactor.trackEvent(event: Event.onDisappear)
     }
     
     func onExercisePressed(exercise: Binding<WorkoutTemplateExercise>) {
@@ -84,32 +81,4 @@ class DefineWorkoutPresenter {
         )
     }
     
-}
-
-extension DefineWorkoutPresenter {
-    enum Event: LoggableEvent {
-        case onAppear
-        case onDisappear
-        
-        var eventName: String {
-            switch self {
-            case .onAppear: return "DefineWorkoutView_Appear"
-            case .onDisappear: return "DefineWorkoutView_Disappear"
-            }
-        }
-        
-        var parameters: [String: Any]? {
-            switch self {
-            default:
-                return nil
-            }
-        }
-        
-        var type: LogType {
-            switch self {
-            default:
-                return .analytic
-            }
-        }
-    }
 }

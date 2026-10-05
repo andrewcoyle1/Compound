@@ -38,12 +38,6 @@ struct MesocycleDisclosureGroupView: View {
                     }
                 }
         }
-        .onAppear {
-            presenter.onViewAppear(delegate: delegate)
-        }
-        .onDisappear {
-            presenter.onViewDisappear(delegate: delegate)
-        }
     }
 }
 

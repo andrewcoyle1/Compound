@@ -36,7 +36,7 @@ private class AlertRecordingRouter: GlobalRouter {
 @MainActor
 struct ExerciseModelDetailDeletionTests {
 
-    private final class Interactor: ExerciseModelDetailInteractor {
+    private final class Interactor: SpyGlobalInteractor, ExerciseModelDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var workoutSessions: [WorkoutSessionModel] = []
         var deleteError: Error?

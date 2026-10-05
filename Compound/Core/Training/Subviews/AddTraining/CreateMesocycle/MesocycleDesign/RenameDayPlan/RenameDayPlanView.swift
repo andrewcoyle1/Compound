@@ -15,6 +15,8 @@ struct RenameWorkoutTemplateModelView: View {
                 TextField("Day name", text: $presenter.nameText)
             }
         }
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationTitle("Rename Day")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

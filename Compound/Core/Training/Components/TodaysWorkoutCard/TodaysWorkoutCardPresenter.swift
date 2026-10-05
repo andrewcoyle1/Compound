@@ -53,7 +53,11 @@ class TodaysWorkoutCardPresenter {
                 },
                 onReplace: { [weak self] in
                     Task { @MainActor in
-                        try? self?.interactor.deleteActiveSession()
+                        do {
+                            try self?.interactor.deleteActiveSession()
+                        } catch {
+                            self?.interactor.trackEvent(event: Event.deleteActiveSessionFail(error: error))
+                        }
                         await self?.start(slot.dayPlan, in: mesocycleId, isDeloadCycle: isDeload)
                     }
                 }
@@ -64,8 +68,10 @@ class TodaysWorkoutCardPresenter {
     }
 
     private func start(_ template: WorkoutTemplateModel, in mesocycleId: String?, isDeloadCycle: Bool) async {
+        interactor.trackEvent(event: Event.startStart)
         do {
             try await interactor.startWorkout(for: template, in: mesocycleId, isDeloadCycle: isDeloadCycle)
+            interactor.trackEvent(event: Event.startSuccess)
             router.showWorkoutTrackerView()
         } catch {
             interactor.trackEvent(event: Event.startFail(error: error))
@@ -116,8 +122,10 @@ class TodaysWorkoutCardPresenter {
     }
 
     private func skip(_ slot: MesocycleSchedule.Slot) async {
+        interactor.trackEvent(event: Event.skipStart)
         do {
             try await interactor.skipScheduledWorkout(slot)
+            interactor.trackEvent(event: Event.skipSuccess)
             interactor.playHaptic(option: .success)
         } catch {
             interactor.trackEvent(event: Event.skipFail(error: error))
@@ -144,30 +152,41 @@ class TodaysWorkoutCardPresenter {
 extension TodaysWorkoutCardPresenter {
     enum Event: LoggableEvent {
         case skipPressed
+        case skipStart
+        case skipSuccess
         case skipFail(error: Error)
         case startPressed
+        case startStart
+        case startSuccess
         case startFail(error: Error)
+        case deleteActiveSessionFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .skipPressed: return "TodaysWorkoutCard_Skip_Pressed"
-            case .skipFail:    return "TodaysWorkoutCard_Skip_Fail"
+            case .skipPressed:  return "TodaysWorkoutCard_Skip_Pressed"
+            case .skipStart:    return "TodaysWorkoutCard_Skip_Start"
+            case .skipSuccess:  return "TodaysWorkoutCard_Skip_Success"
+            case .skipFail:     return "TodaysWorkoutCard_Skip_Fail"
             case .startPressed: return "TodaysWorkoutCard_Start_Pressed"
-            case .startFail:   return "TodaysWorkoutCard_Start_Fail"
+            case .startStart:   return "TodaysWorkoutCard_Start_Start"
+            case .startSuccess: return "TodaysWorkoutCard_Start_Success"
+            case .startFail:    return "TodaysWorkoutCard_Start_Fail"
+            case .deleteActiveSessionFail: return "TodaysWorkoutCard_DeleteActiveSession_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .skipFail(let error), .startFail(let error): return error.eventParameters
-            default:                   return nil
+            case .skipFail(let error), .startFail(let error), .deleteActiveSessionFail(let error): return error.eventParameters
+            default: return nil
             }
         }
 
         var type: LogType {
             switch self {
             case .skipFail, .startFail: return .severe
-            default:        return .analytic
+            case .deleteActiveSessionFail: return .warning
+            default: return .analytic
             }
         }
     }

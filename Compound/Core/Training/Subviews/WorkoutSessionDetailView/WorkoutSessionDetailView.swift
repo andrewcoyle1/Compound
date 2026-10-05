@@ -64,6 +64,8 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
         .task {
             await presenter.loadAuthor(for: session)
         }
+        .onAppear { presenter.onViewAppear(delegate: delegate) }
+        .onDisappear { presenter.onViewDisappear(delegate: delegate) }
         .onChange(of: presenter.selectedExerciseModels) { _, newValue in
             guard !newValue.isEmpty else { return }
             presenter.addSelectedExercises(session: $session)

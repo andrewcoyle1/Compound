@@ -30,14 +30,6 @@ class SetTrackerRowPresenter {
         self.router = router
     }
     
-    func onViewAppear(delegate: SetTrackerRowDelegate) {
-        interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
-    }
-    
-    func onViewDisappear(delegate: SetTrackerRowDelegate) {
-        interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
-    }
-    
     /// A left set and its right partner are one set, so swiping either away removes both — a
     /// surviving half would number and rest as a set of its own.
     func deleteSet(setId: String, exercise: Binding<WorkoutExerciseModel>) {
@@ -297,15 +289,11 @@ extension SetTrackerRowPresenter {
 extension SetTrackerRowPresenter {
     
     enum Event: LoggableEvent {
-        case onAppear(delegate: SetTrackerRowDelegate)
-        case onDisappear(delegate: SetTrackerRowDelegate)
         case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool)
         case keyboardOfferedCompletion
 
         var eventName: String {
             switch self {
-            case .onAppear:                 return "SetTrackerRowView_Appear"
-            case .onDisappear:              return "SetTrackerRowView_Disappear"
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
             case .keyboardOfferedCompletion: return "SetTrackerRow_Keyboard_OfferedCompletion"
             }
@@ -313,8 +301,6 @@ extension SetTrackerRowPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
-                return delegate.eventParameters
             case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil):
                 return [
                     "set_id": setId,

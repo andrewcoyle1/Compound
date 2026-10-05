@@ -70,13 +70,16 @@ class TodayPresenter {
         interactor.currentMacrocycle?.name ?? ""
     }
 
+    /// `TodayView_RepeatPlan_Press` is the write's Start.
     func onRepeatMacrocyclePressed() {
         interactor.trackEvent(event: Event.repeatMacrocyclePressed)
         Task {
             do {
                 try await interactor.repeatCurrentMacrocycle()
+                interactor.trackEvent(event: Event.repeatMacrocycleSuccess)
                 interactor.playHaptic(option: .success)
             } catch {
+                interactor.trackEvent(event: Event.repeatMacrocycleFail(error: error))
                 interactor.playHaptic(option: .error)
                 router.showAlert(title: String(localized: "Unable to Repeat Macrocycle"), error: error)
             }
@@ -101,7 +104,11 @@ class TodayPresenter {
                 },
                 onReplace: { [weak self] in
                     Task { @MainActor in
-                        try? self?.interactor.deleteActiveSession()
+                        do {
+                            try self?.interactor.deleteActiveSession()
+                        } catch {
+                            self?.interactor.trackEvent(event: Event.deleteActiveSessionFail(error: error))
+                        }
                         await self?.startBlankWorkout()
                     }
                 }
@@ -112,10 +119,13 @@ class TodayPresenter {
     }
 
     private func startBlankWorkout() async {
+        interactor.trackEvent(event: Event.startBlankWorkoutStart)
         do {
             try await interactor.startBlankWorkout()
+            interactor.trackEvent(event: Event.startBlankWorkoutSuccess)
             router.showWorkoutTrackerView()
         } catch {
+            interactor.trackEvent(event: Event.startBlankWorkoutFail(error: error))
             router.showSimpleAlert(title: String(localized: "Could Not Start Workout"), subtitle: String(localized: "Please try again."))
         }
     }
@@ -138,7 +148,11 @@ class TodayPresenter {
             },
             onStartNew: { [weak self] in
                 Task { @MainActor in
-                    try? self?.interactor.deleteDraftMeal()
+                    do {
+                        try self?.interactor.deleteDraftMeal()
+                    } catch {
+                        self?.interactor.trackEvent(event: Event.deleteDraftMealFail(error: error))
+                    }
                     self?.router.showAddMealView(delegate: AddMealDelegate(mealLog: newMeal))
                 }
             }
@@ -146,12 +160,22 @@ class TodayPresenter {
     }
 
     private func loadNutrition() {
-        // Silent: local read; a missing total shows as no data on the card.
-        nutritionTotals = try? interactor.getDailyTotals(dayKey: Date().dayKey)
+        // Silent to the user: local read; a missing total shows as no data on the card.
+        do {
+            nutritionTotals = try interactor.getDailyTotals(dayKey: Date().dayKey)
+        } catch {
+            nutritionTotals = nil
+            interactor.trackEvent(event: Event.loadNutritionTotalsFail(error: error))
+        }
         guard let userId = interactor.userId else { return }
         Task {
-            // Silent: background read; the card shows no target until one loads.
-            nutritionTarget = try? await interactor.getDailyTarget(for: Date(), userId: userId)
+            // Silent to the user: background read; the card shows no target until one loads.
+            do {
+                nutritionTarget = try await interactor.getDailyTarget(for: Date(), userId: userId)
+            } catch {
+                nutritionTarget = nil
+                interactor.trackEvent(event: Event.loadNutritionTargetFail(error: error))
+            }
         }
     }
 
@@ -206,6 +230,7 @@ class TodayPresenter {
 
     /// Optimistic, and puts the card back if the write does not land: a card that vanished on a
     /// failed write would look exactly like a week that had been dealt with.
+    /// `TodayView_CheckIn_Skip` is the write's Start.
     func onSkipCheckInPressed() {
         guard let weekStart = dueCheckInWeekStart else { return }
         interactor.trackEvent(event: Event.checkInSkipped)
@@ -213,7 +238,9 @@ class TodayPresenter {
         Task {
             do {
                 try await interactor.markCheckInSkipped(weekStart: weekStart)
+                interactor.trackEvent(event: Event.skipCheckInSuccess)
             } catch {
+                interactor.trackEvent(event: Event.skipCheckInFail(error: error))
                 checkInState = .due(weekStart: weekStart)
                 router.showFailure(String(localized: "Unable to Skip Check-In"), error: error)
             }
@@ -248,6 +275,17 @@ extension TodayPresenter {
         case checkInStarted
         case checkInSkipped
         case weeklyReviewPressed
+        case repeatMacrocycleSuccess
+        case repeatMacrocycleFail(error: Error)
+        case startBlankWorkoutStart
+        case startBlankWorkoutSuccess
+        case startBlankWorkoutFail(error: Error)
+        case deleteActiveSessionFail(error: Error)
+        case deleteDraftMealFail(error: Error)
+        case loadNutritionTotalsFail(error: Error)
+        case loadNutritionTargetFail(error: Error)
+        case skipCheckInSuccess
+        case skipCheckInFail(error: Error)
 
         var eventName: String {
             switch self {
@@ -262,6 +300,17 @@ extension TodayPresenter {
             case .checkInStarted:           return "TodayView_CheckIn_Start"
             case .checkInSkipped:           return "TodayView_CheckIn_Skip"
             case .weeklyReviewPressed:      return "TodayView_WeeklyReview_Press"
+            case .repeatMacrocycleSuccess:  return "TodayView_RepeatPlan_Success"
+            case .repeatMacrocycleFail:     return "TodayView_RepeatPlan_Fail"
+            case .startBlankWorkoutStart:   return "TodayView_StartBlankWorkout_Start"
+            case .startBlankWorkoutSuccess: return "TodayView_StartBlankWorkout_Success"
+            case .startBlankWorkoutFail:    return "TodayView_StartBlankWorkout_Fail"
+            case .deleteActiveSessionFail:  return "TodayView_DeleteActiveSession_Fail"
+            case .deleteDraftMealFail:      return "TodayView_DeleteDraftMeal_Fail"
+            case .loadNutritionTotalsFail:  return "TodayView_LoadNutritionTotals_Fail"
+            case .loadNutritionTargetFail:  return "TodayView_LoadNutritionTarget_Fail"
+            case .skipCheckInSuccess:       return "TodayView_CheckIn_Skip_Success"
+            case .skipCheckInFail:          return "TodayView_CheckIn_Skip_Fail"
             }
         }
 
@@ -269,13 +318,24 @@ extension TodayPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .repeatMacrocycleFail(let error), .startBlankWorkoutFail(let error), .deleteActiveSessionFail(let error),
+                 .deleteDraftMealFail(let error), .loadNutritionTotalsFail(let error), .loadNutritionTargetFail(let error),
+                 .skipCheckInFail(let error):
+                return error.eventParameters
             default:
                 return nil
             }
         }
 
         var type: LogType {
-            .analytic
+            switch self {
+            case .repeatMacrocycleFail, .startBlankWorkoutFail, .skipCheckInFail:
+                return .severe
+            case .deleteActiveSessionFail, .deleteDraftMealFail, .loadNutritionTotalsFail, .loadNutritionTargetFail:
+                return .warning
+            default:
+                return .analytic
+            }
         }
     }
 }

@@ -17,6 +17,8 @@ struct EditDayOrderView: View {
             .onMove { presenter.move(fromOffsets: $0, toOffset: $1) }
         }
         .environment(\.editMode, .constant(.active))
+        .onAppear { presenter.onViewAppear() }
+        .onDisappear { presenter.onViewDisappear() }
         .navigationTitle("Day Order")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -37,6 +39,7 @@ extension CoreBuilder {
             presenter: EditDayOrderPresenter(
                 dayPlans: dayPlans,
                 onSave: onSave,
+                interactor: interactor,
                 router: coreRouter
             )
         )

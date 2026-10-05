@@ -82,6 +82,9 @@ struct WeeklyReviewView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+        .onDisappear {
+            presenter.onViewDisappear()
+        }
     }
 
     private func weekHeader(_ review: WeeklyReview) -> some View {

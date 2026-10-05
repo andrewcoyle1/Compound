@@ -45,6 +45,8 @@ struct ExercisesPickerView<ExerciseList: View>: View {
 
             }
             .interactiveDismissDisabled(presenter.hasUnsavedChanges)
+            .onAppear { presenter.onViewAppear() }
+            .onDisappear { presenter.onViewDisappear() }
     }
 }
 

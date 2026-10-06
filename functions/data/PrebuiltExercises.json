@@ -135,7 +135,7 @@
       ],
       "range_of_motion": 4,
       "stability": 4,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 60,
       "alternate_names": [
         "RDL",
         "Romanian Deadlift"
@@ -178,7 +178,7 @@
       ],
       "range_of_motion": 4,
       "stability": 4,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 60,
       "alternate_names": [
         "Sumo Deadlift"
       ],
@@ -373,7 +373,7 @@
         "frontDelts": "secondary",
         "triceps": "secondary"
       },
-      "is_bodyweight": true,
+      "is_bodyweight": false,
       "equipment_variations": [
         {
           "id": "system-chest-dip-v1",
@@ -604,7 +604,7 @@
       ],
       "range_of_motion": 4,
       "stability": 5,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Machine Hack Squat"
       ],
@@ -916,7 +916,7 @@
       ],
       "range_of_motion": 5,
       "stability": 3,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Barbell Back Squat",
         "Back Squat"
@@ -968,7 +968,7 @@
       ],
       "range_of_motion": 4,
       "stability": 2,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Rear Foot Elevated Split Squat"
       ],
@@ -1508,7 +1508,7 @@
       ],
       "range_of_motion": 5,
       "stability": 5,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Pendulum Squat",
         "V-Squat"
@@ -1538,7 +1538,7 @@
         "biceps": "secondary",
         "forearms": "secondary"
       },
-      "is_bodyweight": true,
+      "is_bodyweight": false,
       "equipment_variations": [
         {
           "id": "system-weighted-hammer-grip-pull-up-on-dip-v1",
@@ -1843,7 +1843,7 @@
       ],
       "range_of_motion": 4,
       "stability": 5,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Smith Machine Squat"
       ],
@@ -2954,7 +2954,7 @@
       ],
       "range_of_motion": 5,
       "stability": 4,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Smith Machine Front Foot Elevated Static Lunge"
       ],
@@ -3048,7 +3048,7 @@
       ],
       "range_of_motion": 3,
       "stability": 4,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 60,
       "alternate_names": [
         "Weighted Roman Chair Hyperextension (Holding Weight To Chest)",
         "Weighted Roman Chair Hip Extension (Holding Weight To Chest)",
@@ -3589,7 +3589,7 @@
       ],
       "range_of_motion": 4,
       "stability": 2,
-      "body_weight_contribution": 0,
+      "body_weight_contribution": 85,
       "alternate_names": [
         "Dumbbell Backward Lunge"
       ],

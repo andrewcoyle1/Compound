@@ -93,7 +93,7 @@ class WorkoutTrackerPresenter {
     var progressionBaseline: [String: SuggestedSet] = [:]
 
     // Prevents handleWorkoutSessionChange from double-processing when updateSet() is the caller
-    private var isProcessingUpdateSet = false
+    var isProcessingUpdateSet = false
 
     /// Set once this screen has left — finished, discarded, or told the workout ended elsewhere.
     /// A write after that would put an ended session back as the active one.
@@ -212,16 +212,6 @@ class WorkoutTrackerPresenter {
         #endif
     }
 
-    func onScenePhaseChange(oldPhase: ScenePhase, newPhase: ScenePhase) {
-        // iOS foregrounds through `.inactive`, so `oldPhase` is never `.background` here.
-        if newPhase == .active {
-            // A set logged from the Live Activity while the app was in the background was saved by
-            // the intent handler, not by this screen, so re-read it rather than waiting for the
-            // observation to fire.
-            adoptSavedSessionIfChanged()
-        }
-    }
-
     private func applyWarmupSetting() {
         guard !interactor.workoutSettings.addSmartWarmUps else { return }
         var updated = workoutSession.exercises
@@ -279,10 +269,6 @@ class WorkoutTrackerPresenter {
         }
     }
 
-    func minimizeSession() {
-        router.dismissScreen()
-    }
-
     /// Pause and Resume in the menu. The clock, the Apple Health session and the Live Activity's
     /// paused phase all follow the one toggle.
     func onPauseResumePressed() {
@@ -291,18 +277,6 @@ class WorkoutTrackerPresenter {
         #endif
         interactor.playHaptic(option: .light)
         interactor.trackEvent(event: isActive ? Event.workoutResumed : Event.workoutPaused)
-    }
-    
-    // MARK: - Persistence
-    
-    func saveWorkoutProgress() {
-        guard !isDone else { return }
-        do {
-            try interactor.updateActiveSession(workoutSession)
-        } catch {
-            interactor.trackEvent(event: Event.saveProgressFail(error: error))
-            router.showSimpleAlert(title: String(localized: "Unable to Save Progress"), subtitle: String(localized: "We were unable to save your workout. Please try again."))
-        }
     }
     
     // MARK: - Helpers
@@ -376,129 +350,6 @@ class WorkoutTrackerPresenter {
         workoutSession.notes = trimmed.isEmpty ? nil : trimmed
     }
     
-    // MARK: - The handler's writes
-
-    /// Watches `interactor.activeSession` for a save this screen did not make.
-    ///
-    /// A set logged from the Live Activity is written by `AppLiveActivityIntentHandler`, in this
-    /// process but outside this presenter. Observation is how it reaches the screen: the handler
-    /// saves through the session manager, `activeSession` changes, and the tracker adopts it.
-    ///
-    /// Re-armed on every change, because `withObservationTracking` fires its `onChange` once.
-    private func startObservingActiveSession() {
-        withObservationTracking {
-            _ = interactor.activeSession
-        } onChange: { [weak self] in
-            Task { @MainActor [weak self] in
-                self?.adoptSavedSessionIfChanged()
-                self?.startObservingActiveSession()
-            }
-        }
-    }
-
-    /// Takes on the saved session when it differs from the screen's own copy.
-    ///
-    /// Skipped while `updateSet` is mid-flight: that is this screen's own write on its way to the
-    /// manager, and adopting it back would fight the edit the user is making.
-    func adoptSavedSessionIfChanged() {
-        guard !isProcessingUpdateSet else { return }
-        guard let saved = interactor.activeSession else {
-            // Finished from the Live Activity while this screen sat in the background. There is
-            // nothing left to track, and the next edit here would resurrect the ended session.
-            guard !isDone else { return }
-            isDone = true
-            UIApplication.shared.isIdleTimerDisabled = false
-            router.dismissScreen()
-            return
-        }
-        guard saved.id == workoutSession.id else { return }
-        guard saved != workoutSession else { return }
-
-        workoutSession = saved
-    }
-
-    func updateSet(_ updatedSet: WorkoutSetModel, in exerciseId: String) {
-        guard let exerciseIndex = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }),
-              let setIndex = workoutSession.exercises[exerciseIndex].sets.firstIndex(where: { $0.id == updatedSet.id }) else {
-            return
-        }
-        let exerciseBefore = workoutSession.exercises[exerciseIndex]
-        let wasExerciseCompleteBefore = isComplete(exerciseBefore)
-
-        var updatedExercises = workoutSession.exercises
-        updatedExercises[exerciseIndex].sets[setIndex] = updatedSet
-        propagateChanges(
-            of: updatedSet,
-            replacing: exerciseBefore.sets[setIndex],
-            at: setIndex,
-            in: &updatedExercises[exerciseIndex].sets
-        )
-
-        let isExerciseCompleteNow = isComplete(updatedExercises[exerciseIndex])
-        isProcessingUpdateSet = true
-        workoutSession.updateExercises(updatedExercises)
-        isProcessingUpdateSet = false
-
-        if !wasExerciseCompleteBefore && isExerciseCompleteNow {
-            advanceAfterExerciseCompletion(exerciseIndex: exerciseIndex, in: updatedExercises)
-        } else if exerciseBefore.sets[setIndex].completedAt == nil, updatedSet.completedAt != nil {
-            advanceWithinSuperset(exerciseIndex: exerciseIndex, in: updatedExercises)
-        }
-
-        refreshLiveActivity()
-    }
-
-    /// True when the exercise has sets and every one of them is logged.
-    ///
-    /// Not private: `WorkoutTrackerPresenter+Superset` skips partners that are already finished.
-    func isComplete(_ exercise: WorkoutExerciseModel) -> Bool {
-        !exercise.sets.isEmpty && exercise.sets.allSatisfy { $0.completedAt != nil }
-    }
-
-    /// Copies a weight/reps edit onto sibling sets that still hold the previous values, when
-    /// the propagate-changes setting is on.
-    ///
-    /// Kept within a side: typing a heavier weight on the left arm must not quietly move the right
-    /// arm's sets too, because the two limbs are not equally strong and that is why they are
-    /// logged apart.
-    private func propagateChanges(
-        of updatedSet: WorkoutSetModel,
-        replacing original: WorkoutSetModel,
-        at setIndex: Int,
-        in sets: inout [WorkoutSetModel]
-    ) {
-        guard interactor.workoutSettings.propagateChanges, updatedSet.completedAt == nil else { return }
-
-        let weightChanged = original.weightKg != updatedSet.weightKg
-        let repsChanged = original.reps != updatedSet.reps
-        guard weightChanged || repsChanged else { return }
-
-        for index in sets.indices where index != setIndex {
-            var sibling = sets[index]
-            guard sibling.side == updatedSet.side,
-                  sibling.completedAt == nil,
-                  sibling.weightKg == original.weightKg,
-                  sibling.reps == original.reps else { continue }
-            if weightChanged { sibling.weightKg = updatedSet.weightKg }
-            if repsChanged { sibling.reps = updatedSet.reps }
-            sets[index] = sibling
-        }
-    }
-
-    /// Moves focus to the next exercise with sets left once every set in `exerciseIndex` is
-    /// logged, as the log button's Next does: one finished earlier is skipped. Shared by
-    /// `updateSet` and `handleWorkoutSessionChange`, which both used to inline it.
-    private func advanceAfterExerciseCompletion(exerciseIndex: Int, in exercises: [WorkoutExerciseModel]) {
-        let nextIndex = exercises.indices.first { $0 > exerciseIndex && !isComplete(exercises[$0]) }
-
-        if let nextIndex, interactor.workoutSettings.exerciseAutoNext {
-            expandedExerciseId = exercises[nextIndex].id
-            currentExerciseIndex = nextIndex
-        } else if nextIndex == nil, expandedExerciseId == exercises[exerciseIndex].id {
-            expandedExerciseId = nil
-        }
-    }
-
     func updateExerciseNotes(_ notes: String, exerciseId: String) {
         guard let exerciseIndex = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else {
             return
@@ -522,82 +373,6 @@ class WorkoutTrackerPresenter {
         var session = session
         session.updateExercises(exercises)
         return session
-    }
-
-    private func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
-        guard !isProcessingUpdateSet else { return }
-        propagateEdit(comparedTo: oldSession)
-        cancelRestIfUndone(comparedTo: oldSession)
-        guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
-
-        let exercise = workoutSession.exercises[exerciseIndex]
-        let wasExerciseCompleteBefore = oldSession.exercises
-            .first { $0.id == exercise.id }
-            .map(isComplete) ?? false
-
-        if !wasExerciseCompleteBefore && isComplete(exercise) {
-            advanceAfterExerciseCompletion(exerciseIndex: exerciseIndex, in: workoutSession.exercises)
-        } else {
-            // A set logged from the Live Activity or a widget intent lands here rather than in
-            // `updateSet`, and moves focus the same way.
-            advanceWithinSuperset(exerciseIndex: exerciseIndex, in: workoutSession.exercises)
-        }
-
-        refreshLiveActivity()
-    }
-
-    /// The set rows write straight into `workoutSession` through their bindings, so a typed weight
-    /// or reps arrives here rather than through `updateSet`. Carries it onto the sibling sets the
-    /// same way `updateSet` does.
-    ///
-    /// Only when exactly one set's weight or reps changed: that is what a user's edit looks like.
-    /// A change to several at once is the screen's own (a progression re-suggestion, an adopted
-    /// save) and is not the user's to copy.
-    private func propagateEdit(comparedTo oldSession: WorkoutSessionModel) {
-        guard interactor.workoutSettings.propagateChanges else { return }
-
-        var edits: [(exerciseIndex: Int, original: WorkoutSetModel)] = []
-        for (exerciseIndex, exercise) in workoutSession.exercises.enumerated() {
-            guard let oldExercise = oldSession.exercises.first(where: { $0.id == exercise.id }) else { continue }
-            for set in exercise.sets {
-                guard let original = oldExercise.sets.first(where: { $0.id == set.id }),
-                      original.weightKg != set.weightKg || original.reps != set.reps else { continue }
-                edits.append((exerciseIndex, original))
-            }
-        }
-        guard edits.count == 1, let edit = edits.first,
-              let setIndex = workoutSession.exercises[edit.exerciseIndex].sets.firstIndex(where: { $0.id == edit.original.id })
-        else { return }
-
-        var updatedExercises = workoutSession.exercises
-        propagateChanges(
-            of: updatedExercises[edit.exerciseIndex].sets[setIndex],
-            replacing: edit.original,
-            at: setIndex,
-            in: &updatedExercises[edit.exerciseIndex].sets
-        )
-        guard updatedExercises != workoutSession.exercises else { return }
-
-        isProcessingUpdateSet = true
-        workoutSession.updateExercises(updatedExercises)
-        isProcessingUpdateSet = false
-    }
-
-    /// The first exercise holding a set that flipped incomplete → complete relative to
-    /// `oldSession`, or nil when nothing was newly logged.
-    private func firstNewlyCompletedSetExerciseIndex(comparedTo oldSession: WorkoutSessionModel) -> Int? {
-        var oldSets: [String: WorkoutSetModel] = [:]
-        for exercise in oldSession.exercises {
-            for set in exercise.sets {
-                oldSets[set.id] = set
-            }
-        }
-
-        return workoutSession.exercises.firstIndex { exercise in
-            exercise.sets.contains { set in
-                oldSets[set.id]?.completedAt == nil && set.completedAt != nil
-            }
-        }
     }
 
     func onGymProfilePressed() {

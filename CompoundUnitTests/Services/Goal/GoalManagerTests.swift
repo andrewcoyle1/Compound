@@ -93,18 +93,49 @@ struct GoalManagerTests {
         #expect(manager.currentGoal?.targetWeightKg == 70)
     }
 
-    /// There is one goal per user id, so saving a second one has to replace the first rather than
-    /// leave two documents that the app would then have to choose between.
-    @Test("Test Saving Over An Existing Goal Replaces It")
-    func testSavingOverAnExistingGoalReplacesIt() async throws {
+    /// A written goal cannot be rewritten (`firestore.rules`), so a fresh start is its own
+    /// document and the manager follows it. Saving over the old one is what the rules refused,
+    /// which left a second goal never taking effect.
+    @Test("Test Starting A New Goal Follows Its Own Document")
+    func testStartingANewGoalFollowsItsOwnDocument() async throws {
         let manager = try await TestManagers.signedInGoalManager(goal: goal(targetWeightKg: 75))
+        let fresh = WeightGoal(
+            userId: userId, objective: .loseWeight, startingWeightKg: 83, targetWeightKg: 78,
+            weeklyChangeKg: 0.5, id: "fresh-goal"
+        )
 
-        try await manager.saveGoal(goal(objective: .gainWeight, startingWeightKg: 82, targetWeightKg: 90))
+        try await manager.saveGoal(fresh)
 
-        #expect(await TestManagers.eventually { manager.currentGoal?.targetWeightKg == 90 })
+        #expect(await TestManagers.eventually { manager.currentGoal?.id == "fresh-goal" })
+        #expect(manager.currentGoal?.startingWeightKg == 83)
+    }
+
+    /// Editing changes what the goal aims for and keeps where it started.
+    @Test("Test Editing A Goal Keeps Its Start")
+    func testEditingAGoalKeepsItsStart() async throws {
+        let original = goal(startingWeightKg: 80.6, targetWeightKg: 75)
+        let manager = try await TestManagers.signedInGoalManager(goal: original)
+
+        try await manager.updateGoal(objective: .loseWeight, targetWeightKg: 72, weeklyChangeKg: 0.25)
+
+        #expect(await TestManagers.eventually { manager.currentGoal?.targetWeightKg == 72 })
         let current = try #require(manager.currentGoal)
-        #expect(current.objective == .gainWeight)
-        #expect(current.id == userId)
+        #expect(current.startingWeightKg == 80.6)
+        #expect(current.createdAt == original.createdAt)
+        #expect(current.weeklyChangeKg == 0.25)
+        #expect(current.id == original.id)
+    }
+
+    /// Goals saved before they had their own documents carry no `goal_id`, and are found under the
+    /// user id the app has always listened to.
+    @Test("Test A Goal Saved Before Goal Ids Decodes With The User Id")
+    func testLegacyGoalDecodes() throws {
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(goal())) as? [String: Any])
+        json.removeValue(forKey: "goal_id")
+
+        let decoded = try JSONDecoder().decode(WeightGoal.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.id == userId)
     }
 
     /// The save itself is a plain remote write and does not fail when nobody is listening, but

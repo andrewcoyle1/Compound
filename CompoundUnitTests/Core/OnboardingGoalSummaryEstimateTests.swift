@@ -22,6 +22,7 @@ struct OnboardingGoalSummaryEstimateTests {
         }
         func saveGoal(_ goal: WeightGoal) async throws { }
         func updateCurrentGoalId(goalId: String?) async throws { }
+        func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws { }
     }
 
     private final class Router: GoalSummaryRouter {

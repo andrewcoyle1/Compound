@@ -72,6 +72,19 @@ class GoalSummaryPresenter {
         }
 
         do {
+            if delegate.editingGoal != nil {
+                // Editing keeps where the goal started; only what it aims for changes.
+                try await interactor.updateGoal(
+                    objective: delegate.overarchingObjective,
+                    targetWeightKg: delegate.targetWeight,
+                    weeklyChangeKg: delegate.weightChangeRate
+                )
+                goalCreated = true
+                interactor.trackEvent(event: Event.goalSaveSuccess)
+                interactor.playHaptic(option: .success)
+                onSuccess()
+                return
+            }
             // Create goal in subcollection with frozen starting weight
             let goal = WeightGoal(
                 userId: user.userId,
@@ -79,6 +92,8 @@ class GoalSummaryPresenter {
                 startingWeightKg: startingWeight,
                 targetWeightKg: delegate.targetWeight,
                 weeklyChangeKg: delegate.weightChangeRate,
+                // Its own document: a written goal cannot be changed, only replaced.
+                id: UUID().uuidString
             )
             try await interactor.saveGoal(goal)
 

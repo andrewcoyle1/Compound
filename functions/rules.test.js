@@ -91,10 +91,26 @@ for (const path of [
     });
 }
 
-t("users/goals: the fixed fields of a goal cannot change", async () => {
-    await seed(`users/${ALICE}/goals/g`, { user_id: ALICE, target_weight_kg: 70, note: "a" });
-    await assertSucceeds(updateDoc(doc(db(ALICE), `users/${ALICE}/goals/g`), { note: "b" }));
-    await assertFails(updateDoc(doc(db(ALICE), `users/${ALICE}/goals/g`), { target_weight_kg: 60 }));
+// A goal's aim can be edited; where it started cannot, and a fresh start is a new document.
+t("users/goals: target, rate and objective can be edited; the start cannot", async () => {
+    await seed(`users/${ALICE}/goals/g`, {
+        user_id: ALICE, goal_id: "g", target_weight_kg: 70, weekly_change_kg: 0.5,
+        objective: { loseWeight: {} }, starting_weight_kg: 80.6, created_at: new Date(0),
+    });
+    const goal = doc(db(ALICE), `users/${ALICE}/goals/g`);
+    await assertSucceeds(updateDoc(goal, { target_weight_kg: 75, weekly_change_kg: 0.25, objective: { maintain: {} } }));
+    await assertFails(updateDoc(goal, { starting_weight_kg: 83 }));
+    await assertFails(updateDoc(goal, { created_at: new Date() }));
+    await assertFails(updateDoc(goal, { goal_id: "other" }));
+});
+
+t("users/goals: starting a new goal creates its own document", async () => {
+    await seed(`users/${ALICE}/goals/${ALICE}`, { user_id: ALICE, starting_weight_kg: 80.6, status: "active" });
+    await assertSucceeds(setDoc(doc(db(ALICE), `users/${ALICE}/goals/new-goal`), {
+        user_id: ALICE, goal_id: "new-goal", starting_weight_kg: 83, target_weight_kg: 78, status: "active",
+    }));
+    await assertSucceeds(updateDoc(doc(db(ALICE), `users/${ALICE}/goals/${ALICE}`), { status: "abandoned" }));
+    await assertFails(setDoc(doc(db(BOB), `users/${ALICE}/goals/bobs`), { user_id: ALICE }));
 });
 
 // ---------------- WORKOUT SESSIONS ----------------

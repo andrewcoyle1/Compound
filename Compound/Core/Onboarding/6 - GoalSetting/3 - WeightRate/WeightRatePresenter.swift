@@ -103,6 +103,10 @@ class WeightRatePresenter {
         } else if objective == .gainWeight {
             weightChangeRate = 0.25
         }
+        // Editing a goal toward the same objective keeps its rate.
+        if let editing = delegate.editingGoal, editing.objective == objective, editing.weeklyChangeKg > 0 {
+            weightChangeRate = editing.weeklyChangeKg
+        }
 
         didInitialize = true
     }

@@ -158,7 +158,9 @@ class TargetWeightPresenter {
         let fallbackKg = 70
         // `max(1, Int(weight))` would not have helped: the trap is inside the conversion, which
         // runs before the floor is ever applied.
-        let weight = currentWeightKilograms
+        // Editing a goal toward the same objective starts at its target, not today's weight.
+        let editedTarget = delegate.editingGoal.flatMap { $0.objective == delegate.overarchingObjective ? $0.targetWeightKg : nil }
+        let weight = editedTarget ?? currentWeightKilograms
         let currentKg = max(1, Int(weight))
 
         currentWeight = interactor.currentWeightKilograms.flatMap { $0.isFinite ? $0 : nil } ?? Double(fallbackKg)

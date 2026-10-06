@@ -43,7 +43,15 @@ class SettingsPresenter {
     }
 
     func onWeightGoalPressed() {
-        router.showWeightGoalFlow()
+        guard let goal = currentGoal, goal.status == .active else {
+            router.showWeightGoalFlow(editing: nil)
+            return
+        }
+        WeightGoalChoices.show(
+            on: router,
+            onEdit: { [weak self] in self?.router.showWeightGoalFlow(editing: goal) },
+            onStartNew: { [weak self] in self?.router.showWeightGoalFlow(editing: nil) }
+        )
     }
 
     func onGymProfilesPressed() {

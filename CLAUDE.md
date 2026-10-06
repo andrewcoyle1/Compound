@@ -437,7 +437,7 @@ Those marked *(package)* are aliases from the section above, not code in this re
 | `FoodManager` / `RecipeTemplateManager` | Food and recipe library |
 | `BodyMeasurementsManager` | Body measurements and scale weight |
 | `StepsManager` | Daily step history |
-| `GoalManager` | User goals |
+| `GoalManager` | The weight goal. Each goal is its own document in `users/{uid}/goals` (`goal_id`), and the user's `currentGoalId` names the running one; documents from before goal ids sit under the user id. The rules freeze where a goal started (`starting_weight_kg`, `created_at`), so editing changes only objective, target and rate, and a fresh start is a new goal with the old one marked abandoned (`WeightGoalChoices`) |
 | `WeeklyStreak` (`Core/Social/CircleGoals`) | The one streak: consecutive weeks meeting the weekly session goal (`CircleWeek.goal`). Stamped on sessions as `week_streak_count`, and copied to `users/{uid}/private/settings` (`week_streak`, `week_sessions`, `week_goal`, `week_ends_at`, `last_trained_at`) for the streak reminder. SwiftfulGamification (+Firebase) is still linked in the project but nothing imports it; remove it from the project when convenient |
 | `CoachManager` | The AI coach (see Backend and `docs/specs/ai-coach.md`): streams answers from `coachChat`, reads the saved chats in `users/{uid}/coach_chats` (the function writes them; the app only reads and deletes), and holds consent in private settings (`coach_consent`, written `false` on withdrawal because saves merge). The coach screen checks premium, then consent, itself, so every way in behaves the same. A screen offers it by adopting `AskCoachRouter` and passing a `CoachContext` |
 | `HealthKitManager` / `HKWorkoutManager` | HealthKit read/write |

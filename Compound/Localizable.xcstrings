@@ -28577,6 +28577,56 @@
           }
         }
       }
+    },
+    "Edit Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar objetivo"
+          }
+        }
+      }
+    },
+    "Start a New Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empezar un nuevo objetivo"
+          }
+        }
+      }
+    },
+    "Edit your target and pace, or start a new goal from today's weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edita tu objetivo y tu ritmo, o empieza un nuevo objetivo desde tu peso de hoy."
+          }
+        }
+      }
+    },
+    "Change Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar objetivo"
+          }
+        }
+      }
+    },
+    "There's no goal to edit." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay ningún objetivo que editar."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -44,12 +44,13 @@ struct OverarchingObjectiveView: View {
 }
 
 extension CoreBuilder {
-    func overarchingObjectiveView(router: AnyRouter, isStandaloneMode: Bool = false) -> some View {
+    func overarchingObjectiveView(router: AnyRouter, isStandaloneMode: Bool = false, editingGoal: WeightGoal? = nil) -> some View {
         OverarchingObjectiveView(
             presenter: OverarchingObjectivePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                isStandaloneMode: isStandaloneMode
+                isStandaloneMode: isStandaloneMode,
+                editingGoal: editingGoal
             )
         )
     }
@@ -63,9 +64,10 @@ extension CoreRouter {
     }
 
     /// Setting or replacing the weight goal after onboarding, from Profile or Goal Progress.
-    func showWeightGoalFlow() {
+    /// Sets a new goal, or edits `editing` when given.
+    func showWeightGoalFlow(editing: WeightGoal?) {
         router.showScreen(.sheet) { router in
-            builder.overarchingObjectiveView(router: router, isStandaloneMode: true)
+            builder.overarchingObjectiveView(router: router, isStandaloneMode: true, editingGoal: editing)
         }
     }
 

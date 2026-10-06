@@ -23,18 +23,60 @@ class GoalManager {
     
     // MARK: - Public Methods
     
-    func signIn(userId id: String) async throws {
-        try await userGoalSyncEngine.startListening(documentId: id)
+    /// Listens to the goal the user's `currentGoalId` names; accounts from before goals had their
+    /// own documents have theirs under the user id.
+    func signIn(userId: String, goalId: String? = nil) async throws {
+        try await userGoalSyncEngine.startListening(documentId: goalId ?? userId)
     }
     
     func signOut() {
         userGoalSyncEngine.stopListening()
     }
     
+    /// Saves a goal and follows it. A different goal from the current one is a new document —
+    /// the rules refuse rewriting a goal's figures, which is why setting a second goal used to
+    /// fail — so the listener moves to it and the one it replaces is marked abandoned, the only
+    /// change the rules allow to a written goal.
     func saveGoal(_ goal: WeightGoal) async throws {
+        let replaced = currentGoal
         try await userGoalSyncEngine.saveDocument(goal)
+        guard let replaced, replaced.id != goal.id else { return }
+        try await userGoalSyncEngine.startListening(documentId: goal.id)
+        if replaced.status == .active {
+            // Best effort: the new goal stands either way.
+            try? await userGoalSyncEngine.updateDocument(
+                id: replaced.id,
+                data: [WeightGoal.CodingKeys.status.rawValue: WeightGoal.GoalStatus.abandoned.rawValue]
+            )
+        }
     }
     
+    /// Edits the current goal's objective, target and weekly rate. Where it started stays: a fresh
+    /// start is `saveGoal` with a new goal.
+    ///
+    /// A merge-save of the whole goal rather than a field update: `objective` is a Codable enum,
+    /// which only the document encoder writes in its stored shape. The unchanged start and date
+    /// make no diff, so the rules' freeze on them holds.
+    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws {
+        guard let goal = currentGoal else { throw GoalError.noCurrentGoal }
+        try await userGoalSyncEngine.saveDocument(WeightGoal(
+            userId: goal.userId,
+            objective: objective,
+            startingWeightKg: goal.startingWeightKg,
+            targetWeightKg: targetWeightKg,
+            weeklyChangeKg: weeklyChangeKg,
+            createdAt: goal.createdAt,
+            status: goal.status,
+            completedAt: goal.completedAt,
+            id: goal.id
+        ))
+    }
+
+    enum GoalError: LocalizedError {
+        case noCurrentGoal
+        var errorDescription: String? { String(localized: "There's no goal to edit.") }
+    }
+
     /// Mark a goal as completed
     func completeGoal() async throws {
         try await self.updateGoalStatus(.completed)
@@ -76,6 +118,10 @@ extension CoreInteractor {
         try await goalManager.saveGoal(goal)
     }
         
+    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws {
+        try await goalManager.updateGoal(objective: objective, targetWeightKg: targetWeightKg, weeklyChangeKg: weeklyChangeKg)
+    }
+
     func completeGoal() async throws {
         try await goalManager.completeGoal()
     }

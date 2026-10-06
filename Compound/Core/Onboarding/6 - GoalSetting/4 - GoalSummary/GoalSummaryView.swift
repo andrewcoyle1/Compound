@@ -12,12 +12,21 @@ struct GoalSummaryDelegate {
     let targetWeight: Double
     let weightChangeRate: Double
     let isStandaloneMode: Bool
+    /// Set when editing: saving changes this goal rather than starting a new one.
+    let editingGoal: WeightGoal?
     
-    init(overarchingObjective: OverarchingObjective, targetWeight: Double, weightChangeRate: Double, isStandaloneMode: Bool = false) {
+    init(
+        overarchingObjective: OverarchingObjective,
+        targetWeight: Double,
+        weightChangeRate: Double,
+        isStandaloneMode: Bool = false,
+        editingGoal: WeightGoal? = nil
+    ) {
         self.overarchingObjective = overarchingObjective
         self.targetWeight = targetWeight
         self.weightChangeRate = weightChangeRate
         self.isStandaloneMode = isStandaloneMode
+        self.editingGoal = editingGoal
     }
     
     init(delegate: WeightRateDelegate, weightChangeRate: Double) {
@@ -25,6 +34,7 @@ struct GoalSummaryDelegate {
         self.targetWeight = delegate.targetWeight
         self.weightChangeRate = weightChangeRate
         self.isStandaloneMode = delegate.isStandaloneMode
+        self.editingGoal = delegate.editingGoal
     }
     
     static var mock: Self {

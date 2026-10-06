@@ -27,9 +27,7 @@ struct FinalExerciseDetailsView: View {
                 .listSectionMargins(.top, 0)
             stabilitySection
 
-            if delegate.isBodyweight {
-                bodyweightSection
-            }
+            bodyweightSection
 
             alternateNamesSection
 
@@ -78,7 +76,7 @@ struct FinalExerciseDetailsView: View {
     private var bodyweightSection: some View {
         Section {
             HStack {
-                TextField("Body weight contribution, percent", value: $presenter.bodyweightContribution, format: .number, prompt: Text("75"))
+                TextField("Body weight contribution, percent", value: $presenter.bodyweightContribution, format: .number, prompt: Text("0"))
                     .keyboardType(.numberPad)
                     .accessibilityIdentifier("FinalExerciseDetails.contribution")
                 Text("%")
@@ -88,12 +86,11 @@ struct FinalExerciseDetailsView: View {
             if !presenter.isContributionInRange {
                 InlineMessage(.error, "Enter a number from 0 to 100.")
             }
-        } header: {
-            HStack {
-                Text("Body Weight Contribution")
-                Spacer()
-                Text("Required")
+            if presenter.hasBodyweightConflict(delegate: delegate) {
+                InlineMessage(.warning, "A bodyweight exercise cannot track a load. Go back and turn off Bodyweight Exercise, or track without weight.")
             }
+        } header: {
+            Text("Body Weight Contribution")
         } footer: {
             Text(presenter.contributionFooter(delegate: delegate))
         }
@@ -153,7 +150,8 @@ extension CoreBuilder {
         FinalExerciseDetailsView(
             presenter: FinalExerciseDetailsPresenter(
                 interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
+                router: CoreRouter(router: router, builder: self),
+                isBodyweight: delegate.isBodyweight
             ),
             delegate: delegate
         )

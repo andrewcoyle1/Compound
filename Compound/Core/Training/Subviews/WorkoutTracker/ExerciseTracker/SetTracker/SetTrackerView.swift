@@ -357,14 +357,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             presenter.showAutoRanges.toggle()
         } label: {
             // A chip inside a real 44 pt frame, so the column stays narrow and the tap target full.
-            Group {
-                if presenter.showAutoRanges {
-                    Label("Auto", systemImage: Symbol.smartProgression)
-                } else {
-                    Label("Last", systemImage: Symbol.history)
-                }
+            // A one-word heading cannot wrap and must not shrink below 11 pt, so where the column
+            // is too narrow for the symbol as well, the chip drops it.
+            ViewThatFits(in: .horizontal) {
+                prevAutoChip(showsSymbol: true).fixedSize()
+                prevAutoChip(showsSymbol: false).fixedSize()
             }
-            .chipStyle(tint: .secondary, filled: false)
             .frame(minHeight: ControlSize.row)
             .contentShape(.rect)
         }
@@ -372,7 +370,25 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         .accessibilityHint("Switches between last session and smart progression")
         .frame(width: isStacked ? nil : SetTrackerRowView.previousColumnWidth, alignment: .center)
     }
-    
+
+    /// An `HStack` rather than a `Label`: in a list a label sets aside an icon column as wide as a
+    /// row's, which left the word no room.
+    private func prevAutoChip(showsSymbol: Bool) -> some View {
+        HStack(spacing: Spacing.xxs) {
+            if showsSymbol {
+                Image(systemName: presenter.showAutoRanges ? Symbol.smartProgression : Symbol.history)
+                    .accessibilityHidden(true)
+            }
+            if presenter.showAutoRanges {
+                Text("Auto")
+            } else {
+                Text("Last")
+            }
+        }
+        .lineLimit(1)
+        .chipStyle(tint: .secondary, filled: false)
+    }
+
     private var addSetButton: some View {
         Button {
             presenter.addSet(exercise: delegate.exercise)

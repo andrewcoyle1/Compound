@@ -2172,6 +2172,46 @@
         }
       }
     },
+    "%lld warm-ups" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warm-up"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld warm-ups"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calentamiento"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld calentamientos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld weeks" : {
       "localizations" : {
         "en" : {
@@ -8201,6 +8241,16 @@
         }
       }
     },
+    "Delete Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar serie"
+          }
+        }
+      }
+    },
     "Delete this meal?" : {
       "localizations" : {
         "es" : {
@@ -9599,6 +9649,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Equipo que ayuda, estabiliza o hace posible el movimiento"
+          }
+        }
+      }
+    },
+    "Equipment…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipo…"
           }
         }
       }
@@ -18697,6 +18757,16 @@
         }
       }
     },
+    "Rest Timer…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temporizador de descanso…"
+          }
+        }
+      }
+    },
     "Rest: " : {
       "extractionState" : "stale",
       "localizations" : {
@@ -21425,6 +21495,16 @@
         }
       }
     },
+    "Superset…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superserie…"
+          }
+        }
+      }
+    },
     "Support" : {
       "localizations" : {
         "es" : {
@@ -21494,6 +21574,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar ejercicio"
+          }
+        }
+      }
+    },
+    "Swap…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar…"
           }
         }
       }
@@ -22250,6 +22340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "This changes the unit for this exercise everywhere, including future workouts. Convert Values also converts the sets not yet logged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto cambia la unidad de este ejercicio en todas partes, también en entrenamientos futuros. Convertir valores también convierte las series aún no registradas."
           }
         }
       }
@@ -25340,6 +25440,16 @@
         }
       }
     },
+    "Warmup Sets…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series de calentamiento…"
+          }
+        }
+      }
+    },
     "Warning" : {
       "localizations" : {
         "es" : {
@@ -27903,6 +28013,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Objetivos: %@"
+          }
+        }
+      }
+    },
+    "Targets…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivos…"
           }
         }
       }

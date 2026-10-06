@@ -91,9 +91,10 @@ extension WorkoutTrackerView {
                 imageName: exercise.imageName,
                 resizingMode: .fit,
                 initialsWhenMissing: true,
+                // No chevron: a tap opens the exercise on the card in place rather than pushing.
                 accessory: isDone
                     ? .custom(AnyView(Image(systemName: Symbol.success).foregroundStyle(.success).accessibilityLabel("Done")))
-                    : .chevron
+                    : .none
             )
         }
         .buttonStyle(.plain)
@@ -161,6 +162,9 @@ extension WorkoutTrackerView {
             },
             onUpdateNote: { note in
                 presenter.updateExerciseNotes(note, exerciseId: exerciseId)
+            },
+            onSwap: { replacement in
+                presenter.insertSwappedExercise(after: exerciseId, new: replacement)
             },
             card: ExerciseCard(
                 progressionNote: presenter.progressionNote,

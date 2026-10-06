@@ -34,6 +34,9 @@ struct SetTrackerRowView: View {
     /// The row's cell height at the default text size. Scaled so a larger size never clips a value.
     @ScaledMetric(relativeTo: .body) private var cellHeight: CGFloat = 35
 
+    /// The set number's circle, scaled with its text so "12L" never clips at a larger size.
+    @ScaledMetric(relativeTo: .caption) private var setCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
+
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
@@ -100,7 +103,8 @@ struct SetTrackerRowView: View {
                 .reducedMotionAnimation(.standard, value: isCurrent)
                 .background(Color.surface)
         )
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+        // No full swipe: a set, logged or not, went with one long swipe and no undo.
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             deleteSetButton
         }
         // No rest runs when a finished workout is being corrected, which is the one place these
@@ -110,8 +114,7 @@ struct SetTrackerRowView: View {
                 restTimerButton
             }
         }
-        // `rowActions` does this for one edge; this row swipes both ways, so one menu carries both
-        // actions for anyone who cannot swipe.
+        // Shortcuts to the set number's menu, which is the visible route to both actions.
         .contextMenu {
             if presenter.onStartRest != nil {
                 restTimerButton
@@ -144,7 +147,7 @@ struct SetTrackerRowView: View {
         Button(role: .destructive) {
             presenter.deleteSet(setId: delegate.set.id, exercise: delegate.exercise)
         } label: {
-            Label("Delete", systemImage: Symbol.delete)
+            Label("Delete Set", systemImage: Symbol.delete)
         }
     }
 
@@ -155,7 +158,7 @@ struct SetTrackerRowView: View {
                 setId: delegate.set.wrappedValue.id
             )
         } label: {
-            Label("Rest Timer", systemImage: Symbol.rest)
+            Label("Rest Timer…", systemImage: Symbol.rest)
         }
     }
 
@@ -169,6 +172,13 @@ struct SetTrackerRowView: View {
             } label: {
                 Label("What's a warmup set?", systemImage: Symbol.info)
             }
+
+            // The visible route to what the swipes and the long press also offer.
+            if presenter.onStartRest != nil {
+                restTimerButton
+            }
+            Divider()
+            deleteSetButton
         } label: {
             // Drawn here rather than by `.bordered`, which sizes the control to its text (19 × 28 pt
             // for "1") whatever frame the label is given. A 44 pt frame is what a thumb needs and
@@ -183,13 +193,13 @@ struct SetTrackerRowView: View {
                 // its label view, and left unlabeled it reads as text no element owns.
                 .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
                 .accessibilityValue(isCurrent ? String(localized: "Next to log") : "")
-                .frame(width: ControlSize.thumbnail - Spacing.xs, height: ControlSize.thumbnail - Spacing.xs)
+                .frame(width: setCircleSide, height: setCircleSide)
                 .background(Color.tintedSurface(tint), in: .circle)
-                .frame(width: ControlSize.row, height: ControlSize.row)
+                .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .frame(width: isStacked ? nil : SetTrackerRowView.setColumnWidth, alignment: .center)
+        // A minimum, not a fixed width: the circle outgrows the column at the larger standard sizes.
         .frame(minWidth: SetTrackerRowView.setColumnWidth)
     }
 
@@ -371,9 +381,11 @@ struct SetTrackerRowView: View {
     ) -> some View {
         switch trackingMode {
         case .weightReps:
-            if let weight = prev.weightKg, let reps = prev.reps {
-                fillFromPrevious(withEffort(columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)"), rpe: prev.rpe)) {
-                    $0.weightKg = weight
+            // A set with no weight, as on a bodyweight lift, reads "8 reps" rather than nothing.
+            if let reps = prev.reps,
+               let figures = ActiveWorkout.figures(of: prev, trackingMode: .weightReps, unit: unitPreference.weightUnit, distanceUnit: unitPreference.distanceUnit) {
+                fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe)) {
+                    if let weight = prev.weightKg { $0.weightKg = weight }
                     $0.reps = reps
                 }
             } else {

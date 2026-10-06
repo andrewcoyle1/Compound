@@ -93,6 +93,49 @@ enum RestDurationRules {
         return base
     }
 
+    /// How long to rest after this set, knowing the whole workout. On top of the rules above:
+    ///
+    /// - The workout's last open set rests not at all, a rest set by hand included: Finish comes
+    ///   next, and a rest would only stand in front of it.
+    /// - In a superset (members sharing `supersetGroupId`), a set whose partner still has a set
+    ///   this round is a walk to the partner: `supersetTransitionRestSeconds`, none by default.
+    ///   The round's last set rests the base rest, and the block's last set the between-exercises
+    ///   rest. Warm-ups and the first limb of a pair keep their own rules.
+    ///
+    /// `workout` may hold `set` logged or not; it is read as logged.
+    static func restAfterCompleting(
+        _ set: WorkoutSetModel,
+        in exercise: WorkoutExerciseModel,
+        workout: [WorkoutExerciseModel],
+        settings: WorkoutSettings,
+        context: ExerciseContext,
+        customRestSeconds: Int? = nil
+    ) -> Int? {
+        let isOpen = { (candidate: WorkoutSetModel) in candidate.completedAt == nil && candidate.id != set.id }
+        guard workout.contains(where: { $0.sets.contains(where: isOpen) }) else { return nil }
+
+        let single = restAfterCompleting(set, in: exercise, settings: settings, context: context, customRestSeconds: customRestSeconds)
+        guard customRestSeconds == nil, let group = exercise.supersetGroupId, !set.isWarmup,
+              !hasFollowingSidePartner(set, in: exercise) else { return single }
+        let partners = workout.filter { $0.supersetGroupId == group && $0.id != exercise.id }
+        guard !partners.isEmpty else { return single }
+
+        let round = exercise.workingSetNumber(for: set)
+        let partnerHasSetThisRound = partners.contains { partner in
+            partner.sets.contains { !$0.isWarmup && isOpen($0) && partner.workingSetNumber(for: $0) <= round }
+        }
+        if partnerHasSetThisRound {
+            return settings.supersetTransitionRestSeconds.flatMap { $0 > 0 ? $0 : nil }
+        }
+
+        let blockHasMore = ([exercise] + partners).contains { $0.sets.contains(where: isOpen) }
+        if blockHasMore {
+            return baseRestDuration(settings: settings, context: context)
+        }
+        guard settings.restBetweenExercises else { return nil }
+        return scale(baseRestDuration(settings: settings, context: context), by: settings.betweenExercisesRestScaling)
+    }
+
     /// Scaling to nothing means no rest rather than a zero-second one.
     private static func scale(_ base: Int, by factor: Double) -> Int? {
         let scaled = Int((Double(base) * factor).rounded())

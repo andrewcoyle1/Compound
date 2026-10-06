@@ -34,6 +34,10 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var restAfterLastWarmUp: Bool = true
     var restBetweenExercises: Bool = true
     var restBetweenSideSets: Bool = false
+    /// The rest between one superset partner's set and the next partner's in the same round, in
+    /// seconds. `nil` (the default, and every document saved before the setting) means none: the
+    /// rest comes after the round.
+    var supersetTransitionRestSeconds: Int?
 
     // MARK: - Rest Timer: Notifications
     var restTimerPlaySound: Bool = true
@@ -66,6 +70,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case restAfterLastWarmUp = "rest_after_last_warm_up"
         case restBetweenExercises = "rest_between_exercises"
         case restBetweenSideSets = "rest_between_side_sets"
+        case supersetTransitionRestSeconds = "superset_transition_rest_seconds"
         case restTimerPlaySound = "rest_timer_play_sound"
         case restTimerVibrate = "rest_timer_vibrate"
         case warmUpRestScaling = "warm_up_rest_scaling"

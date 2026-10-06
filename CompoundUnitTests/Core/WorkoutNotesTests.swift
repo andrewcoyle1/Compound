@@ -127,6 +127,7 @@ struct WorkoutPreviousNoteTests {
 struct ExerciseNoteSheetTests {
 
     private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
+        var allExercises: [ExerciseModel] = []
         func exerciseNote(for exerciseId: String) -> String? { nil }
     }
 

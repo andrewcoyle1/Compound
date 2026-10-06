@@ -48,9 +48,9 @@ while this was written, so their numbers may have moved by a few lines.
 | 4a | built | A system sound (1007) stands in for the missing file, with a TODO; the file, once added, plays under `.ambient`. Both follow the silent switch and mix with music. |
 | 4b | built | "Next: Bench Press, 60 kg × 8" through `Format.*` in the exercise's weight unit; "Next: Bench Press" with no figures; title only ("Rest Complete") when nothing is left. |
 | 5a | built | Logged sets move when tracking mode and per-side match; open sets are replaced, as many as were open. Otherwise "Discard Logged Sets?" with "Swap and Discard Sets" / Cancel. The picker hands over its choice after its sheet closes. |
-| 5b | built | Pause Workout / Resume Workout in the menu, through `togglePause()`. The pause lives on `HKWorkoutManager` (works without HealthKit); the clock leaves paused time out; the Live Activity shows its paused phase, and intent pushes follow it. |
+| 5b | built | *Amended 2026-10-06 (hig-decisions T2): visible toolbar items at regular width.* Pause Workout / Resume Workout in the menu, through `togglePause()`. The pause lives on `HKWorkoutManager` (works without HealthKit); the clock leaves paused time out; the Live Activity shows its paused phase, and intent pushes follow it. |
 | 5c | built | Finish opens the existing session detail once the cover is down; success haptic on save and on a retried save; "No Sets Logged" with Discard Workout / Save Anyway / Cancel. |
-| 5d | built | Done logs a ready set; no alert. The event name is kept. |
+| 5d | built | *Reversed 2026-10-06 (hig-decisions T1): Done only closes; WP-F.* Done logs a ready set; no alert. The event name is kept. |
 | 12c | built | Rows and container: fixed height up to `.large`, minimum height above it. Ceiling AX1 on the banner and the expanded island (by the HIG's leading, AX2 would need about 163 pt of the 160). Not captured: the screenshot script cannot show a Live Activity. |
 | 12d | built | "Show on Lock Screen" under Display, default on (optional field, nil reads on), read in `CoreInteractor.ensureLiveActivity`. |
 | 13b | built | At accessibility sizes each set row stacks into two lines (set, Prev/Auto, Done; then the inputs across the width) and the headers follow; the xxxLarge cap is gone. Normal sizes unchanged. |

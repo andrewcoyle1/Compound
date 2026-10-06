@@ -22,19 +22,23 @@ struct ProgressionPlanner {
         /// only rounded to the user's unit.
         let exercise: ExerciseModel?
         let preferredWeightUnit: ExerciseWeightUnit?
+        /// The equipment chosen for this session, when the exercise has a session to read it from.
+        let resistanceEquipment: [EquipmentRef]?
 
         init(
             templateId: String,
             trackingMode: TrackingMode,
             setTargets: [SetTarget],
             exercise: ExerciseModel?,
-            preferredWeightUnit: ExerciseWeightUnit?
+            preferredWeightUnit: ExerciseWeightUnit?,
+            resistanceEquipment: [EquipmentRef]? = nil
         ) {
             self.templateId = templateId
             self.trackingMode = trackingMode
             self.setTargets = setTargets
             self.exercise = exercise
             self.preferredWeightUnit = preferredWeightUnit
+            self.resistanceEquipment = resistanceEquipment
         }
 
         init(templateExercise: WorkoutTemplateExercise, preferredWeightUnit: ExerciseWeightUnit?) {
@@ -57,7 +61,10 @@ struct ProgressionPlanner {
                 trackingMode: sessionExercise.trackingMode,
                 setTargets: sessionExercise.setTargets,
                 exercise: exercise,
-                preferredWeightUnit: preferredWeightUnit
+                preferredWeightUnit: preferredWeightUnit,
+                resistanceEquipment: sessionExercise.chosenVariationId.flatMap { chosen in
+                    sessionExercise.equipmentVariations.first { $0.id == chosen }?.resistanceEquipment
+                }
             )
         }
     }
@@ -94,7 +101,8 @@ struct ProgressionPlanner {
         WeightRoundingRule(
             exercise: context.exercise,
             gymProfile: gymProfile,
-            preferredWeightUnit: context.preferredWeightUnit
+            preferredWeightUnit: context.preferredWeightUnit,
+            resistanceEquipment: context.resistanceEquipment
         )
     }
 

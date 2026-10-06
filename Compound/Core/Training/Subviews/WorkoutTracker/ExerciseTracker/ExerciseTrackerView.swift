@@ -14,7 +14,6 @@ struct ExerciseTrackerDelegate {
     var allWorkoutExercises: [WorkoutExerciseModel] = []
     var supersetLabel: String?
     /// The one line smart progression has to say about this exercise, if anything.
-    var progressionHint: String?
     /// What the engine suggests for this exercise's working sets, shown by the Auto column.
     var progressionSuggestion: ProgressionSuggestion?
     /// The note this exercise was left with last session, shown as a hint when writing this one.
@@ -25,6 +24,20 @@ struct ExerciseTrackerDelegate {
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// Saves this session's note on the exercise; an empty string clears it.
     var onUpdateNote: @MainActor (String) -> Void = { _ in }
+    /// The live tracker draws the current exercise as an open card. `nil` is the collapsible row
+    /// a finished workout's editor uses.
+    var card: ExerciseCard?
+}
+
+/// What the live tracker's exercise card shows beyond the sets.
+struct ExerciseCard {
+    /// See `SetTrackerCard.progressionNote`.
+    var progressionNote: String?
+    var onProgressionNoteAcknowledged: @MainActor () -> Void = { }
+    var restTimer: InlineRestTimer?
+    var onDoLater: (@MainActor () -> Void)?
+    var onLogSet: (@MainActor (String, Int?) -> Void)?
+    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -37,26 +50,105 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     @ViewBuilder var setTracker: (SetTrackerDelegate) -> SetTracker
 
     var body: some View {
-        DisclosureGroup(isExpanded: delegate.isExpanded) {
-            let setDelegate = SetTrackerDelegate(
-                exercise: delegate.exercise,
-                lastExercise: delegate.lastExercise,
-                progressionSuggestion: delegate.progressionSuggestion,
-                allWorkoutExercises: delegate.allWorkoutExercises,
-                onSetSupersetGroup: delegate.onSetSupersetGroup,
-                onDeleteExercise: delegate.onDeleteExercise,
-                onSetCompleted: delegate.onSetCompleted
-            )
-            setTracker(setDelegate)
-        } label: {
-            exerciseHeader(delegate.exercise.wrappedValue)
+        if let card = delegate.card {
+            setTracker(setDelegate(card: SetTrackerCard(
+                header: { menu in AnyView(cardHeader(delegate.exercise.wrappedValue, card: card, menu: menu)) },
+                hasNote: delegate.exercise.wrappedValue.notes != nil,
+                onNotePressed: {
+                    presenter.onNotePressed(
+                        for: delegate.exercise.wrappedValue,
+                        previousNote: delegate.previousNote,
+                        onSave: delegate.onUpdateNote
+                    )
+                },
+                onDoLater: card.onDoLater,
+                progressionNote: card.progressionNote,
+                onProgressionNoteAcknowledged: card.onProgressionNoteAcknowledged,
+                restTimer: card.restTimer,
+                onLogSet: card.onLogSet,
+                onCustomRestChanged: card.onCustomRestChanged
+            )))
+        } else {
+            DisclosureGroup(isExpanded: delegate.isExpanded) {
+                setTracker(setDelegate(card: nil))
+            } label: {
+                exerciseHeader(delegate.exercise.wrappedValue)
+            }
         }
+    }
+
+    private func setDelegate(card: SetTrackerCard?) -> SetTrackerDelegate {
+        SetTrackerDelegate(
+            exercise: delegate.exercise,
+            lastExercise: delegate.lastExercise,
+            progressionSuggestion: delegate.progressionSuggestion,
+            allWorkoutExercises: delegate.allWorkoutExercises,
+            onSetSupersetGroup: delegate.onSetSupersetGroup,
+            onDeleteExercise: delegate.onDeleteExercise,
+            onSetCompleted: delegate.onSetCompleted,
+            card: card
+        )
+    }
+
+    // MARK: - Card
+
+    /// The card's title row, then the user's own note. Kept short: the sets are the point.
+    private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
+                    .frame(width: thumbnailSide, height: thumbnailSide)
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    // The menu sits on the name's line, so it reads as the exercise's own.
+                    HStack(alignment: .center, spacing: Spacing.s) {
+                        Text(exercise.name)
+                            .font(.sectionTitle)
+                            .accessibilityAddTraits(.isHeader)
+                        Spacer(minLength: 0)
+                        menu
+                    }
+                    if let label = delegate.supersetLabel {
+                        Chip(label, systemImage: Symbol.superset, tint: .superset)
+                    }
+                }
+
+            }
+
+            if let note = presenter.note(for: exercise) {
+                pinnedNote(note)
+            }
+
+            if let sessionNote = exercise.notes {
+                Label(sessionNote, systemImage: Symbol.note)
+                    .font(.rowDetail)
+            }
+
+        }
+        .padding(.vertical, Spacing.s)
+    }
+
+    /// The note the user keeps on the exercise, set apart from anything the app says by its
+    /// label, its pin and a neutral fill rather than a tint.
+    private func pinnedNote(_ note: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Label("Your note", systemImage: Symbol.pinnedNote)
+                .font(.label)
+                .foregroundStyle(.secondary)
+            Text(note)
+                .font(.rowDetail)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.s)
+        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder
     func exerciseHeader(_ exercise: WorkoutExerciseModel) -> some View {
         HStack(alignment: .center) {
-            ExerciseImageView(name: exercise.name, imageName: exercise.imageName)
+            ExerciseImageView(name: exercise.name, imageName: presenter.imageName(for: exercise))
                 .frame(width: thumbnailSide, height: thumbnailSide)
                 .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
                 .accessibilityHidden(true)
@@ -74,13 +166,6 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 }
 
                 setProgress(exercise)
-
-                if let progressionHint = delegate.progressionHint {
-                    Label(progressionHint, systemImage: "wand.and.stars")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
 
                 if let note = presenter.note(for: exercise) {
                     Text(note)

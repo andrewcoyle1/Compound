@@ -3713,16 +3713,6 @@
         }
       }
     },
-    "Add set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir serie"
-          }
-        }
-      }
-    },
     "Add Set" : {
       "localizations" : {
         "es" : {
@@ -7440,16 +7430,6 @@
         }
       }
     },
-    "Current Workout" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrenamiento actual"
-          }
-        }
-      }
-    },
     "Custom" : {
       "localizations" : {
         "es" : {
@@ -9223,16 +9203,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esfuerzo (RPE)"
-          }
-        }
-      }
-    },
-    "Elapsed Time" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiempo transcurrido"
           }
         }
       }
@@ -20118,16 +20088,6 @@
         }
       }
     },
-    "Sets Completed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Series completadas"
-          }
-        }
-      }
-    },
     "Sets per Muscle" : {
       "localizations" : {
         "es" : {
@@ -26241,7 +26201,6 @@
       }
     },
     "Workout Notes" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26257,16 +26216,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opciones del entrenamiento"
-          }
-        }
-      }
-    },
-    "Workout Overview" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resumen del entrenamiento"
           }
         }
       }
@@ -28624,6 +28573,446 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay ningún objetivo que editar."
+          }
+        }
+      }
+    },
+    "%@ today." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hoy."
+          }
+        }
+      }
+    },
+    "%@ today. A lighter week to recover." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hoy. Una semana más ligera para recuperarte."
+          }
+        }
+      }
+    },
+    "%@ today. You hit %@ on every working set last time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ hoy. La última vez hiciste %@ en todas las series efectivas."
+          }
+        }
+      }
+    },
+    "%lld of %lld sets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %#@total@"
+          },
+          "substitutions" : {
+            "total" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg set"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg sets"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %#@total@"
+          },
+          "substitutions" : {
+            "total" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg serie"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg series"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld working sets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %#@total@"
+          },
+          "substitutions" : {
+            "total" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg working set"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg working sets"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %#@total@"
+          },
+          "substitutions" : {
+            "total" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg serie efectiva"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg series efectivas"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "+%@ today, at the same weight as last time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%@ hoy, con el mismo peso que la última vez."
+          }
+        }
+      }
+    },
+    "Add Exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir ejercicio"
+          }
+        }
+      }
+    },
+    "Add Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir nota"
+          }
+        }
+      }
+    },
+    "Changes the weight to one your plates can make" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia el peso por uno que tus discos pueden formar"
+          }
+        }
+      }
+    },
+    "Dismisses the note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la nota"
+          }
+        }
+      }
+    },
+    "Do Later" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer más tarde"
+          }
+        }
+      }
+    },
+    "Do Next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer a continuación"
+          }
+        }
+      }
+    },
+    "Done Reordering" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar de reordenar"
+          }
+        }
+      }
+    },
+    "Edit Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar nota"
+          }
+        }
+      }
+    },
+    "Exercise %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicio %lld de %lld"
+          }
+        }
+      }
+    },
+    "Last" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última"
+          }
+        }
+      }
+    },
+    "Last %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Última %@"
+          }
+        }
+      }
+    },
+    "Log set %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie %@"
+          }
+        }
+      }
+    },
+    "Log warm-up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar calentamiento"
+          }
+        }
+      }
+    },
+    "Next to log" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente por registrar"
+          }
+        }
+      }
+    },
+    "Not loadable. Use %@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede cargar. Usa %@ %@"
+          }
+        }
+      }
+    },
+    "Opens this exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre este ejercicio"
+          }
+        }
+      }
+    },
+    "Reorder" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reordenar"
+          }
+        }
+      }
+    },
+    "Rest over, ready for the next set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso terminado, listo para la siguiente serie"
+          }
+        }
+      }
+    },
+    "Rest: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso: %@"
+          }
+        }
+      }
+    },
+    "Rest: %@/%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso: %@/%@"
+          }
+        }
+      }
+    },
+    "RIR %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RIR %@"
+          }
+        }
+      }
+    },
+    "Skip Rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir descanso"
+          }
+        }
+      }
+    },
+    "Smart Progression. %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progresión inteligente. %@"
+          }
+        }
+      }
+    },
+    "Switches between last session and smart progression" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alterna entre la última sesión y la progresión inteligente"
+          }
+        }
+      }
+    },
+    "Tap to dismiss" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para cerrar"
+          }
+        }
+      }
+    },
+    "Top %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejor %@"
+          }
+        }
+      }
+    },
+    "Up Next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A continuación"
+          }
+        }
+      }
+    },
+    "Your note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu nota"
           }
         }
       }

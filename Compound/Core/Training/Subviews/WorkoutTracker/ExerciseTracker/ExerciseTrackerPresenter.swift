@@ -33,6 +33,11 @@ class ExerciseTrackerPresenter {
     ///
     /// Whitespace only counts as nothing: a note saved as a stray newline should leave the header
     /// exactly as it was.
+    /// The stored image, else the library's: a finished workout being corrected may predate it.
+    func imageName(for exercise: WorkoutExerciseModel) -> String? {
+        exercise.imageName(in: interactor.allExercises)
+    }
+
     func note(for exercise: WorkoutExerciseModel) -> String? {
         let trimmed = interactor.exerciseNote(for: exercise.templateId)?
             .trimmingCharacters(in: .whitespacesAndNewlines)

@@ -358,20 +358,6 @@ struct WorkoutTrackerPresenterTests {
         #expect(screen.presenter.expandedExerciseId == nil)
     }
 
-    @Test("Test Expanding An Exercise Changes The Focus")
-    func testExpandingAnExerciseChangesTheFocus() throws {
-        let screen = try makeScreen(exercises: [
-            exercise(id: "e1", index: 1, sets: [set(1)]),
-            exercise(id: "e2", index: 2, sets: [set(1)])
-        ])
-
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e2", isExpanded: true)
-        #expect(screen.presenter.expandedExerciseId == "e2")
-
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e2", isExpanded: false)
-        #expect(screen.presenter.expandedExerciseId == nil)
-    }
-
     // MARK: - Reordering
 
     @Test("Test Reordering Renumbers The Exercises And Refocuses")
@@ -415,7 +401,6 @@ struct WorkoutTrackerPresenterTests {
         ])])
 
         #expect(screen.presenter.computeTotalVolumeKg() == 1180)
-        #expect(screen.presenter.formattedVolume == "1,180 kg")
     }
 
     @Test("Test Sets Without Weight Or Reps Add No Volume")
@@ -426,18 +411,6 @@ struct WorkoutTrackerPresenterTests {
         ])])
 
         #expect(screen.presenter.computeTotalVolumeKg() == 0)
-    }
-
-    @Test("Test The Progress Counters Read As Fractions")
-    func testTheProgressCountersReadAsFractions() throws {
-        let screen = try makeScreen(exercises: [
-            exercise(id: "e1", index: 1, sets: [set(1, done: true), set(2)]),
-            exercise(id: "e2", index: 2, sets: [set(1)])
-        ])
-
-        #expect(screen.presenter.completedSetsFraction == "1/3")
-        #expect(screen.presenter.exercisesCount == "2 exercises")
-        #expect(screen.presenter.exerciseFraction == "1/2")
     }
 
     // MARK: - Notes

@@ -129,9 +129,11 @@ extension WorkoutSessionModel {
     static func equipmentWeightRange(
         exercise: ExerciseModel,
         gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
+        preferredWeightUnit: ExerciseWeightUnit?,
+        resistanceEquipment: [EquipmentRef]? = nil
     ) -> (any WeightRange)? {
-        let refs = exercise.equipmentVariations.first?.resistanceEquipment ?? []
+        // The equipment chosen for this session when there is one, else the exercise's first.
+        let refs = resistanceEquipment ?? exercise.equipmentVariations.first?.resistanceEquipment ?? []
         let gym = gymProfile ?? GymProfileModel(authorId: "")
         let fallbackGym = GymProfileModel(authorId: "")
 

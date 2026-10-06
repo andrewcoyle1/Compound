@@ -8,6 +8,7 @@
 @MainActor
 protocol WorkoutSessionDetailInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
+    var allExercises: [ExerciseModel] { get }
     func getUser(userId: String) async throws -> UserModel
     func saveWorkoutSession(_ session: WorkoutSessionModel) async throws
     func getPreference(templateId: String) -> ExerciseUnitPreference

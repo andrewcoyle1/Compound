@@ -14,6 +14,7 @@ import SwiftUI
 struct WorkoutSessionDeleteFailureTests {
 
     private final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+        var allExercises: [ExerciseModel] = []
         var currentUser: UserModel? = UserModel(userId: "author-1")
 
         func getUser(userId: String) async throws -> UserModel { throw URLError(.fileDoesNotExist) }

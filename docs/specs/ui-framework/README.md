@@ -96,7 +96,10 @@ Files no WP may commit changes to, and why:
 2. **Calories colour.** Blue, which is what `Macro.cals.colour` already says. Protein stops being
    blue anywhere.
 3. **Finish Workout.** It stays in the tracker's menu. In addition, once every set is completed,
-   a Finish button animates into the bottom safe area. See WP-09.
+   a Finish button animates into the bottom safe area. See WP-09. *Amended 2026-10-06:* at
+   regular width (iPad) Pause/Resume, Finish and Notes are visible toolbar items; the menu stays
+   on compact width. The bottom Finish button routes through the "Finish Workout" notes sheet, so
+   finishing is always confirmed. See `docs/specs/workout-tracker/plan.md`.
 4. **List row text.** Titles use `.body` and subtitles use `.subheadline`. Both are Dynamic Type
    text styles. WP-06 carries the accessibility-size layout rules.
 

@@ -181,3 +181,14 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         }
     }
 }
+
+extension WorkoutExerciseModel {
+
+    /// The image to show: the one stored with the session, else the library exercise's. A session
+    /// keeps the image its exercises had when it began, so one logged before an exercise was
+    /// bundled with artwork, or repointed at a bundled exercise since, stored none.
+    func imageName(in library: [ExerciseModel]) -> String? {
+        if let imageName, !imageName.isEmpty { return imageName }
+        return library.first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
+    }
+}

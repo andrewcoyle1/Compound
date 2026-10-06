@@ -25,7 +25,7 @@ extension WorkoutTrackerPresenter {
                 authorId: userId,
                 targetCount: targetCount
             )
-            let imageName = Constants.exerciseImageName(for: exercise.name)
+            let imageName = Constants.exerciseImageName(for: exercise)
             let newExercise = WorkoutExerciseModel(
                 id: UUID().uuidString,
                 authorId: userId,

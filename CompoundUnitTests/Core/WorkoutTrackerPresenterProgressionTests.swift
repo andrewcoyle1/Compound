@@ -140,28 +140,4 @@ struct WorkoutTrackerPresenterProgressionTests {
         #expect(remaining[0].weight == 60)
         #expect(remaining[1].weight == 57)
     }
-
-    // MARK: - The hint
-
-    /// The header says what the engine decided, in one line and in the user's words.
-    @Test("Test The Header Hint Reads From The Rationale")
-    func testTheHeaderHintReadsFromTheRationale() throws {
-        let screen = try makeScreen(sets: [set(1), set(2), set(3)])
-        screen.presenter.progressionSuggestions = [
-            "template-exercise-1": ProgressionSuggestion(rationale: .progressWeight, sets: [])
-        ]
-
-        #expect(screen.presenter.progressionHint(for: "exercise-1") == "Smart Progression: add weight")
-    }
-
-    /// Nothing to go on, nothing to say.
-    @Test("Test There Is No Hint Without History")
-    func testThereIsNoHintWithoutHistory() throws {
-        let screen = try makeScreen(sets: [set(1), set(2), set(3)])
-        screen.presenter.progressionSuggestions = [
-            "template-exercise-1": .noHistory(setCount: 3)
-        ]
-
-        #expect(screen.presenter.progressionHint(for: "exercise-1") == nil)
-    }
 }

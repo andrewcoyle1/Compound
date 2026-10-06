@@ -35,17 +35,6 @@ extension WorkoutTrackerPresenter {
         }
     }
 
-    /// The line the exercise header shows, or `nil` when there is nothing to say.
-    func progressionHint(for exerciseId: String) -> String? {
-        guard let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }),
-              let rationale = progressionSuggestions[exercise.templateId]?.rationale,
-              rationale != .noHistory else { return nil }
-
-        let hint = rationale.hint
-        guard !hint.isEmpty else { return nil }
-        return String(localized: "Smart Progression: \(String(describing: hint.prefix(1).lowercased()))\(String(describing: hint.dropFirst()))")
-    }
-
     // MARK: - Live adjustment
 
     /// Re-suggests the sets of an exercise that are still to come, from the one just logged.

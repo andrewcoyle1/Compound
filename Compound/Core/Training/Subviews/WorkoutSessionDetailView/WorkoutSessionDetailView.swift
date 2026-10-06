@@ -232,7 +232,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
                     ListRow(
                         title: exercise.name,
                         subtitle: presenter.exerciseSummary(exercise),
-                        imageName: exercise.imageName,
+                        imageName: presenter.imageName(for: exercise),
                         initialsWhenMissing: true
                     )
                 }

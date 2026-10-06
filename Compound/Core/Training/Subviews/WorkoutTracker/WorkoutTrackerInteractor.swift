@@ -156,6 +156,9 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
 
     /// Load unit preferences for an exercise template.
     func getPreference(templateId: String) -> ExerciseUnitPreference
+
+    /// The rest set on this exercise itself, which wins over the settings' defaults.
+    func exerciseRestOverride(for exerciseId: String) -> Int?
 }
 
 extension CoreInteractor: WorkoutTrackerInteractor {

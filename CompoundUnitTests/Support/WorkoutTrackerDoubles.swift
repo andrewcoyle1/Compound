@@ -218,6 +218,10 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func getPreference(templateId: String) -> ExerciseUnitPreference {
         preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
     }
+    var restOverrides: [String: Int] = [:]
+    func exerciseRestOverride(for exerciseId: String) -> Int? {
+        restOverrides[exerciseId]
+    }
 }
 
 final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {

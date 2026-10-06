@@ -7,8 +7,17 @@ struct SetTrackerRowDelegate {
     /// What smart progression suggests for this row, if anything. Shown by the Auto column.
     var progressionSuggestion: SuggestedSet?
     var showAutoRanges: Bool = false
+    /// Done, current or upcoming, on the live tracker. `nil` draws every row alike, as the
+    /// warm-up sheet does.
+    var rowState: SetRowState?
     /// Called with the set that was just logged, so the screen can re-suggest what is left.
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
+    /// The live tracker logs the set itself, with any rest set by hand on this row, so its log
+    /// button and this row's Done are one path. `nil` where there is no tracker: the warm-up sheet
+    /// and a finished workout's editor.
+    var onLogSet: (@MainActor (_ setId: String, _ customRestSeconds: Int?) -> Void)?
+    /// Hands a rest set by hand to the tracker, so its log button rests as long.
+    var onCustomRestChanged: (@MainActor (_ setId: String, _ seconds: Int?) -> Void)?
     var eventParameters: [String: Any]? {
         nil
     }
@@ -31,8 +40,10 @@ struct SetTrackerRowView: View {
     /// into two lines and the text keeps growing. Below them the table is as it always was.
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
+    private var isCurrent: Bool { delegate.rowState == .current }
+
     var body: some View {
-        Group {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             if isStacked {
                 stackedRow
             } else {
@@ -46,8 +57,49 @@ struct SetTrackerRowView: View {
                     completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
                 }
             }
+            if isCurrent, let plates = presenter.plateSummary(exercise: delegate.exercise.wrappedValue, set: delegate.set.wrappedValue) {
+                Group {
+                    if let nearestKg = plates.nearestKg {
+                        Button {
+                            delegate.set.wrappedValue.weightKg = nearestKg
+                        } label: {
+                            // The warning colour on the icon only: orange text on the current row's
+                            // highlight is under 4.5:1.
+                            Label {
+                                Text(plates.text)
+                                    .foregroundStyle(.primary)
+                            } icon: {
+                                Image(systemName: Symbol.warning)
+                                    .foregroundStyle(.warning)
+                            }
+                                .font(.label)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, minHeight: ControlSize.row, alignment: .leading)
+                                .contentShape(.rect)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityHint("Changes the weight to one your plates can make")
+                    } else {
+                        Label(plates.text, systemImage: Symbol.equipment)
+                            .font(.label)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.leading, isStacked ? 0 : SetTrackerRowView.setColumnWidth + Spacing.s)
+            }
         }
         .padding(.vertical, Spacing.xs)
+        // The outlines, muted text and plates line follow the highlight in step with it.
+        .reducedMotionAnimation(.standard, value: isCurrent)
+        // Always the same view with the tint faded in or out, so the highlight moves between sets
+        // rather than jumping: a nil background cannot be animated to.
+        .listRowBackground(
+            Color.tintedSurface(.accentColor)
+                .opacity(isCurrent ? 1 : 0)
+                .reducedMotionAnimation(.standard, value: isCurrent)
+                .background(Color.surface)
+        )
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             deleteSetButton
         }
@@ -118,17 +170,27 @@ struct SetTrackerRowView: View {
                 Label("What's a warmup set?", systemImage: Symbol.info)
             }
         } label: {
+            // Drawn here rather than by `.bordered`, which sizes the control to its text (19 × 28 pt
+            // for "1") whatever frame the label is given. A 44 pt frame is what a thumb needs and
+            // what the accessibility audit measures.
+            // The text stays the label's root so the menu's accessibility element is built from
+            // it; a shape on top made the audit see the number as text no element owns.
+            let tint: Color = set.wrappedValue.isWarmup ? .warmup : .secondary
             Text(setLabel(for: set.wrappedValue))
-                .font(.caption)
-                .tapTarget()
+                .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
+                .foregroundStyle(tint)
+                // On the text, not the menu: the menu's inner button takes its accessibility from
+                // its label view, and left unlabeled it reads as text no element owns.
+                .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
+                .accessibilityValue(isCurrent ? String(localized: "Next to log") : "")
+                .frame(width: ControlSize.thumbnail - Spacing.xs, height: ControlSize.thumbnail - Spacing.xs)
+                .background(Color.tintedSurface(tint), in: .circle)
+                .frame(width: ControlSize.row, height: ControlSize.row)
+                .contentShape(.circle)
         }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.circle)
-        .tint(set.wrappedValue.isWarmup ? Color.warmup : .secondary)
-        .foregroundStyle(set.wrappedValue.isWarmup ? AnyShapeStyle(.warmup) : AnyShapeStyle(.secondary))
+        .buttonStyle(.plain)
         .frame(width: isStacked ? nil : SetTrackerRowView.setColumnWidth, alignment: .center)
         .frame(minWidth: SetTrackerRowView.setColumnWidth)
-        .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
     }
 
     /// What the circle beside a set shows. Both halves of a left/right pair carry the same number
@@ -178,14 +240,16 @@ struct SetTrackerRowView: View {
             text: keyboard.displayText(for: field, set: set.wrappedValue, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             isActive: isActive,
             accessibilityLabel: label,
+            isMuted: delegate.rowState == .upcoming,
             presenter: keyboard,
             inputHost: keyboardHost,
             onBegin: { presenter.onKeyboardFieldBegan(field, delegate: delegate) }
         )
         .background(isActive ? AnyShapeStyle(Color.tintedSurface(.accentColor)) : AnyShapeStyle(.clear), in: .rect(cornerRadius: Radius.s, style: .continuous))
         .overlay {
+            // The row being logged is outlined, so its fields read as the ones to fill in.
             RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
-                .strokeBorder(.tint, lineWidth: isActive ? 2 : 0)
+                .strokeBorder(isActive ? AnyShapeStyle(.tint) : AnyShapeStyle(.separator), lineWidth: isActive ? 2 : (isCurrent ? 1 : 0))
         }
         // A logged set stays editable, so a typo is corrected in place rather than by un-logging,
         // which would restart the rest timer. The edit is not copied to other sets.
@@ -232,6 +296,8 @@ struct SetTrackerRowView: View {
 
             if let suggestion, let label {
                 columnText(label)
+                    .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+                    .contentShape(.rect)
                     .anyButton {
                         fill(delegate.set, from: suggestion)
                     }
@@ -286,7 +352,8 @@ struct SetTrackerRowView: View {
             Image(systemName: state.systemImage)
                 .font(.title3)
                 .foregroundStyle(state.tint)
-                .tapTarget()
+                .frame(width: ControlSize.row, height: ControlSize.row)
+                .contentShape(.rect)
         }
         .accessibilityLabel(state.accessibilityLabel)
         .accessibilityValue(state.accessibilityValue)
@@ -305,7 +372,7 @@ struct SetTrackerRowView: View {
         switch trackingMode {
         case .weightReps:
             if let weight = prev.weightKg, let reps = prev.reps {
-                fillFromPrevious(columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)")) {
+                fillFromPrevious(withEffort(columnText("\(Format.weight(kg: weight, unit: unitPreference.weightUnit)) × \(reps)"), rpe: prev.rpe)) {
                     $0.weightKg = weight
                     $0.reps = reps
                 }
@@ -314,7 +381,7 @@ struct SetTrackerRowView: View {
             }
         case .repsOnly:
             if let reps = prev.reps {
-                fillFromPrevious(columnText(String(reps))) { $0.reps = reps }
+                fillFromPrevious(withEffort(columnText(String(reps)), rpe: prev.rpe)) { $0.reps = reps }
             } else {
                 emptyTargetLabel
             }
@@ -340,10 +407,24 @@ struct SetTrackerRowView: View {
         }
     }
 
+    /// Last time's figures with the reps left in reserve under them, when they were logged.
+    private func withEffort(_ figures: some View, rpe: Double?) -> some View {
+        VStack(spacing: 0) {
+            figures
+            if let rpe {
+                Text("RIR \(WeightStepper.format(EffortScale.rir(fromRPE: rpe)))")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
     /// A Prev value that fills this set when tapped, for every tracking mode. Not on a logged set,
     /// where a stray tap would overwrite what was recorded.
     private func fillFromPrevious(_ label: some View, fill: @escaping (inout WorkoutSetModel) -> Void) -> some View {
         label
+            .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+            .contentShape(.rect)
             .anyButton {
                 fill(&delegate.set.wrappedValue)
             }
@@ -396,6 +477,8 @@ extension CoreBuilder {
         )
         presenter.onStartRest = onStartRest
         presenter.onSetCompleted = delegate.onSetCompleted
+        presenter.onLogSet = delegate.onLogSet
+        presenter.onCustomRestChanged = delegate.onCustomRestChanged
         return SetTrackerRowView(presenter: presenter, delegate: delegate)
     }
 

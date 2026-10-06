@@ -414,4 +414,30 @@ struct SetTrackerRowKeyboardTests {
         #expect(router.alerts.isEmpty)
         #expect(presenter.keyboard.activeField == nil)
     }
+
+    /// The line under the set being logged: what goes on each side of the bar, or the nearest
+    /// total the plates make when the weight cannot be loaded.
+    @Test func plateSummaryReadsTheGymsPlates() throws {
+        let row = makeRow()
+        row.interactor.favouriteGymProfile = GymProfileModel(authorId: "u")
+        var set = row.exercise.value.sets[0]
+        // Read the gym's own bar and heaviest plate, so the figures hold whatever its defaults are.
+        let step = WeightStepper.steps(for: row.exercise.value, profile: row.interactor.favouriteGymProfile, unit: .kilograms)
+        let bar = try #require(step.baseWeight)
+        let plate = try #require(step.plates.max())
+        let loadableKg = bar + 2 * plate
+
+        set.weightKg = loadableKg
+        let loadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
+        #expect(loadable?.nearestKg == nil)
+        #expect(loadable?.text.hasPrefix("Per side:") == true)
+
+        // A hair over: nothing in the rack makes it, and the nearest total is the one below.
+        set.weightKg = loadableKg + 0.1
+        let unloadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
+        #expect(unloadable?.nearestKg == loadableKg)
+
+        set.weightKg = nil
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
+    }
 }

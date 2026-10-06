@@ -16,6 +16,9 @@ class SetTrackerRowPresenter {
     /// Handed the set that was just logged. Smart progression uses it to re-suggest the sets of
     /// this exercise that are still to come.
     var onSetCompleted: (@MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void)?
+    /// See `SetTrackerRowDelegate.onLogSet`.
+    var onLogSet: (@MainActor (String, Int?) -> Void)?
+    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
 
     var previousLookup: [PreviousSetKey: WorkoutSetModel] = [:]
 
@@ -39,7 +42,9 @@ class SetTrackerRowPresenter {
     }
     
     func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {
-        if set.wrappedValue.completedAt == nil {
+        if set.wrappedValue.completedAt == nil, let onLogSet {
+            onLogSet(set.wrappedValue.id, restBeforeSetIdToSec[set.wrappedValue.id])
+        } else if set.wrappedValue.completedAt == nil {
             guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue) else {
                 interactor.playHaptic(option: .error)
                 return
@@ -130,6 +135,7 @@ class SetTrackerRowPresenter {
         } else {
             restBeforeSetIdToSec.removeValue(forKey: setId)
         }
+        onCustomRestChanged?(setId, seconds)
     }
 
     func onWarmupSetHelpPressed() {
@@ -146,39 +152,27 @@ class SetTrackerRowPresenter {
     }
 
     func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
+        guard let problem = Self.problem(with: set, trackingMode: trackingMode) else { return true }
+        router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
+        return false
+    }
+
+    /// What stops `set` being logged, in the user's words, or `nil` when it can be. Shared with the
+    /// tracker's log button, so the two ways to log a set refuse the same sets.
+    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode) -> String? {
+        let noReps = String(localized: "Enter at least one rep.")
+        let noTime = String(localized: "Enter a time for this set.")
         switch trackingMode {
         case .weightReps:
-            if let weight = set.weightKg, weight < 0 {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a weight of zero or more."))
-                return false
-            }
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
-                return false
-            }
-            return true
+            if let weight = set.weightKg, weight < 0 { return String(localized: "Enter a weight of zero or more.") }
+            return (set.reps ?? 0) > 0 ? nil : noReps
         case .repsOnly:
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
-                return false
-            }
-            return true
+            return (set.reps ?? 0) > 0 ? nil : noReps
         case .timeOnly:
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
-                return false
-            }
-            return true
+            return (set.durationSec ?? 0) > 0 ? nil : noTime
         case .distanceTime:
-            guard let distance = set.distanceMeters, distance > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a distance for this set."))
-                return false
-            }
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
-                return false
-            }
-            return true
+            guard (set.distanceMeters ?? 0) > 0 else { return String(localized: "Enter a distance for this set.") }
+            return (set.durationSec ?? 0) > 0 ? nil : noTime
         }
     }
 
@@ -205,6 +199,13 @@ class SetTrackerRowPresenter {
         if set.completedAt != nil { return .completed }
         return canComplete(trackingMode: trackingMode, set: set) ? .ready : .notReady
     }
+}
+
+/// The line under the set being logged on a bar. `nearestKg` is set when the weight cannot be
+/// loaded, and a tap uses it.
+struct PlateSummary: Equatable {
+    let text: String
+    let nearestKg: Double?
 }
 
 enum SetCompletionState: Equatable {
@@ -275,6 +276,28 @@ extension SetTrackerRowPresenter {
         )
     }
 
+    /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar, from the gym's bar and
+    /// plates. `nil` for anything not plate-loaded or a set with no weight yet.
+    func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
+        guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
+        let unit = getUnitPreference(for: exercise).weightUnit
+        let step = WeightStepper.steps(for: exercise, profile: interactor.favouriteGymProfile, unit: unit)
+        guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
+        let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
+        switch PlateCalculator.load(total: total, bar: bar, plates: step.plates) {
+        case .loadable(let perSide):
+            guard !perSide.isEmpty else { return PlateSummary(text: String(localized: "Empty bar"), nearestKg: nil) }
+            let text = String(localized: "Per side: ") + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit.abbreviation)"
+            return PlateSummary(text: text, nearestKg: nil)
+        case .notLoadable:
+            let nearest = PlateCalculator.nearestLoadable(total: total, bar: bar, plates: step.plates)
+            return PlateSummary(
+                text: String(localized: "Not loadable. Use \(WeightStepper.format(nearest)) \(unit.abbreviation)"),
+                nearestKg: UnitConversion.convertWeightToKg(nearest, from: unit)
+            )
+        }
+    }
+
     /// Done on a set that is ready logs it, as the row's circle does, with no question in between:
     /// tapping the circle again is the undo. A set that is not ready, or is already logged, just
     /// closes. The event keeps its name so the funnel reading it stays whole.
@@ -289,7 +312,9 @@ extension SetTrackerRowPresenter {
 extension SetTrackerRowPresenter {
     
     enum Event: LoggableEvent {
-        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool)
+        /// Every set logged, from a row, the set keyboard or the tracker's log button, which
+        /// `source` tells apart.
+        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool, source: String = "row")
         case keyboardOfferedCompletion
 
         var eventName: String {
@@ -301,8 +326,9 @@ extension SetTrackerRowPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil):
+            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil, let source):
                 return [
+                    "source": source,
                     "set_id": setId,
                     "exercise_id": exerciseId,
                     "use_rest_timers": useRestTimers,

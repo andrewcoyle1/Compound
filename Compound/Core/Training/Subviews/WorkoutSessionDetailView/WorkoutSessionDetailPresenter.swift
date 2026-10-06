@@ -59,6 +59,11 @@ class WorkoutSessionDetailPresenter {
         self.isWorkoutSummary = isWorkoutSummary
     }
 
+    /// Read at display time, so a workout saved without its image is shown with it and left as it was.
+    func imageName(for exercise: WorkoutExerciseModel) -> String? {
+        exercise.imageName(in: interactor.allExercises)
+    }
+
     func onViewAppear(delegate: WorkoutSessionDetailDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
     }
@@ -386,7 +391,7 @@ class WorkoutSessionDetailPresenter {
                 targetCount: targetCount,
                 perSide: WorkoutSessionModel.isPerSide(template.exercise)
             )
-            let imageName = Constants.exerciseImageName(for: template.exercise.name)
+            let imageName = Constants.exerciseImageName(for: template.exercise)
             
             let newExercise = WorkoutExerciseModel(
                 id: UUID().uuidString,

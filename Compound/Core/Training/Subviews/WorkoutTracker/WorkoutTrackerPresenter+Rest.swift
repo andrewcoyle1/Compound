@@ -91,7 +91,7 @@ extension WorkoutTrackerPresenter {
         // Cancel in manager (will also update Live Activity)
         interactor.cancelRest()
         #endif
-
+        restStartedAt = nil
     }
 
     /// Announces every rest that runs out while this screen is up. Driven from its own `.task` so
@@ -125,6 +125,7 @@ extension WorkoutTrackerPresenter {
             interactor.prepareSoundEffect(sound: .restComplete, simultaneousPlayers: 1)
         }
         interactor.trackEvent(event: Event.startRestTimerCalled(inputDuration: durationSeconds, resolvedDuration: duration))
+        restStartedAt = Date()
         #if !targetEnvironment(macCatalyst)
         interactor.startRest(durationSeconds: duration, session: workoutSession, currentExerciseIndex: currentExerciseIndex)
         #endif

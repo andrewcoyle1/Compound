@@ -220,7 +220,7 @@ struct WorkoutTrackerSupersetTests {
             exercise(id: "e1", index: 1, sets: [set(1, done: true), set(2)], supersetGroupId: "group-1"),
             exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
         ])
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e1", isExpanded: true)
+        screen.presenter.onExerciseSelected("e1")
         var logged = try #require(screen.presenter.workoutSession.exercises.first).sets[0]
         logged.weightKg = 90
 

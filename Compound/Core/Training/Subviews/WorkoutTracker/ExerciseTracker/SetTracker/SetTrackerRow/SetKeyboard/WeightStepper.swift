@@ -83,7 +83,12 @@ enum WeightStepper {
     static func steps(for exercise: WorkoutExerciseModel, profile: GymProfileModel?, unit: ExerciseWeightUnit) -> WeightStep {
         let variation = exercise.equipmentVariations.first { $0.id == exercise.chosenVariationId }
             ?? exercise.equipmentVariations.first
-        guard let profile, let refs = variation?.resistanceEquipment else { return fallback(unit) }
+        return steps(for: variation?.resistanceEquipment, profile: profile, unit: unit)
+    }
+
+    /// The step for one equipment variation's resistance equipment, the first that `profile` has.
+    static func steps(for refs: [EquipmentRef]?, profile: GymProfileModel?, unit: ExerciseWeightUnit) -> WeightStep {
+        guard let profile, let refs else { return fallback(unit) }
 
         for ref in refs {
             if let step = step(for: ref, profile: profile, unit: unit) { return step }

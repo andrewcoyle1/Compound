@@ -19,6 +19,7 @@ import SwiftUI
 struct WorkoutSessionAuthorTests {
 
     private final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+        var allExercises: [ExerciseModel] = []
         var currentUser: UserModel?
         var users: [String: UserModel] = [:]
         private(set) var userLookups: [String] = []

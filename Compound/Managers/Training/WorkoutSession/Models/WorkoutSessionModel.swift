@@ -180,7 +180,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 )
             }
             
-            let imageName = Constants.exerciseImageName(for: exerciseModel.exercise.name)
+            let imageName = Constants.exerciseImageName(for: exerciseModel.exercise)
             return WorkoutExerciseModel(
                 id: UUID().uuidString,
                 authorId: authorId,
@@ -399,6 +399,15 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             let roundedWeightKg = UnitConversion.convertWeightToKg(clampedWeight, from: range.unit)
 
             return roundedWeightKg
+        }
+
+        // A bar: the nearest total its plates make, in the unit the plates are labelled in.
+        if let gymProfile {
+            let unit = preferredWeightUnit ?? .kilograms
+            let step = WeightStepper.steps(for: equipmentRefs, profile: gymProfile, unit: unit)
+            if let bar = step.baseWeight, step.isPlateLoaded {
+                return PlateCalculator.nearestLoadableKg(weightKg, bar: bar, plates: step.plates, unit: unit)
+            }
         }
 
         return weightKg

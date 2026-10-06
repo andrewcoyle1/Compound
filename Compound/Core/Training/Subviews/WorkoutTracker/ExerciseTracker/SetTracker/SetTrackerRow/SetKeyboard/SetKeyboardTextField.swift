@@ -61,6 +61,8 @@ struct SetKeyboardTextField: UIViewRepresentable {
     let text: String
     let isActive: Bool
     let accessibilityLabel: String
+    /// Drawn in the secondary colour: a set further down the table than the one being logged.
+    var isMuted = false
     let presenter: SetKeyboardPresenter
     let inputHost: SetKeyboardInputHost
     let onBegin: () -> Void
@@ -87,6 +89,7 @@ struct SetKeyboardTextField: UIViewRepresentable {
         textField.isEnabled = context.environment.isEnabled
         if textField.text != text { textField.text = text }
         textField.accessibilityLabel = accessibilityLabel
+        textField.textColor = isMuted ? .secondaryLabel : .label
         // Focus follows the presenter, so Next and Prev move it. Deferred: first responder
         // cannot change in the middle of a view update.
         if isActive != textField.isFirstResponder {

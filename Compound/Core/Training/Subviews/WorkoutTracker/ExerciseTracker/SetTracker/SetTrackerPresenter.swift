@@ -13,7 +13,15 @@ class SetTrackerPresenter {
     private let interactor: SetTrackerInteractor
     private let router: SetTrackerRouter
 
-    var showAutoRanges: Bool = true
+    /// Last session by default; Auto shows smart progression's suggestion for each set instead.
+    /// Kept on the device, so the column a user switched to is the one they get next time. The
+    /// redesign changed the default from Auto: users who never switched now get Last too, since
+    /// the Auto figures are already in the rows.
+    var showAutoRanges: Bool {
+        didSet { defaults.set(showAutoRanges, forKey: Self.showAutoRangesKey) }
+    }
+    private let defaults: UserDefaults
+    static let showAutoRangesKey = "SetTracker.showsSuggestions"
     
     /// What the user last did for each exercise, keyed by the exercise's `templateId`.
     var previousExercises: [String: WorkoutExerciseModel] = [:]
@@ -23,9 +31,11 @@ class SetTrackerPresenter {
         interactor.userId
     }
     
-    init(interactor: SetTrackerInteractor, router: SetTrackerRouter) {
+    init(interactor: SetTrackerInteractor, router: SetTrackerRouter, defaults: UserDefaults = .standard) {
         self.interactor = interactor
         self.router = router
+        self.defaults = defaults
+        self.showAutoRanges = defaults.object(forKey: Self.showAutoRangesKey) as? Bool ?? false
     }
 
     func onExerciseEquipmentPressed(_ exercise: Binding<WorkoutExerciseModel>) {
@@ -114,7 +124,7 @@ class SetTrackerPresenter {
         exercise.wrappedValue.name = newExercise.name
         exercise.wrappedValue.trackingMode = newMode
         exercise.wrappedValue.equipmentVariations = newExercise.equipmentVariations
-        exercise.wrappedValue.imageName = Constants.exerciseImageName(for: newExercise.name)
+        exercise.wrappedValue.imageName = Constants.exerciseImageName(for: newExercise)
         exercise.wrappedValue.sets = sets
         exercise.wrappedValue.setTargets = [SetTarget(setNumber: 1, setType: .standard)]
         exercise.wrappedValue.chosenVariationId = nil

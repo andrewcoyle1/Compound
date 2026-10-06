@@ -11,6 +11,11 @@ import SwiftUI
 /// its own router, signed in to the mock scenario the way `AppView` would be, so a UI test does
 /// not have to walk the tab bar to reach it.
 struct AppViewForUITesting: View {
+
+    /// Read once. `WorkoutSessionModel.mock` makes new set ids on every read, and the screen is
+    /// rebuilt on every redraw, so the session being edited never matched the one it started from
+    /// and Save was enabled before anything changed.
+    private static let sessionDetailMock = WorkoutSessionModel.mock
     
     var container: DependencyContainer
     
@@ -142,7 +147,7 @@ extension AppViewForUITesting {
             ("STARTSCREEN_EXERCISES", { builder.exercisesView(router: $0).any() }),
             ("STARTSCREEN_WORKOUT_HISTORY", { builder.workoutHistoryView(router: $0).any() }),
             ("STARTSCREEN_SESSION_DETAIL", {
-                builder.workoutSessionDetailView(router: $0, delegate: WorkoutSessionDetailDelegate(workoutSession: .mock)).any()
+                builder.workoutSessionDetailView(router: $0, delegate: WorkoutSessionDetailDelegate(workoutSession: Self.sessionDetailMock)).any()
             }),
             ("STARTSCREEN_GYM_PROFILES", { builder.gymProfilesView(router: $0).any() }),
             ("STARTSCREEN_NUTRITION", { builder.nutritionView(delegate: NutritionDelegate(), router: $0).any() }),

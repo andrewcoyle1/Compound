@@ -56,6 +56,13 @@ class WorkoutTrackerPresenter {
     }
     
     var expandedExerciseId: String?
+    /// When the rest on screen began, for the inline timer's progress; kept after it runs out so
+    /// the timer can read Ready. `nil` for a rest started from the Lock Screen.
+    var restStartedAt: Date?
+    /// Rests set by hand on a row, by set id, so the log button rests as long as the row would.
+    var customRestSeconds: [String: Int] = [:]
+    /// Exercises whose smart progression note has been dismissed this workout.
+    var acknowledgedProgressionNotes: Set<String> = []
     var workoutNotes = ""
     var currentExerciseIndex = 0
 
@@ -92,18 +99,6 @@ class WorkoutTrackerPresenter {
     /// A write after that would put an ended session back as the active one.
     var isDone = false
     
-    var exercisesCount: String {
-        String(localized: "\(workoutSession.exercises.count) exercises")
-    }
-    
-    var exerciseFraction: String {
-        "\(currentExerciseIndex + 1)/\(workoutSession.exercises.count)"
-    }
-    
-    var completedSetsFraction: String {
-        "\(completedSetsCount)/\(totalSetsCount)"
-    }
-    
     var favouriteGymProfile: GymProfileModel? {
         interactor.favouriteGymProfile
     }
@@ -123,7 +118,7 @@ class WorkoutTrackerPresenter {
             throw WorkoutTrackerError.noActiveWorkout
         }
         
-        self.workoutSession = session
+        self.workoutSession = Self.fillingMissingImages(session, from: interactor.allExercises)
         // Before anything the user does, so an edited set can be told from a filled-in one.
         captureProgressionBaseline()
         
@@ -173,25 +168,6 @@ class WorkoutTrackerPresenter {
         #else
         Format.duration(max(0, date.timeIntervalSince(startTime)))
         #endif
-    }
-
-    /// Counted per exercise so a left/right pair is the one set it is — see `WorkoutSetPairing`.
-    var completedSetsCount: Int {
-        workoutSession.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
-    }
-    
-    var totalSetsCount: Int {
-        workoutSession.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
-    }
-    
-    /// Exercises are logged in different units, so the total is shown in the user's body-weight
-    /// unit. Sets are stored in kilograms, so summing first and converting once is exact.
-    var formattedVolume: String {
-        Format.weight(kg: computeTotalVolumeKg(), unit: interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms)
-    }
-
-    var notesSummary: String {
-        (workoutSession.notes ?? "").isEmpty ? String(localized: "None") : String(localized: "View")
     }
 
     // MARK: - Display Settings
@@ -317,14 +293,6 @@ class WorkoutTrackerPresenter {
         interactor.trackEvent(event: isActive ? Event.workoutResumed : Event.workoutPaused)
     }
     
-    // MARK: - Rest Timer
-    
-    func onExerciseExpansionChanged(exerciseId: String, isExpanded: Bool) {
-        expandedExerciseId = isExpanded ? exerciseId : nil
-
-        refreshLiveActivity()
-    }
-
     // MARK: - Persistence
     
     func saveWorkoutProgress() {
@@ -517,15 +485,16 @@ class WorkoutTrackerPresenter {
         }
     }
 
-    /// Moves focus to the next exercise once every set in `exerciseIndex` is logged. Shared by
+    /// Moves focus to the next exercise with sets left once every set in `exerciseIndex` is
+    /// logged, as the log button's Next does: one finished earlier is skipped. Shared by
     /// `updateSet` and `handleWorkoutSessionChange`, which both used to inline it.
     private func advanceAfterExerciseCompletion(exerciseIndex: Int, in exercises: [WorkoutExerciseModel]) {
-        let nextIndex = exerciseIndex + 1
+        let nextIndex = exercises.indices.first { $0 > exerciseIndex && !isComplete(exercises[$0]) }
 
-        if nextIndex < exercises.count && interactor.workoutSettings.exerciseAutoNext {
+        if let nextIndex, interactor.workoutSettings.exerciseAutoNext {
             expandedExerciseId = exercises[nextIndex].id
             currentExerciseIndex = nextIndex
-        } else if nextIndex >= exercises.count, expandedExerciseId == exercises[exerciseIndex].id {
+        } else if nextIndex == nil, expandedExerciseId == exercises[exerciseIndex].id {
             expandedExerciseId = nil
         }
     }
@@ -541,9 +510,24 @@ class WorkoutTrackerPresenter {
         workoutSession.updateExercises(updatedExercises)
     }
 
+    /// Images the session is missing, taken from the library (see `imageName(in:)`), so the card
+    /// and the Live Activity have them. They are saved with the session's next change.
+    static func fillingMissingImages(_ session: WorkoutSessionModel, from library: [ExerciseModel]) -> WorkoutSessionModel {
+        let exercises = session.exercises.map { exercise in
+            var exercise = exercise
+            exercise.imageName = exercise.imageName(in: library)
+            return exercise
+        }
+        guard exercises != session.exercises else { return session }
+        var session = session
+        session.updateExercises(exercises)
+        return session
+    }
+
     private func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
         propagateEdit(comparedTo: oldSession)
+        cancelRestIfUndone(comparedTo: oldSession)
         guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
 
         let exercise = workoutSession.exercises[exerciseIndex]

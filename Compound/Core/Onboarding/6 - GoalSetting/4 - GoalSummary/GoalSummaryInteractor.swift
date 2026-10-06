@@ -12,7 +12,9 @@ protocol GoalSummaryInteractor: GlobalInteractor {
     func saveGoal(_ goal: WeightGoal
     ) async throws
     func updateCurrentGoalId(goalId: String?) async throws
-    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws
+    @discardableResult
+    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws -> WeightGoal
+    func applyGoalToDietPlan(_ goal: WeightGoal) async throws
 }
 
 extension CoreInteractor: GoalSummaryInteractor { }

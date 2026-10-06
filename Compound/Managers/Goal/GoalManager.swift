@@ -12,6 +12,8 @@ import Foundation
 class GoalManager {
     
     private let userGoalSyncEngine: DocumentSyncEngine<WeightGoal>
+    /// Signed in and listening, so a saved goal is followed; a save before sign-in is not.
+    private var isListening = false
     
     var currentGoal: WeightGoal? {
         userGoalSyncEngine.currentDocument
@@ -27,10 +29,12 @@ class GoalManager {
     /// own documents have theirs under the user id.
     func signIn(userId: String, goalId: String? = nil) async throws {
         try await userGoalSyncEngine.startListening(documentId: goalId ?? userId)
+        isListening = true
     }
     
     func signOut() {
         userGoalSyncEngine.stopListening()
+        isListening = false
     }
     
     /// Saves a goal and follows it. A different goal from the current one is a new document —
@@ -40,8 +44,12 @@ class GoalManager {
     func saveGoal(_ goal: WeightGoal) async throws {
         let replaced = currentGoal
         try await userGoalSyncEngine.saveDocument(goal)
+        // Followed even with nothing replaced: a first goal has its own id too, and the listener
+        // started on the user id, where accounts from before goal ids kept theirs.
+        if isListening {
+            try await userGoalSyncEngine.startListening(documentId: goal.id)
+        }
         guard let replaced, replaced.id != goal.id else { return }
-        try await userGoalSyncEngine.startListening(documentId: goal.id)
         if replaced.status == .active {
             // Best effort: the new goal stands either way.
             try? await userGoalSyncEngine.updateDocument(
@@ -57,9 +65,10 @@ class GoalManager {
     /// A merge-save of the whole goal rather than a field update: `objective` is a Codable enum,
     /// which only the document encoder writes in its stored shape. The unchanged start and date
     /// make no diff, so the rules' freeze on them holds.
-    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws {
+    @discardableResult
+    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws -> WeightGoal {
         guard let goal = currentGoal else { throw GoalError.noCurrentGoal }
-        try await userGoalSyncEngine.saveDocument(WeightGoal(
+        let edited = WeightGoal(
             userId: goal.userId,
             objective: objective,
             startingWeightKg: goal.startingWeightKg,
@@ -69,7 +78,9 @@ class GoalManager {
             status: goal.status,
             completedAt: goal.completedAt,
             id: goal.id
-        ))
+        )
+        try await userGoalSyncEngine.saveDocument(edited)
+        return edited
     }
 
     enum GoalError: LocalizedError {
@@ -118,7 +129,8 @@ extension CoreInteractor {
         try await goalManager.saveGoal(goal)
     }
         
-    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws {
+    @discardableResult
+    func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws -> WeightGoal {
         try await goalManager.updateGoal(objective: objective, targetWeightKg: targetWeightKg, weeklyChangeKg: weeklyChangeKg)
     }
 

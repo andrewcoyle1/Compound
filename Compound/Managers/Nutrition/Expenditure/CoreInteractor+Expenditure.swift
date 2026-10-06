@@ -93,6 +93,27 @@ extension CoreInteractor {
         clearDismissedTargetProposal()
     }
 
+    /// Rebuilds the diet plan for a goal just set or edited, so the goal changes what to eat today
+    /// rather than waiting for a check-in. Only the calories move: the plan's diet choices stay.
+    ///
+    /// `goal` is passed in rather than read from `currentGoal`, which updates when the listener
+    /// next emits. Expenditure is the engine's estimate once it has enough data; while it is
+    /// provisional, or in Fixed mode, it stays what the plan was built on.
+    func applyGoalToDietPlan(_ goal: WeightGoal) async throws {
+        guard let plan = currentDietPlan else { return }
+        let estimate = currentExpenditure
+        let keepsPlanExpenditure = estimate.isProvisional || nutritionStrategySettings.calculationMode == .fixed
+        let updated = nutritionManager.computeDietPlan(
+            user: currentUser,
+            delegate: DietPlanDelegate(plan: plan),
+            mesocycle: activeMesocycle,
+            expenditureKcal: keepsPlanExpenditure ? plan.tdeeEstimate : estimate.kcal,
+            goal: goal
+        )
+        try await saveDietPlan(updated)
+        clearDismissedTargetProposal()
+    }
+
     /// Remembers the figure waved away, so the same card does not come back tomorrow.
     func dismissTargetProposal() {
         guard let proposal = targetProposal else { return }

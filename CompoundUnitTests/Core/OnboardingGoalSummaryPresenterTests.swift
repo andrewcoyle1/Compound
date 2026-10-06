@@ -38,10 +38,13 @@ struct OnboardingGoalSummaryPresenterTests {
             savedGoalIds.append(goalId)
         }
 
-        private(set) var goalEdits: [(objective: OverarchingObjective, target: Double)] = []
-        func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws {
-            goalEdits.append((objective, targetWeightKg))
+        private(set) var goalEdits: [Double] = []
+        private(set) var appliedToDietPlan: [WeightGoal] = []
+        func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws -> WeightGoal {
+            goalEdits.append(targetWeightKg)
+            return WeightGoal(userId: "u", objective: objective, startingWeightKg: 80.6, targetWeightKg: targetWeightKg, weeklyChangeKg: weeklyChangeKg)
         }
+        func applyGoalToDietPlan(_ goal: WeightGoal) async throws { appliedToDietPlan.append(goal) }
     }
 
     /// `GoalSummaryRouter` refines `OnboardingStepRouter`, so this subclasses `SpyOnboardingRouter`
@@ -451,6 +454,8 @@ struct OnboardingGoalSummaryPresenterTests {
         let goal = screen.interactor.savedGoals.first
         #expect(goal?.id != goal?.userId)
         #expect(screen.interactor.savedGoalIds == [goal?.id])
+        // The goal sets the calorie target now, not at the next check-in.
+        #expect(await TestManagers.eventually { screen.interactor.appliedToDietPlan.map(\.id) == [goal?.id] })
     }
 
     /// Editing changes the running goal and creates nothing.
@@ -466,7 +471,8 @@ struct OnboardingGoalSummaryPresenterTests {
         screen.presenter.onCompletePressed(delegate: editing)
 
         #expect(await TestManagers.eventually { screen.interactor.goalEdits.count == 1 })
-        #expect(screen.interactor.goalEdits.first?.target == 72)
+        #expect(screen.interactor.goalEdits == [72])
+        #expect(await TestManagers.eventually { screen.interactor.appliedToDietPlan.map(\.targetWeightKg) == [72] })
         #expect(screen.interactor.savedGoals.isEmpty)
         #expect(screen.interactor.savedGoalIds.isEmpty)
     }

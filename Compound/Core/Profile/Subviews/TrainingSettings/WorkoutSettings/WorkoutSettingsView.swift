@@ -64,9 +64,16 @@ struct WorkoutSettingsView: View {
                 systemImage: "arrow.trianglehead.2.clockwise",
                 isOn: $presenter.supersetAutoScroll
             )
+            Picker(selection: $presenter.supersetTransitionRestSeconds) {
+                ForEach(presenter.supersetTransitionRestOptions, id: \.self) { seconds in
+                    Text(presenter.supersetTransitionRestTitle(seconds)).tag(seconds)
+                }
+            } label: {
+                Label("Rest between superset partners", systemImage: Symbol.rest)
+            }
             ListRowToggle(
                 title: String(localized: "Exercise Auto-Next"),
-                subtitle: String(localized: "Scroll next automatically when an exercise is completed"),
+                subtitle: String(localized: "Move to the next exercise when its rest ends"),
                 systemImage: "arrow.right.to.line.compact",
                 isOn: $presenter.exerciseAutoNext
             )

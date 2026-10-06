@@ -87,6 +87,8 @@ extension WorkoutTrackerPresenter {
     func onSkipRestPressed() {
         interactor.trackEvent(event: Event.restSkipped)
         cancelRestTimer()
+        // A skipped rest is over as surely as one that ran out.
+        onRestEnded()
     }
 
     /// A rest follows the set logged last. Once that set is gone, deleted on its own or with its
@@ -113,6 +115,7 @@ extension WorkoutTrackerPresenter {
     func observeRestCompletions() async {
         for await _ in NotificationCenter.default.notifications(named: Constants.workoutRestDidComplete) {
             announceRestCompletion()
+            onRestEnded()
         }
     }
 

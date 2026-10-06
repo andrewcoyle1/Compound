@@ -536,12 +536,16 @@ struct ActiveWorkoutPresenterTests {
     }
 
     /// Finishing an exercise opens the next with sets left, as the log button's Next would, not
-    /// one done earlier that happens to come next in the list.
+    /// one done earlier that happens to come next in the list. It waits for the rest first.
     @Test("Test Finishing An Exercise Skips Over One Already Done")
     func testAutoAdvanceSkipsFinished() throws {
         let presenter = try makeWorkout(["a", "b", "c"], done: ["b"])
 
         presenter.onPrimaryActionPressed()
+        #expect(presenter.currentExercise?.id == "a")
+        #expect(presenter.primaryActionTitle == "Next: c")
+
+        presenter.onSkipRestPressed()
 
         #expect(presenter.currentExercise?.id == "c")
         #expect(presenter.primaryActionTitle == "Log set 1 · 100 kg × 5")

@@ -194,6 +194,16 @@
         }
       }
     },
+    "Move to the next exercise when its rest ends" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasar al siguiente ejercicio cuando termine su descanso"
+          }
+        }
+      }
+    },
     "Muscles" : {
       "localizations" : {
         "es" : {
@@ -220,6 +230,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restante"
+          }
+        }
+      }
+    },
+    "Rest between superset partners" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso entre ejercicios de una superserie"
           }
         }
       }
@@ -270,6 +290,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strava no pudo procesar el entrenamiento."
+          }
+        }
+      }
+    },
+    "Superset %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superserie %lld de %lld"
           }
         }
       }
@@ -19469,16 +19499,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desplazar automáticamente entre los ejercicios de una superserie al completar una serie"
-          }
-        }
-      }
-    },
-    "Scroll next automatically when an exercise is completed" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pasar automáticamente al siguiente al completar un ejercicio"
           }
         }
       }

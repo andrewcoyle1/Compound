@@ -23,8 +23,13 @@ struct WorkoutProgressHeader: View {
                 Text("\(progress.doneWorkingSets) of \(progress.totalWorkingSets) working sets")
                     .font(.label)
                 Spacer()
-                Text("Exercise \(progress.exerciseNumber) of \(progress.exerciseCount)")
-                    .font(.label)
+                if progress.isSuperset {
+                    Text("Superset \(progress.exerciseNumber) of \(progress.exerciseCount)")
+                        .font(.label)
+                } else {
+                    Text("Exercise \(progress.exerciseNumber) of \(progress.exerciseCount)")
+                        .font(.label)
+                }
             }
             // Primary: secondary on the bar's hard edge fails 4.5:1 at this size.
             .monospacedDigit()

@@ -96,7 +96,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         // element. Labelling the texts inside the set-number and unit menus, moving the +15s label
         // onto its text and auditing a settled screen did not clear it. WP-P (accessibility) owns
         // the audit, narrows its exclusions and adds the per-state passes; it removes this skip.
-        throw XCTSkip("Audit reports an unnamed inaccessible text; see docs/specs/workout-tracker/plan.md WP-P")
+        try XCTSkipIf(true, "Audit reports an unnamed inaccessible text; see docs/specs/workout-tracker/plan.md WP-P")
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)

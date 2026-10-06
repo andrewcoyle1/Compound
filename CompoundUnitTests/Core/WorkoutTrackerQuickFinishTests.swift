@@ -9,8 +9,9 @@ import Foundation
 
 /// The Finish Workout button that appears at the bottom of the tracker once every set is logged.
 ///
-/// It skips the notes sheet the menu item opens (notes stay editable on the overview card and the
-/// summary) but shares the rest of the finish: the empty-workout check, the save and its retries.
+/// It opens the same notes sheet as the menu's Finish, which is its confirmation: the button
+/// becomes Finish under a tap meant for the last set. The rest of the finish is shared too: the
+/// empty-workout check, the save and its retries.
 @MainActor
 struct WorkoutTrackerQuickFinishTests {
 
@@ -88,19 +89,38 @@ struct WorkoutTrackerQuickFinishTests {
         #expect(!presenter.canQuickFinish)
     }
 
-    /// The button's action is `onFinishConfirmed`: every set is logged, so it ends the workout and
-    /// opens the summary with no notes sheet in between.
-    @Test("Test Quick Finish Goes Straight To The Summary")
-    func testQuickFinishGoesStraightToTheSummary() throws {
+    /// The bottom button's Finish asks for notes first, like the menu's, and only then ends the
+    /// workout and opens the summary.
+    @Test("Test The Bottom Button's Finish Opens The Notes Sheet")
+    func testTheBottomButtonsFinishOpensTheNotesSheet() throws {
         let (presenter, router) = try makeScreen(sets: [set("a", done: true)])
         #expect(presenter.canQuickFinish)
+        #expect(presenter.primarySlot == .finish)
 
-        presenter.onFinishConfirmed()
+        presenter.onPrimarySlotPressed()
+
+        #expect(!presenter.isDone)
+        #expect(router.shown == ["workoutNotes"])
+        let delegate = try #require(router.notesDelegates.first)
+        #expect(delegate.title == "Finish Workout")
+        delegate.onSave()
+        delegate.onDidDismiss?()
 
         #expect(presenter.isDone)
-        #expect(router.notesDelegates.isEmpty)
-        #expect(router.shown == ["summary"])
+        #expect(router.shown == ["workoutNotes", "summary"])
         presenter.cancelPendingSave()
+    }
+
+    /// Cancelling the sheet leaves the workout running.
+    @Test("Test Dismissing The Bottom Button's Notes Sheet Keeps The Workout Going")
+    func testDismissingTheNotesSheetKeepsTheWorkoutGoing() throws {
+        let (presenter, router) = try makeScreen(sets: [set("a", done: true)])
+
+        presenter.onPrimarySlotPressed()
+        try #require(router.notesDelegates.first).onDidDismiss?()
+
+        #expect(!presenter.isDone)
+        #expect(router.shown == ["workoutNotes"])
     }
 
     /// The menu's Finish still asks for notes first, then ends the workout through the same finish.

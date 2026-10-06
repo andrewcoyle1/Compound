@@ -17,6 +17,8 @@ struct WorkoutProgressHeader: View {
         let progress = presenter.progress
         return VStack(spacing: Spacing.xs) {
             ProgressView(value: progress.fraction)
+                // Greyed while paused, with Paused in the title: the workout is not moving on.
+                .tint(presenter.isActive ? nil : Color.secondary)
             // Fonts on each text, not the stack: the accessibility audit only credits a text with
             // Dynamic Type when its own font is a text style.
             HStack {

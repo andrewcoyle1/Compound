@@ -26,11 +26,11 @@ final class WorkoutTrackerUITests: XCTestCase {
         app.waitFor(app.buttons["Add Set"].firstMatch).tap()
 
         // The warm-up, then the first working set.
-        logButton.tap()
+        tapSlot(logButton)
         // Smart warm-ups rest after the last one; skip it to reach the first working set.
         let skipRest = app.button("WorkoutTracker.skipRestButton")
-        if skipRest.waitForExistence(timeout: 2) { skipRest.tap() }
-        logButton.tap()
+        if skipRest.waitForExistence(timeout: 2) { tapSlot(skipRest) }
+        tapSlot(logButton)
         app.waitFor(skipRest)
         attach(app, "1-resting")
 
@@ -44,7 +44,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         done.tap()
         // The next exercise opens with its own note, which has to be read before anything else.
         acknowledgeNoteIfShown(app)
-        app.waitFor(skipRest).tap()
+        tapSlot(app.waitFor(skipRest))
         XCTAssertTrue(logButton.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(logButton.label.hasPrefix("Log"), logButton.label)
 
@@ -59,7 +59,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         // Two more exercises done, then the list of finished ones.
         // The mock exercises are a warm-up or two and one working set each.
         for _ in 0..<10 { takeNextStep(app) }
-        if skipRest.exists { skipRest.tap() }
+        if skipRest.exists { tapSlot(skipRest) }
         for _ in 0..<4 { app.swipeUp() }
         app.waitFor(app.staticTexts["Completed"].firstMatch)
         attach(app, "4-several-complete")
@@ -79,10 +79,10 @@ final class WorkoutTrackerUITests: XCTestCase {
         app.launch()
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        logButton.tap()
+        tapSlot(logButton)
         let skipRest = app.button("WorkoutTracker.skipRestButton")
-        if skipRest.waitForExistence(timeout: 2) { skipRest.tap() }
-        logButton.tap()
+        if skipRest.waitForExistence(timeout: 2) { tapSlot(skipRest) }
+        tapSlot(logButton)
         app.waitFor(skipRest)
         attach(app, "6-dark-large-text")
         app.swipeUp()
@@ -100,7 +100,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        logButton.tap()
+        tapSlot(logButton)
         // Audit a settled screen: logging swaps the bottom button for Skip Rest with a transition,
         // and mid-transition the outgoing label is text no element owns, which the audit flags as
         // "potentially inaccessible text" when it catches that frame.
@@ -120,6 +120,52 @@ final class WorkoutTrackerUITests: XCTestCase {
             let isSystemBarButton = issue.auditType == .hitRegion && issue.element == nil
             return isSystemBarButton
         }
+    }
+
+    /// Two quick taps on Log: the first logs the set and starts its rest, and the second, landing
+    /// on what is now Skip Rest, is ignored. Before, it ended the rest the first had just begun.
+    func testADoubleTapOnTheLogButtonLogsOneSet() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        // A second working set, so a rest follows the first.
+        app.waitFor(app.buttons["Add Set"].firstMatch).tap()
+        reachFirstWorkingSet(app)
+        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openBefore = openSets.count
+        Thread.sleep(forTimeInterval: 0.6)
+
+        logButton.doubleTap()
+        Thread.sleep(forTimeInterval: 1)
+
+        XCTAssertEqual(openSets.count, openBefore - 1)
+        XCTAssertTrue(app.button("WorkoutTracker.skipRestButton").exists, "The second tap skipped the rest")
+        attach(app, "9-after-double-tap")
+    }
+
+    /// The log button rides above the set keypad rather than stepping aside for it, and logs.
+    func testTheLogButtonStaysAboveTheKeypad() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        let weights = app.textFields.matching(NSPredicate(format: "label BEGINSWITH 'Weight'"))
+        app.waitFor(weights.firstMatch).tap()
+        app.waitFor(app.buttons["Done"].firstMatch)
+        let firstKey = app.waitFor(app.buttons["1"].firstMatch)
+        attach(app, "10-keypad-open")
+
+        // Above the keypad, not under it. `isHittable` cannot say: the keypad is a custom input
+        // view, whose window the hit test reports as covering the whole screen.
+        XCTAssertTrue(logButton.exists)
+        XCTAssertLessThan(logButton.frame.maxY, firstKey.frame.minY)
+
+        // And a tap on it, keypad still up, logs the set.
+        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openBefore = openSets.count
+        Thread.sleep(forTimeInterval: 0.6)
+        logButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        Thread.sleep(forTimeInterval: 1)
+        XCTAssertEqual(openSets.count, openBefore - 1)
     }
 
     /// Up Next's Reorder shows the drag handles, and Done puts them away.
@@ -145,9 +191,33 @@ final class WorkoutTrackerUITests: XCTestCase {
         if gotIt.exists {
             gotIt.tap()
         } else if skipRest.exists {
-            skipRest.tap()
+            tapSlot(skipRest)
         } else if logButton.exists {
-            logButton.tap()
+            tapSlot(logButton)
+        }
+    }
+
+    /// Taps the bottom button once its action has settled. It ignores taps for 0.4 s after its
+    /// action changes, which a test, unlike a person, can easily land inside.
+    private func tapSlot(_ button: XCUIElement) {
+        XCTAssertTrue(button.waitForExistence(timeout: UITestApp.timeout), "\(button) did not appear")
+        Thread.sleep(forTimeInterval: 0.6)
+        button.tap()
+    }
+
+    /// Logs warm-ups, and skips the rests after them, until the button offers a working set.
+    private func reachFirstWorkingSet(_ app: XCUIApplication) {
+        let logButton = app.button("WorkoutTracker.logButton")
+        let skipRest = app.button("WorkoutTracker.skipRestButton")
+        for _ in 0..<6 {
+            acknowledgeNoteIfShown(app)
+            if skipRest.exists {
+                tapSlot(skipRest)
+            } else if app.waitFor(logButton).label.hasPrefix("Log warm-up") {
+                tapSlot(logButton)
+            } else {
+                return
+            }
         }
     }
 

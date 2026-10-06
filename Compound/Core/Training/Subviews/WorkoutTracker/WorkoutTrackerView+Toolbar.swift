@@ -11,7 +11,8 @@ import SwiftUI
 
 extension WorkoutTrackerView {
 
-    /// The workout's name over its date and running clock. Paused time is left out of the clock.
+    /// The workout's name over its date and running clock. Paused time is left out of the clock,
+    /// and while paused the clock gives way to Paused.
     var titleView: some View {
         VStack(spacing: 0) {
             Text(presenter.workoutSession.name)
@@ -19,7 +20,7 @@ extension WorkoutTrackerView {
                 .lineLimit(1)
             TimelineView(.periodic(from: presenter.workoutSession.dateCreated, by: 1)) { context in
                 // Primary, not secondary: on the glass bar secondary falls just short of 4.5:1.
-                Text("\(presenter.workoutDateText) · \(presenter.elapsedTime(at: context.date))")
+                Text("\(presenter.workoutDateText) · \(presenter.clockText(at: context.date))")
                     .font(.label)
                     .monospacedDigit()
             }
@@ -45,30 +46,26 @@ extension WorkoutTrackerView {
         ToolbarItem(placement: .principal) {
             titleView
         }
+        // On iPad the bar has room for the workout's controls; the system moves any that do not
+        // fit into its overflow menu.
+        if horizontalSizeClass == .regular {
+            ToolbarItem(placement: .primaryAction) {
+                pauseResumeButton
+            }
+            ToolbarItem(placement: .primaryAction) {
+                finishButton
+            }
+            ToolbarItem(placement: .primaryAction) {
+                notesButton
+            }
+        }
         ToolbarItem(placement: .topBarTrailing) {
             Menu {
-                Button {
-                    presenter.onPauseResumePressed()
-                } label: {
-                    if presenter.isActive {
-                        Label("Pause Workout", systemImage: "pause")
-                    } else {
-                        Label("Resume Workout", systemImage: "play")
-                    }
-                }
-
-                // Finishing early. Once every set is logged the button at the foot of the screen
-                // reads Finish Workout instead.
-                Button {
-                    presenter.onFinishPressed()
-                } label: {
-                    Label("Finish Workout", systemImage: Symbol.selected)
-                }
-
-                Button {
-                    presenter.presentWorkoutNotes()
-                } label: {
-                    Label("Workout Notes", systemImage: Symbol.note)
+                if horizontalSizeClass != .regular {
+                    pauseResumeButton
+                    finishButton
+                    Divider()
+                    notesButton
                 }
 
                 Button {
@@ -77,11 +74,15 @@ extension WorkoutTrackerView {
                     Label("Workout Settings", systemImage: Symbol.settings)
                 }
 
-                Button {
-                    presenter.onGymProfilePressed()
-                } label: {
-                    Label("Gym Settings", systemImage: Symbol.gym)
+                if presenter.hasGymProfile {
+                    Button {
+                        presenter.onGymProfilePressed()
+                    } label: {
+                        Label("Gym Settings", systemImage: Symbol.gym)
+                    }
                 }
+
+                Divider()
 
                 Button(role: .destructive) {
                     presenter.onDiscardWorkoutPressed()
@@ -92,6 +93,36 @@ extension WorkoutTrackerView {
                 Image(systemName: Symbol.more)
             }
             .accessibilityLabel("Workout options")
+        }
+    }
+
+    private var pauseResumeButton: some View {
+        Button {
+            presenter.onPauseResumePressed()
+        } label: {
+            if presenter.isActive {
+                Label("Pause Workout", systemImage: "pause")
+            } else {
+                Label("Resume Workout", systemImage: Symbol.start)
+            }
+        }
+    }
+
+    /// Finishing early. Once every set is logged the button at the foot of the screen offers
+    /// Finish Workout as well. Both open the notes sheet first, hence the ellipsis.
+    private var finishButton: some View {
+        Button {
+            presenter.onFinishPressed()
+        } label: {
+            Label("Finish Workout…", systemImage: Symbol.selected)
+        }
+    }
+
+    private var notesButton: some View {
+        Button {
+            presenter.presentWorkoutNotes()
+        } label: {
+            Label("Workout Notes…", systemImage: Symbol.note)
         }
     }
 }

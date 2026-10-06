@@ -10724,6 +10724,16 @@
         }
       }
     },
+    "Finish Workout…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar entrenamiento…"
+          }
+        }
+      }
+    },
     "Finished" : {
       "localizations" : {
         "es" : {
@@ -17199,6 +17209,16 @@
         }
       }
     },
+    "Plus 15" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más 15"
+          }
+        }
+      }
+    },
     "Point camera at a barcode" : {
       "localizations" : {
         "es" : {
@@ -18753,6 +18773,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Día de descanso"
+          }
+        }
+      }
+    },
+    "Rest done · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso terminado · %@"
           }
         }
       }
@@ -26346,6 +26376,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notas del entrenamiento"
+          }
+        }
+      }
+    },
+    "Workout Notes…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas del entrenamiento…"
           }
         }
       }

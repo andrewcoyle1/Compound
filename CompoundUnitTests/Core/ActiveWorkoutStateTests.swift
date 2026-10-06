@@ -220,6 +220,42 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.completedSummary(for: bench, unit: .kilograms, distanceUnit: .meters) == "2 sets · Top 85 kg × 6")
     }
 
+    private func timed(_ id: String, seconds: Int?, meters: Double? = nil, doneAt offset: TimeInterval) -> WorkoutSetModel {
+        WorkoutSetModel(
+            id: id, authorId: "author-1", index: 1, reps: nil, weightKg: nil, durationSec: seconds, distanceMeters: meters,
+            rpe: nil, side: nil, isWarmup: false, completedAt: start.addingTimeInterval(offset), dateCreated: start
+        )
+    }
+
+    private func exercise(_ id: String, mode: TrackingMode, sets: [WorkoutSetModel]) -> WorkoutExerciseModel {
+        WorkoutExerciseModel(id: id, authorId: "author-1", templateId: "template-\(id)", name: "Plank", trackingMode: mode, index: 1, sets: sets)
+    }
+
+    /// Every timed set weighs nothing and has no reps, so "heaviest" picked the first; the longest
+    /// hold is the top one.
+    @Test("Test A Timed Exercise's Top Set Is The Longest")
+    func testTimedTopSet() {
+        let plank = exercise("e1", mode: .timeOnly, sets: [
+            timed("a", seconds: 30, doneAt: 0), timed("b", seconds: 45, doneAt: 1), timed("c", seconds: 40, doneAt: 2)
+        ])
+
+        #expect(ActiveWorkout.completedSummary(for: plank, unit: .kilograms, distanceUnit: .meters) == "3 sets · Top \(Format.duration(45))")
+        #expect(ActiveWorkout.upNextSummary(for: exercise("e2", mode: .timeOnly, sets: []), last: plank, unit: .kilograms, distanceUnit: .meters)
+            .hasSuffix("Last \(Format.duration(45))"))
+    }
+
+    @Test("Test A Distance Exercise's Top Set Is The Farthest")
+    func testDistanceTopSet() {
+        let row = exercise("e1", mode: .distanceTime, sets: [
+            timed("a", seconds: 90, meters: 400, doneAt: 0), timed("b", seconds: 200, meters: 800, doneAt: 1), timed("c", seconds: 95, meters: 500, doneAt: 2)
+        ])
+        let figures = "\(Format.distance(meters: 800, exerciseUnit: .meters)) · \(Format.duration(200))"
+
+        #expect(ActiveWorkout.completedSummary(for: row, unit: .kilograms, distanceUnit: .meters) == "3 sets · Top \(figures)")
+        #expect(ActiveWorkout.upNextSummary(for: exercise("e2", mode: .distanceTime, sets: []), last: row, unit: .kilograms, distanceUnit: .meters)
+            .hasSuffix("Last \(figures)"))
+    }
+
     // MARK: - Plates
 
     @Test("Test A Load Rounds To The Nearest Total The Plates Make")

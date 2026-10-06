@@ -187,8 +187,11 @@ extension WorkoutExerciseModel {
     /// The image to show: the one stored with the session, else the library exercise's. A session
     /// keeps the image its exercises had when it began, so one logged before an exercise was
     /// bundled with artwork, or repointed at a bundled exercise since, stored none.
-    func imageName(in library: [ExerciseModel]) -> String? {
+    ///
+    /// The library is an autoclosure because reading it is a SwiftData fetch and a decode of every
+    /// exercise: a stored image returns before it is ever evaluated.
+    func imageName(in library: @autoclosure () -> [ExerciseModel]) -> String? {
         if let imageName, !imageName.isEmpty { return imageName }
-        return library.first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
+        return library().first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
     }
 }

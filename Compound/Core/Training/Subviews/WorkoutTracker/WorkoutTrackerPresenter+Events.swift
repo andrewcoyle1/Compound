@@ -15,10 +15,24 @@ extension WorkoutTrackerPresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
+        // The keyboard going away ends the edit being typed, which then carries to its siblings.
+        // Synchronous (`queue: nil`): the notification is posted on the main thread.
+        guard savePath.keyboardObserver == nil else { return }
+        savePath.keyboardObserver = NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardDidHideNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.commitPendingEdit() }
+        }
     }
 
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
+        if let observer = savePath.keyboardObserver {
+            NotificationCenter.default.removeObserver(observer)
+            savePath.keyboardObserver = nil
+        }
     }
 
     /// Why a finish ended without the workout saved. The shared finish path reports only an

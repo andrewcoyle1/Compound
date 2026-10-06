@@ -168,6 +168,7 @@ struct ExerciseNoteSheetTests {
         let presenter = screen.presenter, interactor = screen.interactor
 
         presenter.updateExerciseNotes("  Elbows in ", exerciseId: "e1")
+        presenter.flushSave()
         #expect(presenter.workoutSession.exercises[0].notes == "Elbows in")
         #expect(interactor.activeSession?.exercises[0].notes == "Elbows in")
 

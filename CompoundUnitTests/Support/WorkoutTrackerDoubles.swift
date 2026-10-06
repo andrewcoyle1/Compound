@@ -263,3 +263,51 @@ extension RetryBackoff {
         maxTotalDelay: .seconds(1)
     )
 }
+
+// MARK: WP-A
+
+/// A tracker open on one exercise of open sets, for the save and propagation suites.
+@MainActor
+struct WorkoutTrackerTypingScreen {
+    let presenter: WorkoutTrackerPresenter
+    let interactor: WorkoutTrackerInteractorDouble
+    let router: WorkoutTrackerRouterDouble
+
+    /// Set ids are "s1", "s2", …, each with eight reps.
+    init(weights: [Double], propagateChanges: Bool = true) throws {
+        let start = Date(timeIntervalSince1970: 1_000_000)
+        let sets = weights.enumerated().map { offset, weight in
+            WorkoutSetModel(
+                id: "s\(offset + 1)", authorId: "author-1", index: offset + 1, reps: 8, weightKg: weight,
+                isWarmup: false, dateCreated: start
+            )
+        }
+        let exercise = WorkoutExerciseModel(
+            id: "e1", authorId: "author-1", templateId: "template-e1", name: "Bench Press",
+            trackingMode: .weightReps, index: 1, sets: sets
+        )
+        interactor = WorkoutTrackerInteractorDouble()
+        interactor.workoutSettings.propagateChanges = propagateChanges
+        interactor.activeSession = WorkoutSessionModel(
+            id: "session-1", authorId: "author-1", name: "Push Day", dateCreated: start, exercises: [exercise]
+        )
+        router = WorkoutTrackerRouterDouble()
+        presenter = try WorkoutTrackerPresenter(interactor: interactor, router: router, saveRetryBackoff: .testImmediate)
+    }
+
+    /// The weights on screen, set by set.
+    var weights: [Double?] { presenter.workoutSession.exercises[0].sets.map(\.weightKg) }
+
+    /// The weights in the last saved session.
+    var savedWeights: [Double?]? { interactor.activeSession?.exercises[0].sets.map(\.weightKg) }
+
+    var writes: Int { interactor.savedActiveSessions.count }
+
+    /// Types into a set the way the keypad does: each key writes the field's whole value through
+    /// the row's binding into `workoutSession`.
+    func type(_ values: Double..., into setNumber: Int) {
+        for value in values {
+            presenter.workoutSession.exercises[0].sets[setNumber - 1].weightKg = value
+        }
+    }
+}

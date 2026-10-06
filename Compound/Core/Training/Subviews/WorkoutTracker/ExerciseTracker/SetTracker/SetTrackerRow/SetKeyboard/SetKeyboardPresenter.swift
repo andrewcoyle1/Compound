@@ -116,9 +116,13 @@ final class SetKeyboardPresenter {
     }
 
     /// Closes without offering anything: the field lost focus to something else.
+    ///
+    /// Lets go of the set too. The binding reads its set by index, so one kept after an earlier set
+    /// is deleted would read past the end of the array.
     func close() {
         activeField = nil
         showsPlates = false
+        editingSet = nil
     }
 
     private func activate(_ field: SetKeyboardField) {

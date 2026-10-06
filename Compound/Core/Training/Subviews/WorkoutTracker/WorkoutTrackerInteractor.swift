@@ -26,12 +26,19 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
 
     /// The current logged-in user, or nil if not available.
     var currentUser: UserModel? { get }
-    /// The favourite gym profile of the user, or nil if not available
-    var favouriteGymProfile: GymProfileModel? { get }
+    /// The gym this workout is at: the one set with `setActiveWorkoutGymProfile`, else the
+    /// favourite.
+    var workoutGymProfile: GymProfileModel? { get }
 
     func setActiveWorkoutGymProfile(_ profile: GymProfileModel?)
 
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel
+
+    /// A workout template held on this device, for the gym it was written for.
+    func getWorkoutTemplate(id: String) -> WorkoutTemplateModel?
+
+    /// Where the tracker keeps `ActiveWorkoutScreenState`.
+    var activeWorkoutScreenStateStore: UserDefaults { get }
     
     /// The current rest end time for the active session, if any.
     var restEndTime: Date? { get }
@@ -162,7 +169,11 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
 }
 
 extension CoreInteractor: WorkoutTrackerInteractor {
-                                
+
+    var activeWorkoutScreenStateStore: UserDefaults {
+        ActiveWorkoutScreenState.appGroupStore
+    }
+
     func finishWorkout(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         await Compound.finishWorkout(session, using: WorkoutFinishManagers(

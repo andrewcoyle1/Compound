@@ -263,7 +263,7 @@ extension SetTrackerRowPresenter {
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
         return SetKeyboardContext(
             unit: unit,
-            step: WeightStepper.steps(for: exercise, profile: interactor.favouriteGymProfile, unit: unit),
+            step: WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit),
             distanceUnit: units.distanceUnit,
             fields: SetKeyboardField.fields(for: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
@@ -281,7 +281,7 @@ extension SetTrackerRowPresenter {
     func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
         guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
         let unit = getUnitPreference(for: exercise).weightUnit
-        let step = WeightStepper.steps(for: exercise, profile: interactor.favouriteGymProfile, unit: unit)
+        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
         guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
         switch PlateCalculator.load(total: total, bar: bar, plates: step.plates) {

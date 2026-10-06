@@ -29,12 +29,10 @@ class WorkoutTrackerPresenter {
         didSet {
             saveWorkoutProgress()
             handleWorkoutSessionChange(from: oldValue)
+            cancelRestIfRestedSetRemoved(comparedTo: oldValue)
         }
     }
-    
-    var workoutTemplate: WorkoutTemplateModel?
-    var gymProfile: GymProfileModel?
-    
+
     var pendingSelectedTemplates: [WorkoutTemplateExercise] = []
 
     var editMode: EditMode = .inactive
@@ -60,9 +58,14 @@ class WorkoutTrackerPresenter {
     /// the timer can read Ready. `nil` for a rest started from the Lock Screen.
     var restStartedAt: Date?
     /// Rests set by hand on a row, by set id, so the log button rests as long as the row would.
-    var customRestSeconds: [String: Int] = [:]
-    /// Exercises whose smart progression note has been dismissed this workout.
-    var acknowledgedProgressionNotes: Set<String> = []
+    /// Kept in `ActiveWorkoutScreenState`, like the two below, so a minimise does not lose it.
+    var customRestSeconds: [String: Int] = [:] {
+        didSet { saveScreenState() }
+    }
+    /// Exercise template ids whose smart progression note has been dismissed this workout.
+    var acknowledgedProgressionNotes: Set<String> = [] {
+        didSet { saveScreenState() }
+    }
     var workoutNotes = ""
     var currentExerciseIndex = 0
 
@@ -90,7 +93,9 @@ class WorkoutTrackerPresenter {
 
     /// The values the screen filled in for the user, per set id. A set that still holds these
     /// may be re-suggested live; one the user has edited may not.
-    var progressionBaseline: [String: SuggestedSet] = [:]
+    var progressionBaseline: [String: SuggestedSet] = [:] {
+        didSet { saveScreenState() }
+    }
 
     // Prevents handleWorkoutSessionChange from double-processing when updateSet() is the caller
     var isProcessingUpdateSet = false
@@ -101,10 +106,6 @@ class WorkoutTrackerPresenter {
     /// The save waiting out its debounce and the edit waiting to propagate. See `+Persistence`.
     @ObservationIgnored var savePath = WorkoutSavePath()
 
-    var favouriteGymProfile: GymProfileModel? {
-        interactor.favouriteGymProfile
-    }
-    
     // MARK: - Initialization
     
     init(
@@ -121,8 +122,18 @@ class WorkoutTrackerPresenter {
         }
         
         self.workoutSession = Self.fillingMissingImages(session, from: interactor.allExercises)
-        // Before anything the user does, so an edited set can be told from a filled-in one.
-        captureProgressionBaseline()
+
+        // A tracker rebuilt after a minimise carries on from the last one. Its baseline is the
+        // one captured when the workout first opened: captured again now, a set edited before the
+        // minimise would read as filled in, and live progression could overwrite it.
+        let screenState = ActiveWorkoutScreenState.load(sessionId: session.id, from: interactor.activeWorkoutScreenStateStore)
+        self.customRestSeconds = screenState.customRestSeconds
+        self.acknowledgedProgressionNotes = screenState.acknowledgedNoteTemplateIds
+        self.progressionBaseline = screenState.progressionBaseline
+        if progressionBaseline.isEmpty {
+            // Before anything the user does, so an edited set can be told from a filled-in one.
+            captureProgressionBaseline()
+        }
         
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         // Ensure an existing Live Activity is reused, otherwise start one
@@ -147,17 +158,25 @@ class WorkoutTrackerPresenter {
         
     }
     
-    func onTask() async {
-        guard let gymProfileId = self.workoutTemplate?.gymProfileId else { return }
-        let profile: GymProfileModel?
+    /// The gym this workout was written for, so the rows' steps and plates and progression's
+    /// rounding follow it. Without one, `workoutGymProfile` falls back to the favourite.
+    func loadWorkoutGymProfile() async {
+        guard let templateId = workoutSession.workoutTemplateId,
+              let gymProfileId = interactor.getWorkoutTemplate(id: templateId)?.gymProfileId else { return }
         do {
-            profile = try await interactor.getGymProfile(gymProfileId: gymProfileId)
+            interactor.setActiveWorkoutGymProfile(try await interactor.getGymProfile(gymProfileId: gymProfileId))
         } catch {
-            profile = nil
             interactor.trackEvent(event: Event.loadGymProfileFail(error: error))
         }
-        self.gymProfile = profile
-        interactor.setActiveWorkoutGymProfile(profile)
+    }
+
+    func saveScreenState() {
+        ActiveWorkoutScreenState(
+            sessionId: workoutSession.id,
+            acknowledgedNoteTemplateIds: acknowledgedProgressionNotes,
+            progressionBaseline: progressionBaseline,
+            customRestSeconds: customRestSeconds
+        ).save(to: interactor.activeWorkoutScreenStateStore)
     }
     
     // MARK: - Computed Properties
@@ -188,6 +207,7 @@ class WorkoutTrackerPresenter {
     func onAppear() async {
         startObservingActiveSession()
         loadPreviousWorkoutSession()
+        await loadWorkoutGymProfile()
         loadProgressionSuggestions()
         UIApplication.shared.isIdleTimerDisabled = interactor.workoutSettings.keepAlive
 
@@ -378,7 +398,7 @@ class WorkoutTrackerPresenter {
     }
 
     func onGymProfilePressed() {
-        guard let gymProfile = favouriteGymProfile else { return }
+        guard let gymProfile = interactor.workoutGymProfile else { return }
         let delegate = GymProfileDelegate(gymProfile: gymProfile)
         router.showGymProfileView(delegate: delegate)
     }

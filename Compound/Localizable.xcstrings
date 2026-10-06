@@ -20028,6 +20028,16 @@
         }
       }
     },
+    "Set %@ logged, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$@ registrada, %2$@"
+          }
+        }
+      }
+    },
     "Set %@%@" : {
       "localizations" : {
         "es" : {

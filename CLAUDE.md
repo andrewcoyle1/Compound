@@ -129,6 +129,13 @@ reads of one are never equal — capture the value once and compare against that
 If a build fails with `build.db is locked`, Xcode is building the same DerivedData
 concurrently — wait and retry rather than changing anything.
 
+**The unit runner hangs when started straight after a UI run on the same simulator** ("The
+test runner hung before establishing connection", seen five times on 6 Oct 2026, never on a
+fresh device). Run unit suites first and the UI suite last, or `xcrun simctl shutdown` then
+`boot` the device between them and wait ~10 s after `bootstatus -b` before launching. Shutting
+a simulator also kills every test host on it, so when several agents test at once, each uses
+its own device name and never touches another's.
+
 **An unsigned app bundle means the build failed, not that signing is broken.** When
 `build-for-testing` fails in the test target, the host `Compound.app` is left without its
 signature (`codesign -dv` says "not signed at all"), and every later `test-without-building`

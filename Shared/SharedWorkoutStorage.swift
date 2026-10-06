@@ -9,7 +9,7 @@ import Foundation
 
 /// Shared storage for workout data that needs to be accessed by both the main app and widget extension
 public struct SharedWorkoutStorage {
-    private static let appGroupIdentifier = "group.com.dialedin.app"
+    private static let appGroupIdentifier = "group.com.compound.app"
     private static let restEndTimeKey = "workout.rest.endTime"
     private static let hkStartedSessionIdKey = "workout.hk.started.sessionId"
     

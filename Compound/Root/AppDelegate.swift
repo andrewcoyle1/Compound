@@ -28,7 +28,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     #endif
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        
+        // Before any manager reads the rest or the started HealthKit session.
+        if let legacy = UserDefaults(suiteName: SharedWorkoutStorage.legacyAppGroupIdentifier),
+           let current = SharedWorkoutStorage.sharedDefaults {
+            SharedWorkoutStorage.migrateLegacy(from: legacy, to: current)
+        }
+
         var config: BuildConfiguration
         
         #if MOCK

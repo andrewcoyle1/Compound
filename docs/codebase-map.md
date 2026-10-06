@@ -86,7 +86,7 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 
 | Area | Files | Lines | Purpose |
 |---|---:|---:|---|
-| `Compound/Core/Analytics` | 123 | 11,729 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
+| `Compound/Core/Analytics` | 123 | 11,747 | Progress tab: body metrics, exercise/nutrition analytics, insights, consistency |
 | `Compound/Core/AppView` | 7 | 737 | Root view: onboarding-or-tabbar switch, toasts, notification banner |
 | `Compound/Core/Challenges` | 11 | 837 | Group challenges (create, detail) |
 | `Compound/Core/Social` | 39 | 5,088 | Social tab: workout feed, circle goals, challenges, people search, invites, share card, profiles |
@@ -94,26 +94,26 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/DevSettings` | 4 | 809 | DEV/MOCK-only developer tools screen |
 | `Compound/Core/Notifications` | 10 | 1,391 | Activity notifications inbox |
 | `Compound/Core/Nutrition` | 142 | 13,398 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
-| `Compound/Core/Onboarding` | 97 | 7,084 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
+| `Compound/Core/Onboarding` | 98 | 7,169 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `Compound/Core/Paywalls` | 9 | 888 | Paywall screens |
-| `Compound/Core/Profile` | 185 | 12,241 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
+| `Compound/Core/Profile` | 185 | 12,248 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
 | `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
 | `Compound/Core/Training` | 223 | 20,405 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 70 | 6,591 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 257 | 32,500 | App-owned managers, models and services (see Managers table) |
-| `Compound/Root` | 22 | 3,540 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `Compound/Managers` | 257 | 32,564 | App-owned managers, models and services (see Managers table) |
+| `Compound/Root` | 22 | 3,541 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 950 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 318 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 614 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 264 | 2,523 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 286 | 82,695 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 286 | 82,786 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 8 | 608 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 20 | 23,276 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `functions` | 20 | 23,292 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 50 | 10,844 | Specs, reviews, audits, this map |
+| `docs` | 50 | 10,861 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -145,7 +145,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **InsightsAndAnalytics** | [Subviews/InsightsAndAnalytics](Compound/Core/Analytics/Subviews/InsightsAndAnalytics) | 505 | EnergyBalance, ExpenditureDetail, GoalProgress, WeightTrend, Workout | InsightsAndAnalyticsDelegate, `showInsightsAndAnalyticsView` |  |  |
 | **EnergyBalance** | [Subviews/InsightsAndAnalytics/EnergyBalance](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/EnergyBalance) | 358 | AddMeal | EnergyBalanceDelegate, `showEnergyBalanceView` | EnergyBalanceEntry.swift | EnergyBalancePresenterTests.swift |
 | **ExpenditureDetail** | [Subviews/InsightsAndAnalytics/ExpenditureDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/ExpenditureDetail) | 275 | EditProfile | ExpenditureDetailDelegate, `showExpenditureDetailView` | ExpenditureDetailEntry.swift |  |
-| **GoalProgress** | [Subviews/InsightsAndAnalytics/GoalProgress](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress) | 308 | WeightGoalFlow | GoalProgressDelegate, `showGoalProgressView` | GoalProgressEntry.swift |  |
+| **GoalProgress** | [Subviews/InsightsAndAnalytics/GoalProgress](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/GoalProgress) | 326 |  | GoalProgressDelegate, `showGoalProgressView` | GoalProgressEntry.swift |  |
 | **MuscleGroupDetail** | [Subviews/InsightsAndAnalytics/MuscleGroupDetail](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/MuscleGroupDetail) | 291 | Workouts | MuscleGroupDetailDelegate, `showMuscleGroupDetailView` | MuscleGroupDetailEntry.swift | MuscleGroupDetailPresenterTests.swift |
 | **Steps** | [Subviews/InsightsAndAnalytics/Steps](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/Steps) | 283 |  | StepsDelegate, `showStepsView` | StepsEntry.swift |  |
 | **WeightTrend** | [Subviews/InsightsAndAnalytics/WeightTrend](Compound/Core/Analytics/Subviews/InsightsAndAnalytics/WeightTrend) | 315 |  | WeightTrendDelegate, `showWeightTrendView` | WeightTrendEntry.swift | WeightTrendPresenterTests.swift |
@@ -244,10 +244,10 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **Activity** | [4 - CompleteAccountSetup/7 - Activity](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/7%20-%20Activity) | 236 | Expenditure | ActivityDelegate, `showActivityView` |  |  |
 | **Expenditure** | [4 - CompleteAccountSetup/9 - Expenditure](Compound/Core/Onboarding/4%20-%20CompleteAccountSetup/9%20-%20Expenditure) | 577 | HealthDisclaimer | ExpenditureDelegate, `showExpenditureView` |  |  |
 | **HealthDisclaimer** | [5 - HealthDisclaimer](Compound/Core/Onboarding/5%20-%20HealthDisclaimer) | 256 | OverarchingObjective | `showHealthDisclaimerView` |  |  |
-| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 244 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
-| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 405 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
-| **WeightRate** | [6 - GoalSetting/3 - WeightRate](Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 421 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
-| **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 463 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
+| **OverarchingObjective** | [6 - GoalSetting/1 - OverarchingObjective](Compound/Core/Onboarding/6%20-%20GoalSetting/1%20-%20OverarchingObjective) | 252 | GoalSummary, TargetWeight | `showOverarchingObjectiveView`, `showWeightGoalFlow` |  |  |
+| **TargetWeight** | [6 - GoalSetting/2 - TargetWeight](Compound/Core/Onboarding/6%20-%20GoalSetting/2%20-%20TargetWeight) | 409 | WeightRate | TargetWeightDelegate, `showTargetWeightView` |  |  |
+| **WeightRate** | [6 - GoalSetting/3 - WeightRate](Compound/Core/Onboarding/6%20-%20GoalSetting/3%20-%20WeightRate) | 427 | GoalSummary | WeightRateDelegate, `showWeightRateView` |  |  |
+| **GoalSummary** | [6 - GoalSetting/4 - GoalSummary](Compound/Core/Onboarding/6%20-%20GoalSetting/4%20-%20GoalSummary) | 489 |  | GoalSummaryDelegate, `showGoalSummaryView` |  |  |
 | **CustomisingDietProgram** | [8 - OnboardingDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet) | 170 | DietPlan, PreferredDiet | `showCustomisingDietProgramView` |  |  |
 | **PreferredDiet** | [8 - OnboardingDiet/1 - PreferredDiet](Compound/Core/Onboarding/8%20-%20OnboardingDiet/1%20-%20PreferredDiet) | 222 | CalorieDistribution, CalorieFloor | `showPreferredDietView` |  |  |
 | **CalorieFloor** | [8 - OnboardingDiet/2 - CalorieFloor](Compound/Core/Onboarding/8%20-%20OnboardingDiet/2%20-%20CalorieFloor) | 230 | CalorieDistribution | CalorieFloorDelegate, `showCalorieFloorView` |  |  |
@@ -266,7 +266,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
-| **Settings** | [Compound/Core/Profile](Compound/Core/Profile) | 633 | About, AppIcon, Auth, CoachChats, CustomiseAnalytics, DeleteAccount, ExpenditureSettings, FoodLogSettings, GymProfiles, Integrations, Legal, NotificationSettings, Notifications, Paywall, PreferredDiet, Siri, StrategySettings, Tutorials, Units, WeightGoalFlow, WorkoutSettings | `showSettingsView` | ReviewMoment.swift, SignInCancellation.swift | SettingsPresenterTests.swift |
+| **Settings** | [Compound/Core/Profile](Compound/Core/Profile) | 640 | About, AppIcon, Auth, CoachChats, CustomiseAnalytics, DeleteAccount, ExpenditureSettings, FoodLogSettings, GymProfiles, Integrations, Legal, NotificationSettings, Notifications, Paywall, PreferredDiet, Siri, StrategySettings, Tutorials, Units, WorkoutSettings | `showSettingsView` | ReviewMoment.swift, SignInCancellation.swift | SettingsPresenterTests.swift |
 | **About** | [Subviews/About](Compound/Core/Profile/Subviews/About) | 149 | Licences | AboutDelegate, `showAboutView` |  |  |
 | **Licences** | [Subviews/About/Licences](Compound/Core/Profile/Subviews/About/Licences) | 246 |  | LicencesDelegate, `showLicencesView` | Licence.swift |  |
 | **AppIcon** | [Subviews/AppIcon](Compound/Core/Profile/Subviews/AppIcon) | 126 |  | AppIconDelegate, `showAppIconView` |  |  |
@@ -406,7 +406,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **AnalyticsSettingsManager** | [Compound/Managers/Analytics/AnalyticsSettings](Compound/Managers/Analytics/AnalyticsSettings/AnalyticsSettingsManager.swift) | 57 | Document<AnalyticsSettings> | AnalyticsSettings |  |  | AnalyticsSettingsManagerTests.swift |
 | **BodyMeasurementsManager** | [Compound/Managers/BodyMeasurements](Compound/Managers/BodyMeasurements/BodyMeasurementsManager.swift) | 275 | Collection<BodyMeasurementEntry> | BodyMeasurementEntry, WeightSource |  |  | BodyMeasurementsManagerTests.swift |
 | **CoachManager** | [Compound/Managers/Coach](Compound/Managers/Coach/CoachManager.swift) | 105 | Collection<CoachChat> | CoachModels | CoachService |  |  |
-| **GoalManager** | [Compound/Managers/Goal](Compound/Managers/Goal/GoalManager.swift) | 94 | Document<WeightGoal> | WeightGoal, WeightGoalBuilder |  |  | GoalManagerTests.swift |
+| **GoalManager** | [Compound/Managers/Goal](Compound/Managers/Goal/GoalManager.swift) | 140 | Document<WeightGoal> | WeightGoal, WeightGoalBuilder |  |  | GoalManagerTests.swift |
 | **HKWorkoutManager** | [Compound/Managers/HKWorkout](Compound/Managers/HKWorkout/HKWorkoutManager.swift) | 656 |  |  |  |  | HKWorkoutManagerPauseTests.swift, HKWorkoutManagerRestAlertTests.swift, HKWorkoutManagerRestTests.swift |
 | **HealthKitManager** | [Compound/Managers/HealthKitManager](Compound/Managers/HealthKitManager/HealthKitManager.swift) | 117 |  |  |  |  | HealthKitManagerTests.swift |
 | **ImageUploadManager** | [Compound/Managers/ImageUpload](Compound/Managers/ImageUpload/ImageUploadManager.swift) | 43 |  |  | FirebaseImageUploadService, ImageUploadService, MockImageUploadService |  | ImageUploadManagerTests.swift |
@@ -487,7 +487,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [CoreInteractor+Progression.swift](Compound/Root/RIBs/Core/CoreInteractor+Progression.swift) | 105 |
 | [CoreInteractor+ScheduledPush.swift](Compound/Root/RIBs/Core/CoreInteractor+ScheduledPush.swift) | 10 |
 | [CoreInteractor+Username.swift](Compound/Root/RIBs/Core/CoreInteractor+Username.swift) | 17 |
-| [CoreInteractor.swift](Compound/Root/RIBs/Core/CoreInteractor.swift) | 332 |
+| [CoreInteractor.swift](Compound/Root/RIBs/Core/CoreInteractor.swift) | 333 |
 | [CoreRouter.swift](Compound/Root/RIBs/Core/CoreRouter.swift) | 32 |
 
 ## Cloud Functions (`functions/index.js`)
@@ -532,59 +532,59 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | `/users/{user_id}/body_measurements/{entry_id}` | [rules:60](firestore.rules#L60) |
 | `/users/{user_id}/steps/{entry_id}` | [rules:71](firestore.rules#L71) |
 | `/users/{user_id}/goals/{goal_id}` | [rules:82](firestore.rules#L82) |
-| `/users/{user_id}/gym_profiles/{gym_profile_id}` | [rules:94](firestore.rules#L94) |
-| `/users/{user_id}/mesocycles/{mesocycle_id}` | [rules:101](firestore.rules#L101) |
-| `/users/{user_id}/macrocycles/{macrocycle_id}` | [rules:108](firestore.rules#L108) |
-| `/users/{user_id}/training_programs/{training_program_id}` | [rules:116](firestore.rules#L116) |
-| `/users/{user_id}/training_plans/{training_plan_id}` | [rules:122](firestore.rules#L122) |
-| `/users/{user_id}/workout_sessions/{workout_session_id}` | [rules:131](firestore.rules#L131) |
-| `/users/{user_id}/workout_templates/{workout_templates_id}` | [rules:148](firestore.rules#L148) |
-| `/users/{user_id}/workout_settings/{workout_settings_id}` | [rules:155](firestore.rules#L155) |
-| `/users/{user_id}/exercise_settings/{exercise_settings_id}` | [rules:160](firestore.rules#L160) |
-| `/users/{user_id}/food_log_settings/{food_log_settings_id}` | [rules:165](firestore.rules#L165) |
-| `/users/{user_id}/analytics_settings/{analytics_settings_id}` | [rules:170](firestore.rules#L170) |
-| `/users/{user_id}/shortcut_settings/{shortcut_settings_id}` | [rules:175](firestore.rules#L175) |
-| `/users/{user_id}/nutrition_strategy_settings/{nutrition_strategy_settings_id}` | [rules:180](firestore.rules#L180) |
-| `/users/{user_id}/nutrition_day_annotations/{day_key}` | [rules:186](firestore.rules#L186) |
-| `/users/{user_id}/logging_break/{logging_break_id}` | [rules:197](firestore.rules#L197) |
-| `/users/{user_id}/check_in_record/{check_in_record_id}` | [rules:207](firestore.rules#L207) |
-| `/users/{user_id}/meal_logs/{document=**}` | [rules:218](firestore.rules#L218) |
-| `/users/{user_id}/recipe_templates/{workout_templates_id}` | [rules:223](firestore.rules#L223) |
-| `/users/{user_id}/foods/{food_id}` | [rules:230](firestore.rules#L230) |
-| `/users/{user_id}/follow_requests/{requester_id}` | [rules:242](firestore.rules#L242) |
-| `/users/{user_id}/notifications/{notification_id}` | [rules:264](firestore.rules#L264) |
-| `/users/{user_id}/strava_activities/{activity_id}` | [rules:279](firestore.rules#L279) |
-| `/users/{user_id}/coach_chats/{chat_id}` | [rules:285](firestore.rules#L285) |
-| `/user_streaks/{user_id}` | [rules:292](firestore.rules#L292) |
-| `/user_streaks/{user_id}/workout/{document_id}` | [rules:297](firestore.rules#L297) |
-| `/user_streaks/{user_id}/workout/{document_id}/data/{data_id}` | [rules:300](firestore.rules#L300) |
-| `/food_search_cache/{doc}` | [rules:308](firestore.rules#L308) |
-| `/strava_connections/{user_id}` | [rules:315](firestore.rules#L315) |
-| `/strava_events/{event_id}` | [rules:318](firestore.rules#L318) |
-| `/coach_usage/{user_id}` | [rules:324](firestore.rules#L324) |
-| `/{path=**}/workout_sessions/{workout_session_id}` | [rules:332](firestore.rules#L332) |
-| `/{path=**}/follow_requests/{requester_id}` | [rules:340](firestore.rules#L340) |
-| `/ingredient_templates/{ingredient_id}` | [rules:345](firestore.rules#L345) |
-| `/recipe_templates/{recipe_id}` | [rules:352](firestore.rules#L352) |
-| `/diet_plans/{user_id}` | [rules:359](firestore.rules#L359) |
-| `/gym_profiles/{gym_profile_id}` | [rules:366](firestore.rules#L366) |
-| `/exercise_templates/{exercise_id}` | [rules:373](firestore.rules#L373) |
-| `/exercise_history/{exercise_history_id}` | [rules:380](firestore.rules#L380) |
-| `/workout_templates/{workout_template_id}` | [rules:386](firestore.rules#L386) |
-| `/workout_exercises/{exercise_id}` | [rules:397](firestore.rules#L397) |
-| `/workout_sets/{set_id}` | [rules:404](firestore.rules#L404) |
-| `/program_templates/{program_template_id}` | [rules:411](firestore.rules#L411) |
-| `/training_plans/{training_plan_id}` | [rules:418](firestore.rules#L418) |
-| `/training_programs/{training_program_id}` | [rules:426](firestore.rules#L426) |
-| `/reports/{report_id}` | [rules:436](firestore.rules#L436) |
-| `/moderation_queue/{target_id}` | [rules:456](firestore.rules#L456) |
-| `/workout_session_comments/{comment_id}` | [rules:462](firestore.rules#L462) |
-| `/usernames/{handle}` | [rules:502](firestore.rules#L502) |
-| `/shares/{share_id}` | [rules:514](firestore.rules#L514) |
-| `/challenges/{challenge_id}` | [rules:540](firestore.rules#L540) |
-| `/progress/{member_id}` | [rules:571](firestore.rules#L571) |
-| `/invites/{code}` | [rules:582](firestore.rules#L582) |
-| `/users/{user_id}/progress_photos/{photo_id}` | [rules:599](firestore.rules#L599) |
+| `/users/{user_id}/gym_profiles/{gym_profile_id}` | [rules:95](firestore.rules#L95) |
+| `/users/{user_id}/mesocycles/{mesocycle_id}` | [rules:102](firestore.rules#L102) |
+| `/users/{user_id}/macrocycles/{macrocycle_id}` | [rules:109](firestore.rules#L109) |
+| `/users/{user_id}/training_programs/{training_program_id}` | [rules:117](firestore.rules#L117) |
+| `/users/{user_id}/training_plans/{training_plan_id}` | [rules:123](firestore.rules#L123) |
+| `/users/{user_id}/workout_sessions/{workout_session_id}` | [rules:132](firestore.rules#L132) |
+| `/users/{user_id}/workout_templates/{workout_templates_id}` | [rules:149](firestore.rules#L149) |
+| `/users/{user_id}/workout_settings/{workout_settings_id}` | [rules:156](firestore.rules#L156) |
+| `/users/{user_id}/exercise_settings/{exercise_settings_id}` | [rules:161](firestore.rules#L161) |
+| `/users/{user_id}/food_log_settings/{food_log_settings_id}` | [rules:166](firestore.rules#L166) |
+| `/users/{user_id}/analytics_settings/{analytics_settings_id}` | [rules:171](firestore.rules#L171) |
+| `/users/{user_id}/shortcut_settings/{shortcut_settings_id}` | [rules:176](firestore.rules#L176) |
+| `/users/{user_id}/nutrition_strategy_settings/{nutrition_strategy_settings_id}` | [rules:181](firestore.rules#L181) |
+| `/users/{user_id}/nutrition_day_annotations/{day_key}` | [rules:187](firestore.rules#L187) |
+| `/users/{user_id}/logging_break/{logging_break_id}` | [rules:198](firestore.rules#L198) |
+| `/users/{user_id}/check_in_record/{check_in_record_id}` | [rules:208](firestore.rules#L208) |
+| `/users/{user_id}/meal_logs/{document=**}` | [rules:219](firestore.rules#L219) |
+| `/users/{user_id}/recipe_templates/{workout_templates_id}` | [rules:224](firestore.rules#L224) |
+| `/users/{user_id}/foods/{food_id}` | [rules:231](firestore.rules#L231) |
+| `/users/{user_id}/follow_requests/{requester_id}` | [rules:243](firestore.rules#L243) |
+| `/users/{user_id}/notifications/{notification_id}` | [rules:265](firestore.rules#L265) |
+| `/users/{user_id}/strava_activities/{activity_id}` | [rules:280](firestore.rules#L280) |
+| `/users/{user_id}/coach_chats/{chat_id}` | [rules:286](firestore.rules#L286) |
+| `/user_streaks/{user_id}` | [rules:293](firestore.rules#L293) |
+| `/user_streaks/{user_id}/workout/{document_id}` | [rules:298](firestore.rules#L298) |
+| `/user_streaks/{user_id}/workout/{document_id}/data/{data_id}` | [rules:301](firestore.rules#L301) |
+| `/food_search_cache/{doc}` | [rules:309](firestore.rules#L309) |
+| `/strava_connections/{user_id}` | [rules:316](firestore.rules#L316) |
+| `/strava_events/{event_id}` | [rules:319](firestore.rules#L319) |
+| `/coach_usage/{user_id}` | [rules:325](firestore.rules#L325) |
+| `/{path=**}/workout_sessions/{workout_session_id}` | [rules:333](firestore.rules#L333) |
+| `/{path=**}/follow_requests/{requester_id}` | [rules:341](firestore.rules#L341) |
+| `/ingredient_templates/{ingredient_id}` | [rules:346](firestore.rules#L346) |
+| `/recipe_templates/{recipe_id}` | [rules:353](firestore.rules#L353) |
+| `/diet_plans/{user_id}` | [rules:360](firestore.rules#L360) |
+| `/gym_profiles/{gym_profile_id}` | [rules:367](firestore.rules#L367) |
+| `/exercise_templates/{exercise_id}` | [rules:374](firestore.rules#L374) |
+| `/exercise_history/{exercise_history_id}` | [rules:381](firestore.rules#L381) |
+| `/workout_templates/{workout_template_id}` | [rules:387](firestore.rules#L387) |
+| `/workout_exercises/{exercise_id}` | [rules:398](firestore.rules#L398) |
+| `/workout_sets/{set_id}` | [rules:405](firestore.rules#L405) |
+| `/program_templates/{program_template_id}` | [rules:412](firestore.rules#L412) |
+| `/training_plans/{training_plan_id}` | [rules:419](firestore.rules#L419) |
+| `/training_programs/{training_program_id}` | [rules:427](firestore.rules#L427) |
+| `/reports/{report_id}` | [rules:437](firestore.rules#L437) |
+| `/moderation_queue/{target_id}` | [rules:457](firestore.rules#L457) |
+| `/workout_session_comments/{comment_id}` | [rules:463](firestore.rules#L463) |
+| `/usernames/{handle}` | [rules:503](firestore.rules#L503) |
+| `/shares/{share_id}` | [rules:515](firestore.rules#L515) |
+| `/challenges/{challenge_id}` | [rules:541](firestore.rules#L541) |
+| `/progress/{member_id}` | [rules:572](firestore.rules#L572) |
+| `/invites/{code}` | [rules:583](firestore.rules#L583) |
+| `/users/{user_id}/progress_photos/{photo_id}` | [rules:600](firestore.rules#L600) |
 
 ## Unit test suites
 
@@ -722,7 +722,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [functions/index.js](functions/index.js) | 1203 |
 | [functions/index.test.js](functions/index.test.js) | 933 |
 | [functions/lib.js](functions/lib.js) | 979 |
-| [functions/rules.test.js](functions/rules.test.js) | 418 |
+| [functions/rules.test.js](functions/rules.test.js) | 434 |
 | [functions/scripts/coach-eval.js](functions/scripts/coach-eval.js) | 92 |
 | [functions/scripts/migrateEquipmentVariations.js](functions/scripts/migrateEquipmentVariations.js) | 177 |
 | [functions/scripts/migrateMesocycleNames.js](functions/scripts/migrateMesocycleNames.js) | 160 |

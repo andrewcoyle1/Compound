@@ -29,7 +29,7 @@ struct GoalProgressPresenterTests {
         private(set) var didShowLogWeight = false
         private(set) var didShowWeightGoalFlow = false
 
-        func showWeightGoalFlow() { didShowWeightGoalFlow = true }
+        func showWeightGoalFlow(editing: WeightGoal?) { didShowWeightGoalFlow = true }
 
         func showLogWeightView() {
             didShowLogWeight = true

@@ -11,11 +11,13 @@ struct WeightRateDelegate {
     let overarchingObjective: OverarchingObjective
     let targetWeight: Double
     let isStandaloneMode: Bool
+    let editingGoal: WeightGoal?
     
     init(delegate: TargetWeightDelegate, targetWeight: Double) {
         self.overarchingObjective = delegate.overarchingObjective
         self.targetWeight = targetWeight
         self.isStandaloneMode = delegate.isStandaloneMode
+        self.editingGoal = delegate.editingGoal
     }
     
     static func mock(overarchingObjective: OverarchingObjective) -> Self {

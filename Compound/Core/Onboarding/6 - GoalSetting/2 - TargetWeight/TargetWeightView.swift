@@ -12,6 +12,8 @@ struct TargetWeightDelegate {
     /// Set from Profile or Goal Progress, where the flow is a sheet of its own rather than a step
     /// of onboarding. Each step hands it on to the next.
     var isStandaloneMode = false
+    /// The goal being edited, handed on to each step.
+    var editingGoal: WeightGoal?
     
     static func mock(overarchingObjective: OverarchingObjective) -> Self {
         Self(overarchingObjective: overarchingObjective)

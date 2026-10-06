@@ -70,6 +70,14 @@ class NutritionManager {
     }
 
     // MARK: - Core logic
+
+    /// What to eat to move at an active goal's weekly pace: expenditure plus the pace's daily share
+    /// of 7,700 kcal per kg. Maintenance with no goal, or one that is not active. The plan used to
+    /// be built at expenditure whatever the goal, so a goal to lose 0.5 kg a week set no deficit.
+    static func goalTarget(expenditureKcal: Double, goal: WeightGoal?) -> Double {
+        guard let goal, goal.status == .active else { return expenditureKcal }
+        return expenditureKcal + goal.signedWeeklyChangeKg * ExpenditureEngine.Constants.kcalPerKg / 7
+    }
     /// `expenditureKcal` is what the body spends; `targetKcal` is what the plan asks the user to
     /// eat. They are two different numbers and the plan records both.
     ///
@@ -87,7 +95,8 @@ class NutritionManager {
         delegate: DietPlanDelegate,
         mesocycle: Mesocycle? = nil,
         expenditureKcal: Double? = nil,
-        targetKcal: Double? = nil
+        targetKcal: Double? = nil,
+        goal: WeightGoal? = nil
     ) -> DietPlan {
         let now = Date()
         let userId = user?.userId
@@ -95,7 +104,7 @@ class NutritionManager {
         let minimumCalories = delegate.calorieFloor.minimumValue
         // The floor applies to the target whichever way it arrived: an engine that has watched
         // someone eat 900 kcal a day for a month must not be allowed to write that down.
-        let targetCalories = max(targetKcal ?? tdee, minimumCalories)
+        let targetCalories = max(targetKcal ?? Self.goalTarget(expenditureKcal: tdee, goal: goal), minimumCalories)
 
         let proteinGrams = calculateProteinGrams(user: user, proteinIntake: delegate.proteinIntake)
         let macroPercentages = calculateMacroPercentages(
@@ -385,7 +394,7 @@ extension CoreInteractor {
     }
 
     func computeDietPlan(user: UserModel?, delegate: DietPlanDelegate) -> DietPlan {
-        nutritionManager.computeDietPlan(user: user, delegate: delegate, mesocycle: activeMesocycle)
+        nutritionManager.computeDietPlan(user: user, delegate: delegate, mesocycle: activeMesocycle, goal: currentGoal)
     }
 
     /// The same plan built on a supplied expenditure and target rather than the formula estimate.
@@ -400,7 +409,8 @@ extension CoreInteractor {
             delegate: delegate,
             mesocycle: activeMesocycle,
             expenditureKcal: expenditureKcal,
-            targetKcal: targetKcal
+            targetKcal: targetKcal,
+            goal: currentGoal
         )
     }
 

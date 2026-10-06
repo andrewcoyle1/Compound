@@ -37,6 +37,14 @@ struct OnboardingGoalSummaryPresenterTests {
             if let updateGoalIdError { throw updateGoalIdError }
             savedGoalIds.append(goalId)
         }
+
+        private(set) var goalEdits: [Double] = []
+        private(set) var appliedToDietPlan: [WeightGoal] = []
+        func updateGoal(objective: OverarchingObjective, targetWeightKg: Double, weeklyChangeKg: Double) async throws -> WeightGoal {
+            goalEdits.append(targetWeightKg)
+            return WeightGoal(userId: "u", objective: objective, startingWeightKg: 80.6, targetWeightKg: targetWeightKg, weeklyChangeKg: weeklyChangeKg)
+        }
+        func applyGoalToDietPlan(_ goal: WeightGoal) async throws { appliedToDietPlan.append(goal) }
     }
 
     /// `GoalSummaryRouter` refines `OnboardingStepRouter`, so this subclasses `SpyOnboardingRouter`
@@ -431,5 +439,41 @@ struct OnboardingGoalSummaryPresenterTests {
 
         #expect(screen.presenter.isLoading == false)
         #expect(screen.presenter.goalCreated == false)
+    }
+
+    // MARK: - Starting fresh and editing
+
+    /// Each new goal is its own document, so a second goal is not the rewrite the rules refuse.
+    @Test("A new goal gets its own id and becomes the current one")
+    func testNewGoalGetsItsOwnId() async {
+        let screen = makeScreen(isStandaloneMode: true)
+
+        screen.presenter.onCompletePressed(delegate: delegate())
+
+        #expect(await TestManagers.eventually { !screen.interactor.savedGoals.isEmpty })
+        let goal = screen.interactor.savedGoals.first
+        #expect(goal?.id != goal?.userId)
+        #expect(screen.interactor.savedGoalIds == [goal?.id])
+        // The goal sets the calorie target now, not at the next check-in.
+        #expect(await TestManagers.eventually { screen.interactor.appliedToDietPlan.map(\.id) == [goal?.id] })
+    }
+
+    /// Editing changes the running goal and creates nothing.
+    @Test("Editing a goal updates it instead of starting a new one")
+    func testEditingUpdatesTheGoal() async {
+        let screen = makeScreen(isStandaloneMode: true)
+        let running = WeightGoal(userId: "u", objective: .loseWeight, startingWeightKg: 80.6, targetWeightKg: 75, weeklyChangeKg: 0.5)
+        let editing = GoalSummaryDelegate(
+            overarchingObjective: .loseWeight, targetWeight: 72, weightChangeRate: 0.25,
+            isStandaloneMode: true, editingGoal: running
+        )
+
+        screen.presenter.onCompletePressed(delegate: editing)
+
+        #expect(await TestManagers.eventually { screen.interactor.goalEdits.count == 1 })
+        #expect(screen.interactor.goalEdits == [72])
+        #expect(await TestManagers.eventually { screen.interactor.appliedToDietPlan.map(\.targetWeightKg) == [72] })
+        #expect(screen.interactor.savedGoals.isEmpty)
+        #expect(screen.interactor.savedGoalIds.isEmpty)
     }
 }

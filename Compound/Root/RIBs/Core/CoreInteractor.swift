@@ -153,7 +153,8 @@ struct CoreInteractor: GlobalInteractor {
         async let macrocycleSignIn: () = macrocycleManager.signIn()
         // Not `currentUser` directly: on a fresh install the listener has not delivered the
         // profile yet, and an empty list here left the feed and the circle empty until relaunch.
-        let followingIds = await userManager.currentUserOrFetched(userId: user.uid)?.followingIds ?? []
+        let signedInUser = await userManager.currentUserOrFetched(userId: user.uid)
+        let followingIds = signedInUser?.followingIds ?? []
         async let workoutSessionSignIn: () = workoutSessionManager.signIn(userId: user.uid, followingIds: followingIds)
         async let followingUsersSignIn: () = userManager.refreshFollowingUsers(followingIds: followingIds)
         async let exerciseSignIn: () = exerciseModelManager.signIn(userId: user.uid)
@@ -162,7 +163,7 @@ struct CoreInteractor: GlobalInteractor {
         async let nutritionSignIn: () = nutritionManager.signIn(dietPlanId: user.uid)
         async let mealLogSignIn: () = mealLogManager.signIn(userId: user.uid, importSince: user.creationDate)
         async let bodyMeasurementsSignIn: () = bodyMeasurementsManager.signIn(userId: user.uid)
-        async let goalSignIn: () = goalManager.signIn(userId: user.uid)
+        async let goalSignIn: () = goalManager.signIn(userId: user.uid, goalId: signedInUser?.submittedCurrentGoalId)
 
         try await workoutSettingsSignIn
         try await foodLogSettingsSignIn

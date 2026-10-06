@@ -16,6 +16,13 @@ struct GoalProgressView: View {
 
     var body: some View {
         MetricDetailView(presenter: presenter, themeColor: themeColor)
+            .toolbar {
+                if presenter.activeGoal != nil {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Change Goal", systemImage: Symbol.edit) { presenter.onChangeGoalPressed() }
+                    }
+                }
+            }
     }
 }
 

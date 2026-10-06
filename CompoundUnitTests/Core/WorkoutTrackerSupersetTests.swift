@@ -228,4 +228,25 @@ struct WorkoutTrackerSupersetTests {
 
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
+
+    // MARK: - Deleting a member
+
+    /// A superset of one is not a superset: the partner left behind loses its group and reads
+    /// as a plain exercise. A group of three keeps its two.
+    @Test("Test Deleting A Partner Dissolves A Superset Of Two")
+    func testDeletingAPartnerDissolvesTheSuperset() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e5", index: 5, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+
+        screen.presenter.deleteExercise("e2")
+        screen.presenter.deleteExercise("e5")
+
+        let groups = screen.presenter.workoutSession.exercises.map(\.supersetGroupId)
+        #expect(groups == [nil, "group-2", "group-2"])
+    }
 }

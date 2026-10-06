@@ -139,17 +139,18 @@ extension WorkoutTrackerPresenter {
 
     /// Smart progression's reason for the exercise on the card, shown over the log button when
     /// the exercise is started, until it is acknowledged or the first working set is logged: by
-    /// then the user has acted on it.
+    /// then the user has acted on it. Acknowledged by template, as the suggestion it speaks
+    /// for is kept.
     var progressionNote: String? {
         guard let exercise = currentExercise,
-              !acknowledgedProgressionNotes.contains(exercise.id),
+              !acknowledgedProgressionNotes.contains(exercise.templateId),
               exercise.loggedSetCount == 0 else { return nil }
         return progressionReason(for: exercise)
     }
 
     func onProgressionNoteAcknowledged() {
         guard let exercise = currentExercise else { return }
-        acknowledgedProgressionNotes.insert(exercise.id)
+        acknowledgedProgressionNotes.insert(exercise.templateId)
         interactor.trackEvent(event: Event.progressionNoteAcknowledged)
     }
 

@@ -140,4 +140,54 @@ struct WorkoutTrackerPresenterProgressionTests {
         #expect(remaining[0].weight == 60)
         #expect(remaining[1].weight == 57)
     }
+
+    // MARK: - Minimise and reopen
+
+    /// Minimising releases the presenter and reopening builds a new one. The new one used to
+    /// capture its baseline from the values on screen, so the 55 kg typed before the minimise
+    /// read as the engine's own and was overwritten. The baseline is now the one first captured.
+    @Test("Test Minimise And Rebuild Keeps An Edited Set Out Of Live Re-Suggestion")
+    func testMinimiseKeepsEditedSetOutOfReSuggestion() throws {
+        let screen = try makeScreen(sets: [set(1), set(2), set(3)])
+        screen.presenter.workoutSession.exercises[0].sets[1].weightKg = 55
+        screen.presenter.minimizeSession()
+
+        let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
+        #expect(reopened.workoutSession.exercises[0].sets[1].weightKg == 55)
+        completeFirstSet(reopened, reps: 6)
+
+        let remaining = remainingValues(reopened)
+        #expect(remaining[0].weight == 55)
+        #expect(remaining[1].weight == 57)
+    }
+
+    @Test("Test A Reopened Tracker Keeps Dismissed Notes And Rests Set By Hand")
+    func testReopenedTrackerKeepsScreenState() throws {
+        let screen = try makeScreen(sets: [set(1), set(2), set(3)])
+        screen.presenter.onProgressionNoteAcknowledged()
+        screen.presenter.customRestSeconds["set-2"] = 200
+        screen.presenter.minimizeSession()
+
+        let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
+
+        #expect(reopened.acknowledgedProgressionNotes == ["template-exercise-1"])
+        #expect(reopened.customRestSeconds == ["set-2": 200])
+    }
+
+    /// The same store holding another workout's state hands none of it to this one.
+    @Test("Test Another Workout's Screen State Is Not Picked Up")
+    func testAnotherWorkoutsStateIgnored() throws {
+        let screen = try makeScreen(sets: [set(1), set(2)])
+        ActiveWorkoutScreenState(
+            sessionId: "session-0",
+            acknowledgedNoteTemplateIds: ["template-exercise-1"],
+            customRestSeconds: ["set-1": 200]
+        ).save(to: screen.interactor.activeWorkoutScreenStateStore)
+
+        let reopened = try WorkoutTrackerPresenter(interactor: screen.interactor, router: WorkoutTrackerRouterDouble())
+
+        #expect(reopened.acknowledgedProgressionNotes.isEmpty)
+        #expect(reopened.customRestSeconds.isEmpty)
+        #expect(reopened.progressionBaseline["set-1"] == SuggestedSet(weightKg: 60, reps: 8))
+    }
 }

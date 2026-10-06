@@ -208,7 +208,7 @@ enum ActiveWorkout {
     static func completedSummary(for exercise: WorkoutExerciseModel, unit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) -> String {
         let logged = exercise.sets.filter { !$0.isWarmup && $0.completedAt != nil }
         var parts = [Format.sets(Double(logged.pairedSetCount))]
-        let top = logged.max { ($0.weightKg ?? 0, $0.reps ?? 0) < ($1.weightKg ?? 0, $1.reps ?? 0) }
+        let top = topSet(of: logged, trackingMode: exercise.trackingMode)
         if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit) {
             parts.append(String(localized: "Top \(figures)"))
         }
@@ -231,10 +231,23 @@ enum ActiveWorkout {
             parts.append(target.repTargetDescription)
         }
         let lastWorking = last?.sets.filter { !$0.isWarmup && $0.completedAt != nil } ?? []
-        let top = lastWorking.max { ($0.weightKg ?? 0, $0.reps ?? 0) < ($1.weightKg ?? 0, $1.reps ?? 0) }
+        let top = topSet(of: lastWorking, trackingMode: exercise.trackingMode)
         if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit) {
             parts.append(String(localized: "Last \(figures)"))
         }
         return parts.joined(separator: " · ")
+    }
+
+    /// The set a summary calls "Top": the heaviest (then the most reps) for weight and reps, the
+    /// longest for a timed set, the farthest for a distance. Ties go to the earlier set.
+    static func topSet(of sets: [WorkoutSetModel], trackingMode: TrackingMode) -> WorkoutSetModel? {
+        switch trackingMode {
+        case .weightReps, .repsOnly:
+            sets.max { ($0.weightKg ?? 0, $0.reps ?? 0) < ($1.weightKg ?? 0, $1.reps ?? 0) }
+        case .timeOnly:
+            sets.max { ($0.durationSec ?? 0) < ($1.durationSec ?? 0) }
+        case .distanceTime:
+            sets.max { ($0.distanceMeters ?? 0) < ($1.distanceMeters ?? 0) }
+        }
     }
 }

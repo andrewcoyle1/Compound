@@ -34,14 +34,17 @@ extension WorkoutTrackerPresenter {
     /// Resolved one exercise at a time because the fallback is per exercise: an exercise this
     /// template has never held still shows the last time it was performed anywhere.
     func loadPreviousWorkoutSession() {
-        guard let authorId = interactor.currentUser?.userId else {
-            previousExercises = [:]
-            return
-        }
+        loadPrevious(for: workoutSession.exercises.map(\.templateId))
+    }
+
+    /// The same, for some exercises only: those added part-way through. What is already loaded
+    /// for the others is kept.
+    func loadPrevious(for templateIds: [String]) {
+        guard let authorId = interactor.currentUser?.userId else { return }
 
         let workoutTemplateId = workoutSession.workoutTemplateId
         let mesocycleId = workoutSession.mesocycleId
-        let exerciseTemplateIds = Array(Set(workoutSession.exercises.map(\.templateId)))
+        let exerciseTemplateIds = Set(templateIds)
 
         Task {
             var resolved: [String: WorkoutExerciseModel] = [:]
@@ -63,7 +66,7 @@ extension WorkoutTrackerPresenter {
                 }
             }
 
-            previousExercises = resolved
+            previousExercises.merge(resolved) { $1 }
         }
     }
 
@@ -83,6 +86,16 @@ extension WorkoutTrackerPresenter {
 
     func onSkipRestPressed() {
         interactor.trackEvent(event: Event.restSkipped)
+        cancelRestTimer()
+    }
+
+    /// A rest follows the set logged last. Once that set is gone, deleted on its own or with its
+    /// exercise, there is nothing left to rest from.
+    func cancelRestIfRestedSetRemoved(comparedTo oldSession: WorkoutSessionModel) {
+        guard restStartedAt != nil || interactor.restEndTime != nil,
+              let rested = ActiveWorkout.latestCompletedSet(in: oldSession.exercises),
+              !workoutSession.exercises.contains(where: { $0.sets.contains { $0.id == rested.id } })
+        else { return }
         cancelRestTimer()
     }
 

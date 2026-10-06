@@ -43,10 +43,26 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     private(set) var preparedSounds: [SoundEffectFile] = []
     private(set) var playedSounds: [SoundEffectFile] = []
 
-    func setActiveWorkoutGymProfile(_ profile: GymProfileModel?) { }
+    // MARK: WP-B
+
+    /// What `setActiveWorkoutGymProfile` was last given. With the favourite behind it, it is the
+    /// gym the real interactor reports.
+    private(set) var activeWorkoutGymProfile: GymProfileModel?
+    var workoutGymProfile: GymProfileModel? { activeWorkoutGymProfile ?? favouriteGymProfile }
+    /// The templates `getWorkoutTemplate` finds, by id.
+    var workoutTemplates: [String: WorkoutTemplateModel] = [:]
+    /// A store of its own, so one test's screen state never reaches another, while a presenter
+    /// rebuilt on the same double, as after a minimise, still finds it.
+    let activeWorkoutScreenStateStore = UserDefaults(suiteName: "WorkoutTrackerInteractorDouble-\(UUID().uuidString)") ?? .standard
+
+    func setActiveWorkoutGymProfile(_ profile: GymProfileModel?) { activeWorkoutGymProfile = profile }
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel {
         GymProfileModel(id: gymProfileId, authorId: "author-1", name: "Home Gym")
     }
+    func getWorkoutTemplate(id: String) -> WorkoutTemplateModel? { workoutTemplates[id] }
+
+    // MARK: - End WP-B
+
     func canRequestHealthDataAuthorisation() -> Bool { false }
     func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
     func needsAuthorisationForRequiredTypes() -> Bool { false }

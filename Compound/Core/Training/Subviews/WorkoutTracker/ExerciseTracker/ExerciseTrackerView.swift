@@ -24,6 +24,8 @@ struct ExerciseTrackerDelegate {
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// Saves this session's note on the exercise; an empty string clears it.
     var onUpdateNote: @MainActor (String) -> Void = { _ in }
+    /// See `SetTrackerDelegate.onSwap`.
+    var onSwap: (@MainActor (ExerciseModel) -> Void)?
     /// The live tracker draws the current exercise as an open card. `nil` is the collapsible row
     /// a finished workout's editor uses.
     var card: ExerciseCard?
@@ -86,6 +88,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             onSetSupersetGroup: delegate.onSetSupersetGroup,
             onDeleteExercise: delegate.onDeleteExercise,
             onSetCompleted: delegate.onSetCompleted,
+            onSwap: delegate.onSwap,
             card: card
         )
     }
@@ -121,8 +124,12 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             }
 
             if let sessionNote = exercise.notes {
-                Label(sessionNote, systemImage: Symbol.note)
-                    .font(.rowDetail)
+                Label {
+                    ClampedNote(text: sessionNote)
+                } icon: {
+                    Image(systemName: Symbol.note)
+                }
+                .font(.rowDetail)
             }
 
         }
@@ -136,7 +143,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
             Label("Your note", systemImage: Symbol.pinnedNote)
                 .font(.label)
                 .foregroundStyle(.secondary)
-            Text(note)
+            ClampedNote(text: note)
                 .font(.rowDetail)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,6 +229,41 @@ struct ExerciseTrackerView<SetTracker: View>: View {
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(exercise.notes == nil ? String(localized: "Add note") : String(localized: "Edit note"))
+    }
+}
+
+/// A note held to three lines above the sets, so a long one does not push the table off screen,
+/// with More to read the rest in place. More shows only when the note is actually cut short.
+private struct ClampedNote: View {
+    let text: String
+
+    @State private var isExpanded = false
+    @State private var fullHeight: CGFloat = 0
+    @State private var shownHeight: CGFloat = 0
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text(text)
+                .lineLimit(isExpanded ? nil : 3)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { shownHeight = $0 }
+                // The whole note laid out at the same width and hidden, to tell whether three
+                // lines cut it short.
+                .background {
+                    Text(text)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .hidden()
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
+                }
+            if !isExpanded && fullHeight > shownHeight + 1 {
+                Button("More") {
+                    isExpanded = true
+                }
+                .fontWeight(.semibold)
+                .buttonStyle(.borderless)
+                // VoiceOver reads the whole note whatever its line limit.
+                .accessibilityHidden(true)
+            }
+        }
     }
 }
 

@@ -17,6 +17,9 @@ struct SetTrackerDelegate {
     var onDeleteExercise: @MainActor () -> Void = { }
     /// Called with the set that was just logged, so the screen can re-suggest what is left.
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
+    /// The live tracker makes a swap itself, keeping the logged sets on the old exercise. `nil`
+    /// swaps in place, as a finished workout's editor does. See `SetTrackerPresenter.onSwapPressed`.
+    var onSwap: (@MainActor (ExerciseModel) -> Void)?
     /// The live tracker's card: rows drawn done, current or upcoming, the exercise's actions in an
     /// overflow menu that `header` places, and the rest timer among the rows.
     var card: SetTrackerCard?
@@ -49,6 +52,9 @@ struct SetTrackerView<SetTrackerRow: View>: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    /// Whether the logged warm-ups are shown row by row rather than as one line.
+    @State private var showsLoggedWarmups = false
+
     /// The rows stack into two lines at accessibility sizes; the headers follow them.
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
@@ -73,29 +79,29 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             if delegate.card?.restTimer?.anchor == .top {
                 restRow
             }
-            ForEach(delegate.exercise.sets.filter { $0.wrappedValue.completedAt == nil || !$0.wrappedValue.isWarmup }) { set in
-                // Matched on the side as well as the number: a left set inheriting the right
-                // arm's last weight sends the user chasing the other arm's numbers.
-                let lastSet = delegate.lastExercise?.matchingSet(for: set.wrappedValue, in: delegate.exercise.wrappedValue)
-                let suggestedSet = delegate.progressionSuggestion?.suggestedSet(
-                    for: set.wrappedValue,
-                    in: delegate.exercise.wrappedValue
-                )
-                setTrackerRow(
-                    SetTrackerRowDelegate(
-                        exercise: delegate.exercise,
-                        set: set,
-                        lastSet: lastSet,
-                        progressionSuggestion: suggestedSet,
-                        showAutoRanges: presenter.showAutoRanges,
-                        rowState: delegate.card == nil ? nil : ActiveWorkout.rowState(of: set.wrappedValue, in: delegate.exercise.wrappedValue),
-                        onSetCompleted: delegate.onSetCompleted,
-                        onLogSet: delegate.card?.onLogSet,
-                        onCustomRestChanged: delegate.card?.onCustomRestChanged
-                    )
-                )
-                .listRowSeparator(.visible)
-                if delegate.card?.restTimer?.anchor == .below(setId: set.wrappedValue.id) {
+            let loggedWarmups = delegate.exercise.wrappedValue.sets.filter { $0.isWarmup && $0.completedAt != nil }
+            if !loggedWarmups.isEmpty {
+                // Done warm-ups fold into one line, so the table starts at the work, and open on a
+                // tap to be corrected.
+                DisclosureGroup(isExpanded: $showsLoggedWarmups) {
+                    ForEach(loggedWarmups) { set in
+                        row(for: set)
+                    }
+                } label: {
+                    Label {
+                        Text("\(loggedWarmups.count) warm-ups")
+                    } icon: {
+                        Image(systemName: Symbol.success)
+                            .foregroundStyle(.success)
+                    }
+                    .font(.rowDetail)
+                    .frame(minHeight: ControlSize.row)
+                    .padding(.leading, Spacing.l)
+                }
+            }
+            ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
+                row(for: set)
+                if delegate.card?.restTimer?.anchor == .below(setId: set.id) {
                     restRow
                 }
             }
@@ -105,6 +111,42 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         .listRowInsets(.vertical, 0)
         .listRowInsets(.leading, 0)
         .listSectionMargins(.top, 0)
+    }
+
+    private func row(for set: WorkoutSetModel) -> some View {
+        let exercise = delegate.exercise.wrappedValue
+        // Matched on the side as well as the number: a left set inheriting the right arm's last
+        // weight sends the user chasing the other arm's numbers.
+        return setTrackerRow(
+            SetTrackerRowDelegate(
+                exercise: delegate.exercise,
+                set: setBinding(for: set),
+                lastSet: delegate.lastExercise?.matchingSet(for: set, in: exercise),
+                progressionSuggestion: delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
+                showAutoRanges: presenter.showAutoRanges,
+                rowState: delegate.card == nil ? nil : ActiveWorkout.rowState(of: set, in: exercise),
+                onSetCompleted: delegate.onSetCompleted,
+                onLogSet: delegate.card?.onLogSet,
+                onCustomRestChanged: delegate.card?.onCustomRestChanged
+            )
+        )
+        .listRowSeparator(.visible)
+    }
+
+    /// The set by id, not by position, as `WorkoutTrackerView.currentExerciseSection` binds the
+    /// exercise. A binding by index read `sets[4]` of four sets when an earlier set was deleted
+    /// with the keyboard open on the last, and trapped. Once the set is gone the getter hands back
+    /// what it last held, and the setter has nothing to write.
+    private func setBinding(for set: WorkoutSetModel) -> Binding<WorkoutSetModel> {
+        let exercise = delegate.exercise
+        let id = set.id
+        return Binding(
+            get: { exercise.wrappedValue.sets.first { $0.id == id } ?? set },
+            set: { updated in
+                guard let index = exercise.wrappedValue.sets.firstIndex(where: { $0.id == id }) else { return }
+                exercise.wrappedValue.sets[index] = updated
+            }
+        )
     }
 
     @ViewBuilder
@@ -132,6 +174,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 }
                 .font(.caption)
                 .buttonStyle(.bordered)
+                .toggleStyle(.button)
                 .tint(.secondary)
                 .buttonBorderShape(.capsule)
             }
@@ -179,7 +222,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             Button {
                 presenter.onExerciseEquipmentPressed(delegate.exercise)
             } label: {
-                Label("Equipment", systemImage: Symbol.equipment)
+                Label("Equipment…", systemImage: Symbol.equipment)
                     .tapTarget()
             }
         }
@@ -187,35 +230,36 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         Button {
             presenter.onWarmupSetsPressed(delegate.exercise)
         } label: {
-            Label("Warmup", systemImage: Symbol.warmup)
+            Label("Warmup Sets…", systemImage: Symbol.warmup)
                 .tapTarget()
         }
 
         if delegate.exercise.wrappedValue.isPerSide {
-            let isSplit = delegate.exercise.wrappedValue.isSplit
-            Button {
-                presenter.onSplitSidesPressed(delegate.exercise)
-            } label: {
+            // A toggle, so the menu draws a checkmark beside it while the sides are split; a tint
+            // is not drawn inside a menu.
+            let exercise = delegate.exercise
+            Toggle(isOn: Binding(
+                get: { exercise.wrappedValue.isSplit },
+                set: { _ in presenter.onSplitSidesPressed(exercise) }
+            )) {
                 Label("Split L/R", systemImage: Symbol.splitSides)
                     .tapTarget()
             }
-            .tint(isSplit ? .accentColor : .secondary)
             .accessibilityLabel("Split left and right")
             .accessibilityHint("Logs each side as its own set")
-            .accessibilityAddTraits(isSplit ? .isSelected : [])
         }
 
         Button {
             presenter.onTargetsPressed(delegate.exercise)
         } label: {
-            Label("Targets", systemImage: Symbol.goal)
+            Label("Targets…", systemImage: Symbol.goal)
                 .tapTarget()
         }
 
         Button {
-            presenter.onSwapPressed(delegate.exercise)
+            presenter.onSwapPressed(delegate.exercise, onSwap: delegate.onSwap)
         } label: {
-            Label("Swap", systemImage: Symbol.swap)
+            Label("Swap…", systemImage: Symbol.swap)
                 .tapTarget()
         }
 
@@ -227,7 +271,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             )
         } label: {
             let groupLabel: String = {
-                guard let groupId = delegate.exercise.wrappedValue.supersetGroupId else { return String(localized: "Superset") }
+                guard let groupId = delegate.exercise.wrappedValue.supersetGroupId else { return String(localized: "Superset…") }
                 let count = delegate.allWorkoutExercises.filter { $0.supersetGroupId == groupId }.count
                 return count > 2 ? String(localized: "Remove Circuit") : String(localized: "Remove Superset")
             }()
@@ -273,8 +317,9 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                     Text("Done")
                         .frame(width: SetTrackerRowView.doneColumnWidth, alignment: .center)
                 }
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+                // No line limit and no shrinking: Caption 2 is already the 11 pt floor, so a
+                // heading too long for its column wraps instead.
+                .multilineTextAlignment(.center)
             }
         }
         .font(.caption2)

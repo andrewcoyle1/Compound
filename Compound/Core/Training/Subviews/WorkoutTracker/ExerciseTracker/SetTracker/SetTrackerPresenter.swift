@@ -73,11 +73,16 @@ class SetTrackerPresenter {
         router.showSetTargetView(delegate: SetTargetDelegate(exercise: adapted))
     }
 
-    /// Logged sets move to the replacement when it is measured the same way, so a swap mid-exercise
-    /// keeps what was done. When it is not, they cannot, and the person is asked before they go.
-    func onSwapPressed(_ exercise: Binding<WorkoutExerciseModel>) {
+    /// The live tracker passes `onSwap`, and the swap is its to make: the logged sets stay with the
+    /// exercise they were done on (`WorkoutTrackerPresenter.insertSwappedExercise`).
+    ///
+    /// Without it, as when a finished workout is corrected, the exercise is swapped in place. Logged
+    /// sets move to the replacement when it is measured the same way, so a swap keeps what was done.
+    /// When it is not, they cannot, and the person is asked before they go.
+    func onSwapPressed(_ exercise: Binding<WorkoutExerciseModel>, onSwap: (@MainActor (ExerciseModel) -> Void)? = nil) {
         router.showSwapExercisePickerView { [weak self] newExercise in
             guard let self else { return }
+            if let onSwap { return onSwap(newExercise) }
             let current = exercise.wrappedValue
             let hasLoggedSets = current.sets.contains { $0.completedAt != nil }
             let measuredAlike = current.trackingMode == WorkoutSessionModel.trackingMode(for: newExercise)
@@ -100,13 +105,14 @@ class SetTrackerPresenter {
         }
     }
 
-    /// The sets not yet logged are replaced by fresh ones, as many as there were open (three when
-    /// nothing was logged), so a swap leaves the workout the same length.
+    /// The sets not yet logged are replaced by fresh ones, as many working sets as there were open
+    /// (three when nothing was logged), so a swap leaves the workout the same length. An open
+    /// warm-up is not a working set and does not become one.
     func swap(_ exercise: Binding<WorkoutExerciseModel>, to newExercise: ExerciseModel, keepingLoggedSets: Bool) {
         guard let userId = interactor.userId else { return }
         let newMode = WorkoutSessionModel.trackingMode(for: newExercise)
         let logged = keepingLoggedSets ? exercise.wrappedValue.sets.filter { $0.completedAt != nil } : []
-        let openCount = exercise.wrappedValue.sets.filter { $0.completedAt == nil }.pairedSetCount
+        let openCount = exercise.wrappedValue.sets.filter { $0.completedAt == nil && !$0.isWarmup }.pairedSetCount
         let fresh = logged.isEmpty || openCount > 0
             ? WorkoutSessionModel.defaultSets(
                 trackingMode: newMode,
@@ -242,38 +248,37 @@ class SetTrackerPresenter {
         interactor.setWeightUnit(unit, for: templateId)
     }
 
+    /// Converts the sets not yet logged into `newUnit`, each to the nearest weight the gym's
+    /// equipment can make in it, and makes `newUnit` this exercise's unit. Logged sets are history
+    /// and keep what was lifted: 100 kg converted and rounded to 220 lb would be 99.79 kg.
     func convertAndRoundWeights(to newUnit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
-        for set in exercise.sets {
-            guard let weightKg = set.wrappedValue.weightKg else { continue }
-            let weightInNewUnit = UnitConversion.convertWeight(weightKg, to: newUnit)
-            let weightKgAsNewUnit = UnitConversion.convertWeightToKg(weightInNewUnit, from: newUnit)
-
-            let exerciseTemplate = interactor.allExercises.first(where: { $0.id == exercise.wrappedValue.templateId })
-            let roundedWeightKg = WorkoutSessionModel.roundWeightToEquipmentIncrement(
-                weightKg: weightKgAsNewUnit,
-                workoutExercise: exercise.wrappedValue,
-                exerciseTemplate: exerciseTemplate,
-                gymProfile: interactor.workoutGymProfile,
-                preferredWeightUnit: newUnit
-            )
-
-            let roundedWeightKgFinal: Double
-            if roundedWeightKg == weightKgAsNewUnit {
-                let roundedWeight: Double
-                if newUnit == .kilograms {
-                    roundedWeight = round(weightInNewUnit * 2) / 2.0
-                } else {
-                    roundedWeight = round(weightInNewUnit)
-                }
-                roundedWeightKgFinal = UnitConversion.convertWeightToKg(roundedWeight, from: newUnit)
-            } else {
-                roundedWeightKgFinal = roundedWeightKg
-            }
-
-            set.wrappedValue.weightKg = roundedWeightKgFinal
+        let step = WeightStepper.steps(for: exercise.wrappedValue, profile: interactor.workoutGymProfile, unit: newUnit)
+        for index in exercise.wrappedValue.sets.indices {
+            let set = exercise.wrappedValue.sets[index]
+            guard set.completedAt == nil, let weightKg = set.weightKg else { continue }
+            let rounded = Self.nearest(UnitConversion.convertWeight(weightKg, to: newUnit), on: step)
+            exercise.wrappedValue.sets[index].weightKg = UnitConversion.convertWeightToKg(rounded, from: newUnit)
         }
         interactor.setWeightUnit(newUnit, for: exercise.wrappedValue.templateId)
+    }
 
+    /// The weight on `step`'s grid closest to `value`, both in the step's unit. Bands carry no
+    /// weight, so a value is left as it is.
+    static func nearest(_ value: Double, on step: WeightStep) -> Double {
+        switch step.kind {
+        case let .increment(size, min, max):
+            let snapped = min + ((value - min) / size).rounded() * size
+            return Swift.min(Swift.max((snapped * 1000).rounded() / 1000, min), max ?? .infinity)
+        case .list(let weights):
+            return weights.min { abs($0 - value) < abs($1 - value) } ?? value
+        case .bands:
+            return value
+        }
+    }
+
+    /// The unit is a preference on the exercise, not on this workout, so the dialog says so.
+    static var unitChangeMessage: String {
+        String(localized: "This changes the unit for this exercise everywhere, including future workouts. Convert Values also converts the sets not yet logged.")
     }
 
     /// Shows a prompt asking whether to just change display unit or convert values
@@ -283,7 +288,7 @@ class SetTrackerPresenter {
 
         router.showConfirmationDialog(
             title: String(localized: "Change Weight Unit"),
-            subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
+            subtitle: Self.unitChangeMessage,
             buttons: {
                 AnyView(
                     VStack(spacing: Spacing.s) {
@@ -307,7 +312,7 @@ class SetTrackerPresenter {
 
         router.showConfirmationDialog(
             title: String(localized: "Change Distance Unit"),
-            subtitle: String(localized: "How would you like to change the unit for '\(exercise.wrappedValue.name)'?"),
+            subtitle: Self.unitChangeMessage,
             buttons: {
                 AnyView(
                     VStack(spacing: Spacing.s) {
@@ -324,10 +329,9 @@ class SetTrackerPresenter {
         )
     }
 
+    /// As `convertAndRoundWeights`: only the sets not yet logged change.
     func convertAndRoundDistances(to newUnit: ExerciseDistanceUnit, for exercise: Binding<WorkoutExerciseModel>) {
-//        let currentUnit = getUnitPreference(for: exercise.wrappedValue).distanceUnit
-
-        for set in exercise.sets {
+        for set in exercise.sets where set.wrappedValue.completedAt == nil {
             guard let distanceMeters = set.wrappedValue.distanceMeters else { continue }
             let distanceInNewUnit = UnitConversion.convertDistance(distanceMeters, to: newUnit)
             let roundedDistance: Double

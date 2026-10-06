@@ -76,7 +76,8 @@ struct SetKeyboardTextField: UIViewRepresentable {
         textField.font = .preferredFont(forTextStyle: .body)
         textField.adjustsFontForContentSizeCategory = true
         textField.adjustsFontSizeToFitWidth = true
-        textField.minimumFontSize = 9
+        // The HIG's 11 pt floor: "102.5" in a 70 pt field used to shrink to 9 pt.
+        textField.minimumFontSize = 11
         textField.placeholder = "-"
         textField.inputView = inputHost.view(for: presenter)
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)

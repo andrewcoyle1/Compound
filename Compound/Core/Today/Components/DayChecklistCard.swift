@@ -13,7 +13,7 @@ struct DayChecklistCard: View {
     let checklist: TodayChecklist
     let stepGoal: Int
     let onItemPressed: (TodayChecklist.Kind) -> Void
-    let onStepGoalSelected: (Int) -> Void
+    let onStepGoalSelected: @MainActor @Sendable (Int) -> Void
 
     var body: some View {
         Section {

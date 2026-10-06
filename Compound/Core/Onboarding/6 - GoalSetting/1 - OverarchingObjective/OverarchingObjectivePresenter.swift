@@ -14,6 +14,8 @@ class OverarchingObjectivePresenter {
     private let router: OverarchingObjectiveRouter
 
     let isStandaloneMode: Bool
+    /// The goal being edited; nil when setting one. Its figures start every step of the flow.
+    let editingGoal: WeightGoal?
     
     var selectedObjective: OverarchingObjective?
         
@@ -32,11 +34,14 @@ class OverarchingObjectivePresenter {
     init(
         interactor: OverarchingObjectiveInteractor,
         router: OverarchingObjectiveRouter,
-        isStandaloneMode: Bool = false
+        isStandaloneMode: Bool = false,
+        editingGoal: WeightGoal? = nil
     ) {
         self.interactor = interactor
         self.router = router
         self.isStandaloneMode = isStandaloneMode
+        self.editingGoal = editingGoal
+        self.selectedObjective = editingGoal?.objective
     }
 
     func onViewAppear() {
@@ -59,12 +64,13 @@ class OverarchingObjectivePresenter {
                 overarchingObjective: objective,
                 targetWeight: currentWeight,
                 weightChangeRate: 0,
-                isStandaloneMode: isStandaloneMode
+                isStandaloneMode: isStandaloneMode,
+                editingGoal: editingGoal
             )
             interactor.trackEvent(event: Event.navigate)
             router.showGoalSummaryView(delegate: delegate)
         } else {
-            let delegate = TargetWeightDelegate(overarchingObjective: objective, isStandaloneMode: isStandaloneMode)
+            let delegate = TargetWeightDelegate(overarchingObjective: objective, isStandaloneMode: isStandaloneMode, editingGoal: editingGoal)
             interactor.trackEvent(event: Event.navigate)
             router.showTargetWeightView(delegate: delegate)
         }

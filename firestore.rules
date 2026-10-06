@@ -82,10 +82,11 @@ service cloud.firestore {
       match /goals/{goal_id} {
         allow read: if isAuthed() && request.auth.uid == user_id;
         allow create: if isAuthed() && request.auth.uid == user_id && request.resource.data.user_id == user_id;
+        // A goal's objective, target and weekly rate can be edited; where it started cannot. A fresh
+        // start is a new goal document, and the old one is marked abandoned.
         allow update: if isAuthed() && request.auth.uid == user_id && resource.data.user_id == user_id
                       && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-                          'goal_id', 'user_id', 'starting_weight_kg', 'target_weight_kg',
-                          'weekly_change_kg', 'objective', 'created_at'
+                          'goal_id', 'user_id', 'starting_weight_kg', 'created_at'
                       ]);
         allow delete: if isAuthed() && request.auth.uid == user_id && resource.data.user_id == user_id;
       }

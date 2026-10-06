@@ -48,7 +48,20 @@ class GoalProgressPresenter {
     }
 
     func onSetGoalPressed() {
-        router.showWeightGoalFlow()
+        router.showWeightGoalFlow(editing: nil)
+    }
+
+    /// Edit the running goal or start a new one.
+    func onChangeGoalPressed() {
+        guard let goal = activeGoal, goal.status == .active else {
+            router.showWeightGoalFlow(editing: nil)
+            return
+        }
+        WeightGoalChoices.show(
+            on: router,
+            onEdit: { [weak self] in self?.router.showWeightGoalFlow(editing: goal) },
+            onStartNew: { [weak self] in self?.router.showWeightGoalFlow(editing: nil) }
+        )
     }
 }
 

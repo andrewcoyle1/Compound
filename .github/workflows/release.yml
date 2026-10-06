@@ -172,7 +172,9 @@ jobs:
 
       # The auth step points GOOGLE_APPLICATION_CREDENTIALS at a short-lived credential, which
       # firebase-tools picks up. Unchanged functions are skipped, so a release that touches none
-      # of them deploys nothing.
+      # of them deploys nothing. The Firestore rules go out with them: the app shipping with this
+      # release reads collections only these rules open, and leaving them to a hand deploy left
+      # prod nine days behind main (coach chats and Strava imports unreadable).
       - name: Deploy
         working-directory: .
-        run: npx --yes firebase-tools@15.17.0 deploy --only functions --project dialed-c3cb5 --non-interactive
+        run: npx --yes firebase-tools@15.17.0 deploy --only functions,firestore:rules --project dialed-c3cb5 --non-interactive

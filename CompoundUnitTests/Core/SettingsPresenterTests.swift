@@ -46,7 +46,11 @@ struct SettingsPresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         private(set) var shown: [String] = []
 
-        func showWeightGoalFlow() { shown.append("weightGoal") }
+        private(set) var editedGoals: [WeightGoal?] = []
+        func showWeightGoalFlow(editing: WeightGoal?) {
+            shown.append("weightGoal")
+            editedGoals.append(editing)
+        }
         func switchToOnboardingModule() { shown.append("onboarding") }
         func showAuthView() { shown.append("auth") }
         func showDeleteAccountView() { shown.append("deleteAccount") }
@@ -69,6 +73,7 @@ struct SettingsPresenterTests {
         func showPreferredDietView(isFromSettings: Bool) { shown.append("preferredDiet-\(isFromSettings)") }
         func showShareSheet(items: [Any]) { shown.append("share: \(items.first as? String ?? "")") }
         func showSimpleAlert(title: String, subtitle: String?) { shown.append("alert: \(title)") }
+        func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { shown.append("dialog: \(title)") }
     }
 
     private struct Screen {
@@ -315,5 +320,21 @@ struct SettingsPresenterTests {
 
         #expect(screen.router.shown == ["deleteAccount"])
                 #expect(screen.interactor.trackedEventNames == ["Settings_DeleteAccount_Start"])
+    }
+
+    // MARK: - Weight goal
+
+    /// No goal: straight into setting one. A goal running: the choice to edit it or start fresh.
+    @Test("Test The Weight Goal Row Sets One Or Offers Edit And A Fresh Start")
+    func testWeightGoalRow() {
+        let none = makeScreen()
+        none.presenter.onWeightGoalPressed()
+        #expect(none.router.shown == ["weightGoal"])
+        #expect(none.router.editedGoals.first == .some(nil))
+
+        let running = makeScreen()
+        running.interactor.currentGoal = WeightGoal(userId: "user-1", objective: .loseWeight, startingWeightKg: 80.6, targetWeightKg: 75, weeklyChangeKg: 0.5)
+        running.presenter.onWeightGoalPressed()
+        #expect(running.router.shown == ["dialog: Weight Goal"])
     }
 }

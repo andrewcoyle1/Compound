@@ -9,8 +9,10 @@ import Foundation
 
 struct WeightGoal: DataSyncModelProtocol, Equatable {
     
-    var id: String { userId }
-    
+    /// The goal's own document. Goals are frozen once written (`firestore.rules` refuses changes to
+    /// their figures), so a new goal is a new document and the user's `currentGoalId` points at it.
+    /// Goals saved before this had one fixed document named after the user, and decode with that id.
+    let id: String
     let userId: String
     let objective: OverarchingObjective
     let startingWeightKg: Double
@@ -28,8 +30,10 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
         weeklyChangeKg: Double,
         createdAt: Date = Date(),
         status: GoalStatus = .active,
-        completedAt: Date? = nil
+        completedAt: Date? = nil,
+        id: String? = nil
     ) {
+        self.id = id ?? userId
         self.userId = userId
         self.objective = objective
         self.startingWeightKg = startingWeightKg
@@ -57,6 +61,7 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
     }
     
     enum CodingKeys: String, CodingKey {
+        case id = "goal_id"
         case userId = "user_id"
         case objective
         case startingWeightKg = "starting_weight_kg"
@@ -67,6 +72,19 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
         case completedAt = "completed_at"
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        userId = try container.decode(String.self, forKey: .userId)
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? userId
+        objective = try container.decode(OverarchingObjective.self, forKey: .objective)
+        startingWeightKg = try container.decode(Double.self, forKey: .startingWeightKg)
+        targetWeightKg = try container.decode(Double.self, forKey: .targetWeightKg)
+        weeklyChangeKg = try container.decode(Double.self, forKey: .weeklyChangeKg)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        status = try container.decode(GoalStatus.self, forKey: .status)
+        completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
+    }
+
     // MARK: - Computed Properties
     
     var isLosing: Bool {

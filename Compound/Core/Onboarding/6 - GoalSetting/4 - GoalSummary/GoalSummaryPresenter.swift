@@ -72,6 +72,20 @@ class GoalSummaryPresenter {
         }
 
         do {
+            if delegate.editingGoal != nil {
+                // Editing keeps where the goal started; only what it aims for changes.
+                let edited = try await interactor.updateGoal(
+                    objective: delegate.overarchingObjective,
+                    targetWeightKg: delegate.targetWeight,
+                    weeklyChangeKg: delegate.weightChangeRate
+                )
+                await applyToDietPlan(edited)
+                goalCreated = true
+                interactor.trackEvent(event: Event.goalSaveSuccess)
+                interactor.playHaptic(option: .success)
+                onSuccess()
+                return
+            }
             // Create goal in subcollection with frozen starting weight
             let goal = WeightGoal(
                 userId: user.userId,
@@ -79,11 +93,14 @@ class GoalSummaryPresenter {
                 startingWeightKg: startingWeight,
                 targetWeightKg: delegate.targetWeight,
                 weeklyChangeKg: delegate.weightChangeRate,
+                // Its own document: a written goal cannot be changed, only replaced.
+                id: UUID().uuidString
             )
             try await interactor.saveGoal(goal)
 
             // Update user's currentGoalId reference
             try await interactor.updateCurrentGoalId(goalId: goal.id)
+            await applyToDietPlan(goal)
 
             goalCreated = true
             interactor.trackEvent(event: Event.goalSaveSuccess)
@@ -100,6 +117,17 @@ class GoalSummaryPresenter {
         }
     }
     
+    /// The goal sets the calorie target from now, not from the next check-in. A failure leaves the
+    /// goal saved and the old targets in place, which the next check-in corrects; it is logged
+    /// rather than shown, since the goal itself did save.
+    private func applyToDietPlan(_ goal: WeightGoal) async {
+        do {
+            try await interactor.applyGoalToDietPlan(goal)
+        } catch {
+            interactor.trackEvent(event: Event.applyToDietPlanFail(error: error))
+        }
+    }
+
     // MARK: Handle Navigation
     func handleNavigation() {
         // Navigate based on user's inferred onboarding step
@@ -203,6 +231,7 @@ class GoalSummaryPresenter {
         case goalSaveStart
         case goalSaveSuccess
         case goalSaveFail(error: Error)
+        case applyToDietPlanFail(error: Error)
         case navigate
 
         var eventName: String {
@@ -212,6 +241,7 @@ class GoalSummaryPresenter {
             case .goalSaveStart:    return "Onboarding_Goal_Save_Start"
             case .goalSaveSuccess:  return "Onboarding_Goal_Save_Success"
             case .goalSaveFail:     return "Onboarding_Goal_Save_Fail"
+            case .applyToDietPlanFail: return "Onboarding_Goal_ApplyToDietPlan_Fail"
             case .navigate:         return "Onboarding_Goal_Navigation"
             }
         }
@@ -220,7 +250,7 @@ class GoalSummaryPresenter {
             switch self {
             case .onAppear(let isOnboarding), .onDisappear(let isOnboarding):
                 return ["is_onboarding": isOnboarding]
-            case let .goalSaveFail(error):
+            case let .goalSaveFail(error), let .applyToDietPlanFail(error):
                 return error.eventParameters
             default:
                 return nil
@@ -229,7 +259,7 @@ class GoalSummaryPresenter {
         
         var type: LogType {
             switch self {
-            case .goalSaveFail:
+            case .goalSaveFail, .applyToDietPlanFail:
                 return .severe
             case .navigate:
                 return .info

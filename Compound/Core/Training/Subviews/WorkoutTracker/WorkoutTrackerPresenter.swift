@@ -98,7 +98,9 @@ class WorkoutTrackerPresenter {
     /// Set once this screen has left — finished, discarded, or told the workout ended elsewhere.
     /// A write after that would put an ended session back as the active one.
     var isDone = false
-    
+    /// The save waiting out its debounce and the edit waiting to propagate. See `+Persistence`.
+    @ObservationIgnored var savePath = WorkoutSavePath()
+
     var favouriteGymProfile: GymProfileModel? {
         interactor.favouriteGymProfile
     }

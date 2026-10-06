@@ -4,7 +4,7 @@
 //
 //  Split out of WorkoutTrackerPresenter.swift to keep it under the type-body and file-length
 //  limits, so later work adds its logic here rather than in the main file. Reacting to an edited
-//  or logged set: propagating edits to sibling sets and moving focus once an exercise is done.
+//  or logged set: committing edits to sibling sets and moving focus once an exercise is done.
 //
 
 import SwiftUI
@@ -12,21 +12,26 @@ import SwiftUI
 extension WorkoutTrackerPresenter {
 
     func updateSet(_ updatedSet: WorkoutSetModel, in exerciseId: String) {
+        // An edit still being typed into another set is over. This set keeps what the caller
+        // passed, which is what the user was looking at when they acted.
+        commitPendingEdit(sparing: updatedSet.id)
         guard let exerciseIndex = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }),
               let setIndex = workoutSession.exercises[exerciseIndex].sets.firstIndex(where: { $0.id == updatedSet.id }) else {
             return
         }
         let exerciseBefore = workoutSession.exercises[exerciseIndex]
         let wasExerciseCompleteBefore = isComplete(exerciseBefore)
+        let isLogged = exerciseBefore.sets[setIndex].completedAt == nil && updatedSet.completedAt != nil
 
         var updatedExercises = workoutSession.exercises
         updatedExercises[exerciseIndex].sets[setIndex] = updatedSet
-        propagateChanges(
-            of: updatedSet,
-            replacing: exerciseBefore.sets[setIndex],
-            at: setIndex,
-            in: &updatedExercises[exerciseIndex].sets
-        )
+        if interactor.workoutSettings.propagateChanges {
+            updatedExercises[exerciseIndex].sets = ActiveWorkout.propagate(
+                edit: updatedSet,
+                original: exerciseBefore.sets[setIndex],
+                in: updatedExercises[exerciseIndex].sets
+            )
+        }
 
         let isExerciseCompleteNow = isComplete(updatedExercises[exerciseIndex])
         isProcessingUpdateSet = true
@@ -35,10 +40,12 @@ extension WorkoutTrackerPresenter {
 
         if !wasExerciseCompleteBefore && isExerciseCompleteNow {
             advanceAfterExerciseCompletion(exerciseIndex: exerciseIndex, in: updatedExercises)
-        } else if exerciseBefore.sets[setIndex].completedAt == nil, updatedSet.completedAt != nil {
+        } else if isLogged {
             advanceWithinSuperset(exerciseIndex: exerciseIndex, in: updatedExercises)
         }
 
+        // A logged set is the one change worth not waiting for.
+        if isLogged { flushSave() }
         refreshLiveActivity()
     }
 
@@ -47,36 +54,6 @@ extension WorkoutTrackerPresenter {
     /// Not private: `WorkoutTrackerPresenter+Superset` skips partners that are already finished.
     func isComplete(_ exercise: WorkoutExerciseModel) -> Bool {
         !exercise.sets.isEmpty && exercise.sets.allSatisfy { $0.completedAt != nil }
-    }
-
-    /// Copies a weight/reps edit onto sibling sets that still hold the previous values, when
-    /// the propagate-changes setting is on.
-    ///
-    /// Kept within a side: typing a heavier weight on the left arm must not quietly move the right
-    /// arm's sets too, because the two limbs are not equally strong and that is why they are
-    /// logged apart.
-    func propagateChanges(
-        of updatedSet: WorkoutSetModel,
-        replacing original: WorkoutSetModel,
-        at setIndex: Int,
-        in sets: inout [WorkoutSetModel]
-    ) {
-        guard interactor.workoutSettings.propagateChanges, updatedSet.completedAt == nil else { return }
-
-        let weightChanged = original.weightKg != updatedSet.weightKg
-        let repsChanged = original.reps != updatedSet.reps
-        guard weightChanged || repsChanged else { return }
-
-        for index in sets.indices where index != setIndex {
-            var sibling = sets[index]
-            guard sibling.side == updatedSet.side,
-                  sibling.completedAt == nil,
-                  sibling.weightKg == original.weightKg,
-                  sibling.reps == original.reps else { continue }
-            if weightChanged { sibling.weightKg = updatedSet.weightKg }
-            if repsChanged { sibling.reps = updatedSet.reps }
-            sets[index] = sibling
-        }
     }
 
     /// Moves focus to the next exercise with sets left once every set in `exerciseIndex` is
@@ -95,7 +72,7 @@ extension WorkoutTrackerPresenter {
 
     func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
-        propagateEdit(comparedTo: oldSession)
+        notePendingEdit(comparedTo: oldSession)
         cancelRestIfUndone(comparedTo: oldSession)
         guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
 
@@ -115,38 +92,59 @@ extension WorkoutTrackerPresenter {
         refreshLiveActivity()
     }
 
-    /// The set rows write straight into `workoutSession` through their bindings, so a typed weight
-    /// or reps arrives here rather than through `updateSet`. Carries it onto the sibling sets the
-    /// same way `updateSet` does.
+    /// The set rows write straight into `workoutSession` through their bindings, a keystroke at a
+    /// time, so a typed weight or reps arrives here rather than through `updateSet`. A keystroke
+    /// only notes which set is being edited and what it held before the first key; the edit is
+    /// carried onto its siblings once it is over (`commitPendingEdit`). Carrying it per key matched
+    /// siblings against whatever had been typed so far, and rewrote a back-off set that happened
+    /// to equal it.
     ///
     /// Only when exactly one set's weight or reps changed: that is what a user's edit looks like.
     /// A change to several at once is the screen's own (a progression re-suggestion, an adopted
     /// save) and is not the user's to copy.
-    func propagateEdit(comparedTo oldSession: WorkoutSessionModel) {
+    func notePendingEdit(comparedTo oldSession: WorkoutSessionModel) {
         guard interactor.workoutSettings.propagateChanges else { return }
 
-        var edits: [(exerciseIndex: Int, original: WorkoutSetModel)] = []
-        for (exerciseIndex, exercise) in workoutSession.exercises.enumerated() {
+        var originals: [WorkoutSetModel] = []
+        for exercise in workoutSession.exercises {
             guard let oldExercise = oldSession.exercises.first(where: { $0.id == exercise.id }) else { continue }
             for set in exercise.sets {
                 guard let original = oldExercise.sets.first(where: { $0.id == set.id }),
                       original.weightKg != set.weightKg || original.reps != set.reps else { continue }
-                edits.append((exerciseIndex, original))
+                originals.append(original)
             }
         }
-        guard edits.count == 1, let edit = edits.first,
-              let setIndex = workoutSession.exercises[edit.exerciseIndex].sets.firstIndex(where: { $0.id == edit.original.id })
+        guard originals.count == 1, let original = originals.first else { return }
+        // Still the same set: keep what it held before its first key.
+        guard savePath.pendingEdit?.id != original.id else { return }
+
+        commitPendingEdit(sparing: original.id)
+        savePath.pendingEdit = original
+    }
+
+    /// Carries the edit being typed onto its siblings (`ActiveWorkout.propagate`). Called when the
+    /// edit is over: another set is edited, a set is logged, the keyboard hides, or the session is
+    /// flushed.
+    ///
+    /// `sparedSetId` is a set the caller is writing itself, which keeps the value the user sees in
+    /// it rather than taking the committed one.
+    func commitPendingEdit(sparing sparedSetId: String? = nil) {
+        guard let original = savePath.pendingEdit else { return }
+        savePath.pendingEdit = nil
+        guard interactor.workoutSettings.propagateChanges,
+              let exerciseIndex = workoutSession.exercises.firstIndex(where: { $0.sets.contains { $0.id == original.id } })
         else { return }
 
-        var updatedExercises = workoutSession.exercises
-        propagateChanges(
-            of: updatedExercises[edit.exerciseIndex].sets[setIndex],
-            replacing: edit.original,
-            at: setIndex,
-            in: &updatedExercises[edit.exerciseIndex].sets
-        )
-        guard updatedExercises != workoutSession.exercises else { return }
+        let sets = workoutSession.exercises[exerciseIndex].sets
+        guard let edit = sets.first(where: { $0.id == original.id }) else { return }
+        var propagated = ActiveWorkout.propagate(edit: edit, original: original, in: sets)
+        if let spared = sets.firstIndex(where: { $0.id == sparedSetId }) {
+            propagated[spared] = sets[spared]
+        }
+        guard propagated != sets else { return }
 
+        var updatedExercises = workoutSession.exercises
+        updatedExercises[exerciseIndex].sets = propagated
         isProcessingUpdateSet = true
         workoutSession.updateExercises(updatedExercises)
         isProcessingUpdateSet = false

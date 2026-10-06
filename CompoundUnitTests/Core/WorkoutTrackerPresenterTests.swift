@@ -588,7 +588,7 @@ struct WorkoutTrackerPresenterTests {
         #expect(screen.presenter.workoutSession == saved)
     }
 
-    /// The screen's own `updateSet` reaches the manager through `didSet`, and the observation can
+    /// The screen's own write reaches the manager through `flushSave`, and the observation can
     /// fire before it returns. Whatever it reports then is not adopted: adopting it would fight the
     /// edit the user is making.
     @Test("Test A Session Arriving Mid-Update Is Not Adopted")
@@ -615,6 +615,7 @@ struct WorkoutTrackerPresenterTests {
         var edited = own
         edited.reps = 12
         screen.presenter.updateSet(edited, in: "e1")
+        screen.presenter.flushSave()
 
         let sets = try #require(screen.presenter.workoutSession.exercises.first).sets
         #expect(sets[0].reps == 12)
@@ -624,14 +625,15 @@ struct WorkoutTrackerPresenterTests {
 
     // MARK: - Persistence
 
-    /// Every change to the session is written through, so closing the app mid-workout loses
-    /// nothing.
+    /// Every change to the session is written, after the debounce or at the next flush, so closing
+    /// the app mid-workout loses nothing.
     @Test("Test Changing The Session Saves It")
     func testChangingTheSessionSavesIt() throws {
         let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])])
         let before = screen.interactor.savedActiveSessions.count
 
         screen.presenter.updateExerciseNotes("Felt heavy", exerciseId: "e1")
+        screen.presenter.flushSave()
 
         #expect(screen.interactor.savedActiveSessions.count > before)
     }
@@ -665,6 +667,7 @@ extension WorkoutTrackerPresenterTests {
         )
 
         screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+        screen.presenter.flushSave()
 
         #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
         #expect(screen.interactor.activeSession?.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
@@ -691,6 +694,7 @@ extension WorkoutTrackerPresenterTests {
         )
 
         screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+        screen.presenter.flushSave()
 
         #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 80])
     }

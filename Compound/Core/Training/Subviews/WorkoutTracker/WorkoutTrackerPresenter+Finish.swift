@@ -81,6 +81,9 @@ extension WorkoutTrackerPresenter {
         #if !targetEnvironment(macCatalyst)
         workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         #endif
+        // Written before `isDone` stops further writes, so a save that fails below leaves the
+        // finished session, with its last edit, for Training to resume.
+        flushSave()
         isDone = true
         UIApplication.shared.isIdleTimerDisabled = false
 
@@ -88,6 +91,10 @@ extension WorkoutTrackerPresenter {
         // The session detail is the summary, pushed as the tracker's last page; its Done closes
         // the cover.
         router.showWorkoutSummary(session: sessionSnapshot)
+        // At the moment the person sees the workout finish, not when the save lands behind the
+        // summary. A failed save answers with `.error`; a retried one that works plays this again,
+        // with the "Workout saved." toast as its visible cause.
+        interactor.playHaptic(option: .success)
         // `self` is captured strongly on purpose. Done can close the cover before the save lands,
         // and then the view no longer holds the presenter; a weak capture would drop the save on
         // the floor exactly when it matters. The cycle breaks when the task returns.
@@ -119,10 +126,9 @@ extension WorkoutTrackerPresenter {
         switch await interactor.finishWorkout(session) {
         case .saved:
             interactor.trackEvent(event: Event.finishWorkoutSuccess)
-            interactor.playHaptic(option: .success)
         case .failedPermanently:
             interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
-            interactor.showAppToast(SaveToast.failed)
+            showSaveFailed()
         case .failedTransiently:
             await retrySave(session)
         }
@@ -182,7 +188,7 @@ extension WorkoutTrackerPresenter {
                 return
             case .failedPermanently:
                 interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
-                interactor.showAppToast(SaveToast.failed)
+                showSaveFailed()
                 return
             case .failedTransiently:
                 attempt += 1
@@ -190,6 +196,11 @@ extension WorkoutTrackerPresenter {
         }
 
         interactor.trackEvent(event: Event.finishWorkoutFail(reason: .retriesExhausted))
+        showSaveFailed()
+    }
+
+    private func showSaveFailed() {
+        interactor.playHaptic(option: .error)
         interactor.showAppToast(SaveToast.failed)
     }
 }

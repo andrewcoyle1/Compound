@@ -208,6 +208,24 @@ struct SetKeyboardPresenterTests {
         #expect(offers == 0)
     }
 
+    /// The set binding reads its set by index, so a keyboard that kept it after an earlier set was
+    /// deleted would read past the end of the array (perf audit #8). Closing lets go of it.
+    @Test func closeLetsGoOfTheSet() {
+        let box = set(weightKg: 60, reps: 8)
+        box.value.rpe = 8
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(keyboard.selectedRPE == 8)
+
+        keyboard.close()
+        keyboard.stepUp()
+        keyboard.toggleRPE(9)
+
+        #expect(keyboard.selectedRPE == nil)
+        #expect(box.value.weightKg == 60)
+        #expect(box.value.rpe == 8)
+    }
+
     // MARK: - Stepper, chips, plates
 
     @Test func stepperMovesByTheEquipmentStep() {
@@ -231,7 +249,9 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.weightKg == nil)
         keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "Light")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
         keyboard.stepDown()
+        keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "Heavy")
     }
 

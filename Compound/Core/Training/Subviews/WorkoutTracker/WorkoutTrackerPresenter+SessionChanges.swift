@@ -20,7 +20,6 @@ extension WorkoutTrackerPresenter {
             return
         }
         let exerciseBefore = workoutSession.exercises[exerciseIndex]
-        let wasExerciseCompleteBefore = isComplete(exerciseBefore)
         let isLogged = exerciseBefore.sets[setIndex].completedAt == nil && updatedSet.completedAt != nil
 
         var updatedExercises = workoutSession.exercises
@@ -33,16 +32,11 @@ extension WorkoutTrackerPresenter {
             )
         }
 
-        let isExerciseCompleteNow = isComplete(updatedExercises[exerciseIndex])
         isProcessingUpdateSet = true
         workoutSession.updateExercises(updatedExercises)
         isProcessingUpdateSet = false
 
-        if !wasExerciseCompleteBefore && isExerciseCompleteNow {
-            advanceAfterExerciseCompletion(exerciseIndex: exerciseIndex, in: updatedExercises)
-        } else if isLogged {
-            advanceWithinSuperset(exerciseIndex: exerciseIndex, in: updatedExercises)
-        }
+        if isLogged { moveFocus(afterLogging: updatedSet.id) }
 
         // A logged set is the one change worth not waiting for.
         if isLogged { flushSave() }
@@ -50,44 +44,19 @@ extension WorkoutTrackerPresenter {
     }
 
     /// True when the exercise has sets and every one of them is logged.
-    ///
-    /// Not private: `WorkoutTrackerPresenter+Superset` skips partners that are already finished.
     func isComplete(_ exercise: WorkoutExerciseModel) -> Bool {
         !exercise.sets.isEmpty && exercise.sets.allSatisfy { $0.completedAt != nil }
-    }
-
-    /// Moves focus to the next exercise with sets left once every set in `exerciseIndex` is
-    /// logged, as the log button's Next does: one finished earlier is skipped. Shared by
-    /// `updateSet` and `handleWorkoutSessionChange`, which both used to inline it.
-    func advanceAfterExerciseCompletion(exerciseIndex: Int, in exercises: [WorkoutExerciseModel]) {
-        let nextIndex = exercises.indices.first { $0 > exerciseIndex && !isComplete(exercises[$0]) }
-
-        if let nextIndex, interactor.workoutSettings.exerciseAutoNext {
-            expandedExerciseId = exercises[nextIndex].id
-            currentExerciseIndex = nextIndex
-        } else if nextIndex == nil, expandedExerciseId == exercises[exerciseIndex].id {
-            expandedExerciseId = nil
-        }
     }
 
     func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
         notePendingEdit(comparedTo: oldSession)
         cancelRestIfUndone(comparedTo: oldSession)
-        guard let exerciseIndex = firstNewlyCompletedSetExerciseIndex(comparedTo: oldSession) else { return }
+        guard let setId = firstNewlyCompletedSetId(comparedTo: oldSession) else { return }
 
-        let exercise = workoutSession.exercises[exerciseIndex]
-        let wasExerciseCompleteBefore = oldSession.exercises
-            .first { $0.id == exercise.id }
-            .map(isComplete) ?? false
-
-        if !wasExerciseCompleteBefore && isComplete(exercise) {
-            advanceAfterExerciseCompletion(exerciseIndex: exerciseIndex, in: workoutSession.exercises)
-        } else {
-            // A set logged from the Live Activity or a widget intent lands here rather than in
-            // `updateSet`, and moves focus the same way.
-            advanceWithinSuperset(exerciseIndex: exerciseIndex, in: workoutSession.exercises)
-        }
+        // A set logged from the Live Activity or a widget intent lands here rather than in
+        // `updateSet`, and moves focus the same way.
+        moveFocus(afterLogging: setId)
 
         refreshLiveActivity()
     }
@@ -150,9 +119,9 @@ extension WorkoutTrackerPresenter {
         isProcessingUpdateSet = false
     }
 
-    /// The first exercise holding a set that flipped incomplete → complete relative to
-    /// `oldSession`, or nil when nothing was newly logged.
-    func firstNewlyCompletedSetExerciseIndex(comparedTo oldSession: WorkoutSessionModel) -> Int? {
+    /// The first set that flipped incomplete → complete relative to `oldSession`, or nil when
+    /// nothing was newly logged.
+    func firstNewlyCompletedSetId(comparedTo oldSession: WorkoutSessionModel) -> String? {
         var oldSets: [String: WorkoutSetModel] = [:]
         for exercise in oldSession.exercises {
             for set in exercise.sets {
@@ -160,10 +129,9 @@ extension WorkoutTrackerPresenter {
             }
         }
 
-        return workoutSession.exercises.firstIndex { exercise in
-            exercise.sets.contains { set in
-                oldSets[set.id]?.completedAt == nil && set.completedAt != nil
-            }
-        }
+        return workoutSession.exercises.lazy
+            .flatMap(\.sets)
+            .first { oldSets[$0.id]?.completedAt == nil && $0.completedAt != nil }?
+            .id
     }
 }

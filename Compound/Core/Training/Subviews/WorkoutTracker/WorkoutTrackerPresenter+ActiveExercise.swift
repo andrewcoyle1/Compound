@@ -251,13 +251,7 @@ extension WorkoutTrackerPresenter {
         updateSet(set, in: exerciseId)
 
         let settings = interactor.workoutSettings
-        let rest = RestDurationRules.restAfterCompleting(
-            set,
-            in: exercise,
-            settings: settings,
-            context: restContext(for: exercise),
-            customRestSeconds: custom ?? customRestSeconds[setId]
-        )
+        let rest = restAfterLogging(set, in: exercise, customRestSeconds: custom)
         interactor.trackEvent(event: SetTrackerRowPresenter.Event.setCompleted(
             setId: setId,
             exerciseId: exerciseId,
@@ -272,7 +266,7 @@ extension WorkoutTrackerPresenter {
         applyLiveProgression(after: set, in: exerciseId)
     }
 
-    private func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
+    func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
             exerciseTypeRawValue: interactor.allExercises.first { $0.id == exercise.templateId }?.type?.rawValue

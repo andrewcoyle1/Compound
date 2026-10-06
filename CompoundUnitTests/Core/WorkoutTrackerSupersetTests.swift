@@ -192,10 +192,11 @@ struct WorkoutTrackerSupersetTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
-    /// Finishing the exercise outright is the other rule's job, and it wins: the user is done
-    /// with this lift, so what happens next is auto-next's business, not this setting's.
-    @Test("Test Finishing A Superset Exercise Still Advances Normally")
-    func testFinishingASupersetExerciseStillAdvancesNormally() throws {
+    /// A member finished while its partner still has this round's set is not the superset
+    /// finished: the round goes on to the partner, whatever auto-next says. Auto-next is about
+    /// leaving the superset, not moving within it.
+    @Test("Test Finishing One Member Goes On To The Partner's Set In The Round")
+    func testFinishingOneMemberGoesOnToThePartner() throws {
         let screen = try makeScreen(
             exercises: [
                 exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
@@ -208,8 +209,49 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        // Auto-next is off, so nothing moves — the superset rule does not smuggle it back in.
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.expandedExerciseId == "e2")
+    }
+
+    // MARK: - The log button through a superset
+
+    /// T6: the log button alternates A, B, A, B; nothing rests between partners, and the round's
+    /// rest comes after B. The last round ends the workout, so it rests not at all.
+    @Test("Test The Log Button Alternates And Rests After The Round")
+    func testTheLogButtonAlternatesAndRestsAfterTheRound() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
+        ])
+        var logged: [String] = []
+        var rests: [[Int]] = []
+
+        for _ in 0..<4 {
+            guard case let .logSet(exerciseId, setId)? = screen.presenter.primaryAction else { break }
+            logged.append("\(exerciseId)/\(setId)")
+            screen.presenter.onPrimaryActionPressed()
+            rests.append(screen.interactor.startedRests)
+        }
+
+        #expect(logged == ["e1/e1-set-1", "e2/e2-set-1", "e1/e1-set-2", "e2/e2-set-2"])
+        #expect(rests == [[], [90], [90], [90]])
+        #expect(screen.presenter.primaryAction == .finish)
+    }
+
+    /// With a transition rest chosen, A1 earns it and B1 the round's rest.
+    @Test("Test A Transition Rest Runs Between Partners When Chosen")
+    func testATransitionRestRunsBetweenPartners() throws {
+        let screen = try makeScreen(
+            exercises: [
+                exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+                exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
+            ],
+            settings: { $0.supersetTransitionRestSeconds = 15 }
+        )
+
+        screen.presenter.onPrimaryActionPressed()
+        screen.presenter.onPrimaryActionPressed()
+
+        #expect(screen.interactor.startedRests == [15, 90])
     }
 
     /// Correcting the weight on a set already logged is not logging a set, and must not move the

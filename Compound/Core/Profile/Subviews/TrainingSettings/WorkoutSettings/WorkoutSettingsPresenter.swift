@@ -72,6 +72,18 @@ class WorkoutSettingsPresenter {
         set { settings.exerciseAutoNext = newValue; save() }
     }
 
+    /// Off, then the two short walks a partner can be from the bench.
+    let supersetTransitionRestOptions: [Int?] = [nil, 15, 30]
+
+    var supersetTransitionRestSeconds: Int? {
+        get { settings.supersetTransitionRestSeconds }
+        set { settings.supersetTransitionRestSeconds = newValue; save() }
+    }
+
+    func supersetTransitionRestTitle(_ seconds: Int?) -> String {
+        seconds.map { String(localized: "\($0) s") } ?? String(localized: "Off")
+    }
+
     // MARK: - Display Settings
 
     var keepAlive: Bool {

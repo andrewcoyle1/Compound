@@ -54,8 +54,12 @@ enum ActiveWorkout {
     struct Progress: Equatable {
         let doneWorkingSets: Int
         let totalWorkingSets: Int
+        /// Which block of how many: a superset counts once (`blocks(_:)`), so the count holds
+        /// still while its members alternate.
         let exerciseNumber: Int
         let exerciseCount: Int
+        /// The current block is a superset: the header reads "Superset 2 of 5".
+        var isSuperset = false
 
         var fraction: Double {
             totalWorkingSets == 0 ? 0 : Double(doneWorkingSets) / Double(totalWorkingSets)
@@ -66,11 +70,15 @@ enum ActiveWorkout {
     /// warm-ups look a third done before the first real set. A pair counts once, when both sides are.
     static func progress(of exercises: [WorkoutExerciseModel], currentIndex: Int) -> Progress {
         let working = exercises.map { $0.sets.filter { !$0.isWarmup } }
+        let blocks = blocks(exercises)
+        let current = exercises.isEmpty ? nil : exercises[min(max(currentIndex, 0), exercises.count - 1)].id
+        let blockIndex = blocks.firstIndex { $0.contains(current ?? "") }
         return Progress(
             doneWorkingSets: working.reduce(0) { $0 + $1.fullyCompletedPairedSetCount },
             totalWorkingSets: working.reduce(0) { $0 + $1.pairedSetCount },
-            exerciseNumber: exercises.isEmpty ? 0 : min(currentIndex, exercises.count - 1) + 1,
-            exerciseCount: exercises.count
+            exerciseNumber: blockIndex.map { $0 + 1 } ?? 0,
+            exerciseCount: blocks.count,
+            isSuperset: blockIndex.map { blocks[$0].count > 1 } ?? false
         )
     }
 
@@ -149,17 +157,26 @@ enum ActiveWorkout {
 
     // MARK: - Footer
 
-    /// Log the current exercise's next set; once it has none, move to the next exercise with sets
-    /// left, wrapping round to any skipped earlier; once nothing is left anywhere, finish.
+    /// Log the card's next set; once its block has none, move to the next block with sets left,
+    /// wrapping round to any skipped earlier; once nothing is left anywhere, finish.
+    ///
+    /// A superset is worked in rounds (A1, B1, A2, B2…, `nextSet(inBlock:)`). When the round's
+    /// next set belongs to a partner rather than the card, the button opens the partner, so it
+    /// never logs a set the card does not show.
     static func primaryAction(exercises: [WorkoutExerciseModel], currentExerciseId: String?) -> ActiveWorkoutAction? {
-        let currentIndex = exercises.firstIndex { $0.id == currentExerciseId }
-        if let currentIndex, let set = currentSet(in: exercises[currentIndex]) {
-            return .logSet(exerciseId: exercises[currentIndex].id, setId: set.id)
+        let blocks = blocks(exercises)
+        let blockIndex = blocks.firstIndex { $0.contains(currentExerciseId ?? "") }
+        if let blockIndex, let currentExerciseId {
+            let block = blocks[blockIndex]
+            let member = block.firstIndex(of: currentExerciseId) ?? 0
+            if let next = nextSet(inBlock: block, of: exercises, from: member) {
+                return next.exerciseId == currentExerciseId
+                    ? .logSet(exerciseId: next.exerciseId, setId: next.setId)
+                    : .next(exerciseId: next.exerciseId)
+            }
         }
-        let start = currentIndex.map { $0 + 1 } ?? 0
-        let order = exercises.indices.map { (start + $0) % max(exercises.count, 1) }
-        if let next = order.first(where: { currentSet(in: exercises[$0]) != nil }) {
-            return .next(exerciseId: exercises[next].id)
+        if let next = nextBlockExercise(after: blockIndex, in: blocks, of: exercises) {
+            return .next(exerciseId: next)
         }
         return exercises.contains { !$0.sets.isEmpty } ? .finish : nil
     }

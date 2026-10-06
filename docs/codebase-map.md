@@ -99,21 +99,21 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/Profile` | 185 | 12,248 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
 | `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 227 | 21,494 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Core/Training` | 227 | 21,497 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 70 | 6,601 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
 | `Compound/Managers` | 257 | 32,676 | App-owned managers, models and services (see Managers table) |
-| `Compound/Root` | 22 | 3,546 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `Compound/Root` | 22 | 3,551 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 14 | 957 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 318 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
-| `Shared` | 5 | 614 | Code compiled into both the app and the Live Activity extension |
-| `WorkoutSessionActivity` | 264 | 2,523 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 288 | 83,411 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
-| `CompoundUITests` | 9 | 763 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
-| `functions` | 20 | 23,292 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
+| `Shared` | 5 | 634 | Code compiled into both the app and the Live Activity extension |
+| `WorkoutSessionActivity` | 263 | 2,523 | Live Activity / Dynamic Island / home widget extension |
+| `CompoundUnitTests` | 288 | 83,453 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUITests` | 9 | 774 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
+| `functions` | 18 | 23,292 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 62 | 15,815 | Specs, reviews, audits, this map |
+| `docs` | 61 | 15,828 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -386,10 +386,10 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **WorkoutHistory** | [Subviews/WorkoutHistory](Compound/Core/Training/Subviews/WorkoutHistory) | 293 | WorkoutSessionDetail | WorkoutHistoryDelegate, `showWorkoutHistoryView` |  |  |
 | **WorkoutSessionDetail** | [Subviews/WorkoutSessionDetailView](Compound/Core/Training/Subviews/WorkoutSessionDetailView) | 1168 | ExercisesPicker, SessionDuration, SessionStartTime | WorkoutSessionDetailDelegate, `showSessionDurationView`, `showSessionStartTimeView`, `showWorkoutSessionDetailView`, `showWorkoutSessionThread` | WorkoutSessionTimingSheets.swift | WorkoutSessionDetailPresenterTests.swift |
 | **WorkoutTemplateDetail** | [Subviews/WorkoutTemplateDetail](Compound/Core/Training/Subviews/WorkoutTemplateDetail) | 510 | CreateWorkout, EditMesocycle, ExerciseModelDetail, ShareToFollower, WorkoutTracker | WorkoutTemplateDetailDelegate, `showDeleteConfirmation`, `showWorkoutTemplateDetailView` |  |  |
-| **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 2800 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | ActiveWorkoutState.swift, InlineRestTimerRow.swift, ProgressionNote.swift, StravaOffer.swift, WorkoutTrackerPresenter+ActiveExercise.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
+| **WorkoutTracker** | [Subviews/WorkoutTracker](Compound/Core/Training/Subviews/WorkoutTracker) | 2802 | ExercisesPicker, GymProfile, WorkoutNotes, WorkoutSettings, WorkoutSummary | `showWorkoutSummary`, `showWorkoutTrackerView` | ActiveWorkoutState.swift, InlineRestTimerRow.swift, ProgressionNote.swift, StravaOffer.swift, WorkoutTrackerPresenter+ActiveExercise.swift, WorkoutTrackerPresenter+Events.swift, WorkoutTrackerPresenter+Exercises.swift, WorkoutTrackerPresenter+Finish.swift, WorkoutTrackerPresenter+Notes.swift, WorkoutTrackerPresenter+Progression.swift, WorkoutTrackerPresenter+Rest.swift, WorkoutTrackerPresenter+Superset.swift | WorkoutTrackerPresenterProgressionTests.swift, WorkoutTrackerPresenterTests.swift |
 | **ExerciseTracker** | [Subviews/WorkoutTracker/ExerciseTracker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker) | 360 | WorkoutNotes | ExerciseTrackerDelegate |  |  |
 | **SetTracker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker) | 860 | ExerciseSettings, RestModal, SetTarget, SwapExercisePicker, WarmupSetInfoModal, WarmupSets, WorkoutExerciseEquipmentSheet | SetTrackerDelegate |  | SetTrackerPresenterTests.swift |
-| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 934 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
+| **SetTrackerRow** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow) | 935 | RestModal, WarmupSetInfoModal | SetTrackerRowDelegate, `showSetTrackerRowView` |  |  |
 | **SetKeyboard** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard) | 1041 |  |  | PlateCalculator.swift, SetKeyboardTextField.swift, WeightStepper.swift | SetKeyboardPresenterTests.swift |
 | **SwapExercisePicker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker) | 121 |  | `showSwapExercisePickerView` |  |  |
 | **WarmupSets** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets) | 180 |  | WarmupSetsDelegate, `showWarmupSetsView` |  |  |
@@ -648,7 +648,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`CompoundUnitTests/Utilities`** (4): `PrivacyManifestTests`, `RetryPolicyTests`, `UnitConversionTests`, `WeightTrendCalculatorTests`
 
-**`CompoundUnitTests/Widgets`** (1): `WidgetSnapshotTests`
+**`CompoundUnitTests/Widgets`** (2): `SharedWorkoutStorageMigrationTests`, `WidgetSnapshotTests`
 
 **`CompoundUITests`**: `CreateExerciseUITests`, `CreateMesocycleUITests`, `CreateWorkoutUITests`, `EditWorkoutSessionUITests`, `OnboardingUITests`, `ScreenDeckSmokeTests+Screens`, `ScreenDeckSmokeTests`, `UITestApp`, `WorkoutTrackerUITests`
 
@@ -717,7 +717,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [docs/specs/workout-tracker/input.md](docs/specs/workout-tracker/input.md) | 401 |
 | [docs/specs/workout-tracker/learn-decide.md](docs/specs/workout-tracker/learn-decide.md) | 500 |
 | [docs/specs/workout-tracker/perf.md](docs/specs/workout-tracker/perf.md) | 336 |
-| [docs/specs/workout-tracker/plan.md](docs/specs/workout-tracker/plan.md) | 271 |
+| [docs/specs/workout-tracker/plan.md](docs/specs/workout-tracker/plan.md) | 272 |
 | [docs/specs/workout-tracker/product.md](docs/specs/workout-tracker/product.md) | 347 |
 | [docs/specs/workout-tracker/system.md](docs/specs/workout-tracker/system.md) | 340 |
 | [docs/specs/workout-tracker/uikit-motion.md](docs/specs/workout-tracker/uikit-motion.md) | 707 |

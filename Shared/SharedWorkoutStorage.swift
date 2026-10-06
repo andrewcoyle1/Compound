@@ -9,7 +9,7 @@ import Foundation
 
 /// Shared storage for workout data that needs to be accessed by both the main app and widget extension
 public struct SharedWorkoutStorage {
-    private static let appGroupIdentifier = "group.com.dialedin.app"
+    private static let appGroupIdentifier = "group.com.compound.app"
     private static let restEndTimeKey = "workout.rest.endTime"
     private static let hkStartedSessionIdKey = "workout.hk.started.sessionId"
     
@@ -64,5 +64,25 @@ public struct SharedWorkoutStorage {
     /// Clear the recorded HK started session id.
     public static func clearHKStartedSessionId() {
         hkStartedSessionId = nil
+    }
+
+    // MARK: - Legacy store
+
+    /// The suite earlier builds wrote to. The app was never granted it, so it is a store private
+    /// to the app, which is why only the app can migrate it.
+    static let legacyAppGroupIdentifier = "group.com.dialedin.app"
+
+    /// Moves the running rest and the started HealthKit session out of the store earlier builds
+    /// used, so an install that updates mid-workout neither loses its rest nor starts a second
+    /// HealthKit session. A value already in `current` wins. The legacy keys are removed either
+    /// way, so this does nothing on every launch after the first.
+    static func migrateLegacy(from legacy: UserDefaults, to current: UserDefaults) {
+        for key in [restEndTimeKey, hkStartedSessionIdKey] {
+            guard let value = legacy.object(forKey: key) else { continue }
+            if current.object(forKey: key) == nil {
+                current.set(value, forKey: key)
+            }
+            legacy.removeObject(forKey: key)
+        }
     }
 }

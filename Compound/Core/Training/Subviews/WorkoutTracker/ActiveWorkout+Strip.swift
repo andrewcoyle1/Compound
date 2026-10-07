@@ -15,7 +15,8 @@ extension ActiveWorkout {
         /// The block's first exercise, which a tap opens.
         let id: String
         let names: [String]
-        let imageName: String?
+        /// One per member, in the same order as `names`, drawn side by side for a superset.
+        let imageNames: [String?]
         /// "A", "B"… for supersets in workout order; `nil` for an exercise on its own.
         let supersetLetter: String?
         /// Working sets only, a left/right pair counted once, as the header counts them.
@@ -47,7 +48,7 @@ extension ActiveWorkout {
             return StripItem(
                 id: first.id,
                 names: members.map(\.name),
-                imageName: first.imageName,
+                imageNames: members.map(\.imageName),
                 supersetLetter: letter,
                 doneWorkingSets: working.reduce(0) { $0 + $1.fullyCompletedPairedSetCount },
                 totalWorkingSets: working.reduce(0) { $0 + $1.pairedSetCount },

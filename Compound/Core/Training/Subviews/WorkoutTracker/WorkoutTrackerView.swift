@@ -39,8 +39,11 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                         .removeListRowFormatting()
                     } else {
                         currentExerciseSection
-                        upNextSection
-                        completedSection
+                        // With the strip on, it is the map: only the selected block is on the card.
+                        if !presenter.showsExerciseStrip {
+                            upNextSection
+                            completedSection
+                        }
                     }
                     addExerciseSection
                 }

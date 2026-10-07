@@ -52,23 +52,22 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertTrue(logButton.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(logButton.label.hasPrefix("Log"), logButton.label)
 
-        // Back to the finished exercise, from the Completed list at the foot of the screen.
-        let finished = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Barbell Bench Press,'")).firstMatch
-        for _ in 0..<4 where !finished.isHittable { app.swipeUp() }
-        finished.tap()
-        for _ in 0..<4 { app.swipeDown() }
+        // Back to the finished exercise, from its thumbnail on the strip (the one button whose
+        // label is the bare name; the card's rows and menus all say more).
+        app.waitFor(app.buttons["Barbell Bench Press"]).tap()
+        XCTAssertTrue(logButton.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(logButton.label.hasPrefix("Next: Barbell Incline Bench Press"), logButton.label)
         attach(app, "3-exercise-complete")
 
-        // Two more exercises done, then the list of finished ones.
+        // Two more exercises done: the strip marks each one complete.
         // The mock exercises are a warm-up or two and one working set each.
         for _ in 0..<10 { takeNextStep(app) }
         if skipRest.exists { tapSlot(skipRest) }
-        for _ in 0..<4 { app.swipeUp() }
-        app.waitFor(app.staticTexts["Completed"].firstMatch)
+        let incline = app.buttons.matching(
+            NSPredicate(format: "label == 'Barbell Incline Bench Press' AND value BEGINSWITH '1 of 1'")
+        ).firstMatch
+        XCTAssertTrue(incline.waitForExistence(timeout: UITestApp.timeout))
         attach(app, "4-several-complete")
-        for _ in 0..<4 { app.swipeDown() }
-        attach(app, "5-several-complete-top")
     }
 
     /// The card and the rest row in dark mode at the largest accessibility text size (AX5).
@@ -232,8 +231,8 @@ final class WorkoutTrackerUITests: XCTestCase {
             // and rows scrolled under the top bars, the button's glass bar or the keypad's
             // window, measured against those rather than their own background.
             return "text on or under glass, or under the keypad"
-        case .dynamicType where ["Add Set", "Up Next"].contains(label),
-             .textClipped where ["Add Set", "1 warm-up", "Add 15 seconds"].contains(label):
+        case .dynamicType where ["Add Set", "Up Next", "Add Exercise"].contains(label),
+             .textClipped where ["Add Set", "1 warm-up", "Add 15 seconds", "Add Exercise"].contains(label):
             // Reported at the default size as "may be clipped" or "partially unsupported", and
             // drawn in full, unclipped, by the AX5 passes ("15-light-ax5-resting").
             return "drawn in full at AX5"
@@ -288,9 +287,10 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertEqual(openSets.count, openBefore - 1)
     }
 
-    /// Up Next's Reorder shows the drag handles, and Done puts them away.
+    /// Up Next's Reorder shows the drag handles, and Done puts them away. Up Next is on screen
+    /// only with the exercise strip off; on, the strip is the map.
     func testUpNextCanBeReordered() {
-        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER", arguments: ["UI_TEST_STRIP_OFF"])
         app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         let reorder = app.button("WorkoutTracker.reorderButton")

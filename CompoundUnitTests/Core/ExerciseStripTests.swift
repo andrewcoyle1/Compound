@@ -68,6 +68,7 @@ struct ExerciseStripTests {
 
         #expect(items.map(\.id) == ["a", "b", "d"])
         #expect(items[0].names == ["A", "C"])
+        #expect(items[0].imageNames.count == 2)
         #expect(items[0].supersetLetter == "A")
         #expect(items[0].isCurrent)
         #expect(items[0].doneWorkingSets == 1)

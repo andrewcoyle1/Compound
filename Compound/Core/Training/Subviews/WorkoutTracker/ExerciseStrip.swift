@@ -44,6 +44,9 @@ struct ExerciseStrip: View {
 
     let items: [ActiveWorkout.StripItem]
     let onSelect: (String) -> Void
+    /// Up Next's reordering, on the strip's items while the strip stands in for that list.
+    var onDoNext: (String) -> Void = { _ in }
+    var onDoLater: (String) -> Void = { _ in }
 
     @ScaledMetric(relativeTo: .body) private var side = ControlSize.thumbnail
 
@@ -60,6 +63,12 @@ struct ExerciseStrip: View {
                             thumbnail(item)
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            if !item.isCurrent && !item.isComplete {
+                                Button { onDoNext(item.id) } label: { Label("Do Next", systemImage: Symbol.doNext) }
+                                Button { onDoLater(item.id) } label: { Label("Do Later", systemImage: Symbol.doLater) }
+                            }
+                        }
                         .id(item.id)
                         .accessibilityLabel(item.names.formatted(.list(type: .and)))
                         .accessibilityValue(accessibilityValue(item))
@@ -83,28 +92,36 @@ struct ExerciseStrip: View {
         .accessibilityIdentifier("WorkoutTracker.exerciseStrip")
     }
 
+    /// A superset's members sit side by side under one ring and one progress bar: the strip
+    /// shows it as the one block it is on the card.
     private func thumbnail(_ item: ActiveWorkout.StripItem) -> some View {
-        VStack(spacing: Spacing.xs) {
-            image(item)
-                .frame(width: side, height: side)
-                .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
-                // The current block is ringed as well as tinted, so it is not marked by colour alone.
-                .overlay {
-                    if item.isCurrent {
-                        RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
-                            .strokeBorder(.tint, lineWidth: 2)
-                    }
+        let count = max(item.imageNames.count, 1)
+        let width = side * CGFloat(count) + Spacing.xxs * CGFloat(count - 1)
+        return VStack(spacing: Spacing.xs) {
+            HStack(spacing: Spacing.xxs) {
+                ForEach(Array(zip(item.names, item.imageNames).enumerated()), id: \.offset) { _, member in
+                    image(name: member.0, imageName: member.1)
+                        .frame(width: side, height: side)
                 }
-                .overlay(alignment: .topTrailing) {
-                    if let letter = item.supersetLetter {
-                        Text(letter)
-                            .chipStyle(tint: .superset, filled: true)
-                            .offset(x: Spacing.xs, y: -Spacing.xs)
-                    }
+            }
+            .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
+            // The current block is ringed as well as tinted, so it is not marked by colour alone.
+            .overlay {
+                if item.isCurrent {
+                    RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
+                        .strokeBorder(.tint, lineWidth: 2)
                 }
+            }
+            .overlay(alignment: .topTrailing) {
+                if let letter = item.supersetLetter {
+                    Text(letter)
+                        .chipStyle(tint: .superset, filled: true)
+                        .offset(x: Spacing.xs, y: -Spacing.xs)
+                }
+            }
             ProgressView(value: item.fraction)
                 .tint(item.isComplete ? Color.success : item.isCurrent ? Color.accentColor : Color.secondary)
-                .frame(width: side)
+                .frame(width: width)
         }
         .padding(.vertical, Spacing.xs)
         .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
@@ -112,9 +129,9 @@ struct ExerciseStrip: View {
     }
 
     @ViewBuilder
-    private func image(_ item: ActiveWorkout.StripItem) -> some View {
-        if let imageName = item.imageName, !imageName.isEmpty {
-            ExerciseImageView(name: item.names.first ?? "", imageName: imageName, resizingMode: .fit)
+    private func image(name: String, imageName: String?) -> some View {
+        if let imageName, !imageName.isEmpty {
+            ExerciseImageView(name: name, imageName: imageName, resizingMode: .fit)
         } else {
             Image(systemName: Symbol.exercise)
                 .iconSize(.medium)

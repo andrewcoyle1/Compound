@@ -186,6 +186,9 @@ extension WorkoutTrackerView {
                 presenter.presentAddExercise()
             } label: {
                 Label("Add Exercise", systemImage: Symbol.add)
+                    // A text style of its own: the audit credits Dynamic Type only to the text's
+                    // own font, and with the strip on this row is on screen for every audit pass.
+                    .font(.body)
             }
         }
     }

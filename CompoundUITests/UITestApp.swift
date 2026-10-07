@@ -13,9 +13,9 @@ enum UITestApp {
 
     static let timeout: TimeInterval = 10
 
-    static func launch(startScreen: String) -> XCUIApplication {
+    static func launch(startScreen: String, arguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING", "SIGNED_IN", startScreen]
+        app.launchArguments = ["UI_TESTING", "SIGNED_IN", startScreen] + arguments
         app.launch()
         return app
     }

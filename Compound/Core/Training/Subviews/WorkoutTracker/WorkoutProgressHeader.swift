@@ -22,7 +22,12 @@ struct WorkoutProgressHeader: View {
         let showsThumbnails = showsStrip && !dynamicTypeSize.isAccessibilitySize
         return VStack(spacing: Spacing.xs) {
             if showsThumbnails {
-                ExerciseStrip(items: presenter.stripItems, onSelect: presenter.onStripItemSelected)
+                ExerciseStrip(
+                    items: presenter.stripItems,
+                    onSelect: presenter.onStripItemSelected,
+                    onDoNext: presenter.onDoNextPressed,
+                    onDoLater: presenter.onDoLaterPressed
+                )
             }
             summary(showsBar: !showsThumbnails, blockMenu: showsStrip && !showsThumbnails)
         }
@@ -65,6 +70,9 @@ struct WorkoutProgressHeader: View {
         }
         .padding(.horizontal)
         .accessibilityElement(children: blockMenu ? .contain : .combine)
+        // A label, not a control: without the bar it is a 14 pt line, which the audit otherwise
+        // reads as a hit area too small to tap.
+        .accessibilityRespondsToUserInteraction(blockMenu)
     }
 
     /// The two counts on one line, or one under the other at accessibility sizes, where side by

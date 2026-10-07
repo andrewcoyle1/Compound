@@ -21,9 +21,10 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var showOnLockScreen: Bool?
     var showsOnLockScreen: Bool { showOnLockScreen ?? true }
     /// The exercise strip over the tracker, and the card sliding in from the side it sits on.
-    /// Optional so a document saved before the setting existed still decodes; nil reads as off.
+    /// Optional so a document saved before the setting existed still decodes; nil reads as on
+    /// (the default since 7 Oct 2026; it shipped off while it was being tried).
     var showExerciseStrip: Bool?
-    var showsExerciseStrip: Bool { showExerciseStrip ?? false }
+    var showsExerciseStrip: Bool { showExerciseStrip ?? true }
     
     // MARK: - Warm-Up
     var addSmartWarmUps: Bool = true

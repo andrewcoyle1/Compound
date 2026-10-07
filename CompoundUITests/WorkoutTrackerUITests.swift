@@ -40,8 +40,12 @@ final class WorkoutTrackerUITests: XCTestCase {
         let done = app.waitFor(app.buttons["Done"].firstMatch)
         attach(app, "2-editing")
 
-        // Done on a set that is ready logs it, which finishes the exercise and moves on.
+        // Done only closes the keypad; the log button logs the set, which finishes the exercise
+        // and moves on.
         done.tap()
+        XCTAssertTrue(skipRest.waitForExistence(timeout: UITestApp.timeout))
+        skipRest.tap()
+        app.waitFor(logButton).tap()
         // The next exercise opens with its own note, which has to be read before anything else.
         acknowledgeNoteIfShown(app)
         tapSlot(app.waitFor(skipRest))

@@ -9,7 +9,7 @@ import SwiftUI
 @testable import Compound
 
 /// The weight and reps keyboards: every key writes into the set as it is pressed, Next and Prev
-/// move between the two fields, and Done offers to log a set that is ready.
+/// move between the two fields, and Done only closes.
 @MainActor
 struct SetKeyboardPresenterTests {
 
@@ -128,15 +128,16 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.weightKg == 70)
     }
 
-    @Test func doneOffersToLogAReadySet() {
+    /// Done only closes, even on a set that is ready: the log button is the one way to log.
+    @Test func doneClosesAndLetsGoOfTheSet() {
         let box = set(weightKg: 60, reps: 8)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
         keyboard.open(.reps, set: box.binding, context: SetKeyboardContext())
         keyboard.done()
         #expect(keyboard.activeField == nil)
-        #expect(offers == 1)
+        #expect(box.value.completedAt == nil)
+        keyboard.applyReps(12)
+        #expect(box.value.reps == 8)
     }
 
     // MARK: - Distance and duration
@@ -185,27 +186,30 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.activeField == .distance)
     }
 
-    /// Whether the set is ready is the row's call, since it depends on the tracking mode; the
-    /// keyboard hands over on every Done.
-    @Test func doneAlwaysHandsOverToTheRow() {
-        let box = set(weightKg: 60, reps: nil)
+    // MARK: - VoiceOver
+
+    /// What is read back after a key: the value with its unit in words, never the key alone.
+    @Test func theNewValueIsSpokenInWords() {
+        let box = set(weightKg: 100, reps: 6)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
+        keyboard.locale = Locale(identifier: "en_US")
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
-        keyboard.done()
-        #expect(offers == 1)
+        type("102.5", into: keyboard)
+        #expect(keyboard.spokenValue == "102.5 kilograms")
+        #expect(keyboard.spokenWeight == "102.5 kilograms")
+        keyboard.next()
+        #expect(keyboard.spokenValue == "6 reps")
+        keyboard.backspace()
+        #expect(keyboard.spokenValue == nil)
     }
 
-    @Test func closeOffersNothing() {
-        let box = set(weightKg: 60, reps: 8)
+    @Test func aDurationIsSpokenInMinutesAndSeconds() {
+        let box = set(weightKg: nil)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
-        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
-        keyboard.close()
-        #expect(keyboard.activeField == nil)
-        #expect(offers == 0)
+        keyboard.locale = Locale(identifier: "en_US")
+        keyboard.open(.duration, set: box.binding, context: SetKeyboardContext(fields: [.duration]))
+        type("130", into: keyboard)
+        #expect(keyboard.spokenValue == "1 minute, 30 seconds")
     }
 
     /// The set binding reads its set by index, so a keyboard that kept it after an earlier set was
@@ -293,6 +297,16 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.selectedRPE == 8.5)
         keyboard.toggleRPE(8.5)
         #expect(box.value.rpe == nil)
+    }
+
+    /// Effort is recorded after the set, in the correction row; the keypad offers its RPE chips
+    /// only to correct a set already logged.
+    @Test(arguments: [(false, false, false), (true, false, false), (true, true, true)])
+    func rpeChipsOnlyOnALoggedSet(showsEffort: Bool, logged: Bool, shown: Bool) {
+        let box = set(reps: 8, done: logged)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(showsEffort: showsEffort))
+        #expect(keyboard.showsEffortChips == shown)
     }
 
     @Test func rpeAndRirAreOneScale() {
@@ -384,10 +398,13 @@ struct SetTrackerRowKeyboardTests {
         #expect(presenter.keyboardContext(delegate: delegate).step == WeightStepper.fallback(.kilograms))
     }
 
-    /// Done logs a ready set outright; it used to raise a "Complete Set?" alert first.
-    @Test func doneOnAReadySetLogsIt() {
+    /// Done never logs, however ready the set: decision T1 reverses 5d, which logged it here and
+    /// turned weight changes made before a set into logged sets.
+    @Test func doneNeverLogsAReadySet() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        var logged: [String] = []
+        presenter.onLogSet = { setId, _ in logged.append(setId) }
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         "80".forEach { presenter.keyboard.type($0) }
         presenter.keyboard.next()
@@ -397,11 +414,13 @@ struct SetTrackerRowKeyboardTests {
 
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
-        #expect(exercise.value.sets[1].completedAt != nil)
+        #expect(logged.isEmpty)
+        #expect(exercise.value.sets[1].completedAt == nil)
+        #expect(presenter.keyboard.activeField == nil)
     }
 
     @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
-    func doneOffersNothingWithoutRepsOrOnceLogged(reps: Int?, completed: Bool) {
+    func doneLeavesALoggedSetLogged(reps: Int?, completed: Bool) {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.sets[1].reps = reps
@@ -409,11 +428,10 @@ struct SetTrackerRowKeyboardTests {
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
-        #expect((exercise.value.sets[1].completedAt != nil) == completed)
+        #expect(exercise.value.sets[1].completedAt == (completed ? start : nil))
     }
 
-    /// Logged by Done, rather than offered as it was before, once it has a time.
-    @Test func aTimedSetIsLoggedOnceItHasATime() {
+    @Test func aTimedSetIsNotLoggedByDone() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.trackingMode = .timeOnly
@@ -423,7 +441,7 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(exercise.value.sets[1].durationSec == 45)
         #expect(router.alerts.isEmpty)
-        #expect(exercise.value.sets[1].completedAt != nil)
+        #expect(exercise.value.sets[1].completedAt == nil)
     }
 
     @Test func doneOnAnUnfinishedSetJustCloses() {

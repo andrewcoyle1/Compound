@@ -74,9 +74,6 @@ final class SetKeyboardPresenter {
     /// "," in most of Europe and South America, "." elsewhere: what the decimal key shows.
     var decimalSeparator: String { locale.decimalSeparator ?? "." }
 
-    /// Called by Done. The row offers to log the set if it is ready.
-    var onOfferCompletion: (() -> Void)?
-
     // MARK: - Opening and moving
 
     func open(_ field: SetKeyboardField, set: Binding<WorkoutSetModel>, context: SetKeyboardContext) {
@@ -108,14 +105,13 @@ final class SetKeyboardPresenter {
         activate(field)
     }
 
-    /// Closes the keyboard and hands over to the row, which offers to log the set when it is ready.
-    /// The row decides, because what "ready" means depends on the tracking mode.
+    /// Done only closes. The log button, always above the keypad, is the one way to log, so Done
+    /// never logs a set that was only being prepared (decision T1, `docs/reviews/hig-decisions.md`).
     func done() {
         close()
-        onOfferCompletion?()
     }
 
-    /// Closes without offering anything: the field lost focus to something else.
+    /// Closes the keypad: Done, or the field lost focus to something else.
     ///
     /// Lets go of the set too. The binding reads its set by index, so one kept after an earlier set
     /// is deleted would read past the end of the array.
@@ -256,6 +252,12 @@ final class SetKeyboardPresenter {
 
     var selectedRPE: Double? { editingSet?.wrappedValue.rpe }
 
+    /// The RPE chips, on a set already logged: effort is an outcome, recorded after the set in the
+    /// correction row, so the keypad offers them only to correct a logged one.
+    var showsEffortChips: Bool {
+        context.showsEffort && editingSet?.wrappedValue.completedAt != nil
+    }
+
     var weightChips: [SetKeyboardChip] {
         chips([
             (String(localized: "Last set"), context.lastSetWeightKg),
@@ -288,6 +290,35 @@ final class SetKeyboardPresenter {
               let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
         return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates)
+    }
+
+    // MARK: - VoiceOver
+
+    /// The active field's value as VoiceOver reads it after a key, a step or a chip: "102.5
+    /// kilograms", "6 reps", "1 minute, 30 seconds". `nil` while the field is empty.
+    var spokenValue: String? {
+        guard let field = activeField, let set = editingSet?.wrappedValue else { return nil }
+        switch field {
+        case .weight:
+            return spokenWeight
+        case .reps:
+            return set.reps.map { Format.reps($0, locale: locale) }
+        case .distance:
+            return set.distanceMeters.map {
+                Measurement(value: UnitConversion.convertDistance($0, to: context.distanceUnit), unit: context.distanceUnit == .miles ? UnitLength.miles : UnitLength.meters)
+                    .formatted(.measurement(width: .wide, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0...2))).locale(locale))
+            }
+        case .duration:
+            return set.durationSec.map { Duration.seconds($0).formatted(.units(allowed: [.minutes, .seconds], width: .wide).locale(locale)) }
+        }
+    }
+
+    /// The weight, or the band, as the stepper row's VoiceOver value.
+    var spokenWeight: String? {
+        if let bandIndex, case .bands(let names) = context.step.kind, names.indices.contains(bandIndex) {
+            return names[bandIndex]
+        }
+        return editingSet?.wrappedValue.weightKg.map { ActiveWorkout.spokenWeight(kg: $0, unit: context.unit, locale: locale) }
     }
 
     // MARK: - Display

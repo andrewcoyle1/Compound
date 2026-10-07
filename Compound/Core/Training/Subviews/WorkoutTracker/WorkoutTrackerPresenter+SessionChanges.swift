@@ -12,6 +12,7 @@ import SwiftUI
 extension WorkoutTrackerPresenter {
 
     func updateSet(_ updatedSet: WorkoutSetModel, in exerciseId: String) {
+        recordUndo(replacing: updatedSet, in: exerciseId)
         // An edit still being typed into another set is over. This set keeps what the caller
         // passed, which is what the user was looking at when they acted.
         commitPendingEdit(sparing: updatedSet.id)
@@ -50,6 +51,7 @@ extension WorkoutTrackerPresenter {
 
     func handleWorkoutSessionChange(from oldSession: WorkoutSessionModel) {
         guard !isProcessingUpdateSet else { return }
+        recordUndo(from: oldSession)
         notePendingEdit(comparedTo: oldSession)
         cancelRestIfUndone(comparedTo: oldSession)
         guard let setId = firstNewlyCompletedSetId(comparedTo: oldSession) else { return }

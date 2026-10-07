@@ -24,20 +24,28 @@ enum RestDurationRules {
         let restOverrideSeconds: Int?
         /// The exercise's type, as `WorkoutSettings.restDurationsByExerciseType` keys it.
         let exerciseTypeRawValue: String?
+        /// The rest the plan sets on this exercise in this workout (`WorkoutExerciseModel.restSeconds`).
+        let planRestSeconds: Int?
 
-        init(restOverrideSeconds: Int?, exerciseTypeRawValue: String?) {
+        init(restOverrideSeconds: Int?, exerciseTypeRawValue: String?, planRestSeconds: Int? = nil) {
             self.restOverrideSeconds = restOverrideSeconds
             self.exerciseTypeRawValue = exerciseTypeRawValue
+            self.planRestSeconds = planRestSeconds
         }
     }
 
-    /// The unscaled rest for this exercise, narrowest setting first: the rest set on this one
-    /// exercise, then the one set for its whole type, then the global default.
+    /// The unscaled rest for this exercise, narrowest setting first: the plan's rest on this
+    /// exercise in this workout, then the rest set on the exercise everywhere, then the one set
+    /// for its whole type, then the global default.
     ///
-    /// A zero-second override is treated as no override at all. Both screens that write it clear
-    /// to `nil` on an empty picker, but a document written by an older build can still carry a
-    /// literal zero, and resting for no time is not something a user can have meant.
+    /// A zero-second rest from the plan or override is treated as none at all. Both screens that
+    /// write the override clear to `nil` on an empty picker, but a document written by an older
+    /// build can still carry a literal zero, and resting for no time is not something a user can
+    /// have meant.
     static func baseRestDuration(settings: WorkoutSettings, context: ExerciseContext) -> Int {
+        if let planDuration = context.planRestSeconds, planDuration > 0 {
+            return planDuration
+        }
         if let exerciseDuration = context.restOverrideSeconds, exerciseDuration > 0 {
             return exerciseDuration
         }

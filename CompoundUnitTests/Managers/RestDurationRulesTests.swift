@@ -143,6 +143,25 @@ struct RestDurationRulesTests {
         #expect(rest(after: first, in: exercise, settings: settings, context: unknownType) == 100)
     }
 
+    /// A rest the plan sets on the exercise in this workout beats the one set on the exercise
+    /// everywhere; a zero from the plan is none, like a zero override.
+    @Test("Test The Plan's Rest Wins Over The Exercise Override And Zero Is None")
+    func testThePlansRestWinsOverTheExerciseOverride() {
+        var settings = settings
+        settings.restDurationsByExerciseType["strength"] = 70
+        let first = set("x1")
+        let exercise = exercise([first, set("x2")])
+
+        let plan = RestDurationRules.ExerciseContext(restOverrideSeconds: 30, exerciseTypeRawValue: "strength", planRestSeconds: 150)
+        let zeroPlan = RestDurationRules.ExerciseContext(restOverrideSeconds: 30, exerciseTypeRawValue: "strength", planRestSeconds: 0)
+        let zeroPlanNoOverride = RestDurationRules.ExerciseContext(restOverrideSeconds: nil, exerciseTypeRawValue: "strength", planRestSeconds: 0)
+
+        #expect(rest(after: first, in: exercise, settings: settings, context: plan) == 150)
+        #expect(RestDurationRules.baseRestDuration(settings: settings, context: plan) == 150)
+        #expect(rest(after: first, in: exercise, settings: settings, context: zeroPlan) == 30)
+        #expect(rest(after: first, in: exercise, settings: settings, context: zeroPlanNoOverride) == 70)
+    }
+
     // MARK: - Sub-sets
 
     /// A drop follows its parent at once; the drop then rests as its parent would have.

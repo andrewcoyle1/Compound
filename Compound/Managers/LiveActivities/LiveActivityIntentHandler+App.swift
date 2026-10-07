@@ -211,7 +211,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: exerciseSettingsManager.restOverride(for: exercise.templateId),
             exerciseTypeRawValue: exerciseModelManager.allExercises
-                .first(where: { $0.id == exercise.templateId })?.type?.rawValue
+                .first(where: { $0.id == exercise.templateId })?.type?.rawValue,
+            planRestSeconds: exercise.restSeconds
         )
     }
 

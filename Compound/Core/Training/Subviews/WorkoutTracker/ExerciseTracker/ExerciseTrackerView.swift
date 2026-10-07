@@ -61,6 +61,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     let delegate: ExerciseTrackerDelegate
 
     @ScaledMetric(relativeTo: .body) private var thumbnailSide = ControlSize.thumbnail
+    @Environment(\.openURL) private var openURL
 
     @ViewBuilder var setTracker: (SetTrackerDelegate) -> SetTracker
 
@@ -77,6 +78,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                     )
                 },
                 onDoLater: card.onDoLater,
+                onWatch: watchAction(for: delegate.exercise.wrappedValue),
                 progressionNote: card.progressionNote,
                 onProgressionNoteAcknowledged: card.onProgressionNoteAcknowledged,
                 restTimer: card.restTimer,
@@ -114,6 +116,12 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
     // MARK: - Card
 
+    /// Watch in the card's menu, when the plan links a video the browser can open.
+    private func watchAction(for exercise: WorkoutExerciseModel) -> (@MainActor () -> Void)? {
+        guard let url = presenter.watchURL(for: exercise) else { return nil }
+        return { presenter.onWatchPressed(url, open: openURL) }
+    }
+
     /// The card's title row, then the user's own note. Kept short: the sets are the point.
     private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -150,9 +158,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                             menu
                         }
                     }
-                    if card.memberLetter == nil, let label = delegate.supersetLabel {
-                        Chip(label, systemImage: Symbol.superset, tint: .superset)
-                    }
+                    underTitle(exercise, card: card)
                 }
 
             }
@@ -172,6 +178,27 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
         }
         .padding(.vertical, Spacing.s)
+    }
+
+    /// Under the name: the superset's label, unless the card is a member's, then the plan's cues
+    /// for the lift, held to two lines.
+    @ViewBuilder
+    private func underTitle(_ exercise: WorkoutExerciseModel, card: ExerciseCard) -> some View {
+        if card.memberLetter == nil, let label = delegate.supersetLabel {
+            Chip(label, systemImage: Symbol.superset, tint: .superset)
+        }
+        if let notes = presenter.planNotes(for: exercise) {
+            planNotesView(notes)
+        }
+    }
+
+    private func planNotesView(_ notes: String) -> some View {
+        ClampedNote(text: notes, lineLimit: 2)
+            .font(.rowDetail)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Plan notes")
+            .accessibilityValue(notes)
+            .accessibilityIdentifier("ExerciseTracker.planNotes")
     }
 
     /// The member header's letter, when the card is a superset member's, then the name.
@@ -286,6 +313,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 /// with More to read the rest in place. More shows only when the note is actually cut short.
 private struct ClampedNote: View {
     let text: String
+    var lineLimit = 3
 
     @State private var isExpanded = false
     @State private var fullHeight: CGFloat = 0
@@ -294,10 +322,10 @@ private struct ClampedNote: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             Text(text)
-                .lineLimit(isExpanded ? nil : 3)
+                .lineLimit(isExpanded ? nil : lineLimit)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { shownHeight = $0 }
-                // The whole note laid out at the same width and hidden, to tell whether three
-                // lines cut it short.
+                // The whole note laid out at the same width and hidden, to tell whether the
+                // line limit cuts it short.
                 .background {
                     Text(text)
                         .fixedSize(horizontal: false, vertical: true)

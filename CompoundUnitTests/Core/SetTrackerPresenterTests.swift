@@ -90,7 +90,7 @@ struct SetTrackerPresenterTests {
         }
 
         /// Hands back `swapSelection` when one is set, standing in for the user picking.
-        func showSwapExercisePickerView(onSelect: @escaping (ExerciseModel) -> Void) {
+        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) {
             shown.append("swapPicker")
             if let swapSelection {
                 onSelect(swapSelection)

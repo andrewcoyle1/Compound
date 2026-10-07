@@ -385,6 +385,21 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "16-set-plan-log-button")
     }
 
+    /// WP-P4: the plan's notes sit under the exercise's name, and its video link is Watch in the
+    /// card's menu.
+    func testThePlanNotesAreOnTheCard() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER", arguments: ["UI_TEST_PLAN_NOTES"])
+        let notes = app.descendants(matching: .any)["ExerciseTracker.planNotes"]
+        XCTAssertTrue(notes.waitForExistence(timeout: UITestApp.timeout), app.debugDescription)
+        XCTAssertEqual(notes.label, "Plan notes")
+        XCTAssertTrue((notes.value as? String)?.hasPrefix("Pause one second at the chest.") == true, notes.debugDescription)
+        attach(app, "17-plan-notes")
+
+        app.buttons["Exercise options"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["Watch"].waitForExistence(timeout: UITestApp.timeout), app.debugDescription)
+        attach(app, "18-plan-watch")
+    }
+
     /// One step through a workout: read the note, end the rest, or log the set.
     private func takeNextStep(_ app: XCUIApplication) {
         let gotIt = app.buttons["WorkoutTracker.progressionNote.acknowledge"]

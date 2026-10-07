@@ -80,7 +80,7 @@ class SetTrackerPresenter {
     /// sets move to the replacement when it is measured the same way, so a swap keeps what was done.
     /// When it is not, they cannot, and the person is asked before they go.
     func onSwapPressed(_ exercise: Binding<WorkoutExerciseModel>, onSwap: (@MainActor (ExerciseModel) -> Void)? = nil) {
-        router.showSwapExercisePickerView { [weak self] newExercise in
+        router.showSwapExercisePickerView(alternativeIds: exercise.wrappedValue.substituteExerciseIds) { [weak self] newExercise in
             guard let self else { return }
             if let onSwap { return onSwap(newExercise) }
             let current = exercise.wrappedValue

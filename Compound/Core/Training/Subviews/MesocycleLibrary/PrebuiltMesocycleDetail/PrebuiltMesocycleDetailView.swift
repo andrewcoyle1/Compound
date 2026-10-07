@@ -60,10 +60,27 @@ struct PrebuiltMesocycleDetailView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         WorkoutTemplateRow(workoutTemplate: day)
+                        ForEach(day.exercises) { exercise in
+                            exercisePlan(exercise)
+                        }
                     }
                 }
             }
         }
+    }
+
+    /// "Bench Press" over "Week 1: 2 sets, 8–10 · From week 2: 3 sets, 8–10", or over the one
+    /// set of targets when they never change.
+    private func exercisePlan(_ exercise: WorkoutTemplateExercise) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text(exercise.exercise.name)
+                .font(.rowDetail)
+                .foregroundStyle(.primary)
+            Text(exercise.variationSummary ?? WorkoutTemplateExercise.targetSummary(exercise.setTargets))
+                .font(.label)
+                .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

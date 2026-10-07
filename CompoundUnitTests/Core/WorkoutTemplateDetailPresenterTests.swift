@@ -100,4 +100,76 @@ struct WorkoutTemplateDetailPresenterTests {
         exercise.linkURL = "javascript:alert(1)"
         #expect(exercise.planLink == nil)
     }
+
+    // MARK: - The screen
+
+    private typealias Doubles = TrainingTemplateDetailPresenterTests
+
+    private func makePresenter(library: [ExerciseModel] = []) -> (WorkoutTemplateDetailPresenter, Doubles.Interactor) {
+        let interactor = Doubles.Interactor()
+        interactor.allExercises = library
+        return (WorkoutTemplateDetailPresenter(interactor: interactor, router: Doubles.Router()), interactor)
+    }
+
+    private func delegate(_ exercises: [WorkoutTemplateExercise], week: Int?) -> WorkoutTemplateDetailDelegate {
+        WorkoutTemplateDetailDelegate(
+            workoutTemplate: WorkoutTemplateModel(id: "push", authorId: "me", name: "Push", exercises: exercises),
+            mesocycleId: week == nil ? nil : "program-1",
+            onStartWorkoutPressed: nil,
+            microcycleIndex: week
+        )
+    }
+
+    @Test("Test The Screen Reads The Week It Was Opened On")
+    func testTheScreenReadsTheWeekItWasOpenedOn() {
+        let (presenter, _) = makePresenter()
+        let exercise = varied()
+
+        #expect(presenter.weekSummary(for: exercise, delegate: delegate([exercise], week: 3)) == "Week 3 · 3 sets · 8–10 · RIR 1")
+        #expect(presenter.weekSummary(for: exercise, delegate: delegate([exercise], week: nil)) == "2 sets · 8–10 · RIR 2")
+        #expect(presenter.exerciseForWeek(exercise, delegate: delegate([exercise], week: 3)).setTargets.count == 3)
+        #expect(presenter.exerciseForWeek(exercise, delegate: delegate([exercise], week: nil)).setTargets.count == 2)
+    }
+
+    @Test("Test The Screen Names Alternatives And Letters Supersets")
+    func testTheScreenNamesAlternativesAndLettersSupersets() {
+        let library = Array(ExerciseModel.mocks.prefix(2))
+        let (presenter, _) = makePresenter(library: library)
+        var first = WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)
+        first.substituteExerciseIds = [library[1].id, "gone"]
+        first.supersetGroupId = "g"
+        var second = WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)
+        second.supersetGroupId = "g"
+
+        #expect(presenter.alternativeNames(for: first) == [library[1].name])
+        #expect(presenter.supersetLabels(in: [first, second]) == ["g": "Superset A"])
+    }
+
+    @Test("Test Start Runs The Week The Screen Was Opened On")
+    func testStartRunsTheWeekTheScreenWasOpenedOn() async {
+        let (presenter, interactor) = makePresenter()
+
+        presenter.onStartWorkoutPressed(
+            onStartWorkout: nil,
+            workoutTemplate: WorkoutTemplateModel(id: "push", authorId: "me", name: "Push", exercises: [varied()]),
+            mesocycleId: "program-1",
+            microcycleIndex: 3
+        )
+
+        #expect(await TestManagers.eventually { interactor.startedMicrocycles == [3] })
+        #expect(interactor.startedIn == ["program-1"])
+    }
+
+    @Test("Test A Template On Its Own Starts On Its Base Targets")
+    func testATemplateOnItsOwnStartsOnItsBaseTargets() async {
+        let (presenter, interactor) = makePresenter()
+
+        presenter.onStartWorkoutPressed(
+            onStartWorkout: nil,
+            workoutTemplate: WorkoutTemplateModel(id: "push", authorId: "me", name: "Push", exercises: [varied()]),
+            mesocycleId: nil
+        )
+
+        #expect(await TestManagers.eventually { interactor.startedMicrocycles == [nil] })
+    }
 }

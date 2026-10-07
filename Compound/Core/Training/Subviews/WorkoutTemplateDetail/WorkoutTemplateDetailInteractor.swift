@@ -10,6 +10,7 @@ protocol WorkoutTemplateDetailInteractor: GlobalInteractor, WorkoutStartInteract
     var currentUser: UserModel? { get }
     var mesocycles: [Mesocycle] { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
+    var allExercises: [ExerciseModel] { get }
     func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws
     func deleteActiveSession() throws
     func deleteWorkoutTemplate(id: String) async throws
@@ -19,17 +20,24 @@ protocol WorkoutTemplateDetailInteractor: GlobalInteractor, WorkoutStartInteract
 extension CoreInteractor: WorkoutTemplateDetailInteractor { }
 
 /// Starting a workout from a template. Every Start button goes through
-/// `startWorkout(for:in:isDeloadCycle:)`, so none of them can skip a deload microcycle's weight cut.
+/// `startWorkout(for:in:microcycleIndex:isDeloadCycle:)`, so none of them can skip a deload
+/// microcycle's weight cut or start a mesocycle's day on the wrong week's targets.
 @MainActor
 protocol WorkoutStartInteractor {
     var activeSession: WorkoutSessionModel? { get }
-    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws
+    /// `microcycleIndex` is 1-based; nil for a template started on its own.
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws
     func updateActiveSession(_ session: WorkoutSessionModel) throws
 }
 
 extension WorkoutStartInteractor {
-    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, isDeloadCycle: Bool) async throws {
-        try await startWorkout(for: template, in: mesocycleId)
+    func startWorkout(
+        for template: WorkoutTemplateModel,
+        in mesocycleId: String?,
+        microcycleIndex: Int?,
+        isDeloadCycle: Bool
+    ) async throws {
+        try await startWorkout(for: template, in: mesocycleId, microcycleIndex: microcycleIndex)
         guard isDeloadCycle, var session = activeSession else { return }
         session.applyDeloadWeightReduction()
         // The workout has started either way; a failed cut leaves the planned weights, not no workout.

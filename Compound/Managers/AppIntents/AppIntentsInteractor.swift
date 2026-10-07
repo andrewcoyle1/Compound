@@ -17,7 +17,8 @@ protocol AppIntentsInteractor {
     var activeMesocycle: Mesocycle? { get }
     var activeMesocycleRun: MesocycleSchedule.Run? { get }
     var allWorkoutTemplates: [WorkoutTemplateModel] { get }
-    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws
+    /// `microcycleIndex` is 1-based; nil for a template started on its own.
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws
     func updateWeight(userId: String, weight: Double, weightUnitPreference: WeightUnitPreference) async throws
     func openWorkoutTracker()
@@ -78,9 +79,19 @@ extension AppIntentsInteractor {
         }
         let mesocycle = activeMesocycle
         let mesocycleId = mesocycle?.workoutTemplates.contains { $0.id == template.id } == true ? mesocycle?.id : nil
-        try await startWorkout(for: template, in: mesocycleId)
+        try await startWorkout(for: template, in: mesocycleId, microcycleIndex: microcycleIndex(of: template, in: mesocycleId))
         openWorkoutTracker()
         return AppIntentsPhrasing.started(name: template.name)
+    }
+
+    /// The 1-based microcycle a programme day starts in: the first where it is still open, as on
+    /// the Active Mesocycle screen, or the one under way when it is done in all of them. Nil for a
+    /// template outside the programme.
+    func microcycleIndex(of template: WorkoutTemplateModel, in mesocycleId: String?) -> Int? {
+        guard let mesocycleId, let run = activeMesocycleRun, run.mesocycle.id == mesocycleId else { return nil }
+        let progress = MesocycleSchedule.progress(of: run, sessions: workoutSessions)
+        let open = progress.cycles.joined().first { $0.isOpenWorkout && $0.dayPlan.id == template.id }
+        return (open?.cycleIndex ?? progress.currentCycleIndex) + 1
     }
 
     /// Writes the entry and the profile's current weight, as the Log Weight screen does.

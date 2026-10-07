@@ -68,7 +68,11 @@ struct ActiveMesocyclePresenterTests {
 
         func showEditMesocycleView(delegate: EditMesocycleDelegate) { shown.append("editProgram") }
         func showWorkoutSessionDetailView(delegate: WorkoutSessionDetailDelegate) { shown.append("sessionDetail") }
-        func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) { shown.append("templateDetail") }
+        private(set) var detailDelegates: [WorkoutTemplateDetailDelegate] = []
+        func showWorkoutTemplateDetailView(delegate: WorkoutTemplateDetailDelegate) {
+            shown.append("templateDetail")
+            detailDelegates.append(delegate)
+        }
         func showWorkoutTrackerView() { shown.append("tracker") }
 
         private(set) var alertTitles: [String] = []
@@ -601,6 +605,26 @@ struct ActiveMesocyclePresenterTests {
         screen.presenter.startWorkoutTemplateModelWorkout(day("Upper"), in: "program-1")
 
         #expect(screen.router.shown == ["templateDetail"])
+    }
+
+    /// The day opens on the microcycle it belongs to, so Start uses that week's targets.
+    @Test("Test A Day Opens On The Microcycle Shown")
+    func testADayOpensOnTheMicrocycleShown() throws {
+        let days = [day("Upper"), day("Lower")]
+        let screen = makeScreen(sessions: [
+            session(id: "s1", day: days[0], order: 1),
+            session(id: "s2", day: days[1], order: 2)
+        ])
+        let followed = mesocycle(days: days, cycles: 4)
+
+        let current = try #require(screen.presenter.microcycleItems(mesocycle: followed).first)
+        screen.presenter.onItemPressed(current)
+        screen.presenter.onCycleSelected(3)
+        let later = try #require(screen.presenter.microcycleItems(mesocycle: followed).first)
+        screen.presenter.onItemPressed(later)
+
+        #expect(screen.router.detailDelegates.map(\.microcycleIndex) == [2, 4])
+        #expect(screen.router.detailDelegates.map(\.allowsStart) == [true, false])
     }
 
     /// With a workout already running, starting another asks what to do with it instead of quietly

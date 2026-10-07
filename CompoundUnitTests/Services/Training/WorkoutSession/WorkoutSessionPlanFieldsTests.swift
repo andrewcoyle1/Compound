@@ -135,6 +135,30 @@ struct WorkoutSessionPlanFieldsTests {
         #expect(weekThree.exercises[0].sets.count == 4)
     }
 
+    /// Through the interactor every start path calls: a mesocycle's day started in week 3 plans
+    /// week 3's sets, and a template on its own its base.
+    @Test("Test The Interactor Plans The Week's Targets")
+    func testTheInteractorPlansTheWeeksTargets() async throws {
+        let preview = DevPreview()
+        let interactor = CoreInteractor(container: preview.container())
+        #expect(await TestManagers.eventually { interactor.userId != nil })
+        let entry = WorkoutTemplateExercise(
+            exercise: library,
+            setTargets: targets(2),
+            setRestTimers: false,
+            warmupSetCount: 0,
+            setTargetsByMicrocycle: [MicrocycleSetTargets(fromMicrocycle: 3, setTargets: targets(4, reps: 6))]
+        )
+
+        let weekThree = try await interactor.plannedSession(for: template([entry]), in: "program-1", microcycleIndex: 3)
+        let onItsOwn = try await interactor.plannedSession(for: template([entry]), in: nil, microcycleIndex: nil)
+
+        #expect(weekThree.exercises[0].setTargets == targets(4, reps: 6))
+        #expect(weekThree.exercises[0].workingSets.count == 4)
+        #expect(onItsOwn.exercises[0].setTargets == targets(2))
+        #expect(onItsOwn.exercises[0].workingSets.count == 2)
+    }
+
     @Test("Test The Plan's Columns Are Copied Onto The Session Exercise")
     func testThePlansColumnsAreCopied() {
         let entry = WorkoutTemplateExercise(

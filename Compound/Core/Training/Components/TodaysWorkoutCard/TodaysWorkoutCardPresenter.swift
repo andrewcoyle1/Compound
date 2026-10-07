@@ -34,7 +34,8 @@ class TodaysWorkoutCardPresenter {
                         self?.router.showWorkoutTrackerView()
                     }
                 },
-                isDeloadCycle: isTodayDeload
+                isDeloadCycle: isTodayDeload,
+                microcycleIndex: todaysScheduledItem?.cycleIndex
             )
         )
     }
@@ -55,6 +56,7 @@ class TodaysWorkoutCardPresenter {
         interactor.trackEvent(event: Event.startPressed)
         let mesocycleId = interactor.activeMesocycle?.id
         let isDeload = isTodayDeload
+        let microcycle = slot.cycleIndex + 1
         if interactor.activeSession != nil {
             router.showActiveWorkoutAlert(
                 onResume: { [weak self] in
@@ -67,19 +69,25 @@ class TodaysWorkoutCardPresenter {
                         } catch {
                             self?.interactor.trackEvent(event: Event.deleteActiveSessionFail(error: error))
                         }
-                        await self?.start(slot.dayPlan, in: mesocycleId, isDeloadCycle: isDeload)
+                        await self?.start(slot.dayPlan, in: mesocycleId, microcycleIndex: microcycle, isDeloadCycle: isDeload)
                     }
                 }
             )
         } else {
-            Task { await start(slot.dayPlan, in: mesocycleId, isDeloadCycle: isDeload) }
+            Task { await start(slot.dayPlan, in: mesocycleId, microcycleIndex: microcycle, isDeloadCycle: isDeload) }
         }
     }
 
-    private func start(_ template: WorkoutTemplateModel, in mesocycleId: String?, isDeloadCycle: Bool) async {
+    /// `microcycleIndex` is the slot's 1-based microcycle, whose targets the session takes.
+    private func start(_ template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int, isDeloadCycle: Bool) async {
         interactor.trackEvent(event: Event.startStart)
         do {
-            try await interactor.startWorkout(for: template, in: mesocycleId, isDeloadCycle: isDeloadCycle)
+            try await interactor.startWorkout(
+                for: template,
+                in: mesocycleId,
+                microcycleIndex: microcycleIndex,
+                isDeloadCycle: isDeloadCycle
+            )
             interactor.trackEvent(event: Event.startSuccess)
             router.showWorkoutTrackerView()
         } catch {
@@ -171,7 +179,11 @@ class TodaysWorkoutCardPresenter {
             return
         }
         do {
-            var session = try await interactor.plannedSession(for: slot.dayPlan, in: interactor.activeMesocycle?.id)
+            var session = try await interactor.plannedSession(
+                for: slot.dayPlan,
+                in: interactor.activeMesocycle?.id,
+                microcycleIndex: slot.cycleIndex + 1
+            )
             if isTodayDeload { session.applyDeloadWeightReduction() }
             targets = session.exercises.prefix(4).map { exercise in
                 let unit = interactor.getPreference(templateId: exercise.templateId)

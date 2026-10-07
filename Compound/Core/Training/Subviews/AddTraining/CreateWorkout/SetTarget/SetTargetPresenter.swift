@@ -26,8 +26,45 @@ class SetTargetPresenter {
         self.committedExercise = delegate.exercise
         self.initialExercise = delegate.exercise.wrappedValue
         self.workingExercise = delegate.exercise.wrappedValue
+        self.settings = interactor.workoutSettings
     }
-    
+
+    // MARK: - Set plan (Workout Settings › Set Plan)
+
+    private let settings: WorkoutSettings
+
+    /// Off, the editor is exactly as it was before the set plan: no kinds, no line under a set.
+    var plansSets: Bool { settings.plansSets }
+
+    func planTitle(for setTarget: SetTarget) -> String {
+        SetTargetPlan.title(for: setTarget.setType)
+    }
+
+    func planChip(for setTarget: SetTarget) -> String? {
+        SetTargetPlan.chip(for: setTarget)
+    }
+
+    func planSummary(for setTarget: SetTarget) -> String? {
+        SetTargetPlan.summary(for: setTarget, settings: settings)
+    }
+
+    /// "Set 3, set type, Drop set".
+    func planAccessibilityLabel(for setTarget: SetTarget) -> String {
+        String(localized: "Set \(setTarget.setNumber), set type, \(planTitle(for: setTarget))")
+    }
+
+    func onSetPlanPressed(_ setTarget: SetTarget) {
+        router.showSetPlanDetailView(delegate: SetPlanDetailDelegate(setTarget: setTarget) { [weak self] changed in
+            self?.onSetPlanChanged(changed)
+        })
+    }
+
+    /// The detail sheet's edits land in the working copy, so Save keeps them and Cancel asks first.
+    func onSetPlanChanged(_ setTarget: SetTarget) {
+        guard let index = workingExercise.setTargets.firstIndex(where: { $0.id == setTarget.id }) else { return }
+        workingExercise.setTargets[index] = setTarget
+    }
+
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
     }

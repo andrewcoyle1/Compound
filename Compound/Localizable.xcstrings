@@ -14,12 +14,82 @@
         }
       }
     },
+    "%@ each" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ cada una"
+          }
+        }
+      }
+    },
     "%@ elapsed" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ transcurridos"
+          }
+        }
+      }
+    },
+    "%@, %@ breath" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@ de respiro"
+          }
+        }
+      }
+    },
+    "%@, then %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, luego %@"
+          }
+        }
+      }
+    },
+    "%lld drops" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld drop"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld drops"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld descenso"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld descensos"
+                }
+              }
+            }
           }
         }
       }
@@ -57,6 +127,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Quedan %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld mini-sets" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mini-set"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mini-sets"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld miniserie"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld miniseries"
                 }
               }
             }
@@ -124,6 +234,16 @@
         }
       }
     },
+    "A set's normal rest follows its last piece. The Live Activity shows the short rest as a bar, not a countdown, and buzzes once." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El descanso normal de una serie sigue a su última parte. La Actividad en Vivo muestra el descanso corto como una barra, no como una cuenta atrás, y vibra una vez."
+          }
+        }
+      }
+    },
     "Active Program" : {
       "localizations" : {
         "es" : {
@@ -184,6 +304,26 @@
         }
       }
     },
+    "Add Weight Instead" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir peso en su lugar"
+          }
+        }
+      }
+    },
+    "After beating it twice in a row" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tras superarlo dos veces seguidas"
+          }
+        }
+      }
+    },
     "All Workouts" : {
       "localizations" : {
         "es" : {
@@ -204,6 +344,36 @@
         }
       }
     },
+    "AMRAP %lld+" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AMRAP %lld+"
+          }
+        }
+      }
+    },
+    "As many as possible" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantas como sea posible"
+          }
+        }
+      }
+    },
+    "As many as possible, target %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantas como sea posible, objetivo %lld"
+          }
+        }
+      }
+    },
     "As many reps as possible at a fixed weight, aiming to beat a target." : {
       "localizations" : {
         "es" : {
@@ -214,12 +384,52 @@
         }
       }
     },
+    "Between clusters" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre clusters"
+          }
+        }
+      }
+    },
+    "Between mini-sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre miniseries"
+          }
+        }
+      }
+    },
+    "Between pauses" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre pausas"
+          }
+        }
+      }
+    },
     "Change sign" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar signo"
+          }
+        }
+      }
+    },
+    "Change the weight and go" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambia el peso y sigue"
           }
         }
       }
@@ -304,12 +514,42 @@
         }
       }
     },
+    "Drop set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie descendente"
+          }
+        }
+      }
+    },
     "drop set %lld" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "serie descendente %lld"
+          }
+        }
+      }
+    },
+    "Drops and mini-sets count with their set. Progression plans from the first piece." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los descensos y las miniseries cuentan con su serie. La progresión se planifica desde la primera parte."
+          }
+        }
+      }
+    },
+    "Each Drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada descenso"
           }
         }
       }
@@ -544,6 +784,36 @@
         }
       }
     },
+    "Off: the target keeps rising" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivado: el objetivo sigue subiendo"
+          }
+        }
+      }
+    },
+    "Once the target reaches %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando el objetivo llegue a %lld"
+          }
+        }
+      }
+    },
+    "Plan drops, mini-sets and AMRAP targets in your workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planifica descensos, miniseries y objetivos AMRAP en tus entrenamientos"
+          }
+        }
+      }
+    },
     "Position %lld of %lld" : {
       "localizations" : {
         "es" : {
@@ -554,12 +824,32 @@
         }
       }
     },
+    "Raise the Target" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir el objetivo"
+          }
+        }
+      }
+    },
     "Remaining" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restante"
+          }
+        }
+      }
+    },
+    "Reps on Each Drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reps en cada descenso"
           }
         }
       }
@@ -594,12 +884,42 @@
         }
       }
     },
+    "Set %lld, set type" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld, tipo de serie"
+          }
+        }
+      }
+    },
+    "Set %lld, set type, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld, tipo de serie, %@"
+          }
+        }
+      }
+    },
     "Set options" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opciones de la serie"
+          }
+        }
+      }
+    },
+    "Set Plan" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan de series"
           }
         }
       }
@@ -690,6 +1010,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Superserie %lld de %lld"
+          }
+        }
+      }
+    },
+    "Target %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo %lld"
+          }
+        }
+      }
+    },
+    "Target Reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reps objetivo"
+          }
+        }
+      }
+    },
+    "Target that adds weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo que añade peso"
           }
         }
       }
@@ -814,6 +1164,26 @@
         }
       }
     },
+    "to failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "al fallo"
+          }
+        }
+      }
+    },
+    "To failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al fallo"
+          }
+        }
+      }
+    },
     "upcoming" : {
       "localizations" : {
         "es" : {
@@ -840,6 +1210,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamientos semanales"
+          }
+        }
+      }
+    },
+    "Within a Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dentro de una serie"
           }
         }
       }

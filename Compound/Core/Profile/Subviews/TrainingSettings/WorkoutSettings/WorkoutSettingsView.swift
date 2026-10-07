@@ -136,6 +136,12 @@ struct WorkoutSettingsView: View {
                 systemImage: "rectangle.split.3x1",
                 isOn: $presenter.showExerciseStrip
             )
+            ListRowToggle(
+                title: String(localized: "Set Plan"),
+                subtitle: String(localized: "Plan drops, mini-sets and AMRAP targets in your workouts"),
+                systemImage: "list.number",
+                isOn: $presenter.setPlanning
+            )
 
         } header: {
             Text("Display")

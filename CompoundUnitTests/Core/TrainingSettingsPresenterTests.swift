@@ -147,6 +147,21 @@ struct WorkoutSettingsPresenterTests {
         #expect(saved?.restTimerVibrate == false)
     }
 
+    // MARK: - Set Plan
+
+    @Test("Test The Set Plan Switch Is Off Until Turned On, And Saved With A Haptic")
+    func testTheSetPlanSwitchIsSaved() async {
+        let screen = makeScreen()
+        #expect(!screen.presenter.setPlanning)
+
+        screen.presenter.setPlanning = true
+        await settleSettings()
+
+        #expect(screen.presenter.setPlanning)
+        #expect(screen.interactor.savedSettings.last?.setPlanning == true)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
     // MARK: - Navigation
 
     @Test("Test Each Row Opens Its Own Settings Screen")
@@ -294,6 +309,120 @@ struct RestTimerSettingsPresenterTests {
         screen.presenter.onTimerDurationPressed()
 
         #expect(screen.router.shown == ["timerDuration"])
+    }
+
+    // MARK: - Set Plan
+
+    @Test("Test The Set Plan Sections Follow The Switch")
+    func testTheSetPlanSectionsFollowTheSwitch() {
+        #expect(!makeScreen().presenter.plansSets)
+
+        var settings = WorkoutSettings(authorId: "user-1")
+        settings.setPlanning = true
+        #expect(makeScreen(settings).presenter.plansSets)
+    }
+
+    @Test("Test Each Kind Reads Its Own Rest, Falling Back To The Older One")
+    func testEachKindReadsItsOwnRest() {
+        #expect(makeScreen().presenter.intraSetRest(for: .myo) == 15)
+        #expect(makeScreen().presenter.intraSetRest(for: .restPause) == 20)
+        #expect(makeScreen().presenter.intraSetRest(for: .cluster) == 15)
+
+        var settings = WorkoutSettings(authorId: "user-1")
+        settings.intraSetRestSeconds = 10
+        settings.intraSetRestPauseSeconds = 30
+        let screen = makeScreen(settings)
+        #expect(screen.presenter.intraSetRest(for: .myo) == 10)
+        #expect(screen.presenter.intraSetRest(for: .restPause) == 30)
+    }
+
+    /// Three rows share one write path, so each chip has to land on its own kind's rest.
+    @Test("Test Each Kind's Rest Is Written On Its Own, With A Haptic")
+    func testEachKindsRestIsWrittenOnItsOwn() async {
+        let screen = makeScreen()
+
+        screen.presenter.onIntraSetRestSelected(10, for: .myo)
+        await settleSettings()
+        screen.presenter.onIntraSetRestSelected(30, for: .restPause)
+        await settleSettings()
+        screen.presenter.onIntraSetRestSelected(20, for: .cluster)
+        await settleSettings()
+
+        let saved = screen.interactor.savedSettings.last
+        #expect(saved?.intraSetRestMyoSeconds == 10)
+        #expect(saved?.intraSetRestPauseSeconds == 30)
+        #expect(saved?.intraSetRestClusterSeconds == 20)
+        #expect(saved?.intraSetRestSeconds == nil)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success", "success", "success"])
+    }
+
+    @Test("Test Choosing The Rest Already Chosen Saves Nothing")
+    func testChoosingTheSameRestSavesNothing() async {
+        let screen = makeScreen()
+
+        screen.presenter.onIntraSetRestSelected(15, for: .myo)
+        await settleSettings()
+
+        #expect(screen.interactor.savedSettings.isEmpty)
+    }
+
+    @Test("Test The Rest-Pause Row Offers Longer Rests")
+    func testTheRestPauseRowOffersLongerRests() {
+        #expect(RestTimerSettingsPresenter.IntraSetKind.myo.options == [10, 15, 20])
+        #expect(RestTimerSettingsPresenter.IntraSetKind.restPause.options == [15, 20, 30])
+        #expect(RestTimerSettingsPresenter.IntraSetKind.cluster.options == [10, 15, 20])
+    }
+
+    @Test("Test Raising The AMRAP Target Is Saved")
+    func testRaisingTheAMRAPTargetIsSaved() async {
+        let screen = makeScreen()
+        #expect(screen.presenter.amrapRaisesTarget)
+
+        screen.presenter.amrapRaisesTarget = false
+        await settleSettings()
+
+        #expect(screen.interactor.savedSettings.last?.amrapRaisesTarget == false)
+        #expect(screen.interactor.savedSettings.last?.amrapProgression == nil)
+    }
+
+    @Test("Test The AMRAP Ceiling Is Saved And Read In The Subtitle")
+    func testTheAMRAPCeilingIsSaved() async {
+        let screen = makeScreen()
+        #expect(screen.presenter.amrapAddsWeight)
+        #expect(screen.presenter.amrapAddsWeightSubtitle == "Once the target reaches 12")
+
+        screen.presenter.amrapWeightCeiling = 15
+        await settleSettings()
+
+        #expect(screen.interactor.savedSettings.last?.amrapAddsWeightAtTarget == 15)
+        #expect(screen.presenter.amrapAddsWeightSubtitle == "Once the target reaches 15")
+
+        // The stepper's range holds even when something writes past it.
+        screen.presenter.amrapWeightCeiling = 40
+        await settleSettings()
+        #expect(screen.interactor.savedSettings.last?.amrapAddsWeightAtTarget == 20)
+    }
+
+    /// Off, no target is ever high enough to add weight, so the target keeps rising; on again, it
+    /// starts from the default.
+    @Test("Test Adding Weight Instead Can Be Turned Off And On")
+    func testAddingWeightInsteadCanBeTurnedOffAndOn() async throws {
+        var settings = WorkoutSettings(authorId: "user-1")
+        settings.setPlanning = true
+        let screen = makeScreen(settings)
+
+        screen.presenter.amrapAddsWeight = false
+        await settleSettings()
+
+        #expect(!screen.presenter.amrapAddsWeight)
+        let ceiling = try #require(screen.interactor.savedSettings.last?.amrapProgression?.ceiling)
+        #expect(ceiling > 1_000)
+
+        screen.presenter.amrapAddsWeight = true
+        await settleSettings()
+
+        #expect(screen.presenter.amrapAddsWeight)
+        #expect(screen.interactor.savedSettings.last?.amrapWeightCeiling == 12)
     }
 }
 

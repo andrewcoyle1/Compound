@@ -112,6 +112,13 @@ class WorkoutSettingsPresenter {
         set { settings.showExerciseStrip = newValue; save() }
     }
 
+    /// Workout Settings › Set Plan: templates plan each set's kind, drops, mini-sets and AMRAP
+    /// target, and sessions are made from them.
+    var setPlanning: Bool {
+        get { settings.plansSets }
+        set { settings.setPlanning = newValue; save() }
+    }
+
     // MARK: - Warm-Up Settings
 
     var addSmartWarmUps: Bool {
@@ -127,8 +134,10 @@ class WorkoutSettingsPresenter {
             do {
                 try await interactor.saveWorkoutSettings(settings)
                 interactor.trackEvent(event: Event.saveSuccess)
+                interactor.playHaptic(option: .success)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
         }

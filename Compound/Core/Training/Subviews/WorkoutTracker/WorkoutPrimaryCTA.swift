@@ -18,8 +18,7 @@ extension WorkoutTrackerView {
     @ViewBuilder
     var primaryCTA: some View {
         if presenter.primarySlot != nil {
-            // Skip Rest over +15s at accessibility sizes, where side by side neither fits (S3).
-            ctaLayout {
+            HStack(spacing: 0) {
                 // One button for every action, so its capsule morphs from Log to Skip Rest and back
                 // rather than one button leaving as another arrives, and VoiceOver focus stays on it.
                 CallToActionButton {
@@ -67,22 +66,21 @@ extension WorkoutTrackerView {
         }
     }
 
-    /// Side by side, or one over the other at accessibility text sizes.
-    private var ctaLayout: AnyLayout {
-        dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: Spacing.s))
-            : AnyLayout(HStackLayout(spacing: 0))
-    }
-
     @ViewBuilder
     private var primarySlotLabel: some View {
         let isLarge = dynamicTypeSize.isAccessibilitySize
         if let restEnd = presenter.primarySlotRestEnd {
-            let layout = isLarge ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: Spacing.s))
-            layout {
-                Text("Skip Rest")
-                Text(timerInterval: min(.now, restEnd)...restEnd)
-                    .monospacedDigit()
+            HStack(spacing: Spacing.s) {
+                // At accessibility sizes "Skip Rest 1:23" beside +15s would need two more lines
+                // in a bar that already covers much of the screen. "Skip" fits beside it, and the
+                // rest line in the card shows the clock (S3). VoiceOver hears "Skip rest" either way.
+                if isLarge {
+                    Text("Skip")
+                } else {
+                    Text("Skip Rest")
+                    Text(timerInterval: min(.now, restEnd)...restEnd)
+                        .monospacedDigit()
+                }
             }
             // A name Voice Control can say, with the ticking time as its value rather than in it.
             .accessibilityElement(children: .ignore)

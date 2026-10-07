@@ -73,25 +73,14 @@ struct SetTrackerRowView: View {
                         } label: {
                             // The warning colour on the icon only: orange text on the current row's
                             // highlight is under 4.5:1.
-                            Label {
-                                Text(plates.text)
-                                    .foregroundStyle(.primary)
-                            } icon: {
-                                Image(systemName: Symbol.warning)
-                                    .foregroundStyle(.warning)
-                            }
-                                .font(.label)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, minHeight: ControlSize.row, alignment: .leading)
+                            plateLine(plates.text, symbol: Symbol.warning, tint: .warning)
+                                .frame(minHeight: ControlSize.row)
                                 .contentShape(.rect)
                         }
                         .buttonStyle(.borderless)
                         .accessibilityHint("Changes the weight to one your plates can make")
                     } else {
-                        Label(plates.text, systemImage: Symbol.equipment)
-                            .font(.label)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .foregroundStyle(.secondary)
+                        plateLine(plates.text, symbol: Symbol.equipment, tint: .secondary)
                     }
                 }
                 .padding(.leading, isStacked ? 0 : SetTrackerRowView.setColumnWidth + Spacing.s)
@@ -139,6 +128,22 @@ struct SetTrackerRowView: View {
         .moveDisabled(true)
     }
     
+    /// The plates line under the current row: the colour on the icon only, since coloured or
+    /// secondary text on the row's tint is under 4.5:1 (S4). The text wraps within the row's width
+    /// by itself: wrapped as a whole `Label`, it clipped mid-word at AX5 ("Not loadabl").
+    private func plateLine(_ text: String, symbol: String, tint: Color) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+                .accessibilityHidden(true)
+            Text(text)
+                .foregroundStyle(Color.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.label)
+    }
+
     /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
     /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
     private var rowName: String {

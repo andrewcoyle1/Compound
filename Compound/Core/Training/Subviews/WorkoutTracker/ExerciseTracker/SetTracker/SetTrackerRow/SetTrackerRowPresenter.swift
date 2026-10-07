@@ -34,11 +34,51 @@ class SetTrackerRowPresenter {
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a
-    /// surviving half would number and rest as a set of its own.
+    /// surviving half would number and rest as a set of its own. Its drops and mini-sets go too.
     func deleteSet(setId: String, exercise: Binding<WorkoutExerciseModel>) {
-        let removing = Set(exercise.wrappedValue.sets.pairedSetIds(for: setId))
+        let removing = Set(ActiveWorkout.idsRemovedByDeleting(setId, in: exercise.wrappedValue.sets))
         guard !removing.isEmpty else { return }
         exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
+    }
+
+    /// Deletes the set, asking first when its drops or mini-sets would go with it: "Delete Set 2?
+    /// This also deletes its 2 drop sets."
+    func onDeleteSetPressed(setId: String, setName: String, exercise: Binding<WorkoutExerciseModel>) {
+        let removed = ActiveWorkout.subSetsRemovedByDeleting(setId, in: exercise.wrappedValue.sets)
+        let message: String
+        switch (removed.drops, removed.minis) {
+        case (0, 0): return deleteSet(setId: setId, exercise: exercise)
+        case (let drops, 0): message = String(localized: "This also deletes its \(drops) drop sets.")
+        case (0, let minis): message = String(localized: "This also deletes its \(minis) mini-sets.")
+        case (let drops, let minis): message = String(localized: "This also deletes its \(drops + minis) drop sets and mini-sets.")
+        }
+        router.showConfirmationDialog(title: String(localized: "Delete \(setName)?"), subtitle: message) {
+            AnyView(VStack(spacing: Spacing.s) {
+                Button("Delete", role: .destructive) { self.deleteSet(setId: setId, exercise: exercise) }
+                Button("Cancel", role: .cancel) { }
+            })
+        }
+    }
+
+    /// A drop or mini-set under the set, after any it has: a drop 20 % lighter
+    /// (`ActiveWorkout.dropWeightKg`), a mini-set at the set's weight, the reps left to fill in.
+    func addSubSet(_ subKind: SubSetKind, to setId: String, exercise: Binding<WorkoutExerciseModel>) {
+        let current = exercise.wrappedValue
+        guard let parent = current.sets.first(where: { $0.id == setId }) else { return }
+        let weightKg: Double?
+        switch subKind {
+        case .drop:
+            let unit = getUnitPreference(for: current).weightUnit
+            let step = WeightStepper.steps(for: current, profile: interactor.workoutGymProfile, unit: unit)
+            weightKg = ActiveWorkout.dropWeightKg(from: parent.weightKg, step: step, unit: unit)
+        case .mini:
+            weightKg = parent.weightKg
+        }
+        let sets = ActiveWorkout.addingSubSet(subKind, to: setId, in: current.sets, id: UUID().uuidString, weightKg: weightKg)
+        withReducedMotionAnimation(.standard) {
+            exercise.wrappedValue.sets = sets
+        }
+        interactor.playHaptic(option: .selection)
     }
     
     func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {

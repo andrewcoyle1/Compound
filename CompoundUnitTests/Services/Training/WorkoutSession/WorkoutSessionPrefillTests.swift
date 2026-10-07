@@ -184,4 +184,54 @@ struct WorkoutSessionPrefillTests {
         #expect(workingSets(of: session).allSatisfy { !$0.isSubSet })
         #expect(warmupSets(of: session).allSatisfy { $0.kind == .standard })
     }
+
+    // MARK: WP-Q
+
+    /// Last time's drop is part of set 1. Matched by position it would hand its 40 kg to set 2.
+    @Test("Test Last Time's Drops Are Skipped When Prefilling")
+    func testLastTimesDropsAreSkippedWhenPrefilling() {
+        var previous = previousSession()
+        let drop = WorkoutSetModel(
+            id: "previous-drop", authorId: "author-1", index: 4, reps: 12, weightKg: 40,
+            kind: .drop, parentSetId: "previous-set-1", isWarmup: false, completedAt: start, dateCreated: start
+        )
+        previous.exercises[0].sets.insert(drop, at: 1)
+
+        let session = WorkoutSessionModel(
+            authorId: "author-1",
+            template: template(),
+            previousWorkoutSession: previous,
+            dateCreated: start
+        )
+
+        #expect(workingSets(of: session).map(\.weightKg) == [60, 60, 60])
+        #expect(workingSets(of: session).map(\.reps) == [10, 10, 10])
+    }
+
+    /// A sub-row among the sets being filled is left alone, the sets around it are filled in
+    /// order, and every set keeps its kind and parent.
+    @Test("Test Prefill Fills Around A Sub-Set And Keeps Kinds")
+    func testPrefillFillsAroundASubSetAndKeepsKinds() {
+        var sets = [
+            WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, kind: .amrap, isWarmup: false, dateCreated: start),
+            WorkoutSetModel(id: "d1", authorId: "author-1", index: 3, kind: .drop, parentSetId: "s1", isWarmup: false, dateCreated: start),
+            WorkoutSetModel(id: "s2", authorId: "author-1", index: 2, isWarmup: false, dateCreated: start)
+        ]
+        let previous = [
+            WorkoutSetModel(id: "p1", authorId: "author-1", index: 1, reps: 10, weightKg: 60, isWarmup: false, completedAt: start, dateCreated: start),
+            WorkoutSetModel(id: "p2", authorId: "author-1", index: 2, reps: 9, weightKg: 62.5, isWarmup: false, completedAt: start, dateCreated: start)
+        ]
+
+        WorkingSetPrefill(
+            prefill: .previousValues, previousSets: previous, authorId: "author-1",
+            exercise: exerciseModel(), gymProfile: nil, unitPreferences: nil
+        ).apply(to: &sets)
+
+        #expect(sets.map(\.weightKg) == [60, nil, 62.5])
+        #expect(sets.map(\.reps) == [10, nil, 9])
+        #expect(sets.map(\.kind) == [.amrap, .drop, .standard])
+        #expect(sets[1].parentSetId == "s1")
+    }
+
+    // MARK: - End WP-Q
 }

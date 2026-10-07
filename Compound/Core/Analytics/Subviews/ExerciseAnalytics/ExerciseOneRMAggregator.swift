@@ -39,7 +39,8 @@ enum ExerciseOneRMAggregator {
                 let name = exercise.name
 
                 let best1RMForWorkout = exercise.sets
-                    .filter { !$0.isWarmup && $0.completedAt != nil }
+                    // A drop or mini-set is part of its set, and lighter or shorter than it.
+                    .filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
                     .compactMap { set -> Double? in
                         guard let weight = set.weightKg, weight > 0 else { return nil }
                         let reps = set.reps ?? 1

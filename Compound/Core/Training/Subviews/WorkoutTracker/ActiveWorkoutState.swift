@@ -182,7 +182,9 @@ enum ActiveWorkout {
     }
 
     /// "Log set 2 · 115 kg × 5", "Log warm-up · 60 kg × 5", "Log set 1L · 20 kg × 10", and with
-    /// `showsBodyweight` "Log set 2 · BW + 20 kg × 8".
+    /// `showsBodyweight` "Log set 2 · BW + 20 kg × 8". A set's kind names it: "Log drop set · 80 kg
+    /// × 8", "Log mini-set 2 · 100 kg × 4", and "Log AMRAP set · 100 kg" before its open-ended reps
+    /// are in.
     static func logTitle(
         for set: WorkoutSetModel,
         in exercise: WorkoutExerciseModel,
@@ -190,13 +192,24 @@ enum ActiveWorkout {
         distanceUnit: ExerciseDistanceUnit,
         showsBodyweight: Bool = false
     ) -> String {
-        let name = set.isWarmup
-            ? String(localized: "Log warm-up")
-            : String(localized: "Log set \("\(exercise.workingSetNumber(for: set))\(set.side?.initial ?? "")")")
-        guard let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight) else {
-            return name
+        let name: String = switch (set.isWarmup, set.subSetKind, set.kind) {
+        case (true, _, _): String(localized: "Log warm-up")
+        case (_, .drop, _): String(localized: "Log drop set")
+        case (_, .mini, _): String(localized: "Log mini-set \(subSetOrdinal(of: set, in: exercise.sets))")
+        case (_, nil, .amrap): String(localized: "Log AMRAP set")
+        default: String(localized: "Log set \("\(exercise.workingSetNumber(for: set))\(set.side?.initial ?? "")")")
         }
+        let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight)
+            ?? openRepsWeight(of: set, trackingMode: exercise.trackingMode, unit: unit)
+        guard let figures else { return name }
         return "\(name) · \(figures)"
+    }
+
+    /// An AMRAP set's weight alone, while its reps are still open: "100 kg".
+    private static func openRepsWeight(of set: WorkoutSetModel, trackingMode: TrackingMode, unit: ExerciseWeightUnit) -> String? {
+        guard set.kind == .amrap, !set.isSubSet, trackingMode == .weightReps, set.reps == nil,
+              let weightKg = set.weightKg, weightKg != 0 else { return nil }
+        return Format.weight(kg: weightKg, unit: unit)
     }
 
     /// "115 kg × 5", "12 reps", "1:30", "400 m · 1:30"; `nil` until the set holds its figures, so

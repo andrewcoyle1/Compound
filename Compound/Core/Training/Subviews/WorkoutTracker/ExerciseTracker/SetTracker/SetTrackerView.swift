@@ -165,13 +165,14 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     private func row(for set: WorkoutSetModel, badge: String? = nil, isNext: Bool? = nil) -> some View {
         let exercise = delegate.exercise.wrappedValue
         // Matched on the side as well as the number: a left set inheriting the right arm's last
-        // weight sends the user chasing the other arm's numbers.
+        // weight sends the user chasing the other arm's numbers. A drop is matched on its kind,
+        // and has no suggestion of its own: its parent's would fill it with the heavier figures.
         return setTrackerRow(
             SetTrackerRowDelegate(
                 exercise: delegate.exercise,
                 set: setBinding(for: set),
-                lastSet: delegate.lastExercise?.matchingSet(for: set, in: exercise),
-                progressionSuggestion: delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
+                lastSet: ActiveWorkout.lastSet(for: set, in: exercise, last: delegate.lastExercise),
+                progressionSuggestion: set.isSubSet ? nil : delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
                 showAutoRanges: delegate.card?.showAutoRanges ?? presenter.showAutoRanges,
                 rowState: delegate.card == nil ? nil : isNext.map { ActiveWorkout.blockRowState(of: set, in: exercise, isNext: $0) }
                     ?? ActiveWorkout.rowState(of: set, in: exercise),
@@ -541,10 +542,13 @@ extension SetTrackerView {
             if let set = delegate.exercise.wrappedValue.sets.first(where: { $0.id == setId }) {
                 tableRows {
                     // One VoiceOver container per row, named for its set and exercise, so the
-                    // Containers rotor steps through the rounds: "A1, Bench Press".
+                    // Containers rotor steps through the rounds: "A1, Bench Press", and a drop
+                    // under it "A1 drop set 1, Bench Press".
+                    let name = [badge, ActiveWorkout.subSetName(of: set, in: delegate.exercise.wrappedValue.sets)]
+                        .compactMap { $0 }.joined(separator: " ")
                     row(for: set, badge: badge, isNext: isNext)
                         .accessibilityElement(children: .contain)
-                        .accessibilityLabel([badge, delegate.exercise.wrappedValue.name].joined(separator: ", "))
+                        .accessibilityLabel([name, delegate.exercise.wrappedValue.name].joined(separator: ", "))
                     correctionRow(below: set)
                 }
             }

@@ -164,4 +164,33 @@ struct SupersetBlockLayoutTests {
 
         #expect(layout(rows) == ["A1:a-1", "B1:b-1", "A2:a-2", "B2:b-2"])
     }
+
+    // MARK: WP-Q
+
+    /// A drop sits under its set in the round, before the partner: it is part of A1, and the log
+    /// button takes it before walking to B1.
+    @Test("Test A Drop Stays Under Its Set In The Round")
+    func testADropStaysUnderItsSetInTheRound() {
+        var first = exercise("a")
+        first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-1", in: first.sets, id: "a-1d", weightKg: 64)
+        first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-2", in: first.sets, id: "a-2d", weightKg: 64)
+
+        #expect(layout(ActiveWorkout.blockRows([first, exercise("b")])) == ["A1:a-1", "A1:a-1d", "B1:b-1", "A2:a-2", "A2:a-2d", "B2:b-2"])
+
+        first.sets[0].completedAt = start
+        #expect(ActiveWorkout.nextSetId(inBlock: [first, exercise("b")], current: "a") == "a-1d")
+        first.sets[1].completedAt = start
+        #expect(ActiveWorkout.nextSetId(inBlock: [first, exercise("b")], current: "a") == "b-1")
+    }
+
+    /// A drop on half of a pair goes after the pair, so the round still reads 1L, 1R.
+    @Test("Test A Drop On A Split Pair Follows The Pair")
+    func testADropOnASplitPairFollowsThePair() {
+        var first = exercise("a", working: 1, split: true)
+        first.sets = ActiveWorkout.addingSubSet(.drop, to: "a-1L", in: first.sets, id: "a-1Ld", weightKg: 16)
+
+        #expect(layout(ActiveWorkout.blockRows([first, exercise("b", working: 1)])) == ["A1L:a-1L", "A1R:a-1R", "A1L:a-1Ld", "B1:b-1"])
+    }
+
+    // MARK: - End WP-Q
 }

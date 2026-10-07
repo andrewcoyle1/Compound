@@ -372,3 +372,56 @@ final class TrackerAnnouncementSpy {
 }
 
 // MARK: - End WP-P
+
+// MARK: WP-Q
+
+/// A set row's interactor: kilograms, the default settings, and the gym a test hands it.
+final class SetTrackerRowInteractorDouble: SpyGlobalInteractor, SetTrackerRowInteractor {
+    var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "author-1")
+    var favouriteGymProfile: GymProfileModel?
+    var allExercises: [ExerciseModel] = []
+    var preferences: [String: ExerciseUnitPreference] = [:]
+
+    func getPreference(templateId: String) -> ExerciseUnitPreference {
+        preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
+    }
+
+    func exerciseRestOverride(for exerciseId: String) -> Int? { nil }
+}
+
+/// A set row's router, recording the confirmation dialogs it raises with their messages. The
+/// buttons are views, so tests call the presenter methods they would.
+final class SetTrackerRowRouterDouble: SetTrackerRowRouter {
+    let router: AnyRouter = TestRouting.anyRouter
+    private(set) var confirmations: [(title: String, subtitle: String?)] = []
+
+    func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
+    func showRestModal(
+        primaryButtonAction: @escaping () -> Void,
+        secondaryButtonAction: @escaping () -> Void,
+        minutesSelection: Binding<Int>,
+        secondsSelection: Binding<Int>
+    ) { }
+    func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        confirmations.append((title, subtitle))
+    }
+}
+
+/// An exercise a presenter edits through a `Binding`, read back afterwards.
+@MainActor
+final class ExerciseBox {
+    var exercise: WorkoutExerciseModel
+
+    init(_ exercise: WorkoutExerciseModel) {
+        self.exercise = exercise
+    }
+
+    var binding: Binding<WorkoutExerciseModel> {
+        Binding(
+            get: { MainActor.assumeIsolated { self.exercise } },
+            set: { newValue in MainActor.assumeIsolated { self.exercise = newValue } }
+        )
+    }
+}
+
+// MARK: - End WP-Q

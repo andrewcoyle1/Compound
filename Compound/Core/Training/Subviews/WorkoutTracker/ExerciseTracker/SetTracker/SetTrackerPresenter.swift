@@ -189,9 +189,9 @@ class SetTrackerPresenter {
     }
 
     /// Deleting half of a left/right pair would leave the other half standing alone, numbering and
-    /// resting as a set in its own right, so the pair goes together.
+    /// resting as a set in its own right, so the pair goes together, with its drops and mini-sets.
     func deleteSet(setId: String, exercise: Binding<WorkoutExerciseModel>) {
-        let removing = Set(exercise.wrappedValue.sets.pairedSetIds(for: setId))
+        let removing = Set(ActiveWorkout.idsRemovedByDeleting(setId, in: exercise.wrappedValue.sets))
         guard !removing.isEmpty else { return }
         exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
     }
@@ -216,8 +216,9 @@ class SetTrackerPresenter {
         var nextIndex = (existingSets.map(\.index).max() ?? 0) + 1
         for side in exercise.wrappedValue.sidesPerSet {
             // Carry forward the figures of the last set on the same side, so a left set copies the
-            // left arm's weight rather than the right one's.
-            let lastSet = existingSets.last(where: { side == nil || $0.side == side }) ?? existingSets.last
+            // left arm's weight rather than the right one's. Not a drop's: it is lighter than the set.
+            let ownSets = existingSets.filter { !$0.isSubSet }
+            let lastSet = ownSets.last(where: { side == nil || $0.side == side }) ?? ownSets.last
             exercise.wrappedValue.sets.append(
                 WorkoutSetModel(
                     id: UUID().uuidString,

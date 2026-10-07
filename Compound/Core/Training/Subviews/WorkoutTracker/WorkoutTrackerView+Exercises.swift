@@ -176,7 +176,12 @@ extension WorkoutTrackerView {
                 },
                 onCustomRestChanged: { setId, seconds in
                     presenter.customRestSeconds[setId] = seconds
-                }
+                },
+                correction: presenter.correction(for: current),
+                onCorrection: { setId, action in
+                    presenter.onCorrection(action, setId: setId, in: exerciseId)
+                },
+                onUndoManager: { presenter.onUndoManagerChanged($0) }
             )
         )
     }

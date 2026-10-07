@@ -41,6 +41,11 @@ struct SetTrackerCard {
     /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
+    /// The row under the set just logged, with the rest when one follows it there.
+    var correction: SetCorrection?
+    var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
+    /// Handed the window's undo manager while the card is on screen, and `nil` once it has gone.
+    var onUndoManager: (@MainActor (UndoManager?) -> Void)?
 }
 
 struct SetTrackerView<SetTrackerRow: View>: View {
@@ -51,6 +56,11 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     @ViewBuilder var setTrackerRow: (SetTrackerRowDelegate) -> SetTrackerRow
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.undoManager) private var undoManager
+
+    /// The card's rows on screen. The undo manager is let go only when none is: a single row
+    /// scrolling away is not the card going.
+    @State private var visibleRows = 0
 
     /// Whether the logged warm-ups are shown row by row rather than as one line.
     @State private var showsLoggedWarmups = false
@@ -76,8 +86,8 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 }
                 columnHeaders
             }
-            if delegate.card?.restTimer?.anchor == .top {
-                restRow
+            if let timer = delegate.card?.restTimer, timer.anchor == .top {
+                InlineRestTimerRow(timer: timer)
             }
             let loggedWarmups = delegate.exercise.wrappedValue.sets.filter { $0.isWarmup && $0.completedAt != nil }
             if !loggedWarmups.isEmpty {
@@ -101,11 +111,17 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             }
             ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
                 row(for: set)
-                if delegate.card?.restTimer?.anchor == .below(setId: set.id) {
-                    restRow
-                }
+                correctionRow(below: set)
             }
             addSetButton
+        }
+        .onAppear {
+            visibleRows += 1
+            delegate.card?.onUndoManager?(undoManager)
+        }
+        .onDisappear {
+            visibleRows -= 1
+            if visibleRows == 0 { delegate.card?.onUndoManager?(nil) }
         }
         .listRowSeparator(.hidden)
         .listRowInsets(.vertical, 0)
@@ -149,10 +165,17 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         )
     }
 
+    /// Under the set just logged: what it was, to correct or undo, and the rest it started.
     @ViewBuilder
-    private var restRow: some View {
-        if let timer = delegate.card?.restTimer {
-            InlineRestTimerRow(timer: timer)
+    private func correctionRow(below set: WorkoutSetModel) -> some View {
+        if let card = delegate.card {
+            let correction = card.correction?.setId == set.id ? card.correction : nil
+            let timer = card.restTimer?.anchor == .below(setId: set.id) ? card.restTimer : nil
+            if correction != nil || timer != nil {
+                InlineRestTimerRow(timer: timer, correction: correction) { action in
+                    card.onCorrection?(set.id, action)
+                }
+            }
         }
     }
 

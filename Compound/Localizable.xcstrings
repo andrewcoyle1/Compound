@@ -374,6 +374,16 @@
         }
       }
     },
+    "%lld in reserve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld en reserva"
+          }
+        }
+      }
+    },
     "/ %@" : {
       "localizations" : {
         "es" : {
@@ -2768,6 +2778,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "3–20 caracteres: letras, números, guiones bajos y puntos. Tus amigos pueden encontrarte con él."
+          }
+        }
+      }
+    },
+    "4 or more in reserve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 o más en reserva"
+          }
+        }
+      }
+    },
+    "4+" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4+"
           }
         }
       }
@@ -6039,6 +6069,16 @@
         }
       }
     },
+    "Change Reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar repeticiones"
+          }
+        }
+      }
+    },
     "Change Weight Unit" : {
       "localizations" : {
         "es" : {
@@ -6459,6 +6499,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerrar"
+          }
+        }
+      }
+    },
+    "Closes the keypad" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra el teclado"
           }
         }
       }
@@ -13396,6 +13446,16 @@
         }
       }
     },
+    "Log Set %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie %@"
+          }
+        }
+      }
+    },
     "Log weight" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -18231,6 +18291,16 @@
         }
       }
     },
+    "Remove a rep" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar una repetición"
+          }
+        }
+      }
+    },
     "Remove Circuit" : {
       "localizations" : {
         "es" : {
@@ -20024,6 +20094,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %@"
+          }
+        }
+      }
+    },
+    "Set %@ logged, %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$@ registrada, %2$@"
           }
         }
       }
@@ -24559,6 +24639,16 @@
         }
       }
     },
+    "Undo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
+          }
+        }
+      }
+    },
     "Unilateral" : {
       "localizations" : {
         "es" : {
@@ -24648,6 +24738,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desbloquea ejercicios avanzados"
+          }
+        }
+      }
+    },
+    "Unlog Set %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar registro de la serie %@"
           }
         }
       }

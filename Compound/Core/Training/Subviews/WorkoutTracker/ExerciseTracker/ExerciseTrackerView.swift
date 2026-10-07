@@ -40,6 +40,10 @@ struct ExerciseCard {
     var onDoLater: (@MainActor () -> Void)?
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
+    /// See `SetTrackerCard.correction`, `onCorrection` and `onUndoManager`.
+    var correction: SetCorrection?
+    var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
+    var onUndoManager: (@MainActor (UndoManager?) -> Void)?
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -68,7 +72,10 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 onProgressionNoteAcknowledged: card.onProgressionNoteAcknowledged,
                 restTimer: card.restTimer,
                 onLogSet: card.onLogSet,
-                onCustomRestChanged: card.onCustomRestChanged
+                onCustomRestChanged: card.onCustomRestChanged,
+                correction: card.correction,
+                onCorrection: card.onCorrection,
+                onUndoManager: card.onUndoManager
             )))
         } else {
             DisclosureGroup(isExpanded: delegate.isExpanded) {

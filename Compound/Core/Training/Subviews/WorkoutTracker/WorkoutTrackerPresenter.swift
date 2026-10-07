@@ -111,6 +111,10 @@ class WorkoutTrackerPresenter {
     @ObservationIgnored var lastSlotAction: ActiveWorkout.SlotAction?
     @ObservationIgnored var lastSlotActionChangeAt: Date?
 
+    /// The window's undo manager and the set whose reps taps undo as one. See `+Correction`.
+    @ObservationIgnored weak var undoManager: UndoManager?
+    @ObservationIgnored var coalescingRepsSetId: String?
+
     // MARK: - Initialization
     
     init(

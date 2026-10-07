@@ -250,7 +250,6 @@ extension SetTrackerRowPresenter {
 
     /// A weight or reps field took focus: open its keyboard on what this set and exercise allow.
     func onKeyboardFieldBegan(_ field: SetKeyboardField, delegate: SetTrackerRowDelegate) {
-        keyboard.onOfferCompletion = { [weak self] in self?.offerCompletion(delegate: delegate) }
         keyboard.open(field, set: delegate.set, context: keyboardContext(delegate: delegate))
     }
 
@@ -297,16 +296,6 @@ extension SetTrackerRowPresenter {
             )
         }
     }
-
-    /// Done on a set that is ready logs it, as the row's circle does, with no question in between:
-    /// tapping the circle again is the undo. A set that is not ready, or is already logged, just
-    /// closes. The event keeps its name so the funnel reading it stays whole.
-    private func offerCompletion(delegate: SetTrackerRowDelegate) {
-        let exercise = delegate.exercise.wrappedValue
-        guard completionState(trackingMode: exercise.trackingMode, set: delegate.set.wrappedValue) == .ready else { return }
-        interactor.trackEvent(event: Event.keyboardOfferedCompletion)
-        onSetComplete(exercise, delegate.set)
-    }
 }
 
 extension SetTrackerRowPresenter {
@@ -315,12 +304,10 @@ extension SetTrackerRowPresenter {
         /// Every set logged, from a row, the set keyboard or the tracker's log button, which
         /// `source` tells apart.
         case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool, source: String = "row")
-        case keyboardOfferedCompletion
 
         var eventName: String {
             switch self {
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
-            case .keyboardOfferedCompletion: return "SetTrackerRow_Keyboard_OfferedCompletion"
             }
         }
 
@@ -335,8 +322,6 @@ extension SetTrackerRowPresenter {
                     "rest_duration_seconds": restDurationSeconds,
                     "on_start_rest_is_nil": onStartRestIsNil
                 ]
-            case .keyboardOfferedCompletion:
-                return nil
             }
         }
 

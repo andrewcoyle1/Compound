@@ -264,6 +264,16 @@
         }
       }
     },
+    "Log set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie"
+          }
+        }
+      }
+    },
     "logged" : {
       "localizations" : {
         "es" : {

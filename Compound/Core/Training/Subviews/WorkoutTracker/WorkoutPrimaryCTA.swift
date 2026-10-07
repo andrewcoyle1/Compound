@@ -18,7 +18,8 @@ extension WorkoutTrackerView {
     @ViewBuilder
     var primaryCTA: some View {
         if presenter.primarySlot != nil {
-            HStack(spacing: 0) {
+            // Skip Rest over +15s at accessibility sizes, where side by side neither fits (S3).
+            ctaLayout {
                 // One button for every action, so its capsule morphs from Log to Skip Rest and back
                 // rather than one button leaving as another arrives, and VoiceOver focus stays on it.
                 CallToActionButton {
@@ -28,6 +29,7 @@ extension WorkoutTrackerView {
                     primarySlotLabel
                 }
                 .accessibilityFocused($isPrimaryCTAFocused)
+                .accessibilityInputLabels(presenter.primarySlotInputLabels)
                 .disabled(presenter.isPrimarySlotInGrace)
                 .keyboardShortcut(.return, modifiers: .command)
                 // Two identifiers for the one button, so tests can wait for the state they need.
@@ -65,10 +67,19 @@ extension WorkoutTrackerView {
         }
     }
 
+    /// Side by side, or one over the other at accessibility text sizes.
+    private var ctaLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: Spacing.s))
+            : AnyLayout(HStackLayout(spacing: 0))
+    }
+
     @ViewBuilder
     private var primarySlotLabel: some View {
+        let isLarge = dynamicTypeSize.isAccessibilitySize
         if let restEnd = presenter.primarySlotRestEnd {
-            HStack(spacing: Spacing.s) {
+            let layout = isLarge ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: Spacing.s))
+            layout {
                 Text("Skip Rest")
                 Text(timerInterval: min(.now, restEnd)...restEnd)
                     .monospacedDigit()
@@ -78,10 +89,13 @@ extension WorkoutTrackerView {
             .accessibilityLabel(presenter.primarySlotTitle)
             .accessibilityValue(Text(timerInterval: min(.now, restEnd)...restEnd))
         } else {
-            Text(presenter.primarySlotTitle)
-                .lineLimit(2)
+            // At accessibility sizes "Log set 2 · 102.5 kg × 10" needs three lines and lost its
+            // figures to the line limit; "Log set 2" fits, and the row above shows the figures (S3).
+            Text(isLarge ? presenter.primarySlotShortTitle : presenter.primarySlotTitle)
+                .lineLimit(isLarge ? nil : 2)
                 .multilineTextAlignment(.center)
                 .contentTransition(.opacity)
+                .accessibilityLabel(presenter.primarySlotTitle)
         }
     }
 }

@@ -42,10 +42,12 @@ struct WorkoutProgressHeader: View {
             }
             // Fonts on each text, not the stack: the accessibility audit only credits a text with
             // Dynamic Type when its own font is a text style.
-            HStack {
+            countsLayout {
                 Text("\(progress.doneWorkingSets) of \(progress.totalWorkingSets) working sets")
                     .font(.label)
-                Spacer()
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Spacer()
+                }
                 if blockMenu {
                     Menu {
                         blockMenuItems
@@ -59,9 +61,18 @@ struct WorkoutProgressHeader: View {
             }
             // Primary: secondary on the bar's hard edge fails 4.5:1 at this size.
             .monospacedDigit()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal)
         .accessibilityElement(children: blockMenu ? .contain : .combine)
+    }
+
+    /// The two counts on one line, or one under the other at accessibility sizes, where side by
+    /// side each wrapped onto several lines of a bar that stays pinned on screen (a11y.md S3).
+    private var countsLayout: AnyLayout {
+        dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.xxs))
+            : AnyLayout(HStackLayout())
     }
 
     @ViewBuilder

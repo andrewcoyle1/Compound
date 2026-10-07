@@ -140,6 +140,21 @@ struct WorkoutTrackerAnnouncementTests {
         #expect(ActiveWorkout.spokenFigures(of: set, trackingMode: .weightReps, unit: .kilograms, distanceUnit: .meters) == nil)
     }
 
+    // MARK: - The bottom button's names (S3, S5)
+
+    /// The short form fits at accessibility sizes, and Voice Control's names hold still while the
+    /// set's figures are typed.
+    @Test func theLogButtonHasAShortFormAndNamesThatDoNotChangeWithTheFigures() throws {
+        let (presenter, _) = try makeScreen()
+        #expect(presenter.primarySlotTitle.hasPrefix("Log set 1 · "), "\(presenter.primarySlotTitle)")
+        #expect(presenter.primarySlotShortTitle == "Log set 1")
+
+        let before = presenter.primarySlotInputLabels
+        presenter.workoutSession.exercises[0].sets[0].weightKg = 62.5
+        #expect(presenter.primarySlotInputLabels == before)
+        #expect(before == ["Log set 1", "Log set", "Log"])
+    }
+
     // MARK: - Up Next actions (M1)
 
     @Test func moveUpAndMoveDownAreOfferedOnlyWhereARowCanGo() throws {

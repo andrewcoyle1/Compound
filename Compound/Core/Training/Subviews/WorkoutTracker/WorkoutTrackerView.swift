@@ -12,7 +12,7 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
     /// At regular width Pause, Finish and Notes come out of the menu onto the bar.
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     

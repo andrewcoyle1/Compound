@@ -125,6 +125,27 @@ extension WorkoutTrackerPresenter {
         TrackerAnnouncer.post(announcement)
     }
 
+    // MARK: - The bottom button's names (a11y.md S3, S5)
+
+    /// "Log set 2": the button's words without the figures, which is what fits at accessibility
+    /// text sizes. VoiceOver still reads the whole title.
+    var primarySlotShortTitle: String {
+        primarySlotTitle.components(separatedBy: " · ").first ?? primarySlotTitle
+    }
+
+    /// What Voice Control answers to. The title changes with every keystroke in the set's fields;
+    /// these do not.
+    var primarySlotInputLabels: [String] {
+        switch primarySlot {
+        case .log?: [primarySlotShortTitle, String(localized: "Log set"), String(localized: "Log")]
+        case .skipRest?: [String(localized: "Skip rest"), String(localized: "Skip")]
+        case .next?: [primarySlotTitle, String(localized: "Next")]
+        case .finish?: [String(localized: "Finish Workout"), String(localized: "Finish")]
+        case .resume?: [String(localized: "Resume Workout"), String(localized: "Resume")]
+        case nil: []
+        }
+    }
+
     // MARK: - Up Next actions (a11y.md M1)
 
     /// Where `exerciseId` would go one row up (`-1`) or down (`1`) in Up Next, as a `List.onMove`

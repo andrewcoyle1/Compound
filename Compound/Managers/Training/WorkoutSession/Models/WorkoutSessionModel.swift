@@ -97,6 +97,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         gymProfile: GymProfileModel? = nil,
         unitPreferences: [String: ExerciseUnitPreference]? = nil,
         prefill: SessionPrefill = .previousValues,
+        plansSets: Bool = false,
         dateCreated: Date = .now
     ) {
         self.id = id
@@ -142,6 +143,16 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 gymProfile: gymProfile,
                 unitPreferences: unitPreferences
             ).apply(to: &workingSets)
+
+            // With Workout Settings › Set Plan on, the template's drops, mini-sets and AMRAP
+            // targets, laid onto the prefilled sets so each drop steps down from its set's weight.
+            if plansSets {
+                workingSets = WorkoutSessionModel.applyingSetPlan(
+                    to: workingSets,
+                    setTargets: exerciseModel.setTargets,
+                    authorId: authorId
+                )
+            }
             
             // Use the first working set's weight/reps for warmup calculation, or fall back to estimated values
             let firstWorkingSet = workingSets.first
@@ -484,6 +495,42 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 completedAt: nil,
                 dateCreated: .now
             )
+        }
+    }
+
+    /// The template's set plan laid onto working sets already built and prefilled, one row per
+    /// target in order: a drop target is followed by its drops, each `dropStep` per cent lighter
+    /// than the piece before (to the nearest 0.5 kg; the tracker snaps to the equipment later), a
+    /// myo-rep, rest-pause or cluster target by its mini-sets at the set's weight, and an AMRAP set
+    /// carries the reps it sets out to beat unless the prefill already raised them.
+    static func applyingSetPlan(to workingSets: [WorkoutSetModel], setTargets: [SetTarget], authorId: String) -> [WorkoutSetModel] {
+        workingSets.enumerated().flatMap { position, set -> [WorkoutSetModel] in
+            guard position < setTargets.count, !set.isSubSet else { return [set] }
+            let target = setTargets[position]
+            func piece(kind: SetKind, weightKg: Double?, reps: Int?) -> WorkoutSetModel {
+                WorkoutSetModel(
+                    id: UUID().uuidString, authorId: authorId, index: set.index, reps: reps, weightKg: weightKg,
+                    side: set.side, kind: kind, parentSetId: set.id, isWarmup: false, dateCreated: .now
+                )
+            }
+            switch target.setType {
+            case .standard:
+                return [set]
+            case .failure, .amrap:
+                var amrap = set
+                amrap.targetReps = set.targetReps ?? target.amrapTargetReps
+                return [amrap]
+            case .drop:
+                var weight = set.weightKg
+                return [set] + (0..<max(target.dropCount ?? 0, 0)).map { _ in
+                    weight = weight.map { ($0 * (1 - Double(target.dropStep) / 100) * 2).rounded() / 2 }
+                    return piece(kind: .drop, weightKg: weight, reps: target.dropReps)
+                }
+            case .myo, .restPause, .cluster:
+                return [set] + (0..<max(target.miniSetCount ?? 0, 0)).map { _ in
+                    piece(kind: .standard, weightKg: set.weightKg, reps: nil)
+                }
+            }
         }
     }
 

@@ -32,6 +32,9 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
     var kindRawValue: String?
     /// The set this row is a drop, mini-set or cluster of, or `nil` for a set of its own.
     var parentSetId: String?
+    /// The reps an AMRAP set sets out to beat, from the template's set plan; nil for every other
+    /// set and for every set created without the plan.
+    var targetReps: Int?
 
     var isWarmup: Bool
     var completedAt: Date?
@@ -59,6 +62,7 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         side: SetSide? = nil,
         kind: SetKind = .standard,
         parentSetId: String? = nil,
+        targetReps: Int? = nil,
         isWarmup: Bool,
         completedAt: Date? = nil,
         dateCreated: Date
@@ -74,6 +78,7 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         self.sideRawValue = side?.rawValue
         self.kindRawValue = kind == .standard ? nil : kind.rawValue
         self.parentSetId = parentSetId
+        self.targetReps = targetReps
         self.isWarmup = isWarmup
         self.completedAt = completedAt
         self.dateCreated = dateCreated
@@ -91,6 +96,7 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         case sideRawValue = "side"
         case kindRawValue = "kind"
         case parentSetId = "parent_set_id"
+        case targetReps = "target_reps"
         case isWarmup
         case completedAt = "completed_at"
         case dateCreated = "date_created"

@@ -302,7 +302,8 @@ struct CoreInteractor: GlobalInteractor {
             mesocycleId: mesocycleId,
             previousWorkoutSession: previousSession,
             unitPreferences: unitPreferences,
-            prefill: prefill
+            prefill: prefill,
+            plansSets: workoutSettings.plansSets
         )
     }
     

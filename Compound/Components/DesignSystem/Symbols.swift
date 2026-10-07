@@ -42,6 +42,8 @@ enum Symbol {
     static let restDay = "bed.double"
     static let warmup = "thermometer.sun"
     static let superset = "link"
+    /// A drop or mini-set: a row that is part of the set above it.
+    static let subSet = "arrow.turn.down.right"
     /// Logging each side of a one-limb exercise as its own row.
     static let splitSides = "rectangle.split.2x1"
     static let personalRecord = "trophy.fill"

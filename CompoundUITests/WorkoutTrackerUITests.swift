@@ -337,6 +337,31 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "12-superset-round-logged")
     }
 
+    /// WP-Q: a drop set added from the set-number menu sits under its set, and once its reps are
+    /// in, the log button logs the set and then the drop, with no rest between them.
+    func testADropSetAddedFromTheMenuIsLogged() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        reachFirstWorkingSet(app)
+
+        app.waitFor(app.buttons.matching(NSPredicate(format: "label == 'Set 1'")).firstMatch).tap()
+        app.waitFor(app.buttons["Add drop set to Set 1"]).tap()
+        let dropReps = app.waitFor(app.textFields["Set 1, drop set 1, Reps"])
+        attach(app, "13-drop-set-added")
+
+        dropReps.tap()
+        app.waitFor(app.buttons["8"].firstMatch).tap()
+        app.waitFor(app.buttons["Done"].firstMatch).tap()
+
+        tapSlot(logButton)
+        XCTAssertFalse(app.button("WorkoutTracker.skipRestButton").exists, "A rest ran before the drop")
+        XCTAssertTrue(app.waitFor(logButton).label.hasPrefix("Log drop set"), logButton.label)
+        tapSlot(logButton)
+        XCTAssertTrue(app.buttons["Set 1, drop set 1 completed"].waitForExistence(timeout: UITestApp.timeout))
+        attach(app, "14-drop-set-logged")
+    }
+
     /// One step through a workout: read the note, end the rest, or log the set.
     private func takeNextStep(_ app: XCUIApplication) {
         let gotIt = app.buttons["WorkoutTracker.progressionNote.acknowledge"]

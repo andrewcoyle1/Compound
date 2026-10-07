@@ -56,7 +56,7 @@ struct SetTrackerRowView: View {
                 stackedRow
             } else {
                 HStack {
-                    setNumber(set: delegate.set)
+                    setBadge(set: delegate.set)
                     Spacer()
                     previousValues(exercise: delegate.exercise, set: delegate.set)
                     Spacer()
@@ -86,6 +86,8 @@ struct SetTrackerRowView: View {
                 .padding(.leading, isStacked ? 0 : SetTrackerRowView.setColumnWidth + Spacing.s)
             }
         }
+        // A drop or mini-set sits under its set, one step in.
+        .padding(.leading, delegate.set.wrappedValue.isSubSet ? Spacing.l : 0)
         .padding(.vertical, Spacing.xs)
         // One container per set, read on the way in as "Set 2, next to log, 100 kilograms,
         // 8 reps", so the Containers rotor moves set by set (a11y.md M4).
@@ -146,9 +148,15 @@ struct SetTrackerRowView: View {
 
     /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
     /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
+    /// A drop or mini-set is named after its set: "Set 2, drop set 1".
     private var rowName: String {
         let set = delegate.set.wrappedValue
-        return set.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set))")
+        guard !set.isWarmup else { return String(localized: "Warmup set") }
+        let sets = delegate.exercise.wrappedValue.sets
+        if let parent = sets.first(where: { $0.id == set.parentSetId }), let subSetName = ActiveWorkout.subSetName(of: set, in: sets) {
+            return "\(String(localized: "Set \(setLabel(for: parent))")), \(subSetName)"
+        }
+        return String(localized: "Set \(setLabel(for: set))")
     }
 
     private var rowAccessibilityLabel: String {
@@ -159,14 +167,18 @@ struct SetTrackerRowView: View {
             unit: units.weightUnit,
             distanceUnit: units.distanceUnit
         )
-        return ActiveWorkout.rowSpokenLabel(name: rowName, state: delegate.rowState, figures: figures)
+        // The kind's chip is hidden from VoiceOver; the row says it: "Set 3, AMRAP".
+        let set = delegate.set.wrappedValue
+        let kind = set.isWarmup || set.isSubSet || set.kind == .standard ? nil : set.kind.displayName
+        let name = [rowName, kind].compactMap { $0 }.joined(separator: ", ")
+        return ActiveWorkout.rowSpokenLabel(name: name, state: delegate.rowState, figures: figures)
     }
 
     /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.
     private var stackedRow: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
-                setNumber(set: delegate.set)
+                setBadge(set: delegate.set)
                 previousValues(exercise: delegate.exercise, set: delegate.set)
                 Spacer(minLength: 0)
                 completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
@@ -183,9 +195,13 @@ struct SetTrackerRowView: View {
 
     private var deleteSetButton: some View {
         Button(role: .destructive) {
-            presenter.deleteSet(setId: delegate.set.id, exercise: delegate.exercise)
+            presenter.onDeleteSetPressed(setId: delegate.set.id, setName: rowName, exercise: delegate.exercise)
         } label: {
-            Label("Delete Set", systemImage: Symbol.delete)
+            switch delegate.set.wrappedValue.subSetKind {
+            case .drop: Label("Delete Drop Set", systemImage: Symbol.delete)
+            case .mini: Label("Delete Mini-Set", systemImage: Symbol.delete)
+            case nil: Label("Delete Set", systemImage: Symbol.delete)
+            }
         }
     }
 
@@ -202,13 +218,19 @@ struct SetTrackerRowView: View {
 
     func setNumber(set: Binding<WorkoutSetModel>) -> some View {
         Menu {
-            // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
-            Toggle("Warmup Set", isOn: set.isWarmup)
-            
-            Button {
-                presenter.onWarmupSetHelpPressed()
-            } label: {
-                Label("What's a warmup set?", systemImage: Symbol.info)
+            // A drop or mini-set is part of its set: it is added, typed and retyped from there.
+            if !set.wrappedValue.isSubSet {
+                // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
+                Toggle("Warmup Set", isOn: set.isWarmup)
+
+                Button {
+                    presenter.onWarmupSetHelpPressed()
+                } label: {
+                    Label("What's a warmup set?", systemImage: Symbol.info)
+                }
+            }
+            if ActiveWorkout.offersSetKinds(set.wrappedValue) {
+                setKindItems(set: set)
             }
 
             // The visible route to what the swipes and the long press also offer.
@@ -226,7 +248,14 @@ struct SetTrackerRowView: View {
             let tint: Color = set.wrappedValue.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
             // The label colour on the tinted circle: orange "W" on its own 15 % fill was about
             // 2:1 in light mode. The tint stays on the circle, and the letter says what it is (S4).
-            Text(setLabel(for: set.wrappedValue))
+            // A drop or mini-set has no number of its own, so its circle shows where it hangs from.
+            Group {
+                if set.wrappedValue.isSubSet {
+                    Image(systemName: Symbol.subSet)
+                } else {
+                    Text(setLabel(for: set.wrappedValue))
+                }
+            }
                 .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
                 .foregroundStyle(.primary)
                 // On the text, not the menu: the menu's inner button takes its accessibility from
@@ -347,7 +376,8 @@ struct SetTrackerRowView: View {
 
     @ViewBuilder
     private func autoTargetContent(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> some View {
-        if set.isWarmup {
+        // A drop or mini-set has no target of its own; its set's would read as the drop's.
+        if set.isWarmup || set.isSubSet {
             emptyTargetLabel
         } else {
             // The same number the row is labelled with, so a pair shares one target: a target
@@ -512,6 +542,72 @@ struct SetTrackerRowView: View {
             .disabled(delegate.set.wrappedValue.completedAt != nil)
     }
 
+}
+
+// MARK: - Set kinds
+
+extension SetTrackerRowView {
+
+    /// The set's circle, with its kind's chip under it: "AMRAP", or "Drop" or "Mini" on a sub-row.
+    /// Under rather than beside, so the columns keep the headers' widths.
+    func setBadge(set: Binding<WorkoutSetModel>) -> some View {
+        VStack(spacing: Spacing.xxs) {
+            setNumber(set: set)
+            kindChip(for: set.wrappedValue)
+        }
+    }
+
+    /// The chip's text in the primary colour on its tint, as the circle's is: orange on its own
+    /// 15 % fill is about 2:1 in light mode (S4). Hidden from VoiceOver, which hears the kind in
+    /// the row's name.
+    @ViewBuilder
+    private func kindChip(for set: WorkoutSetModel) -> some View {
+        if let chip = Self.chip(for: set) {
+            Text(chip.text)
+                .foregroundStyle(Color.primary)
+                .lineLimit(1)
+                .fixedSize()
+                .chipStyle(tint: chip.tint, filled: false)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private static func chip(for set: WorkoutSetModel) -> (text: LocalizedStringKey, tint: Color)? {
+        switch (set.subSetKind, set.kind) {
+        case (.drop, _): ("Drop", .warmup)
+        case (.mini, _): ("Mini", .warmup)
+        case (nil, .amrap) where !set.isWarmup: ("AMRAP", .secondary)
+        default: nil
+        }
+    }
+
+    /// The Set Type picker, then a drop or mini-set to add under the set.
+    @ViewBuilder
+    func setKindItems(set: Binding<WorkoutSetModel>) -> some View {
+        Picker(selection: set.kind) {
+            ForEach(ActiveWorkout.setTypeOptions(for: set.wrappedValue), id: \.self) { kind in
+                Text(kind.displayName).tag(kind)
+            }
+        } label: {
+            Label("Set Type", systemImage: Symbol.set)
+        }
+        .pickerStyle(.menu)
+        Divider()
+        Button {
+            presenter.addSubSet(.drop, to: set.wrappedValue.id, exercise: delegate.exercise)
+        } label: {
+            Label("Add Drop Set", systemImage: Symbol.add)
+        }
+        .accessibilityLabel(String(localized: "Add drop set to \(rowName)"))
+        if ActiveWorkout.offersMiniSet(set.wrappedValue) {
+            Button {
+                presenter.addSubSet(.mini, to: set.wrappedValue.id, exercise: delegate.exercise)
+            } label: {
+                Label("Add Mini-Set", systemImage: Symbol.add)
+            }
+            .accessibilityLabel(String(localized: "Add mini-set to \(rowName)"))
+        }
+    }
 }
 
 #Preview {

@@ -138,7 +138,7 @@ enum SessionPrefill {
     case previousValues
     /// Nothing at all: every working set starts blank.
     case empty
-    /// The engine's suggestions, keyed by the exercise's `templateId`. An exercise missing from
+    /// The engine's suggestions, keyed by `ActiveWorkout.historyKey`. An exercise missing from
     /// the dictionary — or carrying a `.noHistory` suggestion — falls back to `.previousValues`.
     case suggestions([String: ProgressionSuggestion])
 }

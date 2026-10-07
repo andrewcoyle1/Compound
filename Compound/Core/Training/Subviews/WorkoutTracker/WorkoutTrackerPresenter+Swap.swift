@@ -45,8 +45,9 @@ extension WorkoutTrackerPresenter {
     ///
     /// The replacement has as many working sets as were open, a left/right pair counted once and
     /// open warm-ups not at all: a warm-up for the old lift is not a working set of the new one.
-    /// Three when none were open. It takes the targets of those open sets, renumbered from one, and
-    /// the old exercise's place in a superset.
+    /// Three when none were open. It takes the targets of those open sets, renumbered from one, the
+    /// old exercise's place in a superset, and the plan's notes, rest, link and alternatives: the
+    /// plan is for the slot, whichever lift fills it.
     static func swapping(
         _ old: WorkoutExerciseModel,
         to replacement: ExerciseModel,
@@ -86,7 +87,11 @@ extension WorkoutTrackerPresenter {
             sets: sets,
             setTargets: targets,
             equipmentVariations: replacement.equipmentVariations,
-            supersetGroupId: old.supersetGroupId
+            supersetGroupId: old.supersetGroupId,
+            planNotes: old.planNotes,
+            restSeconds: old.restSeconds,
+            linkURL: old.linkURL,
+            substituteExerciseIds: old.substituteExerciseIds
         )
         guard !logged.isEmpty else { return (nil, new) }
 

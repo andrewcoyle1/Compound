@@ -155,6 +155,59 @@ struct WorkoutTrackerSwapTests {
         #expect(!grouped.contains { $0.id == "e1" })
     }
 
+    /// The plan is for the slot: its notes, rest, link and alternatives stay with whichever lift
+    /// fills it, as do the targets of the sets still open.
+    @Test("Test The Plan Fields Stay On The Replacement")
+    func testThePlanFieldsStayOnTheReplacement() throws {
+        var planned = halfDone
+        planned.planNotes = "Pause at the chest"
+        planned.restSeconds = 150
+        planned.linkURL = "https://example.com/bench"
+        planned.substituteExerciseIds = ["alt-1", "alt-2"]
+
+        let swap = WorkoutTrackerPresenter.swapping(planned, to: try replacement(), authorId: "author-1")
+
+        #expect(swap.replacement.planNotes == "Pause at the chest")
+        #expect(swap.replacement.restSeconds == 150)
+        #expect(swap.replacement.linkURL == "https://example.com/bench")
+        #expect(swap.replacement.substituteExerciseIds == ["alt-1", "alt-2"])
+        #expect(swap.replacement.setTargets.map(\.minReps) == [4, 6])
+    }
+
+    // MARK: - The picker
+
+    private final class PickerInteractor: SpyGlobalInteractor, SwapExercisePickerInteractor {
+        var allExercises: [ExerciseModel] = ExerciseModel.mocks
+    }
+
+    private final class PickerRouter: SwapExercisePickerRouter {
+        let router: AnyRouter = TestRouting.anyRouter
+    }
+
+    /// The plan's alternatives come first, in the plan's order; an id the library does not hold is
+    /// skipped, and the library follows as before.
+    @Test("Test The Planned Alternatives Are Listed First")
+    func testThePlannedAlternativesAreListedFirst() throws {
+        let library = ExerciseModel.mocks
+        try #require(library.count > 3)
+        let picker = SwapExercisePickerPresenter(
+            interactor: PickerInteractor(),
+            router: PickerRouter(),
+            alternativeIds: [library[3].id, "not-in-the-library", library[1].id],
+            onSelect: { _ in }
+        )
+
+        #expect(picker.plannedAlternatives.map(\.id) == [library[3].id, library[1].id])
+        #expect(picker.filteredExercises.map(\.id) == library.map(\.id))
+    }
+
+    @Test("Test Without A Plan There Are No Alternatives")
+    func testWithoutAPlanThereAreNoAlternatives() {
+        let picker = SwapExercisePickerPresenter(interactor: PickerInteractor(), router: PickerRouter(), onSelect: { _ in })
+
+        #expect(picker.plannedAlternatives.isEmpty)
+    }
+
     /// Last time's figures and the suggestion are keyed by template, so they are loaded for the
     /// replacement rather than left blank.
     @Test("Test Last Time And Suggestions Load For The Replacement")
@@ -177,7 +230,7 @@ struct WorkoutTrackerSwapTests {
 
         presenter.insertSwappedExercise(after: "e1", new: new)
 
-        #expect(await TestManagers.eventually { presenter.previousExercises[new.id]?.id == "last-\(new.id)" })
-        #expect(await TestManagers.eventually { presenter.progressionSuggestions[new.id] != nil })
+        #expect(await TestManagers.eventually { presenter.previousExercises["\(new.id)#0"]?.id == "last-\(new.id)" })
+        #expect(await TestManagers.eventually { presenter.progressionSuggestions["\(new.id)#0"] != nil })
     }
 }

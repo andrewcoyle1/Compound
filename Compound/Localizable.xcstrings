@@ -30667,6 +30667,36 @@
         }
       }
     },
+    "Plan notes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas del plan"
+          }
+        }
+      }
+    },
+    "Planned alternatives" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternativas del plan"
+          }
+        }
+      }
+    },
+    "Watch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver video"
+          }
+        }
+      }
+    },
     "BW" : {
       "localizations" : {
         "es" : {

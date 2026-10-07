@@ -53,7 +53,7 @@ extension WorkoutTrackerPresenter {
         workoutSession.updateExercises(updated)
         focusCard(on: card)
         captureProgressionBaseline(of: added)
-        loadPrevious(for: added.map(\.templateId))
+        loadPrevious(for: added)
         loadProgressionSuggestions(for: added)
 
         refreshLiveActivity()

@@ -249,6 +249,7 @@ private struct ActiveSessionScreen<Content: View>: View {
                     try? await interactor.startWorkout(for: plansSets ? Self.setPlanTemplate : .mock, in: nil)
                     if plansSets { await seedSetPlan() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
+                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_PLAN_NOTES") { seedPlanNotes() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_STRIP_OFF") { await hideExerciseStrip() }
                     isReady = true
                 }
@@ -298,6 +299,15 @@ private struct ActiveSessionScreen<Content: View>: View {
             SetTarget(setNumber: 2, setType: .amrap, amrapTargetReps: 8)
         ]
         return template
+    }
+
+    /// `UI_TEST_PLAN_NOTES`: the first exercise carries a plan's notes and video link, as a session
+    /// started from a planned template does.
+    private func seedPlanNotes() {
+        guard var session = interactor.activeSession, !session.exercises.isEmpty else { return }
+        session.exercises[0].planNotes = "Pause one second at the chest. Keep the shoulder blades pinned throughout every rep."
+        session.exercises[0].linkURL = "https://example.com/bench-press"
+        try? interactor.updateActiveSession(session)
     }
 
     /// `UI_TEST_SUPERSET`: the first two exercises as one superset, without their warm-ups, so a

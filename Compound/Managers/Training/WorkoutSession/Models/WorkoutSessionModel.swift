@@ -146,7 +146,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences
+                unitPreferences: unitPreferences,
+                occurrence: occurrence
             ).apply(to: &workingSets)
 
             // With Workout Settings › Set Plan on, the template's drops, mini-sets and AMRAP

@@ -141,7 +141,7 @@ struct WorkoutSessionPrefillTests {
             authorId: "author-1",
             template: template(),
             previousWorkoutSession: previousSession(),
-            prefill: .suggestions(["exercise-1": suggestion]),
+            prefill: .suggestions(["exercise-1#0": suggestion]),
             dateCreated: start
         )
 
@@ -158,7 +158,7 @@ struct WorkoutSessionPrefillTests {
             authorId: "author-1",
             template: template(),
             previousWorkoutSession: previousSession(),
-            prefill: .suggestions(["exercise-1": .noHistory(setCount: 3)]),
+            prefill: .suggestions(["exercise-1#0": .noHistory(setCount: 3)]),
             dateCreated: start
         )
 

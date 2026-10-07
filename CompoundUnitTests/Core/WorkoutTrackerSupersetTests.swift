@@ -337,4 +337,28 @@ struct WorkoutTrackerSupersetTests {
         let groups = screen.presenter.workoutSession.exercises.map(\.supersetGroupId)
         #expect(groups == [nil, "group-2", "group-2"])
     }
+
+    // MARK: - From a template
+
+    /// A plan's superset arrives on the session with its group, so the tracker draws the pair as
+    /// one block, and the exercise after it as its own.
+    @Test("Test A Template Superset Is One Block")
+    func testATemplateSupersetIsOneBlock() throws {
+        let library = ExerciseModel.mocks
+        try #require(library.count > 2)
+        var first = WorkoutTemplateExercise(exercise: library[0], setRestTimers: false)
+        var second = WorkoutTemplateExercise(exercise: library[1], setRestTimers: false)
+        first.supersetGroupId = "S1"
+        second.supersetGroupId = "S1"
+        let template = WorkoutTemplateModel(
+            authorId: "author-1",
+            name: "Push",
+            exercises: [first, second, WorkoutTemplateExercise(exercise: library[2], setRestTimers: false)]
+        )
+
+        let session = WorkoutSessionModel(authorId: "author-1", template: template)
+
+        let ids = session.exercises.map(\.id)
+        #expect(ActiveWorkout.blocks(session.exercises) == [[ids[0], ids[1]], [ids[2]]])
+    }
 }

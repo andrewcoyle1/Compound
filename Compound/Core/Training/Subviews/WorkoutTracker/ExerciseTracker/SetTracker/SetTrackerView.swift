@@ -34,6 +34,8 @@ struct SetTrackerCard {
     var onNotePressed: @MainActor () -> Void = { }
     /// Moves the exercise to the end of the workout; `nil` when there is nothing to put it behind.
     var onDoLater: (@MainActor () -> Void)?
+    /// Opens the plan's video link; `nil` when there is none to open.
+    var onWatch: (@MainActor () -> Void)?
     /// Why smart progression changed today's numbers, as a row above the sets until it is tapped.
     var progressionNote: String?
     var onProgressionNoteAcknowledged: @MainActor () -> Void = { }
@@ -256,6 +258,13 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                         onDoLater()
                     } label: {
                         Label("Do Later", systemImage: Symbol.doLater)
+                    }
+                }
+                if let onWatch = card.onWatch {
+                    Button {
+                        onWatch()
+                    } label: {
+                        Label("Watch", systemImage: Symbol.video)
                     }
                 }
                 Divider()

@@ -159,7 +159,7 @@ struct WorkoutTrackerRestFeedbackTests {
         screen.presenter.loadPreviousWorkoutSession()
         await settle()
 
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "elsewhere-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "elsewhere-template-e1")
     }
 
     @Test("Test A Workout From A Template Loads What Was Done Last Time")
@@ -175,7 +175,7 @@ struct WorkoutTrackerRestFeedbackTests {
         screen.presenter.loadPreviousWorkoutSession()
         await settle()
 
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "last-time-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "last-time-template-e1")
     }
 
     /// The default, stored as `"anyWorkout"` for every existing user. This workout's own history,
@@ -197,7 +197,7 @@ struct WorkoutTrackerRestFeedbackTests {
         await settle()
 
         #expect(screen.interactor.lastCompletedSessionLookups == [nil])
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "recent-freehand-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "recent-freehand-template-e1")
     }
 
     /// Turned on, the same lookup skips the more recent session logged outside the mesocycle and
@@ -220,7 +220,7 @@ struct WorkoutTrackerRestFeedbackTests {
         await settle()
 
         #expect(screen.interactor.lastCompletedSessionLookups == ["program-1"])
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "old-in-program-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "old-in-program-template-e1")
     }
 
     /// A one-off workout is in no mesocycle, so there is no mesocycle for it to be "within". Filtering
@@ -240,7 +240,7 @@ struct WorkoutTrackerRestFeedbackTests {
         await settle()
 
         #expect(screen.interactor.lastCompletedSessionLookups == [nil])
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "in-program-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "in-program-template-e1")
     }
 
     /// The fallback the whole rework is for: a template that has never held this exercise still
@@ -265,7 +265,7 @@ struct WorkoutTrackerRestFeedbackTests {
         screen.presenter.loadPreviousWorkoutSession()
         await settle()
 
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "elsewhere-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "elsewhere-template-e1")
     }
 
     /// The new scope. The template is not consulted, so the most recent time the exercise was
@@ -286,7 +286,7 @@ struct WorkoutTrackerRestFeedbackTests {
         await settle()
 
         #expect(screen.interactor.lastCompletedSessionLookups.isEmpty)
-        #expect(screen.presenter.previousExercises["template-e1"]?.id == "elsewhere-template-e1")
+        #expect(screen.presenter.previousExercises["template-e1#0"]?.id == "elsewhere-template-e1")
     }
 
     // MARK: - Announcing the end of a rest

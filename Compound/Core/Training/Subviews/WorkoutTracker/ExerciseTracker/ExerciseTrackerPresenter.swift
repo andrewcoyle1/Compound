@@ -45,6 +45,43 @@ class ExerciseTrackerPresenter {
         return trimmed
     }
 
+    /// The plan's notes for the exercise (the coach's cues), or `nil` when there are none.
+    func planNotes(for exercise: WorkoutExerciseModel) -> String? {
+        let trimmed = exercise.planNotes?.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmed, !trimmed.isEmpty else { return nil }
+        return trimmed
+    }
+
+    /// The plan's video link, when it is a web address to open in the browser. Anything else, a
+    /// typo or another scheme, hides Watch rather than offering a link that goes nowhere.
+    func watchURL(for exercise: WorkoutExerciseModel) -> URL? {
+        guard let text = exercise.linkURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+              let url = URL(string: text),
+              let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              url.host()?.isEmpty == false
+        else { return nil }
+        return url
+    }
+
+    func onWatchPressed(_ url: URL, open: OpenURLAction) {
+        interactor.trackEvent(event: Event.watchPressed)
+        open(url)
+    }
+
+    enum Event: LoggableEvent {
+        case watchPressed
+
+        var eventName: String {
+            switch self {
+            case .watchPressed: return "ExerciseTracker_Watch_Pressed"
+            }
+        }
+
+        var parameters: [String: Any]? { nil }
+
+        var type: LogType { .analytic }
+    }
+
     /// Opens the note sheet for this session's note on the exercise, with last session's as a
     /// hint. The draft starts from the note already written, so reopening edits rather than
     /// replaces it.

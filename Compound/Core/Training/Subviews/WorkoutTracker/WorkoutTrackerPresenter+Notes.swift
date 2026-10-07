@@ -13,8 +13,8 @@ extension WorkoutTrackerPresenter {
     /// The note left on this exercise the last time it was done, for the header's note sheet to
     /// show as a hint. "Last time" is the session `loadPreviousWorkoutSession()` resolved, the same
     /// one the Prev column reads, so the hint and the figures beside it always agree.
-    func previousNote(forExerciseTemplateId templateId: String) -> String? {
-        let trimmed = previousExercises[templateId]?.notes?.trimmingCharacters(in: .whitespacesAndNewlines)
+    func previousNote(for exercise: WorkoutExerciseModel) -> String? {
+        let trimmed = previousExercise(for: exercise)?.notes?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmed, !trimmed.isEmpty else { return nil }
         return trimmed
     }

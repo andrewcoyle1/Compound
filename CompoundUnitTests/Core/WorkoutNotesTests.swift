@@ -90,7 +90,7 @@ struct WorkoutPreviousNoteTests {
         presenter.loadPreviousWorkoutSession()
         await Fixture.settle()
 
-        #expect(presenter.previousNote(forExerciseTemplateId: "template-e1") == "Grip wider")
+        #expect(presenter.previousNote(for: try #require(presenter.workoutSession.exercises.first { $0.templateId == "template-e1" })) == "Grip wider")
     }
 
     /// The last session is the last session: one that left no note gives no hint, rather than
@@ -107,7 +107,7 @@ struct WorkoutPreviousNoteTests {
         presenter.loadPreviousWorkoutSession()
         await Fixture.settle()
 
-        #expect(presenter.previousNote(forExerciseTemplateId: "template-e1") == nil)
+        #expect(presenter.previousNote(for: try #require(presenter.workoutSession.exercises.first { $0.templateId == "template-e1" })) == nil)
     }
 
     @Test("Test No Hint For An Exercise Never Done Before")
@@ -117,7 +117,7 @@ struct WorkoutPreviousNoteTests {
         presenter.loadPreviousWorkoutSession()
         await Fixture.settle()
 
-        #expect(presenter.previousNote(forExerciseTemplateId: "template-e1") == nil)
+        #expect(presenter.previousNote(for: try #require(presenter.workoutSession.exercises.first { $0.templateId == "template-e1" })) == nil)
     }
 }
 

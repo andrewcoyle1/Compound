@@ -538,11 +538,11 @@ struct ActiveWorkoutPresenterTests {
     @Test("Test The Progression Note Shows Until Acknowledged Or Started")
     func testProgressionNote() throws {
         let (presenter, _) = try makePresenter(sets: [openSet("s1"), openSet("s2")])
-        presenter.previousExercises["t1"] = WorkoutExerciseModel(
+        presenter.previousExercises["t1#0"] = WorkoutExerciseModel(
             id: "last", authorId: "author-1", templateId: "t1", name: "Squat", trackingMode: .weightReps, index: 1,
             sets: [WorkoutSetModel(id: "l", authorId: "author-1", index: 1, reps: 5, weightKg: 97.5, isWarmup: false, completedAt: Date(), dateCreated: Date())]
         )
-        presenter.progressionSuggestions["t1"] = ProgressionSuggestion(rationale: .progressWeight, sets: [SuggestedSet(weightKg: 100, reps: 5)])
+        presenter.progressionSuggestions["t1#0"] = ProgressionSuggestion(rationale: .progressWeight, sets: [SuggestedSet(weightKg: 100, reps: 5)])
 
         #expect(presenter.progressionNote == "+2.5 kg today. You hit 5 reps on every working set last time.")
 

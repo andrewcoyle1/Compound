@@ -19,10 +19,11 @@ extension SessionPrefill {
     }
 
     /// The suggestion for one exercise, or `nil` when there is none worth applying — which
-    /// includes `.noHistory`, since the engine never invents a starting weight.
-    func suggestion(for templateId: String) -> ProgressionSuggestion? {
+    /// includes `.noHistory`, since the engine never invents a starting weight. Looked up by
+    /// `ActiveWorkout.historyKey`, so an exercise listed twice gets each appearance's own.
+    func suggestion(for templateId: String, occurrence: Int = 0) -> ProgressionSuggestion? {
         guard case .suggestions(let byExercise) = self,
-              let suggestion = byExercise[templateId],
+              let suggestion = byExercise[ActiveWorkout.historyKey(templateId: templateId, occurrence: occurrence)],
               suggestion.rationale != .noHistory else { return nil }
         return suggestion
     }
@@ -46,6 +47,8 @@ struct WorkingSetPrefill {
     let exercise: ExerciseModel
     let gymProfile: GymProfileModel?
     let unitPreferences: [String: ExerciseUnitPreference]?
+    /// Which appearance of `exercise` in the workout this is, from 0 (`ActiveWorkout.historyKey`).
+    var occurrence = 0
 
     /// Fills `workingSets` from the suggestion for this exercise, falling back per field to what
     /// was logged last time. A set with neither is left exactly as it was built.
@@ -57,7 +60,7 @@ struct WorkingSetPrefill {
     func apply(to workingSets: inout [WorkoutSetModel]) {
         guard prefill.fillsWorkingSets else { return }
 
-        let suggestion = prefill.suggestion(for: exercise.id)
+        let suggestion = prefill.suggestion(for: exercise.id, occurrence: occurrence)
         // A drop or mini-set is part of the set before it, and filled by hand when it is added:
         // matched by position, last time's drop would hand its lighter weight to the next set.
         let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right && !$0.isSubSet }

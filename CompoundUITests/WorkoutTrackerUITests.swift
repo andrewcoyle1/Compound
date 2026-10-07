@@ -204,7 +204,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         try app.performAccessibilityAudit { issue in
             let element = issue.element.map { "\($0.elementType.rawValue) '\($0.label)' id='\($0.identifier)' \($0.frame)" } ?? "-"
             let known = Self.knownIssue(issue, navigationBar: navigationBar, covered: covered)
-            print("AUDIT [\(state)]:", known ?? "UNEXPECTED", "|", issue.auditType.rawValue, issue.compactDescription, element)
+            print("AUDIT [\(state)]:", known ?? (issue.element == nil ? "UNNAMED, expected failure" : "UNEXPECTED"), "|", issue.auditType.rawValue, issue.compactDescription, element)
             if known == nil, issue.element == nil {
                 XCTExpectFailure("Unattributable audit issue in \(state): \(issue.compactDescription)", strict: false) {
                     XCTFail("\(state): \(issue.compactDescription) — \(issue.detailedDescription)")

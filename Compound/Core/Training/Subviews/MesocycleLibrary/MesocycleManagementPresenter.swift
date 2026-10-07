@@ -89,6 +89,10 @@ class MesocycleLibraryPresenter {
         router.showPrebuiltMesocycleDetailView(mesocycle: mesocycle)
     }
 
+    func onImportProgramPressed() {
+        router.showImportProgramView()
+    }
+
     func onCreateMesocyclePressed() {
         router.showCreateMesocycleView(delegate: CreateMesocycleDelegate())
     }

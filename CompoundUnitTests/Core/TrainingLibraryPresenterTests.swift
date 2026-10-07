@@ -471,6 +471,7 @@ struct MesocycleManagementPresenterTests {
         func showMesocycleSettingsView(mesocycle: Binding<Mesocycle>) { shown.append("programSettings") }
         func showCreateMesocycleView(delegate: CreateMesocycleDelegate) { shown.append("createProgram") }
         func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle) { shown.append("prebuilt:\(mesocycle.id)") }
+        func showImportProgramView() { shown.append("importProgram") }
 
         func showEditMesocycleView(delegate: EditMesocycleDelegate) {
             shown.append("editProgram")
@@ -594,6 +595,15 @@ struct MesocycleManagementPresenterTests {
         screen.presenter.onCreateMesocyclePressed()
 
         #expect(screen.router.shown == ["createProgram"])
+    }
+
+    @Test("Test Importing A Program Opens The Import Screen")
+    func testImportingAProgramOpensTheImportScreen() {
+        let screen = makeScreen()
+
+        screen.presenter.onImportProgramPressed()
+
+        #expect(screen.router.shown == ["importProgram"])
     }
 }
 

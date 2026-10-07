@@ -413,6 +413,16 @@
         }
       }
     },
+    "%@ has different days from week 1." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tiene días distintos a los de la semana 1."
+          }
+        }
+      }
+    },
     "%@ in %@" : {
       "localizations" : {
         "es" : {
@@ -1151,6 +1161,22 @@
         }
       }
     },
+    "%@, %@: the exercises differ from week 1." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@: the exercises differ from week 1."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@: los ejercicios son distintos a los de la semana 1."
+          }
+        }
+      }
+    },
     "%@, current" : {
       "localizations" : {
         "es" : {
@@ -1467,6 +1493,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld alternativas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld blocks" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld block"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld blocks"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bloque"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld bloques"
                 }
               }
             }
@@ -4328,6 +4394,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir comida"
+          }
+        }
+      }
+    },
+    "Add mesocycle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir mesociclo"
           }
         }
       }
@@ -7227,6 +7303,16 @@
         }
       }
     },
+    "Choose a file" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir un archivo"
+          }
+        }
+      }
+    },
     "Choose a reason for the report." : {
       "localizations" : {
         "es" : {
@@ -7263,6 +7349,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elegir de la fototeca"
+          }
+        }
+      }
+    },
+    "Choose from library" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir de la biblioteca"
           }
         }
       }
@@ -8324,6 +8420,16 @@
         }
       }
     },
+    "Create \"%@\"" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear \"%@\""
+          }
+        }
+      }
+    },
     "Create & Add" : {
       "localizations" : {
         "es" : {
@@ -8949,6 +9055,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Día %lld"
+          }
+        }
+      }
+    },
+    "Day 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día 1"
           }
         }
       }
@@ -13398,12 +13514,42 @@
         }
       }
     },
+    "Import Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar programa"
+          }
+        }
+      }
+    },
+    "Import Program…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar programa…"
+          }
+        }
+      }
+    },
     "Imported" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importado"
+          }
+        }
+      }
+    },
+    "Imported Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Programa importado"
           }
         }
       }
@@ -15473,6 +15619,26 @@
         }
       }
     },
+    "Match each exercise to one in your library, or create it. A new exercise has no muscle groups until you add them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empareja cada ejercicio con uno de tu biblioteca o créalo. Un ejercicio nuevo no tiene grupos musculares hasta que los añadas."
+          }
+        }
+      }
+    },
+    "Match these exercises first: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero empareja estos ejercicios: %@"
+          }
+        }
+      }
+    },
     "Max" : {
       "localizations" : {
         "es" : {
@@ -16454,6 +16620,16 @@
         }
       }
     },
+    "New exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicio nuevo"
+          }
+        }
+      }
+    },
     "New followers" : {
       "localizations" : {
         "es" : {
@@ -17058,6 +17234,16 @@
         }
       }
     },
+    "No header row with an \"Exercise\" column was found." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ninguna fila de encabezado con una columna \"Exercise\"."
+          }
+        }
+      }
+    },
     "No local active workout available" : {
       "localizations" : {
         "es" : {
@@ -17430,6 +17616,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se puede cargar. Usa %@ %@"
+          }
+        }
+      }
+    },
+    "Not matched" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin emparejar"
           }
         }
       }
@@ -19813,6 +20009,16 @@
         }
       }
     },
+    "Reading file…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leyendo archivo…"
+          }
+        }
+      }
+    },
     "Ready" : {
       "localizations" : {
         "es" : {
@@ -21143,6 +21349,16 @@
         }
       }
     },
+    "Row %lld: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fila %lld: %@"
+          }
+        }
+      }
+    },
     "Row detail" : {
       "shouldTranslate" : false
     },
@@ -21303,6 +21519,16 @@
         }
       }
     },
+    "Save Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar programa"
+          }
+        }
+      }
+    },
     "Save Share Cards to Photos" : {
       "localizations" : {
         "es" : {
@@ -21402,6 +21628,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesociclos guardados"
+          }
+        }
+      }
+    },
+    "Saved as a program that has not started. Start it from your mesocycles." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se guarda como un programa sin empezar. Empiézalo desde tus mesociclos."
           }
         }
       }
@@ -23058,6 +23294,16 @@
         }
       }
     },
+    "Spreadsheet, CSV or JSON" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoja de cálculo, CSV o JSON"
+          }
+        }
+      }
+    },
     "Square" : {
       "localizations" : {
         "es" : {
@@ -23757,6 +24003,16 @@
         }
       }
     },
+    "Summary" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen"
+          }
+        }
+      }
+    },
     "Superset" : {
       "localizations" : {
         "es" : {
@@ -24228,6 +24484,16 @@
         }
       }
     },
+    "Techniques" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Técnicas"
+          }
+        }
+      }
+    },
     "Tell us what is wrong." : {
       "localizations" : {
         "es" : {
@@ -24465,6 +24731,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El entrenador deja de leer tus datos y se eliminan todos los chats."
+          }
+        }
+      }
+    },
+    "The file has no exercises." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo no tiene ejercicios."
           }
         }
       }
@@ -24992,6 +25268,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este ejercicio se hace con el peso corporal, sin resistencia adicional."
+          }
+        }
+      }
+    },
+    "This file could not be read as a program." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer este archivo como un programa."
           }
         }
       }
@@ -26345,6 +26631,16 @@
         }
       }
     },
+    "Unable to Import Program" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede importar el programa"
+          }
+        }
+      }
+    },
     "Unable to Leave" : {
       "localizations" : {
         "es" : {
@@ -27264,6 +27560,16 @@
         }
       }
     },
+    "Unmatched exercises" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicios sin emparejar"
+          }
+        }
+      }
+    },
     "Unread" : {
       "localizations" : {
         "es" : {
@@ -28081,6 +28387,16 @@
         }
       }
     },
+    "Warm-ups" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calentamientos"
+          }
+        }
+      }
+    },
     "Warmup" : {
       "localizations" : {
         "es" : {
@@ -28289,6 +28605,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Semana %lld de %lld · Día %lld"
+          }
+        }
+      }
+    },
+    "Week 1" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana 1"
           }
         }
       }
@@ -29193,6 +29519,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Series efectivas en los últimos 7 días. Un músculo al que un ejercicio solo ayuda cuenta como media serie. Toca un músculo para ver su tendencia de 12 semanas."
+          }
+        }
+      }
+    },
+    "Working sets is missing or not a number." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faltan las series de trabajo o no son un número."
           }
         }
       }

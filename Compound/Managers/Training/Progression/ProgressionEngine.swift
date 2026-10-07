@@ -218,8 +218,8 @@ struct ProgressionEngine {
 
     private func isProgressable(_ target: SetTarget?) -> Bool {
         switch target?.setType ?? .standard {
-        case .standard, .failure: return true
-        case .drop, .myo:         return false
+        case .standard, .failure, .amrap:  return true
+        case .drop, .myo, .restPause, .cluster: return false
         }
     }
 

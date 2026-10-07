@@ -29,7 +29,9 @@ enum SetKind: String, Codable, CaseIterable, Sendable {
         case .standard: self = .standard
         case .drop: self = .drop
         case .myo: self = .myo
-        case .failure: self = .amrap
+        case .failure, .amrap: self = .amrap
+        case .restPause: self = .restPause
+        case .cluster: self = .cluster
         }
     }
 

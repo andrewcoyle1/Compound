@@ -93,6 +93,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         template: WorkoutTemplateModel,
         notes: String? = nil,
         mesocycleId: String? = nil,
+        microcycleIndex: Int? = nil,
         previousWorkoutSession: WorkoutSessionModel? = nil,
         gymProfile: GymProfileModel? = nil,
         unitPreferences: [String: ExerciseUnitPreference]? = nil,
@@ -114,10 +115,14 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.likedByUserIds = []
         self.exercises = template.exercises.enumerated().map { (idx, exerciseModel) in
             let mode = WorkoutSessionModel.trackingMode(for: exerciseModel.exercise)
-            let targetCount = exerciseModel.setTargets.count
-                        
-            // Find matching exercise in previous workout session
-            let previousExercise = previousWorkoutSession?.exercises.first(where: { $0.templateId == exerciseModel.exercise.id })
+            // The week's targets: the template's override for this microcycle, else its base.
+            let setTargets = exerciseModel.setTargets(forMicrocycle: microcycleIndex)
+            let targetCount = setTargets.count
+
+            // The matching exercise last time, by occurrence: an exercise the template lists twice
+            // (a heavy set, then a back-off) matches each entry to its own previous exercise.
+            let occurrence = template.exercises[..<idx].filter { $0.exercise.id == exerciseModel.exercise.id }.count
+            let previousExercise = previousWorkoutSession?.exercise(templateId: exerciseModel.exercise.id, occurrence: occurrence)
             let previousSets = previousExercise?.sets
                         
             // Estimate working weight and reps from previous workout
@@ -129,7 +134,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 targetCount: max(targetCount, 1),
                 perSide: WorkoutSessionModel.isPerSide(exerciseModel.exercise),
-                setTargets: exerciseModel.setTargets
+                setTargets: setTargets
             )
             
             // Fill the working sets the way the Initial Log Fill setting asks for: the
@@ -149,7 +154,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             if plansSets {
                 workingSets = WorkoutSessionModel.applyingSetPlan(
                     to: workingSets,
-                    setTargets: exerciseModel.setTargets,
+                    setTargets: setTargets,
                     authorId: authorId
                 )
             }
@@ -165,10 +170,11 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 workingWeightKg: workingWeightKg,
                 workingReps: workingReps,
-                setTargets: exerciseModel.setTargets,
+                setTargets: setTargets,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences
+                unitPreferences: unitPreferences,
+                count: exerciseModel.warmupSetCount
             )
             
             // Prepend warmup sets to working sets
@@ -192,11 +198,32 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 notes: nil,
                 imageName: imageName,
                 sets: reindexedSets,
-                setTargets: exerciseModel.setTargets,
+                setTargets: setTargets,
                 chosenVariationId: nil,
-                equipmentVariations: exerciseModel.exercise.equipmentVariations
+                equipmentVariations: exerciseModel.exercise.equipmentVariations,
+                supersetGroupId: exerciseModel.supersetGroupId,
+                planNotes: exerciseModel.notes,
+                restSeconds: exerciseModel.restSeconds,
+                linkURL: exerciseModel.linkURL,
+                substituteExerciseIds: exerciseModel.substituteExerciseIds
             )
         }
+    }
+
+    /// Which appearance of its exercise `exercise` is in this workout, from 0, in `index` order:
+    /// the second bench press of a workout is occurrence 1.
+    func occurrence(of exercise: WorkoutExerciseModel) -> Int {
+        exercises(templateId: exercise.templateId).firstIndex { $0.id == exercise.id } ?? 0
+    }
+
+    /// The `occurrence`th appearance of the exercise `templateId` in this workout, from 0.
+    func exercise(templateId: String, occurrence: Int) -> WorkoutExerciseModel? {
+        let matches = exercises(templateId: templateId)
+        return matches.indices.contains(occurrence) ? matches[occurrence] : nil
+    }
+
+    private func exercises(templateId: String) -> [WorkoutExerciseModel] {
+        exercises.filter { $0.templateId == templateId }.sorted { $0.index < $1.index }
     }
 
     static func trackingMode(for exercise: ExerciseModel) -> TrackingMode {

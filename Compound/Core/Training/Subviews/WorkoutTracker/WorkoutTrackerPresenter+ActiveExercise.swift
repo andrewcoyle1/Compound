@@ -322,7 +322,8 @@ extension WorkoutTrackerPresenter {
     func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
-            exerciseTypeRawValue: interactor.allExercises.first { $0.id == exercise.templateId }?.type?.rawValue
+            exerciseTypeRawValue: interactor.allExercises.first { $0.id == exercise.templateId }?.type?.rawValue,
+            planRestSeconds: exercise.restSeconds
         )
     }
 }

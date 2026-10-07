@@ -130,7 +130,8 @@ class SetTrackerRowPresenter {
     private func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
-            exerciseTypeRawValue: interactor.allExercises.first(where: { $0.id == exercise.templateId })?.type?.rawValue
+            exerciseTypeRawValue: interactor.allExercises.first(where: { $0.id == exercise.templateId })?.type?.rawValue,
+            planRestSeconds: exercise.restSeconds
         )
     }
 

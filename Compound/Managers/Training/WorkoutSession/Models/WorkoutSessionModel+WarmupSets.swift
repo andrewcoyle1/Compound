@@ -10,8 +10,9 @@ import Foundation
 // MARK: - Warmup Sets Generation
 extension WorkoutSessionModel {
     
-    /// Generates 1-3 warmup sets before working sets based on working weight
-    /// Uses percentage-based values: 50%, 70%, 90% of working weight
+    /// The warm-up sets before the working sets. With no `count` from the plan, one to three by
+    /// working weight at 50, 70 and 90 % of it; with one, the ramp for that many (see
+    /// `warmupPercentages`).
     @MainActor
     static func generateWarmupSets(
         trackingMode: TrackingMode,
@@ -21,7 +22,8 @@ extension WorkoutSessionModel {
         setTargets: [SetTarget],
         exercise: ExerciseModel? = nil,
         gymProfile: GymProfileModel? = nil,
-        unitPreferences: [String: ExerciseUnitPreference]? = nil
+        unitPreferences: [String: ExerciseUnitPreference]? = nil,
+        count: Int? = nil
     ) -> [WorkoutSetModel] {
         
         // Only generate warmup sets for weight-based tracking modes
@@ -29,12 +31,11 @@ extension WorkoutSessionModel {
             return []
         }
         
-        let warmupCount = determineWarmupCount(workingWeightKg: workingWeightKg)
-        let percentages: [Double] = [0.5, 0.7, 0.9]
+        let percentages = warmupPercentages(count: count, workingWeightKg: workingWeightKg)
         let targetReps = workingReps ?? setTargets.first?.minReps ?? setTargets.first?.maxReps
                 
         // Create warmup sets
-        let warmupSets = (0..<warmupCount).map { index in
+        let warmupSets = percentages.indices.map { index in
             let delegate = WarmupSetDelegate(
                 index: index,
                 authorId: authorId,
@@ -51,6 +52,21 @@ extension WorkoutSessionModel {
         return warmupSets
     }
     
+    /// The fraction of the working weight for each warm-up. A plan's count gets a ramp that ends
+    /// at 85 %, and any set past four another at 90 %; without one, the weight decides how many.
+    private static func warmupPercentages(count: Int?, workingWeightKg: Double?) -> [Double] {
+        guard let count else {
+            return Array([0.5, 0.7, 0.9].prefix(determineWarmupCount(workingWeightKg: workingWeightKg)))
+        }
+        switch count {
+        case ...0: return []
+        case 1: return [0.60]
+        case 2: return [0.50, 0.70]
+        case 3: return [0.45, 0.65, 0.85]
+        default: return [0.45, 0.60, 0.75, 0.85] + Array(repeating: 0.90, count: count - 4)
+        }
+    }
+
     private static func determineWarmupCount(workingWeightKg: Double?) -> Int {
         if let weight = workingWeightKg, weight > 0 {
             let count: Int

@@ -21,15 +21,22 @@ struct WarmupSetGenerationTests {
         weight: Double?,
         reps: Int? = 8,
         mode: TrackingMode = .weightReps,
-        targets: [SetTarget] = []
+        targets: [SetTarget] = [],
+        count: Int? = nil
     ) -> [WorkoutSetModel] {
         WorkoutSessionModel.generateWarmupSets(
             trackingMode: mode,
             authorId: "author-1",
             workingWeightKg: weight,
             workingReps: reps,
-            setTargets: targets
+            setTargets: targets,
+            count: count
         )
+    }
+
+    /// Each warm-up's weight as a whole percentage of a 100 kg working weight.
+    private func percentages(count: Int?) -> [Int] {
+        warmups(weight: 100, count: count).map { Int(($0.weightKg ?? 0).rounded()) }
     }
 
     // MARK: - How many
@@ -155,6 +162,41 @@ struct WarmupSetGenerationTests {
         let noneSet = warmups(weight: 100, reps: nil).allSatisfy { $0.reps == nil }
 
         #expect(noneSet)
+    }
+
+    // MARK: - A count from the plan
+
+    /// The plan's warm-up count overrides the weight rule, each count with its own ramp; past four,
+    /// each extra set is another at 90 %.
+    @Test(
+        "Test A Planned Warm-Up Count Sets The Ramp",
+        arguments: [
+            (0, [Int]()),
+            (1, [60]),
+            (2, [50, 70]),
+            (3, [45, 65, 85]),
+            (4, [45, 60, 75, 85]),
+            (5, [45, 60, 75, 85, 90])
+        ]
+    )
+    func testAPlannedWarmUpCountSetsTheRamp(count: Int, expected: [Int]) {
+        #expect(percentages(count: count) == expected)
+    }
+
+    @Test("Test No Planned Count Leaves The Weight Rule Unchanged")
+    func testNoPlannedCountLeavesTheWeightRuleUnchanged() {
+        #expect(percentages(count: nil) == [50, 70, 90])
+        #expect(warmups(weight: 40, count: nil).map(\.weightKg) == [20])
+    }
+
+    /// A planned count still takes the working reps, and still gives timed work none.
+    @Test("Test A Planned Count Keeps The Reps And The Tracking-Mode Rule")
+    func testAPlannedCountKeepsTheRepsAndTheTrackingModeRule() {
+        let allFives = warmups(weight: 100, reps: 5, count: 4).allSatisfy { $0.reps == 5 && $0.isWarmup }
+
+        #expect(allFives)
+        #expect(warmups(weight: 100, mode: .timeOnly, count: 3).isEmpty)
+        #expect(warmups(weight: 20, count: 3).count == 3)
     }
 
     // MARK: - When there are none

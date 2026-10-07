@@ -30,23 +30,28 @@ struct SetTargetView: View {
                 .accessibilityHidden(true)
 
                 ForEach($presenter.workingExercise.setTargets) { $setTarget in
-                    HStack {
-                        numberBadge("\(setTarget.setNumber)")
-                            .accessibilityLabel("Set \(setTarget.setNumber)")
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            numberBadge("\(setTarget.setNumber)")
+                                .accessibilityLabel("Set \(setTarget.setNumber)")
 
-                        TextField("Optional", text: intTextBinding($setTarget.minReps))
-                            .keyboardType(.numberPad)
-                            .textFieldStyle(.roundedBorder)
-                            .accessibilityLabel("Set \(setTarget.setNumber), minimum reps")
+                            TextField("Optional", text: intTextBinding($setTarget.minReps))
+                                .keyboardType(.numberPad)
+                                .textFieldStyle(.roundedBorder)
+                                .accessibilityLabel("Set \(setTarget.setNumber), minimum reps")
 
-                        TextField("Optional", text: intTextBinding($setTarget.maxReps))
-                            .keyboardType(.numberPad)
-                            .textFieldStyle(.roundedBorder)
-                            .accessibilityLabel("Set \(setTarget.setNumber), maximum reps")
+                            TextField("Optional", text: intTextBinding($setTarget.maxReps))
+                                .keyboardType(.numberPad)
+                                .textFieldStyle(.roundedBorder)
+                                .accessibilityLabel("Set \(setTarget.setNumber), maximum reps")
 
-                        numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
-                            .accessibilityLabel("Reps in reserve")
-                            .accessibilityValue(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                            numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                                .accessibilityLabel("Reps in reserve")
+                                .accessibilityValue(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                        }
+                        if presenter.plansSets {
+                            planButton(setTarget)
+                        }
                     }
                     .rowActions {
                         Button(role: .destructive) {
@@ -105,6 +110,44 @@ struct SetTargetView: View {
         }
     }
     
+    /// With the set plan on, the set's kind and its plan under its reps, opening that set's plan.
+    /// A standard set names its kind without a chip, so it reads as nothing extra.
+    private func planButton(_ setTarget: SetTarget) -> some View {
+        Button {
+            presenter.onSetPlanPressed(setTarget)
+        } label: {
+            HStack(spacing: Spacing.s) {
+                AdaptiveStack(horizontalAlignment: .leading, spacing: Spacing.s) {
+                    if let chip = presenter.planChip(for: setTarget) {
+                        Chip(chip)
+                    } else {
+                        Text(presenter.planTitle(for: setTarget))
+                            .font(.rowDetail)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let summary = presenter.planSummary(for: setTarget) {
+                        Text(summary)
+                            .font(.rowDetail)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.forward")
+                    .font(.rowDetail.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.leading, numberColumnWidth + Spacing.s)
+            .frame(minHeight: ControlSize.row)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(presenter.planAccessibilityLabel(for: setTarget))
+        .accessibilityValue(presenter.planSummary(for: setTarget) ?? "")
+        .accessibilityAddTraits(.isButton)
+    }
+
     /// The set number and RIR columns, as a badge that grows with its text rather than a fixed
     /// circle the number overflowed at large sizes.
     private func numberBadge(_ text: String) -> some View {

@@ -658,13 +658,15 @@ struct WorkoutBuildPickerPresenterTests {
 @MainActor
 struct WorkoutBuildSetTargetPresenterTests {
 
-    private final class Interactor: SpyGlobalInteractor, SetTargetInteractor { }
+    private final class Interactor: SpyGlobalInteractor, SetTargetInteractor {
+        var workoutSettings = WorkoutSettings(authorId: "user-1")
+    }
 
-    /// `SetTargetRouter` has no requirements, and `onDismissPressed()` goes through
-    /// `dismissScreen()`, a `GlobalRouter` extension method that dispatches statically and never
-    /// reaches this double. There is nothing to record.
+    /// `onDismissPressed()` goes through `dismissScreen()`, a `GlobalRouter` extension method that
+    /// dispatches statically and never reaches this double. There is nothing to record.
     private final class Router: SetTargetRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
     }
 
     private func makeScreen() -> (SetTargetPresenter, Interactor) {

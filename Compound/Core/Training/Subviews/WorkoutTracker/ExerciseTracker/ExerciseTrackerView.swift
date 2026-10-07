@@ -44,6 +44,12 @@ struct ExerciseCard {
     var correction: SetCorrection?
     var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
     var onUndoManager: (@MainActor (UndoManager?) -> Void)?
+    /// See `SetTrackerCard.piece` and `showAutoRanges`.
+    var piece: SetTrackerPiece?
+    var showAutoRanges: Bool?
+    /// The member's letter on a superset's card ("A", "B"), which its header shows in place of the
+    /// superset's own label: the member header.
+    var memberLetter: String?
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -75,7 +81,9 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 onCustomRestChanged: card.onCustomRestChanged,
                 correction: card.correction,
                 onCorrection: card.onCorrection,
-                onUndoManager: card.onUndoManager
+                onUndoManager: card.onUndoManager,
+                piece: card.piece,
+                showAutoRanges: card.showAutoRanges
             )))
         } else {
             DisclosureGroup(isExpanded: delegate.isExpanded) {
@@ -113,13 +121,18 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     // The menu sits on the name's line, so it reads as the exercise's own.
                     HStack(alignment: .center, spacing: Spacing.s) {
+                        // The member header: its letter leads the name's line.
+                        if let letter = card.memberLetter {
+                            Chip(letter, systemImage: Symbol.superset, tint: .superset)
+                                .accessibilityLabel(String(localized: "Superset member \(letter)"))
+                        }
                         Text(exercise.name)
                             .font(.sectionTitle)
                             .accessibilityAddTraits(.isHeader)
                         Spacer(minLength: 0)
                         menu
                     }
-                    if let label = delegate.supersetLabel {
+                    if card.memberLetter == nil, let label = delegate.supersetLabel {
                         Chip(label, systemImage: Symbol.superset, tint: .superset)
                     }
                 }

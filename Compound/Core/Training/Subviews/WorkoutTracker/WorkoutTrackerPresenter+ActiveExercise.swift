@@ -20,14 +20,17 @@ extension WorkoutTrackerPresenter {
         return exercises.indices.contains(currentExerciseIndex) ? exercises[currentExerciseIndex] : exercises.last
     }
 
-    /// Everything after the card with sets still to log, in workout order.
+    /// Everything off the card with sets still to log, in workout order. A superset's partners
+    /// are on the card with it.
     var upNextExercises: [WorkoutExerciseModel] {
-        workoutSession.exercises.filter { $0.id != currentExercise?.id && !isComplete($0) }
+        let onCard = ActiveWorkout.cardExerciseIds(current: currentExercise?.id, in: workoutSession.exercises)
+        return workoutSession.exercises.filter { !onCard.contains($0.id) && !isComplete($0) }
     }
 
     /// Exercises already finished, kept reachable so a logged set can still be corrected.
     var completedExercises: [WorkoutExerciseModel] {
-        workoutSession.exercises.filter { $0.id != currentExercise?.id && isComplete($0) }
+        let onCard = ActiveWorkout.cardExerciseIds(current: currentExercise?.id, in: workoutSession.exercises)
+        return workoutSession.exercises.filter { !onCard.contains($0.id) && isComplete($0) }
     }
 
     func onExerciseSelected(_ exerciseId: String) {

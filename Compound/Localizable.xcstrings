@@ -3843,6 +3843,16 @@
         }
       }
     },
+    "Add Set to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir serie a %@"
+          }
+        }
+      }
+    },
     "Add Smart Warm-Ups" : {
       "localizations" : {
         "es" : {
@@ -21631,6 +21641,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desplazamiento automático en superseries"
+          }
+        }
+      }
+    },
+    "Superset member %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miembro %@ de la superserie"
           }
         }
       }

@@ -187,6 +187,40 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertFalse(handle.exists)
     }
 
+    /// T6: a superset is one card. The log button logs A1, then B1 with no rest between them, and
+    /// the card holding both stays where it is.
+    func testASupersetRoundLogsBothPartnersOnOneCard() {
+        let app = XCUIApplication()
+        app.launchArguments = ["UI_TESTING", "SIGNED_IN", "STARTSCREEN_WORKOUT_TRACKER", "UI_TEST_SUPERSET"]
+        app.launch()
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        let skipRest = app.button("WorkoutTracker.skipRestButton")
+        acknowledgeNoteIfShown(app)
+
+        // Both members' first sets on the one card, badged by member.
+        let setA1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set A1'")).firstMatch
+        let setB1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set B1'")).firstMatch
+        XCTAssertTrue(setA1.waitForExistence(timeout: UITestApp.timeout))
+        XCTAssertTrue(setB1.exists)
+        let logged = app.buttons.matching(NSPredicate(format: "label == 'Set completed'"))
+        let loggedBefore = logged.count
+        attach(app, "11-superset-card")
+
+        // A1, and straight on to B1: no rest between partners.
+        tapSlot(logButton)
+        acknowledgeNoteIfShown(app)
+        XCTAssertFalse(skipRest.exists, "A rest ran between superset partners")
+        XCTAssertTrue(logButton.label.hasPrefix("Log"), logButton.label)
+        XCTAssertEqual(logged.count, loggedBefore + 1)
+
+        // B1 ends the round, and its rest follows.
+        tapSlot(logButton)
+        XCTAssertTrue(skipRest.waitForExistence(timeout: UITestApp.timeout))
+        XCTAssertEqual(logged.count, loggedBefore + 2)
+        XCTAssertTrue(setA1.exists && setB1.exists, "The card no longer shows both partners")
+        attach(app, "12-superset-round-logged")
+    }
+
     /// One step through a workout: read the note, end the rest, or log the set.
     private func takeNextStep(_ app: XCUIApplication) {
         let gotIt = app.buttons["WorkoutTracker.progressionNote.acknowledge"]

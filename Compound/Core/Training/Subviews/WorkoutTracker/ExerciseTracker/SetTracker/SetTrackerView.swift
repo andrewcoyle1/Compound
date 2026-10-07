@@ -46,6 +46,25 @@ struct SetTrackerCard {
     var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
     /// Handed the window's undo manager while the card is on screen, and `nil` once it has gone.
     var onUndoManager: (@MainActor (UndoManager?) -> Void)?
+    /// One piece of the table rather than all of it, for a superset's card to place among its
+    /// partners' rows. `nil` draws the whole table.
+    var piece: SetTrackerPiece?
+    /// Last or Auto, when a superset's card holds the choice for every member's rows: each piece
+    /// has its own presenter, so one piece's switch would not reach the others' rows.
+    var showAutoRanges: Bool?
+}
+
+/// A piece of one exercise's set table. See `SupersetBlockView`.
+enum SetTrackerPiece: Equatable {
+    /// The title row with the exercise's actions menu, and smart progression's note under it.
+    case header
+    case columnHeadings
+    /// The logged warm-ups, folded into one line.
+    case loggedWarmups
+    /// A set's row with `badge` in its circle, and the correction row or rest under it when
+    /// they follow that set. Only the row the log button logs next (`isNext`) is current.
+    case row(setId: String, badge: String, isNext: Bool)
+    case addSet
 }
 
 struct SetTrackerView<SetTrackerRow: View>: View {
@@ -69,6 +88,15 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
+        if let piece = delegate.card?.piece {
+            pieceView(piece)
+        } else {
+            table
+        }
+    }
+
+    @ViewBuilder
+    private var table: some View {
         // The title row keeps the list's insets; the table runs to the card's edge.
         if let card = delegate.card {
             card.header(AnyView(actionsMenu))
@@ -89,26 +117,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             if let timer = delegate.card?.restTimer, timer.anchor == .top {
                 InlineRestTimerRow(timer: timer)
             }
-            let loggedWarmups = delegate.exercise.wrappedValue.sets.filter { $0.isWarmup && $0.completedAt != nil }
-            if !loggedWarmups.isEmpty {
-                // Done warm-ups fold into one line, so the table starts at the work, and open on a
-                // tap to be corrected.
-                DisclosureGroup(isExpanded: $showsLoggedWarmups) {
-                    ForEach(loggedWarmups) { set in
-                        row(for: set)
-                    }
-                } label: {
-                    Label {
-                        Text("\(loggedWarmups.count) warm-ups")
-                    } icon: {
-                        Image(systemName: Symbol.success)
-                            .foregroundStyle(.success)
-                    }
-                    .font(.rowDetail)
-                    .frame(minHeight: ControlSize.row)
-                    .padding(.leading, Spacing.l)
-                }
-            }
+            loggedWarmupsGroup
             ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
                 row(for: set)
                 correctionRow(below: set)
@@ -129,7 +138,31 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         .listSectionMargins(.top, 0)
     }
 
-    private func row(for set: WorkoutSetModel) -> some View {
+    /// Done warm-ups fold into one line, so the table starts at the work, and open on a tap to be
+    /// corrected.
+    @ViewBuilder
+    private var loggedWarmupsGroup: some View {
+        let loggedWarmups = delegate.exercise.wrappedValue.sets.filter { $0.isWarmup && $0.completedAt != nil }
+        if !loggedWarmups.isEmpty {
+            DisclosureGroup(isExpanded: $showsLoggedWarmups) {
+                ForEach(loggedWarmups) { set in
+                    row(for: set)
+                }
+            } label: {
+                Label {
+                    Text("\(loggedWarmups.count) warm-ups")
+                } icon: {
+                    Image(systemName: Symbol.success)
+                        .foregroundStyle(.success)
+                }
+                .font(.rowDetail)
+                .frame(minHeight: ControlSize.row)
+                .padding(.leading, Spacing.l)
+            }
+        }
+    }
+
+    private func row(for set: WorkoutSetModel, badge: String? = nil, isNext: Bool? = nil) -> some View {
         let exercise = delegate.exercise.wrappedValue
         // Matched on the side as well as the number: a left set inheriting the right arm's last
         // weight sends the user chasing the other arm's numbers.
@@ -139,11 +172,13 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 set: setBinding(for: set),
                 lastSet: delegate.lastExercise?.matchingSet(for: set, in: exercise),
                 progressionSuggestion: delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
-                showAutoRanges: presenter.showAutoRanges,
-                rowState: delegate.card == nil ? nil : ActiveWorkout.rowState(of: set, in: exercise),
+                showAutoRanges: delegate.card?.showAutoRanges ?? presenter.showAutoRanges,
+                rowState: delegate.card == nil ? nil : isNext.map { ActiveWorkout.blockRowState(of: set, in: exercise, isNext: $0) }
+                    ?? ActiveWorkout.rowState(of: set, in: exercise),
                 onSetCompleted: delegate.onSetCompleted,
                 onLogSet: delegate.card?.onLogSet,
-                onCustomRestChanged: delegate.card?.onCustomRestChanged
+                onCustomRestChanged: delegate.card?.onCustomRestChanged,
+                badgeLabel: badge
             )
         )
         .listRowSeparator(.visible)
@@ -416,7 +451,11 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         Button {
             presenter.addSet(exercise: delegate.exercise)
         } label: {
-            Label("Add Set", systemImage: Symbol.add)
+            // On a superset's card each member has its own, so each says whose it is.
+            Label(
+                delegate.card?.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"),
+                systemImage: Symbol.add
+            )
                 .font(.rowTitle)
                 .frame(maxWidth: .infinity, minHeight: ControlSize.row)
         }
@@ -472,6 +511,54 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Pieces
+
+extension SetTrackerView {
+
+    /// One piece of the table, laid out as the whole table lays it out. The superset card keeps
+    /// the window's undo manager itself, since it knows when the last of its rows has gone.
+    @ViewBuilder
+    func pieceView(_ piece: SetTrackerPiece) -> some View {
+        switch piece {
+        case .header:
+            if let card = delegate.card {
+                card.header(AnyView(actionsMenu))
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(.bottom, 0)
+                if let note = card.progressionNote {
+                    ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
+                        .listRowSeparator(.hidden)
+                }
+            }
+        case .columnHeadings:
+            tableRows { columnHeaders }
+        case .loggedWarmups:
+            tableRows { loggedWarmupsGroup }
+        case let .row(setId, badge, isNext):
+            if let set = delegate.exercise.wrappedValue.sets.first(where: { $0.id == setId }) {
+                tableRows {
+                    // One VoiceOver container per row, named for its set and exercise, so the
+                    // Containers rotor steps through the rounds: "A1, Bench Press".
+                    row(for: set, badge: badge, isNext: isNext)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityLabel([badge, delegate.exercise.wrappedValue.name].joined(separator: ", "))
+                    correctionRow(below: set)
+                }
+            }
+        case .addSet:
+            tableRows { addSetButton }
+        }
+    }
+
+    /// The insets and separators the table gives its rows.
+    private func tableRows(@ViewBuilder _ content: () -> some View) -> some View {
+        Group(content: content)
+            .listRowSeparator(.hidden)
+            .listRowInsets(.vertical, 0)
+            .listRowInsets(.leading, 0)
     }
 }
 

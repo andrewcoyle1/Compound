@@ -13,25 +13,63 @@ extension WorkoutTrackerView {
 
     // MARK: - Exercises
 
+    /// The card: the exercise on it, or the whole superset it belongs to.
     @ViewBuilder
     var currentExerciseSection: some View {
         if let current = presenter.currentExercise {
-            // By id, not index: a binding by index can be read while the exercise it held is being
-            // removed, and would then point at another exercise or past the end.
-            let exercise = Binding(
-                get: { presenter.workoutSession.exercises.first { $0.id == current.id } ?? current },
-                set: { updated in
-                    guard let index = presenter.workoutSession.exercises.firstIndex(where: { $0.id == current.id }) else { return }
-                    presenter.workoutSession.exercises[index] = updated
-                }
-            )
             Section {
-                exerciseTrackerView(delegate(for: exercise), { duration in
-                    presenter.startRestTimer(durationSeconds: duration)
-                })
+                if let members = ActiveWorkout.supersetBlock(containing: current.id, in: presenter.workoutSession.exercises) {
+                    supersetCard(members, current: current)
+                } else {
+                    exerciseTrackerView(delegate(for: binding(for: current)), { duration in
+                        presenter.startRestTimer(durationSeconds: duration)
+                    })
+                }
             }
             .listSectionMargins(.top, Spacing.s)
         }
+    }
+
+    /// By id, not index: a binding by index can be read while the exercise it held is being
+    /// removed, and would then point at another exercise or past the end.
+    private func binding(for current: WorkoutExerciseModel) -> Binding<WorkoutExerciseModel> {
+        Binding(
+            get: { presenter.workoutSession.exercises.first { $0.id == current.id } ?? current },
+            set: { updated in
+                guard let index = presenter.workoutSession.exercises.firstIndex(where: { $0.id == current.id }) else { return }
+                presenter.workoutSession.exercises[index] = updated
+            }
+        )
+    }
+
+    /// One card for a superset, built from each member's own card in pieces. The correction row
+    /// and a rest after a member's set sit under that set, as `delegate(for:)` places them; a
+    /// rest after a set outside the superset is drawn once, above the rows.
+    private func supersetCard(_ members: [WorkoutExerciseModel], current: WorkoutExerciseModel) -> some View {
+        let timers = members.compactMap { presenter.restTimer(for: $0) }
+        let restBefore = timers.contains { $0.anchor != .top } ? nil : timers.first
+        return SupersetBlockView(
+            members: members,
+            rows: ActiveWorkout.blockRows(members),
+            nextSetId: ActiveWorkout.nextSetId(inBlock: members, current: current.id),
+            showsColumnHeadings: ActiveWorkout.blockSharesColumns(members, units: presenter.units(for:)),
+            restBefore: restBefore,
+            onUndoManager: { presenter.onUndoManagerChanged($0) },
+            piece: { exerciseId, piece, showAutoRanges in
+                let index = members.firstIndex { $0.id == exerciseId } ?? 0
+                let member = members[index]
+                var delegate = delegate(for: binding(for: member))
+                delegate.card?.piece = piece
+                delegate.card?.showAutoRanges = showAutoRanges
+                delegate.card?.memberLetter = ActiveWorkout.letter(index)
+                delegate.card?.onUndoManager = nil
+                // Smart progression's note speaks for the exercise the log button is on.
+                if member.id != current.id { delegate.card?.progressionNote = nil }
+                return exerciseTrackerView(delegate, { duration in
+                    presenter.startRestTimer(durationSeconds: duration)
+                })
+            }
+        )
     }
 
     @ViewBuilder
@@ -94,7 +132,7 @@ extension WorkoutTrackerView {
                 // No chevron: a tap opens the exercise on the card in place rather than pushing.
                 accessory: isDone
                     ? .custom(AnyView(Image(systemName: Symbol.success).foregroundStyle(.success).accessibilityLabel("Done")))
-                    : .none
+                    : supersetLabel(for: exercise).map { ListRow.Accessory.custom(AnyView(Chip($0, systemImage: Symbol.superset, tint: .superset))) } ?? .none
             )
         }
         .buttonStyle(.plain)
@@ -126,14 +164,9 @@ extension WorkoutTrackerView {
         }
     }
 
-    /// "Superset A", "Circuit C": the exercise's letter within its group.
+    /// "Superset A", "Circuit B": the superset's letter, one per superset in the workout.
     func supersetLabel(for exercise: WorkoutExerciseModel) -> String? {
-        guard let groupId = exercise.supersetGroupId else { return nil }
-        let group = presenter.workoutSession.exercises.filter { $0.supersetGroupId == groupId }
-        let letters = ["A", "B", "C", "D", "E", "F"]
-        guard let idx = group.firstIndex(where: { $0.id == exercise.id }), idx < letters.count else { return nil }
-        let prefix = group.count > 2 ? String(localized: "Circuit") : String(localized: "Superset")
-        return "\(prefix) \(letters[idx])"
+        ActiveWorkout.supersetLabel(for: exercise, in: presenter.workoutSession.exercises)
     }
 
     func delegate(for exercise: Binding<WorkoutExerciseModel>) -> ExerciseTrackerDelegate {

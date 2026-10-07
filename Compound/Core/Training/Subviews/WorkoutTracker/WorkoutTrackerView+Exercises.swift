@@ -100,6 +100,10 @@ extension WorkoutTrackerView {
             } header: {
                 Text("Up Next")
                     .font(.label.weight(.semibold))
+                    // `Color.primary`, not `.primary`, which in a header resolves to the header's own
+                    // grey: under 4.5:1 at caption size on the grouped background (S4).
+                    .foregroundStyle(Color.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
     }
@@ -115,6 +119,8 @@ extension WorkoutTrackerView {
             } header: {
                 Text("Completed")
                     .font(.label.weight(.semibold))
+                    .foregroundStyle(Color.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
     }

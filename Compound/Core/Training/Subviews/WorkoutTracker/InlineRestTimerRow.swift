@@ -40,7 +40,6 @@ struct InlineRestTimerRow: View {
     var onCorrection: @MainActor (SetCorrectionAction) -> Void = { _ in }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     /// Side by side, or one under the other at accessibility sizes.
     private var lineLayout: AnyLayout {
@@ -213,8 +212,7 @@ struct InlineRestTimerRow: View {
             }
         }
         .monospacedDigit()
-        // Increase Contrast asks for more than secondary text gives.
-        .foregroundStyle(colorSchemeContrast == .increased ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+        // Primary: secondary caption text here measured under 4.5:1 in the accessibility audit.
         .padding(.vertical, Spacing.xs)
         .accessibilityElement(children: .combine)
     }

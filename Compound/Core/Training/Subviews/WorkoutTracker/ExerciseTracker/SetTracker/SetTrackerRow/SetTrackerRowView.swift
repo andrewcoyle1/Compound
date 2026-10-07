@@ -382,7 +382,8 @@ struct SetTrackerRowView: View {
     private func columnText(_ text: String, font: Font = .caption) -> some View {
         Text(text)
             .font(font)
-            .foregroundStyle(.secondary)
+            // On the current row's tint secondary grey was about 2.4:1 (S4); elsewhere it is muted.
+            .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
             .frame(minHeight: cellHeight)
     }
 
@@ -488,7 +489,7 @@ struct SetTrackerRowView: View {
             if let rpe {
                 Text("RIR \(WeightStepper.format(EffortScale.rir(fromRPE: rpe)))")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
             }
         }
     }

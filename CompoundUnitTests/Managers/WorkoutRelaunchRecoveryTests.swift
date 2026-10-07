@@ -114,7 +114,7 @@ struct WorkoutRelaunchRecoveryTests {
         manager.restoreAfterLaunch(activeSession: session, now: now)
 
         #expect(manager.isWorkoutActive == false)
-        #expect(manager.totalPausedDuration(at: now) == 150)
+        #expect((manager.totalPausedDuration(at: now) - 150).magnitude < 0.001)
     }
 
     @Test("Test Pause And Resume Are Written Where A Relaunch Reads Them")
@@ -126,7 +126,8 @@ struct WorkoutRelaunchRecoveryTests {
 
         let (after, _) = makeManager(over: store)
         after.restoreAfterLaunch(activeSession: session)
-        #expect(after.pausedAt == pausedAt)
+        // Kept as seconds since 1970, like the rest's end, so the same instant to well under a millisecond.
+        #expect(try #require(after.pausedAt).timeIntervalSince(pausedAt).magnitude < 0.001)
 
         after.resume()
         #expect(store.pausedAt == nil)

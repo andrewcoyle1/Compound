@@ -59,8 +59,8 @@ struct HKWorkoutManagerPauseTests {
         let manager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: LiveActivityUpdaterSpy(), restOverNotifier: RestOverNotifierSpy(), storage: store)
 
         manager.pause()
-        #expect(store.pausedAt == manager.pausedAt)
-        #expect(store.pausedAt != nil)
+        // Kept as seconds since 1970, like the rest's end, so the same instant to well under a millisecond.
+        #expect(try #require(store.pausedAt).timeIntervalSince(try #require(manager.pausedAt)).magnitude < 0.001)
 
         manager.resume()
         #expect(store.pausedAt == nil)

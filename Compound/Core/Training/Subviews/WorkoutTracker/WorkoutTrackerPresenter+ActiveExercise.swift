@@ -228,7 +228,9 @@ extension WorkoutTrackerPresenter {
         case let .next(exerciseId)?:
             onExerciseSelected(exerciseId)
         case .finish?:
-            onFinishConfirmed()
+            // The notes sheet is the confirmation: the button became Finish under a tap meant
+            // for the set before.
+            onFinishPressed()
         case nil:
             break
         }

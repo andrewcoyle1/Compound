@@ -105,6 +105,11 @@ class WorkoutTrackerPresenter {
     var isDone = false
     /// The save waiting out its debounce and the edit waiting to propagate. See `+Persistence`.
     @ObservationIgnored var savePath = WorkoutSavePath()
+    /// The bottom button's state, kept for its rules (see `+PrimarySlot`): the end of a rest that
+    /// ran out on its own, held through its grace, and the action last seen and when it changed.
+    var expiredRestEnd: Date?
+    @ObservationIgnored var lastSlotAction: ActiveWorkout.SlotAction?
+    @ObservationIgnored var lastSlotActionChangeAt: Date?
 
     // MARK: - Initialization
     
@@ -395,6 +400,11 @@ class WorkoutTrackerPresenter {
         var session = session
         session.updateExercises(exercises)
         return session
+    }
+
+    /// Gym Settings is offered only when the workout has a gym to show.
+    var hasGymProfile: Bool {
+        interactor.workoutGymProfile != nil
     }
 
     func onGymProfilePressed() {

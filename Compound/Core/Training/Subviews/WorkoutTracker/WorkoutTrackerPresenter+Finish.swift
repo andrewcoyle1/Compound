@@ -42,8 +42,8 @@ extension WorkoutTrackerPresenter {
 
     /// True once there is something to finish and all of it is logged: at least one set, and every
     /// set, warm-ups included, completed. The tracker then offers Finish Workout at the bottom of the
-    /// screen as well as in its menu. Un-completing a set, or adding a set or an exercise, turns it
-    /// off again, because the new set is open.
+    /// screen as well as in its menu; both open the same notes sheet. Un-completing a set, or adding
+    /// a set or an exercise, turns it off again, because the new set is open.
     var canQuickFinish: Bool {
         let sets = workoutSession.exercises.flatMap(\.sets)
         return !sets.isEmpty && sets.allSatisfy { $0.completedAt != nil }
@@ -58,9 +58,9 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - Finishing
 
-    /// The notes step was confirmed, or the quick-finish button skipped it. A workout with nothing
-    /// logged would go into the history, the streak and Strava as an empty session, so the person
-    /// is asked first.
+    /// The notes step was confirmed, from the menu's Finish or the bottom button's. A workout with
+    /// nothing logged would go into the history, the streak and Strava as an empty session, so the
+    /// person is asked first.
     func onFinishConfirmed() {
         guard !hasLoggedSet else { return finishWorkout() }
         router.showConfirmationDialog(title: String(localized: "No Sets Logged"), subtitle: nil) {

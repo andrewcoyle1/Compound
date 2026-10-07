@@ -204,6 +204,32 @@ struct LiveActivityIntentHandlerTests {
         rig.hkWorkoutManager.cancelRest()
     }
 
+    /// Set plan: Complete on a myo-rep set's own row breathes the myo rest, not the full rest, and
+    /// the push it makes leaves the first mini-set as the target, which the banner names.
+    @Test("Test Completing A Myo Set Breathes And Targets Its First Mini-Set")
+    func testCompletingAMyoSetBreathesAndTargetsItsFirstMiniSet() async throws {
+        var parent = set("s1", index: 1)
+        parent.kind = .myo
+        var mini = set("s1-m1", index: 2)
+        mini.parentSetId = "s1"
+        let rig = try await makeRig(sets: [parent, mini, set("s2", index: 3)]) { $0.intraSetRestMyoSeconds = 12 }
+
+        await rig.handler.completeSet(id: "s1")
+
+        let seconds = try #require(rig.hkWorkoutManager.restEndTime).timeIntervalSinceNow
+        #expect(seconds > 7 && seconds <= 12)
+        let pushed = try #require(rig.activity.fullUpdates.last)
+        let state = LiveActivityManager(logger: LogManager(), activityLookup: { _ in nil }, plansSets: { true })
+            .makeContentState(session: pushed.session, isActive: true, currentExerciseIndex: 0, restEndsAt: pushed.restEndsAt)
+        #expect(state.targetSetId == "s1-m1")
+        let restEndsAt = try #require(pushed.restEndsAt)
+        let position = SetPosition(index: 1, total: 2, piece: SetPiece(index: 2, count: 2, isDrop: false))
+        let expected = LiveActivityPhase.breathing(until: restEndsAt, next: LiveActivitySetTarget(weightKg: 60, reps: 8), position: position)
+        #expect(LiveActivityPhase(state: state, now: Date(), isStale: false) == expected)
+
+        rig.hkWorkoutManager.cancelRest()
+    }
+
     /// A set that is already logged, or one this session does not have, is dropped rather than
     /// logged twice or against the wrong workout.
     @Test("Test An Unknown Or Already Logged Set Is Dropped")

@@ -89,7 +89,7 @@ struct WorkoutSessionActivity: Widget {
             compactTargetLabel(target, unit: context.state.weightUnit)
         case let .restOver(next):
             compactTargetLabel(next, unit: context.state.weightUnit)
-        case let .resting(until, _, _, _):
+        case let .resting(until, _, _, _), let .breathing(until, _, _):
             Text(timerInterval: Date()...max(until, Date()), countsDown: true)
                 .monospacedDigit()
                 .font(.caption.weight(.semibold))
@@ -139,7 +139,7 @@ extension WorkoutActivityAttributes {
 extension WorkoutActivityAttributes.ContentState {
     /// The phases the banner and island have, one preview state each (spec §2).
     enum PreviewPhase: CaseIterable {
-        case ready, resting, restOver, allSetsDone, paused, ended
+        case ready, resting, restOver, allSetsDone, paused, ended, drop, breathing
     }
 
     /// Mid-workout on the third set of bench press, then whatever `phase` needs changed.
@@ -184,6 +184,8 @@ extension WorkoutActivityAttributes.ContentState {
             state.targetSetId = nil
             state.progress = 1
             state.isAllSetsComplete = true
+        case .drop, .breathing:
+            state.planPreview(isDrop: phase == .drop)
         case .ended:
             state.isWorkoutEnded = true
             state.finalDurationSeconds = 52 * 60
@@ -191,6 +193,13 @@ extension WorkoutActivityAttributes.ContentState {
             state.finalCompletedSetsCount = 12
         }
         return state
+    }
+
+    /// Set plan: drop 1 of 2 to log, or the breath before mini-set 3 of 4.
+    private mutating func planPreview(isDrop: Bool) {
+        targetKind = isDrop ? .drop : .myo
+        targetPiece = SetPiece(index: isDrop ? 2 : 4, count: isDrop ? 3 : 5, isDrop: isDrop)
+        if isDrop { targetWeightKg = 80 } else { restEndsAt = Date().addingTimeInterval(15) }
     }
 }
 
@@ -203,5 +212,7 @@ extension WorkoutActivityAttributes.ContentState {
     WorkoutActivityAttributes.ContentState.preview(.allSetsDone)
     WorkoutActivityAttributes.ContentState.preview(.paused)
     WorkoutActivityAttributes.ContentState.preview(.ended)
+    WorkoutActivityAttributes.ContentState.preview(.drop)
+    WorkoutActivityAttributes.ContentState.preview(.breathing)
 }
 #endif

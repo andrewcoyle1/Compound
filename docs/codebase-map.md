@@ -101,14 +101,14 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
 | `Compound/Core/Training` | 256 | 25,834 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 70 | 6,603 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 264 | 33,368 | App-owned managers, models and services (see Managers table) |
-| `Compound/Root` | 22 | 3,629 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
-| `Compound/Utilities` | 14 | 957 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
+| `Compound/Managers` | 265 | 33,428 | App-owned managers, models and services (see Managers table) |
+| `Compound/Root` | 22 | 3,635 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
+| `Compound/Utilities` | 13 | 898 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
-| `Compound/SupportingFiles` | 318 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
-| `Shared` | 5 | 680 | Code compiled into both the app and the Live Activity extension |
-| `WorkoutSessionActivity` | 263 | 2,525 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 323 | 89,783 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `Compound/SupportingFiles` | 316 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
+| `Shared` | 5 | 770 | Code compiled into both the app and the Live Activity extension |
+| `WorkoutSessionActivity` | 263 | 2,614 | Live Activity / Dynamic Island / home widget extension |
+| `CompoundUnitTests` | 324 | 90,046 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 9 | 1,046 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 18 | 23,295 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
@@ -410,7 +410,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **HKWorkoutManager** | [Compound/Managers/HKWorkout](Compound/Managers/HKWorkout/HKWorkoutManager.swift) | 524 |  |  |  | HKWorkoutManager+Rest.swift | HKWorkoutManagerPauseTests.swift, HKWorkoutManagerRestAlertTests.swift, HKWorkoutManagerRestTests.swift |
 | **HealthKitManager** | [Compound/Managers/HealthKitManager](Compound/Managers/HealthKitManager/HealthKitManager.swift) | 117 |  |  |  |  | HealthKitManagerTests.swift |
 | **ImageUploadManager** | [Compound/Managers/ImageUpload](Compound/Managers/ImageUpload/ImageUploadManager.swift) | 43 |  |  | FirebaseImageUploadService, ImageUploadService, MockImageUploadService |  | ImageUploadManagerTests.swift |
-| **LiveActivityManager** | [Compound/Managers/LiveActivities](Compound/Managers/LiveActivities/LiveActivityManager.swift) | 530 |  |  |  | LiveActivityManager+Events.swift | LiveActivityManagerTests.swift |
+| **LiveActivityManager** | [Compound/Managers/LiveActivities](Compound/Managers/LiveActivities/LiveActivityManager.swift) | 547 |  |  |  | LiveActivityManager+Events.swift, LiveActivityManager+Pieces.swift | LiveActivityManagerTests.swift |
 | **ActivityNotificationManager** | [Compound/Managers/Notifications](Compound/Managers/Notifications/ActivityNotificationManager.swift) | 111 |  |  |  |  | ActivityNotificationManagerTests.swift |
 | **FoodManager** | [Compound/Managers/Nutrition/Food](Compound/Managers/Nutrition/Food/FoodManager.swift) | 63 | Collection<FoodModel> | FoodModel, FoodModel+MealItem, ServingUnit |  |  | FoodManagerTests.swift |
 | **FoodLogSettingsManager** | [Compound/Managers/Nutrition/FoodLogSettings](Compound/Managers/Nutrition/FoodLogSettings/FoodLogSettingsManager.swift) | 88 | Document<FoodLogSettings> | FoodLogSettings |  |  | FoodLogSettingsManagerTests.swift |
@@ -598,7 +598,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`CompoundUnitTests/Extensions`** (2): `CollectionAndStringExtensionTests`, `DateExtensionTests`
 
-**`CompoundUnitTests/Managers`** (31): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `CoachParityTests`, `HKWorkoutManagerPauseTests`, `HKWorkoutManagerRestAlertTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `RestOverAlertTests`, `RestOverMessageTests`, `StepsManagerTests`, `StravaManagerTests`, `StravaStrengthFileTests`, `WorkoutLocationTypeDescriptionTests`, `WorkoutRelaunchRecoveryTests`, `WorkoutSettingsDecodingTests`, `WorkoutSettingsLockScreenTests`
+**`CompoundUnitTests/Managers`** (32): `ABTestManagerTests`, `AIManagerTests`, `ActivityNotificationManagerTests`, `AdjustLastSetRepsIntentTests`, `AppIntentsTests`, `AppStateTests`, `CoachParityTests`, `HKWorkoutManagerPauseTests`, `HKWorkoutManagerRestAlertTests`, `HKWorkoutManagerRestTests`, `HealthKitManagerTests`, `ImageUploadManagerTests`, `LiveActivityEventNameTests`, `LiveActivityIntentHandlerTests`, `LiveActivityPhaseTests`, `LiveActivityPieceTests`, `LiveActivityScenarioTests`, `LiveActivitySetTargetLabelTests`, `PremiumAccessTests`, `PushManagerTests`, `PushPendingDeepLinkTests`, `ReportManagerTests`, `RestDurationRulesTests`, `RestOverAlertTests`, `RestOverMessageTests`, `StepsManagerTests`, `StravaManagerTests`, `StravaStrengthFileTests`, `WorkoutLocationTypeDescriptionTests`, `WorkoutRelaunchRecoveryTests`, `WorkoutSettingsDecodingTests`, `WorkoutSettingsLockScreenTests`
 
 **`CompoundUnitTests/Managers/FirestoreCost`** (2): `DataAccessLogTests`, `FollowingQueriesTests`
 

@@ -27,12 +27,16 @@ struct WeightStep: Equatable {
     let baseWeight: Double?
     /// The plates that can go on, ascending. Empty when the equipment is not plate-loaded.
     let plates: [Double]
+    /// The weight is assistance (`ExerciseModel.isAssisted`), stored negative. An empty field then
+    /// steps from zero, and the keyboard offers a ± key.
+    var isAssisted = false
 
     /// Whether the keyboard offers the plate calculator.
     var isPlateLoaded: Bool { baseWeight != nil && !plates.isEmpty }
 
     /// The next weight up from `value`, or the lightest there is when nothing is entered.
     func next(after value: Double?) -> Double? {
+        let value = value ?? (isAssisted ? 0 : nil)
         switch kind {
         case let .increment(step, min, max):
             guard let value else { return min }
@@ -48,6 +52,7 @@ struct WeightStep: Equatable {
 
     /// The next weight down from `value`, never below the lightest there is.
     func previous(before value: Double?) -> Double? {
+        let value = value ?? (isAssisted ? 0 : nil)
         switch kind {
         case let .increment(step, min, max):
             guard let value else { return min }
@@ -59,6 +64,24 @@ struct WeightStep: Equatable {
         case .bands:
             return nil
         }
+    }
+
+    /// The same equipment giving assistance: mirrored below zero, down to the most it gives (or
+    /// 200 steps where it has no top), and never above zero for an exercise that cannot be loaded
+    /// (`isBodyweight`). −30 kg up one 2.5 kg step is −27.5 kg: less help, a harder set.
+    func assisted(bodyweightOnly: Bool) -> WeightStep {
+        let mirrored: Kind
+        switch kind {
+        case let .increment(step, _, max):
+            let deepest = ((max ?? step * 200) / step).rounded(.up) * step
+            mirrored = .increment(step, min: -deepest, max: bodyweightOnly ? 0 : max)
+        case .list(let weights):
+            let below = weights.map { -$0 } + [0] + (bodyweightOnly ? [] : weights)
+            mirrored = .list(Array(Set(below)).sorted())
+        case .bands:
+            return self
+        }
+        return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true)
     }
 
     /// The band after (or before) `index`, wrapping round: bands cycle rather than stop.

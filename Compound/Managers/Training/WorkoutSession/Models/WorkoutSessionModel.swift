@@ -455,6 +455,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     
     /// The empty sets an exercise starts a session with.
     ///
+    /// Every figure starts empty, timed and distance work included: a stored default would log as
+    /// though it had been done. The fields show last time's figures as a greyed placeholder instead.
+    ///
     /// `targetCount` is how many sets the user is being asked to do. An exercise worked one limb
     /// at a time gets one `both` row per set, which the tracker's Split chip can turn into a left
     /// and a right row when the sides differ.
@@ -472,8 +475,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 index: index,
                 reps: nil,
                 weightKg: nil,
-                durationSec: defaultDurationSec(for: trackingMode),
-                distanceMeters: defaultDistanceMeters(for: trackingMode),
+                durationSec: nil,
+                distanceMeters: nil,
                 rpe: nil,
                 side: perSide ? .both : nil,
                 isWarmup: false,
@@ -483,19 +486,6 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         }
     }
 
-    /// Timed and distance work starts from a figure worth showing; weight and reps start empty.
-    private static func defaultDurationSec(for trackingMode: TrackingMode) -> Int? {
-        switch trackingMode {
-        case .weightReps, .repsOnly: return nil
-        case .timeOnly:              return 60
-        case .distanceTime:          return 120
-        }
-    }
-
-    private static func defaultDistanceMeters(for trackingMode: TrackingMode) -> Double? {
-        trackingMode == .distanceTime ? 400 : nil
-    }
-    
     @MainActor
     static var mock: WorkoutSessionModel {
         mocks[0]

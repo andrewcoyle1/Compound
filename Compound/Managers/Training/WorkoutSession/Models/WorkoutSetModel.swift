@@ -39,8 +39,11 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
 
     /// Weight × reps, `nil` without both. A `both` row is two limbs' work logged once, so it
     /// counts twice — the same as the left and right rows it stands for.
+    ///
+    /// `nil` for a negative weight too: that is assistance (`ExerciseModel.isAssisted`), and
+    /// without the lifter's bodyweight there is no load to multiply.
     var volumeKg: Double? {
-        guard let weightKg, let reps else { return nil }
+        guard let weightKg, weightKg >= 0, let reps else { return nil }
         return weightKg * Double(reps) * (side == .both ? 2 : 1)
     }
 

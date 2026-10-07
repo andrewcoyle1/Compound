@@ -124,6 +124,27 @@ struct WeightStepperTests {
         #expect(step.previous(before: testCase.from) == testCase.expectedDown)
     }
 
+    /// An assisted machine on the cable stack (5–50 kg in fives): the stack's range, below zero,
+    /// stopping at zero for an exercise that cannot be loaded.
+    @Test func anAssistedMachineStepsBelowZeroToItsDeepest() {
+        let step = step(.cableMachine, "cable").assisted(bodyweightOnly: true)
+        #expect(step.next(after: -30) == -25)
+        #expect(step.previous(before: -30) == -35)
+        #expect(step.previous(before: -50) == -50)
+        #expect(step.next(after: -5) == 0)
+        #expect(step.next(after: 0) == 0)
+        #expect(step.previous(before: nil) == -5)
+    }
+
+    /// Without assistance nothing steps below zero, whatever the equipment.
+    @Test(arguments: [EquipmentKind.cableMachine, .freeWeight, .bodyWeight, .supportEquipment])
+    func nothingElseStepsBelowZero(_ kind: EquipmentKind) {
+        let ids: [EquipmentKind: String] = [.cableMachine: "cable", .freeWeight: "dumbbells", .bodyWeight: "vest", .supportEquipment: "bench"]
+        let step = step(kind, ids[kind] ?? "")
+        #expect((step.previous(before: 0) ?? 0) >= 0)
+        #expect((step.previous(before: nil) ?? 0) >= 0)
+    }
+
     @Test func barShowsItsWeightAndPlates() {
         let step = step(.loadableBar, "barbell")
         #expect(step.chip == "Bar 20 kg")

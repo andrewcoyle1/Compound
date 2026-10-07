@@ -195,6 +195,20 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.logTitle(for: noReps.sets[0], in: noReps, unit: .kilograms, distanceUnit: .meters) == "Log set 1")
     }
 
+    /// A new timed set holds no duration, only a greyed placeholder, so the button shows no
+    /// figures and one tap cannot log an invented minute. Assistance reads as a negative weight.
+    @Test("Test The Log Button Shows No Figures Until A Time Is Entered")
+    func testLogTitlePlaceholder() {
+        var plank = exercise("e1", name: "Plank", sets: WorkoutSessionModel.defaultSets(trackingMode: .timeOnly, authorId: "author-1", targetCount: 1))
+        plank.trackingMode = .timeOnly
+        #expect(ActiveWorkout.logTitle(for: plank.sets[0], in: plank, unit: .kilograms, distanceUnit: .meters) == "Log set 1")
+        plank.sets[0].durationSec = 42
+        #expect(ActiveWorkout.logTitle(for: plank.sets[0], in: plank, unit: .kilograms, distanceUnit: .meters) == "Log set 1 · 0:42")
+
+        let pullUp = exercise("e2", name: "Assisted Pull-Up", sets: [set("s1", reps: 8, weightKg: -30)])
+        #expect(ActiveWorkout.logTitle(for: pullUp.sets[0], in: pullUp, unit: .kilograms, distanceUnit: .meters) == "Log set 1 · -30 kg × 8")
+    }
+
     @Test("Test Up Next Shows The Plan And Last Time's Top Set")
     func testUpNextSummary() {
         let bench = exercise("e2", sets: [set("a"), set("b"), set("c")], targets: [SetTarget(setNumber: 1, minReps: 8, maxReps: 12)])

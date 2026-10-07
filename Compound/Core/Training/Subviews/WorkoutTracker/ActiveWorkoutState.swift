@@ -197,7 +197,8 @@ enum ActiveWorkout {
         return "\(name) · \(figures)"
     }
 
-    /// "115 kg × 5", "12 reps", "1:30", "400 m · 1:30"; `nil` until the set holds its figures.
+    /// "115 kg × 5", "12 reps", "1:30", "400 m · 1:30"; `nil` until the set holds its figures, so
+    /// a timed set's title reads "Log set 1" until a time is entered or the stopwatch stops.
     static func figures(
         of set: WorkoutSetModel,
         trackingMode: TrackingMode,
@@ -207,7 +208,8 @@ enum ActiveWorkout {
         switch trackingMode {
         case .weightReps:
             guard let reps = set.reps else { return nil }
-            guard let weightKg = set.weightKg, weightKg > 0 else { return Format.reps(reps) }
+            // A negative weight is assistance: "−30 kg × 8" on an assisted pull-up.
+            guard let weightKg = set.weightKg, weightKg != 0 else { return Format.reps(reps) }
             return "\(Format.weight(kg: weightKg, unit: unit)) × \(reps)"
         case .repsOnly:
             return set.reps.map { Format.reps($0) }

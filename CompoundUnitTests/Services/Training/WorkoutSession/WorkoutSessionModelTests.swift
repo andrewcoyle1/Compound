@@ -163,16 +163,16 @@ struct WorkoutSessionModelTests {
         #expect(WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a", targetCount: -3).count == 1)
     }
 
-    /// Timed and distance work start from something usable; weights and reps are left blank for the
-    /// user to fill in, since a guess there would be wrong for everyone.
-    @Test("Test Timed And Distance Sets Are Prefilled")
-    func testTimedAndDistanceSetsArePrefilled() {
+    /// Every figure starts blank, timed and distance work included: a stored default of 1:00 or
+    /// 400 m would log as though it had been done. The fields show a greyed placeholder instead.
+    @Test("Test New Sets Start Empty")
+    func testNewSetsStartEmpty() {
         let timed = WorkoutSessionModel.defaultSets(trackingMode: .timeOnly, authorId: "a")
         let distance = WorkoutSessionModel.defaultSets(trackingMode: .distanceTime, authorId: "a")
         let weights = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a")
 
-        #expect(timed.allSatisfy { $0.durationSec == 60 })
-        #expect(distance.allSatisfy { $0.distanceMeters == 400 && $0.durationSec == 120 })
+        #expect(timed.allSatisfy { $0.durationSec == nil })
+        #expect(distance.allSatisfy { $0.distanceMeters == nil && $0.durationSec == nil })
         #expect(weights.allSatisfy { $0.weightKg == nil && $0.reps == nil })
     }
 

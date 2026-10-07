@@ -164,7 +164,8 @@ class WorkoutTrackerPresenter {
         } else {
             expandedExerciseId = workoutSession.exercises.first?.id
         }
-        
+        restoreFocus(from: screenState)
+
     }
     
     /// The gym this workout was written for, so the rows' steps and plates and progression's

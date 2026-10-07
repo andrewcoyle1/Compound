@@ -237,23 +237,32 @@ extension WorkoutTrackerPresenter {
     }
 
     /// The one way a set is logged on this screen, from the log button, a row's Done or the set
-    /// keyboard: check it, stamp it, rest for as long as the rules (or a rest set by hand on the
-    /// row) say, and let smart progression re-suggest what is left.
+    /// keyboard. The rule (`ActiveWorkout.log`, shared with the Live Activity) checks it, stamps it
+    /// and says how long to rest — the rules, or a rest set by hand on the row; this plays the
+    /// haptic, saves, starts the rest and lets smart progression re-suggest what is left.
     func logSet(_ setId: String, in exerciseId: String, customRestSeconds custom: Int? = nil, source: String = "log_button") {
-        guard let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }),
-              var set = exercise.sets.first(where: { $0.id == setId }), set.completedAt == nil else { return }
-        if let problem = SetTrackerRowPresenter.problem(with: set, trackingMode: exercise.trackingMode) {
+        guard let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }) else { return }
+        let settings = interactor.workoutSettings
+        guard let outcome = ActiveWorkout.log(
+            setId: setId,
+            in: workoutSession,
+            settings: settings,
+            context: restContext(for: exercise),
+            customRestSeconds: custom ?? customRestSeconds[setId]
+        ) else { return }
+        if let problem = outcome.problem {
             interactor.playHaptic(option: .error)
             router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
             return
         }
+        guard let set = outcome.session.exercises.first(where: { $0.id == exerciseId })?.sets.first(where: { $0.id == setId })
+        else { return }
 
-        set.completedAt = Date()
         interactor.playHaptic(option: .success)
         updateSet(set, in: exerciseId)
+        persistFocus(currentExercise?.id)
 
-        let settings = interactor.workoutSettings
-        let rest = restAfterLogging(set, in: exercise, customRestSeconds: custom)
+        let rest = outcome.restSeconds
         interactor.trackEvent(event: SetTrackerRowPresenter.Event.setCompleted(
             setId: setId,
             exerciseId: exerciseId,

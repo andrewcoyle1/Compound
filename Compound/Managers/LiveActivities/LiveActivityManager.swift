@@ -329,7 +329,9 @@ class LiveActivityManager: LiveActivityUpdating {
             lastLoggedReps: lastLogged?.set.reps,
             lastLoggedWeightKg: lastLogged?.set.weightKg,
             restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false,
-            distanceUnit: current.templateId.map(distanceUnit)
+            distanceUnit: current.templateId.map(distanceUnit),
+            targetSide: current.targetSet.flatMap(Self.sideMarker),
+            canComplete: current.targetSet.map { SetValidation.canLog($0, trackingMode: current.trackingMode) } ?? false
         )
     }
 
@@ -392,11 +394,15 @@ class LiveActivityManager: LiveActivityUpdating {
         let isAllSetsComplete: Bool
     }
 
+    /// Working sets only, as the tracker's header counts them: warm-ups are preparation. A pair
+    /// counts once, when both sides are. Every row, warm-ups included, has to be logged before
+    /// all sets are done.
     private func computeTotals(session: WorkoutSessionModel) -> Totals {
-        let totalSetsCount = session.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
-        let completedSetsCount = session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
+        let totalSetsCount = session.exercises.reduce(0) { $0 + $1.workingSets.pairedSetCount }
+        let completedSetsCount = session.exercises.reduce(0) { $0 + $1.workingSets.fullyCompletedPairedSetCount }
         let progress = totalSetsCount > 0 ? Double(completedSetsCount) / Double(totalSetsCount) : 0
-        let isAllSetsComplete = totalSetsCount > 0 && completedSetsCount == totalSetsCount
+        let rows = session.exercises.flatMap(\.sets)
+        let isAllSetsComplete = !rows.isEmpty && rows.allSatisfy { $0.completedAt != nil }
 
         return Totals(
             totalSetsCount: totalSetsCount,
@@ -409,6 +415,7 @@ class LiveActivityManager: LiveActivityUpdating {
     private struct CurrentExerciseData {
         let id: String?
         let templateId: String?
+        let trackingMode: TrackingMode
         let name: String?
         let imageName: String?
         let position: ExercisePosition
@@ -433,6 +440,13 @@ class LiveActivityManager: LiveActivityUpdating {
             total: group.pairedSetCount,
             isWarmup: isWarmup
         )
+    }
+
+    /// "L" or "R" for one side of a split working set, so the banner reads "Set 1L" and "Set 1R";
+    /// `nil` for a set worked with both sides together, a two-sided exercise or a warm-up.
+    static func sideMarker(for set: WorkoutSetModel) -> String? {
+        guard !set.isWarmup, let marker = set.side?.initial, !marker.isEmpty else { return nil }
+        return marker
     }
 
     /// The index the activity should describe: `requested` while it has an incomplete set, else the
@@ -473,6 +487,7 @@ class LiveActivityManager: LiveActivityUpdating {
         return CurrentExerciseData(
             id: currentExercise?.id,
             templateId: currentExercise?.templateId,
+            trackingMode: currentExercise?.trackingMode ?? .weightReps,
             name: currentExerciseName,
             imageName: currentExerciseImageName,
             position: Self.exercisePosition(in: currentExerciseSets),

@@ -59,6 +59,11 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         // The unit the current exercise's distances are shown in. Optional so a state encoded
         // before it existed still decodes; nil reads as metres.
         var distanceUnit: LiveActivityDistanceUnit?
+        // "L" or "R" when the target set is one side of a split pair, so it reads "Set 1L"
+        var targetSide: String?
+        // Whether the target set holds what its tracking mode needs. Complete is disabled
+        // otherwise: the app would refuse it.
+        var canComplete: Bool = true
     }
 
     // Immutable attributes for this workout Live Activity instance

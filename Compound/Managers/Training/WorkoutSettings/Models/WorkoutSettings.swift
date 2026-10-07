@@ -49,9 +49,29 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// rest comes after the round.
     var supersetTransitionRestSeconds: Int?
     /// The breath between the rows of one myo-rep, rest-pause or cluster set, in seconds. Optional
-    /// so a document saved before the setting still decodes; nil reads as 15.
+    /// so a document saved before the setting still decodes; nil reads as 15. Since the per-kind
+    /// rests below, it is only their fallback: a document that chose this one rest keeps it.
     var intraSetRestSeconds: Int?
     var intraSetRest: Int { intraSetRestSeconds ?? 15 }
+    /// The breath within a myo-rep, rest-pause or cluster set, in seconds. Each Optional, read as
+    /// `intraSetRestSeconds` when only that was saved, else 15, 20 and 15.
+    var intraSetRestMyoSeconds: Int?
+    var intraSetRestPauseSeconds: Int?
+    var intraSetRestClusterSeconds: Int?
+    var intraSetRestMyo: Int { intraSetRestMyoSeconds ?? intraSetRestSeconds ?? 15 }
+    var intraSetRestPause: Int { intraSetRestPauseSeconds ?? intraSetRestSeconds ?? 20 }
+    var intraSetRestCluster: Int { intraSetRestClusterSeconds ?? intraSetRestSeconds ?? 15 }
+
+    /// The rest between the rows of one set of this kind; nil for a kind that does not rest
+    /// within its set (a drop is a change of weight, not a breath).
+    func intraSetRest(for kind: SetKind) -> Int? {
+        switch kind {
+        case .myo: return intraSetRestMyo
+        case .restPause: return intraSetRestPause
+        case .cluster: return intraSetRestCluster
+        case .standard, .drop, .amrap: return nil
+        }
+    }
 
     // MARK: - Rest Timer: Notifications
     var restTimerPlaySound: Bool = true
@@ -88,6 +108,9 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case restBetweenSideSets = "rest_between_side_sets"
         case supersetTransitionRestSeconds = "superset_transition_rest_seconds"
         case intraSetRestSeconds = "intra_set_rest_seconds"
+        case intraSetRestMyoSeconds = "intra_set_rest_myo_seconds"
+        case intraSetRestPauseSeconds = "intra_set_rest_pause_seconds"
+        case intraSetRestClusterSeconds = "intra_set_rest_cluster_seconds"
         case restTimerPlaySound = "rest_timer_play_sound"
         case restTimerVibrate = "rest_timer_vibrate"
         case warmUpRestScaling = "warm_up_rest_scaling"

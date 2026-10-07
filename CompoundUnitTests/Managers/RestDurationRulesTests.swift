@@ -156,23 +156,45 @@ struct RestDurationRulesTests {
         #expect(rest(after: drop, in: exercise) == 100)
     }
 
-    /// Mini-sets and clusters take the intra-set rest, 15 seconds unless chosen, none at zero.
-    @Test("Test Myo, Rest-Pause And Cluster Rows Rest The Intra-Set Rest", arguments: [SetKind.myo, .restPause, .cluster])
-    func testIntraSetRest(kind: SetKind) {
+    /// Mini-sets and clusters take their kind's intra-set rest (15, 20 and 15 seconds unless
+    /// chosen); a document with only the one older intra-set rest uses it for all three; none at zero.
+    @Test(
+        "Test Myo, Rest-Pause And Cluster Rows Rest Their Kind's Intra-Set Rest",
+        arguments: [(SetKind.myo, 15), (.restPause, 20), (.cluster, 15)]
+    )
+    func testIntraSetRest(kind: SetKind, seconds: Int) {
         let parent = set("x1", kind: kind)
         let first = set("x1-m1", kind: kind, parent: "x1")
         let last = set("x1-m2", kind: kind, parent: "x1")
         let exercise = exercise([parent, first, last, set("x2")])
-        var chosen = settings
-        chosen.intraSetRestSeconds = 20
+        var older = settings
+        older.intraSetRestSeconds = 25
         var none = settings
         none.intraSetRestSeconds = 0
 
-        #expect(rest(after: parent, in: exercise) == 15)
-        #expect(rest(after: first, in: exercise) == 15)
+        #expect(rest(after: parent, in: exercise) == seconds)
+        #expect(rest(after: first, in: exercise) == seconds)
         #expect(rest(after: last, in: exercise) == 100)
-        #expect(rest(after: parent, in: exercise, settings: chosen) == 20)
+        #expect(rest(after: parent, in: exercise, settings: older) == 25)
         #expect(rest(after: parent, in: exercise, settings: none) == nil)
+    }
+
+    /// Each kind's own rest wins over the older one, and only for its own kind.
+    @Test("Test Each Kind's Intra-Set Rest Is Its Own")
+    func testEachKindsIntraSetRestIsItsOwn() {
+        var chosen = settings
+        chosen.intraSetRestSeconds = 25
+        chosen.intraSetRestMyoSeconds = 10
+        chosen.intraSetRestPauseSeconds = 30
+        chosen.intraSetRestClusterSeconds = 0
+        func restAfterParent(_ kind: SetKind) -> Int? {
+            let parent = set("x1", kind: kind)
+            return rest(after: parent, in: exercise([parent, set("x1-m", parent: "x1"), set("x2")]), settings: chosen)
+        }
+
+        #expect(restAfterParent(.myo) == 10)
+        #expect(restAfterParent(.restPause) == 30)
+        #expect(restAfterParent(.cluster) == nil)
     }
 
     /// A plain row under a myo parent is still a mini-set of it.

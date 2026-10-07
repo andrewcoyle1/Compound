@@ -103,4 +103,38 @@ struct WorkoutSettingsDecodingTests {
         #expect(decoded.setPlanning == isOn)
         #expect(decoded.plansSets == isOn)
     }
+
+    /// The per-kind rests within a set: 15, 20 and 15 seconds for a document saved before them,
+    /// or the one intra-set rest such a document chose.
+    @Test("Test A Document Saved Before The Per-Kind Intra-Set Rests Reads Their Defaults")
+    func testPerKindIntraSetRestsDefault() throws {
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(WorkoutSettings(authorId: "author-1"))) as? [String: Any] ?? [:]
+        for key in ["intra_set_rest_seconds", "intra_set_rest_myo_seconds", "intra_set_rest_pause_seconds", "intra_set_rest_cluster_seconds"] {
+            json.removeValue(forKey: key)
+        }
+
+        var decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.intraSetRestMyoSeconds == nil && decoded.intraSetRestPauseSeconds == nil && decoded.intraSetRestClusterSeconds == nil)
+        #expect(decoded.intraSetRestMyo == 15 && decoded.intraSetRestPause == 20 && decoded.intraSetRestCluster == 15)
+
+        json["intra_set_rest_seconds"] = 25
+        decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.intraSetRestMyo == 25 && decoded.intraSetRestPause == 25 && decoded.intraSetRestCluster == 25)
+    }
+
+    @Test("Test The Per-Kind Intra-Set Rests Are Kept Through A Save")
+    func testPerKindIntraSetRestsRoundTrip() throws {
+        var settings = WorkoutSettings(authorId: "author-1")
+        settings.intraSetRestMyoSeconds = 10
+        settings.intraSetRestPauseSeconds = 30
+        settings.intraSetRestClusterSeconds = 12
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONEncoder().encode(settings))
+
+        #expect(decoded.intraSetRestMyo == 10 && decoded.intraSetRestPause == 30 && decoded.intraSetRestCluster == 12)
+        #expect(decoded.intraSetRest(for: .drop) == nil)
+        #expect(decoded.intraSetRest(for: .restPause) == 30)
+    }
 }

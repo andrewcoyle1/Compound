@@ -28,7 +28,8 @@ extension WorkoutTrackerPresenter {
                 trackingMode: mode,
                 authorId: userId,
                 targetCount: targetCount,
-                perSide: WorkoutSessionModel.isPerSide(exercise)
+                perSide: WorkoutSessionModel.isPerSide(exercise),
+                setTargets: template.setTargets
             )
             let imageName = Constants.exerciseImageName(for: exercise)
             let newExercise = WorkoutExerciseModel(

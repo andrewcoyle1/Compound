@@ -124,6 +124,46 @@
         }
       }
     },
+    "Add Drop Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir serie descendente"
+          }
+        }
+      }
+    },
+    "Add drop set to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir serie descendente a %@"
+          }
+        }
+      }
+    },
+    "Add Mini-Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir miniserie"
+          }
+        }
+      }
+    },
+    "Add mini-set to %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir miniserie a %@"
+          }
+        }
+      }
+    },
     "All Workouts" : {
       "localizations" : {
         "es" : {
@@ -134,12 +174,32 @@
         }
       }
     },
+    "AMRAP" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AMRAP"
+          }
+        }
+      }
+    },
     "Change sign" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiar signo"
+          }
+        }
+      }
+    },
+    "Cluster" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cluster"
           }
         }
       }
@@ -174,12 +234,52 @@
         }
       }
     },
+    "Delete Drop Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar serie descendente"
+          }
+        }
+      }
+    },
+    "Delete Mini-Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar miniserie"
+          }
+        }
+      }
+    },
     "Difference" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diferencia"
+          }
+        }
+      }
+    },
+    "Drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop"
+          }
+        }
+      }
+    },
+    "drop set %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "serie descendente %lld"
           }
         }
       }
@@ -264,6 +364,36 @@
         }
       }
     },
+    "Log AMRAP set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie AMRAP"
+          }
+        }
+      }
+    },
+    "Log drop set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie descendente"
+          }
+        }
+      }
+    },
+    "Log mini-set %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar miniserie %lld"
+          }
+        }
+      }
+    },
     "Log set" : {
       "localizations" : {
         "es" : {
@@ -280,6 +410,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "registrada"
+          }
+        }
+      }
+    },
+    "Mini" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mini"
+          }
+        }
+      }
+    },
+    "mini-set %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "miniserie %lld"
           }
         }
       }
@@ -320,6 +470,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Músculos"
+          }
+        }
+      }
+    },
+    "Myo-reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Myo-reps"
           }
         }
       }
@@ -394,12 +554,32 @@
         }
       }
     },
+    "Rest-pause" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso-pausa"
+          }
+        }
+      }
+    },
     "Set options" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opciones de la serie"
+          }
+        }
+      }
+    },
+    "Set Type" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de serie"
           }
         }
       }
@@ -480,6 +660,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Superserie %lld de %lld"
+          }
+        }
+      }
+    },
+    "This also deletes its %lld drop sets and mini-sets." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its drop set and mini-set."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its %lld drop sets and mini-sets."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se elimina su serie descendente o miniserie."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se eliminan sus %lld series descendentes y miniseries."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "This also deletes its %lld drop sets." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its drop set."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its %lld drop sets."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se elimina su serie descendente."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se eliminan sus %lld series descendentes."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "This also deletes its %lld mini-sets." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its mini-set."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "This also deletes its %lld mini-sets."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se elimina su miniserie."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "También se eliminan sus %lld miniseries."
+                }
+              }
+            }
           }
         }
       }

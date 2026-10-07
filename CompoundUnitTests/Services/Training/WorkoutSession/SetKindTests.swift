@@ -135,4 +135,39 @@ struct SetKindTests {
 
         #expect(history.first?.workingSets.map(\.id) == ["s1", "s2"])
     }
+
+    // MARK: WP-Q
+
+    /// A rest-pause mini-set of one heavy rep would otherwise claim a best 1RM the set never had.
+    @Test("Test The 1RM Leaves Sub-Sets Out")
+    func testThe1RMLeavesSubSetsOut() {
+        var heavySingle = set("s1-m", parent: "s1")
+        heavySingle.weightKg = 140
+        heavySingle.reps = 1
+        let session = WorkoutSessionModel(
+            id: "session-1", authorId: "author-1", name: "Push", dateCreated: date, endedAt: date,
+            exercises: [
+                WorkoutExerciseModel(
+                    id: "e1", authorId: "author-1", templateId: "t1", name: "Bench Press",
+                    trackingMode: .weightReps, index: 1, sets: [set("s1"), heavySingle]
+                )
+            ]
+        )
+
+        let latest = ExerciseOneRMAggregator.aggregate(sessions: [session])["t1"]?.latest1RM
+
+        #expect(latest == ExerciseOneRMAggregator.estimated1RM(weightKg: 100, reps: 8))
+    }
+
+    /// An exercise added part-way through takes its targets' kinds, as one in the template does.
+    @Test("Test Default Sets Take Their Targets' Kinds")
+    func testDefaultSetsTakeTheirTargetsKinds() {
+        let targets = [SetTarget(setNumber: 1, setType: .failure), SetTarget(setNumber: 2, setType: .myo)]
+
+        let sets = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "author-1", targetCount: 3, setTargets: targets)
+
+        #expect(sets.map(\.kind) == [.amrap, .myo, .standard])
+    }
+
+    // MARK: - End WP-Q
 }

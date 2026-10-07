@@ -127,7 +127,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 trackingMode: mode,
                 authorId: authorId,
                 targetCount: max(targetCount, 1),
-                perSide: WorkoutSessionModel.isPerSide(exerciseModel.exercise)
+                perSide: WorkoutSessionModel.isPerSide(exerciseModel.exercise),
+                setTargets: exerciseModel.setTargets
             )
             
             // Fill the working sets the way the Initial Log Fill setting asks for: the
@@ -141,12 +142,6 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 gymProfile: gymProfile,
                 unitPreferences: unitPreferences
             ).apply(to: &workingSets)
-
-            // Each working set takes the kind its set target asks for: a template's drop set is
-            // logged as a drop set. A set beyond the targets stays standard.
-            for position in workingSets.indices where position < exerciseModel.setTargets.count {
-                workingSets[position].kind = SetKind(exerciseModel.setTargets[position].setType)
-            }
             
             // Use the first working set's weight/reps for warmup calculation, or fall back to estimated values
             let firstWorkingSet = workingSets.first
@@ -461,11 +456,16 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// `targetCount` is how many sets the user is being asked to do. An exercise worked one limb
     /// at a time gets one `both` row per set, which the tracker's Split chip can turn into a left
     /// and a right row when the sides differ.
+    ///
+    /// Each set takes the kind its set target asks for, so a template's drop set is logged as a
+    /// drop set wherever the exercise is added, at the start or part-way through. A set beyond the
+    /// targets stays standard.
     static func defaultSets(
         trackingMode: TrackingMode,
         authorId: String,
         targetCount: Int = 3,
-        perSide: Bool = false
+        perSide: Bool = false,
+        setTargets: [SetTarget] = []
     ) -> [WorkoutSetModel] {
         let count = max(targetCount, 1)
         return (1...count).map { index in
@@ -479,6 +479,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 distanceMeters: nil,
                 rpe: nil,
                 side: perSide ? .both : nil,
+                kind: index <= setTargets.count ? SetKind(setTargets[index - 1].setType) : .standard,
                 isWarmup: false,
                 completedAt: nil,
                 dateCreated: .now

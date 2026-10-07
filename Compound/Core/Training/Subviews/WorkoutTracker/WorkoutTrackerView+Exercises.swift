@@ -79,6 +79,7 @@ extension WorkoutTrackerView {
             Section {
                 ForEach(upNext) { exercise in
                     exerciseRow(exercise, isDone: false)
+                        .accessibilityActions { upNextActions(for: exercise) }
                 }
                 .onMove { source, destination in
                     presenter.moveUpNext(from: source, to: destination)
@@ -154,6 +155,22 @@ extension WorkoutTrackerView {
                     Label("Do Later", systemImage: Symbol.doLater)
                 }
             }
+        }
+    }
+
+    /// The long-press menu and the drag handles, as named actions: VoiceOver's Actions rotor,
+    /// Switch Control's menu and Voice Control's "show actions" reach them without a gesture.
+    @ViewBuilder
+    private func upNextActions(for exercise: WorkoutExerciseModel) -> some View {
+        Button("Do Next") { presenter.onDoNextPressed(exercise.id) }
+        if presenter.canDoLater(exercise) {
+            Button("Do Later") { presenter.onDoLaterPressed(exercise.id) }
+        }
+        if presenter.upNextMoveDestination(of: exercise.id, by: -1) != nil {
+            Button("Move Up") { presenter.onUpNextMovePressed(exercise.id, by: -1) }
+        }
+        if presenter.upNextMoveDestination(of: exercise.id, by: 1) != nil {
+            Button("Move Down") { presenter.onUpNextMovePressed(exercise.id, by: 1) }
         }
     }
 

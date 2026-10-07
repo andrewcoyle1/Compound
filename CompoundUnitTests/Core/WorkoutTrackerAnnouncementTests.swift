@@ -15,9 +15,9 @@ struct WorkoutTrackerAnnouncementTests {
 
     private let start = Date(timeIntervalSince1970: 1_000_000)
 
-    /// Two exercises of two 60 kg × 8 sets, no rests, so a log moves nothing but the button.
-    private func makeScreen() throws -> (presenter: WorkoutTrackerPresenter, interactor: WorkoutTrackerInteractorDouble) {
-        let exercises = ["bench", "row"].enumerated().map { offset, id in
+    /// Exercises of two 60 kg × 8 sets, no rests, so a log moves nothing but the button.
+    private func makeScreen(_ ids: [String] = ["bench", "row"]) throws -> (presenter: WorkoutTrackerPresenter, interactor: WorkoutTrackerInteractorDouble) {
+        let exercises = ids.enumerated().map { offset, id in
             WorkoutExerciseModel(
                 id: id, authorId: "author-1", templateId: "template-\(id)", name: id == "bench" ? "Bench Press" : "Barbell Row",
                 trackingMode: .weightReps, index: offset + 1,
@@ -120,5 +120,32 @@ struct WorkoutTrackerAnnouncementTests {
         spy.listen { presenter.onCurrentExerciseChanged(from: "bench", to: "bench") }
 
         #expect(spy.texts.isEmpty)
+    }
+
+    // MARK: - Up Next actions (M1)
+
+    @Test func moveUpAndMoveDownAreOfferedOnlyWhereARowCanGo() throws {
+        let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])
+        #expect(presenter.upNextExercises.map(\.id) == ["row", "curl", "dip"])
+
+        #expect(presenter.upNextMoveDestination(of: "row", by: -1) == nil)
+        #expect(presenter.upNextMoveDestination(of: "dip", by: 1) == nil)
+        #expect(presenter.upNextMoveDestination(of: "curl", by: -1) == 0)
+        #expect(presenter.upNextMoveDestination(of: "curl", by: 1) == 3)
+    }
+
+    @Test func movingARowSaysWhereItWent() throws {
+        let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])
+        let spy = TrackerAnnouncementSpy()
+
+        spy.listen { presenter.onUpNextMovePressed("curl", by: -1) }
+        #expect(presenter.upNextExercises.map(\.id) == ["curl", "row", "dip"])
+
+        spy.listen { presenter.onUpNextMovePressed("row", by: 1) }
+        #expect(presenter.upNextExercises.map(\.id) == ["curl", "dip", "row"])
+        #expect(spy.texts == ["Position 1 of 3", "Position 3 of 3"])
+
+        // The card's exercise is not in Up Next and does not move.
+        #expect(presenter.workoutSession.exercises.first?.id == "bench")
     }
 }

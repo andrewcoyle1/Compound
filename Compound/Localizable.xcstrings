@@ -244,12 +244,32 @@
         }
       }
     },
+    "Move Down" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajar"
+          }
+        }
+      }
+    },
     "Move to the next exercise when its rest ends" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pasar al siguiente ejercicio cuando termine su descanso"
+          }
+        }
+      }
+    },
+    "Move Up" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subir"
           }
         }
       }
@@ -280,6 +300,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahora: %@"
+          }
+        }
+      }
+    },
+    "Position %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posición %lld de %lld"
           }
         }
       }

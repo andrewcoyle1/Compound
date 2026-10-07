@@ -10,6 +10,7 @@ struct SetTargetView: View {
     @State var presenter: SetTargetPresenter
 
     @ScaledMetric(relativeTo: .body) private var numberColumnWidth: CGFloat = 44
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Form {
@@ -137,7 +138,9 @@ struct SetTargetView: View {
                     .font(.rowDetail.weight(.semibold))
                     .foregroundStyle(.tertiary)
             }
-            .padding(.leading, numberColumnWidth + Spacing.s)
+            // Under the reps fields, or the full width at the accessibility sizes, where the
+            // number column is wide enough to break "Standard" over two lines.
+            .padding(.leading, dynamicTypeSize.isAccessibilitySize ? 0 : numberColumnWidth + Spacing.s)
             .frame(minHeight: ControlSize.row)
             .contentShape(.rect)
         }

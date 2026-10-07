@@ -64,21 +64,28 @@ struct SetPlanDetailView: View {
         layout {
             Text("Each Drop")
                 .frame(maxWidth: .infinity, alignment: .leading)
-            HStack(spacing: Spacing.xs) {
-                ForEach(presenter.dropSteps, id: \.self) { percent in
-                    Button {
-                        presenter.onDropStepPressed(percent)
-                    } label: {
-                        Chip(presenter.dropStepTitle(percent), isSelected: presenter.dropStep == percent)
-                            .chipTapTarget()
-                    }
-                    .buttonStyle(.plain)
-                }
+            // In a row while they fit unbroken, else one above the other.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Spacing.xs) { dropStepChips }
+                VStack(alignment: .leading, spacing: 0) { dropStepChips }
             }
         }
         .accessibilityElement(children: .contain)
 
         NumberField(String(localized: "To failure"), value: $presenter.dropReps, label: String(localized: "Reps on Each Drop"))
+    }
+
+    private var dropStepChips: some View {
+        ForEach(presenter.dropSteps, id: \.self) { percent in
+            Button {
+                presenter.onDropStepPressed(percent)
+            } label: {
+                Chip(presenter.dropStepTitle(percent), isSelected: presenter.dropStep == percent)
+                    .fixedSize()
+                    .chipTapTarget()
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 

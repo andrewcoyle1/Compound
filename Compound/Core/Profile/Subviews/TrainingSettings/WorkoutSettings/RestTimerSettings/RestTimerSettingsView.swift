@@ -131,18 +131,25 @@ struct RestTimerSettingsView: View {
         }
     }
 
+    /// In a row while they fit unbroken, else one above the other.
     private func intraSetRestChips(for kind: RestTimerSettingsPresenter.IntraSetKind) -> some View {
-        HStack(spacing: Spacing.xs) {
-            ForEach(kind.options, id: \.self) { seconds in
-                Button {
-                    presenter.onIntraSetRestSelected(seconds, for: kind)
-                } label: {
-                    Chip(presenter.secondsTitle(seconds), isSelected: presenter.intraSetRest(for: kind) == seconds)
-                        .chipTapTarget()
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(presenter.intraSetRestAccessibilityLabel(seconds, for: kind))
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Spacing.xs) { intraSetRestOptions(for: kind) }
+            VStack(alignment: .leading, spacing: 0) { intraSetRestOptions(for: kind) }
+        }
+    }
+
+    private func intraSetRestOptions(for kind: RestTimerSettingsPresenter.IntraSetKind) -> some View {
+        ForEach(kind.options, id: \.self) { seconds in
+            Button {
+                presenter.onIntraSetRestSelected(seconds, for: kind)
+            } label: {
+                Chip(presenter.secondsTitle(seconds), isSelected: presenter.intraSetRest(for: kind) == seconds)
+                    .fixedSize()
+                    .chipTapTarget()
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel(presenter.intraSetRestAccessibilityLabel(seconds, for: kind))
         }
     }
 

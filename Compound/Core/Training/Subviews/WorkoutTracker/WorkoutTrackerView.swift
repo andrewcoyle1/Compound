@@ -98,8 +98,19 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .onChange(of: presenter.canQuickFinish) { _, isAvailable in
             presenter.onQuickFinishAvailabilityChanged(isAvailable)
         }
+        // Told to VoiceOver as they happen (a11y.md S1): a log, from here or the Lock Screen, and
+        // the card moving on.
+        .onChange(of: presenter.latestLogMark) { oldMark, newMark in
+            presenter.onLatestLogChanged(from: oldMark, to: newMark)
+        }
+        .onChange(of: presenter.currentExercise?.id) { oldId, newId in
+            presenter.onCurrentExerciseChanged(from: oldId, to: newId)
+        }
         .task {
             await presenter.observeRestCompletions()
+        }
+        .task {
+            await presenter.observeRestOverAnnouncements()
         }
         .task {
             await presenter.onAppear()

@@ -246,8 +246,8 @@ private struct ActiveSessionScreen<Content: View>: View {
             ProgressView()
                 .task {
                     let plansSets = ProcessInfo.processInfo.arguments.contains("UI_TEST_SET_PLAN")
-                    if plansSets { await turnOnSetPlan() }
                     try? await interactor.startWorkout(for: plansSets ? Self.setPlanTemplate : .mock, in: nil)
+                    if plansSets { await seedSetPlan() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_STRIP_OFF") { await hideExerciseStrip() }
                     isReady = true
@@ -263,15 +263,33 @@ private struct ActiveSessionScreen<Content: View>: View {
         try? await interactor.saveWorkoutSettings(settings)
     }
 
-    /// `UI_TEST_SET_PLAN`: Workout Settings › Set Plan on, before the session is created from it.
-    private func turnOnSetPlan() async {
+    /// `UI_TEST_SET_PLAN`: Workout Settings › Set Plan on, and the first exercise's working sets laid
+    /// out by the plan through the path session creation takes with the switch on. Laid out here
+    /// rather than left to creation, because the settings engine applies the switch only when its
+    /// listener next emits, which can be after the session is made; the tracker reads it live.
+    private func seedSetPlan() async {
+        if var session = interactor.activeSession, var exercise = session.exercises.first,
+           !exercise.sets.contains(where: \.isSubSet) {
+            let working = WorkoutSessionModel.applyingSetPlan(
+                to: exercise.sets.filter { !$0.isWarmup },
+                setTargets: exercise.setTargets,
+                authorId: session.authorId
+            )
+            exercise.sets = (exercise.sets.filter(\.isWarmup) + working).enumerated().map { index, set in
+                var set = set
+                set.index = index + 1
+                return set
+            }
+            session.exercises[0] = exercise
+            try? interactor.updateActiveSession(session)
+        }
         var settings = interactor.workoutSettings
         settings.setPlanning = true
         try? await interactor.saveWorkoutSettings(settings)
     }
 
     /// `UI_TEST_SET_PLAN`: the mock template with its first exercise planned as a drop set with
-    /// two drops, then an AMRAP set aiming for 8, so the session is created through the plan.
+    /// two drops, then an AMRAP set aiming for 8.
     private static var setPlanTemplate: WorkoutTemplateModel {
         var template = WorkoutTemplateModel.mock
         guard !template.exercises.isEmpty else { return template }

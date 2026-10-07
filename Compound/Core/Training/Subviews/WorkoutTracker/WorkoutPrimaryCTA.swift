@@ -96,7 +96,8 @@ extension WorkoutTrackerView {
             if let piece = presenter.primarySlotNextPiece {
                 // With the set plan on, what follows the set when it is a drop or mini-set of it:
                 // "Then: drop 1 · 80 kg, no rest". Left off at accessibility sizes, as the figures
-                // are; VoiceOver hears it as the button's value either way.
+                // are; VoiceOver hears it after the title either way. In the label, not a value: a
+                // value set inside a button's label does not reach the button.
                 VStack(spacing: Spacing.xxs) {
                     title
                     if !isLarge {
@@ -108,8 +109,7 @@ extension WorkoutTrackerView {
                     }
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(presenter.primarySlotTitle)
-                .accessibilityValue(String(localized: "Then: \(piece.spokenText)"))
+                .accessibilityLabel([presenter.primarySlotTitle, String(localized: "Then: \(piece.spokenText)")].joined(separator: ". "))
             } else {
                 title
                     .accessibilityLabel(presenter.primarySlotTitle)

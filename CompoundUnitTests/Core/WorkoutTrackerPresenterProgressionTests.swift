@@ -141,6 +141,18 @@ struct WorkoutTrackerPresenterProgressionTests {
         #expect(remaining[1].weight == 57)
     }
 
+    /// Assistance is stored negative, so the same rule takes help away: −30 kg done for 14 reps,
+    /// two past the top of 8–12, suggests −27.5 kg for what is left — a harder set, not an easier.
+    @Test("Test An Assisted Set Progresses To Less Assistance")
+    func testAnAssistedSetProgressesToLessAssistance() throws {
+        let screen = try makeScreen(sets: [set(1, weightKg: -30), set(2, weightKg: -30), set(3, weightKg: -30)])
+
+        completeFirstSet(screen.presenter, reps: 14)
+
+        let lessHelp = remainingValues(screen.presenter).allSatisfy { $0.weight == -27.5 && $0.reps == 8 }
+        #expect(lessHelp)
+    }
+
     // MARK: - Minimise and reopen
 
     /// Minimising releases the presenter and reopening builds a new one. The new one used to

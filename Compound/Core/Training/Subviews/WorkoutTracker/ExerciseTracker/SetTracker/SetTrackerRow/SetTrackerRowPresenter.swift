@@ -45,7 +45,7 @@ class SetTrackerRowPresenter {
         if set.wrappedValue.completedAt == nil, let onLogSet {
             onLogSet(set.wrappedValue.id, restBeforeSetIdToSec[set.wrappedValue.id])
         } else if set.wrappedValue.completedAt == nil {
-            guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue) else {
+            guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue, isAssisted: isAssisted(exercise)) else {
                 interactor.playHaptic(option: .error)
                 return
             }
@@ -151,26 +151,31 @@ class SetTrackerRowPresenter {
         return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
 
-    func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        guard let problem = SetValidation.problem(with: set, trackingMode: trackingMode) else { return true }
+    func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
+        guard let problem = SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted) else { return true }
         router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
         return false
     }
 
-    /// See `SetValidation.problem(with:trackingMode:)`.
-    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode) -> String? {
-        SetValidation.problem(with: set, trackingMode: trackingMode)
+    /// See `SetValidation.problem(with:trackingMode:isAssisted:)`.
+    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> String? {
+        SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted)
     }
 
-    func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        SetValidation.canLog(set, trackingMode: trackingMode)
+    func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
+        SetValidation.canLog(set, trackingMode: trackingMode, isAssisted: isAssisted)
+    }
+
+    /// Whether `exercise`'s weight is assistance, stored negative (`ExerciseModel.isAssisted`).
+    func isAssisted(_ exercise: WorkoutExerciseModel) -> Bool {
+        interactor.allExercises.first { $0.id == exercise.templateId }?.isAssisted ?? false
     }
 
     /// What the Done column shows. Each state has its own symbol and spoken value, so none of them
     /// is told apart by colour alone.
-    func completionState(trackingMode: TrackingMode, set: WorkoutSetModel) -> SetCompletionState {
+    func completionState(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> SetCompletionState {
         if set.completedAt != nil { return .completed }
-        return canComplete(trackingMode: trackingMode, set: set) ? .ready : .notReady
+        return canComplete(trackingMode: trackingMode, set: set, isAssisted: isAssisted) ? .ready : .notReady
     }
 }
 
@@ -233,9 +238,12 @@ extension SetTrackerRowPresenter {
         let unit = units.weightUnit
         let lastSet = exercise.sets.firstIndex { $0.id == set.id }.flatMap { $0 > 0 ? exercise.sets[$0 - 1] : nil }
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
+        // An assisted machine steps below zero, and never above it when the exercise cannot be loaded.
+        let library = interactor.allExercises.first { $0.id == exercise.templateId }
+        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
         return SetKeyboardContext(
             unit: unit,
-            step: WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit),
+            step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,
             distanceUnit: units.distanceUnit,
             fields: SetKeyboardField.fields(for: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,

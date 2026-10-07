@@ -315,6 +315,90 @@ struct SetKeyboardPresenterTests {
         #expect(EffortScale.rir(fromRPE: 10) == 0)
         #expect(EffortScale.rpe(fromRIR: 3) == 7)
     }
+
+    // MARK: - WP-N: assistance and placeholders
+
+    private func assistedContext(bodyweightOnly: Bool = true) -> SetKeyboardContext {
+        SetKeyboardContext(step: WeightStepper.fallback(.kilograms).assisted(bodyweightOnly: bodyweightOnly))
+    }
+
+    /// The ± key shows only on an assisted exercise's weight field.
+    @Test func theSignKeyShowsOnlyForAnAssistedWeight() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(!keyboard.showsSignKey)
+        keyboard.close()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        #expect(keyboard.showsSignKey)
+        keyboard.open(.reps, set: box.binding, context: assistedContext())
+        #expect(!keyboard.showsSignKey)
+    }
+
+    /// "± 3 0" types −30, ± flips a stored weight, and typing over a negative keeps it negative.
+    @Test func signKeyTypesAndFlipsAssistance() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        keyboard.toggleSign()
+        #expect(keyboard.text == "-")
+        #expect(box.value.weightKg == nil)
+        type("30", into: keyboard)
+        #expect(box.value.weightKg == -30)
+
+        keyboard.toggleSign()
+        #expect(box.value.weightKg == 30)
+        keyboard.toggleSign()
+        #expect(box.value.weightKg == -30)
+        #expect(keyboard.text == "-30")
+
+        // The first key after a flip replaces the value, but assistance stays assistance.
+        type("25", into: keyboard)
+        #expect(box.value.weightKg == -25)
+    }
+
+    /// A hardware keyboard's minus key is the ± key, and does nothing on an ordinary weight.
+    @Test func aHardwareMinusFlipsOnlyAnAssistedWeight() {
+        let box = set(weightKg: 20)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        keyboard.type("-")
+        #expect(box.value.weightKg == 20)
+        keyboard.close()
+        keyboard.open(.weight, set: box.binding, context: assistedContext(bodyweightOnly: false))
+        keyboard.type("-")
+        #expect(box.value.weightKg == -20)
+    }
+
+    /// − on an empty assisted field gives one step of assistance, not the deepest there is.
+    @Test func steppingDownAnEmptyAssistedFieldGivesOneStepOfHelp() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        keyboard.stepDown()
+        #expect(box.value.weightKg == -2.5)
+        keyboard.stepUp()
+        keyboard.stepUp()
+        #expect(box.value.weightKg == 0)
+    }
+
+    /// An empty field's hint is last time's value, greyed; it is never written into the set.
+    @Test func placeholdersShowLastTimeAndAreNeverValues() {
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "en_US")
+        let previous = WorkoutSetModel(
+            id: "p", authorId: "u", index: 0, reps: 8, weightKg: -30, durationSec: 45,
+            isWarmup: false, completedAt: start, dateCreated: start
+        )
+        #expect(keyboard.placeholder(for: .duration, previous: previous, unit: .kilograms) == "0:45")
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "-30")
+        #expect(keyboard.placeholder(for: .reps, previous: previous, unit: .kilograms) == "8")
+        #expect(keyboard.placeholder(for: .distance, previous: previous, unit: .kilograms) == Format.placeholder)
+        #expect(keyboard.placeholder(for: .duration, previous: nil, unit: .kilograms) == Format.placeholder)
+
+        let empty = set(weightKg: nil)
+        #expect(keyboard.displayText(for: .weight, set: empty.value, unit: .kilograms).isEmpty)
+    }
 }
 
 /// The row's side of the keyboard: what it resolves before opening one, and what Done leads to.
@@ -477,5 +561,21 @@ struct SetTrackerRowKeyboardTests {
 
         set.weightKg = nil
         #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
+    }
+
+    // MARK: - WP-N: assistance
+
+    /// The row opens an assisted exercise's keypad on the assisted step.
+    @Test func anAssistedExerciseOpensOnTheAssistedStep() {
+        let row = makeRow()
+        row.interactor.allExercises = [ExerciseModel(
+            id: "t", authorId: "u", name: "Assisted Pull-Up", trackableMetrics: [.reps, .weightPerSideAssistance],
+            type: .compoundUpper, laterality: .bilateral, muscleGroups: [.lats: .primary], isBodyweight: true,
+            equipmentVariations: [], rangeOfMotion: 4, stability: 4, bodyWeightContribution: 100, alternateNames: []
+        )]
+        let context = row.presenter.keyboardContext(delegate: row.delegate)
+        #expect(context.step.isAssisted)
+        #expect(context.step.next(after: 0) == 0)
+        #expect(row.presenter.isAssisted(row.exercise.value))
     }
 }

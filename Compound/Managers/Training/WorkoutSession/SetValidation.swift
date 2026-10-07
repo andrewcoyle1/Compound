@@ -11,12 +11,15 @@ import Foundation
 enum SetValidation {
 
     /// What stops `set` being logged, in the user's words, or `nil` when it can be.
-    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode) -> String? {
+    ///
+    /// `isAssisted` is the exercise's `ExerciseModel.isAssisted`: its weight is assistance, stored
+    /// negative, so only then may the weight go below zero.
+    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> String? {
         let noReps = String(localized: "Enter at least one rep.")
         let noTime = String(localized: "Enter a time for this set.")
         switch trackingMode {
         case .weightReps:
-            if let weight = set.weightKg, weight < 0 { return String(localized: "Enter a weight of zero or more.") }
+            if !isAssisted, let weight = set.weightKg, weight < 0 { return String(localized: "Enter a weight of zero or more.") }
             return (set.reps ?? 0) > 0 ? nil : noReps
         case .repsOnly:
             return (set.reps ?? 0) > 0 ? nil : noReps
@@ -29,7 +32,14 @@ enum SetValidation {
     }
 
     /// Whether `set` holds what its tracking mode needs.
-    static func canLog(_ set: WorkoutSetModel, trackingMode: TrackingMode) -> Bool {
-        problem(with: set, trackingMode: trackingMode) == nil
+    static func canLog(_ set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> Bool {
+        problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted) == nil
     }
+}
+
+extension ExerciseModel {
+    /// Tracked as assistance (`.weightPerSideAssistance`): an assisted pull-up or dip machine. The
+    /// weight is stored as negative kilograms, so −30 kg is 30 kg of help, and adding weight
+    /// means less help: progression works unchanged.
+    var isAssisted: Bool { trackableMetrics.contains(.weightPerSideAssistance) }
 }

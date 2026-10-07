@@ -25,7 +25,8 @@ extension ActiveWorkout {
 
     /// Logs `setId`: checks it, stamps `completedAt = now`, and works out the rest and the next
     /// focus across the whole workout. `context` is the set's exercise's, and `customRestSeconds`
-    /// a rest set by hand on its row, which wins.
+    /// a rest set by hand on its row, which wins. `isAssisted` lets an assisted exercise log the
+    /// negative weight its assistance is stored as (`SetValidation`).
     ///
     /// `nil` when there is nothing to log: the set is not in the session, or is already logged.
     static func log(
@@ -34,6 +35,7 @@ extension ActiveWorkout {
         settings: WorkoutSettings,
         context: RestDurationRules.ExerciseContext,
         customRestSeconds: Int? = nil,
+        isAssisted: Bool = false,
         now: Date = Date()
     ) -> LogOutcome? {
         var exercises = session.exercises
@@ -43,7 +45,8 @@ extension ActiveWorkout {
 
         if let problem = SetValidation.problem(
             with: exercises[exerciseIndex].sets[setIndex],
-            trackingMode: exercises[exerciseIndex].trackingMode
+            trackingMode: exercises[exerciseIndex].trackingMode,
+            isAssisted: isAssisted
         ) {
             return LogOutcome(session: session, problem: problem)
         }

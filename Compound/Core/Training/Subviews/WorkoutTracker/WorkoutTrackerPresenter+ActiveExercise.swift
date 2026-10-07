@@ -258,7 +258,8 @@ extension WorkoutTrackerPresenter {
             in: workoutSession,
             settings: settings,
             context: restContext(for: exercise),
-            customRestSeconds: custom ?? customRestSeconds[setId]
+            customRestSeconds: custom ?? customRestSeconds[setId],
+            isAssisted: interactor.isAssisted(templateId: exercise.templateId)
         ) else { return }
         if let problem = outcome.problem {
             interactor.playHaptic(option: .error)

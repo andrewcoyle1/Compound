@@ -223,7 +223,12 @@ struct SetKeyboardView: View {
                 }
                 digit("0")
                 keyButton(systemImage: "delete.left", label: String(localized: "Delete"), isKey: true) { presenter.backspace() }
-                Color.clear.frame(height: 1).accessibilityHidden(true)
+                if presenter.showsSignKey {
+                    keyButton(title: "±", label: String(localized: "Change sign"), isKey: true) { presenter.toggleSign() }
+                        .accessibilityHint("A negative weight is assistance")
+                } else {
+                    Color.clear.frame(height: 1).accessibilityHidden(true)
+                }
             }
         }
     }

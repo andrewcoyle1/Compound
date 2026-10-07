@@ -25,6 +25,11 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// (the default since 7 Oct 2026; it shipped off while it was being tried).
     var showExerciseStrip: Bool?
     var showsExerciseStrip: Bool { showExerciseStrip ?? true }
+    /// Workout Settings › Set Plan: the template owns each set's kind and its plan (drops,
+    /// mini-sets, an AMRAP target), and a session is created from it. Optional so a document
+    /// saved before the setting existed still decodes; nil reads as off.
+    var setPlanning: Bool?
+    var plansSets: Bool { setPlanning ?? false }
     
     // MARK: - Warm-Up
     var addSmartWarmUps: Bool = true
@@ -71,6 +76,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case showBodyweightContribution = "show_bodyweight_contribution"
         case showOnLockScreen = "show_on_lock_screen"
         case showExerciseStrip = "show_exercise_strip"
+        case setPlanning = "set_planning"
         case exerciseAutoNext = "exercise_auto_next"
         case propagateChanges = "propagate_changes"
         case rirTracking = "rir_tracking"

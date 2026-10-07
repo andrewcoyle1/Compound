@@ -79,4 +79,28 @@ struct WorkoutSettingsDecodingTests {
         #expect(decoded.showExerciseStrip == isOn)
         #expect(decoded.showsExerciseStrip == isOn)
     }
+
+    /// The set plan is off unless switched on, including for every document saved before it.
+    @Test("Test A Document Saved Before The Set Plan Reads As Off")
+    func testSetPlanningDefaultsToOff() throws {
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(WorkoutSettings(authorId: "author-1"))) as? [String: Any] ?? [:]
+        json.removeValue(forKey: "set_planning")
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.setPlanning == nil)
+        #expect(!decoded.plansSets)
+        #expect(!WorkoutSettings(authorId: "author-1").plansSets)
+    }
+
+    @Test("Test The Set Plan Choice Is Kept Through A Save", arguments: [true, false])
+    func testSetPlanningRoundTrips(isOn: Bool) throws {
+        var settings = WorkoutSettings(authorId: "author-1")
+        settings.setPlanning = isOn
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONEncoder().encode(settings))
+
+        #expect(decoded.setPlanning == isOn)
+        #expect(decoded.plansSets == isOn)
+    }
 }

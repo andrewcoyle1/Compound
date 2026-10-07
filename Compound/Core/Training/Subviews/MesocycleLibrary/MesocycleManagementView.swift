@@ -106,12 +106,17 @@ struct MesocycleLibraryView<MesocycleDisclosure: View, InactiveSection: View>: V
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
-            Button {
-                presenter.onCreateMesocyclePressed()
+            Menu {
+                Button("Create Mesocycle") {
+                    presenter.onCreateMesocyclePressed()
+                }
+                Button("Import Program…") {
+                    presenter.onImportProgramPressed()
+                }
             } label: {
                 Image(systemName: Symbol.add)
             }
-            .accessibilityLabel("Create mesocycle")
+            .accessibilityLabel("Add mesocycle")
         }
     }
 }

@@ -96,7 +96,11 @@ extension TodayPresenter {
                 mesocycleId: interactor.activeMesocycle?.id,
                 onStartWorkoutPressed: { [weak self] in
                     Task { @MainActor in self?.router.showWorkoutTrackerView() }
-                }
+                },
+                microcycleIndex: MesocycleSchedule.todayItem(
+                    run: interactor.activeMesocycleRun,
+                    sessions: interactor.workoutSessions
+                )?.cycleIndex
             ))
         } else {
             onStartEmptyWorkoutPressed()

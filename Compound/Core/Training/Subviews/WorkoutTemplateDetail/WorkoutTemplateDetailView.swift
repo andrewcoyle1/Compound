@@ -12,6 +12,9 @@ struct WorkoutTemplateDetailDelegate {
     let mesocycleId: String?
     let onStartWorkoutPressed: (@Sendable () -> Void)?
     var isDeloadCycle: Bool = false
+    /// The 1-based microcycle the day was opened from, whose targets the screen shows and Start
+    /// uses; nil for a template on its own.
+    var microcycleIndex: Int?
     var periodisationPhase: PeriodisationPhase?
     /// False for a preview of a later microcycle's day, which is not started from there.
     var allowsStart: Bool = true
@@ -55,6 +58,7 @@ struct WorkoutTemplateDetailView: View {
                         onStartWorkout: delegate.onStartWorkoutPressed,
                         workoutTemplate: delegate.workoutTemplate,
                         mesocycleId: delegate.mesocycleId,
+                        microcycleIndex: delegate.microcycleIndex,
                         isDeloadCycle: delegate.isDeloadCycle
                     )
                 } label: {
@@ -125,12 +129,28 @@ struct WorkoutTemplateDetailView: View {
     }
 
     private var exercisesSection: some View {
-        Section {
-            ForEach(delegate.workoutTemplate.exercises) { exercise in
-                TemplateExerciseRow(exercise: exercise)
-                    .anyButton(.highlight) {
-                        presenter.onExercisePressed(exercise.exercise)
+        let exercises = delegate.workoutTemplate.exercises
+        let supersetLabels = presenter.supersetLabels(in: exercises)
+        return Section {
+            ForEach(exercises) { exercise in
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    TemplateExerciseRow(exercise: presenter.exerciseForWeek(exercise, delegate: delegate))
+                    TemplateExercisePlanDetails(
+                        exercise: exercise,
+                        weekSummary: presenter.weekSummary(for: exercise, delegate: delegate),
+                        supersetLabel: exercise.supersetGroupId.flatMap { supersetLabels[$0] },
+                        alternativeNames: presenter.alternativeNames(for: exercise)
+                    )
+                }
+                .anyButton(.highlight) {
+                    presenter.onExercisePressed(exercise.exercise)
+                }
+                if let link = exercise.planLink {
+                    Link(destination: link) {
+                        Label("Watch", systemImage: Symbol.openExternally)
                     }
+                    .accessibilityLabel(Text("Watch \(exercise.exercise.name)"))
+                }
             }
         } header: {
             // The "+" here had its action commented out. Authors add exercises through Edit

@@ -4,6 +4,16 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%@ completed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ completada"
+          }
+        }
+      }
+    },
     "%@ elapsed" : {
       "localizations" : {
         "es" : {
@@ -134,6 +144,16 @@
         }
       }
     },
+    "Complete %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completar %@"
+          }
+        }
+      }
+    },
     "Consumed" : {
       "localizations" : {
         "es" : {
@@ -244,6 +264,16 @@
         }
       }
     },
+    "logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "registrada"
+          }
+        }
+      }
+    },
     "Move Down" : {
       "localizations" : {
         "es" : {
@@ -280,6 +310,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Músculos"
+          }
+        }
+      }
+    },
+    "next to log" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "siguiente por registrar"
           }
         }
       }
@@ -340,6 +380,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descanso terminado"
+          }
+        }
+      }
+    },
+    "Set options" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de la serie"
           }
         }
       }
@@ -420,6 +470,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Superserie %lld de %lld"
+          }
+        }
+      }
+    },
+    "upcoming" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pendiente"
           }
         }
       }

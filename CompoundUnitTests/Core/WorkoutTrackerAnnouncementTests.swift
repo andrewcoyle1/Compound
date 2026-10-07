@@ -122,6 +122,24 @@ struct WorkoutTrackerAnnouncementTests {
         #expect(spy.texts.isEmpty)
     }
 
+    // MARK: - A set row as one container (M4)
+
+    @Test func aSetRowReadsWhereItStandsAndItsFiguresInWords() {
+        let english = Locale(identifier: "en_US")
+        let set = WorkoutSetModel(id: "s2", authorId: "author-1", index: 2, reps: 8, weightKg: 100, isWarmup: false, dateCreated: start)
+        let figures = ActiveWorkout.spokenFigures(of: set, trackingMode: .weightReps, unit: .kilograms, distanceUnit: .meters, locale: english)
+
+        #expect(ActiveWorkout.rowSpokenLabel(name: "Set 2", state: .current, figures: figures) == "Set 2, next to log, 100 kilograms, 8 reps")
+        #expect(ActiveWorkout.rowSpokenLabel(name: "Set 1", state: .done, figures: nil) == "Set 1, logged")
+        // The warm-up sheet and a finished workout's editor draw rows with no state.
+        #expect(ActiveWorkout.rowSpokenLabel(name: "Set 3", state: nil, figures: figures) == "Set 3, 100 kilograms, 8 reps")
+    }
+
+    @Test func aSetWithNoFiguresHasNoneToRead() {
+        let set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: nil, weightKg: nil, isWarmup: false, dateCreated: start)
+        #expect(ActiveWorkout.spokenFigures(of: set, trackingMode: .weightReps, unit: .kilograms, distanceUnit: .meters) == nil)
+    }
+
     // MARK: - Up Next actions (M1)
 
     @Test func moveUpAndMoveDownAreOfferedOnlyWhereARowCanGo() throws {

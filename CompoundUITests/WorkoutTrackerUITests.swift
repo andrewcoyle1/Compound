@@ -35,7 +35,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "1-resting")
 
         // The second working set's weight, open in the set keyboard.
-        let weights = app.textFields.matching(NSPredicate(format: "label BEGINSWITH 'Weight'"))
+        let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         weights.element(boundBy: 1).tap()
         let done = app.waitFor(app.buttons["Done"].firstMatch)
         attach(app, "2-editing")
@@ -135,7 +135,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         // A second working set, so a rest follows the first.
         app.waitFor(app.buttons["Add Set"].firstMatch).tap()
         reachFirstWorkingSet(app)
-        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openSets = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Complete '"))
         let openBefore = openSets.count
         Thread.sleep(forTimeInterval: 0.6)
 
@@ -152,7 +152,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        let weights = app.textFields.matching(NSPredicate(format: "label BEGINSWITH 'Weight'"))
+        let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         app.waitFor(weights.firstMatch).tap()
         app.waitFor(app.buttons["Done"].firstMatch)
         let firstKey = app.waitFor(app.buttons["1"].firstMatch)
@@ -164,7 +164,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertLessThan(logButton.frame.maxY, firstKey.frame.minY)
 
         // And a tap on it, keypad still up, logs the set.
-        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openSets = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Complete '"))
         let openBefore = openSets.count
         Thread.sleep(forTimeInterval: 0.6)
         logButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -202,7 +202,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let setB1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set B1'")).firstMatch
         XCTAssertTrue(setA1.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(setB1.exists)
-        let logged = app.buttons.matching(NSPredicate(format: "label == 'Set completed'"))
+        let logged = app.buttons.matching(NSPredicate(format: "label ENDSWITH ' completed'"))
         let loggedBefore = logged.count
         attach(app, "11-superset-card")
 

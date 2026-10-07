@@ -97,6 +97,10 @@ struct SetTrackerRowView: View {
             }
         }
         .padding(.vertical, Spacing.xs)
+        // One container per set, read on the way in as "Set 2, next to log, 100 kilograms,
+        // 8 reps", so the Containers rotor moves set by set (a11y.md M4).
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(rowAccessibilityLabel)
         // The outlines, muted text and plates line follow the highlight in step with it.
         .reducedMotionAnimation(.standard, value: isCurrent)
         // Always the same view with the tint faded in or out, so the highlight moves between sets
@@ -128,6 +132,24 @@ struct SetTrackerRowView: View {
         .moveDisabled(true)
     }
     
+    /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
+    /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
+    private var rowName: String {
+        let set = delegate.set.wrappedValue
+        return set.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set))")
+    }
+
+    private var rowAccessibilityLabel: String {
+        let units = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
+        let figures = ActiveWorkout.spokenFigures(
+            of: delegate.set.wrappedValue,
+            trackingMode: delegate.exercise.wrappedValue.trackingMode,
+            unit: units.weightUnit,
+            distanceUnit: units.distanceUnit
+        )
+        return ActiveWorkout.rowSpokenLabel(name: rowName, state: delegate.rowState, figures: figures)
+    }
+
     /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.
     private var stackedRow: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -195,8 +217,9 @@ struct SetTrackerRowView: View {
                 .foregroundStyle(tint)
                 // On the text, not the menu: the menu's inner button takes its accessibility from
                 // its label view, and left unlabeled it reads as text no element owns.
-                .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
-                .accessibilityValue(isCurrent ? String(localized: "Next to log") : "")
+                // Where the set stands is the row's to say, on the way into it.
+                .accessibilityLabel(rowName)
+                .accessibilityHint("Set options")
                 .frame(width: setCircleSide, height: setCircleSide)
                 .background(Color.tintedSurface(tint), in: .circle)
                 .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
@@ -262,7 +285,8 @@ struct SetTrackerRowView: View {
             field: field,
             text: keyboard.displayText(for: field, set: set.wrappedValue, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             isActive: isActive,
-            accessibilityLabel: label,
+            // "Set 2, Weight, kilograms": the set first, so each row's fields have names of their own.
+            accessibilityLabel: "\(rowName), \(label)",
             isMuted: delegate.rowState == .upcoming,
             placeholder: keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             presenter: keyboard,
@@ -379,7 +403,9 @@ struct SetTrackerRowView: View {
                 .frame(width: ControlSize.row, height: ControlSize.row)
                 .contentShape(.rect)
         }
-        .accessibilityLabel(state.accessibilityLabel)
+        // "Complete Set 2", not "Complete set" on every row, which Voice Control could only
+        // number (a11y.md S5).
+        .accessibilityLabel(state == .completed ? String(localized: "\(rowName) completed") : String(localized: "Complete \(rowName)"))
         .accessibilityValue(state.accessibilityValue)
         .buttonStyle(.plain)
         .frame(width: isStacked ? nil : SetTrackerRowView.doneColumnWidth, alignment: .center)

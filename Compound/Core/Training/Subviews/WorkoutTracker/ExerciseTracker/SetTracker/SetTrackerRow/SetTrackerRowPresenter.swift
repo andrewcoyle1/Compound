@@ -286,7 +286,7 @@ extension SetTrackerRowPresenter {
             unit: unit,
             step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,
             distanceUnit: units.distanceUnit,
-            fields: SetKeyboardField.fields(for: exercise.trackingMode),
+            fields: SetKeyboardField.fields(for: set, trackingMode: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
             lastSetWeightKg: lastSet?.weightKg,
             lastSetReps: lastSet?.reps,

@@ -35,6 +35,22 @@ struct SetPlanDetailView: View {
                 if presenter.showsAMRAPTarget {
                     NumberField(String(localized: "Optional"), value: $presenter.amrapTargetReps, label: String(localized: "Target Reps"))
                 }
+                if presenter.showsPartialReps {
+                    Picker("Partial Reps", selection: $presenter.partialReps) {
+                        ForEach(presenter.partialRepsChoices, id: \.self) { reps in
+                            Text(presenter.partialRepsTitle(reps)).tag(reps)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+                if presenter.showsHoldSeconds {
+                    Picker("Duration", selection: $presenter.holdSeconds) {
+                        ForEach(presenter.holdSecondsChoices, id: \.self) { seconds in
+                            Text(presenter.holdSecondsTitle(seconds)).tag(seconds)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
             } footer: {
                 Text("Drops and mini-sets count with their set. Progression plans from the first piece.")
             }

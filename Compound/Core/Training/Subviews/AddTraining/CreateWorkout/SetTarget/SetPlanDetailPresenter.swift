@@ -1,8 +1,9 @@
 import SwiftUI
 
 /// One set's plan in the template editor (Workout Settings › Set Plan): its kind, and the drops,
-/// mini-sets or AMRAP target that kind takes. Every change goes straight back to the editor's
-/// working copy, so the editor's own Save and Cancel still decide whether any of it is kept.
+/// mini-sets, AMRAP target, partial reps or hold time that kind takes. Every change goes straight
+/// back to the editor's working copy, so the editor's own Save and Cancel still decide whether any
+/// of it is kept.
 @Observable
 @MainActor
 class SetPlanDetailPresenter {
@@ -24,6 +25,10 @@ class SetPlanDetailPresenter {
     let dropSteps = SetTargetPlan.dropSteps
     let dropCountRange = SetTargetPlan.dropCountRange
     let miniSetCountRange = SetTargetPlan.miniSetCountRange
+    /// With the set's own value among them, so an imported 40 s hold still shows.
+    var holdSecondsChoices: [Int] { Set(SetTargetPlan.holdSecondsChoices + [holdSeconds]).sorted() }
+    /// To failure first, then the counts, the set's own among them.
+    var partialRepsChoices: [Int?] { [nil] + Set(Array(SetTargetPlan.partialRepsRange) + [partialReps].compactMap { $0 }).sorted().map(Optional.some) }
 
     var title: String { String(localized: "Set \(setTarget.setNumber)") }
     var setTypeAccessibilityLabel: String { String(localized: "Set \(setTarget.setNumber), set type") }
@@ -46,7 +51,8 @@ class SetPlanDetailPresenter {
                 case .drop: target.dropCount = target.dropCount ?? 2
                 case .myo, .restPause, .cluster: target.miniSetCount = target.miniSetCount ?? 3
                 case .amrap, .failure: target.amrapTargetReps = target.amrapTargetReps ?? target.minReps ?? target.maxReps
-                case .standard, .partials, .stretch, .hold: break
+                case .stretch, .hold: target.holdSeconds = target.holdSeconds ?? Self.defaultHoldSeconds
+                case .standard, .partials: break
                 }
             }
             interactor.playHaptic(option: .selection)
@@ -56,6 +62,8 @@ class SetPlanDetailPresenter {
     var showsDrops: Bool { setType == .drop }
     var showsMiniSets: Bool { [.myo, .restPause, .cluster].contains(setType) }
     var showsAMRAPTarget: Bool { setType == .amrap }
+    var showsPartialReps: Bool { setType == .partials }
+    var showsHoldSeconds: Bool { setType == .stretch || setType == .hold }
 
     // MARK: - Drop
 
@@ -95,6 +103,29 @@ class SetPlanDetailPresenter {
         get { setTarget.amrapTargetReps.map(Double.init) }
         set { update { $0.amrapTargetReps = Self.reps(newValue) } }
     }
+
+    // MARK: - Partials
+
+    /// The partial reps after the set; nil is to failure.
+    var partialReps: Int? {
+        get { setTarget.partialReps }
+        set { update { $0.partialReps = newValue } }
+    }
+
+    func partialRepsTitle(_ reps: Int?) -> String {
+        reps.map { Format.reps($0) } ?? String(localized: "To failure")
+    }
+
+    // MARK: - Stretch and hold
+
+    static let defaultHoldSeconds = 30
+
+    var holdSeconds: Int {
+        get { setTarget.holdSeconds ?? Self.defaultHoldSeconds }
+        set { update { $0.holdSeconds = newValue } }
+    }
+
+    func holdSecondsTitle(_ seconds: Int) -> String { String(localized: "\(seconds) s") }
 
     // MARK: - Lifecycle
 

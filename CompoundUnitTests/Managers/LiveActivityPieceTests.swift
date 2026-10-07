@@ -53,6 +53,25 @@ struct LiveActivityPieceTests {
         }
     }
 
+    private func session(_ sets: [WorkoutSetModel]) -> WorkoutSessionModel {
+        WorkoutSessionModel(
+            id: "session-1", authorId: "author-1", name: "Push Day", dateCreated: Self.start,
+            exercises: [WorkoutExerciseModel(
+                id: "e1", authorId: "author-1", templateId: "template-1", name: "Bench Press",
+                trackingMode: .weightReps, index: 1, sets: sets
+            )]
+        )
+    }
+
+    private func state(
+        _ session: WorkoutSessionModel,
+        plansSets: Bool = true,
+        restEndsAt: Date? = nil
+    ) -> WorkoutActivityAttributes.ContentState {
+        LiveActivityManager(logger: LogManager(), activityLookup: { _ in nil }, plansSets: { plansSets })
+            .makeContentState(session: session, isActive: true, currentExerciseIndex: 0, restEndsAt: restEndsAt)
+    }
+
     // MARK: - Which piece
 
     @Test("A drop set's own row is piece 1 and names no piece")
@@ -126,6 +145,92 @@ struct LiveActivityPieceTests {
         #expect(piece.dividers(completedSets: 1, totalSets: 4) == dividers)
         #expect(SetPiece(index: 1, count: 1, isDrop: false).dividers(completedSets: 0, totalSets: 4).isEmpty)
         #expect(piece.progress(completedSets: 0, totalSets: 0) == 0)
+    }
+
+    // MARK: - The content state
+
+    @Test("With the plan on, drop 1 still reads set 2 and carries its piece and kind")
+    func contentStateOnDropOne() {
+        let state = state(session(sets(done: ["s1", "s2"])))
+
+        #expect(state.targetSetId == "s2-d1")
+        #expect(state.currentExerciseCompletedSetsCount == 1)
+        #expect(state.targetKind == .drop)
+        #expect(state.targetPiece == SetPiece(index: 2, count: 3, isDrop: true))
+        let progress: Double = (1 + 1.0 / 3) / 3
+        #expect(state.progress == progress)
+        #expect(LiveActivityPhase.position(state).label == "Set 2 · Drop 1 of 2")
+    }
+
+    @Test("With the plan off, the state is as it always was")
+    func contentStateWithThePlanOff() {
+        let state = state(session(sets(done: ["s1", "s2"])), plansSets: false)
+
+        #expect(state.targetSetId == "s2-d1")
+        #expect(state.currentExerciseCompletedSetsCount == 2)
+        #expect(state.targetKind == nil)
+        #expect(state.targetPiece == nil)
+        let progress: Double = 2.0 / 3
+        #expect(state.progress == progress)
+    }
+
+    // MARK: - Which rest
+
+    @Test("A rest before a mini-set is the breath, drawn as a bar")
+    func restBeforeMiniSetIsTheBreath() throws {
+        let now = Date()
+        let state = state(session(sets(done: ["s1", "s2", "s2-d1", "s2-d2", "s3"])), restEndsAt: now.addingTimeInterval(15))
+
+        guard case let .breathing(_, next, position) = LiveActivityPhase(state: state, now: now, isStale: false) else {
+            Issue.record("expected the breath")
+            return
+        }
+        #expect(next == LiveActivitySetTarget(weightKg: 100, reps: 8))
+        #expect(position.label == "Set 3 · Mini-set 1 of 2")
+    }
+
+    @Test("A rest before a set's first piece is the rest between sets")
+    func restBeforeASetIsTheRestBetweenSets() {
+        let now = Date()
+        let state = state(session(sets(done: ["s1"])), restEndsAt: now.addingTimeInterval(90))
+
+        guard case .resting = LiveActivityPhase(state: state, now: now, isStale: false) else {
+            Issue.record("expected the rest between sets")
+            return
+        }
+    }
+
+    // MARK: - Complete walks the pieces
+
+    /// Each tap logs the target through `ActiveWorkout.log`, as the Lock Screen's Complete does,
+    /// and the next state's target is the next piece, with the rest the rule gives: none before a
+    /// drop, the myo breath before a mini-set, a full rest between sets.
+    @Test("Complete walks the drops and mini-sets in order")
+    func completeWalksThePieces() throws {
+        var settings = WorkoutSettings(authorId: "author-1")
+        settings.defaultRestDurationSeconds = 90
+        let context = RestDurationRules.ExerciseContext(restOverrideSeconds: nil, exerciseTypeRawValue: nil)
+        var session = session(sets())
+        var targets: [String] = []
+        var labels: [String] = []
+        var rests: [Int?] = []
+
+        while let target = state(session).targetSetId {
+            let label = LiveActivityPhase.position(state(session)).label
+            let outcome = try #require(ActiveWorkout.log(setId: target, in: session, settings: settings, context: context))
+            #expect(outcome.problem == nil)
+            targets.append(target)
+            labels.append(label)
+            rests.append(outcome.restSeconds)
+            session = outcome.session
+        }
+
+        #expect(targets == ["s1", "s2", "s2-d1", "s2-d2", "s3", "s3-m1", "s3-m2"])
+        #expect(labels == [
+            "Set 1 of 3", "Set 2 of 3", "Set 2 · Drop 1 of 2", "Set 2 · Drop 2 of 2",
+            "Set 3 of 3", "Set 3 · Mini-set 1 of 2", "Set 3 · Mini-set 2 of 2"
+        ])
+        #expect(rests == [90, nil, nil, 90, 15, 15, nil])
     }
 }
 

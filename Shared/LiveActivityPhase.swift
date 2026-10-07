@@ -272,7 +272,7 @@ enum LiveActivityFormat {
 
 // MARK: - Phase
 
-/// The seven layouts the Live Activity can be in. Derived once, in one place, from the
+/// The layouts the Live Activity can be in. Derived once, in one place, from the
 /// content state — the views branch on this and nothing else.
 enum LiveActivityPhase: Equatable {
     /// About to lift.
@@ -280,6 +280,8 @@ enum LiveActivityPhase: Equatable {
     /// Countdown running. `nextExerciseName` is set only when the rest leads into a different
     /// exercise from the one the logged set belonged to.
     case resting(until: Date, next: LiveActivitySetTarget?, logged: LoggedSet?, nextExerciseName: String?)
+    /// The short breath before a drop or mini-set (set plan on), drawn as a bar, not a countdown.
+    case breathing(until: Date, next: LiveActivitySetTarget?, position: SetPosition)
     /// Rest passed, phone untouched (or the activity has gone stale).
     case restOver(next: LiveActivitySetTarget)
     /// Nothing left but Finish.
@@ -341,6 +343,9 @@ extension LiveActivityPhase {
         if let restEndsAt = state.restEndsAt {
             // 4. Rest still running — and a stale activity cannot be trusted to be counting.
             if restEndsAt > now && !isStale {
+                if let piece = state.targetPiece, piece.restIsWithinTheSet {
+                    return .breathing(until: restEndsAt, next: target.isEmpty ? nil : target, position: position(state))
+                }
                 let logged = state.lastLoggedSetId.map {
                     LoggedSet(setId: $0, reps: state.lastLoggedReps, weightKg: state.lastLoggedWeightKg)
                 }
@@ -359,19 +364,22 @@ extension LiveActivityPhase {
         //    points the state at an exercise with work left, so a missing target means there is
         //    none anywhere and row 3 has usually already answered.
         if state.targetSetId != nil {
-            return .ready(
-                target: target,
-                position: SetPosition(
-                    index: state.currentExerciseCompletedSetsCount + 1,
-                    total: state.currentExerciseTotalSetsCount,
-                    isWarmup: state.targetIsWarmup,
-                    side: state.targetSide
-                )
-            )
+            return .ready(target: target, position: position(state))
         }
 
         // 7. Nothing to show.
         return .unknown
+    }
+
+    /// Where the target is: "Set 2 of 4", "Set 3 · Drop 1 of 2".
+    static func position(_ state: WorkoutActivityAttributes.ContentState) -> SetPosition {
+        SetPosition(
+            index: state.currentExerciseCompletedSetsCount + 1,
+            total: state.currentExerciseTotalSetsCount,
+            isWarmup: state.targetIsWarmup,
+            side: state.targetSide,
+            piece: state.targetPiece
+        )
     }
 }
 

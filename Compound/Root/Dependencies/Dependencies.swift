@@ -319,6 +319,8 @@ struct Dependencies {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
             }, distanceUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
+            }, plansSets: {
+                workoutSettingsManager.workoutSettings.plansSets
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif
@@ -686,6 +688,8 @@ struct Dependencies {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
             }, distanceUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
+            }, plansSets: {
+                workoutSettingsManager.workoutSettings.plansSets
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif
@@ -1057,6 +1061,8 @@ struct Dependencies {
                 exerciseUnitPreferenceManager.getPreference(for: $0).weightUnit.liveActivityUnit
             }, distanceUnit: {
                 exerciseUnitPreferenceManager.getPreference(for: $0).distanceUnit.liveActivityUnit
+            }, plansSets: {
+                workoutSettingsManager.workoutSettings.plansSets
             })
             hkWorkoutManager = HKWorkoutManager(logger: logManager, liveActivityUpdater: liveActivityManager)
             #endif

@@ -193,7 +193,9 @@ Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` 
 
 ## Status (7 Oct 2026)
 
-Waves 0–4 and WP-Q are merged (PRs #49–#61); WP-R stays gated on the decision tests. The four audit tests in `WorkoutTrackerUITests` run every
+Waves 0–4 and WP-Q are merged (PRs #49–#61); WP-R stays gated on the decision tests. A TestFlight build of the branch at `70ea6456` was
+uploaded on 7 Oct 2026 (archived locally with the `Compound` scheme; the branch is not on `main`,
+so the release workflow did not run) for the device checks and the decision tests. The four audit tests in `WorkoutTrackerUITests` run every
 audit type in five states and are not red, but each is recorded as an **expected failure**: the
 audit still reports contrast, "potentially inaccessible text" and "text clipped" on
 `SwiftUI.AccessibilityNode`s it cannot attribute to any element, most of them inside the keypad

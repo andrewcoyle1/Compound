@@ -12,12 +12,15 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
     /// At regular width Pause, Finish and Notes come out of the menu onto the bar.
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State var presenter: WorkoutTrackerPresenter
     @State private var cardSwapEdge = CardSwapEdge()
+    /// VoiceOver's cursor on the bottom button, put back after its action changes the screen
+    /// (a11y.md C1). See `WorkoutPrimaryCTA`.
+    @AccessibilityFocusState var isPrimaryCTAFocused: Bool
 
     @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate, ((Int) -> Void)?) -> ExerciseTracker
     
@@ -89,6 +92,15 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .bottomCTA {
             primaryCTA
         }
+        // The bottom button is the last element in reading order. A two-finger double tap does
+        // what it does from anywhere on the screen, and the scrub gesture minimises, as the
+        // chevron does (a11y.md M2).
+        .accessibilityAction(.magicTap) {
+            presenter.onPrimarySlotPressed()
+        }
+        .accessibilityAction(.escape) {
+            presenter.minimizeSession()
+        }
         .onChange(of: presenter.primarySlot) { _, action in
             presenter.onPrimarySlotChanged(action)
         }
@@ -98,8 +110,19 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .onChange(of: presenter.canQuickFinish) { _, isAvailable in
             presenter.onQuickFinishAvailabilityChanged(isAvailable)
         }
+        // Told to VoiceOver as they happen (a11y.md S1): a log, from here or the Lock Screen, and
+        // the card moving on.
+        .onChange(of: presenter.latestLogMark) { oldMark, newMark in
+            presenter.onLatestLogChanged(from: oldMark, to: newMark)
+        }
+        .onChange(of: presenter.currentExercise?.id) { oldId, newId in
+            presenter.onCurrentExerciseChanged(from: oldId, to: newId)
+        }
         .task {
             await presenter.observeRestCompletions()
+        }
+        .task {
+            await presenter.observeRestOverAnnouncements()
         }
         .task {
             await presenter.onAppear()

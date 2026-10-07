@@ -83,10 +83,15 @@ struct InlineRestTimerRow: View {
     /// "✓ Set 2 · 100 kg × 8   [−] [+]   Undo".
     private func summaryLine(_ correction: SetCorrection) -> some View {
         lineLayout {
-            Label(correction.title, systemImage: Symbol.success)
+            // The green on the tick only: green caption text is about 2.2:1 in light mode (S4).
+            Label {
+                Text(correction.title)
+            } icon: {
+                Image(systemName: Symbol.success)
+                    .foregroundStyle(.success)
+            }
                 .font(.label.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(.success)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 // The container's label says it, with the units in words.
                 .accessibilityHidden(true)
@@ -173,9 +178,14 @@ struct InlineRestTimerRow: View {
             if let end = timer.endsAt, context.date < end {
                 running(timer, now: context.date, end: end)
             } else {
-                Label("Ready", systemImage: Symbol.success)
+                // As the correction line: the colour on the tick, the word in the label colour.
+                Label {
+                    Text("Ready")
+                } icon: {
+                    Image(systemName: Symbol.success)
+                        .foregroundStyle(.success)
+                }
                     .font(.label.weight(.semibold))
-                    .foregroundStyle(.success)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, Spacing.xs)
                     .accessibilityLabel("Rest over, ready for the next set")
@@ -202,7 +212,7 @@ struct InlineRestTimerRow: View {
             }
         }
         .monospacedDigit()
-        .foregroundStyle(.secondary)
+        // Primary: secondary caption text here measured under 4.5:1 in the accessibility audit.
         .padding(.vertical, Spacing.xs)
         .accessibilityElement(children: .combine)
     }

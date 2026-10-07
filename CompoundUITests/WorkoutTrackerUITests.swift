@@ -35,7 +35,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "1-resting")
 
         // The second working set's weight, open in the set keyboard.
-        let weights = app.textFields.matching(NSPredicate(format: "label BEGINSWITH 'Weight'"))
+        let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         weights.element(boundBy: 1).tap()
         let done = app.waitFor(app.buttons["Done"].firstMatch)
         attach(app, "2-editing")
@@ -71,14 +71,14 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "5-several-complete-top")
     }
 
-    /// The card and the rest row in dark mode at a large accessibility text size.
+    /// The card and the rest row in dark mode at the largest accessibility text size (AX5).
     func testDarkModeAtALargeTextSize() {
         XCUIDevice.shared.appearance = .dark
         defer { XCUIDevice.shared.appearance = .light }
         let app = XCUIApplication()
         app.launchArguments = [
             "UI_TESTING", "SIGNED_IN", "STARTSCREEN_WORKOUT_TRACKER",
-            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityL"
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
         ]
         app.launch()
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
@@ -93,36 +93,152 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "7-dark-large-text-scrolled")
     }
 
-    /// Apple's automated audit, run over the tracker mid-exercise: labels, hit areas, clipped
-    /// text and contrast.
+    // MARK: - The accessibility audit (a11y.md M8)
+
+    /// Apple's automated audit, every type, over the tracker in light mode: first as it opens,
+    /// with a warm-up row on screen and nothing logged, then mid-exercise, resting after a set.
     func testTheTrackerPassesTheAccessibilityAudit() throws {
-        // Skipped 6 Oct 2026: the audit reports one "Potentially inaccessible text" issue with no
-        // element. Labelling the texts inside the set-number and unit menus, moving the +15s label
-        // onto its text and auditing a settled screen did not clear it. WP-P (accessibility) owns
-        // the audit, narrows its exclusions and adds the per-state passes; it removes this skip.
-        try XCTSkipIf(true, "Audit reports an unnamed inaccessible text; see docs/specs/workout-tracker/plan.md WP-P")
+        XCUIDevice.shared.appearance = .light
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
+        XCTAssertTrue(app.buttons["Warmup set"].firstMatch.exists, "No warm-up row to audit")
+        try audit(app, "opening, warm-up row")
+
         tapSlot(logButton)
         // Audit a settled screen: logging swaps the bottom button for Skip Rest with a transition,
-        // and mid-transition the outgoing label is text no element owns, which the audit flags as
-        // "potentially inaccessible text" when it catches that frame.
+        // and mid-transition the outgoing label is text no element owns.
         app.waitFor(app.button("WorkoutTracker.skipRestButton"))
         Thread.sleep(forTimeInterval: 1)
-        // Left out, each after a run that flagged elements the screenshots show are fine (6 Oct 2026):
-        // - Dynamic Type and clipping: list section headers, the timer and the exercise name, all
-        //   drawn in full by `testDarkModeAtALargeTextSize` at an accessibility size.
-        // - Contrast: black text on the grouped background and white on the black log button,
-        //   which the audit measures against the glass bars rather than what is drawn.
-        try app.performAccessibilityAudit(for: .all.subtracting([.dynamicType, .textClipped, .contrast])) { issue in
-            print("AUDIT:", issue.auditType, issue.compactDescription, issue.element.map { "\($0.elementType) '\($0.label)' \($0.frame)" } ?? "-")
-            print("AUDIT DETAIL:", issue.detailedDescription)
-            // A hit-area issue the audit cannot name an element for: the toolbar's minimize and
-            // options buttons, the 36 pt glass circles iOS draws for every bar button. Measured on
-            // 6 Oct 2026, they were the only controls on this screen under 44 pt.
-            let isSystemBarButton = issue.auditType == .hitRegion && issue.element == nil
-            return isSystemBarButton
+        try audit(app, "resting")
+    }
+
+    /// The set keypad up, over the row it edits.
+    func testTheTrackerPassesTheAccessibilityAuditWithTheKeypadOpen() throws {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        app.waitFor(app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'")).firstMatch).tap()
+        app.waitFor(app.buttons["Done"].firstMatch)
+        Thread.sleep(forTimeInterval: 1)
+        try audit(app, "keypad open")
+    }
+
+    /// A rest run out: the rest line reads Ready. The set is given a three-second rest from its
+    /// menu so the test need not wait out the default.
+    func testTheTrackerPassesTheAccessibilityAuditWithARestOver() throws {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        app.waitFor(app.buttons["Warmup set"].firstMatch).tap()
+        app.waitFor(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Rest Timer'")).firstMatch).tap()
+        let wheels = app.pickerWheels
+        app.waitFor(wheels.element(boundBy: 1))
+        wheels.element(boundBy: 0).adjust(toPickerWheelValue: "0 min")
+        wheels.element(boundBy: 1).adjust(toPickerWheelValue: "3 s")
+        let sheetButtons = app.navigationBars["Set Rest"].buttons
+        sheetButtons.element(boundBy: sheetButtons.count - 1).tap()
+
+        tapSlot(logButton)
+        let ready = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Rest over, ready for the next set'")).firstMatch
+        XCTAssertTrue(ready.waitForExistence(timeout: UITestApp.timeout), "The rest never ran out")
+        Thread.sleep(forTimeInterval: 1.5)
+        attach(app, "13-rest-over")
+        try audit(app, "rest over")
+    }
+
+    /// The largest accessibility text size (AX5), light mode.
+    func testTheTrackerPassesTheAccessibilityAuditAtTheLargestTextSize() throws {
+        XCUIDevice.shared.appearance = .light
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "UI_TESTING", "SIGNED_IN", "STARTSCREEN_WORKOUT_TRACKER",
+            "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
+        ]
+        app.launch()
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        Thread.sleep(forTimeInterval: 1)
+        attach(app, "14-light-ax5")
+        try audit(app, "AX5")
+
+        // Resting, scrolled a third of the screen at a time through the rest line, the folded
+        // warm-up, the current row and its plates line, Add Set and Up Next.
+        tapSlot(logButton)
+        app.waitFor(app.button("WorkoutTracker.skipRestButton"))
+        // The log scrolls the next set into view; first back up to the rest line above it.
+        for (step, drag) in [0.15, -0.25, -0.25].enumerated() {
+            let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            from.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5 + drag)))
+            Thread.sleep(forTimeInterval: 1.5)
+            attach(app, "15-light-ax5-resting-\(step)")
+            try audit(app, "AX5 resting \(step)")
+        }
+    }
+
+    /// Runs every audit type. A named element's issue fails the test unless it is one of the
+    /// known ones in `knownIssue`, matched by that element, never by type alone.
+    ///
+    /// An issue the audit cannot name an element for (a `SwiftUI.AccessibilityNode` with no
+    /// accessibility element: text merged into a button's label, or inside the keypad's window)
+    /// cannot be matched to anything, so it is recorded as an expected failure: it shows in the
+    /// results as a known issue rather than passing silently. On 7 Oct 2026 every state had some,
+    /// all contrast or clipping. Forcing every secondary text in the list to primary, and
+    /// swapping the glass buttons for bordered ones, each moved the count but neither cleared it.
+    private func audit(_ app: XCUIApplication, _ state: String) throws {
+        let navigationBar = app.navigationBars.firstMatch.frame
+        let keypad = app.otherElements["inputView"].firstMatch
+        let keypadFrame = keypad.exists ? keypad.frame : .null
+        // From the top of the bottom button down: the glass bar the list scrolls under.
+        let bottomBarTop = ["WorkoutTracker.logButton", "WorkoutTracker.skipRestButton"]
+            .map { app.button($0) }.filter(\.exists).map(\.frame.minY).min() ?? .infinity
+        let bottomBar = bottomBarTop.isFinite ? CGRect(x: 0, y: bottomBarTop, width: 10_000, height: 10_000) : .null
+        // From the top of the screen to the foot of the progress header: the bars the list
+        // scrolls under at the top.
+        let headerBottom = app.staticTexts.matching(NSPredicate(format: "label ENDSWITH 'working sets'")).firstMatch.frame.maxY
+        let topBars = CGRect(x: 0, y: 0, width: 10_000, height: headerBottom)
+        let covered = keypadFrame.union(bottomBar).union(topBars)
+        // Every issue reported, not only the first.
+        continueAfterFailure = true
+        defer { continueAfterFailure = false }
+        try app.performAccessibilityAudit { issue in
+            let element = issue.element.map { "\($0.elementType.rawValue) '\($0.label)' id='\($0.identifier)' \($0.frame)" } ?? "-"
+            let known = Self.knownIssue(issue, navigationBar: navigationBar, covered: covered)
+            print("AUDIT [\(state)]:", known ?? (issue.element == nil ? "UNNAMED, expected failure" : "UNEXPECTED"), "|", issue.auditType.rawValue, issue.compactDescription, element)
+            if known == nil, issue.element == nil {
+                XCTExpectFailure("Unattributable audit issue in \(state): \(issue.compactDescription)", strict: false) {
+                    XCTFail("\(state): \(issue.compactDescription) — \(issue.detailedDescription)")
+                }
+                return true
+            }
+            return known != nil
+        }
+    }
+
+    /// Why a named element's issue is not this screen's fault, or `nil` when it is. Each was
+    /// checked against the screenshots on 7 Oct 2026 (WP-P).
+    private static func knownIssue(_ issue: XCUIAccessibilityAuditIssue, navigationBar: CGRect, covered: CGRect) -> String? {
+        guard let element = issue.element else { return nil }
+        let label = element.label
+        let center = CGPoint(x: element.frame.midX, y: element.frame.midY)
+        switch issue.auditType {
+        case .dynamicType where element.elementType == .staticText && navigationBar.contains(center):
+            // The navigation bar caps its text for every app; the title offers the Large Content
+            // Viewer instead (`WorkoutTrackerView+Toolbar`).
+            return "system-capped navigation bar title"
+        case .contrast where covered.intersects(element.frame):
+            // The bottom button's own text, measured against what shows through its glass rather
+            // than its fill (with `.bordered` styles in place of the glass ones these went away),
+            // and rows scrolled under the top bars, the button's glass bar or the keypad's
+            // window, measured against those rather than their own background.
+            return "text on or under glass, or under the keypad"
+        case .dynamicType where ["Add Set", "Up Next"].contains(label),
+             .textClipped where ["Add Set", "1 warm-up", "Add 15 seconds"].contains(label):
+            // Reported at the default size as "may be clipped" or "partially unsupported", and
+            // drawn in full, unclipped, by the AX5 passes ("15-light-ax5-resting").
+            return "drawn in full at AX5"
+        default:
+            return nil
         }
     }
 
@@ -135,7 +251,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         // A second working set, so a rest follows the first.
         app.waitFor(app.buttons["Add Set"].firstMatch).tap()
         reachFirstWorkingSet(app)
-        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openSets = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Complete '"))
         let openBefore = openSets.count
         Thread.sleep(forTimeInterval: 0.6)
 
@@ -152,7 +268,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
-        let weights = app.textFields.matching(NSPredicate(format: "label BEGINSWITH 'Weight'"))
+        let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         app.waitFor(weights.firstMatch).tap()
         app.waitFor(app.buttons["Done"].firstMatch)
         let firstKey = app.waitFor(app.buttons["1"].firstMatch)
@@ -164,7 +280,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertLessThan(logButton.frame.maxY, firstKey.frame.minY)
 
         // And a tap on it, keypad still up, logs the set.
-        let openSets = app.buttons.matching(NSPredicate(format: "label == 'Complete set'"))
+        let openSets = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Complete '"))
         let openBefore = openSets.count
         Thread.sleep(forTimeInterval: 0.6)
         logButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -202,7 +318,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let setB1 = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Set B1'")).firstMatch
         XCTAssertTrue(setA1.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(setB1.exists)
-        let logged = app.buttons.matching(NSPredicate(format: "label == 'Set completed'"))
+        let logged = app.buttons.matching(NSPredicate(format: "label ENDSWITH ' completed'"))
         let loggedBefore = logged.count
         attach(app, "11-superset-card")
 

@@ -23,9 +23,12 @@ extension WorkoutTrackerView {
                 // rather than one button leaving as another arrives, and VoiceOver focus stays on it.
                 CallToActionButton {
                     presenter.onPrimarySlotPressed()
+                    returnFocusToPrimaryCTA()
                 } label: {
                     primarySlotLabel
                 }
+                .accessibilityFocused($isPrimaryCTAFocused)
+                .accessibilityInputLabels(presenter.primarySlotInputLabels)
                 .disabled(presenter.isPrimarySlotInGrace)
                 .keyboardShortcut(.return, modifiers: .command)
                 // Two identifiers for the one button, so tests can wait for the state they need.
@@ -51,23 +54,46 @@ extension WorkoutTrackerView {
         }
     }
 
+    /// A log, a skip or Next redraws the button and the rows above it, and VoiceOver's cursor used
+    /// to land wherever the redraw left it, often the top of the screen. It goes back to the
+    /// button once the new state is drawn, so the next double tap logs the next set (a11y.md C1).
+    /// Without VoiceOver this does nothing.
+    func returnFocusToPrimaryCTA() {
+        Task { @MainActor in
+            // After the redraw: set during it, the focus goes to the element being replaced.
+            try? await Task.sleep(for: .milliseconds(300))
+            isPrimaryCTAFocused = true
+        }
+    }
+
     @ViewBuilder
     private var primarySlotLabel: some View {
+        let isLarge = dynamicTypeSize.isAccessibilitySize
         if let restEnd = presenter.primarySlotRestEnd {
             HStack(spacing: Spacing.s) {
-                Text("Skip Rest")
-                Text(timerInterval: min(.now, restEnd)...restEnd)
-                    .monospacedDigit()
+                // At accessibility sizes "Skip Rest 1:23" beside +15s would need two more lines
+                // in a bar that already covers much of the screen. "Skip" fits beside it, and the
+                // rest line in the card shows the clock (S3). VoiceOver hears "Skip rest" either way.
+                if isLarge {
+                    Text("Skip")
+                } else {
+                    Text("Skip Rest")
+                    Text(timerInterval: min(.now, restEnd)...restEnd)
+                        .monospacedDigit()
+                }
             }
             // A name Voice Control can say, with the ticking time as its value rather than in it.
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(presenter.primarySlotTitle)
             .accessibilityValue(Text(timerInterval: min(.now, restEnd)...restEnd))
         } else {
-            Text(presenter.primarySlotTitle)
-                .lineLimit(2)
+            // At accessibility sizes "Log set 2 · 102.5 kg × 10" needs three lines and lost its
+            // figures to the line limit; "Log set 2" fits, and the row above shows the figures (S3).
+            Text(isLarge ? presenter.primarySlotShortTitle : presenter.primarySlotTitle)
+                .lineLimit(isLarge ? nil : 2)
                 .multilineTextAlignment(.center)
                 .contentTransition(.opacity)
+                .accessibilityLabel(presenter.primarySlotTitle)
         }
     }
 }

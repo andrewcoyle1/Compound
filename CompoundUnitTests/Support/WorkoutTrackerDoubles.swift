@@ -356,3 +356,19 @@ struct WorkoutTrackerTypingScreen {
         }
     }
 }
+
+// MARK: WP-P
+
+/// Hears what the tracker tells VoiceOver. Bound per task, so only the test listening hears it.
+@MainActor
+final class TrackerAnnouncementSpy {
+    private(set) var announcements: [TrackerAnnouncement] = []
+    var texts: [String] { announcements.map(\.text) }
+
+    /// Runs `body` with every announcement it makes, and any task it starts, sent here.
+    func listen<T>(_ body: () throws -> T) rethrows -> T {
+        try TrackerAnnouncer.$post.withValue({ [self] in announcements.append($0) }, operation: body)
+    }
+}
+
+// MARK: - End WP-P

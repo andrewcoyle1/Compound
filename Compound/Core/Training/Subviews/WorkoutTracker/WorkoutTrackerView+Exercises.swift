@@ -79,6 +79,7 @@ extension WorkoutTrackerView {
             Section {
                 ForEach(upNext) { exercise in
                     exerciseRow(exercise, isDone: false)
+                        .accessibilityActions { upNextActions(for: exercise) }
                 }
                 .onMove { source, destination in
                     presenter.moveUpNext(from: source, to: destination)
@@ -99,6 +100,10 @@ extension WorkoutTrackerView {
             } header: {
                 Text("Up Next")
                     .font(.label.weight(.semibold))
+                    // `Color.primary`, not `.primary`, which in a header resolves to the header's own
+                    // grey: under 4.5:1 at caption size on the grouped background (S4).
+                    .foregroundStyle(Color.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
     }
@@ -114,6 +119,8 @@ extension WorkoutTrackerView {
             } header: {
                 Text("Completed")
                     .font(.label.weight(.semibold))
+                    .foregroundStyle(Color.primary)
+                    .accessibilityAddTraits(.isHeader)
             }
         }
     }
@@ -122,6 +129,9 @@ extension WorkoutTrackerView {
     func exerciseRow(_ exercise: WorkoutExerciseModel, isDone: Bool) -> some View {
         Button {
             presenter.onExerciseSelected(exercise.id)
+            // The row leaves the list as its exercise goes onto the card; VoiceOver goes on to
+            // the button that logs its first set rather than to wherever the row was.
+            returnFocusToPrimaryCTA()
         } label: {
             ListRow(
                 title: exercise.name,
@@ -151,6 +161,22 @@ extension WorkoutTrackerView {
                     Label("Do Later", systemImage: Symbol.doLater)
                 }
             }
+        }
+    }
+
+    /// The long-press menu and the drag handles, as named actions: VoiceOver's Actions rotor,
+    /// Switch Control's menu and Voice Control's "show actions" reach them without a gesture.
+    @ViewBuilder
+    private func upNextActions(for exercise: WorkoutExerciseModel) -> some View {
+        Button("Do Next") { presenter.onDoNextPressed(exercise.id) }
+        if presenter.canDoLater(exercise) {
+            Button("Do Later") { presenter.onDoLaterPressed(exercise.id) }
+        }
+        if presenter.upNextMoveDestination(of: exercise.id, by: -1) != nil {
+            Button("Move Up") { presenter.onUpNextMovePressed(exercise.id, by: -1) }
+        }
+        if presenter.upNextMoveDestination(of: exercise.id, by: 1) != nil {
+            Button("Move Down") { presenter.onUpNextMovePressed(exercise.id, by: 1) }
         }
     }
 

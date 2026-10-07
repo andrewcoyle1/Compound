@@ -42,6 +42,7 @@ struct SetTrackerRowView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
@@ -72,37 +73,36 @@ struct SetTrackerRowView: View {
                         } label: {
                             // The warning colour on the icon only: orange text on the current row's
                             // highlight is under 4.5:1.
-                            Label {
-                                Text(plates.text)
-                                    .foregroundStyle(.primary)
-                            } icon: {
-                                Image(systemName: Symbol.warning)
-                                    .foregroundStyle(.warning)
-                            }
-                                .font(.label)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, minHeight: ControlSize.row, alignment: .leading)
+                            plateLine(plates.text, symbol: Symbol.warning, tint: .warning)
+                                .frame(minHeight: ControlSize.row)
                                 .contentShape(.rect)
                         }
                         .buttonStyle(.borderless)
                         .accessibilityHint("Changes the weight to one your plates can make")
                     } else {
-                        Label(plates.text, systemImage: Symbol.equipment)
-                            .font(.label)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .foregroundStyle(.secondary)
+                        plateLine(plates.text, symbol: Symbol.equipment, tint: .secondary)
                     }
                 }
                 .padding(.leading, isStacked ? 0 : SetTrackerRowView.setColumnWidth + Spacing.s)
             }
         }
         .padding(.vertical, Spacing.xs)
+        // One container per set, read on the way in as "Set 2, next to log, 100 kilograms,
+        // 8 reps", so the Containers rotor moves set by set (a11y.md M4).
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(rowAccessibilityLabel)
         // The outlines, muted text and plates line follow the highlight in step with it.
         .reducedMotionAnimation(.standard, value: isCurrent)
         // Always the same view with the tint faded in or out, so the highlight moves between sets
         // rather than jumping: a nil background cannot be animated to.
         .listRowBackground(
             Color.tintedSurface(.accentColor)
+                // The 15 % tint alone is well under 3:1 against the surface; the outline in the
+                // accent is what marks the row (S4), heavier with Increase Contrast on.
+                .overlay {
+                    Rectangle()
+                        .strokeBorder(.tint, lineWidth: colorSchemeContrast == .increased ? 2.5 : 1.5)
+                }
                 .opacity(isCurrent ? 1 : 0)
                 .reducedMotionAnimation(.standard, value: isCurrent)
                 .background(Color.surface)
@@ -128,6 +128,40 @@ struct SetTrackerRowView: View {
         .moveDisabled(true)
     }
     
+    /// The plates line under the current row: the colour on the icon only, since coloured or
+    /// secondary text on the row's tint is under 4.5:1 (S4). The text wraps within the row's width
+    /// by itself: wrapped as a whole `Label`, it clipped mid-word at AX5 ("Not loadabl").
+    private func plateLine(_ text: String, symbol: String, tint: Color) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+            Image(systemName: symbol)
+                .foregroundStyle(tint)
+                .accessibilityHidden(true)
+            Text(text)
+                .foregroundStyle(Color.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.label)
+    }
+
+    /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
+    /// its controls' names, so Voice Control can tell "Set 2 weight" from "Set 3 weight" (S5).
+    private var rowName: String {
+        let set = delegate.set.wrappedValue
+        return set.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set))")
+    }
+
+    private var rowAccessibilityLabel: String {
+        let units = presenter.getUnitPreference(for: delegate.exercise.wrappedValue)
+        let figures = ActiveWorkout.spokenFigures(
+            of: delegate.set.wrappedValue,
+            trackingMode: delegate.exercise.wrappedValue.trackingMode,
+            unit: units.weightUnit,
+            distanceUnit: units.distanceUnit
+        )
+        return ActiveWorkout.rowSpokenLabel(name: rowName, state: delegate.rowState, figures: figures)
+    }
+
     /// Line one: the set, what it was last time, and Done. Line two: the inputs, sharing the width.
     private var stackedRow: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -190,15 +224,24 @@ struct SetTrackerRowView: View {
             // The text stays the label's root so the menu's accessibility element is built from
             // it; a shape on top made the audit see the number as text no element owns.
             let tint: Color = set.wrappedValue.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
+            // The label colour on the tinted circle: orange "W" on its own 15 % fill was about
+            // 2:1 in light mode. The tint stays on the circle, and the letter says what it is (S4).
             Text(setLabel(for: set.wrappedValue))
                 .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
-                .foregroundStyle(tint)
+                .foregroundStyle(.primary)
                 // On the text, not the menu: the menu's inner button takes its accessibility from
                 // its label view, and left unlabeled it reads as text no element owns.
-                .accessibilityLabel(set.wrappedValue.isWarmup ? String(localized: "Warmup set") : String(localized: "Set \(setLabel(for: set.wrappedValue))"))
-                .accessibilityValue(isCurrent ? String(localized: "Next to log") : "")
+                // Where the set stands is the row's to say, on the way into it.
+                .accessibilityLabel(rowName)
+                .accessibilityHint("Set options")
                 .frame(width: setCircleSide, height: setCircleSide)
                 .background(Color.tintedSurface(tint), in: .circle)
+                // Increase Contrast: the circle's edge in its full colour, where the fill alone is faint.
+                .overlay {
+                    if colorSchemeContrast == .increased {
+                        Circle().strokeBorder(tint, lineWidth: 1)
+                    }
+                }
                 .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                 .contentShape(.circle)
         }
@@ -262,7 +305,8 @@ struct SetTrackerRowView: View {
             field: field,
             text: keyboard.displayText(for: field, set: set.wrappedValue, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             isActive: isActive,
-            accessibilityLabel: label,
+            // "Set 2, Weight, kilograms": the set first, so each row's fields have names of their own.
+            accessibilityLabel: "\(rowName), \(label)",
             isMuted: delegate.rowState == .upcoming,
             placeholder: keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             presenter: keyboard,
@@ -343,7 +387,8 @@ struct SetTrackerRowView: View {
     private func columnText(_ text: String, font: Font = .caption) -> some View {
         Text(text)
             .font(font)
-            .foregroundStyle(.secondary)
+            // On the current row's tint secondary grey was about 2.4:1 (S4); elsewhere it is muted.
+            .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
             .frame(minHeight: cellHeight)
     }
 
@@ -379,7 +424,9 @@ struct SetTrackerRowView: View {
                 .frame(width: ControlSize.row, height: ControlSize.row)
                 .contentShape(.rect)
         }
-        .accessibilityLabel(state.accessibilityLabel)
+        // "Complete Set 2", not "Complete set" on every row, which Voice Control could only
+        // number (a11y.md S5).
+        .accessibilityLabel(state == .completed ? String(localized: "\(rowName) completed") : String(localized: "Complete \(rowName)"))
         .accessibilityValue(state.accessibilityValue)
         .buttonStyle(.plain)
         .frame(width: isStacked ? nil : SetTrackerRowView.doneColumnWidth, alignment: .center)
@@ -447,7 +494,7 @@ struct SetTrackerRowView: View {
             if let rpe {
                 Text("RIR \(WeightStepper.format(EffortScale.rir(fromRPE: rpe)))")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isCurrent ? AnyShapeStyle(Color.primary) : AnyShapeStyle(.secondary))
             }
         }
     }

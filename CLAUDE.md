@@ -145,6 +145,17 @@ Erasing the simulator or restarting CoreSimulatorService does not help. Always c
 reading test results; on 6 Oct 2026 an unchecked status hid a test-target compile error for an
 afternoon.
 
+**Known unit flakes under a full-bundle run**, each passing alone: the HealthKit import-observer
+suites (`StepsManagerTests`, `MealLogHealthKitImportTests`, `BodyMeasurementsManagerTests`) time
+out one at a time in `TestManagers.eventually`, and the Live Activity suites fail as a block of
+about eight with `ActivityAuthorizationError.visibility` or "the app has pushed nothing"
+(seen twice on 7 Oct 2026, both on a simulator that had just been erased or cycled). Rerun the
+suite alone before blaming a change. The Live Activity suites are nested in a serialized parent,
+so select them by its path: `-only-testing:CompoundUnitTests/WorkoutRestSharedStateTests`
+(`…/LiveActivityManagerTests` alone selects nothing and reports "Executed 0 tests"). Simulator
+names are not unique either — there are two "iPhone 17" and two "iPhone 17e" — so pass a UDID
+(`-destination 'platform=iOS Simulator,id=…'`).
+
 **Deployment target**: iOS 26.0 (26.1 for some targets). The project-level Swift language
 version is 6.0; the test and extension targets are still on 5.0.
 

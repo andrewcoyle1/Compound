@@ -29496,6 +29496,16 @@
           }
         }
       }
+    },
+    "BW" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PC"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

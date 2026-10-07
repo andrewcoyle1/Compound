@@ -17,33 +17,51 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State var presenter: WorkoutTrackerPresenter
+    @State private var cardSwapEdge = CardSwapEdge()
 
     @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate, ((Int) -> Void)?) -> ExerciseTracker
     
     var body: some View {
         ScrollViewReader { proxy in
-            List {
-                if presenter.workoutSession.exercises.isEmpty {
-                    ContentUnavailableView {
-                        Text("No Exercises")
-                    } description: {
-                        Text("Please add some exercises to get started.")
+            // A real container around the list: the reader alone does not run the list's
+            // transition, and the swap below fell back to a plain fade.
+            ZStack {
+                List {
+                    if presenter.workoutSession.exercises.isEmpty {
+                        ContentUnavailableView {
+                            Text("No Exercises")
+                        } description: {
+                            Text("Please add some exercises to get started.")
+                        }
+                        .removeListRowFormatting()
+                    } else {
+                        currentExerciseSection
+                        upNextSection
+                        completedSection
                     }
-                    .removeListRowFormatting()
-                } else {
-                    currentExerciseSection
-                    upNextSection
-                    completedSection
+                    addExerciseSection
                 }
-                addExerciseSection
+                // The next set's row, brought up from under the button or the keypad after a log. A
+                // nil anchor scrolls only as far as needed, so a row already on screen stays put.
+                .onChange(of: presenter.currentLogSetId) { _, setId in
+                    guard let setId else { return }
+                    withReducedMotionAnimation(.standard) {
+                        proxy.scrollTo(setId, anchor: nil)
+                    }
+                }
+                // With the exercise strip on, a new block is a new list, pushed in from the side of
+                // the strip it lies on (a fade under Reduce Motion). Off, the list keeps one identity.
+                .id(presenter.cardListId)
+                .transition(cardTransition)
             }
-            // The next set's row, brought up from under the button or the keypad after a log. A
-            // nil anchor scrolls only as far as needed, so a row already on screen stays put.
-            .onChange(of: presenter.currentLogSetId) { _, setId in
-                guard let setId else { return }
-                withReducedMotionAnimation(.standard) {
-                    proxy.scrollTo(setId, anchor: nil)
-                }
+            .reducedMotionAnimation(.standard, value: presenter.cardListId)
+            // Keeps the swap's edge in step with the block and the order shown; it reads them
+            // first itself when a swap runs, so these only catch up afterwards.
+            .onChange(of: presenter.cardListId, initial: true) { _, blockId in
+                cardSwapEdge.edge(to: blockId, order: presenter.blockOrder)
+            }
+            .onChange(of: presenter.blockOrder) { _, order in
+                cardSwapEdge.edge(to: presenter.cardListId, order: order)
             }
         }
         .navigationTitle(presenter.workoutSession.name)
@@ -64,7 +82,8 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             WorkoutProgressHeader(presenter: presenter)
         }
         // Hard, so a scrolled set table never shows through the progress text at large sizes.
-        .scrollEdgeEffectStyle(.hard, for: .top)
+        // The strip's bar has no solid fill and takes the automatic effect instead.
+        .scrollEdgeEffectStyle(presenter.showsExerciseStrip ? .automatic : .hard, for: .top)
         // Always shown, above the keypad too: its animations are its own, so a log no longer
         // animates the whole list with it.
         .bottomCTA {
@@ -90,6 +109,15 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             presenter.onScenePhaseChange(oldPhase: oldPhase, newPhase: newPhase)
         }
+    }
+
+    private var cardTransition: AnyTransition {
+        guard presenter.showsExerciseStrip else { return .identity }
+        guard !reduceMotion else { return .opacity }
+        let swapEdge = cardSwapEdge
+        return AnyTransition(CardPush { [presenter] in
+            swapEdge.edge(to: presenter.cardListId, order: presenter.blockOrder)
+        })
     }
 }
 

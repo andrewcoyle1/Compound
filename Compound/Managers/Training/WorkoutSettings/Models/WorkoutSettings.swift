@@ -20,6 +20,10 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// document saved before the setting existed still decodes; nil reads as on.
     var showOnLockScreen: Bool?
     var showsOnLockScreen: Bool { showOnLockScreen ?? true }
+    /// The exercise strip over the tracker, and the card sliding in from the side it sits on.
+    /// Optional so a document saved before the setting existed still decodes; nil reads as off.
+    var showExerciseStrip: Bool?
+    var showsExerciseStrip: Bool { showExerciseStrip ?? false }
     
     // MARK: - Warm-Up
     var addSmartWarmUps: Bool = true
@@ -65,6 +69,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case showWorkoutTimer = "show_workout_timer"
         case showBodyweightContribution = "show_bodyweight_contribution"
         case showOnLockScreen = "show_on_lock_screen"
+        case showExerciseStrip = "show_exercise_strip"
         case exerciseAutoNext = "exercise_auto_next"
         case propagateChanges = "propagate_changes"
         case rirTracking = "rir_tracking"

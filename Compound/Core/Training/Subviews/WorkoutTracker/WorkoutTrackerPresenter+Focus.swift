@@ -17,6 +17,8 @@ extension WorkoutTrackerPresenter {
         case exerciseFinished = "exercise_finished"
         /// The rest after a finished exercise ran out or was skipped.
         case restEnded = "rest_ended"
+        /// A tap on the exercise strip.
+        case strip
     }
 
     /// Opens `exerciseId` on the card and tells the Live Activity. Nothing happens when the card

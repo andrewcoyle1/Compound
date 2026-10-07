@@ -40,6 +40,7 @@ struct InlineRestTimerRow: View {
     var onCorrection: @MainActor (SetCorrectionAction) -> Void = { _ in }
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     /// Side by side, or one under the other at accessibility sizes.
     private var lineLayout: AnyLayout {
@@ -83,10 +84,15 @@ struct InlineRestTimerRow: View {
     /// "✓ Set 2 · 100 kg × 8   [−] [+]   Undo".
     private func summaryLine(_ correction: SetCorrection) -> some View {
         lineLayout {
-            Label(correction.title, systemImage: Symbol.success)
+            // The green on the tick only: green caption text is about 2.2:1 in light mode (S4).
+            Label {
+                Text(correction.title)
+            } icon: {
+                Image(systemName: Symbol.success)
+                    .foregroundStyle(.success)
+            }
                 .font(.label.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(.success)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 // The container's label says it, with the units in words.
                 .accessibilityHidden(true)
@@ -173,9 +179,14 @@ struct InlineRestTimerRow: View {
             if let end = timer.endsAt, context.date < end {
                 running(timer, now: context.date, end: end)
             } else {
-                Label("Ready", systemImage: Symbol.success)
+                // As the correction line: the colour on the tick, the word in the label colour.
+                Label {
+                    Text("Ready")
+                } icon: {
+                    Image(systemName: Symbol.success)
+                        .foregroundStyle(.success)
+                }
                     .font(.label.weight(.semibold))
-                    .foregroundStyle(.success)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, Spacing.xs)
                     .accessibilityLabel("Rest over, ready for the next set")
@@ -202,7 +213,8 @@ struct InlineRestTimerRow: View {
             }
         }
         .monospacedDigit()
-        .foregroundStyle(.secondary)
+        // Increase Contrast asks for more than secondary text gives.
+        .foregroundStyle(colorSchemeContrast == .increased ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
         .padding(.vertical, Spacing.xs)
         .accessibilityElement(children: .combine)
     }

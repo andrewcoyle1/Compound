@@ -42,6 +42,7 @@ struct SetTrackerRowView: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
+    @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
@@ -107,6 +108,12 @@ struct SetTrackerRowView: View {
         // rather than jumping: a nil background cannot be animated to.
         .listRowBackground(
             Color.tintedSurface(.accentColor)
+                // The 15 % tint alone is well under 3:1 against the surface; the outline in the
+                // accent is what marks the row (S4), heavier with Increase Contrast on.
+                .overlay {
+                    Rectangle()
+                        .strokeBorder(.tint, lineWidth: colorSchemeContrast == .increased ? 2.5 : 1.5)
+                }
                 .opacity(isCurrent ? 1 : 0)
                 .reducedMotionAnimation(.standard, value: isCurrent)
                 .background(Color.surface)
@@ -212,9 +219,11 @@ struct SetTrackerRowView: View {
             // The text stays the label's root so the menu's accessibility element is built from
             // it; a shape on top made the audit see the number as text no element owns.
             let tint: Color = set.wrappedValue.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
+            // The label colour on the tinted circle: orange "W" on its own 15 % fill was about
+            // 2:1 in light mode. The tint stays on the circle, and the letter says what it is (S4).
             Text(setLabel(for: set.wrappedValue))
                 .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
-                .foregroundStyle(tint)
+                .foregroundStyle(.primary)
                 // On the text, not the menu: the menu's inner button takes its accessibility from
                 // its label view, and left unlabeled it reads as text no element owns.
                 // Where the set stands is the row's to say, on the way into it.
@@ -222,6 +231,12 @@ struct SetTrackerRowView: View {
                 .accessibilityHint("Set options")
                 .frame(width: setCircleSide, height: setCircleSide)
                 .background(Color.tintedSurface(tint), in: .circle)
+                // Increase Contrast: the circle's edge in its full colour, where the fill alone is faint.
+                .overlay {
+                    if colorSchemeContrast == .increased {
+                        Circle().strokeBorder(tint, lineWidth: 1)
+                    }
+                }
                 .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
                 .contentShape(.circle)
         }

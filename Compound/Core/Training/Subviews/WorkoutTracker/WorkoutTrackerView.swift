@@ -92,6 +92,15 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .bottomCTA {
             primaryCTA
         }
+        // The bottom button is the last element in reading order. A two-finger double tap does
+        // what it does from anywhere on the screen, and the scrub gesture minimises, as the
+        // chevron does (a11y.md M2).
+        .accessibilityAction(.magicTap) {
+            presenter.onPrimarySlotPressed()
+        }
+        .accessibilityAction(.escape) {
+            presenter.minimizeSession()
+        }
         .onChange(of: presenter.primarySlot) { _, action in
             presenter.onPrimarySlotChanged(action)
         }

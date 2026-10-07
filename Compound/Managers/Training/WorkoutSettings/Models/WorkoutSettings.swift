@@ -38,6 +38,10 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// seconds. `nil` (the default, and every document saved before the setting) means none: the
     /// rest comes after the round.
     var supersetTransitionRestSeconds: Int?
+    /// The breath between the rows of one myo-rep, rest-pause or cluster set, in seconds. Optional
+    /// so a document saved before the setting still decodes; nil reads as 15.
+    var intraSetRestSeconds: Int?
+    var intraSetRest: Int { intraSetRestSeconds ?? 15 }
 
     // MARK: - Rest Timer: Notifications
     var restTimerPlaySound: Bool = true
@@ -71,6 +75,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case restBetweenExercises = "rest_between_exercises"
         case restBetweenSideSets = "rest_between_side_sets"
         case supersetTransitionRestSeconds = "superset_transition_rest_seconds"
+        case intraSetRestSeconds = "intra_set_rest_seconds"
         case restTimerPlaySound = "rest_timer_play_sound"
         case restTimerVibrate = "rest_timer_vibrate"
         case warmUpRestScaling = "warm_up_rest_scaling"

@@ -5922,6 +5922,129 @@
         }
       },
       "weeks" : 12
+    },
+    {
+      "endDay" : "2026-03-28",
+      "expected" : {
+        "abductors" : [
+          0
+        ],
+        "abs" : [
+          0
+        ],
+        "adductors" : [
+          0
+        ],
+        "biceps" : [
+          0
+        ],
+        "calves" : [
+          0
+        ],
+        "chest" : [
+          2
+        ],
+        "forearms" : [
+          0
+        ],
+        "frontDelts" : [
+          1
+        ],
+        "glutes" : [
+          0
+        ],
+        "hamstrings" : [
+          0
+        ],
+        "lats" : [
+          0
+        ],
+        "lowerBack" : [
+          0
+        ],
+        "neck" : [
+          0
+        ],
+        "obliques" : [
+          0
+        ],
+        "quads" : [
+          0
+        ],
+        "rearDelts" : [
+          0
+        ],
+        "serratus" : [
+          0
+        ],
+        "sideDelts" : [
+          0
+        ],
+        "tibialis" : [
+          0
+        ],
+        "triceps" : [
+          1
+        ],
+        "upperBack" : [
+          0
+        ],
+        "upperTraps" : [
+          0
+        ]
+      },
+      "name" : "a drop set counts with its parent",
+      "sessions" : [
+        {
+          "day" : "2026-03-27",
+          "exercises" : [
+            {
+              "name" : "Bench",
+              "sets" : [
+                {
+                  "completed" : true,
+                  "isWarmup" : true,
+                  "reps" : 10,
+                  "side" : null,
+                  "weightKg" : 40
+                },
+                {
+                  "completed" : true,
+                  "isWarmup" : false,
+                  "reps" : 8,
+                  "side" : null,
+                  "weightKg" : 100
+                },
+                {
+                  "completed" : true,
+                  "isWarmup" : false,
+                  "parentSetId" : "s0-0-1",
+                  "reps" : 6,
+                  "side" : null,
+                  "weightKg" : 80
+                },
+                {
+                  "completed" : true,
+                  "isWarmup" : false,
+                  "reps" : 8,
+                  "side" : null,
+                  "weightKg" : 100
+                }
+              ],
+              "templateId" : "system-barbell-bench-press"
+            }
+          ],
+          "order" : 1
+        }
+      ],
+      "templates" : {
+        "system-barbell-bench-press" : {
+          "chest" : "primary",
+          "frontDelts" : "secondary",
+          "triceps" : "secondary"
+        }
+      },
+      "weeks" : 1
     }
   ],
   "weightTrend" : [

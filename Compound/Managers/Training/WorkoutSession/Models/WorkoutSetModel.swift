@@ -28,6 +28,11 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         set { sideRawValue = newValue?.rawValue }
     }
 
+    /// Stored raw for the same reason as `sideRawValue`; read it through `kind` (`SetKind.swift`).
+    var kindRawValue: String?
+    /// The set this row is a drop, mini-set or cluster of, or `nil` for a set of its own.
+    var parentSetId: String?
+
     var isWarmup: Bool
     var completedAt: Date?
     var dateCreated: Date
@@ -49,6 +54,8 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         distanceMeters: Double? = nil,
         rpe: Double? = nil,
         side: SetSide? = nil,
+        kind: SetKind = .standard,
+        parentSetId: String? = nil,
         isWarmup: Bool,
         completedAt: Date? = nil,
         dateCreated: Date
@@ -62,6 +69,8 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         self.distanceMeters = distanceMeters
         self.rpe = rpe
         self.sideRawValue = side?.rawValue
+        self.kindRawValue = kind == .standard ? nil : kind.rawValue
+        self.parentSetId = parentSetId
         self.isWarmup = isWarmup
         self.completedAt = completedAt
         self.dateCreated = dateCreated
@@ -77,6 +86,8 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         case distanceMeters = "distance_meters"
         case rpe
         case sideRawValue = "side"
+        case kindRawValue = "kind"
+        case parentSetId = "parent_set_id"
         case isWarmup
         case completedAt = "completed_at"
         case dateCreated = "date_created"

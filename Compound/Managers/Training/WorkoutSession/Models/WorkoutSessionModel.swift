@@ -141,6 +141,12 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 gymProfile: gymProfile,
                 unitPreferences: unitPreferences
             ).apply(to: &workingSets)
+
+            // Each working set takes the kind its set target asks for: a template's drop set is
+            // logged as a drop set. A set beyond the targets stays standard.
+            for position in workingSets.indices where position < exerciseModel.setTargets.count {
+                workingSets[position].kind = SetKind(exerciseModel.setTargets[position].setType)
+            }
             
             // Use the first working set's weight/reps for warmup calculation, or fall back to estimated values
             let firstWorkingSet = workingSets.first
@@ -164,20 +170,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             
             // Re-index all sets: warmup sets first, then working sets
             let reindexedSets = allSets.enumerated().map { index, set in
-                WorkoutSetModel(
-                    id: set.id,
-                    authorId: set.authorId,
-                    index: index + 1,
-                    reps: set.reps,
-                    weightKg: set.weightKg,
-                    durationSec: set.durationSec,
-                    distanceMeters: set.distanceMeters,
-                    rpe: set.rpe,
-                    side: set.side,
-                    isWarmup: set.isWarmup,
-                    completedAt: set.completedAt,
-                    dateCreated: set.dateCreated
-                )
+                var set = set
+                set.index = index + 1
+                return set
             }
             
             let imageName = Constants.exerciseImageName(for: exerciseModel.exercise)

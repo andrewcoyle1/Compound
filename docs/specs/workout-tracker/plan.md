@@ -193,7 +193,7 @@ Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` 
 
 ## Status (7 Oct 2026)
 
-Waves 0–4 are merged (PRs #49–#60). The four audit tests in `WorkoutTrackerUITests` run every
+Waves 0–4 and WP-Q are merged (PRs #49–#61); WP-R stays gated on the decision tests. The four audit tests in `WorkoutTrackerUITests` run every
 audit type in five states and are not red, but each is recorded as an **expected failure**: the
 audit still reports contrast, "potentially inaccessible text" and "text clipped" on
 `SwiftUI.AccessibilityNode`s it cannot attribute to any element, most of them inside the keypad

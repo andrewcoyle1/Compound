@@ -14,8 +14,9 @@ class ExercisesPickerPresenter {
     private let router: ExercisesPickerRouter
 
     private let committedExercises: Binding<[WorkoutTemplateExercise]>
+    private let excludedExerciseIds: Set<String>
     private(set) var workingExercises: [WorkoutTemplateExercise] = []
-    
+
     init(
         interactor: ExercisesPickerInteractor,
         router: ExercisesPickerRouter,
@@ -24,6 +25,7 @@ class ExercisesPickerPresenter {
         self.interactor = interactor
         self.router = router
         self.committedExercises = delegate.addedExercises
+        self.excludedExerciseIds = delegate.excludedExerciseIds
     }
 
     /// Ticked exercises are lost if the sheet closes, so the swipe is blocked and close asks.
@@ -61,9 +63,10 @@ class ExercisesPickerPresenter {
     }
 
     /// An exercise already in the workout stays ticked: it used to count as picked and then add
-    /// nothing.
+    /// nothing. An excluded one cannot be ticked.
     func onExercisePressed(exercise: ExerciseModel) {
-        guard !committedExercises.wrappedValue.contains(where: { $0.exercise.id == exercise.id }) else { return }
+        guard !excludedExerciseIds.contains(exercise.id),
+              !committedExercises.wrappedValue.contains(where: { $0.exercise.id == exercise.id }) else { return }
         if let index = workingExercises.firstIndex(where: { $0.exercise.id == exercise.id }) {
             workingExercises.remove(at: index)
         } else {

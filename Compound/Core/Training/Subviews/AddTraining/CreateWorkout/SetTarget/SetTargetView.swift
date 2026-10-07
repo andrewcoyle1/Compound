@@ -1,8 +1,20 @@
 import Foundation
 import SwiftUI
 
+/// What the set-target editor offers beside the targets.
+enum SetTargetScope: Equatable {
+    /// A logged session's targets, from the tracker, which keeps only the targets.
+    case session
+    /// A template exercise: its targets and its plan (warm-ups, rest, notes, link, substitutions,
+    /// weekly variation).
+    case template
+    /// One week's variation of a template exercise: its targets only.
+    case week(Int)
+}
+
 struct SetTargetDelegate {
     var exercise: Binding<WorkoutTemplateExercise>
+    var scope: SetTargetScope = .session
 }
 
 struct SetTargetView: View {
@@ -72,16 +84,22 @@ struct SetTargetView: View {
                 .accessibilityLabel("Add set target")
             }
             
-            Section {
-                ListRowToggle(
-                    title: String(localized: "Set Rest Timers"),
-                    subtitle: String(localized: "This will override default exercise settings."),
-                    systemImage: Symbol.rest,
-                    isOn: $presenter.workingExercise.setRestTimers
-                )
+            if presenter.showsPlan {
+                ExercisePlanSection(presenter: presenter)
+            }
+
+            if presenter.showsRestTimers {
+                Section {
+                    ListRowToggle(
+                        title: String(localized: "Set Rest Timers"),
+                        subtitle: String(localized: "This will override default exercise settings."),
+                        systemImage: Symbol.rest,
+                        isOn: $presenter.workingExercise.setRestTimers
+                    )
+                }
             }
         }
-        .navigationTitle("Targets")
+        .navigationTitle(presenter.title)
         .navigationSubtitle(presenter.workingExercise.exercise.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -108,6 +126,7 @@ struct SetTargetView: View {
             Button(role: .confirm) {
                 presenter.onSavePressed()
             }
+            .accessibilityIdentifier("SetTarget.save")
         }
     }
     
@@ -209,7 +228,7 @@ extension CoreRouter {
     @Previewable @State var exercise: WorkoutTemplateExercise = WorkoutTemplateExercise(exercise: .mock, setRestTimers: false)
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    let delegate = SetTargetDelegate(exercise: $exercise)
+    let delegate = SetTargetDelegate(exercise: $exercise, scope: .template)
     
     return RouterView { router in
         builder.setTargetView(router: router, delegate: delegate)

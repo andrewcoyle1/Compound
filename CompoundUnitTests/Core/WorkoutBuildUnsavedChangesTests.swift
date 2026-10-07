@@ -66,10 +66,13 @@ private final class DialogRouter: SetTargetRouter, ExercisesPickerRouter {
     }
 
     func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
+    func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
+    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
 }
 
 private final class SetTargetSpyInteractor: SpyGlobalInteractor, SetTargetInteractor {
     var workoutSettings = WorkoutSettings(authorId: "user-1")
+    var allExercises: [ExerciseModel] = []
 }
 private final class PickerSpyInteractor: SpyGlobalInteractor, ExercisesPickerInteractor { }
 private final class WrapperSpyInteractor: SpyGlobalInteractor, DefineWorkoutWrapperInteractor, DefineWorkoutInteractor {

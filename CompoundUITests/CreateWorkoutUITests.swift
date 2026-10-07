@@ -56,4 +56,36 @@ final class CreateWorkoutUITests: XCTestCase {
 
         app.waitFor(app.staticTexts["1 Exercise"].firstMatch)
     }
+
+    /// A warm-up count set in an exercise's plan reads under it, and two exercises chosen from the
+    /// list's edit mode become one superset carrying its letter.
+    func testAWarmupCountAndASupersetShowOnTheRows() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_CREATE_WORKOUT")
+        reachTheDefineStep(app)
+
+        app.tap("ExerciseList.Plank")
+        app.tap("ExerciseList.Push Up")
+        app.tap("ExercisesPicker.confirm")
+
+        app.tap("DefineWorkout.exercise.Plank")
+        app.tap("SetTarget.warmupSets")
+        app.waitFor(app.buttons["2"].firstMatch).tap()
+        app.tap("SetTarget.save")
+        assertLabel(of: app.button("DefineWorkout.exercise.Plank"), contains: "2 warm-ups")
+
+        app.tap("DefineWorkout.edit")
+        app.tap("DefineWorkout.superset")
+        app.tap("DefineWorkout.exercise.Plank")
+        app.tap("DefineWorkout.exercise.Push Up")
+        app.tap("DefineWorkout.confirmSuperset")
+
+        assertLabel(of: app.button("DefineWorkout.exercise.Plank"), contains: "Superset A")
+        assertLabel(of: app.button("DefineWorkout.exercise.Push Up"), contains: "Superset A")
+    }
+
+    private func assertLabel(of element: XCUIElement, contains text: String, file: StaticString = #filePath, line: UInt = #line) {
+        let predicate = NSPredicate(format: "label CONTAINS %@", text)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        XCTAssertEqual(XCTWaiter().wait(for: [expectation], timeout: UITestApp.timeout), .completed, "\(element) never read \(text)", file: file, line: line)
+    }
 }

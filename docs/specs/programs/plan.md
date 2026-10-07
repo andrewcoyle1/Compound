@@ -313,4 +313,7 @@ P2 ─┘
 
 ## Status
 
-- 7 Oct 2026: branch and plan created. Wave 1 dispatched.
+- 7 Oct 2026: branch and plan created. Wave 1 merged the same evening: P1 (#67, `70a0ff75`)
+  and P2 (#68, `66c17918`). Two notes from P2 for a later tidy: a lone partials, stretch or hold
+  piece still reads "Mini-set 1 of 1" on the Live Activity (`SetPiece` knows only drop and
+  mini-set) and its delete action says "Delete Mini-Set". Wave 2 (P3, P4, P5, P6) dispatched.

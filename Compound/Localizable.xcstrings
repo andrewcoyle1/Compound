@@ -174,6 +174,16 @@
         }
       }
     },
+    "%lld s breath" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s de respiro"
+          }
+        }
+      }
+    },
     "%lld target" : {
       "localizations" : {
         "es" : {
@@ -514,6 +524,16 @@
         }
       }
     },
+    "drop %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "descenso %lld"
+          }
+        }
+      }
+    },
     "Drop set" : {
       "localizations" : {
         "es" : {
@@ -774,6 +794,16 @@
         }
       }
     },
+    "no rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sin descanso"
+          }
+        }
+      }
+    },
     "Now: %@" : {
       "localizations" : {
         "es" : {
@@ -880,6 +910,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descanso-pausa"
+          }
+        }
+      }
+    },
+    "Set %lld is %@ from your plan: %@, then %@, a short breath between." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La serie %1$lld es %2$@ según tu plan: %3$@, luego %4$@, con un breve respiro entre medias."
+          }
+        }
+      }
+    },
+    "Set %lld is a drop set from your plan: %@, then %@ to failure, no rest between." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La serie %1$lld es descendente según tu plan: %2$@, luego %3$@ hasta el fallo, sin descanso entre medias."
+          }
+        }
+      }
+    },
+    "Set %lld is a drop set from your plan: %@, then %@ × %lld, no rest between." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La serie %1$lld es descendente según tu plan: %2$@, luego %3$@ × %4$lld, sin descanso entre medias."
+          }
+        }
+      }
+    },
+    "Set %lld is AMRAP, target %lld+." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La serie %1$lld es AMRAP, objetivo %2$lld+."
           }
         }
       }
@@ -1024,6 +1094,16 @@
         }
       }
     },
+    "target %lld+" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "objetivo %lld+"
+          }
+        }
+      }
+    },
     "Target Reps" : {
       "localizations" : {
         "es" : {
@@ -1040,6 +1120,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Objetivo que añade peso"
+          }
+        }
+      }
+    },
+    "Then: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después: %@"
           }
         }
       }

@@ -184,7 +184,7 @@ enum ActiveWorkout {
     /// "Log set 2 · 115 kg × 5", "Log warm-up · 60 kg × 5", "Log set 1L · 20 kg × 10", and with
     /// `showsBodyweight` "Log set 2 · BW + 20 kg × 8". A set's kind names it: "Log drop set · 80 kg
     /// × 8", "Log mini-set 2 · 100 kg × 4", and "Log AMRAP set · 100 kg" before its open-ended reps
-    /// are in.
+    /// are in. An AMRAP set the plan gave a target says it: "Log AMRAP set · 100 kg · target 8+".
     static func logTitle(
         for set: WorkoutSetModel,
         in exercise: WorkoutExerciseModel,
@@ -201,8 +201,10 @@ enum ActiveWorkout {
         }
         let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight)
             ?? openRepsWeight(of: set, trackingMode: exercise.trackingMode, unit: unit)
-        guard let figures else { return name }
-        return "\(name) · \(figures)"
+        let target = set.kind == .amrap && !set.isSubSet && !set.isWarmup
+            ? set.targetReps.map { String(localized: "target \($0)+") }
+            : nil
+        return [name, figures, target].compactMap { $0 }.joined(separator: " · ")
     }
 
     /// An AMRAP set's weight alone, while its reps are still open: "100 kg".

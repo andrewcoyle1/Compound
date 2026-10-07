@@ -167,9 +167,9 @@ struct SetTrackerRowView: View {
             unit: units.weightUnit,
             distanceUnit: units.distanceUnit
         )
-        // The kind's chip is hidden from VoiceOver; the row says it: "Set 3, AMRAP".
+        // The kind's chip is hidden from VoiceOver; the row says it: "Set 3, AMRAP", "Set 4, AMRAP 8+".
         let set = delegate.set.wrappedValue
-        let kind = set.isWarmup || set.isSubSet || set.kind == .standard ? nil : set.kind.displayName
+        let kind = set.isWarmup || set.isSubSet || set.kind == .standard ? nil : Self.kindName(of: set)
         let name = [rowName, kind].compactMap { $0 }.joined(separator: ", ")
         return ActiveWorkout.rowSpokenLabel(name: name, state: delegate.rowState, figures: figures)
     }
@@ -337,7 +337,8 @@ struct SetTrackerRowView: View {
             // "Set 2, Weight, kilograms": the set first, so each row's fields have names of their own.
             accessibilityLabel: "\(rowName), \(label)",
             isMuted: delegate.rowState == .upcoming,
-            placeholder: keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
+            placeholder: Self.targetPlaceholder(for: field, set: set.wrappedValue)
+                ?? keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             presenter: keyboard,
             inputHost: keyboardHost,
             onBegin: { presenter.onKeyboardFieldBegan(field, delegate: delegate) }
@@ -576,9 +577,23 @@ extension SetTrackerRowView {
         switch (set.subSetKind, set.kind) {
         case (.drop, _): ("Drop", .warmup)
         case (.mini, _): ("Mini", .warmup)
-        case (nil, .amrap) where !set.isWarmup: ("AMRAP", .secondary)
+        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { "AMRAP \($0)+" } ?? "AMRAP", .secondary)
         default: nil
         }
+    }
+
+    /// "AMRAP 8+" for an AMRAP set the plan gave a target, else the kind's name.
+    static func kindName(of set: WorkoutSetModel) -> String {
+        guard set.kind == .amrap, let target = set.targetReps else { return set.kind.displayName }
+        return String(localized: "AMRAP \(target)+")
+    }
+
+    /// An AMRAP set's reps, while they are open, hint at the plan's target, greyed as any
+    /// placeholder is: "8+".
+    static func targetPlaceholder(for field: SetKeyboardField, set: WorkoutSetModel) -> String? {
+        guard field == .reps, set.kind == .amrap, !set.isSubSet, !set.isWarmup, set.reps == nil,
+              let target = set.targetReps else { return nil }
+        return "\(target)+"
     }
 
     /// The Set Type picker, then a drop or mini-set to add under the set.

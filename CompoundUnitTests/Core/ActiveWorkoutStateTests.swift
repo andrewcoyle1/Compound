@@ -209,6 +209,27 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.logTitle(for: pullUp.sets[0], in: pullUp, unit: .kilograms, distanceUnit: .meters) == "Log set 1 · -30 kg × 8")
     }
 
+    /// WP-S3: an AMRAP set the plan gave a target says it, reps open or typed; without a target,
+    /// as the set plan off creates every set, the title is as it was.
+    @Test("Test An AMRAP Set's Log Title Names Its Target")
+    func testAMRAPLogTitleNamesItsTarget() {
+        var amrap = set("s1", reps: nil)
+        amrap.kind = .amrap
+        func title(_ set: WorkoutSetModel) -> String {
+            ActiveWorkout.logTitle(for: set, in: exercise("e1", sets: [set]), unit: .kilograms, distanceUnit: .meters)
+        }
+
+        #expect(title(amrap) == "Log AMRAP set · 100 kg")
+        amrap.targetReps = 8
+        #expect(title(amrap) == "Log AMRAP set · 100 kg · target 8+")
+        amrap.reps = 10
+        #expect(title(amrap) == "Log AMRAP set · 100 kg × 10 · target 8+")
+
+        // A target left on a set that is no longer AMRAP says nothing.
+        amrap.kind = .standard
+        #expect(title(amrap) == "Log set 1 · 100 kg × 10")
+    }
+
     @Test("Test Up Next Shows The Plan And Last Time's Top Set")
     func testUpNextSummary() {
         let bench = exercise("e2", sets: [set("a"), set("b"), set("c")], targets: [SetTarget(setNumber: 1, minReps: 8, maxReps: 12)])

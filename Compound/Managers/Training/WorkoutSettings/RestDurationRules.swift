@@ -159,12 +159,13 @@ enum RestDurationRules {
         return exercise.sets[(position + 1)...].first { $0.parentSetId == parentId }
     }
 
-    /// The rest before `subSet`, decided by its kind, or its parent's when the row itself is plain.
+    /// The rest before `subSet`, decided by its kind, or its parent's when the row itself is plain:
+    /// each of myo-rep, rest-pause and cluster has its own (`WorkoutSettings.intraSetRest(for:)`).
     private static func intraSetRest(before subSet: WorkoutSetModel, in exercise: WorkoutExerciseModel, settings: WorkoutSettings) -> Int? {
         let parentKind = exercise.sets.first { $0.id == subSet.parentSetId }?.kind ?? .standard
         let kind = subSet.kind == .standard ? parentKind : subSet.kind
-        guard kind.restsWithinTheSet, settings.intraSetRest > 0 else { return nil }
-        return settings.intraSetRest
+        guard let seconds = settings.intraSetRest(for: kind), seconds > 0 else { return nil }
+        return seconds
     }
 
     /// True when this set is the first limb of a pair whose other limb is still to come, so what

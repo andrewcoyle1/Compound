@@ -76,7 +76,8 @@ struct ProgressionPlanner {
         for contexts: [ExerciseContext],
         history sessions: [WorkoutSessionModel],
         adjustmentMode: ProgressionAdjustmentMode,
-        gymProfile: GymProfileModel?
+        gymProfile: GymProfileModel?,
+        amrap: AMRAPProgression? = nil
     ) -> [String: ProgressionSuggestion] {
         let engine = ProgressionEngine()
         var result: [String: ProgressionSuggestion] = [:]
@@ -89,7 +90,8 @@ struct ProgressionPlanner {
                 history: history(forTemplateId: context.templateId, in: sessions),
                 adjustmentMode: adjustmentMode,
                 roundWeight: rule.round,
-                minimumIncrementKg: rule.minimumIncrementKg
+                minimumIncrementKg: rule.minimumIncrementKg,
+                amrap: amrap
             )
             result[context.templateId] = engine.suggest(input)
         }

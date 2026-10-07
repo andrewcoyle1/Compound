@@ -84,6 +84,7 @@ struct WorkingSetPrefill {
             workingSets[index].weightKg = weightKg
             workingSets[index].durationSec = suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec
             workingSets[index].distanceMeters = suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters
+            workingSets[index].targetReps = suggested?.targetReps ?? workingSets[index].targetReps
             workingSets[index].isWarmup = false
             workingSets[index].completedAt = nil
             workingSets[index].dateCreated = .now

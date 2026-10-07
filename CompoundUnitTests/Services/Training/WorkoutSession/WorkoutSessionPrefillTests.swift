@@ -234,4 +234,103 @@ struct WorkoutSessionPrefillTests {
     }
 
     // MARK: - End WP-Q
+
+    // MARK: - WP-S1 set plan
+
+    private func plannedTemplate(_ plan: (inout SetTarget) -> Void) -> WorkoutTemplateModel {
+        var template = template()
+        plan(&template.exercises[0].setTargets[0])
+        return template
+    }
+
+    private func session(_ template: WorkoutTemplateModel, plansSets: Bool, previous: WorkoutSessionModel? = nil) -> WorkoutSessionModel {
+        WorkoutSessionModel(
+            authorId: "author-1",
+            template: template,
+            previousWorkoutSession: previous ?? previousSession(),
+            plansSets: plansSets,
+            dateCreated: start
+        )
+    }
+
+    /// Off, a planned template is created exactly as before: no sub-sets, no AMRAP target.
+    @Test("Test With The Set Plan Off A Planned Template Creates No Sub-Sets")
+    func testSetPlanOffCreatesNoSubSets() {
+        let drop = plannedTemplate { $0.setType = .drop; $0.dropCount = 2 }
+        let amrap = plannedTemplate { $0.setType = .amrap; $0.amrapTargetReps = 8 }
+
+        #expect(workingSets(of: session(drop, plansSets: false)).count == 3)
+        #expect(workingSets(of: session(amrap, plansSets: false)).allSatisfy { $0.targetReps == nil })
+        #expect(workingSets(of: session(amrap, plansSets: false))[0].kind == .amrap)
+    }
+
+    /// Each drop is a fifth lighter than the piece before it, to the nearest half kilo.
+    @Test("Test A Drop Target Becomes Its Set And Its Drops")
+    func testDropTargetExpands() {
+        let template = plannedTemplate { $0.setType = .drop; $0.dropCount = 2 }
+
+        let sets = workingSets(of: session(template, plansSets: true))
+
+        #expect(sets.count == 5)
+        #expect(sets.map(\.kind) == [.drop, .drop, .drop, .standard, .standard])
+        #expect(sets.map(\.weightKg) == [60, 48, 38.5, 60, 60])
+        #expect(sets.map(\.reps) == [10, nil, nil, 10, 10])
+        #expect(sets[1].parentSetId == sets[0].id && sets[2].parentSetId == sets[0].id)
+        #expect(sets.map(\.index) == sets.map(\.index).sorted())
+    }
+
+    @Test("Test A Drop's Step And Reps Come From The Plan")
+    func testDropStepAndReps() {
+        let template = plannedTemplate { $0.setType = .drop; $0.dropCount = 1; $0.dropStepPercent = 30; $0.dropReps = 6 }
+
+        let sets = workingSets(of: session(template, plansSets: true))
+
+        #expect(sets[1].weightKg == 42)
+        #expect(sets[1].reps == 6)
+    }
+
+    @Test("Test A Mini-Set Target Becomes Its Set And Its Mini-Sets", arguments: [SetTargetSetType.myo, .restPause, .cluster])
+    func testMiniSetTargetExpands(setType: SetTargetSetType) {
+        let template = plannedTemplate { $0.setType = setType; $0.miniSetCount = 3 }
+
+        let sets = workingSets(of: session(template, plansSets: true))
+
+        #expect(sets.count == 6)
+        #expect(sets[0].kind == SetKind(setType))
+        #expect(sets[1...3].allSatisfy { $0.kind == .standard && $0.parentSetId == sets[0].id })
+        #expect(sets[1...3].allSatisfy { $0.weightKg == 60 && $0.reps == nil })
+    }
+
+    @Test("Test An AMRAP Target Carries Its Reps To Beat", arguments: [SetTargetSetType.amrap, .failure])
+    func testAMRAPTargetReps(setType: SetTargetSetType) {
+        let template = plannedTemplate { $0.setType = setType; $0.amrapTargetReps = 8 }
+
+        let sets = workingSets(of: session(template, plansSets: true))
+
+        #expect(sets[0].kind == .amrap)
+        #expect(sets[0].targetReps == 8)
+        #expect(sets.count == 3)
+    }
+
+    /// Last time's drop is still skipped (WP-Q), and this time's drop steps down from the weight
+    /// set 1 was prefilled with, not from last time's drop.
+    @Test("Test A Planned Drop Steps Down From The Prefilled Weight, Skipping Last Time's Drops")
+    func testPlannedDropAfterPrefillFromSubSets() {
+        var previous = previousSession()
+        previous.exercises[0].sets.insert(
+            WorkoutSetModel(
+                id: "previous-drop", authorId: "author-1", index: 4, reps: 12, weightKg: 40,
+                kind: .drop, parentSetId: "previous-set-1", isWarmup: false, completedAt: start, dateCreated: start
+            ),
+            at: 1
+        )
+        let template = plannedTemplate { $0.setType = .drop; $0.dropCount = 1; $0.dropStepPercent = 25 }
+
+        let sets = workingSets(of: session(template, plansSets: true, previous: previous))
+
+        #expect(sets.map(\.weightKg) == [60, 45, 60, 60])
+        #expect(sets.map(\.reps) == [10, nil, 10, 10])
+    }
+
+    // MARK: - End WP-S1
 }

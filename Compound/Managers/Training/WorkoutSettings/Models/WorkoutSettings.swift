@@ -25,6 +25,11 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// (the default since 7 Oct 2026; it shipped off while it was being tried).
     var showExerciseStrip: Bool?
     var showsExerciseStrip: Bool { showExerciseStrip ?? true }
+    /// Workout Settings › Set Plan: the template owns each set's kind and its plan (drops,
+    /// mini-sets, an AMRAP target), and a session is created from it. Optional so a document
+    /// saved before the setting existed still decodes; nil reads as off.
+    var setPlanning: Bool?
+    var plansSets: Bool { setPlanning ?? false }
     
     // MARK: - Warm-Up
     var addSmartWarmUps: Bool = true
@@ -33,6 +38,18 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var smartProgressionApplyInSession: Bool = false
     var smartProgressionInitialLogFill: InitialLogFillOption = .smartProgression
     var smartProgressionAdjustmentMode: ProgressionAdjustmentMode = .weightFirst
+    /// With the set plan on, an AMRAP target beaten twice running goes up a rep. Optional so a
+    /// document saved before the setting still decodes; nil reads as on.
+    var amrapRaisesTarget: Bool?
+    var raisesAMRAPTarget: Bool { amrapRaisesTarget ?? true }
+    /// The AMRAP target at which beating it adds weight instead (and the target goes back to the
+    /// template's). Optional for the same reason; nil reads as 12.
+    var amrapAddsWeightAtTarget: Int?
+    var amrapWeightCeiling: Int { amrapAddsWeightAtTarget ?? 12 }
+    /// The AMRAP rule progression runs, or nil when the set plan or the rule is off.
+    var amrapProgression: AMRAPProgression? {
+        plansSets && raisesAMRAPTarget ? AMRAPProgression(ceiling: amrapWeightCeiling) : nil
+    }
 
     // MARK: - Rest Timer: Behaviour
     var useRestTimers: Bool = true
@@ -44,9 +61,29 @@ struct WorkoutSettings: DataSyncModelProtocol {
     /// rest comes after the round.
     var supersetTransitionRestSeconds: Int?
     /// The breath between the rows of one myo-rep, rest-pause or cluster set, in seconds. Optional
-    /// so a document saved before the setting still decodes; nil reads as 15.
+    /// so a document saved before the setting still decodes; nil reads as 15. Since the per-kind
+    /// rests below, it is only their fallback: a document that chose this one rest keeps it.
     var intraSetRestSeconds: Int?
     var intraSetRest: Int { intraSetRestSeconds ?? 15 }
+    /// The breath within a myo-rep, rest-pause or cluster set, in seconds. Each Optional, read as
+    /// `intraSetRestSeconds` when only that was saved, else 15, 20 and 15.
+    var intraSetRestMyoSeconds: Int?
+    var intraSetRestPauseSeconds: Int?
+    var intraSetRestClusterSeconds: Int?
+    var intraSetRestMyo: Int { intraSetRestMyoSeconds ?? intraSetRestSeconds ?? 15 }
+    var intraSetRestPause: Int { intraSetRestPauseSeconds ?? intraSetRestSeconds ?? 20 }
+    var intraSetRestCluster: Int { intraSetRestClusterSeconds ?? intraSetRestSeconds ?? 15 }
+
+    /// The rest between the rows of one set of this kind; nil for a kind that does not rest
+    /// within its set (a drop is a change of weight, not a breath).
+    func intraSetRest(for kind: SetKind) -> Int? {
+        switch kind {
+        case .myo: return intraSetRestMyo
+        case .restPause: return intraSetRestPause
+        case .cluster: return intraSetRestCluster
+        case .standard, .drop, .amrap: return nil
+        }
+    }
 
     // MARK: - Rest Timer: Notifications
     var restTimerPlaySound: Bool = true
@@ -71,6 +108,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case showBodyweightContribution = "show_bodyweight_contribution"
         case showOnLockScreen = "show_on_lock_screen"
         case showExerciseStrip = "show_exercise_strip"
+        case setPlanning = "set_planning"
         case exerciseAutoNext = "exercise_auto_next"
         case propagateChanges = "propagate_changes"
         case rirTracking = "rir_tracking"
@@ -82,6 +120,9 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case restBetweenSideSets = "rest_between_side_sets"
         case supersetTransitionRestSeconds = "superset_transition_rest_seconds"
         case intraSetRestSeconds = "intra_set_rest_seconds"
+        case intraSetRestMyoSeconds = "intra_set_rest_myo_seconds"
+        case intraSetRestPauseSeconds = "intra_set_rest_pause_seconds"
+        case intraSetRestClusterSeconds = "intra_set_rest_cluster_seconds"
         case restTimerPlaySound = "rest_timer_play_sound"
         case restTimerVibrate = "rest_timer_vibrate"
         case warmUpRestScaling = "warm_up_rest_scaling"
@@ -93,6 +134,8 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case smartProgressionApplyInSession = "smart_progression_apply_in_session"
         case smartProgressionInitialLogFill = "smart_progression_initial_log_fill"
         case smartProgressionAdjustmentMode = "smart_progression_adjustment_mode"
+        case amrapRaisesTarget = "amrap_raises_target"
+        case amrapAddsWeightAtTarget = "amrap_adds_weight_at_target"
     }
     
     var eventParameters: [String: Any] {

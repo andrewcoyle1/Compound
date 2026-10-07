@@ -104,6 +104,26 @@
         }
       }
     },
+    "A set split into short mini-sets with brief rests between them, at the same weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una serie dividida en miniseries cortas con descansos breves entre ellas, con el mismo peso."
+          }
+        }
+      }
+    },
+    "A set taken close to failure, then continued after short pauses at the same weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una serie llevada cerca del fallo y continuada tras pausas breves con el mismo peso."
+          }
+        }
+      }
+    },
     "Active Program" : {
       "localizations" : {
         "es" : {
@@ -180,6 +200,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "AMRAP"
+          }
+        }
+      }
+    },
+    "As many reps as possible at a fixed weight, aiming to beat a target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantas repeticiones como sea posible con un peso fijo, intentando superar un objetivo."
           }
         }
       }

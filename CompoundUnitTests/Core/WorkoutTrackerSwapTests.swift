@@ -177,7 +177,7 @@ struct WorkoutTrackerSwapTests {
 
         presenter.insertSwappedExercise(after: "e1", new: new)
 
-        #expect(await TestManagers.eventually { presenter.previousExercises[new.id]?.id == "last-\(new.id)" })
-        #expect(await TestManagers.eventually { presenter.progressionSuggestions[new.id] != nil })
+        #expect(await TestManagers.eventually { presenter.previousExercises["\(new.id)#0"]?.id == "last-\(new.id)" })
+        #expect(await TestManagers.eventually { presenter.progressionSuggestions["\(new.id)#0"] != nil })
     }
 }

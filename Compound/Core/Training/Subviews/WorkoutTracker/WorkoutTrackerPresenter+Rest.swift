@@ -38,24 +38,27 @@ extension WorkoutTrackerPresenter {
     /// what last time was.
     ///
     /// Resolved one exercise at a time because the fallback is per exercise: an exercise this
-    /// template has never held still shows the last time it was performed anywhere.
+    /// template has never held still shows the last time it was performed anywhere. Kept by
+    /// `ActiveWorkout.historyKey`, so an exercise the workout holds twice has a last time for each.
     func loadPreviousWorkoutSession() {
-        loadPrevious(for: workoutSession.exercises.map(\.templateId))
+        loadPrevious(for: workoutSession.exercises)
     }
 
     /// The same, for some exercises only: those added part-way through. What is already loaded
-    /// for the others is kept.
-    func loadPrevious(for templateIds: [String]) {
+    /// for the others is kept. The nth appearance of an exercise is matched to the nth appearance
+    /// of it in the session found.
+    func loadPrevious(for exercises: [WorkoutExerciseModel]) {
         guard let authorId = interactor.currentUser?.userId else { return }
 
         let workoutTemplateId = workoutSession.workoutTemplateId
         let mesocycleId = workoutSession.mesocycleId
-        let exerciseTemplateIds = Set(templateIds)
+        let session = workoutSession
+        let wanted = exercises.map { (templateId: $0.templateId, occurrence: session.occurrence(of: $0)) }
 
         Task {
             var resolved: [String: WorkoutExerciseModel] = [:]
 
-            for exerciseTemplateId in exerciseTemplateIds {
+            for exerciseTemplateId in Set(wanted.map(\.templateId)) {
                 let sessions = await interactor.previousSessions(
                     forExerciseTemplateId: exerciseTemplateId,
                     workoutTemplateId: workoutTemplateId,
@@ -63,17 +66,29 @@ extension WorkoutTrackerPresenter {
                     mesocycleId: mesocycleId,
                     limit: 1
                 )
-                let match = sessions
-                    .lazy
-                    .compactMap { $0.exercises.first(where: { $0.templateId == exerciseTemplateId }) }
-                    .first
-                if let match {
-                    resolved[exerciseTemplateId] = match
+                for occurrence in Set(wanted.filter { $0.templateId == exerciseTemplateId }.map(\.occurrence)) {
+                    let match = sessions
+                        .lazy
+                        .compactMap { $0.exercise(templateId: exerciseTemplateId, occurrence: occurrence) }
+                        .first
+                    if let match {
+                        resolved[ActiveWorkout.historyKey(templateId: exerciseTemplateId, occurrence: occurrence)] = match
+                    }
                 }
             }
 
             previousExercises.merge(resolved) { $1 }
         }
+    }
+
+    /// What `exercise` was last time, for its Prev column, summaries and note hint.
+    func previousExercise(for exercise: WorkoutExerciseModel) -> WorkoutExerciseModel? {
+        previousExercises[ActiveWorkout.historyKey(for: exercise, in: workoutSession)]
+    }
+
+    /// Smart progression's suggestion for `exercise`, by the same key as last time.
+    func progressionSuggestion(for exercise: WorkoutExerciseModel) -> ProgressionSuggestion? {
+        progressionSuggestions[ActiveWorkout.historyKey(for: exercise, in: workoutSession)]
     }
 
     /// What the rest pill's "+15s" adds, the same step the Live Activity offers.

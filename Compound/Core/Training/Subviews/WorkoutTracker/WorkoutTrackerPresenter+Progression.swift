@@ -16,9 +16,14 @@ extension WorkoutTrackerPresenter {
     /// already filled in when the session was built; this is the reasoning behind them.
     ///
     /// `exercises` narrows it to those added part-way through; the others keep what they have.
+    /// Every appearance of a narrowed exercise is kept in, so each one's occurrence, and with it
+    /// its key (`ActiveWorkout.historyKey`), is the one it has in the whole workout.
     func loadProgressionSuggestions(for exercises: [WorkoutExerciseModel]? = nil) {
         var session = workoutSession
-        if let exercises { session.updateExercises(exercises) }
+        if let exercises {
+            let templateIds = Set(exercises.map(\.templateId))
+            session.updateExercises(workoutSession.exercises.filter { templateIds.contains($0.templateId) })
+        }
         Task {
             let suggestions = await interactor.progressionSuggestions(for: session, gymProfile: interactor.workoutGymProfile)
             progressionSuggestions.merge(suggestions) { $1 }

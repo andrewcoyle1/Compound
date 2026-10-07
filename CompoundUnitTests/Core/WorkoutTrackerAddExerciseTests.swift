@@ -68,7 +68,7 @@ struct WorkoutTrackerAddExerciseTests {
     @Test("Test An Added Exercise Loads Last Time And Its Suggestion, Keeping The Others'")
     func testLastAndSuggestionLoaded() async throws {
         let (presenter, interactor) = try makeScreen()
-        presenter.previousExercises["t-squat"] = WorkoutExerciseModel(
+        presenter.previousExercises["t-squat#0"] = WorkoutExerciseModel(
             id: "kept", authorId: "author-1", templateId: "t-squat", name: "squat", trackingMode: .weightReps, index: 1, sets: []
         )
         interactor.completedSessions = [WorkoutSessionModel(
@@ -90,10 +90,10 @@ struct WorkoutTrackerAddExerciseTests {
         presenter.addSelectedExercises()
 
         #expect(await TestManagers.eventually(timeout: .seconds(5)) {
-            presenter.previousExercises["one-arm-row"]?.id == "last-row"
-                && presenter.progressionSuggestions["one-arm-row"] != nil
+            presenter.previousExercises["one-arm-row#0"]?.id == "last-row"
+                && presenter.progressionSuggestions["one-arm-row#0"] != nil
         })
-        #expect(presenter.previousExercises["t-squat"]?.id == "kept")
+        #expect(presenter.previousExercises["t-squat#0"]?.id == "kept")
     }
 
     @Test("Test Adding An Exercise Leaves The Card Where It Was")

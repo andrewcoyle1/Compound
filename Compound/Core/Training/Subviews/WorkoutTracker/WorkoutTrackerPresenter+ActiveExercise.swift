@@ -150,9 +150,9 @@ extension WorkoutTrackerPresenter {
 
     func progressionReason(for exercise: WorkoutExerciseModel) -> String? {
         ActiveWorkout.progressionReason(
-            suggestion: progressionSuggestions[exercise.templateId],
+            suggestion: progressionSuggestion(for: exercise),
             planned: exercise,
-            last: previousExercises[exercise.templateId],
+            last: previousExercise(for: exercise),
             unit: units(for: exercise).weightUnit
         )
     }
@@ -193,7 +193,7 @@ extension WorkoutTrackerPresenter {
         }
         return ActiveWorkout.upNextSummary(
             for: exercise,
-            last: previousExercises[exercise.templateId],
+            last: previousExercise(for: exercise),
             unit: units.weightUnit,
             distanceUnit: units.distanceUnit,
             showsBodyweight: showsBodyweight

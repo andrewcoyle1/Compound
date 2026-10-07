@@ -153,7 +153,7 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     ) async throws -> [WorkoutSessionModel]
 
     /// What smart progression suggests for each exercise of a session already under way, keyed
-    /// by the exercise's `templateId`.
+    /// by `ActiveWorkout.historyKey`.
     func progressionSuggestions(
         for session: WorkoutSessionModel,
         gymProfile: GymProfileModel?

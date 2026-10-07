@@ -207,12 +207,12 @@ extension WorkoutTrackerView {
         }
         return ExerciseTrackerDelegate(
             exercise: exercise,
-            lastExercise: presenter.previousExercises[current.templateId],
+            lastExercise: presenter.previousExercise(for: current),
             isExpanded: .constant(true),
             allWorkoutExercises: presenter.workoutSession.exercises,
             supersetLabel: supersetLabel(for: current),
-            progressionSuggestion: presenter.progressionSuggestions[current.templateId],
-            previousNote: presenter.previousNote(forExerciseTemplateId: current.templateId),
+            progressionSuggestion: presenter.progressionSuggestion(for: current),
+            previousNote: presenter.previousNote(for: current),
             onSetSupersetGroup: { exerciseId, groupId in
                 presenter.setSupersetGroupId(groupId, forExerciseId: exerciseId)
             },

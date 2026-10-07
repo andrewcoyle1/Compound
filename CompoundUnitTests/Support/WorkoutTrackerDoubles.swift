@@ -207,14 +207,23 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         )
     }
 
-    /// What `progressionSuggestions(for:gymProfile:)` hands back, keyed by exercise `templateId`.
+    /// What `progressionSuggestions(for:gymProfile:)` hands back for each exercise of the session:
+    /// the entry under its `ActiveWorkout.historyKey`, else the one under its `templateId`. Keyed
+    /// as the real interactor keys it, by history key.
     var progressionSuggestionsByTemplateId: [String: ProgressionSuggestion] = [:]
 
     func progressionSuggestions(
         for session: WorkoutSessionModel,
         gymProfile: GymProfileModel?
     ) async -> [String: ProgressionSuggestion] {
-        progressionSuggestionsByTemplateId
+        var result: [String: ProgressionSuggestion] = [:]
+        for exercise in session.exercises {
+            let key = ActiveWorkout.historyKey(for: exercise, in: session)
+            if let suggestion = progressionSuggestionsByTemplateId[key] ?? progressionSuggestionsByTemplateId[exercise.templateId] {
+                result[key] = suggestion
+            }
+        }
+        return result
     }
 
     func startRest(durationSeconds: Int, session: WorkoutSessionModel, currentExerciseIndex: Int) {

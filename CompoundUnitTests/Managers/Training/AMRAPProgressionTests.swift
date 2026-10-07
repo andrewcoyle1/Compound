@@ -159,7 +159,7 @@ struct AMRAPProgressionTests {
         )
 
         let session = WorkoutSessionModel(
-            authorId: "author-1", template: template, prefill: .suggestions(["exercise-1": suggestion]),
+            authorId: "author-1", template: template, prefill: .suggestions(["exercise-1#0": suggestion]),
             plansSets: true, dateCreated: start
         )
         let sets = session.exercises[0].sets.filter { !$0.isWarmup }

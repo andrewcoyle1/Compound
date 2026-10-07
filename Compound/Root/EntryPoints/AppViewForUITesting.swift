@@ -246,9 +246,21 @@ private struct ActiveSessionScreen<Content: View>: View {
             ProgressView()
                 .task {
                     try? await interactor.startWorkout(for: .mock, in: nil)
+                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
                     isReady = true
                 }
         }
+    }
+
+    /// `UI_TEST_SUPERSET`: the first two exercises as one superset, without their warm-ups, so a
+    /// UI test logs A1 and then B1 straight from the log button.
+    private func seedSuperset() {
+        guard var session = interactor.activeSession, session.exercises.count > 1 else { return }
+        for index in 0..<2 {
+            session.exercises[index].supersetGroupId = "ui-test-superset"
+            session.exercises[index].sets.removeAll { $0.isWarmup }
+        }
+        try? interactor.updateActiveSession(session)
     }
 }
 

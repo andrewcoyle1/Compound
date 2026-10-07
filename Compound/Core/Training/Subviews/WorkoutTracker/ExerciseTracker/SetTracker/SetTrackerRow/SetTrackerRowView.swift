@@ -18,6 +18,9 @@ struct SetTrackerRowDelegate {
     var onLogSet: (@MainActor (_ setId: String, _ customRestSeconds: Int?) -> Void)?
     /// Hands a rest set by hand to the tracker, so its log button rests as long.
     var onCustomRestChanged: (@MainActor (_ setId: String, _ seconds: Int?) -> Void)?
+    /// What the set's circle shows in place of its number, in the superset tint: "A1", "B2" on
+    /// a superset's card. `nil` shows the number.
+    var badgeLabel: String?
     var eventParameters: [String: Any]? {
         nil
     }
@@ -185,7 +188,7 @@ struct SetTrackerRowView: View {
             // what the accessibility audit measures.
             // The text stays the label's root so the menu's accessibility element is built from
             // it; a shape on top made the audit see the number as text no element owns.
-            let tint: Color = set.wrappedValue.isWarmup ? .warmup : .secondary
+            let tint: Color = set.wrappedValue.isWarmup ? .warmup : delegate.badgeLabel == nil ? .secondary : .superset
             Text(setLabel(for: set.wrappedValue))
                 .font(set.wrappedValue.isWarmup ? .caption.weight(.semibold) : .caption)
                 .foregroundStyle(tint)
@@ -207,6 +210,7 @@ struct SetTrackerRowView: View {
     /// with an L or R after it, because they are one set — numbering them 1 and 2 would tell a
     /// user doing three sets a side that they were on their fourth.
     private func setLabel(for set: WorkoutSetModel) -> String {
+        if let badge = delegate.badgeLabel { return badge }
         guard !set.isWarmup else { return "W" }
         let number = delegate.exercise.wrappedValue.workingSetNumber(for: set)
         return "\(number)\(set.side?.initial ?? "")"

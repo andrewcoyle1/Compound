@@ -271,6 +271,52 @@ struct WorkoutTrackerSupersetTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
+    // MARK: - Labels and the block card
+
+    /// Two supersets in one workout read "Superset A" and "Superset B": the letter is the
+    /// superset's, not the member's, which used to make both read A/B. Inside a card the rows
+    /// letter the member and number the set.
+    @Test("Test Two Supersets Are Lettered Apart And Their Rows Badged")
+    func testTwoSupersetsAreLetteredApartAndTheirRowsBadged() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)]),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e5", index: 5, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+        let exercises = screen.presenter.workoutSession.exercises
+
+        let labels = exercises.map { ActiveWorkout.supersetLabel(for: $0, in: exercises) }
+        #expect(labels == ["Superset A", "Superset A", nil, "Superset B", "Superset B"])
+
+        let members = try #require(ActiveWorkout.supersetBlock(containing: screen.presenter.currentExercise?.id, in: exercises))
+        let badges = ActiveWorkout.blockRows(members).compactMap { row -> String? in
+            if case let .set(_, badge) = row.kind { return badge }
+            return nil
+        }
+        #expect(badges == ["A1", "B1", "A2"])
+    }
+
+    /// The card holds both members of a superset, and only a superset: an exercise on its own,
+    /// or the last of a group, keeps the single card.
+    @Test("Test The Block Card Is Chosen Only For A Superset Of Two Or More")
+    func testTheBlockCardIsChosenOnlyForASupersetOfTwoOrMore() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)]),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+        let exercises = screen.presenter.workoutSession.exercises
+
+        #expect(ActiveWorkout.supersetBlock(containing: "e1", in: exercises)?.map(\.id) == ["e1", "e2"])
+        #expect(ActiveWorkout.supersetBlock(containing: "e3", in: exercises) == nil)
+        #expect(ActiveWorkout.supersetBlock(containing: "e4", in: exercises) == nil)
+        // The partner on the card is not listed again under Up Next.
+        #expect(screen.presenter.upNextExercises.map(\.id) == ["e3", "e4"])
+    }
+
     // MARK: - Deleting a member
 
     /// A superset of one is not a superset: the partner left behind loses its group and reads

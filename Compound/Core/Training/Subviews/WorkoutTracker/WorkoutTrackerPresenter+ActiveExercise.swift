@@ -161,13 +161,19 @@ extension WorkoutTrackerPresenter {
     /// the exercise is started, until it is acknowledged or the first working set is logged: by
     /// then the user has acted on it. Acknowledged by template, as the suggestion it speaks
     /// for is kept. Sets logged from the Lock Screen while the screen was away take the slot
-    /// first, until the next action (see `logReceipt`).
+    /// first, until the next action (see `logReceipt`). With the set plan on, an exercise that
+    /// opens with drops, mini-sets or an AMRAP target says what they are after the reason
+    /// (`ActiveWorkout.planSummary`), acknowledged with it.
     var progressionNote: String? {
         if let logReceipt { return logReceipt }
         guard let exercise = currentExercise,
               !acknowledgedProgressionNotes.contains(exercise.templateId),
               exercise.loggedSetCount == 0 else { return nil }
-        return progressionReason(for: exercise)
+        let plan = interactor.workoutSettings.plansSets
+            ? ActiveWorkout.planSummary(for: exercise, unit: units(for: exercise).weightUnit)
+            : nil
+        let note = [progressionReason(for: exercise), plan].compactMap { $0 }
+        return note.isEmpty ? nil : note.joined(separator: " ")
     }
 
     func onProgressionNoteAcknowledged() {

@@ -202,4 +202,36 @@ struct WorkoutTrackerPresenterProgressionTests {
         #expect(reopened.customRestSeconds.isEmpty)
         #expect(reopened.progressionBaseline["set-1"] == SuggestedSet(weightKg: 60, reps: 8))
     }
+
+    // MARK: - WP-S3: the set plan's note
+
+    /// With the set plan on, an exercise that opens with an AMRAP target says so over its sets,
+    /// until the note is read; with it off, the same session shows no note.
+    @Test("Test The Plan Note Shows Once With The Switch On And Is Acknowledged")
+    func testThePlanNoteShowsOnceAndIsAcknowledged() throws {
+        var amrap = set(3)
+        amrap.kind = .amrap
+        amrap.targetReps = 8
+        let screen = try makeScreen(sets: [set(1), set(2), amrap])
+        #expect(screen.presenter.progressionNote == nil)
+
+        screen.interactor.workoutSettings.setPlanning = true
+        #expect(screen.presenter.progressionNote == "Set 3 is AMRAP, target 8+.")
+
+        screen.presenter.onProgressionNoteAcknowledged()
+        #expect(screen.presenter.progressionNote == nil)
+        #expect(screen.presenter.acknowledgedProgressionNotes == ["template-exercise-1"])
+    }
+
+    /// Once the first working set is logged the plan is under way, and the note has had its moment.
+    @Test("Test The Plan Note Goes Once A Working Set Is Logged")
+    func testThePlanNoteGoesOnceAWorkingSetIsLogged() throws {
+        var amrap = set(2)
+        amrap.kind = .amrap
+        amrap.targetReps = 8
+        let screen = try makeScreen(sets: [set(1, done: true), amrap])
+        screen.interactor.workoutSettings.setPlanning = true
+
+        #expect(screen.presenter.progressionNote == nil)
+    }
 }

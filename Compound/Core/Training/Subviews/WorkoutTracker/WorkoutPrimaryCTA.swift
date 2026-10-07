@@ -89,11 +89,31 @@ extension WorkoutTrackerView {
         } else {
             // At accessibility sizes "Log set 2 · 102.5 kg × 10" needs three lines and lost its
             // figures to the line limit; "Log set 2" fits, and the row above shows the figures (S3).
-            Text(isLarge ? presenter.primarySlotShortTitle : presenter.primarySlotTitle)
+            let title = Text(isLarge ? presenter.primarySlotShortTitle : presenter.primarySlotTitle)
                 .lineLimit(isLarge ? nil : 2)
                 .multilineTextAlignment(.center)
                 .contentTransition(.opacity)
+            if let piece = presenter.primarySlotNextPiece {
+                // With the set plan on, what follows the set when it is a drop or mini-set of it:
+                // "Then: drop 1 · 80 kg, no rest". Left off at accessibility sizes, as the figures
+                // are; VoiceOver hears it as the button's value either way.
+                VStack(spacing: Spacing.xxs) {
+                    title
+                    if !isLarge {
+                        Text("Then: \(piece.text)")
+                            .font(.label)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                }
+                .accessibilityElement(children: .ignore)
                 .accessibilityLabel(presenter.primarySlotTitle)
+                .accessibilityValue(String(localized: "Then: \(piece.spokenText)"))
+            } else {
+                title
+                    .accessibilityLabel(presenter.primarySlotTitle)
+            }
         }
     }
 }

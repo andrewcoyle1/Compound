@@ -245,7 +245,9 @@ private struct ActiveSessionScreen<Content: View>: View {
         } else {
             ProgressView()
                 .task {
-                    try? await interactor.startWorkout(for: .mock, in: nil)
+                    let plansSets = ProcessInfo.processInfo.arguments.contains("UI_TEST_SET_PLAN")
+                    if plansSets { await turnOnSetPlan() }
+                    try? await interactor.startWorkout(for: plansSets ? Self.setPlanTemplate : .mock, in: nil)
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
                     if ProcessInfo.processInfo.arguments.contains("UI_TEST_STRIP_OFF") { await hideExerciseStrip() }
                     isReady = true
@@ -259,6 +261,25 @@ private struct ActiveSessionScreen<Content: View>: View {
         var settings = interactor.workoutSettings
         settings.showExerciseStrip = false
         try? await interactor.saveWorkoutSettings(settings)
+    }
+
+    /// `UI_TEST_SET_PLAN`: Workout Settings › Set Plan on, before the session is created from it.
+    private func turnOnSetPlan() async {
+        var settings = interactor.workoutSettings
+        settings.setPlanning = true
+        try? await interactor.saveWorkoutSettings(settings)
+    }
+
+    /// `UI_TEST_SET_PLAN`: the mock template with its first exercise planned as a drop set with
+    /// two drops, then an AMRAP set aiming for 8, so the session is created through the plan.
+    private static var setPlanTemplate: WorkoutTemplateModel {
+        var template = WorkoutTemplateModel.mock
+        guard !template.exercises.isEmpty else { return template }
+        template.exercises[0].setTargets = [
+            SetTarget(setNumber: 1, minReps: 8, maxReps: 8, setType: .drop, dropCount: 2),
+            SetTarget(setNumber: 2, setType: .amrap, amrapTargetReps: 8)
+        ]
+        return template
     }
 
     /// `UI_TEST_SUPERSET`: the first two exercises as one superset, without their warm-ups, so a

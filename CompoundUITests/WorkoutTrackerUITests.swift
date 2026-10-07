@@ -362,6 +362,27 @@ final class WorkoutTrackerUITests: XCTestCase {
         attach(app, "14-drop-set-logged")
     }
 
+    /// WP-S3: with the set plan on, the note says the plan, the log button's second line names
+    /// the drop that follows the set it logs, and the AMRAP set wears its target.
+    func testTheSetPlanIsOnTheCard() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER", arguments: ["UI_TEST_SET_PLAN"])
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        let note = app.buttons["WorkoutTracker.progressionNote.acknowledge"]
+        XCTAssertTrue(note.waitForExistence(timeout: UITestApp.timeout))
+        XCTAssertTrue(note.label.contains("Set 1 is a drop set from your plan"), note.label)
+        XCTAssertTrue(note.label.contains("Set 2 is AMRAP, target 8+."), note.label)
+        attach(app, "15-set-plan-note")
+        acknowledgeNoteIfShown(app)
+        reachFirstWorkingSet(app)
+
+        XCTAssertTrue(app.waitFor(logButton).label.hasPrefix("Log set 1"), logButton.label)
+        let then = logButton.value as? String ?? ""
+        XCTAssertTrue(then.hasPrefix("Then: drop 1") && then.hasSuffix("no rest"), then)
+        let amrapRow = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Set 2, AMRAP 8+'")).firstMatch
+        XCTAssertTrue(amrapRow.waitForExistence(timeout: UITestApp.timeout))
+        attach(app, "16-set-plan-log-button")
+    }
+
     /// One step through a workout: read the note, end the rest, or log the set.
     private func takeNextStep(_ app: XCUIApplication) {
         let gotIt = app.buttons["WorkoutTracker.progressionNote.acknowledge"]

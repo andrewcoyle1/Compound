@@ -185,6 +185,7 @@ enum ActiveWorkout {
     /// `showsBodyweight` "Log set 2 · BW + 20 kg × 8". A set's kind names it: "Log drop set · 80 kg
     /// × 8", "Log mini-set 2 · 100 kg × 4", and "Log AMRAP set · 100 kg" before its open-ended reps
     /// are in. An AMRAP set the plan gave a target says it: "Log AMRAP set · 100 kg · target 8+".
+    /// The piece after a partials, stretch or hold set: "Log partials · 80 kg × 5", "Log 30 s hold".
     static func logTitle(
         for set: WorkoutSetModel,
         in exercise: WorkoutExerciseModel,
@@ -195,6 +196,9 @@ enum ActiveWorkout {
         let name: String = switch (set.isWarmup, set.subSetKind, set.kind) {
         case (true, _, _): String(localized: "Log warm-up")
         case (_, .drop, _): String(localized: "Log drop set")
+        case (_, .mini, .partials): String(localized: "Log partials")
+        case (_, .mini, .stretch): set.durationSec.map { String(localized: "Log \($0) s stretch") } ?? String(localized: "Log stretch")
+        case (_, .mini, .hold): set.durationSec.map { String(localized: "Log \($0) s hold") } ?? String(localized: "Log hold")
         case (_, .mini, _): String(localized: "Log mini-set \(subSetOrdinal(of: set, in: exercise.sets))")
         case (_, nil, .amrap): String(localized: "Log AMRAP set")
         default: String(localized: "Log set \("\(exercise.workingSetNumber(for: set))\(set.side?.initial ?? "")")")

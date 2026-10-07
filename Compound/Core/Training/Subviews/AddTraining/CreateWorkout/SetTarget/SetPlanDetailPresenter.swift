@@ -46,7 +46,7 @@ class SetPlanDetailPresenter {
                 case .drop: target.dropCount = target.dropCount ?? 2
                 case .myo, .restPause, .cluster: target.miniSetCount = target.miniSetCount ?? 3
                 case .amrap, .failure: target.amrapTargetReps = target.amrapTargetReps ?? target.minReps ?? target.maxReps
-                case .standard: break
+                case .standard, .partials, .stretch, .hold: break
                 }
             }
             interactor.playHaptic(option: .selection)

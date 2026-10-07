@@ -84,6 +84,42 @@ struct SetTargetPlanSummaryTests {
 
     @Test("Test The Picker Offers Every Kind But The Legacy One")
     func testKinds() {
-        #expect(SetTargetPlan.kinds.map(SetTargetPlan.title(for:)) == ["Standard", "AMRAP", "Myo-reps", "Rest-pause", "Cluster", "Drop set"])
+        #expect(SetTargetPlan.kinds.map(SetTargetPlan.title(for:)) == [
+            "Standard", "AMRAP", "Myo-reps", "Rest-pause", "Cluster", "Drop set",
+            "Lengthened partials", "Loaded stretch", "Static hold"
+        ])
+    }
+
+    // MARK: WP-P2
+
+    @Test("Test Partials To Failure Or For A Count")
+    func testPartials() {
+        let toFailure = SetTarget(setNumber: 3, minReps: 8, maxReps: 8, setType: .partials)
+        let five = SetTarget(setNumber: 3, minReps: 8, maxReps: 8, setType: .partials, partialReps: 5)
+
+        #expect(SetTargetPlan.summary(for: toFailure, settings: settings) == "8 reps, then partials to failure")
+        #expect(SetTargetPlan.summary(for: five, settings: settings) == "8 reps, then 5 partials")
+        #expect(SetTargetPlan.chip(for: toFailure) == "Lengthened partials")
+    }
+
+    @Test("Test A Stretch And A Hold Name Their Time")
+    func testStretchAndHold() {
+        let stretch = SetTarget(setNumber: 3, minReps: 8, maxReps: 12, setType: .stretch, holdSeconds: 30)
+        let hold = SetTarget(setNumber: 3, minReps: 8, maxReps: 8, setType: .hold, holdSeconds: 30)
+
+        #expect(SetTargetPlan.summary(for: stretch, settings: settings) == "8–12 reps, then a 30 s stretch")
+        #expect(SetTargetPlan.summary(for: hold, settings: settings) == "8 reps, then a 30 s hold")
+        #expect(SetTargetPlan.chip(for: stretch) == "Loaded stretch")
+        #expect(SetTargetPlan.chip(for: hold) == "Static hold")
+        // No time planned reads as the reps alone, as a drop set with no drops does.
+        #expect(SetTargetPlan.summary(for: SetTarget(setNumber: 1, minReps: 8, maxReps: 8, setType: .hold), settings: settings) == "8 reps")
+        #expect(SetTargetPlan.summary(for: SetTarget(setNumber: 1, setType: .stretch, holdSeconds: 20), settings: settings) == "a 20 s stretch")
+    }
+
+    @Test("Test A Drop Can Step By A Quarter")
+    func testDropSteps() {
+        #expect(SetTargetPlan.dropSteps == [10, 20, 25, 30])
+        #expect(SetTargetPlan.holdSecondsChoices == [15, 20, 30, 45, 60])
+        #expect(SetTargetPlan.partialRepsRange == 1...10)
     }
 }

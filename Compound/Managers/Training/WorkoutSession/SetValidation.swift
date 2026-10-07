@@ -17,6 +17,9 @@ enum SetValidation {
     static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> String? {
         let noReps = String(localized: "Enter at least one rep.")
         let noTime = String(localized: "Enter a time for this set.")
+        if set.isTimedPiece {
+            return (set.durationSec ?? 0) > 0 ? nil : noTime
+        }
         switch trackingMode {
         case .weightReps:
             if !isAssisted, let weight = set.weightKg, weight < 0 { return String(localized: "Enter a weight of zero or more.") }

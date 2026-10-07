@@ -114,6 +114,23 @@ struct LiveActivityPieceTests {
         #expect(LiveActivityManager.kind(of: row("a", index: 1, kind: .amrap), in: []) == .amrap)
     }
 
+    /// WP-P2: a partials, stretch or hold set's piece is one piece after the set, under its kind's label.
+    @Test("Partials, a stretch and a hold carry their kind and label", arguments: [
+        (SetKind.partials, LiveActivitySetKind.partials, "Partials"),
+        (.stretch, .stretch, "Stretch"),
+        (.hold, .hold, "Hold")
+    ])
+    func techniquePieceKinds(kind: SetKind, expected: LiveActivitySetKind, label: String) {
+        let sets = [row("s1", index: 1, kind: kind), row("s1-p", index: 1, kind: kind, parent: "s1")]
+
+        #expect(LiveActivityManager.kind(of: sets[1], in: sets) == expected)
+        #expect(LiveActivityManager.kind(of: sets[0], in: sets) == expected)
+        #expect(expected.label == label)
+        #expect(LiveActivityManager.piece(of: sets[1], in: sets) == SetPiece(index: 2, count: 2, isDrop: false))
+        // The set is done once its piece is.
+        #expect(LiveActivityManager.countingPieces([row("s1", index: 1, kind: kind, done: true), sets[1]])[0].completedAt == nil)
+    }
+
     // MARK: - Labels
 
     @Test("The banner names the set and the piece")

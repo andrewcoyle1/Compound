@@ -333,4 +333,35 @@ struct WorkoutSessionPrefillTests {
     }
 
     // MARK: - End WP-S1
+
+    // MARK: - WP-P2 partials, stretch, hold
+
+    @Test("Test A Partials Target Becomes Its Set And One Partials Piece At Its Weight")
+    func testPartialsTargetExpands() {
+        let toFailure = workingSets(of: session(plannedTemplate { $0.setType = .partials }, plansSets: true))
+        let five = workingSets(of: session(plannedTemplate { $0.setType = .partials; $0.partialReps = 5 }, plansSets: true))
+
+        #expect(toFailure.count == 4)
+        #expect(toFailure.map(\.kind) == [.partials, .partials, .standard, .standard])
+        #expect(toFailure[1].parentSetId == toFailure[0].id)
+        #expect(toFailure[1].weightKg == 60)
+        #expect(toFailure[1].reps == nil)
+        #expect(five[1].reps == 5)
+    }
+
+    /// A stretch carries no weight; a hold keeps the set's. Both carry the plan's seconds.
+    @Test("Test A Stretch Or Hold Target Becomes Its Set And One Timed Piece")
+    func testTimedTargetsExpand() {
+        let stretch = workingSets(of: session(plannedTemplate { $0.setType = .stretch; $0.holdSeconds = 30 }, plansSets: true))
+        let hold = workingSets(of: session(plannedTemplate { $0.setType = .hold; $0.holdSeconds = 45 }, plansSets: true))
+
+        #expect(stretch.count == 4)
+        #expect(stretch[1].kind == .stretch && stretch[1].parentSetId == stretch[0].id)
+        #expect(stretch[1].durationSec == 30)
+        #expect(stretch[1].weightKg == nil)
+        #expect(stretch[1].reps == nil)
+        #expect(hold[1].kind == .hold)
+        #expect(hold[1].durationSec == 45)
+        #expect(hold[1].weightKg == 60)
+    }
 }

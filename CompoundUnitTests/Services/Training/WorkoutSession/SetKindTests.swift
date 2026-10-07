@@ -81,6 +81,69 @@ struct SetKindTests {
         #expect(SetKind(.drop) == .drop)
         #expect(SetKind(.myo) == .myo)
         #expect(SetKind(.failure) == .amrap)
+        #expect(SetKind(.partials) == .partials)
+        #expect(SetKind(.stretch) == .stretch)
+        #expect(SetKind(.hold) == .hold)
+    }
+
+    // MARK: WP-P2
+
+    @Test("Test Partials, Stretch And Hold Decode From Their Raw Values", arguments: ["partials", "stretch", "hold"])
+    func testNewKindsDecode(rawValue: String) throws {
+        var json = try json(set("s2", parent: "s1"))
+        json["kind"] = rawValue
+
+        #expect(try decode(json).kind.rawValue == rawValue)
+        let setType = try JSONDecoder().decode(SetTargetSetType.self, from: JSONEncoder().encode(rawValue))
+        #expect(setType.rawValue == rawValue)
+    }
+
+    /// The piece follows the set with no breath, so the menu offers no mini-set either.
+    @Test("Test Partials, Stretch And Hold Do Not Rest Within The Set", arguments: [SetKind.partials, .stretch, .hold])
+    func testNewKindsDoNotRestWithinTheSet(kind: SetKind) {
+        #expect(!kind.restsWithinTheSet)
+        #expect(WorkoutSettings(authorId: "author-1").intraSetRest(for: kind) == nil)
+        #expect(!ActiveWorkout.offersMiniSet(set("s1", kind: kind)))
+    }
+
+    /// The set itself is lifted as usual; only the piece after it is timed.
+    @Test("Test Only A Stretch Or Hold Piece Is Timed")
+    func testOnlyAStretchOrHoldPieceIsTimed() {
+        #expect(set("p", kind: .stretch, parent: "s1").isTimedPiece)
+        #expect(set("p", kind: .hold, parent: "s1").isTimedPiece)
+        #expect(!set("s1", kind: .hold).isTimedPiece)
+        #expect(!set("p", kind: .partials, parent: "s1").isTimedPiece)
+    }
+
+    /// A timed piece needs a time, not reps, on a weight-and-reps exercise; partials need reps,
+    /// as a drop does.
+    @Test("Test A Timed Piece Logs With A Time And Partials With Reps")
+    func testTimedPieceValidation() {
+        var stretch = set("p", kind: .stretch, parent: "s1")
+        stretch.reps = nil
+        stretch.weightKg = nil
+        #expect(SetValidation.problem(with: stretch, trackingMode: .weightReps) == "Enter a time for this set.")
+        stretch.durationSec = 30
+        #expect(SetValidation.canLog(stretch, trackingMode: .weightReps))
+
+        var partials = set("p", kind: .partials, parent: "s1")
+        partials.reps = nil
+        #expect(SetValidation.problem(with: partials, trackingMode: .weightReps) == "Enter at least one rep.")
+    }
+
+    @Test("Test A Set Target Saved Before Partials And Holds Decodes, And Both Round-Trip")
+    func testSetTargetPlanFieldsDecode() throws {
+        let target = SetTarget(setNumber: 1, setType: .hold, partialReps: 5, holdSeconds: 30)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(target)) as? [String: Any])
+        #expect(json["partial_reps"] as? Int == 5)
+        #expect(json["hold_seconds"] as? Int == 30)
+        #expect(try JSONDecoder().decode(SetTarget.self, from: JSONSerialization.data(withJSONObject: json)) == target)
+
+        json.removeValue(forKey: "partial_reps")
+        json.removeValue(forKey: "hold_seconds")
+        let old = try JSONDecoder().decode(SetTarget.self, from: JSONSerialization.data(withJSONObject: json))
+        #expect(old.partialReps == nil)
+        #expect(old.holdSeconds == nil)
     }
 
     // MARK: - Counting

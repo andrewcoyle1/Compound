@@ -149,4 +149,38 @@ struct ActiveWorkoutPiecesTests {
         let warmedUp = [set("w1", warmup: true, logged: true), set("s1", kind: .amrap, target: 8)]
         #expect(ActiveWorkout.planSummary(for: exercise(warmedUp), unit: .kilograms) == "Set 1 is AMRAP, target 8+.")
     }
+
+    // MARK: - WP-P2 partials, stretch, hold
+
+    private func timed(_ kind: SetKind, weight: Double?, duration: Int?) -> WorkoutSetModel {
+        var piece = set("p1", weight: weight, reps: nil, kind: kind, parent: "s1")
+        piece.durationSec = duration
+        return piece
+    }
+
+    @Test("Test Partials Follow To Failure, Or For Their Reps")
+    func testPartialsHint() {
+        let toFailure = exercise([set("s1", kind: .partials), set("p1", reps: nil, kind: .partials, parent: "s1")])
+        let five = exercise([set("s1", kind: .partials), set("p1", reps: 5, kind: .partials, parent: "s1")])
+
+        #expect(ActiveWorkout.nextPiece(after: "s1", in: toFailure, settings: settings, unit: .kilograms)?.text == "partials to failure")
+        #expect(ActiveWorkout.nextPiece(after: "s1", in: five, settings: settings, unit: .kilograms)?.text == "partials × 5")
+    }
+
+    @Test("Test A Stretch And A Hold Name Their Time")
+    func testStretchAndHoldHints() {
+        let stretch = exercise([set("s1", kind: .stretch), timed(.stretch, weight: nil, duration: 30)])
+        let hold = exercise([set("s1", kind: .hold), timed(.hold, weight: 100, duration: 30)])
+
+        #expect(ActiveWorkout.nextPiece(after: "s1", in: stretch, settings: settings, unit: .kilograms)?.text == "30 s stretch")
+        #expect(ActiveWorkout.nextPiece(after: "s1", in: hold, settings: settings, unit: .kilograms)?.text == "30 s hold")
+    }
+
+    /// Partials are not mini-sets: the plan summary says nothing of them rather than "1 mini-sets".
+    @Test("Test Partials Are Not Told As Mini-Sets")
+    func testPartialsAreNotMiniSets() {
+        let sets = [set("s1", kind: .partials), set("p1", reps: nil, kind: .partials, parent: "s1")]
+
+        #expect(ActiveWorkout.planSummary(for: exercise(sets), unit: .kilograms) == nil)
+    }
 }

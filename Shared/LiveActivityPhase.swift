@@ -145,6 +145,9 @@ enum LiveActivitySetKind: String, Codable, Hashable, CaseIterable, Sendable {
     case myo
     case restPause
     case cluster
+    case partials
+    case stretch
+    case hold
 
     var label: String {
         switch self {
@@ -153,6 +156,9 @@ enum LiveActivitySetKind: String, Codable, Hashable, CaseIterable, Sendable {
         case .myo: String(localized: "Myo-reps")
         case .restPause: String(localized: "Rest-pause")
         case .cluster: String(localized: "Cluster")
+        case .partials: String(localized: "Partials")
+        case .stretch: String(localized: "Stretch")
+        case .hold: String(localized: "Hold")
         }
     }
 }

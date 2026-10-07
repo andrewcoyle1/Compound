@@ -27,6 +27,13 @@ enum SetKeyboardField: Equatable {
         case .distanceTime: return [.distance, .duration]
         }
     }
+
+    /// The fields of `set`'s row: a stretch or hold after a set is timed, whatever the exercise
+    /// tracks, and a hold keeps the set's weight.
+    static func fields(for set: WorkoutSetModel, trackingMode: TrackingMode) -> [SetKeyboardField] {
+        guard set.isTimedPiece else { return fields(for: trackingMode) }
+        return set.kind == .hold && trackingMode == .weightReps ? [.weight, .duration] : [.duration]
+    }
 }
 
 /// What the keyboard needs to know about the exercise and set it is editing, resolved by the row

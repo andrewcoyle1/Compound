@@ -312,6 +312,21 @@ struct ProgressionEngineTests {
         ])
     }
 
+    /// WP-P2: partials, a stretch and a hold are intensity techniques like a drop.
+    @Test("Test Partials, Stretch And Hold Sets Are Prefilled But Never Progressed", arguments: [SetTargetSetType.partials, .stretch, .hold])
+    func testTechniqueSetsAreNeverProgressed(setType: SetTargetSetType) {
+        var setTargets = targets(min: 8, max: 12, count: 3)
+        setTargets[2] = SetTarget(id: "target-3", setNumber: 3, minReps: 8, maxReps: 12, setType: setType)
+
+        let suggestion = engine.suggest(input(
+            targets: setTargets,
+            history: [sets([(60, 12, nil), (60, 12, nil), (60, 9, nil)])]
+        ))
+
+        #expect(suggestion.rationale == .progressWeight)
+        #expect(suggestion.sets.last == SuggestedSet(weightKg: 60, reps: 9))
+    }
+
     /// More sets were logged than the template has targets for, so the last target carries on
     /// applying rather than the extra sets losing their range.
     @Test("Test The Last Target Applies To Sets Past The End Of The List")

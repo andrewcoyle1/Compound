@@ -338,6 +338,16 @@
         }
       }
     },
+    "Hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostén"
+          }
+        }
+      }
+    },
     "Logged %@" : {
       "localizations" : {
         "es" : {
@@ -414,6 +424,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abre la app para elegir uno"
+          }
+        }
+      }
+    },
+    "Partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parciales"
           }
         }
       }
@@ -584,6 +604,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Racha"
+          }
+        }
+      }
+    },
+    "Stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estiramiento"
           }
         }
       }

@@ -660,6 +660,7 @@ struct WorkoutBuildSetTargetPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, SetTargetInteractor {
         var workoutSettings = WorkoutSettings(authorId: "user-1")
+        var allExercises: [ExerciseModel] = []
     }
 
     /// `onDismissPressed()` goes through `dismissScreen()`, a `GlobalRouter` extension method that
@@ -667,6 +668,8 @@ struct WorkoutBuildSetTargetPresenterTests {
     private final class Router: SetTargetRouter {
         let router: AnyRouter = TestRouting.anyRouter
         func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
+        func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
+        func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
     }
 
     private func makeScreen() -> (SetTargetPresenter, Interactor) {

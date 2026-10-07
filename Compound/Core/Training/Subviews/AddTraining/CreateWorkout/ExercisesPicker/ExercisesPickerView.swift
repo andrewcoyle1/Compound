@@ -9,6 +9,9 @@ import SwiftUI
 
 struct ExercisesPickerDelegate {
     var addedExercises: Binding<[WorkoutTemplateExercise]>
+    /// Exercises that cannot be picked: choosing an exercise's substitutions leaves out the
+    /// exercise itself.
+    var excludedExerciseIds: Set<String> = []
 }
 
 struct ExercisesPickerView<ExerciseList: View>: View {

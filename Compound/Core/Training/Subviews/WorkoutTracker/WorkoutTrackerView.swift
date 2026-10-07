@@ -45,7 +45,11 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                             completedSection
                         }
                     }
-                    addExerciseSection
+                    // The strip's last item adds an exercise; at accessibility sizes the strip is
+                    // a count and a menu, and the row stays.
+                    if !presenter.showsExerciseStrip || dynamicTypeSize.isAccessibilitySize {
+                        addExerciseSection
+                    }
                 }
                 // The next set's row, brought up from under the button or the keypad after a log. A
                 // nil anchor scrolls only as far as needed, so a row already on screen stays put.
@@ -60,6 +64,9 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
                 .id(presenter.cardListId)
                 .transition(cardTransition)
             }
+            // The list's own colour behind the swap: while one list slides out and the next in,
+            // the gap between them showed the window's white.
+            .background(Color.canvas.ignoresSafeArea())
             .reducedMotionAnimation(.standard, value: presenter.cardListId)
             // Keeps the swap's edge in step with the block and the order shown; it reads them
             // first itself when a swap runs, so these only catch up afterwards.

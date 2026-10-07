@@ -47,6 +47,8 @@ struct ExerciseStrip: View {
     /// Up Next's reordering, on the strip's items while the strip stands in for that list.
     var onDoNext: (String) -> Void = { _ in }
     var onDoLater: (String) -> Void = { _ in }
+    /// The strip's last item: Add Exercise, standing in for the list's row while the strip is up.
+    var onAddExercise: () -> Void = {}
 
     @ScaledMetric(relativeTo: .body) private var side = ControlSize.thumbnail
 
@@ -75,6 +77,12 @@ struct ExerciseStrip: View {
                         .accessibilityAddTraits(item.isCurrent ? .isSelected : [])
                         .accessibilityHint("Opens this exercise")
                     }
+                    Button(action: onAddExercise) {
+                        addThumbnail
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Add Exercise")
+                    .accessibilityIdentifier("WorkoutTracker.strip.addExercise")
                 }
                 .padding(.horizontal)
             }
@@ -122,6 +130,24 @@ struct ExerciseStrip: View {
             ProgressView(value: item.fraction)
                 .tint(item.isComplete ? Color.success : item.isCurrent ? Color.accentColor : Color.secondary)
                 .frame(width: width)
+        }
+        .padding(.vertical, Spacing.xs)
+        .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)
+        .contentShape(.rect)
+    }
+
+    /// A plus in a thumbnail's frame, with the bar's space left under it so it lines up.
+    private var addThumbnail: some View {
+        VStack(spacing: Spacing.xs) {
+            Image(systemName: Symbol.add)
+                .iconSize(.medium)
+                .foregroundStyle(.tint)
+                .frame(width: side, height: side)
+                .background(Color.surface)
+                .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
+            ProgressView(value: 0)
+                .frame(width: side)
+                .hidden()
         }
         .padding(.vertical, Spacing.xs)
         .frame(minWidth: ControlSize.row, minHeight: ControlSize.row)

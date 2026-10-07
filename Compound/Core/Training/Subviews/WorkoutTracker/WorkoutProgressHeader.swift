@@ -26,7 +26,8 @@ struct WorkoutProgressHeader: View {
                     items: presenter.stripItems,
                     onSelect: presenter.onStripItemSelected,
                     onDoNext: presenter.onDoNextPressed,
-                    onDoLater: presenter.onDoLaterPressed
+                    onDoLater: presenter.onDoLaterPressed,
+                    onAddExercise: presenter.presentAddExercise
                 )
             }
             summary(showsBar: !showsThumbnails, blockMenu: showsStrip && !showsThumbnails)

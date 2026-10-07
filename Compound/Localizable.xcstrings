@@ -30456,6 +30456,46 @@
           }
         }
       }
+    },
+    "Breathe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respira"
+          }
+        }
+      }
+    },
+    "Drop %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descendente %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Mini-set %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miniserie %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Set %lld%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$lld%2$@"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

@@ -111,18 +111,94 @@ struct SetPosition: Equatable, Hashable, Sendable {
     var isWarmup: Bool
     /// "L" or "R" for one side of a split pair: "Set 1L of 4".
     var side: String?
+    /// Where the target is in a set worked in pieces, with the set plan on.
+    var piece: SetPiece?
 
-    init(index: Int, total: Int, isWarmup: Bool = false, side: String? = nil) {
+    init(index: Int, total: Int, isWarmup: Bool = false, side: String? = nil, piece: SetPiece? = nil) {
         self.index = index
         self.total = total
         self.isWarmup = isWarmup
         self.side = side
+        self.piece = piece
     }
 
+    /// On a drop or mini-set, the set's number and the piece, "Set 3 · Drop 1 of 2": the piece's
+    /// own count says how far through the set it is, so the set count gives way to it.
     var label: String {
         if isWarmup { return String(localized: "Warmup \(index) of \(total)") }
+        if let pieceLabel = piece?.label {
+            let set = side.map { String(localized: "Set \(index)\($0)") } ?? String(localized: "Set \(index)")
+            return "\(set) · \(pieceLabel)"
+        }
         if let side { return String(localized: "Set \(index)\(side) of \(total)") }
         return String(localized: "Set \(index) of \(total)")
+    }
+}
+
+// MARK: - Set plan
+
+/// A set's kind, for the small label beside its number. Raw values match the app's `SetKind`,
+/// which `Shared/` cannot see; a plain set has none.
+enum LiveActivitySetKind: String, Codable, Hashable, CaseIterable, Sendable {
+    case drop
+    case amrap
+    case myo
+    case restPause
+    case cluster
+
+    var label: String {
+        switch self {
+        case .drop: String(localized: "Drop")
+        case .amrap: String(localized: "AMRAP")
+        case .myo: String(localized: "Myo-reps")
+        case .restPause: String(localized: "Rest-pause")
+        case .cluster: String(localized: "Cluster")
+        }
+    }
+}
+
+/// Where the target is in a set worked in pieces: the set itself is piece 1, its drops or
+/// mini-sets the pieces after it, so "Drop 1 of 2" is piece 2 of 3. Only a set with pieces after
+/// it has one.
+struct SetPiece: Codable, Equatable, Hashable, Sendable {
+    /// 1-based, the set itself being 1.
+    var index: Int
+    /// The set and all its drops or mini-sets.
+    var count: Int
+    /// The pieces after the first are drops rather than mini-sets.
+    var isDrop: Bool
+
+    init(index: Int, count: Int, isDrop: Bool) {
+        self.index = index
+        self.count = count
+        self.isDrop = isDrop
+    }
+
+    /// "Drop 1 of 2", "Mini-set 3 of 4"; nil on the set itself, which its number names.
+    var label: String? {
+        guard index > 1 else { return nil }
+        return isDrop
+            ? String(localized: "Drop \(index - 1) of \(count - 1)")
+            : String(localized: "Mini-set \(index - 1) of \(count - 1)")
+    }
+
+    /// A rest running before a drop or mini-set is the short breath inside the set, not a rest
+    /// between sets: the log rule rests nothing before a drop and the intra-set rest before a
+    /// mini-set, and a rest typed on the row is still taken inside the set.
+    var restIsWithinTheSet: Bool { index > 1 }
+
+    /// Whole-workout progress with this set's logged pieces counted in: `completedSets` of
+    /// `totalSets` done, and this set, the next, split into `count` equal parts.
+    func progress(completedSets: Int, totalSets: Int) -> Double {
+        guard totalSets > 0, count > 0 else { return 0 }
+        return min(1, (Double(completedSets) + Double(index - 1) / Double(count)) / Double(totalSets))
+    }
+
+    /// Where the breaks between this set's pieces fall along the whole-workout line, as fractions
+    /// of its length. The set's segment is the one after the `completedSets` already done.
+    func dividers(completedSets: Int, totalSets: Int) -> [Double] {
+        guard totalSets > 0, count > 1 else { return [] }
+        return (1..<count).map { (Double(completedSets) + Double($0) / Double(count)) / Double(totalSets) }
     }
 }
 

@@ -152,45 +152,18 @@ class SetTrackerRowPresenter {
     }
 
     func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        guard let problem = Self.problem(with: set, trackingMode: trackingMode) else { return true }
+        guard let problem = SetValidation.problem(with: set, trackingMode: trackingMode) else { return true }
         router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
         return false
     }
 
-    /// What stops `set` being logged, in the user's words, or `nil` when it can be. Shared with the
-    /// tracker's log button, so the two ways to log a set refuse the same sets.
+    /// See `SetValidation.problem(with:trackingMode:)`.
     static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode) -> String? {
-        let noReps = String(localized: "Enter at least one rep.")
-        let noTime = String(localized: "Enter a time for this set.")
-        switch trackingMode {
-        case .weightReps:
-            if let weight = set.weightKg, weight < 0 { return String(localized: "Enter a weight of zero or more.") }
-            return (set.reps ?? 0) > 0 ? nil : noReps
-        case .repsOnly:
-            return (set.reps ?? 0) > 0 ? nil : noReps
-        case .timeOnly:
-            return (set.durationSec ?? 0) > 0 ? nil : noTime
-        case .distanceTime:
-            guard (set.distanceMeters ?? 0) > 0 else { return String(localized: "Enter a distance for this set.") }
-            return (set.durationSec ?? 0) > 0 ? nil : noTime
-        }
+        SetValidation.problem(with: set, trackingMode: trackingMode)
     }
 
     func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        switch trackingMode {
-        case .weightReps:
-            let hasValidWeight = set.weightKg == nil || set.weightKg! >= 0
-            let hasValidReps = set.reps != nil && set.reps! > 0
-            return hasValidWeight && hasValidReps
-        case .repsOnly:
-            return set.reps != nil && set.reps! > 0
-        case .timeOnly:
-            return set.durationSec != nil && set.durationSec! > 0
-        case .distanceTime:
-            let hasValidDistance = set.distanceMeters != nil && set.distanceMeters! > 0
-            let hasValidTime = set.durationSec != nil && set.durationSec! > 0
-            return hasValidDistance && hasValidTime
-        }
+        SetValidation.canLog(set, trackingMode: trackingMode)
     }
 
     /// What the Done column shows. Each state has its own symbol and spoken value, so none of them

@@ -37,6 +37,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
     private let macrocycleManager: MacrocycleManager?
     private let stravaManager: StravaManager?
     private let logManager: LogManager
+    /// Where the tracker keeps the exercise the user is on and the rests set by hand on a row.
+    private let screenStateStore: UserDefaults
 
     init(
         workoutSessionManager: WorkoutSessionManager,
@@ -50,7 +52,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         userManager: UserManager,
         macrocycleManager: MacrocycleManager? = nil,
         stravaManager: StravaManager? = nil,
-        logManager: LogManager = LogManager(services: [])
+        logManager: LogManager = LogManager(services: []),
+        screenStateStore: UserDefaults = ActiveWorkoutScreenState.appGroupStore
     ) {
         self.workoutSessionManager = workoutSessionManager
         self.hkWorkoutManager = hkWorkoutManager
@@ -64,37 +67,48 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         self.macrocycleManager = macrocycleManager
         self.stravaManager = stravaManager
         self.logManager = logManager
+        self.screenStateStore = screenStateStore
     }
 
     // MARK: - LiveActivityIntentHandling
 
-    /// Log the set with this id and start the rest that follows it.
+    /// Log the set with this id and start the rest that follows it, by the rule the tracker's log
+    /// button uses (`ActiveWorkout.log`): a set that is not ready is refused, the row's own rest
+    /// wins, nothing rests after the workout's last set, and a superset moves on to the partner.
     ///
     /// The values logged are the set's own — the weight, reps, duration and distance already on it
     /// — not the activity's `target*` fields, which are a formatted copy that can be a push behind.
-    /// Completing a set on the tracker does exactly the same thing: it sets `completedAt` and
-    /// leaves the numbers alone.
     func completeSet(id: String) async {
         guard let session = workoutSessionManager.activeSession,
-              let location = locate(setId: id, in: session) else { return pushActiveSession() }
+              let exercise = session.exercises.first(where: { $0.sets.contains { $0.id == id } })
+        else { return pushActiveSession() }
 
-        let exercise = session.exercises[location.exerciseIndex]
-        let set = exercise.sets[location.setIndex]
-        guard set.completedAt == nil else { return pushActiveSession() }
+        let settings = workoutSettingsManager.workoutSettings
+        var screenState = ActiveWorkoutScreenState.load(sessionId: session.id, from: screenStateStore)
+        guard let outcome = ActiveWorkout.log(
+            setId: id,
+            in: session,
+            settings: settings,
+            context: restContext(for: exercise),
+            customRestSeconds: screenState.customRestSeconds[id]
+        ), outcome.problem == nil, save(outcome.session) else { return pushActiveSession() }
 
-        var exercises = session.exercises
-        exercises[location.exerciseIndex].sets[location.setIndex].completedAt = Date()
+        // Stays on the exercise just logged unless the rule moves on; the manager points a
+        // finished exercise's push at the next one with work left.
+        let focusId = outcome.focusExerciseId ?? exercise.id
+        screenState.focusExerciseId = focusId
+        screenState.save(to: screenStateStore)
+        let index = exerciseIndex(focusedOn: focusId, in: outcome.session)
 
-        var updated = session
-        updated.updateExercises(exercises)
-        guard save(updated) else { return pushActiveSession() }
-
-        // The exercise to show is the one just tapped while it has work left, else the next one
-        // with some: after its last set the finished exercise has no target, and a banner with no
-        // target has no way out once the rest ends.
-        let nextIndex = LiveActivityManager.exerciseIndexWithWorkLeft(from: location.exerciseIndex, in: updated)
-        startRest(after: set, in: exercise, session: updated, exerciseIndex: nextIndex)
-        push(updated, exerciseIndex: nextIndex)
+        if settings.useRestTimers, let rest = outcome.restSeconds {
+            hkWorkoutManager.startRest(
+                durationSeconds: rest,
+                session: outcome.session,
+                currentExerciseIndex: index,
+                alertSound: settings.restTimerPlaySound
+            )
+        }
+        push(outcome.session, exerciseIndex: index)
     }
 
     /// Correct the reps of a set already logged, while the rest after it is still running.
@@ -192,34 +206,11 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         }
     }
 
-    /// The rest the set-row presenter would have started for this set, through the same rules.
-    private func startRest(
-        after set: WorkoutSetModel,
-        in exercise: WorkoutExerciseModel,
-        session: WorkoutSessionModel,
-        exerciseIndex: Int
-    ) {
-        let settings = workoutSettingsManager.workoutSettings
-        guard settings.useRestTimers else { return }
-
-        let context = RestDurationRules.ExerciseContext(
+    private func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
+        RestDurationRules.ExerciseContext(
             restOverrideSeconds: exerciseSettingsManager.restOverride(for: exercise.templateId),
             exerciseTypeRawValue: exerciseModelManager.allExercises
                 .first(where: { $0.id == exercise.templateId })?.type?.rawValue
-        )
-
-        guard let duration = RestDurationRules.restAfterCompleting(
-            set,
-            in: exercise,
-            settings: settings,
-            context: context
-        ) else { return }
-
-        hkWorkoutManager.startRest(
-            durationSeconds: duration,
-            session: session,
-            currentExerciseIndex: exerciseIndex,
-            alertSound: settings.restTimerPlaySound
         )
     }
 
@@ -262,11 +253,16 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         return endTime
     }
 
-    /// The exercise the user is on when nothing says otherwise: the first with a set still to log.
-    /// The manager owns that rule (its search wraps), so this asks it from the top rather than
-    /// keeping a second copy.
+    /// The exercise the user is on, as the tracker or the last log here left it in the screen
+    /// state, else the first with a set still to log. The manager moves a finished one on.
     private func currentExerciseIndex(in session: WorkoutSessionModel) -> Int {
-        LiveActivityManager.exerciseIndexWithWorkLeft(from: 0, in: session)
+        let focusId = ActiveWorkoutScreenState.load(sessionId: session.id, from: screenStateStore).focusExerciseId
+        return exerciseIndex(focusedOn: focusId, in: session)
+    }
+
+    private func exerciseIndex(focusedOn exerciseId: String?, in session: WorkoutSessionModel) -> Int {
+        let focused = session.exercises.firstIndex { $0.id == exerciseId } ?? 0
+        return LiveActivityManager.exerciseIndexWithWorkLeft(from: focused, in: session)
     }
 }
 

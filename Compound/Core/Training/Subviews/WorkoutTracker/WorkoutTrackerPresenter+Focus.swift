@@ -26,8 +26,29 @@ extension WorkoutTrackerPresenter {
               expandedExerciseId != exerciseId || currentExerciseIndex != index else { return }
         expandedExerciseId = exerciseId
         currentExerciseIndex = index
+        persistFocus(exerciseId)
         interactor.trackEvent(event: FocusEvent.focusMoved(reason: reason))
         refreshLiveActivity()
+    }
+
+    /// Records the exercise the user is on in the screen state, where the Live Activity's handler
+    /// reads it and a rebuilt tracker picks it up.
+    func persistFocus(_ exerciseId: String?) {
+        guard let exerciseId else { return }
+        var state = ActiveWorkoutScreenState.load(sessionId: workoutSession.id, from: interactor.activeWorkoutScreenStateStore)
+        guard state.focusExerciseId != exerciseId else { return }
+        state.focusExerciseId = exerciseId
+        state.save(to: interactor.activeWorkoutScreenStateStore)
+    }
+
+    /// A tracker rebuilt after a minimise or a relaunch opens on the exercise the last one, or the
+    /// Live Activity, was on, while it still has a set to log.
+    func restoreFocus(from state: ActiveWorkoutScreenState) {
+        guard let id = state.focusExerciseId,
+              let index = workoutSession.exercises.firstIndex(where: { $0.id == id }),
+              ActiveWorkout.currentSet(in: workoutSession.exercises[index]) != nil else { return }
+        expandedExerciseId = id
+        currentExerciseIndex = index
     }
 
     /// The rest after logging `set`, by the rules across the whole workout, or a rest set by hand

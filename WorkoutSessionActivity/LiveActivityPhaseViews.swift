@@ -110,7 +110,8 @@ struct LiveActivityPhaseContent: View {
         SetPosition(
             index: state.currentExerciseCompletedSetsCount + 1,
             total: state.currentExerciseTotalSetsCount,
-            isWarmup: state.targetIsWarmup
+            isWarmup: state.targetIsWarmup,
+            side: state.targetSide
         ).label
     }
 
@@ -206,7 +207,8 @@ struct LiveActivityPhaseContent: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.accent)
-            .disabled(state.targetSetId == nil || state.isProcessingIntent)
+            // A set the app would refuse (no reps, no time) is entered in the app instead.
+            .disabled(state.targetSetId == nil || state.isProcessingIntent || !state.canComplete)
         }
         .liveActivityRowHeight()
     }

@@ -20138,6 +20138,16 @@
         }
       }
     },
+    "Set %lld%@ of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$lld%2$@ de %3$lld"
+          }
+        }
+      }
+    },
     "Set %lld, %@" : {
       "localizations" : {
         "es" : {

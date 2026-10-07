@@ -9,8 +9,8 @@
 import Foundation
 
 /// The tracker's own state for one session: progression notes already dismissed, the values the
-/// screen filled in (so an edited set is still told from a suggested one), and rests set by hand
-/// on a row.
+/// screen filled in (so an edited set is still told from a suggested one), rests set by hand on a
+/// row, and the exercise the user is on.
 ///
 /// One value under one key in the App Group's defaults. A stored value for any other session is
 /// stale and is never handed back.
@@ -22,6 +22,9 @@ struct ActiveWorkoutScreenState: Codable, Equatable {
     var progressionBaseline: [String: SuggestedSet] = [:]
     /// Rests set by hand on a row, by set id.
     var customRestSeconds: [String: Int] = [:]
+    /// The exercise the user is on, written by the tracker when its card moves and by the Live
+    /// Activity's handler when a set is logged there, so both carry on from the same exercise.
+    var focusExerciseId: String?
 
     static let storageKey = "workout.tracker.screenState"
 
@@ -40,9 +43,14 @@ struct ActiveWorkoutScreenState: Codable, Equatable {
         return stored
     }
 
+    /// A `nil` focus keeps the one stored: the tracker writes its other fields without it.
     func save(to defaults: UserDefaults) {
+        var state = self
+        if state.focusExerciseId == nil {
+            state.focusExerciseId = Self.load(sessionId: sessionId, from: defaults).focusExerciseId
+        }
         do {
-            defaults.set(try PropertyListEncoder().encode(self), forKey: Self.storageKey)
+            defaults.set(try PropertyListEncoder().encode(state), forKey: Self.storageKey)
         } catch {
             // Strings, integers and optional doubles always encode to a property list.
             assertionFailure("ActiveWorkoutScreenState failed to encode: \(error)")

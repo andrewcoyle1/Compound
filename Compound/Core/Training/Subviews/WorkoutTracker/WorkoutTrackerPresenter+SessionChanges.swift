@@ -60,6 +60,15 @@ extension WorkoutTrackerPresenter {
         // `updateSet`, and moves focus the same way.
         moveFocus(afterLogging: setId)
 
+        // Logged elsewhere and adopted here, smart progression re-suggests what is left as it
+        // does for a set logged on this screen. Only an adopted save equals the saved session: a
+        // write from this screen waits out the save's debounce.
+        if workoutSession == interactor.activeSession,
+           let exercise = workoutSession.exercises.first(where: { $0.sets.contains { $0.id == setId } }),
+           let set = exercise.sets.first(where: { $0.id == setId }) {
+            applyLiveProgression(after: set, in: exercise.id)
+        }
+
         refreshLiveActivity()
     }
 

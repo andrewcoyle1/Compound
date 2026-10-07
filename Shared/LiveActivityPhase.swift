@@ -109,15 +109,20 @@ struct SetPosition: Equatable, Hashable, Sendable {
     var index: Int
     var total: Int
     var isWarmup: Bool
+    /// "L" or "R" for one side of a split pair: "Set 1L of 4".
+    var side: String?
 
-    init(index: Int, total: Int, isWarmup: Bool = false) {
+    init(index: Int, total: Int, isWarmup: Bool = false, side: String? = nil) {
         self.index = index
         self.total = total
         self.isWarmup = isWarmup
+        self.side = side
     }
 
     var label: String {
-        isWarmup ? String(localized: "Warmup \(index) of \(total)") : String(localized: "Set \(index) of \(total)")
+        if isWarmup { return String(localized: "Warmup \(index) of \(total)") }
+        if let side { return String(localized: "Set \(index)\(side) of \(total)") }
+        return String(localized: "Set \(index) of \(total)")
     }
 }
 
@@ -283,7 +288,8 @@ extension LiveActivityPhase {
                 position: SetPosition(
                     index: state.currentExerciseCompletedSetsCount + 1,
                     total: state.currentExerciseTotalSetsCount,
-                    isWarmup: state.targetIsWarmup
+                    isWarmup: state.targetIsWarmup,
+                    side: state.targetSide
                 )
             )
         }

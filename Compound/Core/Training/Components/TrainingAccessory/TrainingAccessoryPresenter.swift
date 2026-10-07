@@ -58,13 +58,14 @@ class TrainingAccessoryPresenter {
         router.showWorkoutTrackerView()
     }
 
-    /// A left/right pair is one set, so the accessory's "4/12 sets" matches the screen behind it.
+    /// Working sets only, a left/right pair counting once, so the accessory's "4/12 sets" matches
+    /// the tracker's header behind it.
     func completedSetsCount(_ session: WorkoutSessionModel) -> Int {
-        session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
+        session.exercises.reduce(0) { $0 + $1.workingSets.fullyCompletedPairedSetCount }
     }
 
     func totalSetsCount(_ session: WorkoutSessionModel) -> Int {
-        session.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
+        session.exercises.reduce(0) { $0 + $1.workingSets.pairedSetCount }
     }
 
     enum Event: LoggableEvent {

@@ -14,12 +14,42 @@
         }
       }
     },
+    "%@ each" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ cada una"
+          }
+        }
+      }
+    },
     "%@ elapsed" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ transcurridos"
+          }
+        }
+      }
+    },
+    "%@, %@ breath" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, %@ de respiro"
+          }
+        }
+      }
+    },
+    "%@, then %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, luego %@"
           }
         }
       }
@@ -57,6 +87,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Quedan %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld mini-sets" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mini-set"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld mini-sets"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld miniserie"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld miniseries"
                 }
               }
             }
@@ -204,6 +274,36 @@
         }
       }
     },
+    "AMRAP %lld+" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AMRAP %lld+"
+          }
+        }
+      }
+    },
+    "As many as possible" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantas como sea posible"
+          }
+        }
+      }
+    },
+    "As many as possible, target %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantas como sea posible, objetivo %lld"
+          }
+        }
+      }
+    },
     "As many reps as possible at a fixed weight, aiming to beat a target." : {
       "localizations" : {
         "es" : {
@@ -300,6 +400,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Drop"
+          }
+        }
+      }
+    },
+    "Drop set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie descendente"
           }
         }
       }
@@ -810,6 +920,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "to failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "al fallo"
           }
         }
       }

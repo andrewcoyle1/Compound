@@ -198,8 +198,8 @@ parked until there are users to run them on; the owner decided from use instead 
 the **exercise strip is the default** (with it on, only the selected block is on the card, and a
 superset shows its members' images side by side under one progress bar); the **pager is
 closed** (reopens only if a user asks to swipe); **WP-R is closed as not needed** (reopens if
-keypad corrections turn out frequent in use; the design stays in `input.md` §7). A TestFlight build of the branch at `70ea6456` was
-uploaded on 7 Oct 2026 (archived locally with the `Compound` scheme; the branch is not on `main`,
+keypad corrections turn out frequent in use; the design stays in `input.md` §7). TestFlight builds of the branch were uploaded on 7 Oct 2026 from `70ea6456` and, with the
+set plan and the strip default in, from `5e3e413d` (archived locally with the `Compound` scheme; the branch is not on `main`,
 so the release workflow did not run) for the device checks and the decision tests. The four audit tests in `WorkoutTrackerUITests` run every
 audit type in five states and are not red, but each is recorded as an **expected failure**: the
 audit still reports contrast, "potentially inaccessible text" and "text clipped" on

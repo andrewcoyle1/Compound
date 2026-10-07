@@ -219,10 +219,12 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
 
     func startRest(durationSeconds: Int, session: WorkoutSessionModel, currentExerciseIndex: Int) {
         startedRests.append(durationSeconds)
+        restStartedAt = Date()
         restEndTime = Date().addingTimeInterval(TimeInterval(durationSeconds))
     }
     func cancelRest() {
         didCancelRest = true
+        restStartedAt = nil
         restEndTime = nil
     }
     func prepareSoundEffect(sound: SoundEffectFile, simultaneousPlayers: Int) {
@@ -238,6 +240,16 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func exerciseRestOverride(for exerciseId: String) -> Int? {
         restOverrides[exerciseId]
     }
+
+    // MARK: WP-L
+
+    /// Kept by the rest's owner, as `HKWorkoutManager` does: set with the rest, kept after it runs
+    /// out, cleared when it is called off.
+    var restStartedAt: Date?
+    /// A finish lands here, as the session manager records it.
+    var lastFinishedSession: WorkoutSessionModel? { endedSessions.last }
+
+    // MARK: - End WP-L
 }
 
 final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
@@ -264,6 +276,17 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
         confirmations.append(title)
     }
+
+    // MARK: WP-L
+
+    /// Titles of the alerts raised. The buttons are views, so tests call the presenter methods
+    /// they would.
+    private(set) var alerts: [String] = []
+    func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        alerts.append(title)
+    }
+
+    // MARK: - End WP-L
 }
 
 extension RetryBackoff {

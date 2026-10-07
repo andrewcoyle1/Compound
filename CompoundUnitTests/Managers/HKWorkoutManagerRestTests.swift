@@ -134,7 +134,35 @@ struct HKWorkoutManagerRestTests {
         #expect((infinityEnd?.timeIntervalSince(before) ?? -1) <= 86_401)
     }
 
+    /// The rest's start is the owner's too, so the inline timer's progress is the same wherever
+    /// the rest was started, and a relaunch can take it back (system.md #3, #4).
+    @Test("Test Starting A Rest Records Its Start Beside Its End")
+    func testStartingARestRecordsItsStart() throws {
+        let (manager, _) = makeManager()
+        let before = Date()
+
+        manager.startRest(durationSeconds: 90, session: session)
+
+        let start = try #require(manager.restStartedAt)
+        #expect(start >= before)
+        #expect(try #require(SharedWorkoutStorage.appGroup.restStartedAt).timeIntervalSince(start).magnitude < 0.001)
+        manager.cancelRest()
+    }
+
     // MARK: - Running Out
+
+    /// Kept after the rest runs out, so the row reads Ready until the next set.
+    @Test("Test A Rest That Runs Out Keeps Its Start")
+    func testARestThatRunsOutKeepsItsStart() async {
+        let (manager, _) = makeManager()
+
+        manager.startRest(duration: Self.briefRest, session: session)
+
+        #expect(await TestManagers.eventually { manager.restEndTime == nil })
+        #expect(manager.restStartedAt != nil)
+        #expect(SharedWorkoutStorage.appGroup.restStartedAt != nil)
+        manager.cancelRest()
+    }
 
     @Test("Test A Rest That Runs Out Announces Itself")
     func testARestThatRunsOutAnnouncesItself() async {
@@ -195,6 +223,8 @@ struct HKWorkoutManagerRestTests {
 
         #expect(manager.restEndTime == nil)
         #expect(SharedWorkoutStorage.restEndTime == nil)
+        #expect(manager.restStartedAt == nil)
+        #expect(SharedWorkoutStorage.appGroup.restStartedAt == nil)
     }
 
     /// `updateRestAndActive` rather than a full update, so the exercise the Live Activity is

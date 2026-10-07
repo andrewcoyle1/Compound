@@ -140,8 +140,10 @@ extension WorkoutTrackerPresenter {
     /// Smart progression's reason for the exercise on the card, shown over the log button when
     /// the exercise is started, until it is acknowledged or the first working set is logged: by
     /// then the user has acted on it. Acknowledged by template, as the suggestion it speaks
-    /// for is kept.
+    /// for is kept. Sets logged from the Lock Screen while the screen was away take the slot
+    /// first, until the next action (see `logReceipt`).
     var progressionNote: String? {
+        if let logReceipt { return logReceipt }
         guard let exercise = currentExercise,
               !acknowledgedProgressionNotes.contains(exercise.templateId),
               exercise.loggedSetCount == 0 else { return nil }
@@ -149,6 +151,8 @@ extension WorkoutTrackerPresenter {
     }
 
     func onProgressionNoteAcknowledged() {
+        // The receipt sits in the same slot; dismissing it leaves the progression note to show.
+        if logReceipt != nil { return markSetsSeen() }
         guard let exercise = currentExercise else { return }
         acknowledgedProgressionNotes.insert(exercise.templateId)
         interactor.trackEvent(event: Event.progressionNoteAcknowledged)
@@ -171,15 +175,18 @@ extension WorkoutTrackerPresenter {
     // MARK: - Rest
 
     /// The inline timer for `exercise`'s card, or `nil` when there is none to show. A rest still
-    /// running counts down; one that has run out reads Ready until the next set is logged.
+    /// running counts down; one that has run out reads Ready until the next set is logged. Both
+    /// times are the rest owner's, so a rest started from the Lock Screen, or running across a
+    /// relaunch, draws the same as one started here.
     func restTimer(for exercise: WorkoutExerciseModel) -> InlineRestTimer? {
         let endsAt = interactor.restEndTime
+        let startedAt = interactor.restStartedAt
         let rested = ActiveWorkout.latestCompletedSet(in: workoutSession.exercises)
-        guard endsAt != nil || restStartedAt != nil,
-              let anchor = ActiveWorkout.restAnchor(in: exercise, restedSet: rested, restStartedAt: restStartedAt)
+        guard endsAt != nil || startedAt != nil,
+              let anchor = ActiveWorkout.restAnchor(in: exercise, restedSet: rested, restStartedAt: startedAt)
         else { return nil }
-        // A rest started from the Lock Screen began when its set was logged there.
-        return InlineRestTimer(anchor: anchor, startedAt: restStartedAt ?? rested?.completedAt, endsAt: endsAt)
+        // A rest kept by an older build has no start: it began when its set was logged.
+        return InlineRestTimer(anchor: anchor, startedAt: startedAt ?? rested?.completedAt, endsAt: endsAt)
     }
 
     /// Undoing the set a rest follows calls the rest off: there is nothing to rest from.

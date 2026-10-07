@@ -59,6 +59,24 @@ struct AssistedWeightTests {
         #expect(SetValidation.canLog(set(weightKg: 20), trackingMode: .weightReps, isAssisted: true))
     }
 
+    /// The shared log rule (log button and Live Activity) passes assistance through.
+    @Test func theLogRuleLogsANegativeWeightOnlyWhenAssisted() throws {
+        let pending = set(weightKg: -30)
+        let exercise = WorkoutExerciseModel(
+            id: "e", authorId: "u", templateId: "assisted-pull-up", name: "Assisted Pull-Up", trackingMode: .weightReps,
+            index: 0, sets: [pending]
+        )
+        let session = WorkoutSessionModel(id: "s", authorId: "u", name: "Pull", dateCreated: start, exercises: [exercise])
+        let context = RestDurationRules.ExerciseContext(restOverrideSeconds: nil, exerciseTypeRawValue: nil)
+        let settings = WorkoutSettings(authorId: "u")
+
+        let refused = try #require(ActiveWorkout.log(setId: pending.id, in: session, settings: settings, context: context, now: start))
+        #expect(refused.problem != nil)
+        let logged = try #require(ActiveWorkout.log(setId: pending.id, in: session, settings: settings, context: context, isAssisted: true, now: start))
+        #expect(logged.problem == nil)
+        #expect(logged.session.exercises[0].sets[0].completedAt == start)
+    }
+
     // MARK: - Stepping
 
     @Test func theStepperNeverGoesBelowZeroUnlessAssisted() {

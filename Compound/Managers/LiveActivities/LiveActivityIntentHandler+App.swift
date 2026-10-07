@@ -90,7 +90,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
             in: session,
             settings: settings,
             context: restContext(for: exercise),
-            customRestSeconds: screenState.customRestSeconds[id]
+            customRestSeconds: screenState.customRestSeconds[id],
+            isAssisted: exerciseModelManager.allExercises.first { $0.id == exercise.templateId }?.isAssisted ?? false
         ), outcome.problem == nil, save(outcome.session) else { return pushActiveSession() }
 
         // Stays on the exercise just logged unless the rule moves on; the manager points a

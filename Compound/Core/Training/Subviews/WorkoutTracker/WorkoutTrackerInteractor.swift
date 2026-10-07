@@ -173,6 +173,15 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     func exerciseRestOverride(for exerciseId: String) -> Int?
 }
 
+extension WorkoutTrackerInteractor {
+
+    /// Whether the library exercise `templateId` is tracked as assistance, so its sets store a
+    /// negative weight (`ExerciseModel.isAssisted`). Unknown exercises are not.
+    func isAssisted(templateId: String) -> Bool {
+        allExercises.first { $0.id == templateId }?.isAssisted ?? false
+    }
+}
+
 extension CoreInteractor: WorkoutTrackerInteractor {
 
     var activeWorkoutScreenStateStore: UserDefaults {

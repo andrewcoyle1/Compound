@@ -331,7 +331,12 @@ class LiveActivityManager: LiveActivityUpdating {
             restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false,
             distanceUnit: current.templateId.map(distanceUnit),
             targetSide: current.targetSet.flatMap(Self.sideMarker),
-            canComplete: current.targetSet.map { SetValidation.canLog($0, trackingMode: current.trackingMode) } ?? false
+            // The manager has no exercise library, and only an assisted exercise's keypad can
+            // enter a negative weight, so one is read as assistance here; the handler's log rule
+            // checks the library when Complete is tapped.
+            canComplete: current.targetSet.map {
+                SetValidation.canLog($0, trackingMode: current.trackingMode, isAssisted: ($0.weightKg ?? 0) < 0)
+            } ?? false
         )
     }
 

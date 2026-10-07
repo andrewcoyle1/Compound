@@ -134,14 +134,18 @@ final class SetKeyboardPresenter {
     /// types the region's separator, so a hardware keyboard works whichever the user reaches for.
     func type(_ key: Character) {
         guard let field = activeField else { return }
-        let base = replacesOnNextKey ? "" : text
+        // Assistance stays assistance: typing over "−30" types another negative weight.
+        let base = replacesOnNextKey ? (showsSignKey && text.hasPrefix("-") ? "-" : "") : text
         let candidate: String
         switch key {
         case ".", ",":
             guard field.takesDecimals, !base.contains(decimalSeparator) else { return }
-            candidate = (base.isEmpty ? "0" : base) + decimalSeparator
+            candidate = (base.isEmpty || base == "-" ? base + "0" : base) + decimalSeparator
         case "0"..."9":
             candidate = base + String(key)
+        case "-" where showsSignKey:
+            toggleSign()
+            return
         default:
             return
         }
@@ -168,7 +172,7 @@ final class SetKeyboardPresenter {
         case .weight, .distance:
             let parts = candidate.components(separatedBy: decimalSeparator)
             let wholeDigits = field == .distance ? 5 : 4
-            return (parts.first?.count ?? 0) <= wholeDigits && (parts.count < 2 || parts[1].count <= 2)
+            return (parts.first?.filter(\.isNumber).count ?? 0) <= wholeDigits && (parts.count < 2 || parts[1].count <= 2)
         }
     }
 
@@ -203,6 +207,25 @@ final class SetKeyboardPresenter {
     static func clock(fromDigits digits: String) -> String {
         let padded = String(repeating: "0", count: max(0, 3 - digits.count)) + digits
         return "\(padded.dropLast(2)):\(padded.suffix(2))"
+    }
+
+    // MARK: - Assistance
+
+    /// The ± key, on an assisted exercise's weight only: assistance is stored as a negative weight.
+    var showsSignKey: Bool { activeField == .weight && context.step.isAssisted }
+
+    /// Flips the weight between load and assistance: 30 kg ↔ −30 kg. On an empty field it starts
+    /// a negative number, so "± 3 0" types −30.
+    func toggleSign() {
+        guard showsSignKey, let set = editingSet else { return }
+        if let weightKg = set.wrappedValue.weightKg, weightKg != 0 {
+            applyWeight(displayValue: UnitConversion.convertWeight(-weightKg, to: context.unit))
+            return
+        }
+        // Nothing to flip yet: start a negative number, or cancel one just started.
+        text = text == "-" ? "" : "-"
+        replacesOnNextKey = false
+        set.wrappedValue.weightKg = nil
     }
 
     // MARK: - Stepper and chips
@@ -338,6 +361,21 @@ final class SetKeyboardPresenter {
         }
         if field == .duration { return set.durationSec.map { Format.duration(TimeInterval($0)) } ?? "" }
         return Self.text(for: field, set: set, unit: unit, distanceUnit: distanceUnit, locale: locale)
+    }
+
+    /// The greyed hint an empty field shows: what the same set held last time, else "—". Only a
+    /// hint: it is never written into the set, so it can never be logged as done.
+    func placeholder(
+        for field: SetKeyboardField,
+        previous: WorkoutSetModel?,
+        unit: ExerciseWeightUnit,
+        distanceUnit: ExerciseDistanceUnit = .meters
+    ) -> String {
+        guard let previous else { return Format.placeholder }
+        let hint = field == .duration
+            ? previous.durationSec.map { Format.duration(TimeInterval($0)) } ?? ""
+            : Self.text(for: field, set: previous, unit: unit, distanceUnit: distanceUnit, locale: locale)
+        return hint.isEmpty ? Format.placeholder : hint
     }
 
     private func currentText(for field: SetKeyboardField) -> String {

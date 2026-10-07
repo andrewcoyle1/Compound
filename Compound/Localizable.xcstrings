@@ -4,6 +4,16 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%@ elapsed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ transcurridos"
+          }
+        }
+      }
+    },
     "%lld left" : {
       "localizations" : {
         "en" : {
@@ -74,6 +84,16 @@
         }
       }
     },
+    "A negative weight is assistance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un peso negativo es asistencia"
+          }
+        }
+      }
+    },
     "Active Program" : {
       "localizations" : {
         "es" : {
@@ -100,6 +120,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todos los entrenamientos"
+          }
+        }
+      }
+    },
+    "Change sign" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar signo"
           }
         }
       }
@@ -140,6 +170,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar perfil"
+          }
+        }
+      }
+    },
+    "Empty" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacío"
+          }
+        }
+      }
+    },
+    "Empty, last time %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacío, la última vez %@"
           }
         }
       }
@@ -284,6 +334,26 @@
         }
       }
     },
+    "Start timer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar cronómetro"
+          }
+        }
+      }
+    },
+    "Stop timer" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detener cronómetro"
+          }
+        }
+      }
+    },
     "Strava could not process the workout." : {
       "localizations" : {
         "es" : {
@@ -320,6 +390,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamientos semanales"
+          }
+        }
+      }
+    },
+    "Writes the time held into this set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anota en esta serie el tiempo mantenido"
           }
         }
       }

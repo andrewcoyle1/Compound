@@ -233,8 +233,16 @@ struct SetTrackerRowView: View {
                 keyboardField(.reps, set: set, label: String(localized: "Reps"))
                     .setColumn(width: 50, height: cellHeight, stretches: isStacked)
             case .timeOnly:
-                keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                // A set still to do gets a stopwatch; a logged one is corrected by typing.
+                if set.wrappedValue.completedAt == nil {
+                    SetStopwatch(set: set, targetSeconds: delegate.lastSet?.durationSec) {
+                        keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                    }
                     .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+                } else {
+                    keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                        .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+                }
             case .distanceTime:
                 keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
                     .setColumn(width: 70, height: cellHeight, stretches: isStacked)
@@ -255,6 +263,7 @@ struct SetTrackerRowView: View {
             isActive: isActive,
             accessibilityLabel: label,
             isMuted: delegate.rowState == .upcoming,
+            placeholder: keyboard.placeholder(for: field, previous: delegate.lastSet, unit: units.weightUnit, distanceUnit: units.distanceUnit),
             presenter: keyboard,
             inputHost: keyboardHost,
             onBegin: { presenter.onKeyboardFieldBegan(field, delegate: delegate) }
@@ -359,7 +368,7 @@ struct SetTrackerRowView: View {
     // MARK: - Done
 
     func completeButton(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
-        let state = presenter.completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue)
+        let state = presenter.completionState(trackingMode: exercise.trackingMode, set: set.wrappedValue, isAssisted: presenter.isAssisted(exercise))
         return Button {
             presenter.onSetComplete(exercise, set)
         } label: {

@@ -130,6 +130,12 @@ struct WorkoutSettingsView: View {
                 systemImage: "platter.filled.bottom.iphone",
                 isOn: $presenter.showOnLockScreen
             )
+            ListRowToggle(
+                title: String(localized: "Exercise Strip"),
+                subtitle: String(localized: "Show the workout's exercises as thumbnails above the current one"),
+                systemImage: "rectangle.split.3x1",
+                isOn: $presenter.showExerciseStrip
+            )
 
         } header: {
             Text("Display")

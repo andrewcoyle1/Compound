@@ -107,6 +107,11 @@ class WorkoutSettingsPresenter {
         set { settings.showOnLockScreen = newValue; save() }
     }
 
+    var showExerciseStrip: Bool {
+        get { settings.showsExerciseStrip }
+        set { settings.showExerciseStrip = newValue; save() }
+    }
+
     // MARK: - Warm-Up Settings
 
     var addSmartWarmUps: Bool {

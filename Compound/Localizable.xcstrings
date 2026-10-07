@@ -1340,6 +1340,16 @@
         }
       }
     },
+    "%@, current" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, actual"
+          }
+        }
+      }
+    },
     "%@, not trained yet today, %lld of %lld sessions this week" : {
       "localizations" : {
         "en" : {
@@ -10125,6 +10135,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajustes del ejercicio"
+          }
+        }
+      }
+    },
+    "Exercise Strip" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tira de ejercicios"
           }
         }
       }
@@ -20649,6 +20669,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muestra el anillo de proteína en el banner del registro"
+          }
+        }
+      }
+    },
+    "Show the workout's exercises as thumbnails above the current one" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra los ejercicios del entrenamiento como miniaturas sobre el actual"
           }
         }
       }

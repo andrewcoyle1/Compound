@@ -131,6 +131,23 @@ extension WorkoutTrackerPresenter {
         interactor.getPreference(templateId: exercise.templateId)
     }
 
+    /// The bodyweight `exercise` lifts, for its badge and "BW" labels: `nil` with the setting off or
+    /// for a movement that lifts none.
+    func bodyweightContribution(for exercise: WorkoutExerciseModel) -> BodyweightContribution? {
+        guard showBodyweightContribution else { return nil }
+        // ponytail: today's bodyweight, not the session's, so a workout reopened later reads at
+        // whatever the scale says then; snapshot it onto the session if history must stay fixed.
+        // Read from the library once per exercise rather than on every keystroke.
+        if bodyweightPercents[exercise.templateId] == nil {
+            let library = interactor.allExercises
+            for templateId in Set(workoutSession.exercises.map(\.templateId) + [exercise.templateId]) {
+                bodyweightPercents[templateId] = library.first { $0.id == templateId }?.bodyWeightContribution ?? 0
+            }
+        }
+        guard let percent = bodyweightPercents[exercise.templateId], percent > 0 else { return nil }
+        return BodyweightContribution(percent: percent, bodyweightKg: interactor.currentWeightKilograms, unit: units(for: exercise).weightUnit)
+    }
+
     func progressionReason(for exercise: WorkoutExerciseModel) -> String? {
         ActiveWorkout.progressionReason(
             suggestion: progressionSuggestions[exercise.templateId],
@@ -164,14 +181,16 @@ extension WorkoutTrackerPresenter {
     /// Today's top set for a finished exercise; the plan and last time's for one still to come.
     func upNextSummary(for exercise: WorkoutExerciseModel) -> String {
         let units = units(for: exercise)
+        let showsBodyweight = bodyweightContribution(for: exercise) != nil
         if isComplete(exercise) {
-            return ActiveWorkout.completedSummary(for: exercise, unit: units.weightUnit, distanceUnit: units.distanceUnit)
+            return ActiveWorkout.completedSummary(for: exercise, unit: units.weightUnit, distanceUnit: units.distanceUnit, showsBodyweight: showsBodyweight)
         }
         return ActiveWorkout.upNextSummary(
             for: exercise,
             last: previousExercises[exercise.templateId],
             unit: units.weightUnit,
-            distanceUnit: units.distanceUnit
+            distanceUnit: units.distanceUnit,
+            showsBodyweight: showsBodyweight
         )
     }
 
@@ -220,7 +239,13 @@ extension WorkoutTrackerPresenter {
             guard let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }),
                   let set = exercise.sets.first(where: { $0.id == setId }) else { return "" }
             let units = units(for: exercise)
-            return ActiveWorkout.logTitle(for: set, in: exercise, unit: units.weightUnit, distanceUnit: units.distanceUnit)
+            return ActiveWorkout.logTitle(
+                for: set,
+                in: exercise,
+                unit: units.weightUnit,
+                distanceUnit: units.distanceUnit,
+                showsBodyweight: bodyweightContribution(for: exercise) != nil
+            )
         case let .next(exerciseId)?:
             let name = workoutSession.exercises.first { $0.id == exerciseId }?.name ?? ""
             return String(localized: "Next: \(name)")

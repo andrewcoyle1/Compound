@@ -586,3 +586,86 @@ struct ActiveWorkoutPresenterTests {
         #expect(WorkoutTrackerPresenter.fillingMissingImages(filled, from: [squat]) == filled)
     }
 }
+
+// MARK: - Bodyweight contribution (WP-O)
+
+extension ActiveWorkoutStateTests {
+
+    @Test("Test The Log Button Reads BW With The Bodyweight Contribution Shown")
+    func testBodyweightLogTitle() {
+        let dips = exercise("e1", name: "Dip", sets: [set("s1", reps: 8, weightKg: 20), set("s2", reps: 8, weightKg: nil), set("s3", reps: 8, weightKg: -20)])
+        let kg20 = Format.weight(kg: 20, unit: .kilograms)
+
+        #expect(ActiveWorkout.logTitle(for: dips.sets[0], in: dips, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "Log set 1 · BW + \(kg20) × 8")
+        #expect(ActiveWorkout.logTitle(for: dips.sets[1], in: dips, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "Log set 2 · BW × 8")
+        #expect(ActiveWorkout.logTitle(for: dips.sets[2], in: dips, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "Log set 3 · BW − \(kg20) × 8")
+        // No reps yet: no figures, as without bodyweight.
+        let noReps = exercise("e1", sets: [set("s1", reps: nil, weightKg: 20)])
+        #expect(ActiveWorkout.logTitle(for: noReps.sets[0], in: noReps, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "Log set 1")
+    }
+
+    @Test("Test With The Bodyweight Contribution Hidden The Figures Are Unchanged")
+    func testBodyweightOffUnchanged() {
+        let dips = exercise("e1", name: "Dip", sets: [set("s1", reps: 8, weightKg: 20), set("s2", reps: 8, weightKg: nil)])
+
+        #expect(ActiveWorkout.logTitle(for: dips.sets[0], in: dips, unit: .kilograms, distanceUnit: .meters, showsBodyweight: false) == "Log set 1 · 20 kg × 8")
+        #expect(ActiveWorkout.logTitle(for: dips.sets[1], in: dips, unit: .kilograms, distanceUnit: .meters) == "Log set 2 · 8 reps")
+        // Time and distance have no load to add bodyweight to.
+        let plank = WorkoutSetModel(id: "p", authorId: "author-1", index: 1, durationSec: 90, isWarmup: false, dateCreated: start)
+        #expect(ActiveWorkout.figures(of: plank, trackingMode: .timeOnly, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == Format.duration(90))
+    }
+
+    @Test("Test The Summaries Read BW With The Bodyweight Contribution Shown")
+    func testBodyweightSummaries() {
+        let pullUps = exercise("e1", name: "Pull-Up", sets: [set("a", reps: 8, weightKg: 10, doneAt: 0), set("b", reps: 6, weightKg: 20, doneAt: 1)])
+        let kg20 = Format.weight(kg: 20, unit: .kilograms)
+
+        #expect(ActiveWorkout.completedSummary(for: pullUps, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "2 sets · Top BW + \(kg20) × 6")
+        let today = exercise("e2", name: "Pull-Up", sets: [set("c")])
+        #expect(ActiveWorkout.upNextSummary(for: today, last: pullUps, unit: .kilograms, distanceUnit: .meters, showsBodyweight: true) == "1 set · Last BW + \(kg20) × 6")
+    }
+}
+
+// MARK: - Bodyweight contribution on the tracker (WP-O)
+
+extension ActiveWorkoutPresenterTests {
+
+    private func libraryExercise(_ id: String, percent: Int) -> ExerciseModel {
+        ExerciseModel(
+            id: id, authorId: "author-1", name: id, trackableMetrics: [.weight, .reps], type: .compoundLower,
+            laterality: .bilateral, muscleGroups: [.quads: .primary], isBodyweight: false, rangeOfMotion: 4, stability: 5,
+            bodyWeightContribution: percent, alternateNames: []
+        )
+    }
+
+    @Test("Test The Tracker Reads BW And Counts Bodyweight In Volume With The Setting On")
+    func testBodyweightOnTracker() throws {
+        let (presenter, interactor) = try makePresenter(sets: [openSet("s1"), openSet("s2")])
+        interactor.allExercises = [libraryExercise("t1", percent: 50)]
+        interactor.currentWeightKilograms = 80
+        let off = presenter.computeTotalVolumeKg()
+        #expect(presenter.primaryActionTitle == "Log set 1 · 100 kg × 5")
+        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[0]) == nil)
+
+        interactor.workoutSettings.showBodyweightContribution = true
+
+        let squat = presenter.workoutSession.exercises[0]
+        #expect(presenter.bodyweightContribution(for: squat) == BodyweightContribution(percent: 50, bodyweightKg: 80, unit: .kilograms))
+        #expect(presenter.primaryActionTitle == "Log set 1 · BW + \(Format.weight(kg: 100, unit: .kilograms)) × 5")
+        // Two sets of 5 gain 40 kg of bodyweight a rep; the lunge lifts none.
+        #expect(presenter.computeTotalVolumeKg() == off + 2 * 5 * 40)
+        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[1]) == nil)
+    }
+
+    @Test("Test With No Bodyweight Known The Labels Stay And Volume Does Not Grow")
+    func testBodyweightUnknown() throws {
+        let (presenter, interactor) = try makePresenter(sets: [openSet("s1")])
+        interactor.allExercises = [libraryExercise("t1", percent: 100)]
+        let off = presenter.computeTotalVolumeKg()
+        interactor.workoutSettings.showBodyweightContribution = true
+
+        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[0])?.contributionKg == nil)
+        #expect(presenter.primaryActionTitle.contains("BW + "))
+        #expect(presenter.computeTotalVolumeKg() == off)
+    }
+}

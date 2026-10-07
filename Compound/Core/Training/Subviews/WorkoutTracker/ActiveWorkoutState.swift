@@ -181,17 +181,19 @@ enum ActiveWorkout {
         return exercises.contains { !$0.sets.isEmpty } ? .finish : nil
     }
 
-    /// "Log set 2 · 115 kg × 5", "Log warm-up · 60 kg × 5", "Log set 1L · 20 kg × 10".
+    /// "Log set 2 · 115 kg × 5", "Log warm-up · 60 kg × 5", "Log set 1L · 20 kg × 10", and with
+    /// `showsBodyweight` "Log set 2 · BW + 20 kg × 8".
     static func logTitle(
         for set: WorkoutSetModel,
         in exercise: WorkoutExerciseModel,
         unit: ExerciseWeightUnit,
-        distanceUnit: ExerciseDistanceUnit
+        distanceUnit: ExerciseDistanceUnit,
+        showsBodyweight: Bool = false
     ) -> String {
         let name = set.isWarmup
             ? String(localized: "Log warm-up")
             : String(localized: "Log set \("\(exercise.workingSetNumber(for: set))\(set.side?.initial ?? "")")")
-        guard let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit) else {
+        guard let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight) else {
             return name
         }
         return "\(name) · \(figures)"
@@ -199,12 +201,18 @@ enum ActiveWorkout {
 
     /// "115 kg × 5", "12 reps", "1:30", "400 m · 1:30"; `nil` until the set holds its figures, so
     /// a timed set's title reads "Log set 1" until a time is entered or the stopwatch stops.
+    /// With `showsBodyweight`, a movement that lifts bodyweight reads "BW + 20 kg × 8", "BW × 8".
     static func figures(
         of set: WorkoutSetModel,
         trackingMode: TrackingMode,
         unit: ExerciseWeightUnit,
-        distanceUnit: ExerciseDistanceUnit
+        distanceUnit: ExerciseDistanceUnit,
+        showsBodyweight: Bool = false
     ) -> String? {
+        if showsBodyweight, trackingMode == .weightReps || trackingMode == .repsOnly, let reps = set.reps,
+           let load = BodyweightLoad.label(weightKg: set.weightKg, unit: unit, showsBodyweight: true) {
+            return "\(load) × \(reps)"
+        }
         switch trackingMode {
         case .weightReps:
             guard let reps = set.reps else { return nil }
@@ -224,11 +232,16 @@ enum ActiveWorkout {
     // MARK: - Up next
 
     /// "2 sets · Top 32.5 kg × 9": a finished exercise, as it went today.
-    static func completedSummary(for exercise: WorkoutExerciseModel, unit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) -> String {
+    static func completedSummary(
+        for exercise: WorkoutExerciseModel,
+        unit: ExerciseWeightUnit,
+        distanceUnit: ExerciseDistanceUnit,
+        showsBodyweight: Bool = false
+    ) -> String {
         let logged = exercise.sets.filter { !$0.isWarmup && $0.completedAt != nil }
         var parts = [Format.sets(Double(logged.pairedSetCount))]
         let top = topSet(of: logged, trackingMode: exercise.trackingMode)
-        if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit) {
+        if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight) {
             parts.append(String(localized: "Top \(figures)"))
         }
         return parts.joined(separator: " · ")
@@ -239,7 +252,8 @@ enum ActiveWorkout {
         for exercise: WorkoutExerciseModel,
         last: WorkoutExerciseModel?,
         unit: ExerciseWeightUnit,
-        distanceUnit: ExerciseDistanceUnit
+        distanceUnit: ExerciseDistanceUnit,
+        showsBodyweight: Bool = false
     ) -> String {
         // Started and left for later, it says how far it got.
         let logged = exercise.loggedSetCount
@@ -251,7 +265,7 @@ enum ActiveWorkout {
         }
         let lastWorking = last?.sets.filter { !$0.isWarmup && $0.completedAt != nil } ?? []
         let top = topSet(of: lastWorking, trackingMode: exercise.trackingMode)
-        if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit) {
+        if let top, let figures = figures(of: top, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight) {
             parts.append(String(localized: "Last \(figures)"))
         }
         return parts.joined(separator: " · ")

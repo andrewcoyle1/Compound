@@ -50,6 +50,9 @@ struct ExerciseCard {
     /// The member's letter on a superset's card ("A", "B"), which its header shows in place of the
     /// superset's own label: the member header.
     var memberLetter: String?
+    /// The bodyweight the movement lifts, while the setting is on: the header's badge and the rows'
+    /// "BW" labels. `nil` leaves the card as it was.
+    var bodyweight: BodyweightContribution?
 }
 
 struct ExerciseTrackerView<SetTracker: View>: View {
@@ -85,6 +88,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 piece: card.piece,
                 showAutoRanges: card.showAutoRanges
             )))
+            .environment(\.showsBodyweightLoad, card.bodyweight != nil)
         } else {
             DisclosureGroup(isExpanded: delegate.isExpanded) {
                 setTracker(setDelegate(card: nil))
@@ -119,18 +123,32 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    // The menu sits on the name's line, so it reads as the exercise's own.
-                    HStack(alignment: .center, spacing: Spacing.s) {
-                        // The member header: its letter leads the name's line.
-                        if let letter = card.memberLetter {
-                            Chip(letter, systemImage: Symbol.superset, tint: .superset)
-                                .accessibilityLabel(String(localized: "Superset member \(letter)"))
+                    if let bodyweight = card.bodyweight, bodyweight.contributionKg != nil {
+                        // The badge sits before the menu, and goes under the name when the line
+                        // cannot hold both, as at accessibility sizes.
+                        ViewThatFits(in: .horizontal) {
+                            HStack(alignment: .center, spacing: Spacing.s) {
+                                cardTitle(exercise, card: card)
+                                Spacer(minLength: 0)
+                                BodyweightContributionBadge(contribution: bodyweight)
+                                menu
+                            }
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                HStack(alignment: .center, spacing: Spacing.s) {
+                                    cardTitle(exercise, card: card)
+                                    Spacer(minLength: 0)
+                                    menu
+                                }
+                                BodyweightContributionBadge(contribution: bodyweight)
+                            }
                         }
-                        Text(exercise.name)
-                            .font(.sectionTitle)
-                            .accessibilityAddTraits(.isHeader)
-                        Spacer(minLength: 0)
-                        menu
+                    } else {
+                        // The menu sits on the name's line, so it reads as the exercise's own.
+                        HStack(alignment: .center, spacing: Spacing.s) {
+                            cardTitle(exercise, card: card)
+                            Spacer(minLength: 0)
+                            menu
+                        }
                     }
                     if card.memberLetter == nil, let label = delegate.supersetLabel {
                         Chip(label, systemImage: Symbol.superset, tint: .superset)
@@ -154,6 +172,18 @@ struct ExerciseTrackerView<SetTracker: View>: View {
 
         }
         .padding(.vertical, Spacing.s)
+    }
+
+    /// The member header's letter, when the card is a superset member's, then the name.
+    @ViewBuilder
+    private func cardTitle(_ exercise: WorkoutExerciseModel, card: ExerciseCard) -> some View {
+        if let letter = card.memberLetter {
+            Chip(letter, systemImage: Symbol.superset, tint: .superset)
+                .accessibilityLabel(String(localized: "Superset member \(letter)"))
+        }
+        Text(exercise.name)
+            .font(.sectionTitle)
+            .accessibilityAddTraits(.isHeader)
     }
 
     /// The note the user keeps on the exercise, set apart from anything the app says by its

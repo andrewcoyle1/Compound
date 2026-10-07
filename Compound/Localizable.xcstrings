@@ -29506,6 +29506,36 @@
           }
         }
       }
+    },
+    "Bodyweight contribution" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aporte del peso corporal"
+          }
+        }
+      }
+    },
+    "Effective load = external load + %@ of your bodyweight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga efectiva = carga externa + %@ de tu peso corporal"
+          }
+        }
+      }
+    },
+    "Explains effective load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explica la carga efectiva"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

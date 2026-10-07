@@ -129,6 +129,9 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     func finishWorkout(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome
 
     var allExercises: [ExerciseModel] { get }
+
+    /// Today's bodyweight, which a movement's bodyweight contribution is a share of.
+    var currentWeightKilograms: Double? { get }
     
     // MARK: - Workout History
 

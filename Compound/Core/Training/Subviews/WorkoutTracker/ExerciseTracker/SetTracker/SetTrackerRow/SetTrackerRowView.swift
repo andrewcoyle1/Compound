@@ -41,6 +41,7 @@ struct SetTrackerRowView: View {
     @ScaledMetric(relativeTo: .caption) private var setCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
 
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
@@ -394,9 +395,16 @@ struct SetTrackerRowView: View {
     ) -> some View {
         switch trackingMode {
         case .weightReps:
-            // A set with no weight, as on a bodyweight lift, reads "8 reps" rather than nothing.
+            // A set with no weight, as on a bodyweight lift, reads "8 reps" rather than nothing, or
+            // "BW × 8" while the bodyweight contribution is shown.
             if let reps = prev.reps,
-               let figures = ActiveWorkout.figures(of: prev, trackingMode: .weightReps, unit: unitPreference.weightUnit, distanceUnit: unitPreference.distanceUnit) {
+               let figures = ActiveWorkout.figures(
+                   of: prev,
+                   trackingMode: .weightReps,
+                   unit: unitPreference.weightUnit,
+                   distanceUnit: unitPreference.distanceUnit,
+                   showsBodyweight: showsBodyweightLoad
+               ) {
                 fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe)) {
                     if let weight = prev.weightKg { $0.weightKg = weight }
                     $0.reps = reps

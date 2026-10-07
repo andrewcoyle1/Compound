@@ -95,7 +95,8 @@ extension CoreInteractor {
                 for: [context],
                 history: history,
                 adjustmentMode: workoutSettings.smartProgressionAdjustmentMode,
-                gymProfile: gymProfile
+                gymProfile: gymProfile,
+                amrap: workoutSettings.amrapProgression
             )
             result.merge(suggestion) { _, latest in latest }
         }

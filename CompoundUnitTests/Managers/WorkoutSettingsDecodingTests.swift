@@ -137,4 +137,31 @@ struct WorkoutSettingsDecodingTests {
         #expect(decoded.intraSetRest(for: .drop) == nil)
         #expect(decoded.intraSetRest(for: .restPause) == 30)
     }
+
+    /// AMRAP progression: raising the target is on, and weight is added at a target of 12, for
+    /// every document saved before the settings.
+    @Test("Test A Document Saved Before The AMRAP Settings Reads Their Defaults")
+    func testAMRAPSettingsDefault() throws {
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(WorkoutSettings(authorId: "author-1"))) as? [String: Any] ?? [:]
+        json.removeValue(forKey: "amrap_raises_target")
+        json.removeValue(forKey: "amrap_adds_weight_at_target")
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.amrapRaisesTarget == nil && decoded.amrapAddsWeightAtTarget == nil)
+        #expect(decoded.raisesAMRAPTarget)
+        #expect(decoded.amrapWeightCeiling == 12)
+    }
+
+    @Test("Test The AMRAP Settings Are Kept Through A Save")
+    func testAMRAPSettingsRoundTrip() throws {
+        var settings = WorkoutSettings(authorId: "author-1")
+        settings.amrapRaisesTarget = false
+        settings.amrapAddsWeightAtTarget = 15
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONEncoder().encode(settings))
+
+        #expect(!decoded.raisesAMRAPTarget)
+        #expect(decoded.amrapWeightCeiling == 15)
+    }
 }

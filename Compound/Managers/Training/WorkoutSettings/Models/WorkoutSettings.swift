@@ -38,6 +38,18 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var smartProgressionApplyInSession: Bool = false
     var smartProgressionInitialLogFill: InitialLogFillOption = .smartProgression
     var smartProgressionAdjustmentMode: ProgressionAdjustmentMode = .weightFirst
+    /// With the set plan on, an AMRAP target beaten twice running goes up a rep. Optional so a
+    /// document saved before the setting still decodes; nil reads as on.
+    var amrapRaisesTarget: Bool?
+    var raisesAMRAPTarget: Bool { amrapRaisesTarget ?? true }
+    /// The AMRAP target at which beating it adds weight instead (and the target goes back to the
+    /// template's). Optional for the same reason; nil reads as 12.
+    var amrapAddsWeightAtTarget: Int?
+    var amrapWeightCeiling: Int { amrapAddsWeightAtTarget ?? 12 }
+    /// The AMRAP rule progression runs, or nil when the set plan or the rule is off.
+    var amrapProgression: AMRAPProgression? {
+        plansSets && raisesAMRAPTarget ? AMRAPProgression(ceiling: amrapWeightCeiling) : nil
+    }
 
     // MARK: - Rest Timer: Behaviour
     var useRestTimers: Bool = true
@@ -122,6 +134,8 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case smartProgressionApplyInSession = "smart_progression_apply_in_session"
         case smartProgressionInitialLogFill = "smart_progression_initial_log_fill"
         case smartProgressionAdjustmentMode = "smart_progression_adjustment_mode"
+        case amrapRaisesTarget = "amrap_raises_target"
+        case amrapAddsWeightAtTarget = "amrap_adds_weight_at_target"
     }
     
     var eventParameters: [String: Any] {

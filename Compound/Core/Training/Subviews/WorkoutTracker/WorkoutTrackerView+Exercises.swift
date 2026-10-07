@@ -214,7 +214,8 @@ extension WorkoutTrackerView {
                 onCorrection: { setId, action in
                     presenter.onCorrection(action, setId: setId, in: exerciseId)
                 },
-                onUndoManager: { presenter.onUndoManagerChanged($0) }
+                onUndoManager: { presenter.onUndoManagerChanged($0) },
+                bodyweight: presenter.bodyweightContribution(for: current)
             )
         )
     }

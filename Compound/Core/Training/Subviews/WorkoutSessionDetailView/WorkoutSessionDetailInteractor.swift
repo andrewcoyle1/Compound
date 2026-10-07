@@ -9,6 +9,9 @@
 protocol WorkoutSessionDetailInteractor: GlobalInteractor {
     var currentUser: UserModel? { get }
     var allExercises: [ExerciseModel] { get }
+    /// With `showBodyweightContribution`, the volume counts the bodyweight a movement lifts.
+    var workoutSettings: WorkoutSettings { get }
+    var currentWeightKilograms: Double? { get }
     func getUser(userId: String) async throws -> UserModel
     func saveWorkoutSession(_ session: WorkoutSessionModel) async throws
     func getPreference(templateId: String) -> ExerciseUnitPreference

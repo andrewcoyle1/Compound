@@ -69,6 +69,8 @@ class WorkoutTrackerPresenter {
     }
     var workoutNotes = ""
     var currentExerciseIndex = 0
+    /// Each exercise's bodyweight contribution by template id, read from the library on first use.
+    @ObservationIgnored var bodyweightPercents: [String: Int] = [:]
 
     /// The exercise index to use for Live Activity updates — prefers the expanded exercise
     /// over `currentExerciseIndex` so the widget reflects what the user is actually working on,
@@ -327,10 +329,13 @@ class WorkoutTrackerPresenter {
         #endif
     }
     
+    /// At effective load: a movement that lifts bodyweight adds it to every rep while the setting is on.
     func computeTotalVolumeKg() -> Double {
-        return workoutSession.exercises.flatMap { $0.sets }
-            .compactMap(\.volumeKg)
-            .reduce(0.0, +)
+        workoutSession.exercises.flatMap { exercise in
+            let contributionKg = bodyweightContribution(for: exercise)?.contributionKg
+            return exercise.sets.compactMap { BodyweightLoad.volumeKg(of: $0, contributionKg: contributionKg) }
+        }
+        .reduce(0.0, +)
     }
     
     private func firstIncompleteExerciseIndex(in exercises: [WorkoutExerciseModel]) -> Int? {

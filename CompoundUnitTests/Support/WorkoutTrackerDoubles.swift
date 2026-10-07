@@ -250,6 +250,12 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     var lastFinishedSession: WorkoutSessionModel? { endedSessions.last }
 
     // MARK: - End WP-L
+
+    // MARK: WP-O
+
+    var currentWeightKilograms: Double?
+
+    // MARK: - End WP-O
 }
 
 final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {

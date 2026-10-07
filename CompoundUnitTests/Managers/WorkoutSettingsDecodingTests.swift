@@ -55,4 +55,28 @@ struct WorkoutSettingsDecodingTests {
 
         #expect(decoded.intraSetRest == 20)
     }
+
+    /// The exercise strip is off unless chosen, including for every document saved before it.
+    @Test("Test A Document Saved Before The Exercise Strip Reads As Off")
+    func testExerciseStripDefaultsToOff() throws {
+        var json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(WorkoutSettings(authorId: "author-1"))) as? [String: Any] ?? [:]
+        json.removeValue(forKey: "show_exercise_strip")
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONSerialization.data(withJSONObject: json))
+
+        #expect(decoded.showExerciseStrip == nil)
+        #expect(!decoded.showsExerciseStrip)
+        #expect(!WorkoutSettings(authorId: "author-1").showsExerciseStrip)
+    }
+
+    @Test("Test The Exercise Strip Choice Is Kept Through A Save", arguments: [true, false])
+    func testExerciseStripRoundTrips(isOn: Bool) throws {
+        var settings = WorkoutSettings(authorId: "author-1")
+        settings.showExerciseStrip = isOn
+
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONEncoder().encode(settings))
+
+        #expect(decoded.showExerciseStrip == isOn)
+        #expect(decoded.showsExerciseStrip == isOn)
+    }
 }

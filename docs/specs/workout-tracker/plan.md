@@ -278,7 +278,11 @@ WP-0 ─┬─ A ─┬─ E ─┬─ J ─┐
 | An agent can't finish | Merge its green pure-rules commit; split the rest into a follow-on package; never merge red or with warnings; revert rather than patch |
 
 ## Owner action items
-- Enable **Time Sensitive Notifications** on the App ID and confirm the App Group for both App IDs before WP-D merges.
-- Merge the `SwiftfulDataManagers` fork PR (atomic write) during WP-A.
-- Confirm the prebuilt contribution values (squats/lunges ≈ 85, hinges ≈ 60) before WP-H merges.
-- Confirm Undo as an in-tracker affordance (correction row + shake/⌘Z) rather than a toast.
+All four were closed on 7 Oct 2026:
+- Time Sensitive Notifications and the App Group `group.com.compound.app` are enabled on both
+  App IDs (the app and the widget extension).
+- `SwiftfulDataManagers` fork PR #1 (atomic write) is merged and tagged `v1.2.1`; the app is
+  pinned to it.
+- The prebuilt contribution values WP-H shipped (dips and pull-ups 100, squat patterns 85,
+  hinges 60, ab wheel 75, knee raise 40) are confirmed as they stand.
+- Undo is an in-tracker affordance (the correction row plus shake / ⌘Z), not a toast.

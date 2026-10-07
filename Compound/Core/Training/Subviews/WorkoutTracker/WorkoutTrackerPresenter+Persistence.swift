@@ -87,9 +87,6 @@ extension WorkoutTrackerPresenter {
         writeSession()
     }
 
-    // ponytail: writes are non-atomic until SwiftfulDataManagers 1.2.1
-    // (andrewcoyle1/SwiftfulDataManagers#1); bump Package.resolved once it is tagged.
-
     /// Writes whatever is waiting. The debounced task calls this rather than `flushSave`: an edit
     /// still being typed is not committed by a pause, only by leaving it.
     ///

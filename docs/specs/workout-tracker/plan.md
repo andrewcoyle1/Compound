@@ -191,6 +191,16 @@ Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` 
 **Changes (a11y.md refs):** C1 `AccessibilityFocusState` back to the CTA after log/skip/next; S1 announcements on log, rest over (regardless of sound/haptic settings), exercise change; S3 AX5 header stacks, CTA short form, rest row vertical; S4 text on tints `.primary` with colour on the icon, current-row outline `.tint` 1.5 pt, increased contrast respected; S5 input labels + set-numbered control names; M1 Up Next actions Do Next/Do Later/Move Up/Move Down; M2 Magic Tap (log/skip) + Escape (minimise); M4 each row a container "Set 2, next to log"; M8 remove the suite-wide audit exclusions, filter by element, add passes with keyboard open / "Ready" / `AccessibilityXXXL` / light mode with a warm-up row. **Also remove the `XCTSkip` on `testTheTrackerPassesTheAccessibilityAudit`** (added 6 Oct 2026): the audit reports one "Potentially inaccessible text" with no element that survived labelling the menu texts, the +15s text and auditing a settled screen; dump every leaf element's screenshot with its label to find it (the earlier dump showed only the then-unlabeled "1" and "Kg" menu buttons). TipKit deferred unless test 1 shows the Done change confuses people.
 **Accept:** narrowed audit passes; `WorkoutTrackerUITests` serial. Manual: the VoiceOver walk-through below. **Depends:** E, J, F.
 
+## Status (7 Oct 2026)
+
+Waves 0–4 are merged (PRs #49–#60). The four audit tests in `WorkoutTrackerUITests` run every
+audit type in five states and are not red, but each is recorded as an **expected failure**: the
+audit still reports contrast, "potentially inaccessible text" and "text clipped" on
+`SwiftUI.AccessibilityNode`s it cannot attribute to any element, most of them inside the keypad
+window. A named element's issue must be excused by a listed reason or the test fails, so these
+cannot hide a real finding, but they are not a pass either. Follow-up: find the unnamed nodes
+(the keypad's keys and stepper are the first suspects) and clear them.
+
 ## Tail (serial, gated)
 - **WP-Q · Set-kind UI · M** (needs M): "Set Type" picker in the set-number menu; "Add Drop Set"/"Add Mini-Set" → indented sub-row; AMRAP chip; log titles "Log drop set"/"Log AMRAP set"; Last matched by kind.
 - **WP-R · Docked current-set bar · L** (input.md §7: one shared `SetKeyboardInputHost` in the bottom inset, steppers from `WeightStep`): build only if decision test 2 shows ≥ 0.3 keypad edits per set or ≥ 2 lifters name keypad friction; otherwise close as not needed.

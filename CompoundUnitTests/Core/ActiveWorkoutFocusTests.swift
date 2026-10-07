@@ -111,6 +111,25 @@ struct ActiveWorkoutFocusTests {
         #expect(ActiveWorkout.focus(afterLogging: "a-1", in: exercises, settings: settings, restFollows: false) == nil)
     }
 
+    /// With the set plan on, a drop or mini-set of the set just logged comes before the partner's
+    /// round: the Lock Screen and the card both target it, and only its last piece hands over.
+    @Test("Test A Set's Pieces Come Before The Partner's Round")
+    func testPiecesBeforePartner() {
+        func exercises(dropDone: Bool) -> [WorkoutExerciseModel] {
+            var first = exercise("a", done: 1, open: 1, group: "g")
+            let drop = WorkoutSetModel(
+                id: "a-1-d1", authorId: "a", index: 2, reps: 8, weightKg: 64, kind: .drop, parentSetId: "a-1",
+                isWarmup: false, completedAt: dropDone ? start : nil, dateCreated: start
+            )
+            first.sets.insert(drop, at: 1)
+            return [first, exercise("b", open: 2, group: "g")]
+        }
+
+        #expect(ActiveWorkout.nextSet(inBlock: ["a", "b"], of: exercises(dropDone: false))?.setId == "a-1-d1")
+        #expect(ActiveWorkout.focus(afterLogging: "a-1", in: exercises(dropDone: false), settings: settings, restFollows: false) == nil)
+        #expect(ActiveWorkout.focus(afterLogging: "a-1-d1", in: exercises(dropDone: true), settings: settings, restFollows: false) == "b")
+    }
+
     /// A circuit of three goes A, B, C, skipping a member with nothing left.
     @Test("Test A Circuit Skips A Finished Member")
     func testFocusCircuit() {

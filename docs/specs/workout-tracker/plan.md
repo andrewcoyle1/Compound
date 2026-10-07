@@ -208,6 +208,12 @@ window. A named element's issue must be excused by a listed reason or the test f
 cannot hide a real finding, but they are not a pass either. Follow-up: find the unnamed nodes
 (the keypad's keys and stepper are the first suspects) and clear them.
 
+The set plan (below) is merged in full on 7 Oct 2026: S1 (#62), S2 (#63), S3 (#64) and S5 (#65),
+all behind **Workout Settings › Set Plan**, off by default. Two things to know: with "Add Weight
+Instead" off, the AMRAP ceiling is stored as `Int.max` (S1 has no switch of its own; a `Bool?` is
+a small follow-up), and in a superset a set's drops and mini-sets now come before the partner's
+round (`ActiveWorkout.nextSet(inBlock:)`), which S5 found and the lead fixed.
+
 ## Tail (serial, gated)
 - **WP-Q · Set-kind UI · M** (needs M): "Set Type" picker in the set-number menu; "Add Drop Set"/"Add Mini-Set" → indented sub-row; AMRAP chip; log titles "Log drop set"/"Log AMRAP set"; Last matched by kind.
 - **WP-R · Docked current-set bar · L** (input.md §7: one shared `SetKeyboardInputHost` in the bottom inset, steppers from `WeightStep`): build only if decision test 2 shows ≥ 0.3 keypad edits per set or ≥ 2 lifters name keypad friction; otherwise close as not needed.

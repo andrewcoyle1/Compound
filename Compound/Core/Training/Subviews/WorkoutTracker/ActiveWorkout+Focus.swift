@@ -48,6 +48,8 @@ extension ActiveWorkout {
         let open = members.compactMap { member in
             currentSet(in: member).map { (exercise: member, set: $0, round: round(of: $0, in: member)) }
         }
+        // A set under way finishes its drops and mini-sets before the round moves to a partner.
+        if let piece = open.first(where: { $0.set.isSubSet }) { return (piece.exercise.id, piece.set.id) }
         guard let earliest = open.map(\.round).min(), !members.isEmpty else { return nil }
         let order = members.indices.map { (startMember + $0) % members.count }
         for index in order {

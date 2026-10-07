@@ -159,6 +159,52 @@ struct SetTargetPlanPresenterTests {
         #expect(screen.box.value.setTargets[0].amrapTargetReps == 10)
     }
 
+    // MARK: WP-P2
+
+    @Test("Test Partials Start To Failure And Save Their Reps")
+    func testPartialsRoundTrip() throws {
+        let screen = makeScreen()
+        let detail = try openDetail(screen)
+
+        detail.setType = .partials
+        #expect(detail.showsPartialReps && !detail.showsHoldSeconds && !detail.showsDrops)
+        #expect(detail.partialReps == nil)
+        #expect(detail.partialRepsChoices == [nil] + Array(1...10).map(Optional.some))
+        #expect(detail.partialRepsTitle(nil) == "To failure")
+        #expect(detail.partialRepsTitle(5) == "5 reps")
+        detail.partialReps = 5
+        screen.editor.onSavePressed()
+
+        #expect(screen.box.value.setTargets[0].setType == .partials)
+        #expect(screen.box.value.setTargets[0].partialReps == 5)
+    }
+
+    @Test("Test A Stretch Or Hold Starts At 30 Seconds And Saves Its Time", arguments: [SetTargetSetType.stretch, .hold])
+    func testHoldSecondsRoundTrip(kind: SetTargetSetType) throws {
+        let screen = makeScreen()
+        let detail = try openDetail(screen)
+
+        detail.setType = kind
+        #expect(detail.showsHoldSeconds && !detail.showsPartialReps)
+        #expect(detail.holdSeconds == 30)
+        #expect(detail.holdSecondsChoices == [15, 20, 30, 45, 60])
+        #expect(detail.holdSecondsTitle(45) == "45 s")
+        detail.holdSeconds = 45
+        screen.editor.onSavePressed()
+
+        #expect(screen.box.value.setTargets[0].setType == kind)
+        #expect(screen.box.value.setTargets[0].holdSeconds == 45)
+    }
+
+    /// An imported plan's 40 s hold is not one of the choices, but still shows as chosen.
+    @Test("Test A Hold Time Outside The Choices Is Offered Too")
+    func testUnlistedHoldSeconds() throws {
+        let screen = makeScreen(plansSets: true, [SetTarget(setNumber: 1, setType: .hold, holdSeconds: 40)])
+        let detail = try openDetail(screen)
+
+        #expect(detail.holdSecondsChoices == [15, 20, 30, 40, 45, 60])
+    }
+
     @Test("Test A Typed Target That Is Not A Count Is No Target")
     func testBadTarget() throws {
         let screen = makeScreen(plansSets: true, [SetTarget(setNumber: 1, setType: .amrap, amrapTargetReps: 8)])

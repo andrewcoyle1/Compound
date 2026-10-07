@@ -195,6 +195,27 @@ struct ActiveWorkoutStateTests {
         #expect(ActiveWorkout.logTitle(for: noReps.sets[0], in: noReps, unit: .kilograms, distanceUnit: .meters) == "Log set 1")
     }
 
+    /// WP-P2: the piece after a partials, stretch or hold set names itself; a timed one its time.
+    @Test("Test The Log Button Names Partials, A Stretch And A Hold")
+    func testLogTitleTechniquePieces() {
+        func piece(_ kind: SetKind, reps: Int? = nil, weightKg: Double? = nil, seconds: Int? = nil) -> String {
+            var parent = set("s1")
+            parent.kind = kind
+            var piece = set("p1", reps: reps, weightKg: weightKg)
+            piece.kind = kind
+            piece.parentSetId = "s1"
+            piece.durationSec = seconds
+            let bench = exercise("e1", sets: [parent, piece])
+            return ActiveWorkout.logTitle(for: bench.sets[1], in: bench, unit: .kilograms, distanceUnit: .meters)
+        }
+
+        #expect(piece(.partials, weightKg: 100) == "Log partials")
+        #expect(piece(.partials, reps: 5, weightKg: 100) == "Log partials · 100 kg × 5")
+        #expect(piece(.stretch, seconds: 30) == "Log 30 s stretch")
+        #expect(piece(.hold, weightKg: 100, seconds: 30) == "Log 30 s hold")
+        #expect(piece(.hold, weightKg: 100) == "Log hold")
+    }
+
     /// A new timed set holds no duration, only a greyed placeholder, so the button shows no
     /// figures and one tap cannot log an invented minute. Assistance reads as a negative weight.
     @Test("Test The Log Button Shows No Figures Until A Time Is Entered")

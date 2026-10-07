@@ -85,8 +85,8 @@ struct ProgressionEngine {
                 }
             }
 
-            // A drop or myo set is an intensity technique the template author designed. Prefill it
-            // with what was done last time, but never progress it.
+            // A drop, myo, partials, stretch or hold set is an intensity technique the template
+            // author designed. Prefill it with what was done last time, but never progress it.
             guard isProgressable(setTarget) else {
                 return SuggestedSet(weightKg: referenceWeight, reps: referenceReps)
             }
@@ -228,7 +228,7 @@ struct ProgressionEngine {
     private func isProgressable(_ target: SetTarget?) -> Bool {
         switch target?.setType ?? .standard {
         case .standard, .failure, .amrap:  return true
-        case .drop, .myo, .restPause, .cluster: return false
+        case .drop, .myo, .restPause, .cluster, .partials, .stretch, .hold: return false
         }
     }
 

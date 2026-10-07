@@ -296,32 +296,57 @@ struct SetTrackerRowView: View {
     func inputFields(exercise: WorkoutExerciseModel, set: Binding<WorkoutSetModel>) -> some View {
         let units = presenter.getUnitPreference(for: exercise)
         HStack(spacing: Spacing.s) {
-            switch exercise.trackingMode {
-            case .weightReps:
-                keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
-                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
-                keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                    .setColumn(width: 50, height: cellHeight, stretches: isStacked)
-            case .repsOnly:
-                keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                    .setColumn(width: 50, height: cellHeight, stretches: isStacked)
-            case .timeOnly:
-                // A set still to do gets a stopwatch; a logged one is corrected by typing.
-                if set.wrappedValue.completedAt == nil {
-                    SetStopwatch(set: set, targetSeconds: delegate.lastSet?.durationSec) {
-                        keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                    }
-                    .setColumn(width: 90, height: cellHeight, stretches: isStacked)
-                } else {
-                    keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                        .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+            if set.wrappedValue.isTimedPiece {
+                // A stretch or hold after the set is timed towards the plan's seconds, whatever the
+                // exercise tracks; a hold keeps the set's weight.
+                if SetKeyboardField.fields(for: set.wrappedValue, trackingMode: exercise.trackingMode).contains(.weight) {
+                    keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
+                        .setColumn(width: 70, height: cellHeight, stretches: isStacked)
                 }
-            case .distanceTime:
-                keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
-                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
-                keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                    .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+                timeField(set: set, targetSeconds: set.wrappedValue.durationSec)
+            } else {
+                trackingModeFields(exercise: exercise, set: set, units: units)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func trackingModeFields(
+        exercise: WorkoutExerciseModel,
+        set: Binding<WorkoutSetModel>,
+        units: (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit)
+    ) -> some View {
+        switch exercise.trackingMode {
+        case .weightReps:
+            keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
+                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+            keyboardField(.reps, set: set, label: String(localized: "Reps"))
+                .setColumn(width: 50, height: cellHeight, stretches: isStacked)
+        case .repsOnly:
+            keyboardField(.reps, set: set, label: String(localized: "Reps"))
+                .setColumn(width: 50, height: cellHeight, stretches: isStacked)
+        case .timeOnly:
+            timeField(set: set, targetSeconds: delegate.lastSet?.durationSec)
+        case .distanceTime:
+            keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
+                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+            keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+        }
+    }
+
+    /// A set still to do gets a stopwatch, its bar filling towards `targetSeconds`; a logged one is
+    /// corrected by typing.
+    @ViewBuilder
+    private func timeField(set: Binding<WorkoutSetModel>, targetSeconds: Int?) -> some View {
+        if set.wrappedValue.completedAt == nil {
+            SetStopwatch(set: set, targetSeconds: targetSeconds) {
+                keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+            }
+            .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+        } else {
+            keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
+                .setColumn(width: 90, height: cellHeight, stretches: isStacked)
         }
     }
 
@@ -549,7 +574,8 @@ struct SetTrackerRowView: View {
 
 extension SetTrackerRowView {
 
-    /// The set's circle, with its kind's chip under it: "AMRAP", or "Drop" or "Mini" on a sub-row.
+    /// The set's circle, with its kind's chip under it: "AMRAP", or "Drop", "Mini", "Partials",
+    /// "Stretch" or "Hold" on a sub-row.
     /// Under rather than beside, so the columns keep the headers' widths.
     func setBadge(set: Binding<WorkoutSetModel>) -> some View {
         VStack(spacing: Spacing.xxs) {
@@ -573,11 +599,11 @@ extension SetTrackerRowView {
         }
     }
 
-    private static func chip(for set: WorkoutSetModel) -> (text: LocalizedStringKey, tint: Color)? {
+    private static func chip(for set: WorkoutSetModel) -> (text: String, tint: Color)? {
         switch (set.subSetKind, set.kind) {
-        case (.drop, _): ("Drop", .warmup)
-        case (.mini, _): ("Mini", .warmup)
-        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { "AMRAP \($0)+" } ?? "AMRAP", .secondary)
+        case (.drop, _): (String(localized: "Drop"), .warmup)
+        case let (.mini, kind): (kind.pieceName ?? String(localized: "Mini"), .warmup)
+        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "AMRAP \($0)+") } ?? String(localized: "AMRAP"), .secondary)
         default: nil
         }
     }

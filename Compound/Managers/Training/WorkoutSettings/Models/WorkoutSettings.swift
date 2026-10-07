@@ -81,7 +81,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case .myo: return intraSetRestMyo
         case .restPause: return intraSetRestPause
         case .cluster: return intraSetRestCluster
-        case .standard, .drop, .amrap: return nil
+        case .standard, .drop, .amrap, .partials, .stretch, .hold: return nil
         }
     }
 

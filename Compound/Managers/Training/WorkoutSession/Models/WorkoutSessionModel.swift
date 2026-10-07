@@ -529,15 +529,17 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// target in order: a drop target is followed by its drops, each `dropStep` per cent lighter
     /// than the piece before (to the nearest 0.5 kg; the tracker snaps to the equipment later), a
     /// myo-rep, rest-pause or cluster target by its mini-sets at the set's weight, and an AMRAP set
-    /// carries the reps it sets out to beat unless the prefill already raised them.
+    /// carries the reps it sets out to beat unless the prefill already raised them. Partials, a
+    /// stretch or a hold is one piece after the set: partials and a hold at its weight, a stretch
+    /// with none, and the stretch and hold timed.
     static func applyingSetPlan(to workingSets: [WorkoutSetModel], setTargets: [SetTarget], authorId: String) -> [WorkoutSetModel] {
         workingSets.enumerated().flatMap { position, set -> [WorkoutSetModel] in
             guard position < setTargets.count, !set.isSubSet else { return [set] }
             let target = setTargets[position]
-            func piece(kind: SetKind, weightKg: Double?, reps: Int?) -> WorkoutSetModel {
+            func piece(kind: SetKind, weightKg: Double?, reps: Int? = nil, durationSec: Int? = nil) -> WorkoutSetModel {
                 WorkoutSetModel(
                     id: UUID().uuidString, authorId: authorId, index: set.index, reps: reps, weightKg: weightKg,
-                    side: set.side, kind: kind, parentSetId: set.id, isWarmup: false, dateCreated: .now
+                    durationSec: durationSec, side: set.side, kind: kind, parentSetId: set.id, isWarmup: false, dateCreated: .now
                 )
             }
             switch target.setType {
@@ -555,8 +557,14 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 }
             case .myo, .restPause, .cluster:
                 return [set] + (0..<max(target.miniSetCount ?? 0, 0)).map { _ in
-                    piece(kind: .standard, weightKg: set.weightKg, reps: nil)
+                    piece(kind: .standard, weightKg: set.weightKg)
                 }
+            case .partials:
+                return [set, piece(kind: .partials, weightKg: set.weightKg, reps: target.partialReps)]
+            case .stretch:
+                return [set, piece(kind: .stretch, weightKg: nil, durationSec: target.holdSeconds)]
+            case .hold:
+                return [set, piece(kind: .hold, weightKg: set.weightKg, durationSec: target.holdSeconds)]
             }
         }
     }

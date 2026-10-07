@@ -37,6 +37,20 @@ extension SetKind {
         case .myo: String(localized: "Myo-reps")
         case .restPause: String(localized: "Rest-pause")
         case .cluster: String(localized: "Cluster")
+        case .partials: String(localized: "Lengthened partials")
+        case .stretch: String(localized: "Loaded stretch")
+        case .hold: String(localized: "Static hold")
+        }
+    }
+
+    /// "Partials", "Stretch", "Hold": the piece after a set of these kinds, on its chip and in its
+    /// row's name. Nil for every other kind, whose pieces are drops or mini-sets.
+    var pieceName: String? {
+        switch self {
+        case .partials: String(localized: "Partials")
+        case .stretch: String(localized: "Stretch")
+        case .hold: String(localized: "Hold")
+        case .standard, .drop, .amrap, .myo, .restPause, .cluster: nil
         }
     }
 }
@@ -146,9 +160,10 @@ extension ActiveWorkout {
         return (siblings.firstIndex { $0.id == set.id } ?? -1) + 1
     }
 
-    /// "drop set 1", "mini-set 2": a sub-row's name after its parent's.
+    /// "drop set 1", "mini-set 2", "Partials": a sub-row's name after its parent's.
     static func subSetName(of set: WorkoutSetModel, in sets: [WorkoutSetModel]) -> String? {
         guard let subKind = set.subSetKind else { return nil }
+        if let pieceName = set.kind.pieceName { return pieceName }
         let ordinal = subSetOrdinal(of: set, in: sets)
         return switch subKind {
         case .drop: String(localized: "drop set \(ordinal)")

@@ -32,6 +32,7 @@ extension ActiveWorkout {
         guard let position = exercise.sets.firstIndex(where: { $0.id == setId }),
               let next = exercise.sets[(position + 1)...].first(where: { $0.completedAt == nil }),
               let subKind = next.subSetKind else { return nil }
+        if let hint = techniqueHint(for: next) { return hint }
         let ordinal = subSetOrdinal(of: next, in: exercise.sets)
         let name = subKind == .drop ? String(localized: "drop \(ordinal)") : String(localized: "mini-set \(ordinal)")
 
@@ -74,7 +75,8 @@ extension ActiveWorkout {
                 }
                 return String(localized: "Set \(number) is a drop set from your plan: \(first), then \(weights) to failure, no rest between.")
             }
-            let minis = pieces.count(where: { $0.subSetKind == .mini })
+            // Mini-sets are stored plain; partials, a stretch or a hold are not mini-sets.
+            let minis = pieces.count(where: { $0.subSetKind == .mini && $0.kind == .standard })
             if minis > 0 {
                 let count = String(localized: "\(minis) mini-sets")
                 return String(localized: "Set \(number) is \(set.kind.displayName) from your plan: \(first), then \(count), a short breath between.")
@@ -82,6 +84,23 @@ extension ActiveWorkout {
             return nil
         }
         return sentences.isEmpty ? nil : sentences.joined(separator: " ")
+    }
+
+    /// "partials to failure", "partials × 5", "30 s stretch", "30 s hold": the piece after a
+    /// partials, stretch or hold set, which follows it with no rest. Nil for a drop or mini-set.
+    private static func techniqueHint(for piece: WorkoutSetModel) -> PieceHint? {
+        let text: String
+        switch piece.kind {
+        case .partials:
+            text = piece.reps.map { String(localized: "partials × \($0)") } ?? String(localized: "partials to failure")
+        case .stretch:
+            text = piece.durationSec.map { String(localized: "\($0) s stretch") } ?? String(localized: "Stretch")
+        case .hold:
+            text = piece.durationSec.map { String(localized: "\($0) s hold") } ?? String(localized: "Hold")
+        case .standard, .drop, .amrap, .myo, .restPause, .cluster:
+            return nil
+        }
+        return PieceHint(text: text, spokenText: text)
     }
 
     /// "100 × 8", "100", "8 reps": a piece's figures as the plan reads them, the unit left to the

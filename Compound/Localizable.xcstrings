@@ -174,12 +174,72 @@
         }
       }
     },
+    "%lld partials" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld partial"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld partials"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld parcial"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld parciales"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld s breath" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld s de respiro"
+          }
+        }
+      }
+    },
+    "%lld s hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sostén de %lld s"
+          }
+        }
+      }
+    },
+    "%lld s stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "estiramiento de %lld s"
           }
         }
       }
@@ -214,12 +274,52 @@
         }
       }
     },
+    "a %lld s hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "un sostén de %lld s"
+          }
+        }
+      }
+    },
+    "a %lld s stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "un estiramiento de %lld s"
+          }
+        }
+      }
+    },
     "A negative weight is assistance" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un peso negativo es asistencia"
+          }
+        }
+      }
+    },
+    "A set followed straight away by holding the stretched position for a set time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una serie seguida de inmediato por mantener la posición estirada durante un tiempo fijo."
+          }
+        }
+      }
+    },
+    "A set followed straight away by holding the weight still for a set time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una serie seguida de inmediato por sostener el peso inmóvil durante un tiempo fijo."
           }
         }
       }
@@ -240,6 +340,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Una serie llevada cerca del fallo y continuada tras pausas breves con el mismo peso."
+          }
+        }
+      }
+    },
+    "A set taken to failure, then continued with partial reps in the stretched half of the movement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una serie llevada al fallo y continuada con repeticiones parciales en la mitad estirada del movimiento."
           }
         }
       }
@@ -614,6 +724,16 @@
         }
       }
     },
+    "Hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostén"
+          }
+        }
+      }
+    },
     "Last %lld Days" : {
       "localizations" : {
         "en" : {
@@ -654,6 +774,46 @@
         }
       }
     },
+    "Lengthened partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parciales en estiramiento"
+          }
+        }
+      }
+    },
+    "Loaded stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estiramiento con carga"
+          }
+        }
+      }
+    },
+    "Log %lld s hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar sostén de %lld s"
+          }
+        }
+      }
+    },
+    "Log %lld s stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar estiramiento de %lld s"
+          }
+        }
+      }
+    },
     "Log AMRAP set" : {
       "localizations" : {
         "es" : {
@@ -674,6 +834,16 @@
         }
       }
     },
+    "Log hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar sostén"
+          }
+        }
+      }
+    },
     "Log mini-set %lld" : {
       "localizations" : {
         "es" : {
@@ -684,12 +854,32 @@
         }
       }
     },
+    "Log partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar parciales"
+          }
+        }
+      }
+    },
     "Log set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrar serie"
+          }
+        }
+      }
+    },
+    "Log stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar estiramiento"
           }
         }
       }
@@ -830,6 +1020,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuando el objetivo llegue a %lld"
+          }
+        }
+      }
+    },
+    "Partial Reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones parciales"
+          }
+        }
+      }
+    },
+    "Partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parciales"
+          }
+        }
+      }
+    },
+    "partials to failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "parciales al fallo"
+          }
+        }
+      }
+    },
+    "partials × %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "parciales × %lld"
           }
         }
       }
@@ -1054,6 +1284,16 @@
         }
       }
     },
+    "Static hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostén estático"
+          }
+        }
+      }
+    },
     "Stop timer" : {
       "localizations" : {
         "es" : {
@@ -1070,6 +1310,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strava no pudo procesar el entrenamiento."
+          }
+        }
+      }
+    },
+    "Stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estiramiento"
           }
         }
       }

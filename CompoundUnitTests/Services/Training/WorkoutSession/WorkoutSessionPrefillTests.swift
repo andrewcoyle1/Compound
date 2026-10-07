@@ -165,4 +165,23 @@ struct WorkoutSessionPrefillTests {
         #expect(workingSets(of: session).map(\.weightKg) == [60, 60, 60])
         #expect(workingSets(of: session).map(\.reps) == [10, 10, 10])
     }
+
+    /// A template's drop and failure sets are logged as drop and AMRAP sets; warm-ups stay plain.
+    @Test("Test Each Working Set Takes Its Target's Set Type")
+    func testEachWorkingSetTakesItsTargetsSetType() {
+        var template = template()
+        template.exercises[0].setTargets[1].setType = .drop
+        template.exercises[0].setTargets[2].setType = .failure
+
+        let session = WorkoutSessionModel(
+            authorId: "author-1",
+            template: template,
+            previousWorkoutSession: previousSession(),
+            dateCreated: start
+        )
+
+        #expect(workingSets(of: session).map(\.kind) == [.standard, .drop, .amrap])
+        #expect(workingSets(of: session).allSatisfy { !$0.isSubSet })
+        #expect(warmupSets(of: session).allSatisfy { $0.kind == .standard })
+    }
 }

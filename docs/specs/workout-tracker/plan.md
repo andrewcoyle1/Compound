@@ -212,6 +212,23 @@ cannot hide a real finding, but they are not a pass either. Follow-up: find the 
 - **WP-Q · Set-kind UI · M** (needs M): "Set Type" picker in the set-number menu; "Add Drop Set"/"Add Mini-Set" → indented sub-row; AMRAP chip; log titles "Log drop set"/"Log AMRAP set"; Last matched by kind.
 - **WP-R · Docked current-set bar · L** (input.md §7: one shared `SetKeyboardInputHost` in the bottom inset, steppers from `WeightStep`): build only if decision test 2 shows ≥ 0.3 keypad edits per set or ≥ 2 lifters name keypad friction; otherwise close as not needed.
 
+## Set plan (decided 7 Oct 2026; mock-ups at https://claude.ai/artifact/LfKYaW9oNaXXYFTEk8hmUj)
+
+Behind **Workout Settings › Set Plan** (`WorkoutSettings.setPlanning: Bool?`, accessor
+`plansSets`, default off, like the strip was). Off, nothing changes: templates keep their set
+types, sessions are created as today, the tracker and Live Activity are byte-for-byte as now.
+On: the template owns each set's kind and its plan, the session is created from it, the card
+shows the plan, rests are per kind, the Lock Screen walks the pieces.
+
+| WP | Scope | Owns | Depends |
+|---|---|---|---|
+| **S1 · Model and rules** (general-purpose) | `setPlanning` + accessor; `SetTargetSetType` gains `amrap`, `restPause`, `cluster` (`failure` keeps decoding, read as AMRAP); `SetTarget` gains `dropCount`, `dropStepPercent` (default 20), `dropReps` (nil = to failure), `miniSetCount`, `amrapTargetReps`, all Optional; `WorkoutSetModel.targetReps: Int?` (`target_reps`); session creation expands a drop target into its sub-sets at −step% each (rounded to 0.5 kg; the tracker's grid snaps later) and a myo/rest-pause/cluster target into its mini-sets, only with the switch on; per-kind intra-set rests `intraSetRestMyoSeconds` (15), `intraSetRestPauseSeconds` (20), `intraSetRestClusterSeconds` (15), with `intraSetRestSeconds` as the fallback for a document that only has it; `amrapRaisesTarget: Bool?` (true), `amrapAddsWeightAtTarget: Int?` (12); progression keeps kinds and plans, raises an AMRAP target by one after it is beaten twice running, and adds weight instead once the target reaches the ceiling | `WorkoutSettings.swift`, `SetTargetSetType.swift`, `SetTarget`, `WorkoutSetModel.swift` (one field), `WorkoutSessionModel.swift` (creation), `RestDurationRules.swift` (`intraSetRest` per kind), the progression planner, decode/rule tests, coach parity unchanged | — |
+| **S2 · Template editor and rest settings** (SwiftUI) | `SetTargetView`/`Presenter`: with the switch on, each set row shows its kind and opens a detail sheet (Drop: drops stepper, −10/20/30 % chips, reps to failure or a number; myo/rest-pause/cluster: mini-set count; AMRAP: target reps), footer "Drops and mini-sets count with their set…"; Rest Timers screen gains "Within a set" rows per kind and the AMRAP section (board 3); Workout Settings gains the Set Plan switch | the set-target module, the rest-timer and workout settings screens, strings | S1 |
+| **S3 · The plan on the card** (SwiftUI) | With the switch on: AMRAP chip reads its target ("AMRAP 8+"), the CTA's second line names the next piece ("Then: drop 1 · 80 kg, no rest") from a pure `ActiveWorkout.nextPiece(after:)`, the progression note says what the plan is when a set comes with one, `targetReps` shown greyed as the AMRAP's placeholder | `WorkoutPrimaryCTA.swift`, `ActiveWorkoutState.swift`, `+ActiveExercise.swift` (note text), `SetTrackerRowView.swift` (the chip), tests | S1 |
+| **S5 · Live Activity pieces** (general-purpose) | `ContentState` gains `targetPieceLabel` ("Drop 1 of 2") and `targetKind`; the banner names the piece; the set's segment of the progress bar splits into its pieces; the intra-set rest draws as a bar with Skip rather than a countdown; Complete walks sub-sets in order through `ActiveWorkout.log` as it does sets | `WorkoutActivityAttributes.swift`, `LiveActivityPhase*.swift`, `LiveActivityManager.swift`, the widget views, tests | S1 |
+
+Merge order S1, then S3, S2, S5. Same working rules as every package above.
+
 ## Dependency graph
 
 ```

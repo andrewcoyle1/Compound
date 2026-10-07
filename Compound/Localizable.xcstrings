@@ -29127,6 +29127,26 @@
         }
       }
     },
+    "Finish at %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar a las %@"
+          }
+        }
+      }
+    },
+    "Keep Going" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        }
+      }
+    },
     "Last" : {
       "localizations" : {
         "es" : {
@@ -29167,12 +29187,32 @@
         }
       }
     },
+    "Logged from Lock Screen: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrado desde la pantalla de bloqueo: %@"
+          }
+        }
+      }
+    },
     "Next to log" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siguiente por registrar"
+          }
+        }
+      }
+    },
+    "No set logged in the last hour." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No has registrado ninguna serie en la última hora."
           }
         }
       }
@@ -29263,6 +29303,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Progresión inteligente. %@"
+          }
+        }
+      }
+    },
+    "Still training?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Sigues entrenando?"
           }
         }
       }

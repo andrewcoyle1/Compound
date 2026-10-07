@@ -42,6 +42,11 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     
     /// The current rest end time for the active session, if any.
     var restEndTime: Date? { get }
+    /// When that rest began, as the rest's owner recorded it, wherever it was started. Kept after
+    /// it runs out, so the inline timer reads Ready until the next set.
+    var restStartedAt: Date? { get }
+    /// The last session finished on this device, from here or from the Live Activity.
+    var lastFinishedSession: WorkoutSessionModel? { get }
 
     /// The current active workout session, if any.
     var activeSession: WorkoutSessionModel? { get }

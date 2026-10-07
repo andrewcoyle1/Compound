@@ -76,8 +76,8 @@ extension WorkoutTrackerPresenter {
         workoutSession.exercises.contains { $0.sets.contains { $0.completedAt != nil } }
     }
 
-    func finishWorkout() {
-        let now = Date()
+    /// `now` is when the workout ended: earlier than the tap for "Still training?"'s Finish.
+    func finishWorkout(at now: Date = Date()) {
         #if !targetEnvironment(macCatalyst)
         workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         #endif

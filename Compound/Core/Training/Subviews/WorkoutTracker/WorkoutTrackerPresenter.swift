@@ -54,9 +54,10 @@ class WorkoutTrackerPresenter {
     }
     
     var expandedExerciseId: String?
-    /// When the rest on screen began, for the inline timer's progress; kept after it runs out so
-    /// the timer can read Ready. `nil` for a rest started from the Lock Screen.
-    var restStartedAt: Date?
+    /// Up to when the screen has seen the session's logged sets: moved on by everything the screen
+    /// does, not by saves made elsewhere, so a set logged after it came from the Live Activity.
+    /// See `+Persistence` and `ActiveWorkout.receipt`.
+    var lastSeenSetCompletion: Date?
     /// Rests set by hand on a row, by set id, so the log button rests as long as the row would.
     /// Kept in `ActiveWorkoutScreenState`, like the two below, so a minimise does not lose it.
     var customRestSeconds: [String: Int] = [:] {

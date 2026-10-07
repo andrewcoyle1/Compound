@@ -19,6 +19,12 @@ extension WorkoutTrackerPresenter {
         interactor.restEndTime
     }
 
+    /// When the rest on screen began, for the inline timer's progress: the rest owner's, so a rest
+    /// started from the Lock Screen or before a relaunch has one too.
+    var restStartedAt: Date? {
+        interactor.restStartedAt
+    }
+
     var isRestActive: Bool {
         guard let end = interactor.restEndTime else { return false }
         return Date() < end
@@ -103,10 +109,9 @@ extension WorkoutTrackerPresenter {
 
     func cancelRestTimer() {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
-        // Cancel in manager (will also update Live Activity)
+        // Cancel in manager (will also update Live Activity, and forget when the rest began)
         interactor.cancelRest()
         #endif
-        restStartedAt = nil
     }
 
     /// Announces every rest that runs out while this screen is up. Driven from its own `.task` so
@@ -141,7 +146,6 @@ extension WorkoutTrackerPresenter {
             interactor.prepareSoundEffect(sound: .restComplete, simultaneousPlayers: 1)
         }
         interactor.trackEvent(event: Event.startRestTimerCalled(inputDuration: durationSeconds, resolvedDuration: duration))
-        restStartedAt = Date()
         #if !targetEnvironment(macCatalyst)
         interactor.startRest(durationSeconds: duration, session: workoutSession, currentExerciseIndex: currentExerciseIndex)
         #endif

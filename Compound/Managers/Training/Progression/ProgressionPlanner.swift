@@ -131,10 +131,11 @@ struct ProgressionPlanner {
 
     /// The sets that count as one session's attempt at an exercise. The two rows of a per-side
     /// set are one set, so only the left one is read — otherwise three sets a side would look
-    /// like six and every rep count would be read twice.
+    /// like six and every rep count would be read twice. A sub-set (a drop or mini-set) is part of
+    /// its parent's set, and the parent's figures are the ones to progress from.
     private static func completedWorkingSets(of exercise: WorkoutExerciseModel) -> [WorkoutSetModel] {
         exercise.sets
-            .filter { !$0.isWarmup && $0.completedAt != nil }
+            .filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
             .filter { $0.side != .right }
     }
 }

@@ -287,6 +287,7 @@ export function shapeSession(doc, env) {
                 distanceMeters: set.distance_meters ?? null,
                 rpe: set.rpe ?? null,
                 side: set.side ?? null,
+                parentSetId: set.parent_set_id ?? null,
                 isWarmup: set.isWarmup === true,
                 completed: set.completed_at != null,
             })),

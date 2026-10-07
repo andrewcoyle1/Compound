@@ -78,6 +78,15 @@ enum RestDurationRules {
             return scale(base, by: settings.warmUpRestScaling)
         }
 
+        // A drop or mini-set still to come belongs to this set: no rest before a drop, the short
+        // intra-set rest before a mini-set or cluster. The set's last row then rests as the set
+        // itself would have, so a drop on the last set still walks to the next exercise.
+        if let next = followingSubSet(of: set, in: exercise) {
+            return intraSetRest(before: next, in: exercise, settings: settings)
+        }
+        let parentId = set.parentSetId
+        let set = exercise.sets.first { $0.id == parentId } ?? set
+
         // Before the last-set check, because the left half of a pair is never the last working
         // set and would otherwise fall through to the full between-sets rest.
         if hasFollowingSidePartner(set, in: exercise) {
@@ -116,7 +125,8 @@ enum RestDurationRules {
 
         let single = restAfterCompleting(set, in: exercise, settings: settings, context: context, customRestSeconds: customRestSeconds)
         guard customRestSeconds == nil, let group = exercise.supersetGroupId, !set.isWarmup,
-              !hasFollowingSidePartner(set, in: exercise) else { return single }
+              !hasFollowingSidePartner(set, in: exercise),
+              followingSubSet(of: set, in: exercise) == nil else { return single }
         let partners = workout.filter { $0.supersetGroupId == group && $0.id != exercise.id }
         guard !partners.isEmpty else { return single }
 
@@ -142,6 +152,21 @@ enum RestDurationRules {
         return scaled > 0 ? scaled : nil
     }
 
+    /// The next drop, mini-set or cluster of the set `set` belongs to, after `set` itself.
+    private static func followingSubSet(of set: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> WorkoutSetModel? {
+        let parentId = set.parentSetId ?? set.id
+        guard let position = exercise.sets.firstIndex(where: { $0.id == set.id }) else { return nil }
+        return exercise.sets[(position + 1)...].first { $0.parentSetId == parentId }
+    }
+
+    /// The rest before `subSet`, decided by its kind, or its parent's when the row itself is plain.
+    private static func intraSetRest(before subSet: WorkoutSetModel, in exercise: WorkoutExerciseModel, settings: WorkoutSettings) -> Int? {
+        let parentKind = exercise.sets.first { $0.id == subSet.parentSetId }?.kind ?? .standard
+        let kind = subSet.kind == .standard ? parentKind : subSet.kind
+        guard kind.restsWithinTheSet, settings.intraSetRest > 0 else { return nil }
+        return settings.intraSetRest
+    }
+
     /// True when this set is the first limb of a pair whose other limb is still to come, so what
     /// follows is a swap of hands rather than a rest between sets.
     private static func hasFollowingSidePartner(_ set: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> Bool {
@@ -153,7 +178,8 @@ enum RestDurationRules {
     }
 
     /// Warm-ups are prepended, so the last working set is the last of the sets that are not one.
+    /// A drop or mini-set trailing it is part of it, not a set after it.
     private static func isLastWorkingSet(_ set: WorkoutSetModel, in exercise: WorkoutExerciseModel) -> Bool {
-        exercise.sets.last(where: { !$0.isWarmup })?.id == set.id
+        exercise.sets.last(where: { !$0.isWarmup && !$0.isSubSet })?.id == set.id
     }
 }

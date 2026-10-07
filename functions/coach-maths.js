@@ -33,11 +33,13 @@ const clamp = (value, low, high, whenNotFinite) => (Number.isFinite(value) ? Mat
 
 // MARK: - Sets
 
-// A left/right pair is one set: a right row straight after a left one folds into it.
+// A left/right pair is one set: a right row straight after a left one folds into it. A sub-set (a
+// drop or mini-set, carrying `parentSetId`) is part of its parent and adds nothing.
 export function pairedSetCount(sets) {
     let count = 0;
     let previousSide = null;
     for (const set of sets) {
+        if (set.parentSetId != null) continue;
         if (!(set.side === "right" && previousSide === "left")) count += 1;
         previousSide = set.side ?? null;
     }

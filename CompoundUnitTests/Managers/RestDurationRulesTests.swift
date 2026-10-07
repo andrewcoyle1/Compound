@@ -14,8 +14,11 @@ struct RestDurationRulesTests {
 
     private static let start = Date(timeIntervalSince1970: 1_772_000_000)
 
-    private func set(_ id: String, warmup: Bool = false, side: SetSide? = nil) -> WorkoutSetModel {
-        WorkoutSetModel(id: id, authorId: "author-1", index: 1, reps: 8, side: side, isWarmup: warmup, dateCreated: Self.start)
+    private func set(_ id: String, warmup: Bool = false, side: SetSide? = nil, kind: SetKind = .standard, parent: String? = nil) -> WorkoutSetModel {
+        WorkoutSetModel(
+            id: id, authorId: "author-1", index: 1, reps: 8, side: side, kind: kind, parentSetId: parent,
+            isWarmup: warmup, dateCreated: Self.start
+        )
     }
 
     private func exercise(_ sets: [WorkoutSetModel]) -> WorkoutExerciseModel {
@@ -138,6 +141,70 @@ struct RestDurationRulesTests {
         #expect(rest(after: first, in: exercise, settings: settings, context: zeroOverride) == 70)
         #expect(rest(after: first, in: exercise, settings: settings, context: typeOnly) == 70)
         #expect(rest(after: first, in: exercise, settings: settings, context: unknownType) == 100)
+    }
+
+    // MARK: - Sub-sets
+
+    /// A drop follows its parent at once; the drop then rests as its parent would have.
+    @Test("Test There Is No Rest Before A Drop")
+    func testThereIsNoRestBeforeADrop() {
+        let parent = set("x1")
+        let drop = set("x1-d", kind: .drop, parent: "x1")
+        let exercise = exercise([parent, drop, set("x2")])
+
+        #expect(rest(after: parent, in: exercise) == nil)
+        #expect(rest(after: drop, in: exercise) == 100)
+    }
+
+    /// Mini-sets and clusters take the intra-set rest, 15 seconds unless chosen, none at zero.
+    @Test("Test Myo, Rest-Pause And Cluster Rows Rest The Intra-Set Rest", arguments: [SetKind.myo, .restPause, .cluster])
+    func testIntraSetRest(kind: SetKind) {
+        let parent = set("x1", kind: kind)
+        let first = set("x1-m1", kind: kind, parent: "x1")
+        let last = set("x1-m2", kind: kind, parent: "x1")
+        let exercise = exercise([parent, first, last, set("x2")])
+        var chosen = settings
+        chosen.intraSetRestSeconds = 20
+        var none = settings
+        none.intraSetRestSeconds = 0
+
+        #expect(rest(after: parent, in: exercise) == 15)
+        #expect(rest(after: first, in: exercise) == 15)
+        #expect(rest(after: last, in: exercise) == 100)
+        #expect(rest(after: parent, in: exercise, settings: chosen) == 20)
+        #expect(rest(after: parent, in: exercise, settings: none) == nil)
+    }
+
+    /// A plain row under a myo parent is still a mini-set of it.
+    @Test("Test A Plain Sub-Set Takes Its Parent's Kind")
+    func testAPlainSubSetTakesItsParentsKind() {
+        let parent = set("x1", kind: .myo)
+        #expect(rest(after: parent, in: exercise([parent, set("x1-m", parent: "x1"), set("x2")])) == 15)
+    }
+
+    /// The parent of the last set is still the last set: its trailing drop walks to the next
+    /// exercise, rather than the parent being taken for a set in the middle.
+    @Test("Test A Sub-Set Does Not End Its Parent's Rest Rule")
+    func testASubSetDoesNotEndItsParentsRestRule() {
+        let last = set("x2")
+        let drop = set("x2-d", kind: .drop, parent: "x2")
+        let exercise = exercise([set("x1"), last, drop])
+
+        #expect(rest(after: last, in: exercise) == nil)
+        #expect(rest(after: drop, in: exercise) == 200)
+    }
+
+    /// In a superset, a drop still to come keeps the parent's rule: no walk to the partner first.
+    @Test("Test A Drop In A Superset Comes Before The Partner")
+    func testADropInASupersetComesBeforeThePartner() {
+        var first = member("a", sets: 2)
+        first.sets.insert(set("a1-d", kind: .drop, parent: "a1"), at: 1)
+        var transition = settings
+        transition.supersetTransitionRestSeconds = 30
+        let workout = [first, member("b", sets: 2)]
+
+        #expect(rest(after: "a1", in: workout, settings: transition) == nil)
+        #expect(rest(after: "a1-d", in: workout, settings: transition) == 30)
     }
 
     // MARK: - Across the workout

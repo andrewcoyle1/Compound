@@ -82,4 +82,57 @@ struct SetKindTests {
         #expect(SetKind(.myo) == .myo)
         #expect(SetKind(.failure) == .amrap)
     }
+
+    // MARK: - Counting
+
+    @Test("Test A Sub-Set Is Not Counted As A Set")
+    func testASubSetIsNotCounted() {
+        let sets = [set("s1"), set("s1-d1", kind: .drop, parent: "s1"), set("s1-d2", kind: .drop, parent: "s1"), set("s2")]
+
+        #expect(sets.pairedSetCount == 2)
+        #expect(sets.fullyCompletedPairedSetCount == 2)
+    }
+
+    @Test("Test A Sub-Set Between A Pair Does Not Break The Pair")
+    func testASubSetBetweenAPairKeepsThePair() {
+        let sets = [set("s1-l", side: .left), set("s1-r", side: .right), set("s1-d", kind: .drop, parent: "s1-l", side: .right), set("s2-l", side: .left)]
+
+        #expect(sets.pairedSetCount == 2)
+    }
+
+    @Test("Test A Sub-Set Shares Its Parent's Number")
+    func testASubSetSharesItsParentsNumber() {
+        let drop = set("s1-d", kind: .drop, parent: "s1")
+        let second = set("s2")
+        let exercise = WorkoutExerciseModel(
+            id: "e1", authorId: "author-1", templateId: "t1", name: "Bench Press",
+            trackingMode: .weightReps, index: 1, sets: [set("s1"), drop, second]
+        )
+
+        #expect(exercise.workingSetNumber(for: drop) == 1)
+        #expect(exercise.workingSetNumber(for: second) == 2)
+        #expect(exercise.workingSetCount == 2)
+        #expect(exercise.loggedSetCount == 2)
+    }
+
+    // MARK: - Progression
+
+    /// Progression reads the parent's figures; a drop's lighter weight is not an attempt.
+    @Test("Test Progression History Leaves Sub-Sets Out")
+    func testProgressionHistoryLeavesSubSetsOut() {
+        let session = WorkoutSessionModel(
+            id: "session-1", authorId: "author-1", name: "Push", dateCreated: date, endedAt: date,
+            exercises: [
+                WorkoutExerciseModel(
+                    id: "e1", authorId: "author-1", templateId: "t1", name: "Bench Press",
+                    trackingMode: .weightReps, index: 1,
+                    sets: [set("s1"), set("s1-d", kind: .drop, parent: "s1"), set("s2")]
+                )
+            ]
+        )
+
+        let history = ProgressionPlanner.history(forTemplateId: "t1", in: [session])
+
+        #expect(history.first?.workingSets.map(\.id) == ["s1", "s2"])
+    }
 }

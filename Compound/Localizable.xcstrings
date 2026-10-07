@@ -454,6 +454,16 @@
         }
       }
     },
+    "Alternatives" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternativas"
+          }
+        }
+      }
+    },
     "AMRAP" : {
       "localizations" : {
         "es" : {
@@ -720,6 +730,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Termina un entrenamiento y tus mejores levantamientos aparecerán aquí."
+          }
+        }
+      }
+    },
+    "From week %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desde la semana %lld"
           }
         }
       }
@@ -1074,6 +1094,16 @@
         }
       }
     },
+    "Plan notes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas del plan"
+          }
+        }
+      }
+    },
     "Position %lld of %lld" : {
       "localizations" : {
         "es" : {
@@ -1110,6 +1140,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reps en cada descenso"
+          }
+        }
+      }
+    },
+    "Rest %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso %@"
           }
         }
       }
@@ -1544,12 +1584,52 @@
         }
       }
     },
+    "Watch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver"
+          }
+        }
+      }
+    },
+    "Watch %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver %@"
+          }
+        }
+      }
+    },
+    "Week %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semana %lld"
+          }
+        }
+      }
+    },
     "Weekly Workouts" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamientos semanales"
+          }
+        }
+      }
+    },
+    "Weeks %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semanas %@"
           }
         }
       }

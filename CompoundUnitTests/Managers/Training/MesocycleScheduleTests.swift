@@ -293,6 +293,46 @@ struct MesocycleScheduleTests {
         #expect(today(joined, [])?.dayPlan.id == "a")
     }
 
+    // MARK: - Today's microcycle
+
+    /// Starting today's workout picks that week's targets, so today's entry says which week it is.
+    @Test("Test Today's Workout Carries Its Microcycle")
+    func testTodaysWorkoutCarriesItsMicrocycle() {
+        #expect(today(run(), [])?.cycleIndex == 1)
+
+        let firstPass = [session("a", dayOffset: 0), session("b", dayOffset: 2), session("c", dayOffset: 4)]
+        let item = today(run(), firstPass, dayOffset: 7)
+        #expect(item?.dayPlan.id == "a")
+        #expect(item?.cycleIndex == 2)
+        // Done today, it keeps the week it was done in.
+        #expect(today(run(), firstPass + [session("a", dayOffset: 7, hour: 8)], dayOffset: 7)?.cycleIndex == 2)
+    }
+
+    /// A rest the second microcycle's A pre-logged for late tomorrow is that microcycle's rest.
+    @Test("Test A Rest Pre-Logged For Later Today Carries Its Microcycle")
+    func testARestPreLoggedForLaterTodayCarriesItsMicrocycle() {
+        let sessions = [session("a", dayOffset: 0), session("b", dayOffset: 2), session("c", dayOffset: 4),
+                        session("a", dayOffset: 7), restSession("rest 1", dayOffset: 8, hour: 23)]
+
+        let item = today(run(), sessions, dayOffset: 8)
+
+        #expect(item?.dayPlan.id == "rest 1")
+        #expect(item?.completedSessionId == "rest 1-8-23")
+        #expect(item?.cycleIndex == 2)
+    }
+
+    @Test("Test Joining At A Later Microcycle Counts From There")
+    func testJoiningAtALaterMicrocycleCountsFromThere() {
+        var joined = run()
+        joined.firstMicrocycleIndex = 2
+        #expect(today(joined, [])?.cycleIndex == 3)
+    }
+
+    @Test("Test Without A Mesocycle There Is No Microcycle")
+    func testWithoutAMesocycleThereIsNoMicrocycle() {
+        #expect(MesocycleSchedule.todayItem(run: nil, sessions: [])?.cycleIndex == nil)
+    }
+
     @Test("Test A Workout Done After Joining Fills The Joined Microcycle")
     func testAWorkoutDoneAfterJoiningFillsTheJoinedMicrocycle() {
         var joined = run()

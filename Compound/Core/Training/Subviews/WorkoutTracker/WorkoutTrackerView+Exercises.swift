@@ -122,6 +122,9 @@ extension WorkoutTrackerView {
     func exerciseRow(_ exercise: WorkoutExerciseModel, isDone: Bool) -> some View {
         Button {
             presenter.onExerciseSelected(exercise.id)
+            // The row leaves the list as its exercise goes onto the card; VoiceOver goes on to
+            // the button that logs its first set rather than to wherever the row was.
+            returnFocusToPrimaryCTA()
         } label: {
             ListRow(
                 title: exercise.name,

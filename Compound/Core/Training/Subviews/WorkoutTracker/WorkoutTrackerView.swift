@@ -18,6 +18,9 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
     
     @State var presenter: WorkoutTrackerPresenter
     @State private var cardSwapEdge = CardSwapEdge()
+    /// VoiceOver's cursor on the bottom button, put back after its action changes the screen
+    /// (a11y.md C1). See `WorkoutPrimaryCTA`.
+    @AccessibilityFocusState var isPrimaryCTAFocused: Bool
 
     @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate, ((Int) -> Void)?) -> ExerciseTracker
     

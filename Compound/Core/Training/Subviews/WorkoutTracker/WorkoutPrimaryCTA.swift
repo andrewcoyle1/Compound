@@ -23,9 +23,11 @@ extension WorkoutTrackerView {
                 // rather than one button leaving as another arrives, and VoiceOver focus stays on it.
                 CallToActionButton {
                     presenter.onPrimarySlotPressed()
+                    returnFocusToPrimaryCTA()
                 } label: {
                     primarySlotLabel
                 }
+                .accessibilityFocused($isPrimaryCTAFocused)
                 .disabled(presenter.isPrimarySlotInGrace)
                 .keyboardShortcut(.return, modifiers: .command)
                 // Two identifiers for the one button, so tests can wait for the state they need.
@@ -48,6 +50,18 @@ extension WorkoutTrackerView {
             // Scoped to the button: the list beneath animates only what changed in it.
             .reducedMotionAnimation(.standard, value: presenter.primarySlot)
             .reducedMotionAnimation(.emphasis, value: presenter.canQuickFinish)
+        }
+    }
+
+    /// A log, a skip or Next redraws the button and the rows above it, and VoiceOver's cursor used
+    /// to land wherever the redraw left it, often the top of the screen. It goes back to the
+    /// button once the new state is drawn, so the next double tap logs the next set (a11y.md C1).
+    /// Without VoiceOver this does nothing.
+    func returnFocusToPrimaryCTA() {
+        Task { @MainActor in
+            // After the redraw: set during it, the focus goes to the element being replaced.
+            try? await Task.sleep(for: .milliseconds(300))
+            isPrimaryCTAFocused = true
         }
     }
 

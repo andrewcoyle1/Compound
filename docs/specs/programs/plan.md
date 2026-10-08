@@ -326,6 +326,8 @@ P2 ─┘
   the full unit bundle (4510 passing) and the WorkoutTracker, CreateWorkout and CreateMesocycle
   UI suites (20 passing). PR #66's CI failure (Xcode 26.6 crashing on a thunk in
   `DayChecklistCard`) was fixed on the tracker branch (`361f8e6e`) and merged here.
+- A TestFlight build of the branch was uploaded on 8 Oct 2026 from `bcea7344` (App Store Connect
+  assigns the build number).
 - Follow-ups: the library matcher is strict by design, so a published sheet leaves most names
   to map by hand (89 of the two sheets' names, substitutions included); a suggestions list per
   unmatched name on the review screen would cut that. The two P2 Live Activity labels above.

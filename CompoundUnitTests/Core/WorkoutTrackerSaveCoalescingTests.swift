@@ -23,8 +23,9 @@ struct WorkoutTrackerSaveCoalescingTests {
         screen.type(1, 10, 100, 102, 102.5, into: 1)
         #expect(screen.writes == before)
 
-        try await Task.sleep(for: pastTheDebounce)
-        #expect(screen.writes == before + 1)
+        // The one write lands when the debounce fires: wait for it rather than a fixed time,
+        // which a loaded CI runner overran.
+        #expect(await TestManagers.eventually { screen.writes == before + 1 })
         #expect(screen.savedWeights?.first == 102.5)
     }
 

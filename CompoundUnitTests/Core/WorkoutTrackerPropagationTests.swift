@@ -32,8 +32,9 @@ struct WorkoutTrackerPropagationTests {
         let screen = try WorkoutTrackerTypingScreen(weights: [100, 100, 80])
 
         screen.type(8, 80, into: 1)
-        try await Task.sleep(for: .milliseconds(600))
-        #expect(screen.savedWeights == [80, 100, 80])
+        // The debounced save lands on its own task: wait for it rather than a fixed time, which a
+        // loaded CI runner overran.
+        #expect(await TestManagers.eventually { screen.savedWeights == [80, 100, 80] })
         screen.type(8, 82, 82.5, into: 1)
         screen.presenter.flushSave()
 

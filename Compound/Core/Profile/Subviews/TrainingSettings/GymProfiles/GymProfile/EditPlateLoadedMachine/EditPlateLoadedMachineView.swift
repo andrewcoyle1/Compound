@@ -6,6 +6,12 @@ struct EditPlateLoadedMachineView: View {
     
     var body: some View {
         List {
+            if presenter.isCustom {
+                Section("Name") {
+                    TextField(String(localized: "Name"), text: $presenter.plateLoadedMachine.name)
+                        .font(.rowTitle)
+                }
+            }
             pickerSection
         }
         .navigationTitle(presenter.plateLoadedMachine.name)
@@ -31,7 +37,7 @@ struct EditPlateLoadedMachineView: View {
                     TextField("", value: $presenter.plateLoadedMachine.baseWeight, format: .number)
                         .textFieldStyle(.roundedBorder)
                     Spacer()
-                    Picker("Unit", selection: $presenter.selectedUnit) {
+                    Picker("Unit", selection: $presenter.plateLoadedMachine.unit) {
                         ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                             Text(unit.abbreviation)
                         }
@@ -40,6 +46,18 @@ struct EditPlateLoadedMachineView: View {
                     .labelsHidden()
                     .fixedSize()
                 }
+            }
+            VStack(alignment: .leading) {
+                Text("Plates go on")
+                    .font(.sectionTitle)
+                // One side: a T-bar row or belt squat takes its plates on a single post, so the
+                // smallest change is one plate rather than a pair.
+                Picker("Plates go on", selection: $presenter.plateLoadedMachine.sleeves) {
+                    Text("One side").tag(1)
+                    Text("Two sides").tag(2)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
             }
         }
         .listSectionMargins(.vertical, 0)

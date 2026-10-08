@@ -235,9 +235,11 @@ enum ActiveWorkout {
         switch trackingMode {
         case .weightReps:
             guard let reps = set.reps else { return nil }
-            // A negative weight is assistance: "−30 kg × 8" on an assisted pull-up.
-            guard let weightKg = set.weightKg, weightKg != 0 else { return Format.reps(reps) }
-            return "\(Format.weight(kg: weightKg, unit: unit)) × \(reps)"
+            // A negative weight is assistance: "−30 kg × 8" on an assisted pull-up. Bands read
+            // "Red + Blue × 8", or "60 kg + Red × 8" on a bar.
+            let weight = set.weightKg.flatMap { $0 != 0 ? Format.weight(kg: $0, unit: unit) : nil }
+            guard let load = Format.load(weight, bands: set.bands) else { return Format.reps(reps) }
+            return "\(load) × \(reps)"
         case .repsOnly:
             return set.reps.map { Format.reps($0) }
         case .timeOnly:

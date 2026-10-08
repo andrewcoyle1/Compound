@@ -70,8 +70,9 @@ final class SetKeyboardPresenter {
     /// The first key after a field opens replaces its value, as a selected text field would.
     private var replacesOnNextKey = false
     private(set) var context = SetKeyboardContext()
-    private(set) var bandIndex: Int?
     var showsPlates = false
+    /// Played when a band chip is toggled. The row sets it, as the keyboard has no interactor.
+    var playSelectionHaptic: (@MainActor () -> Void)?
 
     private var editingSet: Binding<WorkoutSetModel>?
 
@@ -188,7 +189,6 @@ final class SetKeyboardPresenter {
         guard let set = editingSet, let field = activeField else { return }
         switch field {
         case .weight:
-            bandIndex = nil
             set.wrappedValue.weightKg = Double.typed(text, locale: locale).map { UnitConversion.convertWeightToKg($0, from: context.unit) }
         case .reps:
             set.wrappedValue.reps = Int(text)
@@ -241,10 +241,14 @@ final class SetKeyboardPresenter {
 
     func stepDown() { step(forward: false) }
 
+    /// Bands alone have no weight to step, so ± moves through them one at a time, as it always
+    /// has, choosing just that band: from the last one chosen, or the lightest (heaviest going down).
     private func step(forward: Bool) {
         guard let set = editingSet else { return }
-        if case .bands = context.step.kind {
-            bandIndex = context.step.band(after: bandIndex, forward: forward)
+        if context.step.kind == .bands {
+            let current = set.wrappedValue.bands?.last.flatMap { context.step.bands.firstIndex(of: $0) }
+            let next = context.step.band(after: current, forward: forward)
+            set.wrappedValue.bands = next.map { [context.step.bands[$0]] }
             set.wrappedValue.weightKg = nil
             text = ""
             replacesOnNextKey = true
@@ -258,7 +262,6 @@ final class SetKeyboardPresenter {
     /// Sets the weight from a value already in the display unit.
     func applyWeight(displayValue: Double?) {
         guard let set = editingSet else { return }
-        bandIndex = nil
         set.wrappedValue.weightKg = displayValue.map { UnitConversion.convertWeightToKg($0, from: context.unit) }
         if activeField == .weight {
             text = currentText(for: .weight)
@@ -312,14 +315,40 @@ final class SetKeyboardPresenter {
         }
     }
 
+    // MARK: - Bands
+
+    /// The bands on the set being edited, in the order they were chosen.
+    var selectedBands: [String] { editingSet?.wrappedValue.bands ?? [] }
+
+    /// Adds the band to the set, or takes it off; the last one off leaves no bands (`nil`). Beside
+    /// any weight: on a bar with bands, ± steps the bar and these choose the bands.
+    func toggleBand(_ name: String) {
+        guard let set = editingSet else { return }
+        var bands = set.wrappedValue.bands ?? []
+        if let index = bands.firstIndex(of: name) {
+            bands.remove(at: index)
+        } else {
+            bands.append(name)
+        }
+        set.wrappedValue.bands = bands.isEmpty ? nil : bands
+        playSelectionHaptic?()
+    }
+
     // MARK: - Plates
 
-    /// The per-side breakdown of the current weight, for plate-loaded equipment.
+    /// The per-sleeve breakdown of the current weight, for plate-loaded equipment.
     var plateLoad: PlateCalculator.Result? {
         guard context.step.isPlateLoaded, let bar = context.step.baseWeight,
               let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
-        return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates)
+        return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates, sleeves: context.step.sleeves)
+    }
+
+    /// "Pin 14 + 2 kg" for the current weight on a stack with add-ons; nil otherwise.
+    var stackSummary: String? {
+        guard context.step.stack != nil, let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
+        let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
+        return context.step.stackText(total: total, unit: context.unit)
     }
 
     // MARK: - VoiceOver
@@ -343,12 +372,10 @@ final class SetKeyboardPresenter {
         }
     }
 
-    /// The weight, or the band, as the stepper row's VoiceOver value.
+    /// The weight and bands as the stepper row's VoiceOver value: "60 kilograms + Red", "Red + Blue".
     var spokenWeight: String? {
-        if let bandIndex, case .bands(let names) = context.step.kind, names.indices.contains(bandIndex) {
-            return names[bandIndex]
-        }
-        return editingSet?.wrappedValue.weightKg.map { ActiveWorkout.spokenWeight(kg: $0, unit: context.unit, locale: locale) }
+        guard let set = editingSet?.wrappedValue else { return nil }
+        return Format.load(set.weightKg.map { ActiveWorkout.spokenWeight(kg: $0, unit: context.unit, locale: locale) }, bands: set.bands)
     }
 
     // MARK: - Display
@@ -361,11 +388,10 @@ final class SetKeyboardPresenter {
         distanceUnit: ExerciseDistanceUnit = .meters
     ) -> String {
         if field == activeField, editingSet?.wrappedValue.id == set.id {
+            if field == .weight { return Self.load(text, bands: set.bands) }
             return field == .duration && !text.isEmpty ? Self.clock(fromDigits: text) : text
         }
-        if field == .weight, let bandIndex, case .bands(let names) = context.step.kind, names.indices.contains(bandIndex) {
-            return names[bandIndex]
-        }
+        if field == .weight { return Self.load(Self.text(for: .weight, set: set, unit: unit, locale: locale), bands: set.bands) }
         if field == .duration { return set.durationSec.map { Format.duration(TimeInterval($0)) } ?? "" }
         return Self.text(for: field, set: set, unit: unit, distanceUnit: distanceUnit, locale: locale)
     }
@@ -379,10 +405,17 @@ final class SetKeyboardPresenter {
         distanceUnit: ExerciseDistanceUnit = .meters
     ) -> String {
         guard let previous else { return Format.placeholder }
-        let hint = field == .duration
-            ? previous.durationSec.map { Format.duration(TimeInterval($0)) } ?? ""
-            : Self.text(for: field, set: previous, unit: unit, distanceUnit: distanceUnit, locale: locale)
+        let hint = switch field {
+        case .duration: previous.durationSec.map { Format.duration(TimeInterval($0)) } ?? ""
+        case .weight: Self.load(Self.text(for: field, set: previous, unit: unit, locale: locale), bands: previous.bands)
+        case .reps, .distance: Self.text(for: field, set: previous, unit: unit, distanceUnit: distanceUnit, locale: locale)
+        }
         return hint.isEmpty ? Format.placeholder : hint
+    }
+
+    /// The weight cell: "60 + Red", "Red + Blue", or the weight alone. The column header gives the unit.
+    private static func load(_ weight: String, bands: [String]?) -> String {
+        Format.load(weight.isEmpty ? nil : weight, bands: bands) ?? ""
     }
 
     private func currentText(for field: SetKeyboardField) -> String {

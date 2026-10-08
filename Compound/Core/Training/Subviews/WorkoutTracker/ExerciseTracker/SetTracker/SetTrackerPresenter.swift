@@ -230,6 +230,7 @@ class SetTrackerPresenter {
                     distanceMeters: lastSet?.distanceMeters,
                     rpe: lastSet?.rpe,
                     side: side,
+                    bands: lastSet?.bands,
                     isWarmup: false,
                     completedAt: nil,
                     dateCreated: Date()
@@ -257,24 +258,10 @@ class SetTrackerPresenter {
         for index in exercise.wrappedValue.sets.indices {
             let set = exercise.wrappedValue.sets[index]
             guard set.completedAt == nil, let weightKg = set.weightKg else { continue }
-            let rounded = Self.nearest(UnitConversion.convertWeight(weightKg, to: newUnit), on: step)
+            let rounded = step.nearest(to: UnitConversion.convertWeight(weightKg, to: newUnit))
             exercise.wrappedValue.sets[index].weightKg = UnitConversion.convertWeightToKg(rounded, from: newUnit)
         }
         interactor.setWeightUnit(newUnit, for: exercise.wrappedValue.templateId)
-    }
-
-    /// The weight on `step`'s grid closest to `value`, both in the step's unit. Bands carry no
-    /// weight, so a value is left as it is.
-    static func nearest(_ value: Double, on step: WeightStep) -> Double {
-        switch step.kind {
-        case let .increment(size, min, max):
-            let snapped = min + ((value - min) / size).rounded() * size
-            return Swift.min(Swift.max((snapped * 1000).rounded() / 1000, min), max ?? .infinity)
-        case .list(let weights):
-            return weights.min { abs($0 - value) < abs($1 - value) } ?? value
-        case .bands:
-            return value
-        }
     }
 
     /// The unit is a preference on the exercise, not on this workout, so the dialog says so.

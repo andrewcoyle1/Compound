@@ -202,7 +202,10 @@ struct GymProfileManagerTests {
         #expect(decoded.id == "gym-1")
         #expect(decoded.authorId == "author-1")
         #expect(decoded.imageUrl == "https://example.com/gym.jpg")
-        #expect(decoded.freeWeights.isEmpty)
+        // An empty stored list gains the catalogue switched off, which is the merge on decode
+        // (see `GymProfileDecodingTests`): items cannot be deleted, so nothing is brought back.
+        #expect(decoded.freeWeights.map(\.id) == FreeWeights.defaultFreeWeights.map(\.id))
+        #expect(decoded.freeWeights.allSatisfy { !$0.isActive })
         #expect(decoded.cableMachines.count == original.cableMachines.count)
         #expect(decoded.pinLoadedMachines.count == original.pinLoadedMachines.count)
 

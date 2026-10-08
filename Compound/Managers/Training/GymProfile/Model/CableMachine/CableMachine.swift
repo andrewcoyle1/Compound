@@ -9,20 +9,20 @@ import Foundation
 
 struct CableMachine: Identifiable, Codable {
     var id: String
+    /// The catalogue type this item is, which exercises name. A duplicate shares its original's;
+    /// a machine the user made that works as nothing in the catalogue has its own id.
+    var typeId: String
     var name: String
     var imageName: String?
     var description: String?
     var defaultRangeId: String?
     var ranges: [CableMachineRange]
-    
-    var defaultRange: CableMachineRange? {
-        ranges.first(where: { $0.id == self.defaultRangeId })
-    }
 
     var isActive: Bool
     
     init(
         id: String,
+        typeId: String? = nil,
         name: String,
         imageName: String? = nil,
         description: String? = nil,
@@ -30,6 +30,7 @@ struct CableMachine: Identifiable, Codable {
         isActive: Bool
     ) {
         self.id = id
+        self.typeId = typeId ?? id
         self.name = name
         self.imageName = imageName
         self.description = description
@@ -47,7 +48,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -56,7 +57,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -73,7 +74,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -82,7 +83,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -99,7 +100,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -108,7 +109,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -125,7 +126,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -134,7 +135,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -146,127 +147,31 @@ struct CableMachine: Identifiable, Codable {
     ]
     
     static var mock: CableMachine {
-        mocks[0]
+        defaultCableMachines[0]
     }
-    
-    static let mocks: [CableMachine] = [
-        CableMachine(
-            id: "cable_lat_pulldown_machine",
-            name: "Cable Lat Pulldown Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "pin-loaded_dual_cable_machine",
-            name: "Pin-Loaded Dual Cable Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "pin-loaded_single_cable_machine",
-            name: "Pin-Loaded Single Cable Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "seated_cable_row_machine",
-            name: "Seated Cable Row Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        )
-    ]
-
 }
 
-struct CableMachineRange: Identifiable, Codable, @MainActor WeightRange {
-    var id: String
-    
-    var name: String
-    var minWeight: Double
-    var maxWeight: Double
-    var increment: Double
-    
-    var unit: ExerciseWeightUnit
+// MARK: - Decoding
 
-    var isActive: Bool
+extension CableMachine {
+    /// The keys match the property names, which is the wire format these items have always had.
+    /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
+    /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
+    enum CodingKeys: String, CodingKey {
+        case id, typeId, name, imageName, description, defaultRangeId, ranges, isActive
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(String.self, forKey: .id)
+        self.id = id
+        // Items saved before custom and duplicate machines are their own type.
+        typeId = try container.decodeIfPresent(String.self, forKey: .typeId) ?? id
+        name = try container.decode(String.self, forKey: .name)
+        imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        defaultRangeId = try container.decodeIfPresent(String.self, forKey: .defaultRangeId)
+        ranges = container.decodeLossyArray(CableMachineRange.self, forKey: .ranges) ?? []
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
+    }
 }

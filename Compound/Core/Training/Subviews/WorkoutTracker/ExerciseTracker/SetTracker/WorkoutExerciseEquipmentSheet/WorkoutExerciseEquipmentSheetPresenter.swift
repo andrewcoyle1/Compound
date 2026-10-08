@@ -84,9 +84,10 @@ class WorkoutExerciseEquipmentSheetPresenter {
             throw LoadError.noVariations
         }
 
-        // Build name index from full catalog
+        // Build name index from the catalogue and the user's own machines
         equipmentNameIndex = Dictionary(
-            uniqueKeysWithValues: GymProfileModel.allEquipmentCatalog.map { ($0.ref, $0.name) }
+            interactor.allEquipmentTypes.map { ($0.ref, $0.name) },
+            uniquingKeysWith: { first, _ in first }
         )
 
         // Build display items

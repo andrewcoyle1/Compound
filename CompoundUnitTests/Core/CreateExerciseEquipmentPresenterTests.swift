@@ -30,28 +30,31 @@ private final class EquipmentRefBox {
 private struct FlowResistanceEquipment: GymEquipmentItem {
     static var kind: EquipmentKind { .freeWeight }
     let id: String
+    var typeId: String { id }
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private struct FlowSupportEquipment: GymEquipmentItem {
     static var kind: EquipmentKind { .supportEquipment }
     let id: String
+    var typeId: String { id }
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private struct FlowAccessoryEquipment: GymEquipmentItem {
     static var kind: EquipmentKind { .accessoryEquipment }
     let id: String
+    var typeId: String { id }
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private let dumbbell = AnyEquipment(FlowResistanceEquipment(id: "dumbbell", name: "Dumbbell"))
@@ -516,6 +519,7 @@ struct ExerciseSavePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, ExerciseSaveInteractor {
         var currentUser: UserModel?
+        var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
         var saveError: Error?
         var saveDelay: Duration = .zero
         private(set) var saved: [ExerciseModel] = []

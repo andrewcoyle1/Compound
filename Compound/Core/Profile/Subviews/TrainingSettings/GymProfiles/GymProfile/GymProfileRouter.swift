@@ -8,9 +8,9 @@ protocol GymProfileRouter: OnboardingStepRouter {
     func showEditBandView(band: Binding<Bands>)
     func showEditBodyWeightView(bodyWeight: Binding<BodyWeights>)
     func showEditLoadableAccessoryView(loadableAccessory: Binding<LoadableAccessoryEquipment>)
-    func showEditCableMachineView(cableMachine: Binding<CableMachine>)
+    func showEditStackMachineView<Machine: StackMachine>(machine: Binding<Machine>)
     func showEditPlateLoadedMachineView(plateLoadedMachine: Binding<PlateLoadedMachine>)
-    func showEditPinLoadedMachineView(pinLoadedMachine: Binding<PinLoadedMachine>)
+    func showAddGymMachineView(delegate: AddGymMachineDelegate)
     
 }
 

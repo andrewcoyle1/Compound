@@ -510,6 +510,7 @@ struct SetTrackerRowView: View {
                ) {
                 fillFromPrevious(withEffort(columnText(figures), rpe: prev.rpe)) {
                     if let weight = prev.weightKg { $0.weightKg = weight }
+                    $0.bands = prev.bands
                     $0.reps = reps
                 }
             } else {

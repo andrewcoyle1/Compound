@@ -116,7 +116,7 @@ struct AssistedWeightTests {
     }
 
     @Test func bandsAreLeftAlone() {
-        let bands = WeightStep(kind: .bands(["Light"]), chip: nil, baseWeight: nil, plates: [])
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light"])
         #expect(bands.assisted(bodyweightOnly: true) == bands)
     }
 
@@ -144,7 +144,7 @@ struct AssistedWeightTests {
 
     /// Progression is unchanged: one 2.5 kg step up from −30 kg is −27.5 kg, less help.
     @Test func progressingAnAssistedSetTakesAssistanceAway() {
-        let rounding = WeightRoundingRule(equipment: nil, preferredUnit: .kilograms).progressionRounding
+        let rounding = WeightRoundingRule(step: WeightStepper.fallback(.kilograms), unit: .kilograms, preferredUnit: .kilograms).progressionRounding
         let completed = set(weightKg: -30, reps: 14, done: true)
         let suggestions = ProgressionEngine().adjustRemaining(
             completed: completed,

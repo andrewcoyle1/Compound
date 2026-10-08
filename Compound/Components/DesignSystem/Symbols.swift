@@ -111,6 +111,7 @@ enum Symbol {
     static let start = "play"
     static let edit = "pencil"
     static let delete = "trash"
+    static let duplicate = "plus.square.on.square"
     static let close = "xmark"
     static let share = "square.and.arrow.up"
     /// Opening something in another app or the browser, such as a workout's Strava activity.

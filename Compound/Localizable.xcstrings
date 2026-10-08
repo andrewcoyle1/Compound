@@ -23,6 +23,16 @@
         }
       }
     },
+    "%@ %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        }
+      }
+    },
     "%@ %lld:%@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -923,6 +933,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ quiere seguirte"
+          }
+        }
+      }
+    },
+    "%@ will be removed from this gym." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ se quitará de este gimnasio."
           }
         }
       }
@@ -3391,6 +3411,16 @@
         }
       }
     },
+    "A pin weight must be more than zero." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El peso de un pasador debe ser mayor que cero."
+          }
+        }
+      }
+    },
     "A plain row with a subtitle" : {
       "localizations" : {
         "es" : {
@@ -3548,6 +3578,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El descanso normal de una serie sigue a su última parte. La Actividad en Vivo muestra el descanso corto como una barra, no como una cuenta atrás, y vibra una vez."
+          }
+        }
+      }
+    },
+    "A stack can have up to %lld add-ons." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una pila puede tener hasta %lld pesos adicionales."
           }
         }
       }
@@ -4053,6 +4093,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir elemento"
+          }
+        }
+      }
+    },
+    "Add Machine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir máquina"
+          }
+        }
+      }
+    },
+    "Add Machine…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir máquina…"
           }
         }
       }
@@ -4700,6 +4760,26 @@
         }
       }
     },
+    "Add-on weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso adicional"
+          }
+        }
+      }
+    },
+    "Add-on weights" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesos adicionales"
+          }
+        }
+      }
+    },
     "Added" : {
       "localizations" : {
         "es" : {
@@ -5172,6 +5252,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cantidad"
+          }
+        }
+      }
+    },
+    "An add-on must weigh more than zero." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un peso adicional debe pesar más de cero."
           }
         }
       }
@@ -6015,6 +6105,16 @@
         }
       }
     },
+    "Bar %@ %@ + collars" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra %1$@ %2$@ + collarines"
+          }
+        }
+      }
+    },
     "Bar shows what you ate, the tick is your target, and a caret means you went over." : {
       "localizations" : {
         "es" : {
@@ -6052,6 +6152,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de código de barras"
+          }
+        }
+      }
+    },
+    "Base %@ · one side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base %@ · un lado"
           }
         }
       }
@@ -6591,6 +6701,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "COMPOUND"
+          }
+        }
+      }
+    },
+    "Cable" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polea"
           }
         }
       }
@@ -7604,6 +7724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Código"
+          }
+        }
+      }
+    },
+    "Collars" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collarines"
           }
         }
       }
@@ -9384,6 +9514,16 @@
         }
       }
     },
+    "Delete Machine?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar máquina?"
+          }
+        }
+      }
+    },
     "Delete Macrocycle" : {
       "localizations" : {
         "es" : {
@@ -10314,6 +10454,16 @@
         }
       }
     },
+    "Duplicate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar"
+          }
+        }
+      }
+    },
     "Duration" : {
       "localizations" : {
         "es" : {
@@ -10382,6 +10532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada descenso"
+          }
+        }
+      }
+    },
+    "Each collar" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada collarín"
           }
         }
       }
@@ -11493,6 +11653,16 @@
         }
       }
     },
+    "Exercises for the chosen machine use this one too. With None, it is a machine of its own that you can pick when creating an exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los ejercicios de la máquina elegida también usan esta. Con Ninguno, es una máquina propia que puedes elegir al crear un ejercicio."
+          }
+        }
+      }
+    },
     "Exercises performed with both sides at once, but each limb works independently on its own path." : {
       "localizations" : {
         "es" : {
@@ -12453,6 +12623,16 @@
         }
       }
     },
+    "For a stack whose plates are not all the same weight: list every weight the pin can select." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para una pila cuyas placas no pesan todas lo mismo: indica cada peso que puede seleccionar el pasador."
+          }
+        }
+      }
+    },
     "Forearms" : {
       "localizations" : {
         "es" : {
@@ -13022,6 +13202,16 @@
         }
       }
     },
+    "Heaviest pin" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasador más pesado"
+          }
+        }
+      }
+    },
     "Height" : {
       "localizations" : {
         "es" : {
@@ -13342,6 +13532,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Cómo va este bloque?"
+          }
+        }
+      }
+    },
+    "How many" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuántos"
           }
         }
       }
@@ -14122,6 +14322,16 @@
         }
       }
     },
+    "Kind" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo"
+          }
+        }
+      }
+    },
     "Knowledge Base" : {
       "localizations" : {
         "es" : {
@@ -14700,6 +14910,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Más ligero esta semana"
+          }
+        }
+      }
+    },
+    "Lightest pin" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasador más ligero"
           }
         }
       }
@@ -17274,6 +17494,16 @@
         }
       }
     },
+    "No limit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin límite"
+          }
+        }
+      }
+    },
     "No local active workout available" : {
       "localizations" : {
         "es" : {
@@ -18319,6 +18549,16 @@
         }
       }
     },
+    "One side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un lado"
+          }
+        }
+      }
+    },
     "One subscription for training, nutrition and progress." : {
       "localizations" : {
         "es" : {
@@ -19040,12 +19280,52 @@
         }
       }
     },
+    "Pin %@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasador %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "Pin %@ + %@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasador %1$@ + %2$@ %3$@"
+          }
+        }
+      }
+    },
     "Pin Loaded Machines" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Máquinas de placas"
+          }
+        }
+      }
+    },
+    "Pin weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso del pasador"
+          }
+        }
+      }
+    },
+    "Pin-loaded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De placas"
           }
         }
       }
@@ -19155,12 +19435,42 @@
         }
       }
     },
+    "Plate-loaded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De discos"
+          }
+        }
+      }
+    },
     "Plates" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discos"
+          }
+        }
+      }
+    },
+    "Plates go on" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los discos van en"
+          }
+        }
+      }
+    },
+    "Plates: " : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discos: "
           }
         }
       }
@@ -24805,6 +25115,16 @@
         }
       }
     },
+    "The lightest pin must be less than the heaviest." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El pasador más ligero debe pesar menos que el más pesado."
+          }
+        }
+      }
+    },
     "The lowest target offered is %@, a BMI of 18.5 for your height. Below that is considered underweight." : {
       "localizations" : {
         "es" : {
@@ -25389,6 +25709,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este peso ya está añadido."
+          }
+        }
+      }
+    },
+    "This weight is already on the stack." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este peso ya está en la pila."
           }
         }
       }
@@ -26281,6 +26611,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tutoriales"
+          }
+        }
+      }
+    },
+    "Two collars are added to the bar's weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se suman dos collarines al peso de la barra."
+          }
+        }
+      }
+    },
+    "Two sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dos lados"
           }
         }
       }
@@ -27493,6 +27843,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deshacer"
+          }
+        }
+      }
+    },
+    "Uneven stack" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pila irregular"
+          }
+        }
+      }
+    },
+    "Uneven · %lld weights" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Uneven · %lld weight"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Uneven · %lld weights"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Irregular · %lld peso"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Irregular · %lld pesos"
+                }
+              }
+            }
           }
         }
       }
@@ -29062,6 +29462,16 @@
         }
       }
     },
+    "Weights that go on top of the pin, each on or off, such as a 2 kg toggle. A lever with three positions is two equal add-ons." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesos que se suman al pasador, cada uno puesto o no, como un suplemento de 2 kg. Una palanca de tres posiciones son dos pesos adicionales iguales."
+          }
+        }
+      }
+    },
     "Welcome to Compound." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -29873,6 +30283,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamientos, planes y notas"
+          }
+        }
+      }
+    },
+    "Works as" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funciona como"
           }
         }
       }

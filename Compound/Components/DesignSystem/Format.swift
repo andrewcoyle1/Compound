@@ -59,6 +59,14 @@ enum Format {
         "\(value.formatted(.number.precision(.fractionLength(0...maximumFractionDigits)).locale(locale))) \(isPounds ? "lb" : "kg")"
     }
 
+    /// A set's load: `"60 kg + Red"`, `"Red + Blue"`, `"60 kg"`, from its weight already formatted
+    /// (with or without the unit, spoken or written) and the bands on the set (`WorkoutSetModel.bands`).
+    /// `nil` with neither. The one place a set's bands are joined to its weight.
+    static func load(_ weight: String?, bands: [String]?) -> String? {
+        let parts = [weight].compactMap { $0 } + (bands ?? [])
+        return parts.isEmpty ? nil : parts.joined(separator: " + ")
+    }
+
     /// `"8 reps"`, `"1 rep"`.
     static func reps(_ count: Int, locale: Locale = .autoupdatingCurrent) -> String {
         count == 1 ? String(localized: "1 rep") : String(localized: "\(count.formatted(.number.locale(locale))) reps")

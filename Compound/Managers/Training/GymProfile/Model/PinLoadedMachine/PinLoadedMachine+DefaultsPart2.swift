@@ -18,7 +18,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -35,7 +35,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -52,7 +52,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -69,7 +69,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -86,7 +86,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -103,7 +103,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -120,7 +120,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -137,7 +137,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -154,7 +154,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -171,7 +171,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -188,7 +188,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -205,7 +205,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -222,7 +222,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -239,7 +239,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -256,7 +256,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -273,7 +273,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -290,7 +290,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -307,7 +307,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -324,7 +324,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -341,7 +341,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -358,7 +358,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,
@@ -375,7 +375,7 @@ extension PinLoadedMachine {
                 PinLoadedMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 300,
                     increment: 5,
                     unit: .pounds,

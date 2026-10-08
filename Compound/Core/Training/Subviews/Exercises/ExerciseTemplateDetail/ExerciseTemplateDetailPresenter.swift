@@ -126,6 +126,11 @@ class ExerciseModelDetailPresenter {
     func formattedVolume(_ kilos: Double) -> String {
         formattedWeight(kilos)
     }
+
+    /// The variations list printed equipment ids; a user's own machine has only a UUID for one.
+    func equipmentName(for ref: EquipmentRef) -> String {
+        interactor.allEquipmentTypes.name(for: ref)
+    }
         
     private(set) var isDeleting: Bool = false
 

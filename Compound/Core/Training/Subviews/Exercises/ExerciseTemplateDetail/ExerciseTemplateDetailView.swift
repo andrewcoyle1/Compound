@@ -346,14 +346,14 @@ private extension ExerciseModelDetailView {
                                 HStack {
                                     Text("Resistance:")
                                         .foregroundStyle(.secondary)
-                                    Text(equipment.equipmentId)
+                                    Text(presenter.equipmentName(for: equipment))
                                 }
                             }
                             ForEach(variation.supportEquipment, id: \.self) { equipment in
                                 HStack {
                                     Text("Support:")
                                         .foregroundStyle(.secondary)
-                                    Text(equipment.equipmentId)
+                                    Text(presenter.equipmentName(for: equipment))
                                 }
                             }
                         }

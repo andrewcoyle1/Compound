@@ -69,6 +69,32 @@ struct ExerciseListBuilderPresenterTests {
 
         #expect(interactor.trackedEventNames == ["ExercisesView_Exercise_Selected"])
     }
+
+    /// The gym filter goes by type: a gym whose catalogue lat pulldown is off but which has a
+    /// duplicate switched on can still do a lat pulldown.
+    @Test("Test A Duplicate Machine Makes Its Type Available To The Gym Filter")
+    func testADuplicateMachineMakesItsTypeAvailableToTheGymFilter() throws {
+        let (presenter, interactor) = makePresenter()
+        let latPulldown = "cable_lat_pulldown_machine"
+        var gym = GymProfileModel(id: "gym-1", authorId: "user-1")
+        let index = try #require(gym.cableMachines.firstIndex { $0.id == latPulldown })
+        gym.cableMachines[index].isActive = false
+        interactor.gymProfiles = [gym]
+        var exercise = listBuilderExercise(id: "ex-1", name: "Lat Pulldown")
+        exercise.equipmentVariations = [EquipmentVariation(resistanceEquipment: [EquipmentRef(kind: .cableMachine, id: latPulldown)])]
+        interactor.allExercises = [exercise]
+        presenter.filters.gymProfileId = "gym-1"
+        #expect(presenter.filteredExercises.isEmpty)
+
+        let copyIdResult = gym.duplicateMachine(in: \.cableMachines, id: latPulldown)
+
+        let copyId = try #require(copyIdResult)
+        let copyIndex = try #require(gym.cableMachines.firstIndex { $0.id == copyId })
+        gym.cableMachines[copyIndex].isActive = true
+        interactor.gymProfiles = [gym]
+
+        #expect(presenter.filteredExercises.map(\.id) == ["ex-1"])
+    }
 }
 
 // MARK: - Workouts

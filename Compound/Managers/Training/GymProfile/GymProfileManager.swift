@@ -79,7 +79,13 @@ extension CoreInteractor {
     var gymProfiles: [GymProfileModel] {
         gymProfileManager.gymProfiles
     }
-    
+
+    /// The catalogue plus the user's own machines, for choosing an exercise's equipment and for
+    /// naming what an exercise uses.
+    var allEquipmentTypes: [AnyEquipment] {
+        GymProfileModel.equipmentTypes(including: gymProfiles)
+    }
+
     var favouriteGymProfile: GymProfileModel? {
         guard let favouriteGymProfileId = currentUser?.submittedFavouriteGymProfileId else { return nil }
         return gymProfiles.first { model in

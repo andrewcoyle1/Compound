@@ -65,6 +65,18 @@ class EditFreeWeightPresenter {
         )
     }
 
+    /// How many of one plate the gym has, as its field shows it: empty is no limit. A count that
+    /// is not a whole, non-negative number is rounded down to one.
+    func bindingForCount(id: String) -> Binding<Double?> {
+        Binding(
+            get: { self.freeWeight.range.first { $0.id == id }?.count.map(Double.init) },
+            set: { value in
+                guard let index = self.freeWeight.range.firstIndex(where: { $0.id == id }) else { return }
+                self.freeWeight.range[index].count = value.flatMap { Int(exactly: max($0, 0).rounded(.down)) }
+            }
+        )
+    }
+
     func deleteWeights(at offsets: IndexSet, weightIDs: [String]) {
         let idsToDelete = offsets.compactMap { offset in
             weightIDs.indices.contains(offset) ? weightIDs[offset] : nil

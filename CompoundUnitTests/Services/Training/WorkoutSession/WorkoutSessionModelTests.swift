@@ -223,34 +223,40 @@ struct WorkoutSessionModelTests {
 
     // MARK: - Rounding to a usable weight
 
+    /// What a weight the equipment does not constrain is rounded to (`WeightRoundingRule`).
+    private func unconstrained(_ unit: ExerciseWeightUnit) -> WeightRoundingRule {
+        WeightRoundingRule(step: WeightStepper.fallback(unit), unit: unit, preferredUnit: unit)
+    }
+
     /// Kilograms round to the half, because that is the smallest plate pair most gyms have.
     @Test("Test Kilograms Round To The Nearest Half")
     func testKilogramsRoundToTheNearestHalf() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.2, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.3, preferredUnit: .kilograms) == 60.5)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.75, preferredUnit: .kilograms) == 61)
+        #expect(unconstrained(.kilograms).round(60.2) == 60)
+        #expect(unconstrained(.kilograms).round(60.3) == 60.5)
+        #expect(unconstrained(.kilograms).round(60.75) == 61)
     }
 
     /// Pounds round to the whole, and the result is stored back in kilograms — so a pounds user
     /// gets a round number on screen rather than 61.23 kg converted from 135.
     @Test("Test Pounds Round To A Whole Pound And Store As Kilograms")
-    func testPoundsRoundToAWholePoundAndStoreAsKilograms() throws {
-        let stored = try #require(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 61.2, preferredUnit: .pounds))
+    func testPoundsRoundToAWholePoundAndStoreAsKilograms() {
+        let stored = unconstrained(.pounds).round(61.2)
         let shown = UnitConversion.convertWeight(stored, to: ExerciseWeightUnit.pounds)
 
         #expect(abs(shown.rounded() - shown) < 0.0001)
         #expect(abs(stored - 61.2) < 0.3)
     }
 
-    @Test("Test Rounding Nothing Gives Nothing")
-    func testRoundingNothingGivesNothing() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: nil, preferredUnit: .kilograms) == nil)
+    /// Without a unit preference nothing says what a round number is, so the weight is kept.
+    @Test("Test Rounding Without A Unit Keeps The Weight")
+    func testRoundingWithoutAUnitKeepsTheWeight() {
+        #expect(WeightRoundingRule(step: WeightStepper.fallback(.kilograms), unit: .kilograms, preferredUnit: nil).round(60.2) == 60.2)
     }
 
     @Test("Test A Weight Already On The Increment Is Left Alone")
     func testAWeightAlreadyOnTheIncrementIsLeftAlone() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 62.5, preferredUnit: .kilograms) == 62.5)
+        #expect(unconstrained(.kilograms).round(60) == 60)
+        #expect(unconstrained(.kilograms).round(62.5) == 62.5)
     }
 
     // MARK: - Editing a session
@@ -412,5 +418,52 @@ struct WorkoutSessionModelTests {
 
         #expect(json["target_reps"] as? Int == 8)
         #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set)).targetReps == 8)
+    }
+
+    // MARK: - Bands
+
+    @Test("Test A Set's Bands Round-Trip And Old Sets Decode Without Them")
+    func testBandsCoding() throws {
+        var set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 10, weightKg: 60, isWarmup: false, dateCreated: start)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] == nil)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONSerialization.data(withJSONObject: json)).bands == nil)
+
+        set.bands = ["Red", "Blue"]
+        json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] as? [String] == ["Red", "Blue"])
+        let decoded = try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set))
+        #expect(decoded.bands == ["Red", "Blue"])
+        #expect(decoded.weightKg == 60)
+        // Bands carry no kg: 60 kg × 10 whatever bands are on.
+        #expect(decoded.volumeKg == 600)
+    }
+
+    /// Sets are nested in the session, so an unreadable `bands` (a later build's shape, or
+    /// corruption) must cost the bands and nothing else, as an unreadable side does.
+    @Test("Test A Session Survives A Set With Unreadable Bands")
+    func testUnreadableBandsCostOnlyTheBands() throws {
+        let session = WorkoutSessionModel(
+            id: "session-1",
+            authorId: "author-1",
+            name: "Pull",
+            dateCreated: start,
+            exercises: [WorkoutExerciseModel(
+                id: "e", authorId: "author-1", templateId: "t", name: "Row", trackingMode: .weightReps, index: 0,
+                sets: [set(index: 1), set(index: 2)]
+            )]
+        )
+        var raw = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(session)) as? [String: Any])
+        var exercises = try #require(raw["exercises"] as? [[String: Any]])
+        var sets = try #require(exercises[0]["sets"] as? [[String: Any]])
+        sets[0]["bands"] = 7
+        sets[1]["bands"] = [["name": "Red"]]
+        exercises[0]["sets"] = sets
+        raw["exercises"] = exercises
+
+        let decoded = try JSONDecoder().decode(WorkoutSessionModel.self, from: JSONSerialization.data(withJSONObject: raw))
+        let decodedSets = try #require(decoded.exercises.first?.sets)
+        #expect(decodedSets.map(\.bands) == [nil, nil])
+        #expect(decodedSets.map(\.reps) == [8, 8])
     }
 }

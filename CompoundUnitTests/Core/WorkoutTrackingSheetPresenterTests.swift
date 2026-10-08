@@ -23,6 +23,7 @@ struct WorkoutEquipmentSheetPresenterTests {
         var userId: String? = "user-1"
         var workoutGymProfile: GymProfileModel?
         var allExercises: [ExerciseModel] = []
+        var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
     }
 
     /// `WorkoutExerciseEquipmentSheetRouter` adds nothing to `GlobalRouter`, so the dismissals both

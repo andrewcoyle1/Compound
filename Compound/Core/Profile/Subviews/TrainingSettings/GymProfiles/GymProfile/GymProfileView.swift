@@ -324,6 +324,17 @@ struct GymProfileView: View {
         }
         
         ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button("Add Machine…", systemImage: Symbol.add) {
+                    presenter.onAddMachinePressed()
+                }
+            } label: {
+                Image(systemName: Symbol.add)
+            }
+            .accessibilityLabel("Add")
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddImagePressed()
             } label: {
@@ -362,15 +373,19 @@ private struct GymProfileMachineSectionsView: View {
                     imageName: cableMachines.imageName,
                     detail: ActiveSortedWeightSubtitle.format(items: cableMachines.ranges, config: .init(
                         isActive: { $0.isActive },
-                        value: { $0.minWeight },
+                        value: { $0.lightestPin },
                         unit: { $0.unit },
-                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        formatter: { GymEquipmentFormat.stack($0) },
                         separator: "\n"
                     )),
                     editTitle: "Edit Machine",
                     isActive: $cableMachines.isActive
                 ) {
-                    presenter.onEditCableMachinePressed(cableMachine: $cableMachines)
+                    presenter.onEditStackMachinePressed(machine: $cableMachines)
+                }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.cableMachines, machine: cableMachines)
                 }
             }
         } header: {
@@ -384,15 +399,43 @@ private struct GymProfileMachineSectionsView: View {
                 GymEquipmentRow(
                     name: plateLoadedMachines.name,
                     imageName: plateLoadedMachines.imageName,
-                    detail: GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit),
+                    detail: plateLoadedMachines.sleeves == 1
+                        ? String(localized: "Base \(GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit)) · one side")
+                        : GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit),
                     editTitle: "Edit Base Weight",
                     isActive: $plateLoadedMachines.isActive
                 ) {
                     presenter.onEditPlateLoadedMachinePressed(plateLoadedMachine: $plateLoadedMachines)
                 }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.plateLoadedMachines, machine: plateLoadedMachines)
+                }
             }
         } header: {
             Text("Plate Loaded Machines")
+        }
+    }
+
+    /// Duplicate for every machine; Delete, last and destructive, only for the user's own and
+    /// duplicated ones, since a catalogue machine would come back on the next load.
+    @ViewBuilder
+    private func machineActions<Machine: CustomizableMachine>(
+        in list: WritableKeyPath<GymProfileModel, [Machine]>,
+        machine: Machine
+    ) -> some View {
+        Button {
+            presenter.onDuplicateMachinePressed(in: list, id: machine.id)
+        } label: {
+            Label("Duplicate", systemImage: Symbol.duplicate)
+        }
+        .tint(.accentColor)
+        if machine.isCustom {
+            Button(role: .destructive) {
+                presenter.onDeleteMachinePressed(machine: machine)
+            } label: {
+                Label("Delete", systemImage: Symbol.delete)
+            }
         }
     }
 
@@ -404,15 +447,19 @@ private struct GymProfileMachineSectionsView: View {
                     imageName: pinLoadedMachines.imageName,
                     detail: ActiveSortedWeightSubtitle.format(items: pinLoadedMachines.ranges, config: .init(
                         isActive: { $0.isActive },
-                        value: { $0.minWeight },
+                        value: { $0.lightestPin },
                         unit: { $0.unit },
-                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        formatter: { GymEquipmentFormat.stack($0) },
                         separator: "\n"
                     )),
                     editTitle: "Edit Machine",
                     isActive: $pinLoadedMachines.isActive
                 ) {
-                    presenter.onEditPinLoadedMachinePressed(pinLoadedMachine: $pinLoadedMachines)
+                    presenter.onEditStackMachinePressed(machine: $pinLoadedMachines)
+                }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.pinLoadedMachines, machine: pinLoadedMachines)
                 }
             }
         } header: {

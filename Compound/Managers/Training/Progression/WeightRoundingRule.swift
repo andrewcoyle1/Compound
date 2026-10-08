@@ -2,43 +2,29 @@
 //  WeightRoundingRule.swift
 //  Compound
 //
-//  What a weight is allowed to be, as plain numbers.
+//  What a weight is allowed to be, as a plain value.
 //
-//  `WorkoutSessionModel`'s rounding needs a gym profile and so is `@MainActor`; the progression
-//  engine is neither and must stay that way. Resolving the equipment once, on the main actor,
-//  and handing the engine the four numbers that fall out of it keeps the rule in one place
-//  without dragging the gym into the algorithm.
+//  Resolving the equipment needs a gym profile and happens on the main actor; the progression
+//  engine is neither and must stay that way. Resolving once, through the same `WeightStepper` the
+//  weight keyboard uses, and handing the engine the resulting `WeightStep` keeps one answer to
+//  "what can this exercise weigh here" without dragging the gym into the algorithm.
 //
 
 import Foundation
 
 struct WeightRoundingRule: Equatable {
 
-    /// The machine's own range, when the exercise is on one. Nothing else constrains a weight.
-    struct Equipment: Equatable {
-        let minWeight: Double
-        let maxWeight: Double
-        let increment: Double
-        let unit: ExerciseWeightUnit
-    }
-
-    /// A bar loaded with plates: the bar and the plates the gym has, in `unit`.
-    struct PlateLoading: Equatable {
-        let bar: Double
-        let plates: [Double]
-        let unit: ExerciseWeightUnit
-    }
-
-    let equipment: Equipment?
+    /// What the exercise's equipment allows, in `unit`. A step that does not constrain the weight
+    /// (no gym, equipment the gym lacks, body weight, bands) leaves rounding to the user's unit.
+    let step: WeightStep
+    /// The unit `step`'s numbers are in.
+    let unit: ExerciseWeightUnit
     let preferredUnit: ExerciseWeightUnit?
-    /// Set for a barbell (or plate-loaded machine) in a gym whose plates are known, so a weight
-    /// comes out as one the bar can actually carry rather than the nearest half kilogram.
-    var plateLoading: PlateLoading?
 
-    init(equipment: Equipment?, preferredUnit: ExerciseWeightUnit?, plateLoading: PlateLoading? = nil) {
-        self.equipment = equipment
+    init(step: WeightStep, unit: ExerciseWeightUnit, preferredUnit: ExerciseWeightUnit?) {
+        self.step = step
+        self.unit = unit
         self.preferredUnit = preferredUnit
-        self.plateLoading = plateLoading
     }
 
     /// Resolves the rule for one exercise in one gym, on `resistanceEquipment` (the variation
@@ -51,32 +37,32 @@ struct WeightRoundingRule: Equatable {
         preferredWeightUnit: ExerciseWeightUnit?,
         resistanceEquipment: [EquipmentRef]? = nil
     ) {
-        let range = exercise.flatMap {
-            WorkoutSessionModel.equipmentWeightRange(
-                exercise: $0,
-                gymProfile: gymProfile,
-                preferredWeightUnit: preferredWeightUnit,
-                resistanceEquipment: resistanceEquipment
-            )
-        }
-        self.equipment = range.map {
-            Equipment(minWeight: $0.minWeight, maxWeight: $0.maxWeight, increment: $0.increment, unit: $0.unit)
-        }
-        self.preferredUnit = preferredWeightUnit
         let unit = preferredWeightUnit ?? .kilograms
         let refs = resistanceEquipment ?? exercise?.equipmentVariations.first?.resistanceEquipment
-        let step = WeightStepper.steps(for: refs, profile: gymProfile, unit: unit)
-        if let bar = step.baseWeight, step.isPlateLoaded,
-           let smallest = step.plates.min(),
-           UnitConversion.convertWeightToKg(smallest, from: unit) <= Self.smallestPlateForProgressionKg {
-            self.plateLoading = PlateLoading(bar: bar, plates: step.plates, unit: unit)
+        var step = WeightStepper.steps(for: refs, profile: gymProfile, unit: unit)
+        // Assistance is stored negative, so the equipment is mirrored below zero exactly as the
+        // keyboard mirrors it; otherwise a machine's grid would clamp every assisted weight to its
+        // lightest pin.
+        if let exercise, exercise.isAssisted {
+            step = step.assisted(bodyweightOnly: exercise.isBodyweight)
         }
+        self.init(step: step, unit: unit, preferredUnit: preferredWeightUnit)
     }
 
     /// Progression rounds to plates only when the gym has small ones. A profile whose lightest
     /// plate is 5 kg is far more likely to be missing its small plates than to have none, and
     /// rounding to it would make every step 10 kg.
     static let smallestPlateForProgressionKg = 2.5 + 0.001
+
+    /// The rule progression uses: this one, except that a bar in a gym without small plates is
+    /// rounded as though nothing constrained it (`smallestPlateForProgressionKg`).
+    var forProgression: WeightRoundingRule {
+        guard step.isPlateLoaded, let smallest = step.plates.map(\.weight).min(),
+              UnitConversion.convertWeightToKg(smallest, from: unit) > Self.smallestPlateForProgressionKg else { return self }
+        var unconstrained = step
+        unconstrained.constrainsWeight = false
+        return WeightRoundingRule(step: unconstrained, unit: unit, preferredUnit: preferredUnit)
+    }
 
     /// The rule as the engine takes it.
     var progressionRounding: ProgressionRounding {
@@ -85,15 +71,11 @@ struct WeightRoundingRule: Equatable {
 
     /// kg in, kg the user could actually load out.
     func round(_ weightKg: Double) -> Double {
-        if let equipment, equipment.increment > 0 {
-            let inEquipmentUnit = UnitConversion.convertWeight(weightKg, to: equipment.unit)
-            let rounded = (inEquipmentUnit / equipment.increment).rounded() * equipment.increment
-            let clamped = max(equipment.minWeight, min(equipment.maxWeight, rounded))
-            return UnitConversion.convertWeightToKg(clamped, from: equipment.unit)
-        }
-
-        if let plateLoading {
-            return PlateCalculator.nearestLoadableKg(weightKg, bar: plateLoading.bar, plates: plateLoading.plates, unit: plateLoading.unit)
+        if step.constrainsWeight {
+            // Rounded to the gram first, as the stepper's own figures are, so a weight that is on
+            // the equipment already is not pushed off it by the conversion.
+            let value = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
+            return UnitConversion.convertWeightToKg(step.nearest(to: value), from: unit)
         }
 
         guard let preferredUnit else { return weightKg }
@@ -106,15 +88,12 @@ struct WeightRoundingRule: Equatable {
         return UnitConversion.convertWeightToKg(rounded, from: preferredUnit)
     }
 
-    /// The smallest step this rule can express, in kg: the machine's increment where there is
-    /// one, a pair of the smallest plates on a bar, otherwise 2.5 kg or 5 lb — the smallest plate
-    /// a user would actually add.
+    /// The smallest step this rule can express, in kg: the equipment's smallest change where it
+    /// constrains the weight, otherwise 2.5 kg or 5 lb — the smallest plate a user would actually
+    /// add.
     var minimumIncrementKg: Double {
-        if let equipment, equipment.increment > 0 {
-            return UnitConversion.convertWeightToKg(equipment.increment, from: equipment.unit)
-        }
-        if let plateLoading, let smallest = plateLoading.plates.min() {
-            return UnitConversion.convertWeightToKg(smallest * 2, from: plateLoading.unit)
+        if step.constrainsWeight, let smallest = step.smallestStep {
+            return UnitConversion.convertWeightToKg(smallest, from: unit)
         }
         switch preferredUnit ?? .kilograms {
         case .kilograms: return 2.5

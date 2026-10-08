@@ -336,6 +336,7 @@ class WorkoutSessionDetailPresenter {
                     distanceMeters: lastSet?.distanceMeters,
                     rpe: lastSet?.rpe,
                     side: side,
+                    bands: lastSet?.bands,
                     isWarmup: false,
                     // A set added to a finished workout is one the user did and forgot to log.
                     completedAt: Date(),

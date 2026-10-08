@@ -13,7 +13,7 @@ import SwiftUI
 //
 //  Adding one more weight to a piece of equipment a gym already has.
 //
-//  Seven screens, one shape: a blank entry is prepared in the unit the list was showing, the user
+//  Six screens, one shape: a blank entry is prepared in the unit the list was showing, the user
 //  sets a figure on it, and saving appends it to the equipment. What a gym holds is not a cosmetic
 //  list — a live workout rounds the weight it suggests onto the nearest thing the gym actually has,
 //  so a weight added here in the wrong unit, or added twice, changes the load someone is told to
@@ -65,6 +65,18 @@ struct GymAddFreeWeightPresenterTests {
         #expect(box.value.range.last?.availableWeights == 12.5)
         // Added as something the gym has, not as a row that has to be switched on afterwards.
         #expect(box.value.range.last?.isActive == true)
+    }
+
+    @Test("Test A Plate Count Travels With The Plate")
+    func testAPlateCountTravelsWithThePlate() {
+        let box = GymEquipmentBox(GymEquipmentFixtures.freeWeights())
+        let presenter = makePresenter(box)
+        presenter.freeWeightAvailable.availableWeights = 20
+        presenter.freeWeightAvailable.count = 2
+
+        presenter.onSavePressed()
+
+        #expect(box.value.range.last?.count == 2)
     }
 
     /// A gym cannot hold the same dumbbell twice, and a duplicate row could not be told from its
@@ -354,18 +366,19 @@ struct GymAddBandPresenterTests {
     }
 }
 
-/// Adding a weight range to a cable machine: the start, the end and the step its stack moves in.
+/// Adding a stack to a cable machine through the shared add form: its lightest pin, its heaviest
+/// and the step between.
 @MainActor
 struct GymAddCableMachineRangePresenterTests {
 
     private func makePresenter(
         _ box: GymEquipmentBox<CableMachine>,
         unit: ExerciseWeightUnit = .kilograms
-    ) -> AddCableMachineRangePresenter {
-        AddCableMachineRangePresenter(
+    ) -> AddWeightStackPresenter {
+        AddWeightStackPresenter(
             interactor: GymEquipmentInteractor(),
             router: GymEquipmentRouter(),
-            delegate: AddCableMachineRangeDelegate(cableMachine: box.binding, unit: unit)
+            delegate: GymEquipmentFixtures.addStackDelegate(box, unit: unit)
         )
     }
 
@@ -485,18 +498,18 @@ struct GymAddCableMachineRangePresenterTests {
     }
 }
 
-/// Adding a weight range to a pin-loaded machine.
+/// Adding a stack to a pin-loaded machine through the same form.
 @MainActor
 struct GymAddPinLoadedRangePresenterTests {
 
     private func makePresenter(
         _ box: GymEquipmentBox<PinLoadedMachine>,
         unit: ExerciseWeightUnit = .kilograms
-    ) -> AddPinLoadedMachineRangePresenter {
-        AddPinLoadedMachineRangePresenter(
+    ) -> AddWeightStackPresenter {
+        AddWeightStackPresenter(
             interactor: GymEquipmentInteractor(),
             router: GymEquipmentRouter(),
-            delegate: AddPinLoadedMachineRangeDelegate(pinLoadedMachine: box.binding, unit: unit)
+            delegate: GymEquipmentFixtures.addStackDelegate(box, unit: unit)
         )
     }
 

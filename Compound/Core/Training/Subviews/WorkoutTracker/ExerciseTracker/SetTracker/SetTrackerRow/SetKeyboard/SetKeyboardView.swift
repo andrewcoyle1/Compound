@@ -42,8 +42,17 @@ struct SetKeyboardView: View {
     private var weightAccessories: some View {
         chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
         stepperRow
+        if !presenter.context.step.bands.isEmpty {
+            bandRow
+        }
         if presenter.showsPlates {
             plateStrip
+        }
+        if let stackSummary = presenter.stackSummary {
+            Text(stackSummary)
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: plateStripHeight)
         }
     }
 
@@ -101,13 +110,40 @@ struct SetKeyboardView: View {
         }
     }
 
+    /// The gym's bands for this exercise, any number on at once, light to heavy. Beside the
+    /// stepper, so a bar with bands takes both.
+    private var bandRow: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.s) {
+                Text("Bands")
+                    .font(.label)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                ForEach(presenter.context.step.bands, id: \.self) { band in
+                    let isSelected = presenter.selectedBands.contains(band)
+                    Button {
+                        presenter.toggleBand(band)
+                        announceValue()
+                    } label: {
+                        Chip(band, isSelected: isSelected)
+                            .chipTapTarget()
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(band)
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
     @ViewBuilder
     private var plateStrip: some View {
         let unit = presenter.context.unit.abbreviation
         Group {
             switch presenter.plateLoad {
             case .loadable(let perSide)?:
-                Text(perSide.isEmpty ? String(localized: "Empty bar") : String(localized: "Per side: ") + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit)")
+                Text(presenter.context.step.plateText(perSide, unit: presenter.context.unit))
             case let .notLoadable(below, above)?:
                 HStack(spacing: Spacing.s) {
                     Label("Not loadable", systemImage: Symbol.warning)

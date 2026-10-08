@@ -14,7 +14,17 @@ enum SetTargetSetType: String, DataSyncModelProtocol {
     case standard
     case drop
     case myo
+    /// Written by templates before `amrap` existed; read as an AMRAP set (`SetKind.init`).
     case failure
+    case amrap
+    case restPause
+    case cluster
+    /// Lengthened partials after the set's last full rep: a reps piece at the set's weight.
+    case partials
+    /// A loaded static stretch after the set: a timed piece with no weight.
+    case stretch
+    /// A weighted static hold after the set: a timed piece at the set's weight.
+    case hold
 
     init(from decoder: Decoder) throws {
         if let rawValue = try? decoder.singleValueContainer().decode(String.self),
@@ -63,6 +73,12 @@ enum SetTargetSetType: String, DataSyncModelProtocol {
         case .drop: return String(localized: "Drop Set")
         case .myo: return String(localized: "Myo Set")
         case .failure: return String(localized: "Failure Set")
+        case .amrap: return String(localized: "AMRAP")
+        case .restPause: return String(localized: "Rest-pause")
+        case .cluster: return String(localized: "Cluster")
+        case .partials: return String(localized: "Lengthened partials")
+        case .stretch: return String(localized: "Loaded stretch")
+        case .hold: return String(localized: "Static hold")
         }
     }
 
@@ -72,6 +88,12 @@ enum SetTargetSetType: String, DataSyncModelProtocol {
         case .drop: return String(localized: "A set where you continue repping to push muscle fatigue with progressively lower weight after reaching failure at a heavier load.")
         case .myo: return String(localized: "A set where you continue repping to push muscle fatigue with progressively low reps while keeping the weight constant.")
         case .failure: return String(localized: "A set where you perform reps until you can no longer maintain proper form (for compound exercises) or complete another rep (for isolation exercises).")
+        case .amrap: return String(localized: "As many reps as possible at a fixed weight, aiming to beat a target.")
+        case .restPause: return String(localized: "A set taken close to failure, then continued after short pauses at the same weight.")
+        case .cluster: return String(localized: "A set split into short mini-sets with brief rests between them, at the same weight.")
+        case .partials: return String(localized: "A set taken to failure, then continued with partial reps in the stretched half of the movement.")
+        case .stretch: return String(localized: "A set followed straight away by holding the stretched position for a set time.")
+        case .hold: return String(localized: "A set followed straight away by holding the weight still for a set time.")
         }
     }
 }

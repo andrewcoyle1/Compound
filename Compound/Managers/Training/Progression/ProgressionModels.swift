@@ -27,6 +27,9 @@ struct ProgressionInput {
     let roundWeight: (Double) -> Double
     /// The smallest step the rounding above can express, in kg.
     let minimumIncrementKg: Double
+    /// How an AMRAP set with a planned target progresses; nil (set plan off) progresses it as a
+    /// standard set.
+    let amrap: AMRAPProgression?
 
     /// The two of them together, for the calls that only need to know what a weight may be.
     var rounding: ProgressionRounding {
@@ -39,7 +42,8 @@ struct ProgressionInput {
         history: [ProgressionHistorySession],
         adjustmentMode: ProgressionAdjustmentMode,
         roundWeight: @escaping (Double) -> Double,
-        minimumIncrementKg: Double
+        minimumIncrementKg: Double,
+        amrap: AMRAPProgression? = nil
     ) {
         self.trackingMode = trackingMode
         self.setTargets = setTargets
@@ -47,6 +51,7 @@ struct ProgressionInput {
         self.adjustmentMode = adjustmentMode
         self.roundWeight = roundWeight
         self.minimumIncrementKg = minimumIncrementKg
+        self.amrap = amrap
     }
 }
 
@@ -68,24 +73,28 @@ struct SuggestedSet: Equatable {
     let reps: Int?
     let durationSec: Int?
     let distanceMeters: Double?
+    /// An AMRAP set's target for the session (`WorkoutSetModel.targetReps`), set plan only.
+    let targetReps: Int?
 
     init(
         weightKg: Double? = nil,
         reps: Int? = nil,
         durationSec: Int? = nil,
-        distanceMeters: Double? = nil
+        distanceMeters: Double? = nil,
+        targetReps: Int? = nil
     ) {
         self.weightKg = weightKg
         self.reps = reps
         self.durationSec = durationSec
         self.distanceMeters = distanceMeters
+        self.targetReps = targetReps
     }
 
     /// Nothing to suggest — the caller falls back to whatever it would have done anyway.
     static let none = SuggestedSet()
 
     var isEmpty: Bool {
-        weightKg == nil && reps == nil && durationSec == nil && distanceMeters == nil
+        weightKg == nil && reps == nil && durationSec == nil && distanceMeters == nil && targetReps == nil
     }
 }
 
@@ -129,7 +138,7 @@ enum SessionPrefill {
     case previousValues
     /// Nothing at all: every working set starts blank.
     case empty
-    /// The engine's suggestions, keyed by the exercise's `templateId`. An exercise missing from
+    /// The engine's suggestions, keyed by `ActiveWorkout.historyKey`. An exercise missing from
     /// the dictionary — or carrying a `.noHistory` suggestion — falls back to `.previousValues`.
     case suggestions([String: ProgressionSuggestion])
 }

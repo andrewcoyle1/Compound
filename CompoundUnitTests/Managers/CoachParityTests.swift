@@ -253,6 +253,7 @@ struct CoachParityTests {
                             id: "s\(index)-\(position)-\(setIndex)", authorId: "parity", index: setIndex,
                             reps: set["reps"] as? Int, weightKg: set["weightKg"] as? Double,
                             side: (set["side"] as? String).flatMap(SetSide.init(rawValue:)),
+                            parentSetId: set["parentSetId"] as? String,
                             isWarmup: set["isWarmup"] as? Bool ?? false,
                             completedAt: set["completed"] as? Bool == true ? date : nil, dateCreated: date
                         )

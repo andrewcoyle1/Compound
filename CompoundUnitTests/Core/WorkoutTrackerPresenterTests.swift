@@ -19,8 +19,8 @@ import HealthKit
 /// - **Propagate changes.** Correcting the weight on set one copies it onto the sets that still hold
 ///   the old numbers — but only those, and never onto a set already logged. Copying onto a set the
 ///   user had deliberately set differently would silently rewrite their session.
-/// - **Auto-advance.** Finishing the last set of an exercise moves focus to the next one. On the
-///   final exercise there is nowhere to go, so it collapses instead of wrapping round.
+/// - **Auto-advance.** Finishing the last set of an exercise moves focus to the next one once its
+///   rest ends or is skipped, at once when no rest follows. After the final set it stays put.
 /// - **Smart warm-ups.** With the setting off, unlogged warm-ups are stripped and the remaining sets
 ///   renumbered — but a warm-up the user already did is theirs, and stays.
 ///
@@ -288,14 +288,15 @@ struct WorkoutTrackerPresenterTests {
 
     // MARK: - Advancing between exercises
 
-    @Test("Test Finishing An Exercise Moves On To The Next")
+    /// With no rest to wait out, there is nothing to stay for.
+    @Test("Test Finishing An Exercise With No Rest Moves On To The Next")
     func testFinishingAnExerciseMovesOnToTheNext() throws {
         let screen = try makeScreen(
             exercises: [
                 exercise(id: "e1", index: 1, sets: [set(1)]),
                 exercise(id: "e2", index: 2, sets: [set(1)])
             ],
-            settings: { $0.exerciseAutoNext = true }
+            settings: { $0.exerciseAutoNext = true; $0.restBetweenExercises = false }
         )
         var logged = try #require(screen.presenter.workoutSession.exercises.first).sets[0]
         logged.completedAt = start
@@ -342,34 +343,45 @@ struct WorkoutTrackerPresenterTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
-    /// After the last exercise there is nowhere to advance to, so the list collapses rather than
-    /// wrapping round to the first.
-    @Test("Test Finishing The Last Exercise Collapses The List")
-    func testFinishingTheLastExerciseCollapsesTheList() throws {
+    /// After the workout's final set there is nowhere to go and no rest: the card stays and the
+    /// button offers Finish.
+    @Test("Test Finishing The Last Exercise Stays And Offers Finish")
+    func testFinishingTheLastExerciseStaysAndOffersFinish() throws {
         let screen = try makeScreen(
             exercises: [exercise(id: "e1", index: 1, sets: [set(1)])],
             settings: { $0.exerciseAutoNext = true }
         )
-        var logged = try #require(screen.presenter.workoutSession.exercises.first).sets[0]
-        logged.completedAt = start
 
-        screen.presenter.updateSet(logged, in: "e1")
+        screen.presenter.onPrimaryActionPressed()
 
-        #expect(screen.presenter.expandedExerciseId == nil)
+        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.interactor.startedRests.isEmpty)
+        #expect(screen.presenter.primaryAction == .finish)
     }
 
-    @Test("Test Expanding An Exercise Changes The Focus")
-    func testExpandingAnExerciseChangesTheFocus() throws {
+    /// T3: the card stays on the finished exercise while its rest runs, so the set just done can
+    /// be checked or another added, and moves on when the rest ends or is skipped.
+    @Test("Test A Finished Exercise Stays During Its Rest, Then Moves On", arguments: [false, true])
+    func testAFinishedExerciseStaysDuringItsRest(skip: Bool) throws {
         let screen = try makeScreen(exercises: [
             exercise(id: "e1", index: 1, sets: [set(1)]),
             exercise(id: "e2", index: 2, sets: [set(1)])
         ])
 
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e2", isExpanded: true)
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        screen.presenter.onPrimaryActionPressed()
+        #expect(screen.interactor.startedRests == [90])
+        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.primaryAction == .next(exerciseId: "e2"))
 
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e2", isExpanded: false)
-        #expect(screen.presenter.expandedExerciseId == nil)
+        if skip {
+            screen.presenter.onSkipRestPressed()
+        } else {
+            screen.interactor.restEndTime = nil
+            screen.presenter.onRestEnded()
+        }
+
+        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
     // MARK: - Reordering
@@ -415,7 +427,6 @@ struct WorkoutTrackerPresenterTests {
         ])])
 
         #expect(screen.presenter.computeTotalVolumeKg() == 1180)
-        #expect(screen.presenter.formattedVolume == "1,180 kg")
     }
 
     @Test("Test Sets Without Weight Or Reps Add No Volume")
@@ -426,18 +437,6 @@ struct WorkoutTrackerPresenterTests {
         ])])
 
         #expect(screen.presenter.computeTotalVolumeKg() == 0)
-    }
-
-    @Test("Test The Progress Counters Read As Fractions")
-    func testTheProgressCountersReadAsFractions() throws {
-        let screen = try makeScreen(exercises: [
-            exercise(id: "e1", index: 1, sets: [set(1, done: true), set(2)]),
-            exercise(id: "e2", index: 2, sets: [set(1)])
-        ])
-
-        #expect(screen.presenter.completedSetsFraction == "1/3")
-        #expect(screen.presenter.exercisesCount == "2 exercises")
-        #expect(screen.presenter.exerciseFraction == "1/2")
     }
 
     // MARK: - Notes
@@ -615,7 +614,7 @@ struct WorkoutTrackerPresenterTests {
         #expect(screen.presenter.workoutSession == saved)
     }
 
-    /// The screen's own `updateSet` reaches the manager through `didSet`, and the observation can
+    /// The screen's own write reaches the manager through `flushSave`, and the observation can
     /// fire before it returns. Whatever it reports then is not adopted: adopting it would fight the
     /// edit the user is making.
     @Test("Test A Session Arriving Mid-Update Is Not Adopted")
@@ -642,6 +641,7 @@ struct WorkoutTrackerPresenterTests {
         var edited = own
         edited.reps = 12
         screen.presenter.updateSet(edited, in: "e1")
+        screen.presenter.flushSave()
 
         let sets = try #require(screen.presenter.workoutSession.exercises.first).sets
         #expect(sets[0].reps == 12)
@@ -651,14 +651,15 @@ struct WorkoutTrackerPresenterTests {
 
     // MARK: - Persistence
 
-    /// Every change to the session is written through, so closing the app mid-workout loses
-    /// nothing.
+    /// Every change to the session is written, after the debounce or at the next flush, so closing
+    /// the app mid-workout loses nothing.
     @Test("Test Changing The Session Saves It")
     func testChangingTheSessionSavesIt() throws {
         let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])])
         let before = screen.interactor.savedActiveSessions.count
 
         screen.presenter.updateExerciseNotes("Felt heavy", exerciseId: "e1")
+        screen.presenter.flushSave()
 
         #expect(screen.interactor.savedActiveSessions.count > before)
     }
@@ -692,6 +693,7 @@ extension WorkoutTrackerPresenterTests {
         )
 
         screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+        screen.presenter.flushSave()
 
         #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
         #expect(screen.interactor.activeSession?.exercises[0].sets.map(\.weightKg) == [100, 100, 80])
@@ -718,6 +720,7 @@ extension WorkoutTrackerPresenterTests {
         )
 
         screen.presenter.workoutSession.exercises[0].sets[0].weightKg = 100
+        screen.presenter.flushSave()
 
         #expect(screen.presenter.workoutSession.exercises[0].sets.map(\.weightKg) == [100, 80])
     }

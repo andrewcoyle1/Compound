@@ -1,0 +1,1129 @@
+[
+  {
+    "author_id" : "user-1",
+    "colour" : "#000000",
+    "date_created" : 813104665.6896,
+    "date_modified" : 813104665.6896,
+    "deload" : "none",
+    "icon" : "flag",
+    "id" : "0E3E2BC7-6762-4391-BEA1-733BAC606036",
+    "name" : "Build",
+    "num_microcycles" : 2,
+    "periodisation" : false,
+    "workout_templates" : [
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.689364,
+        "date_modified" : 813104665.689364,
+        "exercises" : [
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-incline-press",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Incline Press",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "9C61E420-AAD8-4F56-9231-B178045E3CC7",
+            "notes" : "Pause at the bottom.",
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "B6550FDD-DE5B-4BE6-915F-FD4BC28ABEB2",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "C96D40D3-E34E-400C-85A8-F078A70F8E63",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 0,
+                "set_number" : 2,
+                "set_type" : "amrap"
+              }
+            ],
+            "set_targets_by_microcycle" : [
+              {
+                "from_microcycle" : 2,
+                "set_targets" : [
+                  {
+                    "id" : "05437C89-EBCE-4D7C-9751-6D388879D391",
+                    "max_reps" : 8,
+                    "min_reps" : 6,
+                    "rir_target" : 2,
+                    "set_number" : 1,
+                    "set_type" : "standard"
+                  },
+                  {
+                    "id" : "49AFCA7B-E65C-4E58-8FB0-7EE2F5D38D3D",
+                    "max_reps" : 8,
+                    "min_reps" : 6,
+                    "rir_target" : 2,
+                    "set_number" : 2,
+                    "set_type" : "standard"
+                  },
+                  {
+                    "id" : "1E8555EA-8630-4106-9D3F-10E04271A7CF",
+                    "max_reps" : 8,
+                    "min_reps" : 6,
+                    "rir_target" : 0,
+                    "set_number" : 3,
+                    "set_type" : "amrap"
+                  }
+                ]
+              }
+            ],
+            "substitute_exercise_ids" : [
+              "ex-machine-press",
+              "ex-dumbbell-press"
+            ],
+            "superset_group_id" : "60BAECFE-1D3B-4E44-944E-A301762247F6",
+            "warmup_set_count" : 3
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-row",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Row",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "FD9691E0-290F-4199-B87C-DC7017D38FF5",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "F4E145F0-7701-454A-8FFA-D9F5C098C6F2",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "6798A135-0EF2-4FA5-846E-A1C9317FEC37",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "8D51010F-B1CA-423E-8BD8-471949326039",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "mini_set_count" : 3,
+                "rir_target" : 1,
+                "set_number" : 3,
+                "set_type" : "myo"
+              }
+            ],
+            "substitute_exercise_ids" : [
+              "ex-cable-row"
+            ],
+            "superset_group_id" : "60BAECFE-1D3B-4E44-944E-A301762247F6",
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-lateral-raise",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Lateral Raise",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "55C4AF23-D982-45A7-A815-54267502C770",
+            "rest_seconds" : 45,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "84948CA8-4FE6-4F95-A732-3F3BCF4330C4",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "77002657-E331-4EFC-AA1B-F4FC4EB0B417",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 2,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "drop_count" : 2,
+                "drop_step_percent" : 25,
+                "id" : "D7B18CA4-EA47-450B-9C4E-0BEDC7191A19",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 1,
+                "set_number" : 3,
+                "set_type" : "drop"
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-lateral-raise",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Lateral Raise",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "4A53B08B-7651-48C7-9B42-31BF7CD7AE55",
+            "notes" : "Back-off set.",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "E4BFF173-0F80-4C5A-AEE8-D9CA67E1D374",
+                "max_reps" : 20,
+                "min_reps" : 20,
+                "rir_target" : 0,
+                "set_number" : 1,
+                "set_type" : "standard"
+              }
+            ],
+            "warmup_set_count" : 0
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-triceps-pushdown",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Triceps Pushdown",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "7B52D6AD-9423-4325-9B68-7CEFB44DA2E7",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "99EBF8F6-F624-4237-A432-2D18A126C4EB",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "3FA52D75-F0C9-4665-9BD7-625108F44FB7",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 0,
+                "set_number" : 2,
+                "set_type" : "partials"
+              }
+            ]
+          }
+        ],
+        "name" : "Upper",
+        "workout_id" : "E87FC79C-0AAA-42CE-B908-DD39FBD4C3E6"
+      },
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.689598,
+        "date_modified" : 813104665.689598,
+        "exercises" : [
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-squat",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Squat",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "E441DBE6-76ED-4852-B57C-4CD3A5FF64EB",
+            "notes" : "Brace hard.",
+            "rest_seconds" : 180,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "F39B299D-A72E-417D-8AF9-5A791E26A342",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 3,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "C8576566-A036-4A02-A017-F5A6DFE37A7F",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 3,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "890B0220-DAD7-4E33-BE11-F19A30BE71A4",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 2,
+                "set_number" : 3,
+                "set_type" : "standard"
+              }
+            ],
+            "substitute_exercise_ids" : [
+              "ex-hack-squat",
+              "ex-leg-press"
+            ],
+            "warmup_set_count" : 4
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-split-squat",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Split Squat",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "3964B9F7-7D0A-4F38-911D-07522475A62A",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "5529F175-A7FD-4EBC-8552-865DD5BC9A36",
+                "max_reps" : 10,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "hold_seconds" : 30,
+                "id" : "BF9A13F4-2639-4349-B858-3DAD3D048479",
+                "max_reps" : 10,
+                "min_reps" : 10,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "stretch"
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-leg-curl",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Leg Curl",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "3D4BCEB3-6800-45A1-9B16-41381FAEA192",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "23FA49FB-489D-407B-A6FA-80B28BD02F25",
+                "max_reps" : 10,
+                "min_reps" : 8,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "hold_seconds" : 20,
+                "id" : "928B76C6-80C3-4BBB-ADF8-3450A3D1E591",
+                "max_reps" : 10,
+                "min_reps" : 8,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "hold"
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "someone-else",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-calf-raise",
+              "is_bodyweight" : false,
+              "is_system_exercise" : false,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Calf Raise",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "E4D0CD87-C127-409A-B927-4F89B99DF8FB",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "AEE700EC-3A62-4F51-A71B-9AF16AD13EA2",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "64D9A8CB-F515-499E-8D29-82D18C135E40",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 2,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "C0E68324-2FDB-4541-BA08-F1C00FB38F27",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 0,
+                "set_number" : 3,
+                "set_type" : "partials"
+              }
+            ],
+            "warmup_set_count" : 1
+          }
+        ],
+        "name" : "Lower",
+        "workout_id" : "77D8E128-89D7-47AD-A81F-D4EBA9775A5A"
+      },
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.689599,
+        "date_modified" : 813104665.689599,
+        "exercises" : [
+
+        ],
+        "name" : "Rest",
+        "workout_id" : "1F73B3DC-2B41-42DA-A03E-44FCFCCA6154"
+      }
+    ]
+  },
+  {
+    "author_id" : "user-1",
+    "colour" : "#000000",
+    "date_created" : 813104665.690158,
+    "date_modified" : 813104665.690158,
+    "deload" : "none",
+    "icon" : "flag",
+    "id" : "C58D7D60-C503-40C2-AA4A-B8A526D3F50A",
+    "name" : "Peak",
+    "num_microcycles" : 2,
+    "periodisation" : false,
+    "workout_templates" : [
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.69,
+        "date_modified" : 813104665.69,
+        "exercises" : [
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-incline-press",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Incline Press",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "744EBDAD-C01D-4384-BF8E-349C51973883",
+            "rest_seconds" : 180,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "CD263C14-2EEE-4DC3-BC7C-063FBF35EC47",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "87B34B77-79A4-4AE4-937D-0C6D0387DF23",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "7DADEF45-5647-4938-9FA8-3790379144B7",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 0,
+                "set_number" : 3,
+                "set_type" : "amrap"
+              }
+            ],
+            "warmup_set_count" : 2
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-row",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Row",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "2F7F60B5-9AD0-4DC4-ACE5-E8FFBEFDD2ED",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "1A2E78FC-7D3C-4370-8AD8-4820151D871E",
+                "max_reps" : 10,
+                "min_reps" : 8,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "A26AA883-E32F-4C15-8047-A7EBA86E4C06",
+                "max_reps" : 10,
+                "min_reps" : 8,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "1D2BD6BD-3AE7-4CFC-A604-CC755B01DC33",
+                "max_reps" : 10,
+                "min_reps" : 8,
+                "mini_set_count" : 3,
+                "rir_target" : 1,
+                "set_number" : 3,
+                "set_type" : "myo"
+              }
+            ],
+            "set_targets_by_microcycle" : [
+              {
+                "from_microcycle" : 2,
+                "set_targets" : [
+                  {
+                    "id" : "C4D9C869-B2DE-48A1-B820-E1B754431006",
+                    "max_reps" : 10,
+                    "min_reps" : 8,
+                    "rir_target" : 2,
+                    "set_number" : 1,
+                    "set_type" : "standard"
+                  },
+                  {
+                    "id" : "B0DE03F9-B81F-4813-A23F-D00D3B420761",
+                    "max_reps" : 10,
+                    "min_reps" : 8,
+                    "rir_target" : 1,
+                    "set_number" : 2,
+                    "set_type" : "standard"
+                  },
+                  {
+                    "id" : "9F6E9F2C-C1A0-47D2-8D23-B7FA4EED63E1",
+                    "max_reps" : 10,
+                    "min_reps" : 8,
+                    "mini_set_count" : 3,
+                    "rir_target" : 0,
+                    "set_number" : 3,
+                    "set_type" : "myo"
+                  }
+                ]
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-lateral-raise",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Lateral Raise",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "DAA6E7EB-9FE2-417D-950E-73F07CD788D7",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "A109EE4A-0E6C-4E9C-83B8-218EE10AA49B",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 1,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "drop_count" : 3,
+                "drop_step_percent" : 20,
+                "id" : "8ABF002A-4369-4AC6-9A29-E949A39FCD59",
+                "max_reps" : 12,
+                "min_reps" : 10,
+                "rir_target" : 0,
+                "set_number" : 2,
+                "set_type" : "drop"
+              }
+            ],
+            "warmup_set_count" : 0
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-triceps-pushdown",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Triceps Pushdown",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "A5E9220D-0F8B-4C8B-8BAE-8E9050D26B49",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "EB98A1A5-74B0-49B6-A840-DDBC0977EB07",
+                "max_reps" : 15,
+                "min_reps" : 12,
+                "rir_target" : 1,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "AA9EF959-0F4A-4C62-8270-05592BCE4022",
+                "max_reps" : 15,
+                "min_reps" : 12,
+                "rir_target" : 0,
+                "set_number" : 2,
+                "set_type" : "partials"
+              }
+            ],
+            "warmup_set_count" : 0
+          }
+        ],
+        "name" : "Upper",
+        "workout_id" : "7D9A1AC3-E8C4-4734-9402-8A13B58EB321"
+      },
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.690157,
+        "date_modified" : 813104665.690157,
+        "exercises" : [
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-squat",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Squat",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "294C666F-F889-4235-AB9D-CB8897655651",
+            "rest_seconds" : 180,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "54B36092-DEEB-47FD-8CCA-7F06F1BB9DB9",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 2,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "15C7D64D-B4E3-4B0D-8E0F-405FDCF97EF6",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 2,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "0EA7E9DA-1D82-456D-872D-DB31BEE32D6F",
+                "max_reps" : 6,
+                "min_reps" : 4,
+                "rir_target" : 1,
+                "set_number" : 3,
+                "set_type" : "standard"
+              }
+            ],
+            "warmup_set_count" : 4
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-split-squat",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Split Squat",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "A3ED7105-34E2-4869-BCD8-AF46B9E93E23",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "17E804BA-6059-4A31-92C1-0D4E6E5BC2E0",
+                "max_reps" : 8,
+                "min_reps" : 8,
+                "rir_target" : 1,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "B4B5E66C-16B8-4E4B-80C0-8B263BA211F4",
+                "max_reps" : 8,
+                "min_reps" : 8,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "standard"
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "official",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-leg-curl",
+              "is_bodyweight" : false,
+              "is_system_exercise" : true,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Leg Curl",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "133DF427-B8FE-4D44-9671-F92FE5F7BB0B",
+            "rest_seconds" : 90,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "2966C8B9-F223-489A-A99D-54907A2F51DE",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 1,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "hold_seconds" : 30,
+                "id" : "FC9BF159-ABF1-4D28-955B-AAD3000BE6EC",
+                "max_reps" : 8,
+                "min_reps" : 6,
+                "rir_target" : 0,
+                "set_number" : 2,
+                "set_type" : "hold"
+              }
+            ],
+            "warmup_set_count" : 1
+          },
+          {
+            "exercise" : {
+              "alternate_names" : [
+
+              ],
+              "author_id" : "someone-else",
+              "body_weight_contribution" : 0,
+              "bookmark_count" : 0,
+              "click_count" : 0,
+              "date_created" : 0,
+              "date_modified" : 0,
+              "equipment_variations" : [
+
+              ],
+              "favourite_count" : 0,
+              "id" : "ex-calf-raise",
+              "is_bodyweight" : false,
+              "is_system_exercise" : false,
+              "laterality" : "bilateral",
+              "muscle_groups" : {
+
+              },
+              "name" : "Calf Raise",
+              "range_of_motion" : 0,
+              "stability" : 0,
+              "trackable_metrics" : [
+                "weight",
+                "reps"
+              ]
+            },
+            "id" : "777165BA-2716-4C5C-8DA1-1A58625C5F55",
+            "rest_seconds" : 45,
+            "set_rest_timers" : false,
+            "set_targets" : [
+              {
+                "id" : "8D362033-9450-482B-88B6-076B475211A7",
+                "max_reps" : 15,
+                "min_reps" : 15,
+                "rir_target" : 1,
+                "set_number" : 1,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "0A586362-218B-4A23-946B-C5F0829AEB19",
+                "max_reps" : 15,
+                "min_reps" : 15,
+                "rir_target" : 1,
+                "set_number" : 2,
+                "set_type" : "standard"
+              },
+              {
+                "id" : "DD7EAD5F-05A4-4B2A-93B8-646123F9C439",
+                "max_reps" : 15,
+                "min_reps" : 15,
+                "rir_target" : 0,
+                "set_number" : 3,
+                "set_type" : "amrap"
+              }
+            ],
+            "warmup_set_count" : 0
+          }
+        ],
+        "name" : "Lower",
+        "workout_id" : "183C898D-3649-4D87-8948-737E9ABB2E3D"
+      },
+      {
+        "author_id" : "user-1",
+        "date_created" : 813104665.690158,
+        "date_modified" : 813104665.690158,
+        "exercises" : [
+
+        ],
+        "name" : "Rest",
+        "workout_id" : "31A26CE4-5177-423E-8C32-4502C730D2A8"
+      }
+    ]
+  }
+]

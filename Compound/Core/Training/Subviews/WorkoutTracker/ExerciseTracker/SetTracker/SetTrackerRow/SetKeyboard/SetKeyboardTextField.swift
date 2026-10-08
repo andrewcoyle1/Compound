@@ -61,6 +61,10 @@ struct SetKeyboardTextField: UIViewRepresentable {
     let text: String
     let isActive: Bool
     let accessibilityLabel: String
+    /// Drawn in the secondary colour: a set further down the table than the one being logged.
+    var isMuted = false
+    /// Shown greyed while the field is empty: last time's value, or "—". Never a value.
+    var placeholder = Format.placeholder
     let presenter: SetKeyboardPresenter
     let inputHost: SetKeyboardInputHost
     let onBegin: () -> Void
@@ -74,8 +78,8 @@ struct SetKeyboardTextField: UIViewRepresentable {
         textField.font = .preferredFont(forTextStyle: .body)
         textField.adjustsFontForContentSizeCategory = true
         textField.adjustsFontSizeToFitWidth = true
-        textField.minimumFontSize = 9
-        textField.placeholder = "-"
+        // The HIG's 11 pt floor: "102.5" in a 70 pt field used to shrink to 9 pt.
+        textField.minimumFontSize = 11
         textField.inputView = inputHost.view(for: presenter)
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -87,6 +91,16 @@ struct SetKeyboardTextField: UIViewRepresentable {
         textField.isEnabled = context.environment.isEnabled
         if textField.text != text { textField.text = text }
         textField.accessibilityLabel = accessibilityLabel
+        textField.placeholder = placeholder
+        // Read as "empty" rather than the placeholder's dash; a hint says what it was last time.
+        if text.isEmpty {
+            textField.accessibilityValue = placeholder == Format.placeholder
+                ? String(localized: "Empty")
+                : String(localized: "Empty, last time \(placeholder)")
+        } else {
+            textField.accessibilityValue = nil
+        }
+        textField.textColor = isMuted ? .secondaryLabel : .label
         // Focus follows the presenter, so Next and Prev move it. Deferred: first responder
         // cannot change in the middle of a view update.
         if isActive != textField.isFirstResponder {

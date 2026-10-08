@@ -339,17 +339,19 @@ struct FinalExerciseDetailsPresenterTests {
         let router: Router
     }
 
-    private func makeScreen() -> Screen {
+    private func makeScreen(isBodyweight: Bool = false) -> Screen {
         let interactor = Interactor()
         let router = Router()
-        return Screen(presenter: FinalExerciseDetailsPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
+        let presenter = FinalExerciseDetailsPresenter(interactor: interactor, router: router, isBodyweight: isBodyweight)
+        return Screen(presenter: presenter, interactor: interactor, router: router)
     }
 
+    /// A bodyweight exercise tracks reps only, since it cannot be loaded.
     private func delegate(isBodyweight: Bool = false) -> FinalExerciseDetailsDelegate {
         FinalExerciseDetailsDelegate(
             name: "Bench Press",
             trackableMetricA: .reps,
-            trackableMetricB: .weight,
+            trackableMetricB: isBodyweight ? nil : .weight,
             exerciseType: .compoundUpper,
             laterality: .bilateral,
             targetMuscles: [.chest: .primary],
@@ -388,28 +390,54 @@ struct FinalExerciseDetailsPresenterTests {
         #expect(passed?.exerciseDescription == "Press the bar off the chest.")
     }
 
-    /// The field is only shown for bodyweight exercises, so the default it holds must not be
-    /// stored against everything else as if it meant something.
-    @Test("Test A Loaded Exercise Stores No Bodyweight Contribution")
-    func testALoadedExerciseStoresNoBodyweightContribution() {
+    /// The contribution belongs to the movement: a weighted dip or a squat moves bodyweight as well
+    /// as the load, so a loaded exercise keeps what was entered rather than having it zeroed.
+    @Test("Test A Loaded Exercise Keeps Its Bodyweight Contribution")
+    func testALoadedExerciseKeepsItsBodyweightContribution() {
         let screen = makeScreen()
+        screen.presenter.bodyweightContribution = 85
         screen.presenter.onNextPressed(delegate: delegate())
-        #expect(screen.router.saveDelegates.first?.bodyweightContribution == 0)
+        #expect(screen.router.saveDelegates.first?.bodyweightContribution == 85)
     }
 
-    /// Labelled "Required" but never checked: any integer went through, including negatives.
-    @Test("Test The Contribution Must Be A Percentage For A Bodyweight Exercise")
-    func testTheContributionMustBeAPercentageForABodyweightExercise() {
+    /// Any integer used to go through, including negatives. The range now holds for every
+    /// exercise, since every exercise carries the value.
+    @Test("Test The Contribution Must Be A Percentage", arguments: [false, true])
+    func testTheContributionMustBeAPercentage(isBodyweight: Bool) {
         let screen = makeScreen()
 
         screen.presenter.bodyweightContribution = 140
-        #expect(!screen.presenter.canContinue(delegate: delegate(isBodyweight: true)))
-        #expect(screen.presenter.canContinue(delegate: delegate()))
-        screen.presenter.onNextPressed(delegate: delegate(isBodyweight: true))
+        #expect(!screen.presenter.canContinue(delegate: delegate(isBodyweight: isBodyweight)))
+        screen.presenter.onNextPressed(delegate: delegate(isBodyweight: isBodyweight))
         #expect(screen.router.saveDelegates.isEmpty)
 
+        screen.presenter.bodyweightContribution = -1
+        #expect(!screen.presenter.canContinue(delegate: delegate(isBodyweight: isBodyweight)))
+
         screen.presenter.bodyweightContribution = 100
-        #expect(screen.presenter.canContinue(delegate: delegate(isBodyweight: true)))
+        #expect(screen.presenter.canContinue(delegate: delegate(isBodyweight: isBodyweight)))
+    }
+
+    /// `isBodyweight` means the exercise cannot be loaded, so pairing it with a weight metric is a
+    /// contradiction the screen names and refuses to save. Assistance is still allowed.
+    @Test("Test A Bodyweight Exercise That Tracks A Load Cannot Continue")
+    func testABodyweightExerciseThatTracksALoadCannotContinue() {
+        let screen = makeScreen(isBodyweight: true)
+        let loaded = FinalExerciseDetailsDelegate(
+            name: "Dip", trackableMetricA: .reps, trackableMetricB: .weight, exerciseType: .compoundUpper,
+            laterality: .bilateral, targetMuscles: [.chest: .primary], isBodyweight: true, equipmentVariations: []
+        )
+        #expect(screen.presenter.hasBodyweightConflict(delegate: loaded))
+        #expect(!screen.presenter.canContinue(delegate: loaded))
+        screen.presenter.onNextPressed(delegate: loaded)
+        #expect(screen.router.saveDelegates.isEmpty)
+
+        let assisted = FinalExerciseDetailsDelegate(
+            name: "Assisted Dip", trackableMetricA: .reps, trackableMetricB: .weightPerSideAssistance, exerciseType: .compoundUpper,
+            laterality: .bilateral, targetMuscles: [.chest: .primary], isBodyweight: true, equipmentVariations: []
+        )
+        #expect(!screen.presenter.hasBodyweightConflict(delegate: assisted))
+        #expect(screen.presenter.canContinue(delegate: assisted))
     }
 
     /// The footer used to be the literal placeholder "XX kg at your current weight."
@@ -456,11 +484,12 @@ struct FinalExerciseDetailsPresenterTests {
         #expect(screen.router.saveDelegates.first?.alternativeNames == ["Barbell Bench"])
     }
 
-    /// Most exercises are not bodyweight, so the percentage starts somewhere sensible rather than
-    /// at zero, which would read as an exercise that moves nothing.
-    @Test("Test The Bodyweight Contribution Starts At Seventy Five")
-    func testTheBodyweightContributionStartsAtSeventyFive() {
-        #expect(makeScreen().presenter.bodyweightContribution == 75)
+    /// Every exercise now shows the field, so it starts at 0 — a cable curl moves no bodyweight —
+    /// unless the Bodyweight toggle was switched on, which presets it to 75.
+    @Test("Test The Bodyweight Contribution Starts At Zero Or The Bodyweight Preset")
+    func testTheBodyweightContributionStartsAtZeroOrTheBodyweightPreset() {
+        #expect(makeScreen().presenter.bodyweightContribution == 0)
+        #expect(makeScreen(isBodyweight: true).presenter.bodyweightContribution == 75)
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

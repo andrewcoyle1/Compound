@@ -59,7 +59,7 @@ struct Constants {
     }
 
     // App Group identifier for sharing data between app and widget extension
-    static let appGroupIdentifier = "group.com.dialedin.app"
+    static let appGroupIdentifier = "group.com.compound.app"
     
     /// Posted when remote data sync completes (e.g. on app foreground). Listen to refresh active training mesocycle.
     static let remoteDataSyncDidComplete = Notification.Name("Compound.RemoteDataSyncDidComplete")
@@ -87,6 +87,13 @@ struct Constants {
     /// the invite. `userInfo` carries `code`. See `DeepLink.post()`.
     static let acceptInvite = Notification.Name("Compound.AcceptInvite")
     
+    /// The bundled asset a session shows for `exercise`, in the app and its Live Activity: the
+    /// library's own image, else one matched by name for exercises from before it carried one.
+    static func exerciseImageName(for exercise: ExerciseModel) -> String? {
+        if let url = exercise.imageURL, !url.isEmpty { return url }
+        return exerciseImageName(for: exercise.name)
+    }
+
     /// Map exercise template names to bundled asset names for Live Activity
     /// Returns nil for exercises without bundled images
     static func exerciseImageName(for exerciseName: String) -> String? {

@@ -148,7 +148,9 @@ struct LiveActivityScenarioTests {
             exerciseModelManager: TestManagers.exerciseModelManager(),
             gymProfileManager: TestManagers.gymProfileManager(),
             mesocycleManager: TestManagers.mesocycleManager(),
-            userManager: TestManagers.userManager(user: nil)
+            userManager: TestManagers.userManager(user: nil),
+            // Its own store, so no other run's focus for "scenario-session" is read back.
+            screenStateStore: UserDefaults(suiteName: "LiveActivityScenarioTests-\(UUID().uuidString)") ?? .standard
         )
         return Rig(
             handler: handler, sessions: sessions, hkWorkoutManager: hkWorkoutManager,

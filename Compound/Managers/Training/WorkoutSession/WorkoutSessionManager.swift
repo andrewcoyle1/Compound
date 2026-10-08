@@ -21,6 +21,14 @@ class WorkoutSessionManager {
 
     var activeSession: WorkoutSessionModel?
 
+    /// The last session finished on this device, from the tracker or the Live Activity, so a
+    /// tracker that finds its workout gone can tell a finish (show the summary) from a discard.
+    private(set) var lastFinishedSession: WorkoutSessionModel?
+
+    /// The last logged set the "Still training?" notification is counted from, so it is moved
+    /// only when a set is logged, not on every keystroke.
+    private var idleReminderAnchor: Date?
+
     var workoutSessions: [WorkoutSessionModel] {
         userWorkoutSessionSyncEngine.currentCollection
     }
@@ -81,10 +89,21 @@ class WorkoutSessionManager {
     func updateActiveSession(_ session: WorkoutSessionModel) throws {
         try activeWorkoutSessionPersistence.saveDocument(managerKey: Keys.activeWorkoutSessionManagerKey, session)
         self.activeSession = session
+        rescheduleIdleReminder(for: session)
     }
-    
+
+    /// Every save of the active session comes through here, the phone's and the Live Activity's,
+    /// so this is where "Still training?" follows the last logged set.
+    private func rescheduleIdleReminder(for session: WorkoutSessionModel) {
+        let lastLog = ActiveWorkout.latestCompletedSet(in: session.exercises)?.completedAt
+        guard let lastLog, lastLog != idleReminderAnchor else { return }
+        idleReminderAnchor = lastLog
+        IdleWorkoutReminder.schedule(after: lastLog)
+    }
+
     func endWorkoutSession(_ session: WorkoutSessionModel) async throws {
         try await self.saveWorkoutSession(session)
+        lastFinishedSession = session
         try clearActiveSession()
     }
     
@@ -95,6 +114,8 @@ class WorkoutSessionManager {
     private func clearActiveSession() throws {
         try activeWorkoutSessionPersistence.saveDocument(managerKey: Keys.activeWorkoutSessionManagerKey, nil)
         self.activeSession = nil
+        idleReminderAnchor = nil
+        IdleWorkoutReminder.cancel()
     }
     
     func getLastWorkoutSessionForTemplate(templateId: String) async throws -> WorkoutSessionModel? {
@@ -284,6 +305,19 @@ extension CoreInteractor {
         #else
         return nil
         #endif
+    }
+
+    /// When the rest on screen began, as its owner recorded it, wherever it was started.
+    var restStartedAt: Date? {
+        #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
+        return hkWorkoutManager.restStartedAt
+        #else
+        return nil
+        #endif
+    }
+
+    var lastFinishedSession: WorkoutSessionModel? {
+        workoutSessionManager.lastFinishedSession
     }
 
     func endWorkoutSession(_ session: WorkoutSessionModel) async throws {

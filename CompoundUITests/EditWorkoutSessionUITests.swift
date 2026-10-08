@@ -21,7 +21,7 @@ final class EditWorkoutSessionUITests: XCTestCase {
         let save = app.waitFor(app.button("SessionDetail.save"))
         XCTAssertFalse(save.isEnabled)
 
-        app.waitFor(app.buttons["Add set"].firstMatch).tap()
+        app.waitFor(app.buttons["Add Set"].firstMatch).tap()
         XCTAssertTrue(save.isEnabled)
 
         save.tap()

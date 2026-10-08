@@ -42,6 +42,8 @@ enum Symbol {
     static let restDay = "bed.double"
     static let warmup = "thermometer.sun"
     static let superset = "link"
+    /// A drop or mini-set: a row that is part of the set above it.
+    static let subSet = "arrow.turn.down.right"
     /// Logging each side of a one-limb exercise as its own row.
     static let splitSides = "rectangle.split.2x1"
     static let personalRecord = "trophy.fill"
@@ -54,6 +56,17 @@ enum Symbol {
     static let cardio = "figure.run"
     static let muscleGroup = "figure.arms.open"
     static let note = "note.text"
+    /// The user's own note on an exercise, kept from session to session.
+    static let pinnedNote = "pin.fill"
+    /// Putting an exercise off until the end of the workout, or bringing it up next.
+    static let doLater = "arrow.down.to.line"
+    static let doNext = "arrow.up.to.line"
+    /// A step along the strip, layout-direction aware.
+    static let moveEarlier = "arrow.backward"
+    static let moveLater = "arrow.forward"
+    static let reorder = "arrow.up.arrow.down"
+    static let swap = "arrow.left.arrow.right"
+    static let smartProgression = "wand.and.stars"
 
     // Nutrition
     static let nutrition = "leaf"
@@ -102,6 +115,8 @@ enum Symbol {
     static let share = "square.and.arrow.up"
     /// Opening something in another app or the browser, such as a workout's Strava activity.
     static let openExternally = "arrow.up.forward.app"
+    /// Watching a demonstration video, such as the one a plan links for an exercise.
+    static let video = "play.rectangle"
     static let search = "magnifyingglass"
     static let filter = "line.3.horizontal.decrease"
     static let more = "ellipsis"
@@ -115,6 +130,8 @@ enum Symbol {
     // Status
     static let info = "info.circle"
     static let success = "checkmark.circle.fill"
+    /// The plain tick: a menu's chosen item, and Finish in a menu.
+    static let selected = "checkmark"
     static let warning = "exclamationmark.triangle"
     static let error = "exclamationmark.circle"
 }

@@ -11,6 +11,11 @@ import SwiftUI
 /// its own router, signed in to the mock scenario the way `AppView` would be, so a UI test does
 /// not have to walk the tab bar to reach it.
 struct AppViewForUITesting: View {
+
+    /// Read once. `WorkoutSessionModel.mock` makes new set ids on every read, and the screen is
+    /// rebuilt on every redraw, so the session being edited never matched the one it started from
+    /// and Save was enabled before anything changed.
+    private static let sessionDetailMock = WorkoutSessionModel.mock
     
     var container: DependencyContainer
     
@@ -142,7 +147,7 @@ extension AppViewForUITesting {
             ("STARTSCREEN_EXERCISES", { builder.exercisesView(router: $0).any() }),
             ("STARTSCREEN_WORKOUT_HISTORY", { builder.workoutHistoryView(router: $0).any() }),
             ("STARTSCREEN_SESSION_DETAIL", {
-                builder.workoutSessionDetailView(router: $0, delegate: WorkoutSessionDetailDelegate(workoutSession: .mock)).any()
+                builder.workoutSessionDetailView(router: $0, delegate: WorkoutSessionDetailDelegate(workoutSession: Self.sessionDetailMock)).any()
             }),
             ("STARTSCREEN_GYM_PROFILES", { builder.gymProfilesView(router: $0).any() }),
             ("STARTSCREEN_NUTRITION", { builder.nutritionView(delegate: NutritionDelegate(), router: $0).any() }),
@@ -240,10 +245,80 @@ private struct ActiveSessionScreen<Content: View>: View {
         } else {
             ProgressView()
                 .task {
-                    try? await interactor.startWorkout(for: .mock, in: nil)
+                    let plansSets = ProcessInfo.processInfo.arguments.contains("UI_TEST_SET_PLAN")
+                    try? await interactor.startWorkout(for: plansSets ? Self.setPlanTemplate : .mock, in: nil)
+                    if plansSets { await seedSetPlan() }
+                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_SUPERSET") { seedSuperset() }
+                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_PLAN_NOTES") { seedPlanNotes() }
+                    if ProcessInfo.processInfo.arguments.contains("UI_TEST_STRIP_OFF") { await hideExerciseStrip() }
                     isReady = true
                 }
         }
+    }
+
+    /// `UI_TEST_STRIP_OFF`: the tracker as it is with the exercise strip switched off, so Up Next
+    /// and Completed are on screen for the tests that use them.
+    private func hideExerciseStrip() async {
+        var settings = interactor.workoutSettings
+        settings.showExerciseStrip = false
+        try? await interactor.saveWorkoutSettings(settings)
+    }
+
+    /// `UI_TEST_SET_PLAN`: Workout Settings › Set Plan on, and the first exercise's working sets laid
+    /// out by the plan through the path session creation takes with the switch on. Laid out here
+    /// rather than left to creation, because the settings engine applies the switch only when its
+    /// listener next emits, which can be after the session is made; the tracker reads it live.
+    private func seedSetPlan() async {
+        if var session = interactor.activeSession, var exercise = session.exercises.first,
+           !exercise.sets.contains(where: \.isSubSet) {
+            let working = WorkoutSessionModel.applyingSetPlan(
+                to: exercise.sets.filter { !$0.isWarmup },
+                setTargets: exercise.setTargets,
+                authorId: session.authorId
+            )
+            exercise.sets = (exercise.sets.filter(\.isWarmup) + working).enumerated().map { index, set in
+                var set = set
+                set.index = index + 1
+                return set
+            }
+            session.exercises[0] = exercise
+            try? interactor.updateActiveSession(session)
+        }
+        var settings = interactor.workoutSettings
+        settings.setPlanning = true
+        try? await interactor.saveWorkoutSettings(settings)
+    }
+
+    /// `UI_TEST_SET_PLAN`: the mock template with its first exercise planned as a drop set with
+    /// two drops, then an AMRAP set aiming for 8.
+    private static var setPlanTemplate: WorkoutTemplateModel {
+        var template = WorkoutTemplateModel.mock
+        guard !template.exercises.isEmpty else { return template }
+        template.exercises[0].setTargets = [
+            SetTarget(setNumber: 1, minReps: 8, maxReps: 8, setType: .drop, dropCount: 2),
+            SetTarget(setNumber: 2, setType: .amrap, amrapTargetReps: 8)
+        ]
+        return template
+    }
+
+    /// `UI_TEST_PLAN_NOTES`: the first exercise carries a plan's notes and video link, as a session
+    /// started from a planned template does.
+    private func seedPlanNotes() {
+        guard var session = interactor.activeSession, !session.exercises.isEmpty else { return }
+        session.exercises[0].planNotes = "Pause one second at the chest. Keep the shoulder blades pinned throughout every rep."
+        session.exercises[0].linkURL = "https://example.com/bench-press"
+        try? interactor.updateActiveSession(session)
+    }
+
+    /// `UI_TEST_SUPERSET`: the first two exercises as one superset, without their warm-ups, so a
+    /// UI test logs A1 and then B1 straight from the log button.
+    private func seedSuperset() {
+        guard var session = interactor.activeSession, session.exercises.count > 1 else { return }
+        for index in 0..<2 {
+            session.exercises[index].supersetGroupId = "ui-test-superset"
+            session.exercises[index].sets.removeAll { $0.isWarmup }
+        }
+        try? interactor.updateActiveSession(session)
     }
 }
 

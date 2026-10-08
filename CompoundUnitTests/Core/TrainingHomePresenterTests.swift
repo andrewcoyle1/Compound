@@ -427,6 +427,7 @@ struct TrainingTemplateDetailPresenterTests {
         var activeSession: WorkoutSessionModel?
         var mesocycles: [Mesocycle] = []
         var allWorkoutTemplates: [WorkoutTemplateModel] = []
+        var allExercises: [ExerciseModel] = []
         private(set) var savedTemplates: [WorkoutTemplateModel] = []
 
         func saveWorkoutTemplate(workoutTemplate: WorkoutTemplateModel, image: PlatformImage?) async throws {
@@ -436,13 +437,15 @@ struct TrainingTemplateDetailPresenterTests {
         var deleteError: Error?
         var sessionAfterStart: WorkoutSessionModel?
         private(set) var startedIn: [String?] = []
+        private(set) var startedMicrocycles: [Int?] = []
         private(set) var updatedSessions: [WorkoutSessionModel] = []
         private(set) var deletedTemplateIds: [String] = []
         private(set) var didDeleteActiveSession = false
 
-        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws {
             if let startWorkoutError { throw startWorkoutError }
             startedIn.append(mesocycleId)
+            startedMicrocycles.append(microcycleIndex)
             activeSession = sessionAfterStart
         }
 

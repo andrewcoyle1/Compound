@@ -59,6 +59,11 @@ class WorkoutSessionDetailPresenter {
         self.isWorkoutSummary = isWorkoutSummary
     }
 
+    /// Read at display time, so a workout saved without its image is shown with it and left as it was.
+    func imageName(for exercise: WorkoutExerciseModel) -> String? {
+        exercise.imageName(in: interactor.allExercises)
+    }
+
     func onViewAppear(delegate: WorkoutSessionDetailDelegate) {
         interactor.trackScreenEvent(event: Event.onAppear(delegate: delegate))
     }
@@ -90,13 +95,29 @@ class WorkoutSessionDetailPresenter {
             .count
     }
     
+    /// At effective load: see `bodyweightContributionKg(for:)`.
     func totalVolume(session: WorkoutSessionModel) -> Double {
         session
             .exercises
-            .flatMap { $0.sets }
-            .filter { !$0.isWarmup }
-            .compactMap(\.volumeKg)
+            .flatMap { exercise in
+                let contributionKg = bodyweightContributionKg(for: exercise)
+                return exercise.sets
+                    .filter { !$0.isWarmup }
+                    .compactMap { BodyweightLoad.volumeKg(of: $0, contributionKg: contributionKg) }
+            }
             .reduce(0.0, +)
+    }
+
+    /// The bodyweight each rep of `exercise` lifts, which its volume counts while the setting is on.
+    /// Only on the reader's own workouts: this device knows no one else's bodyweight.
+    private func bodyweightContributionKg(for exercise: WorkoutExerciseModel) -> Double? {
+        guard interactor.workoutSettings.showBodyweightContribution,
+              isAuthor(sessionAuthorId: exercise.authorId),
+              let percent = interactor.allExercises.first(where: { $0.id == exercise.templateId })?.bodyWeightContribution
+        else { return nil }
+        // ponytail: today's bodyweight, not the session's, so an old workout's volume moves with
+        // the scale; snapshot it onto the session if history must stay fixed.
+        return BodyweightLoad.contributionKg(bodyweightKg: interactor.currentWeightKilograms, percent: percent)
     }
     
     /// Exercises are logged in different units, so the total is shown in the reader's own
@@ -123,8 +144,9 @@ class WorkoutSessionDetailPresenter {
     func exerciseSummary(_ exercise: WorkoutExerciseModel) -> String {
         let workingSets = exercise.workingSets
         let unit = weightUnit(for: exercise.templateId)
+        let contributionKg = bodyweightContributionKg(for: exercise)
         let volumeKg = workingSets
-            .compactMap(\.volumeKg)
+            .compactMap { BodyweightLoad.volumeKg(of: $0, contributionKg: contributionKg) }
             .reduce(0.0, +)
         return String(localized: "\(String(localized: "\(workingSets.pairedSetCount) sets")) · \(Format.weight(kg: volumeKg, unit: unit)) volume")
     }
@@ -386,7 +408,7 @@ class WorkoutSessionDetailPresenter {
                 targetCount: targetCount,
                 perSide: WorkoutSessionModel.isPerSide(template.exercise)
             )
-            let imageName = Constants.exerciseImageName(for: template.exercise.name)
+            let imageName = Constants.exerciseImageName(for: template.exercise)
             
             let newExercise = WorkoutExerciseModel(
                 id: UUID().uuidString,

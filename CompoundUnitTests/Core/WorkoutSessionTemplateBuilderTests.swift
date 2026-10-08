@@ -158,4 +158,41 @@ struct WorkoutSessionTemplateBuilderTests {
 
         #expect(build(session, library: [Fixture.libraryExercise(id: "bench", name: "Bench Press")]) == nil)
     }
+
+    @Test("Test The Plan The Session Ran From Goes Back On The Template")
+    func testPlanFieldsAreKept() throws {
+        let bench = Fixture.libraryExercise(id: "bench", name: "Bench Press")
+        let fly = Fixture.libraryExercise(id: "fly", name: "Cable Fly")
+        var first = Fixture.logged("Bench Press", templateId: "bench", index: 1)
+        first.supersetGroupId = "s1"
+        first.planNotes = "Pause on the chest"
+        first.restSeconds = 150
+        first.linkURL = "https://example.com/bench"
+        first.substituteExerciseIds = ["dumbbell-press"]
+        first.notes = "Felt heavy"
+        var second = Fixture.logged("Cable Fly", templateId: "fly", index: 2)
+        second.supersetGroupId = "s1"
+
+        let template = try #require(build(Fixture.session(exercises: [first, second]), library: [bench, fly]))
+        let exercise = template.exercises[0]
+
+        #expect(exercise.notes == "Pause on the chest")
+        #expect(exercise.restSeconds == 150)
+        #expect(exercise.linkURL == "https://example.com/bench")
+        #expect(exercise.substituteExerciseIds == ["dumbbell-press"])
+        #expect(template.exercises.map(\.supersetGroupId) == ["s1", "s1"])
+    }
+
+    /// A superset whose partner is not in the reader's library is no longer one.
+    @Test("Test A Superset Left With One Exercise Is Dissolved")
+    func testLoneSupersetIsDissolved() throws {
+        var first = Fixture.logged("Bench Press", templateId: "bench", index: 1)
+        first.supersetGroupId = "s1"
+        var second = Fixture.logged("Mystery Lift", templateId: "friend-only", index: 2)
+        second.supersetGroupId = "s1"
+
+        let template = try #require(build(Fixture.session(exercises: [first, second]), library: [Fixture.libraryExercise(id: "bench", name: "Bench Press")]))
+
+        #expect(template.exercises.map(\.supersetGroupId) == [nil])
+    }
 }

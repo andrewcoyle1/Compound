@@ -22,54 +22,75 @@ struct ProgressionPlanner {
         /// only rounded to the user's unit.
         let exercise: ExerciseModel?
         let preferredWeightUnit: ExerciseWeightUnit?
+        /// The equipment chosen for this session, when the exercise has a session to read it from.
+        let resistanceEquipment: [EquipmentRef]?
+        /// Which appearance of the exercise in its workout this is, from 0: the second bench press
+        /// of a workout progresses from the second bench press of the last one.
+        let occurrence: Int
+
+        /// The key its suggestion is returned under (`ActiveWorkout.historyKey`).
+        var historyKey: String {
+            ActiveWorkout.historyKey(templateId: templateId, occurrence: occurrence)
+        }
 
         init(
             templateId: String,
             trackingMode: TrackingMode,
             setTargets: [SetTarget],
             exercise: ExerciseModel?,
-            preferredWeightUnit: ExerciseWeightUnit?
+            preferredWeightUnit: ExerciseWeightUnit?,
+            resistanceEquipment: [EquipmentRef]? = nil,
+            occurrence: Int = 0
         ) {
             self.templateId = templateId
             self.trackingMode = trackingMode
             self.setTargets = setTargets
             self.exercise = exercise
             self.preferredWeightUnit = preferredWeightUnit
+            self.resistanceEquipment = resistanceEquipment
+            self.occurrence = occurrence
         }
 
-        init(templateExercise: WorkoutTemplateExercise, preferredWeightUnit: ExerciseWeightUnit?) {
+        init(templateExercise: WorkoutTemplateExercise, preferredWeightUnit: ExerciseWeightUnit?, occurrence: Int = 0) {
             self.init(
                 templateId: templateExercise.exercise.id,
                 trackingMode: WorkoutSessionModel.trackingMode(for: templateExercise.exercise),
                 setTargets: templateExercise.setTargets,
                 exercise: templateExercise.exercise,
-                preferredWeightUnit: preferredWeightUnit
+                preferredWeightUnit: preferredWeightUnit,
+                occurrence: occurrence
             )
         }
 
         init(
             sessionExercise: WorkoutExerciseModel,
             exercise: ExerciseModel?,
-            preferredWeightUnit: ExerciseWeightUnit?
+            preferredWeightUnit: ExerciseWeightUnit?,
+            occurrence: Int = 0
         ) {
             self.init(
                 templateId: sessionExercise.templateId,
                 trackingMode: sessionExercise.trackingMode,
                 setTargets: sessionExercise.setTargets,
                 exercise: exercise,
-                preferredWeightUnit: preferredWeightUnit
+                preferredWeightUnit: preferredWeightUnit,
+                resistanceEquipment: sessionExercise.chosenVariationId.flatMap { chosen in
+                    sessionExercise.equipmentVariations.first { $0.id == chosen }?.resistanceEquipment
+                },
+                occurrence: occurrence
             )
         }
     }
 
-    /// A suggestion per exercise, keyed by `templateId`. Exercises with nothing to progress from
+    /// A suggestion per exercise, keyed by its `historyKey`. Exercises with nothing to progress from
     /// still get an entry, carrying `.noHistory`, so a caller can tell "no history" from
     /// "not asked about".
     static func suggestions(
         for contexts: [ExerciseContext],
         history sessions: [WorkoutSessionModel],
         adjustmentMode: ProgressionAdjustmentMode,
-        gymProfile: GymProfileModel?
+        gymProfile: GymProfileModel?,
+        amrap: AMRAPProgression? = nil
     ) -> [String: ProgressionSuggestion] {
         let engine = ProgressionEngine()
         var result: [String: ProgressionSuggestion] = [:]
@@ -79,12 +100,13 @@ struct ProgressionPlanner {
             let input = ProgressionInput(
                 trackingMode: context.trackingMode,
                 setTargets: context.setTargets,
-                history: history(forTemplateId: context.templateId, in: sessions),
+                history: history(forTemplateId: context.templateId, occurrence: context.occurrence, in: sessions),
                 adjustmentMode: adjustmentMode,
                 roundWeight: rule.round,
-                minimumIncrementKg: rule.minimumIncrementKg
+                minimumIncrementKg: rule.minimumIncrementKg,
+                amrap: amrap
             )
-            result[context.templateId] = engine.suggest(input)
+            result[context.historyKey] = engine.suggest(input)
         }
 
         return result
@@ -94,7 +116,8 @@ struct ProgressionPlanner {
         WeightRoundingRule(
             exercise: context.exercise,
             gymProfile: gymProfile,
-            preferredWeightUnit: context.preferredWeightUnit
+            preferredWeightUnit: context.preferredWeightUnit,
+            resistanceEquipment: context.resistanceEquipment
         )
     }
 
@@ -102,16 +125,18 @@ struct ProgressionPlanner {
     /// recent first, at most three deep.
     ///
     /// `sessions` is expected most recent first. A session where the exercise was not reached is
-    /// dropped rather than counted as a miss — it says nothing about how the exercise went.
+    /// dropped rather than counted as a miss — it says nothing about how the exercise went. So is
+    /// one without its `occurrence`th appearance: a back-off done once is no history for a second.
     static func history(
         forTemplateId templateId: String,
+        occurrence: Int = 0,
         in sessions: [WorkoutSessionModel],
         limit: Int = 3
     ) -> [ProgressionHistorySession] {
         var history: [ProgressionHistorySession] = []
 
         for session in sessions {
-            guard let exercise = session.exercises.first(where: { $0.templateId == templateId }) else { continue }
+            guard let exercise = session.exercise(templateId: templateId, occurrence: occurrence) else { continue }
             let workingSets = completedWorkingSets(of: exercise)
             guard !workingSets.isEmpty else { continue }
             history.append(ProgressionHistorySession(workingSets: workingSets))
@@ -123,10 +148,11 @@ struct ProgressionPlanner {
 
     /// The sets that count as one session's attempt at an exercise. The two rows of a per-side
     /// set are one set, so only the left one is read — otherwise three sets a side would look
-    /// like six and every rep count would be read twice.
+    /// like six and every rep count would be read twice. A sub-set (a drop or mini-set) is part of
+    /// its parent's set, and the parent's figures are the ones to progress from.
     private static func completedWorkingSets(of exercise: WorkoutExerciseModel) -> [WorkoutSetModel] {
         exercise.sets
-            .filter { !$0.isWarmup && $0.completedAt != nil }
+            .filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
             .filter { $0.side != .right }
     }
 }

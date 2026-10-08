@@ -43,10 +43,26 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     private(set) var preparedSounds: [SoundEffectFile] = []
     private(set) var playedSounds: [SoundEffectFile] = []
 
-    func setActiveWorkoutGymProfile(_ profile: GymProfileModel?) { }
+    // MARK: WP-B
+
+    /// What `setActiveWorkoutGymProfile` was last given. With the favourite behind it, it is the
+    /// gym the real interactor reports.
+    private(set) var activeWorkoutGymProfile: GymProfileModel?
+    var workoutGymProfile: GymProfileModel? { activeWorkoutGymProfile ?? favouriteGymProfile }
+    /// The templates `getWorkoutTemplate` finds, by id.
+    var workoutTemplates: [String: WorkoutTemplateModel] = [:]
+    /// A store of its own, so one test's screen state never reaches another, while a presenter
+    /// rebuilt on the same double, as after a minimise, still finds it.
+    let activeWorkoutScreenStateStore = UserDefaults(suiteName: "WorkoutTrackerInteractorDouble-\(UUID().uuidString)") ?? .standard
+
+    func setActiveWorkoutGymProfile(_ profile: GymProfileModel?) { activeWorkoutGymProfile = profile }
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel {
         GymProfileModel(id: gymProfileId, authorId: "author-1", name: "Home Gym")
     }
+    func getWorkoutTemplate(id: String) -> WorkoutTemplateModel? { workoutTemplates[id] }
+
+    // MARK: - End WP-B
+
     func canRequestHealthDataAuthorisation() -> Bool { false }
     func requestHealthKitAuthorisation(for scope: HealthDataScope) async throws { }
     func needsAuthorisationForRequiredTypes() -> Bool { false }
@@ -191,22 +207,33 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
         )
     }
 
-    /// What `progressionSuggestions(for:gymProfile:)` hands back, keyed by exercise `templateId`.
+    /// What `progressionSuggestions(for:gymProfile:)` hands back for each exercise of the session:
+    /// the entry under its `ActiveWorkout.historyKey`, else the one under its `templateId`. Keyed
+    /// as the real interactor keys it, by history key.
     var progressionSuggestionsByTemplateId: [String: ProgressionSuggestion] = [:]
 
     func progressionSuggestions(
         for session: WorkoutSessionModel,
         gymProfile: GymProfileModel?
     ) async -> [String: ProgressionSuggestion] {
-        progressionSuggestionsByTemplateId
+        var result: [String: ProgressionSuggestion] = [:]
+        for exercise in session.exercises {
+            let key = ActiveWorkout.historyKey(for: exercise, in: session)
+            if let suggestion = progressionSuggestionsByTemplateId[key] ?? progressionSuggestionsByTemplateId[exercise.templateId] {
+                result[key] = suggestion
+            }
+        }
+        return result
     }
 
     func startRest(durationSeconds: Int, session: WorkoutSessionModel, currentExerciseIndex: Int) {
         startedRests.append(durationSeconds)
+        restStartedAt = Date()
         restEndTime = Date().addingTimeInterval(TimeInterval(durationSeconds))
     }
     func cancelRest() {
         didCancelRest = true
+        restStartedAt = nil
         restEndTime = nil
     }
     func prepareSoundEffect(sound: SoundEffectFile, simultaneousPlayers: Int) {
@@ -218,6 +245,26 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     func getPreference(templateId: String) -> ExerciseUnitPreference {
         preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
     }
+    var restOverrides: [String: Int] = [:]
+    func exerciseRestOverride(for exerciseId: String) -> Int? {
+        restOverrides[exerciseId]
+    }
+
+    // MARK: WP-L
+
+    /// Kept by the rest's owner, as `HKWorkoutManager` does: set with the rest, kept after it runs
+    /// out, cleared when it is called off.
+    var restStartedAt: Date?
+    /// A finish lands here, as the session manager records it.
+    var lastFinishedSession: WorkoutSessionModel? { endedSessions.last }
+
+    // MARK: - End WP-L
+
+    // MARK: WP-O
+
+    var currentWeightKilograms: Double?
+
+    // MARK: - End WP-O
 }
 
 final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
@@ -244,6 +291,17 @@ final class WorkoutTrackerRouterDouble: WorkoutTrackerRouter {
     func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
         confirmations.append(title)
     }
+
+    // MARK: WP-L
+
+    /// Titles of the alerts raised. The buttons are views, so tests call the presenter methods
+    /// they would.
+    private(set) var alerts: [String] = []
+    func showAlert(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        alerts.append(title)
+    }
+
+    // MARK: - End WP-L
 }
 
 extension RetryBackoff {
@@ -259,3 +317,120 @@ extension RetryBackoff {
         maxTotalDelay: .seconds(1)
     )
 }
+
+// MARK: WP-A
+
+/// A tracker open on one exercise of open sets, for the save and propagation suites.
+@MainActor
+struct WorkoutTrackerTypingScreen {
+    let presenter: WorkoutTrackerPresenter
+    let interactor: WorkoutTrackerInteractorDouble
+    let router: WorkoutTrackerRouterDouble
+
+    /// Set ids are "s1", "s2", …, each with eight reps.
+    init(weights: [Double], propagateChanges: Bool = true) throws {
+        let start = Date(timeIntervalSince1970: 1_000_000)
+        let sets = weights.enumerated().map { offset, weight in
+            WorkoutSetModel(
+                id: "s\(offset + 1)", authorId: "author-1", index: offset + 1, reps: 8, weightKg: weight,
+                isWarmup: false, dateCreated: start
+            )
+        }
+        let exercise = WorkoutExerciseModel(
+            id: "e1", authorId: "author-1", templateId: "template-e1", name: "Bench Press",
+            trackingMode: .weightReps, index: 1, sets: sets
+        )
+        interactor = WorkoutTrackerInteractorDouble()
+        interactor.workoutSettings.propagateChanges = propagateChanges
+        interactor.activeSession = WorkoutSessionModel(
+            id: "session-1", authorId: "author-1", name: "Push Day", dateCreated: start, exercises: [exercise]
+        )
+        router = WorkoutTrackerRouterDouble()
+        presenter = try WorkoutTrackerPresenter(interactor: interactor, router: router, saveRetryBackoff: .testImmediate)
+    }
+
+    /// The weights on screen, set by set.
+    var weights: [Double?] { presenter.workoutSession.exercises[0].sets.map(\.weightKg) }
+
+    /// The weights in the last saved session.
+    var savedWeights: [Double?]? { interactor.activeSession?.exercises[0].sets.map(\.weightKg) }
+
+    var writes: Int { interactor.savedActiveSessions.count }
+
+    /// Types into a set the way the keypad does: each key writes the field's whole value through
+    /// the row's binding into `workoutSession`.
+    func type(_ values: Double..., into setNumber: Int) {
+        for value in values {
+            presenter.workoutSession.exercises[0].sets[setNumber - 1].weightKg = value
+        }
+    }
+}
+
+// MARK: WP-P
+
+/// Hears what the tracker tells VoiceOver. Bound per task, so only the test listening hears it.
+@MainActor
+final class TrackerAnnouncementSpy {
+    private(set) var announcements: [TrackerAnnouncement] = []
+    var texts: [String] { announcements.map(\.text) }
+
+    /// Runs `body` with every announcement it makes, and any task it starts, sent here.
+    func listen<T>(_ body: () throws -> T) rethrows -> T {
+        try TrackerAnnouncer.$post.withValue({ [self] in announcements.append($0) }, operation: body)
+    }
+}
+
+// MARK: - End WP-P
+
+// MARK: WP-Q
+
+/// A set row's interactor: kilograms, the default settings, and the gym a test hands it.
+final class SetTrackerRowInteractorDouble: SpyGlobalInteractor, SetTrackerRowInteractor {
+    var workoutSettings: WorkoutSettings = WorkoutSettings(authorId: "author-1")
+    var favouriteGymProfile: GymProfileModel?
+    var allExercises: [ExerciseModel] = []
+    var preferences: [String: ExerciseUnitPreference] = [:]
+
+    func getPreference(templateId: String) -> ExerciseUnitPreference {
+        preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
+    }
+
+    func exerciseRestOverride(for exerciseId: String) -> Int? { nil }
+}
+
+/// A set row's router, recording the confirmation dialogs it raises with their messages. The
+/// buttons are views, so tests call the presenter methods they would.
+final class SetTrackerRowRouterDouble: SetTrackerRowRouter {
+    let router: AnyRouter = TestRouting.anyRouter
+    private(set) var confirmations: [(title: String, subtitle: String?)] = []
+
+    func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
+    func showRestModal(
+        primaryButtonAction: @escaping () -> Void,
+        secondaryButtonAction: @escaping () -> Void,
+        minutesSelection: Binding<Int>,
+        secondsSelection: Binding<Int>
+    ) { }
+    func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
+        confirmations.append((title, subtitle))
+    }
+}
+
+/// An exercise a presenter edits through a `Binding`, read back afterwards.
+@MainActor
+final class ExerciseBox {
+    var exercise: WorkoutExerciseModel
+
+    init(_ exercise: WorkoutExerciseModel) {
+        self.exercise = exercise
+    }
+
+    var binding: Binding<WorkoutExerciseModel> {
+        Binding(
+            get: { MainActor.assumeIsolated { self.exercise } },
+            set: { newValue in MainActor.assumeIsolated { self.exercise = newValue } }
+        )
+    }
+}
+
+// MARK: - End WP-Q

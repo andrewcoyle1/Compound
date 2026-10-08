@@ -19,10 +19,11 @@ extension SessionPrefill {
     }
 
     /// The suggestion for one exercise, or `nil` when there is none worth applying — which
-    /// includes `.noHistory`, since the engine never invents a starting weight.
-    func suggestion(for templateId: String) -> ProgressionSuggestion? {
+    /// includes `.noHistory`, since the engine never invents a starting weight. Looked up by
+    /// `ActiveWorkout.historyKey`, so an exercise listed twice gets each appearance's own.
+    func suggestion(for templateId: String, occurrence: Int = 0) -> ProgressionSuggestion? {
         guard case .suggestions(let byExercise) = self,
-              let suggestion = byExercise[templateId],
+              let suggestion = byExercise[ActiveWorkout.historyKey(templateId: templateId, occurrence: occurrence)],
               suggestion.rationale != .noHistory else { return nil }
         return suggestion
     }
@@ -46,6 +47,8 @@ struct WorkingSetPrefill {
     let exercise: ExerciseModel
     let gymProfile: GymProfileModel?
     let unitPreferences: [String: ExerciseUnitPreference]?
+    /// Which appearance of `exercise` in the workout this is, from 0 (`ActiveWorkout.historyKey`).
+    var occurrence = 0
 
     /// Fills `workingSets` from the suggestion for this exercise, falling back per field to what
     /// was logged last time. A set with neither is left exactly as it was built.
@@ -57,13 +60,15 @@ struct WorkingSetPrefill {
     func apply(to workingSets: inout [WorkoutSetModel]) {
         guard prefill.fillsWorkingSets else { return }
 
-        let suggestion = prefill.suggestion(for: exercise.id)
-        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right }
+        let suggestion = prefill.suggestion(for: exercise.id, occurrence: occurrence)
+        // A drop or mini-set is part of the set before it, and filled by hand when it is added:
+        // matched by position, last time's drop would hand its lighter weight to the next set.
+        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right && !$0.isSubSet }
         let preferredUnit = unitPreferences?[exercise.id]?.weightUnit
 
-        for index in workingSets.indices {
-            let suggested = suggestion?.set(at: index)
-            let previous = index < previousWorkingSets.count ? previousWorkingSets[index] : nil
+        for (position, index) in workingSets.indices.filter({ !workingSets[$0].isSubSet }).enumerated() {
+            let suggested = suggestion?.set(at: position)
+            let previous = position < previousWorkingSets.count ? previousWorkingSets[position] : nil
             guard suggested != nil || previous != nil else { continue }
 
             var weightKg = suggested?.weightKg ?? previous?.weightKg ?? workingSets[index].weightKg
@@ -76,20 +81,16 @@ struct WorkingSetPrefill {
                 )
             }
 
-            workingSets[index] = WorkoutSetModel(
-                id: workingSets[index].id,
-                authorId: authorId,
-                index: workingSets[index].index,
-                reps: suggested?.reps ?? previous?.reps ?? workingSets[index].reps,
-                weightKg: weightKg,
-                durationSec: suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec,
-                distanceMeters: suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters,
-                rpe: workingSets[index].rpe,
-                side: workingSets[index].side,
-                isWarmup: false,
-                completedAt: nil,
-                dateCreated: .now
-            )
+            // Changed in place rather than rebuilt field by field, so its kind and parent survive.
+            // The rows were built for `authorId` (`defaultSets`).
+            workingSets[index].reps = suggested?.reps ?? previous?.reps ?? workingSets[index].reps
+            workingSets[index].weightKg = weightKg
+            workingSets[index].durationSec = suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec
+            workingSets[index].distanceMeters = suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters
+            workingSets[index].targetReps = suggested?.targetReps ?? workingSets[index].targetReps
+            workingSets[index].isWarmup = false
+            workingSets[index].completedAt = nil
+            workingSets[index].dateCreated = .now
         }
     }
 }
@@ -129,9 +130,11 @@ extension WorkoutSessionModel {
     static func equipmentWeightRange(
         exercise: ExerciseModel,
         gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
+        preferredWeightUnit: ExerciseWeightUnit?,
+        resistanceEquipment: [EquipmentRef]? = nil
     ) -> (any WeightRange)? {
-        let refs = exercise.equipmentVariations.first?.resistanceEquipment ?? []
+        // The equipment chosen for this session when there is one, else the exercise's first.
+        let refs = resistanceEquipment ?? exercise.equipmentVariations.first?.resistanceEquipment ?? []
         let gym = gymProfile ?? GymProfileModel(authorId: "")
         let fallbackGym = GymProfileModel(authorId: "")
 

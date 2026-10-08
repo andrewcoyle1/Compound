@@ -444,6 +444,7 @@ struct SwapExercisePickerPresenterTests {
 struct ExerciseTrackerPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
+        var allExercises: [ExerciseModel] = []
         var notes: [String: String] = [:]
 
         func exerciseNote(for exerciseId: String) -> String? {

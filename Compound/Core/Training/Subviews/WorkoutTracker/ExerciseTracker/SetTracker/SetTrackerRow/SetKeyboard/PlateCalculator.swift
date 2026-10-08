@@ -25,6 +25,26 @@ enum PlateCalculator {
                             above: nearest(to: total, bar: bar, plates: plates, upward: true))
     }
 
+    /// `total` if the bar can carry it, otherwise the closer of the loadable totals either side, the
+    /// lighter on a tie. A total nothing can reach is returned as it was.
+    static func nearestLoadable(total: Double, bar: Double, plates: [Double]) -> Double {
+        switch load(total: total, bar: bar, plates: plates) {
+        case .loadable:
+            return total
+        case let .notLoadable(below?, above?):
+            return above - total < total - below ? above : below
+        case let .notLoadable(below, above):
+            return below ?? above ?? total
+        }
+    }
+
+    /// `weightKg` as the nearest total a bar with these plates can carry, in kilograms. The plates
+    /// are labelled in `unit`, so the match is made there and converted back.
+    static func nearestLoadableKg(_ weightKg: Double, bar: Double, plates: [Double], unit: ExerciseWeightUnit) -> Double {
+        let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
+        return UnitConversion.convertWeightToKg(nearestLoadable(total: total, bar: bar, plates: plates), from: unit)
+    }
+
     private static func perSide(total: Double, bar: Double, plates: [Double]) -> [Double]? {
         var remaining = (total - bar) / 2
         guard remaining > -epsilon else { return nil }

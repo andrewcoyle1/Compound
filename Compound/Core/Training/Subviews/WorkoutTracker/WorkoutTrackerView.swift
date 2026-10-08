@@ -7,26 +7,82 @@
 
 import SwiftUI
 import HealthKit
-import Combine
 
 struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
+    /// At regular width Pause, Finish and Notes come out of the menu onto the bar.
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     @State var presenter: WorkoutTrackerPresenter
+    @State private var cardSwapEdge = CardSwapEdge()
+    /// VoiceOver's cursor on the bottom button, put back after its action changes the screen
+    /// (a11y.md C1). See `WorkoutPrimaryCTA`.
+    @AccessibilityFocusState var isPrimaryCTAFocused: Bool
 
     @ViewBuilder var exerciseTrackerView: (ExerciseTrackerDelegate, ((Int) -> Void)?) -> ExerciseTracker
     
     var body: some View {
-        List {
-            workoutOverviewCard
-            exerciseSection
+        ScrollViewReader { proxy in
+            // A real container around the list: the reader alone does not run the list's
+            // transition, and the swap below fell back to a plain fade.
+            ZStack {
+                List {
+                    if presenter.workoutSession.exercises.isEmpty {
+                        ContentUnavailableView {
+                            Text("No Exercises")
+                        } description: {
+                            Text("Please add some exercises to get started.")
+                        }
+                        .removeListRowFormatting()
+                    } else {
+                        currentExerciseSection
+                        // With the strip on, it is the map: only the selected block is on the card.
+                        if !presenter.showsExerciseStrip {
+                            upNextSection
+                            completedSection
+                        }
+                    }
+                    // The strip's last item adds an exercise; at accessibility sizes the strip is
+                    // a count and a menu, and the row stays.
+                    if !presenter.showsExerciseStrip || dynamicTypeSize.isAccessibilitySize {
+                        addExerciseSection
+                    }
+                }
+                // The next set's row, brought up from under the button or the keypad after a log. A
+                // nil anchor scrolls only as far as needed, so a row already on screen stays put.
+                .onChange(of: presenter.currentLogSetId) { _, setId in
+                    guard let setId else { return }
+                    withReducedMotionAnimation(.standard) {
+                        proxy.scrollTo(setId, anchor: nil)
+                    }
+                }
+                // With the exercise strip on, a new block is a new list, pushed in from the side of
+                // the strip it lies on (a fade under Reduce Motion). Off, the list keeps one identity.
+                .id(presenter.cardListId)
+                .transition(cardTransition)
+            }
+            // The list's own colour behind the swap: while one list slides out and the next in,
+            // the gap between them showed the window's white.
+            .background(Color.canvas.ignoresSafeArea())
+            .reducedMotionAnimation(.standard, value: presenter.cardListId)
+            // Keeps the swap's edge in step with the block and the order shown; it reads them
+            // first itself when a swap runs, so these only catch up afterwards.
+            .onChange(of: presenter.cardListId, initial: true) { _, blockId in
+                cardSwapEdge.edge(to: blockId, order: presenter.blockOrder)
+            }
+            .onChange(of: presenter.blockOrder) { _, order in
+                cardSwapEdge.edge(to: presenter.cardListId, order: order)
+            }
         }
         .navigationTitle(presenter.workoutSession.name)
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
+        // The rest timer and the column headings are a line of text each, not a 44 pt row. Every
+        // control in the table carries its own 44 pt hit area.
+        .environment(\.defaultMinListRowHeight, Spacing.xl)
         .environment(\.editMode, $presenter.editMode)
         .onChange(of: presenter.pendingSelectedTemplates) { _, newValue in
             guard !newValue.isEmpty else { return }
@@ -35,30 +91,48 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         .toolbar {
             toolbarContent
         }
-        .safeAreaInset(edge: .bottom) {
-            if presenter.isRestActive {
-                timerHeaderView
-            }
+        .safeAreaBar(edge: .top) {
+            WorkoutProgressHeader(presenter: presenter)
         }
-        // Outside the rest pill's inset, so the button sits at the bottom edge and the pill above it.
+        // Hard, so a scrolled set table never shows through the progress text at large sizes.
+        // The strip's bar has no solid fill and takes the automatic effect instead.
+        .scrollEdgeEffectStyle(presenter.showsExerciseStrip ? .automatic : .hard, for: .top)
+        // Always shown, above the keypad too: its animations are its own, so a log no longer
+        // animates the whole list with it.
         .bottomCTA {
-            if presenter.canQuickFinish {
-                // Straight to the summary, where notes can still be added. The menu's Finish keeps
-                // the notes sheet.
-                CallToActionButton {
-                    presenter.onFinishConfirmed()
-                } label: {
-                    Text("Finish Workout")
-                }
-                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
-            }
+            primaryCTA
         }
-        .reducedMotionAnimation(.emphasis, value: presenter.canQuickFinish)
+        // The bottom button is the last element in reading order. A two-finger double tap does
+        // what it does from anywhere on the screen, and the scrub gesture minimises, as the
+        // chevron does (a11y.md M2).
+        .accessibilityAction(.magicTap) {
+            presenter.onPrimarySlotPressed()
+        }
+        .accessibilityAction(.escape) {
+            presenter.minimizeSession()
+        }
+        .onChange(of: presenter.primarySlot) { _, action in
+            presenter.onPrimarySlotChanged(action)
+        }
+        .onChange(of: presenter.runningRestEnd) { oldEnd, newEnd in
+            presenter.onRunningRestEndChanged(from: oldEnd, to: newEnd)
+        }
         .onChange(of: presenter.canQuickFinish) { _, isAvailable in
             presenter.onQuickFinishAvailabilityChanged(isAvailable)
         }
+        // Told to VoiceOver as they happen (a11y.md S1): a log, from here or the Lock Screen, and
+        // the card moving on.
+        .onChange(of: presenter.latestLogMark) { oldMark, newMark in
+            presenter.onLatestLogChanged(from: oldMark, to: newMark)
+        }
+        .onChange(of: presenter.currentExercise?.id) { oldId, newId in
+            presenter.onCurrentExerciseChanged(from: oldId, to: newId)
+        }
         .task {
             await presenter.observeRestCompletions()
+        }
+        .task {
+            await presenter.observeRestOverAnnouncements()
         }
         .task {
             await presenter.onAppear()
@@ -70,202 +144,13 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         }
     }
 
-    // MARK: - UI Components
-    
-    // MARK: - Workout Overview Card
-    private var workoutOverviewCard: some View {
-        Section {
-            // Two columns at accessibility sizes, where three squeezed each stat to a word a line.
-            LazyVGrid(columns: Array(repeating: GridItem(), count: dynamicTypeSize.isAccessibilitySize ? 2 : 3), alignment: .center, spacing: Spacing.l) {
-                Stat(value: presenter.exercisesCount, label: String(localized: "Current Workout"), size: .small, alignment: .center)
-                Stat(value: presenter.completedSetsFraction, label: String(localized: "Sets Completed"), size: .small, alignment: .center)
-                TimelineView(.periodic(from: presenter.workoutSession.dateCreated, by: 1)) { context in
-                    Stat(value: presenter.elapsedTime(at: context.date), label: String(localized: "Elapsed Time"), size: .small, alignment: .center)
-                }
-                Stat(value: presenter.exerciseFraction, label: String(localized: "Exercise"), size: .small, alignment: .center)
-                Stat(value: presenter.formattedVolume, label: String(localized: "Volume"), size: .small, alignment: .center)
-                Button {
-                    presenter.presentWorkoutNotes()
-                } label: {
-                    Stat(value: presenter.notesSummary, label: String(localized: "Notes"), size: .small, alignment: .center)
-                        .foregroundStyle(.tint)
-                }
-                .buttonStyle(.plain)
-            }
-        } header: {
-            Text("Workout Overview")
-        }
-        .listSectionMargins(.top, 0)
-    }
-
-    // MARK: - Exercise Section Card
-
-    private var exerciseSection: some View {
-        // Exercise List
-        Section {
-            if presenter.workoutSession.exercises.isEmpty {
-                ContentUnavailableView {
-                    Text("No Exercises")
-                } description: {
-                    Text("Please add some exercises to get started.")
-                }
-                .removeListRowFormatting()
-            } else {
-                ForEach($presenter.workoutSession.exercises) { $exercise in
-                    let exerciseId = exercise.id
-                    let isExpanded = Binding<Bool>(
-                        get: { presenter.expandedExerciseId == exerciseId },
-                        set: { presenter.onExerciseExpansionChanged(exerciseId: exerciseId, isExpanded: $0) }
-                    )
-                    let supersetLabel: String? = {
-                        guard let groupId = exercise.supersetGroupId else { return nil }
-                        let group = presenter.workoutSession.exercises.filter { $0.supersetGroupId == groupId }
-                        let letters = ["A", "B", "C", "D", "E", "F"]
-                        guard let idx = group.firstIndex(where: { $0.id == exercise.id }),
-                              idx < letters.count else { return nil }
-                        let prefix = group.count > 2 ? String(localized: "Circuit") : String(localized: "Superset")
-                        return "\(prefix) \(letters[idx])"
-                    }()
-                    let delegate = ExerciseTrackerDelegate(
-                        exercise: $exercise,
-                        lastExercise: presenter.previousExercises[exercise.templateId],
-                        isExpanded: isExpanded,
-                        allWorkoutExercises: presenter.workoutSession.exercises,
-                        supersetLabel: supersetLabel,
-                        progressionHint: presenter.progressionHint(for: exerciseId),
-                        progressionSuggestion: presenter.progressionSuggestions[exercise.templateId],
-                        previousNote: presenter.previousNote(forExerciseTemplateId: exercise.templateId),
-                        onSetSupersetGroup: { exerciseId, groupId in
-                            presenter.setSupersetGroupId(groupId, forExerciseId: exerciseId)
-                        },
-                        onDeleteExercise: {
-                            presenter.deleteExercise(exerciseId)
-                        },
-                        onSetCompleted: { completedSet, _ in
-                            presenter.applyLiveProgression(after: completedSet, in: exerciseId)
-                        },
-                        onUpdateNote: { note in
-                            presenter.updateExerciseNotes(note, exerciseId: exerciseId)
-                        }
-                    )
-                    exerciseTrackerView(delegate, { duration in
-                        presenter.startRestTimer(durationSeconds: duration)
-                    })
-                }
-                .onMove { source, destination in
-                    presenter.moveExercises(from: source, to: destination)
-                }
-            }
-        } header: {
-            HStack {
-                Text("Exercises")
-                Spacer()
-                Button {
-                    presenter.presentAddExercise()
-                } label: {
-                    Image(systemName: Symbol.add)
-                }
-                .accessibilityLabel("Add exercise")
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.circle)
-            }
-        }
-    }
-    
-    // MARK: - Timer Header
-    /// Drawn only while a rest runs (`isRestActive`), with the same +15s and Skip the Lock Screen
-    /// offers, so ending a rest early does not mean locking the phone.
-    private var timerHeaderView: some View {
-        HStack(spacing: Spacing.s) {
-            let now = Date()
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Label("Rest Timer", systemImage: Symbol.rest)
-                    .font(.label)
-                    .foregroundStyle(.secondary)
-                Text(timerInterval: now...max(presenter.restEndTime ?? now, now))
-                    .font(.metricLarge)
-            }
-            .accessibilityElement(children: .combine)
-
-            Spacer()
-
-            Button {
-                presenter.onAddRestTimePressed()
-            } label: {
-                Text("+15s")
-                    .tapTarget()
-            }
-            .accessibilityLabel("Add 15 seconds")
-
-            Button {
-                presenter.onSkipRestPressed()
-            } label: {
-                Text("Skip")
-                    .tapTarget()
-            }
-            .accessibilityLabel("Skip rest")
-        }
-        .font(.rowTitle.weight(.semibold))
-        .buttonStyle(.plain)
-        .foregroundStyle(.tint)
-        .padding(Spacing.s)
-        .padding(.horizontal, Spacing.s)
-        .glassEffect()
-        .padding()
-    }
-
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        // A chevron rather than `role: .close`: the workout keeps running behind it. A full-screen
-        // cover cannot be swiped away, so this is the visible way out.
-        ToolbarItem(placement: .cancellationAction) {
-            Button {
-                presenter.minimizeSession()
-            } label: {
-                Image(systemName: "chevron.down")
-            }
-            .accessibilityLabel("Minimize workout")
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-            Menu {
-                Button {
-                    presenter.onPauseResumePressed()
-                } label: {
-                    if presenter.isActive {
-                        Label("Pause Workout", systemImage: "pause")
-                    } else {
-                        Label("Resume Workout", systemImage: "play")
-                    }
-                }
-
-                Button {
-                    presenter.onFinishPressed()
-                } label: {
-                    Label("Finish Workout", systemImage: "checkmark")
-                }
-
-                Button {
-                    presenter.onWorkoutSettingsPressed()
-                } label: {
-                    Label("Workout Settings", systemImage: Symbol.settings)
-                }
-
-                Button {
-                    presenter.onGymProfilePressed()
-                } label: {
-                    Label("Gym Settings", systemImage: Symbol.gym)
-                }
-
-                Button(role: .destructive) {
-                    presenter.onDiscardWorkoutPressed()
-                } label: {
-                    Label("Discard Workout", systemImage: Symbol.delete)
-                }
-            } label: {
-                Image(systemName: Symbol.more)
-            }
-            .accessibilityLabel("Workout options")
-        }
+    private var cardTransition: AnyTransition {
+        guard presenter.showsExerciseStrip else { return .identity }
+        guard !reduceMotion else { return .opacity }
+        let swapEdge = cardSwapEdge
+        return AnyTransition(CardPush { [presenter] in
+            swapEdge.edge(to: presenter.cardListId, order: presenter.blockOrder)
+        })
     }
 }
 

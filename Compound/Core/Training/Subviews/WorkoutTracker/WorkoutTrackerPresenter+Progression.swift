@@ -14,36 +14,35 @@ extension WorkoutTrackerPresenter {
 
     /// Loads the suggestions for this session so the screen can explain itself. The sets were
     /// already filled in when the session was built; this is the reasoning behind them.
-    func loadProgressionSuggestions() {
+    ///
+    /// `exercises` narrows it to those added part-way through; the others keep what they have.
+    /// Every appearance of a narrowed exercise is kept in, so each one's occurrence, and with it
+    /// its key (`ActiveWorkout.historyKey`), is the one it has in the whole workout.
+    func loadProgressionSuggestions(for exercises: [WorkoutExerciseModel]? = nil) {
+        var session = workoutSession
+        if let exercises {
+            let templateIds = Set(exercises.map(\.templateId))
+            session.updateExercises(workoutSession.exercises.filter { templateIds.contains($0.templateId) })
+        }
         Task {
-            progressionSuggestions = await interactor.progressionSuggestions(
-                for: workoutSession,
-                gymProfile: gymProfile ?? interactor.favouriteGymProfile
-            )
+            let suggestions = await interactor.progressionSuggestions(for: session, gymProfile: interactor.workoutGymProfile)
+            progressionSuggestions.merge(suggestions) { $1 }
         }
     }
 
-    /// What was filled in for the user, before they touched anything.
+    /// What was filled in for the user, before they touched anything: in every exercise, or in
+    /// `exercises` only when they were added part-way through.
     ///
     /// Live adjustment rewrites a set only when it still holds these values — a set the user has
     /// edited is theirs, and the hint speaks for the engine instead.
-    func captureProgressionBaseline() {
-        for exercise in workoutSession.exercises {
+    func captureProgressionBaseline(of exercises: [WorkoutExerciseModel]? = nil) {
+        var baseline = progressionBaseline
+        for exercise in exercises ?? workoutSession.exercises {
             for set in exercise.sets where !set.isWarmup {
-                progressionBaseline[set.id] = SuggestedSet(weightKg: set.weightKg, reps: set.reps)
+                baseline[set.id] = SuggestedSet(weightKg: set.weightKg, reps: set.reps)
             }
         }
-    }
-
-    /// The line the exercise header shows, or `nil` when there is nothing to say.
-    func progressionHint(for exerciseId: String) -> String? {
-        guard let exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }),
-              let rationale = progressionSuggestions[exercise.templateId]?.rationale,
-              rationale != .noHistory else { return nil }
-
-        let hint = rationale.hint
-        guard !hint.isEmpty else { return nil }
-        return String(localized: "Smart Progression: \(String(describing: hint.prefix(1).lowercased()))\(String(describing: hint.dropFirst()))")
+        progressionBaseline = baseline
     }
 
     // MARK: - Live adjustment
@@ -69,7 +68,7 @@ extension WorkoutTrackerPresenter {
 
         let rule = ProgressionPlanner.roundingRule(
             for: progressionContext(for: exercise),
-            gymProfile: gymProfile ?? interactor.favouriteGymProfile
+            gymProfile: interactor.workoutGymProfile
         )
         let adjusted = ProgressionEngine().adjustRemaining(
             completed: completed,
@@ -85,6 +84,7 @@ extension WorkoutTrackerPresenter {
     /// Writes the adjustments back, skipping every set the user has since edited.
     private func applyAdjustments(_ adjusted: [SuggestedSet?], to remaining: [WorkoutSetModel], in exerciseIndex: Int) {
         var exercises = workoutSession.exercises
+        var baseline = progressionBaseline
         var changed = 0
 
         for (offset, suggestion) in adjusted.enumerated() {
@@ -93,12 +93,11 @@ extension WorkoutTrackerPresenter {
             guard let setIndex = exercises[exerciseIndex].sets.firstIndex(where: { $0.id == set.id }) else { continue }
 
             // Only what the engine itself put there may be rewritten.
-            let baseline = progressionBaseline[set.id]
-            guard baseline?.weightKg == set.weightKg, baseline?.reps == set.reps else { continue }
+            guard baseline[set.id]?.weightKg == set.weightKg, baseline[set.id]?.reps == set.reps else { continue }
 
             exercises[exerciseIndex].sets[setIndex].weightKg = suggestion.weightKg ?? set.weightKg
             exercises[exerciseIndex].sets[setIndex].reps = suggestion.reps ?? set.reps
-            progressionBaseline[set.id] = SuggestedSet(
+            baseline[set.id] = SuggestedSet(
                 weightKg: exercises[exerciseIndex].sets[setIndex].weightKg,
                 reps: exercises[exerciseIndex].sets[setIndex].reps
             )
@@ -106,6 +105,7 @@ extension WorkoutTrackerPresenter {
         }
 
         guard changed > 0 else { return }
+        progressionBaseline = baseline
         interactor.trackEvent(event: Event.progressionAdjusted(
             exerciseId: exercises[exerciseIndex].id,
             setsChanged: changed

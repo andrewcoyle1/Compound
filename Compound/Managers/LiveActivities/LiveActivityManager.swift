@@ -28,6 +28,9 @@ class LiveActivityManager: LiveActivityUpdating {
     private let weightUnit: (String) -> LiveActivityWeightUnit
     /// The same for distances, which only the rest-over text shows.
     private let distanceUnit: (String) -> LiveActivityDistanceUnit
+    /// Workout Settings › Set Plan. On, the activity names the target's kind and piece and counts
+    /// a set as done only once its drops and mini-sets are; off, it is exactly as it was.
+    private let plansSets: () -> Bool
 
     init(
         logger: LogManager,
@@ -35,12 +38,14 @@ class LiveActivityManager: LiveActivityUpdating {
             Activity<WorkoutActivityAttributes>.activities.first { $0.attributes.sessionId == sessionId }
         },
         weightUnit: @escaping (String) -> LiveActivityWeightUnit = { _ in .kilograms },
-        distanceUnit: @escaping (String) -> LiveActivityDistanceUnit = { _ in .meters }
+        distanceUnit: @escaping (String) -> LiveActivityDistanceUnit = { _ in .meters },
+        plansSets: @escaping () -> Bool = { false }
     ) {
         self.logger = logger
         self.activityLookup = activityLookup
         self.weightUnit = weightUnit
         self.distanceUnit = distanceUnit
+        self.plansSets = plansSets
     }
     
 	// The currently active Workout Live Activity
@@ -292,9 +297,11 @@ class LiveActivityManager: LiveActivityUpdating {
         currentExerciseIndex: Int,
         restEndsAt: Date?
     ) -> WorkoutActivityAttributes.ContentState {
-        let totals = computeTotals(session: session)
+        let plansSets = plansSets()
+        let totals = computeTotals(session: session, countingPieces: plansSets)
         let currentExerciseIndex = Self.exerciseIndexWithWorkLeft(from: currentExerciseIndex, in: session)
-        let current = deriveCurrentExerciseData(session: session, index: currentExerciseIndex)
+        let current = deriveCurrentExerciseData(session: session, index: currentExerciseIndex, countingPieces: plansSets)
+        let piece = plansSets ? current.targetSet.flatMap { Self.piece(of: $0, in: current.sets) } : nil
         // The correction window is exactly the rest that follows a logged set (spec §4). Deriving
         // it from the rest rather than storing it is what clears it when the rest ends: the state
         // is rebuilt on every update, so there is no bookkeeping to get wrong.
@@ -318,7 +325,8 @@ class LiveActivityManager: LiveActivityUpdating {
             targetDurationSec: current.targetSet?.durationSec,
             weightUnit: current.templateId.map(weightUnit) ?? .kilograms,
             restEndsAt: restEndsAt,
-            progress: totals.progress,
+            progress: piece?.progress(completedSets: totals.completedSetsCount, totalSets: totals.totalSetsCount)
+                ?? totals.progress,
             isWorkoutEnded: false,
             finalDurationSeconds: nil,
             finalVolumeKg: nil,
@@ -329,7 +337,16 @@ class LiveActivityManager: LiveActivityUpdating {
             lastLoggedReps: lastLogged?.set.reps,
             lastLoggedWeightKg: lastLogged?.set.weightKg,
             restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false,
-            distanceUnit: current.templateId.map(distanceUnit)
+            distanceUnit: current.templateId.map(distanceUnit),
+            targetSide: current.targetSet.flatMap(Self.sideMarker),
+            // The manager has no exercise library, and only an assisted exercise's keypad can
+            // enter a negative weight, so one is read as assistance here; the handler's log rule
+            // checks the library when Complete is tapped.
+            canComplete: current.targetSet.map {
+                SetValidation.canLog($0, trackingMode: current.trackingMode, isAssisted: ($0.weightKg ?? 0) < 0)
+            } ?? false,
+            targetKind: plansSets ? current.targetSet.flatMap { Self.kind(of: $0, in: current.sets) } : nil,
+            targetPiece: piece
         )
     }
 
@@ -392,11 +409,17 @@ class LiveActivityManager: LiveActivityUpdating {
         let isAllSetsComplete: Bool
     }
 
-    private func computeTotals(session: WorkoutSessionModel) -> Totals {
-        let totalSetsCount = session.exercises.reduce(0) { $0 + $1.sets.pairedSetCount }
-        let completedSetsCount = session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
+    /// Working sets only, as the tracker's header counts them: warm-ups are preparation. A pair
+    /// counts once, when both sides are. Every row, warm-ups included, has to be logged before
+    /// all sets are done. `countingPieces` (the set plan) counts a set once its pieces are all done.
+    private func computeTotals(session: WorkoutSessionModel, countingPieces: Bool) -> Totals {
+        let totalSetsCount = session.exercises.reduce(0) { $0 + $1.workingSets.pairedSetCount }
+        let completedSetsCount = session.exercises.reduce(0) {
+            $0 + (countingPieces ? Self.countingPieces($1.workingSets) : $1.workingSets).fullyCompletedPairedSetCount
+        }
         let progress = totalSetsCount > 0 ? Double(completedSetsCount) / Double(totalSetsCount) : 0
-        let isAllSetsComplete = totalSetsCount > 0 && completedSetsCount == totalSetsCount
+        let rows = session.exercises.flatMap(\.sets)
+        let isAllSetsComplete = !rows.isEmpty && rows.allSatisfy { $0.completedAt != nil }
 
         return Totals(
             totalSetsCount: totalSetsCount,
@@ -409,10 +432,12 @@ class LiveActivityManager: LiveActivityUpdating {
     private struct CurrentExerciseData {
         let id: String?
         let templateId: String?
+        let trackingMode: TrackingMode
         let name: String?
         let imageName: String?
         let position: ExercisePosition
         let targetSet: WorkoutSetModel?
+        let sets: [WorkoutSetModel]
     }
 
     /// Where the user is in an exercise, counted within the group the next set belongs to.
@@ -425,14 +450,24 @@ class LiveActivityManager: LiveActivityUpdating {
     /// "Warmup 1 of 2" while a warm-up is next, "Set 1 of 4" once the working sets start: the
     /// warm-ups are their own short count rather than the first two of six. With nothing left the
     /// working sets are counted, so a finished exercise reads as all of them done.
-    static func exercisePosition(in sets: [WorkoutSetModel]) -> ExercisePosition {
+    ///
+    /// `countingPieces` (the set plan) keeps a set open until its drops and mini-sets are logged,
+    /// so on drop 1 of set 3 the banner still reads set 3.
+    static func exercisePosition(in sets: [WorkoutSetModel], countingPieces: Bool = false) -> ExercisePosition {
         let isWarmup = sets.first { $0.completedAt == nil }?.isWarmup ?? false
-        let group = sets.filter { $0.isWarmup == isWarmup }
+        let group = (countingPieces ? Self.countingPieces(sets) : sets).filter { $0.isWarmup == isWarmup }
         return ExercisePosition(
             completed: group.fullyCompletedPairedSetCount,
             total: group.pairedSetCount,
             isWarmup: isWarmup
         )
+    }
+
+    /// "L" or "R" for one side of a split working set, so the banner reads "Set 1L" and "Set 1R";
+    /// `nil` for a set worked with both sides together, a two-sided exercise or a warm-up.
+    static func sideMarker(for set: WorkoutSetModel) -> String? {
+        guard !set.isWarmup, let marker = set.side?.initial, !marker.isEmpty else { return nil }
+        return marker
     }
 
     /// The index the activity should describe: `requested` while it has an incomplete set, else the
@@ -455,7 +490,7 @@ class LiveActivityManager: LiveActivityUpdating {
             ?? requested
     }
 
-    private func deriveCurrentExerciseData(session: WorkoutSessionModel, index: Int) -> CurrentExerciseData {
+    private func deriveCurrentExerciseData(session: WorkoutSessionModel, index: Int, countingPieces: Bool) -> CurrentExerciseData {
         let totalExercisesCount = session.exercises.count
         let currentExercise: WorkoutExerciseModel? =
             (0..<totalExercisesCount).contains(index)
@@ -473,10 +508,12 @@ class LiveActivityManager: LiveActivityUpdating {
         return CurrentExerciseData(
             id: currentExercise?.id,
             templateId: currentExercise?.templateId,
+            trackingMode: currentExercise?.trackingMode ?? .weightReps,
             name: currentExerciseName,
             imageName: currentExerciseImageName,
-            position: Self.exercisePosition(in: currentExerciseSets),
-            targetSet: targetSet
+            position: Self.exercisePosition(in: currentExerciseSets, countingPieces: countingPieces),
+            targetSet: targetSet,
+            sets: currentExerciseSets
         )
     }
 

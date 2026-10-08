@@ -36,6 +36,9 @@ struct MacrocyclesView: View {
                             .foregroundStyle(.onAccent)
                     }
                     .buttonStyle(.borderedProminent)
+                    Button("Import Program…") {
+                        presenter.onImportProgramPressed()
+                    }
                 }
             }
         }
@@ -43,12 +46,17 @@ struct MacrocyclesView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button {
-                    presenter.onNewMacrocyclePressed()
+                Menu {
+                    Button("New Macrocycle", systemImage: Symbol.macrocycle) {
+                        presenter.onNewMacrocyclePressed()
+                    }
+                    Button("Import Program…", systemImage: "square.and.arrow.down") {
+                        presenter.onImportProgramPressed()
+                    }
                 } label: {
                     Image(systemName: Symbol.add)
                 }
-                .accessibilityLabel("New Macrocycle")
+                .accessibilityLabel("Add macrocycle")
             }
         }
         .onAppear { presenter.onViewAppear() }

@@ -72,6 +72,18 @@ class WorkoutSettingsPresenter {
         set { settings.exerciseAutoNext = newValue; save() }
     }
 
+    /// Off, then the two short walks a partner can be from the bench.
+    let supersetTransitionRestOptions: [Int?] = [nil, 15, 30]
+
+    var supersetTransitionRestSeconds: Int? {
+        get { settings.supersetTransitionRestSeconds }
+        set { settings.supersetTransitionRestSeconds = newValue; save() }
+    }
+
+    func supersetTransitionRestTitle(_ seconds: Int?) -> String {
+        seconds.map { String(localized: "\($0) s") } ?? String(localized: "Off")
+    }
+
     // MARK: - Display Settings
 
     var keepAlive: Bool {
@@ -95,6 +107,18 @@ class WorkoutSettingsPresenter {
         set { settings.showOnLockScreen = newValue; save() }
     }
 
+    var showExerciseStrip: Bool {
+        get { settings.showsExerciseStrip }
+        set { settings.showExerciseStrip = newValue; save() }
+    }
+
+    /// Workout Settings › Set Plan: templates plan each set's kind, drops, mini-sets and AMRAP
+    /// target, and sessions are made from them.
+    var setPlanning: Bool {
+        get { settings.plansSets }
+        set { settings.setPlanning = newValue; save() }
+    }
+
     // MARK: - Warm-Up Settings
 
     var addSmartWarmUps: Bool {
@@ -110,8 +134,10 @@ class WorkoutSettingsPresenter {
             do {
                 try await interactor.saveWorkoutSettings(settings)
                 interactor.trackEvent(event: Event.saveSuccess)
+                interactor.playHaptic(option: .success)
             } catch {
                 interactor.trackEvent(event: Event.saveFail(error: error))
+                interactor.playHaptic(option: .error)
                 router.showSimpleAlert(title: String(localized: "Unable to Save Settings"), subtitle: String(localized: "Please try again."))
             }
         }

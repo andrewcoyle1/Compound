@@ -56,12 +56,28 @@ struct LiveActivityView: View {
                 Rectangle()
                     .fill(Color.primary)
                     .frame(width: proxy.size.width * progressFraction)
+                // With the set plan on, the set under way is split into its pieces: a break
+                // cut through the line between each.
+                ForEach(pieceDividers, id: \.self) { fraction in
+                    Rectangle()
+                        .frame(width: 2)
+                        .offset(x: proxy.size.width * fraction - 1)
+                        .blendMode(.destinationOut)
+                }
             }
+            .compositingGroup()
         }
         .frame(height: 1)
         .accessibilityElement()
         .accessibilityLabel("Workout progress")
         .accessibilityValue("\(context.state.completedSetsCount) of \(context.state.totalSetsCount) sets")
+    }
+
+    private var pieceDividers: [Double] {
+        context.state.targetPiece?.dividers(
+            completedSets: context.state.completedSetsCount,
+            totalSets: context.state.totalSetsCount
+        ) ?? []
     }
 
     private var progressFraction: CGFloat {
@@ -78,5 +94,7 @@ struct LiveActivityView: View {
     WorkoutActivityAttributes.ContentState.preview(.allSetsDone)
     WorkoutActivityAttributes.ContentState.preview(.paused)
     WorkoutActivityAttributes.ContentState.preview(.ended)
+    WorkoutActivityAttributes.ContentState.preview(.drop)
+    WorkoutActivityAttributes.ContentState.preview(.breathing)
 }
 #endif

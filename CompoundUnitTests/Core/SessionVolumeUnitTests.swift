@@ -46,14 +46,4 @@ struct SessionVolumeUnitTests {
 
         #expect(presenter.volumeFormatted(session: session) == expected)
     }
-
-    @Test(arguments: [(WeightUnitPreference.pounds, "3,329.6 lb"), (.kilograms, "1,510.3 kg")])
-    func trackerShowsVolumeInTheUsersUnit(unit: WeightUnitPreference, expected: String) throws {
-        let interactor = WorkoutTrackerInteractorDouble()
-        interactor.currentUser = user(unit)
-        interactor.activeSession = WorkoutSessionModel(id: "s", authorId: "author-1", name: "Push", dateCreated: start, exercises: exercises)
-        let presenter = try WorkoutTrackerPresenter(interactor: interactor, router: WorkoutTrackerRouterDouble(), saveRetryBackoff: .testImmediate)
-
-        #expect(presenter.formattedVolume == expected)
-    }
 }

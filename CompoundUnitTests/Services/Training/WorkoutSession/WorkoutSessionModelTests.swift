@@ -163,16 +163,16 @@ struct WorkoutSessionModelTests {
         #expect(WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a", targetCount: -3).count == 1)
     }
 
-    /// Timed and distance work start from something usable; weights and reps are left blank for the
-    /// user to fill in, since a guess there would be wrong for everyone.
-    @Test("Test Timed And Distance Sets Are Prefilled")
-    func testTimedAndDistanceSetsArePrefilled() {
+    /// Every figure starts blank, timed and distance work included: a stored default of 1:00 or
+    /// 400 m would log as though it had been done. The fields show a greyed placeholder instead.
+    @Test("Test New Sets Start Empty")
+    func testNewSetsStartEmpty() {
         let timed = WorkoutSessionModel.defaultSets(trackingMode: .timeOnly, authorId: "a")
         let distance = WorkoutSessionModel.defaultSets(trackingMode: .distanceTime, authorId: "a")
         let weights = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a")
 
-        #expect(timed.allSatisfy { $0.durationSec == 60 })
-        #expect(distance.allSatisfy { $0.distanceMeters == 400 && $0.durationSec == 120 })
+        #expect(timed.allSatisfy { $0.durationSec == nil })
+        #expect(distance.allSatisfy { $0.distanceMeters == nil && $0.durationSec == nil })
         #expect(weights.allSatisfy { $0.weightKg == nil && $0.reps == nil })
     }
 
@@ -353,5 +353,64 @@ struct WorkoutSessionModelTests {
         session.applyDeloadWeightReduction()
 
         #expect(session.exercises.isEmpty)
+    }
+
+    // MARK: - WP-S1 set plan
+
+    /// A drop on a per-side set is per-side too, and a set with no weight yet has drops with none.
+    @Test("Test Planned Drops Take Their Set's Side And Leave A Missing Weight Missing")
+    func testPlannedDropsTakeSideAndMissingWeight() {
+        let targets = [SetTarget(setNumber: 1, setType: .drop, dropCount: 2), SetTarget(setNumber: 2)]
+        let sets = WorkoutSessionModel.defaultSets(
+            trackingMode: .weightReps, authorId: "author-1", targetCount: 2, perSide: true, setTargets: targets
+        )
+
+        let planned = WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")
+
+        #expect(planned.count == 4)
+        #expect(planned.allSatisfy { $0.side == .both })
+        #expect(planned.allSatisfy { $0.weightKg == nil })
+        #expect(planned[1].parentSetId == planned[0].id && planned[2].parentSetId == planned[0].id)
+        #expect(planned[3].parentSetId == nil)
+    }
+
+    /// No count, or a nonsense one, adds nothing; a set past the targets is left alone.
+    @Test("Test A Plan Without Counts Adds No Sub-Sets")
+    func testPlanWithoutCountsAddsNothing() {
+        let targets = [
+            SetTarget(setNumber: 1, setType: .drop),
+            SetTarget(setNumber: 2, setType: .myo, miniSetCount: -1)
+        ]
+        let sets = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "author-1", targetCount: 3, setTargets: targets)
+
+        let planned = WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")
+
+        #expect(planned.map(\.id) == sets.map(\.id))
+    }
+
+    /// The plan's AMRAP target stands unless the prefill already raised it.
+    @Test("Test An AMRAP Target Raised By The Prefill Is Kept")
+    func testRaisedAMRAPTargetIsKept() {
+        let targets = [SetTarget(setNumber: 1, setType: .amrap, amrapTargetReps: 8)]
+        var sets = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "author-1", targetCount: 1, setTargets: targets)
+        #expect(WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")[0].targetReps == 8)
+
+        sets[0].targetReps = 9
+
+        #expect(WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")[0].targetReps == 9)
+    }
+
+    @Test("Test A Set's Target Reps Round-Trip And Old Sets Decode Without One")
+    func testTargetRepsCoding() throws {
+        var set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, kind: .amrap, isWarmup: false, dateCreated: start)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["target_reps"] == nil)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONSerialization.data(withJSONObject: json)).targetReps == nil)
+
+        set.targetReps = 8
+        json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+
+        #expect(json["target_reps"] as? Int == 8)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set)).targetReps == 8)
     }
 }

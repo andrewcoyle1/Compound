@@ -71,15 +71,19 @@ struct LiveActivityPhaseContent: View {
         VStack(alignment: .leading, spacing: LiveActivityLayout.rowSpacing) {
             switch phase {
             case let .ready(target, position):
-                exerciseRow(detail: position.label, dimmed: false)
+                exerciseRow(detail: position.label, dimmed: false, kind: state.targetKind)
                 targetActionRow(target: target, prefix: nil)
 
             case let .resting(until, next, logged, nextExerciseName):
                 restingCorrectionRow(logged: logged)
                 restingTimerRow(until: until, next: next, nextExerciseName: nextExerciseName)
 
+            case let .breathing(until, next, position):
+                exerciseRow(detail: position.label, dimmed: false, kind: state.targetKind)
+                breathRow(until: until, next: next)
+
             case let .restOver(next):
-                exerciseRow(detail: currentPositionLabel, dimmed: false)
+                exerciseRow(detail: currentPositionLabel, dimmed: false, kind: state.targetKind)
                 targetActionRow(target: next, prefix: "Rest over")
 
             case .allSetsDone:
@@ -107,16 +111,13 @@ struct LiveActivityPhaseContent: View {
     }
 
     private var currentPositionLabel: String {
-        SetPosition(
-            index: state.currentExerciseCompletedSetsCount + 1,
-            total: state.currentExerciseTotalSetsCount,
-            isWarmup: state.targetIsWarmup
-        ).label
+        LiveActivityPhase.position(state).label
     }
 
     // MARK: Row 1 variants
 
-    private func exerciseRow(detail: String?, dimmed: Bool) -> some View {
+    /// `kind`, with the set plan on, is the target set's kind as a small label after its position.
+    private func exerciseRow(detail: String?, dimmed: Bool, kind: LiveActivitySetKind? = nil) -> some View {
         HStack(spacing: 10) {
             ExerciseImage(imageName: state.currentExerciseImageName)
             VStack(alignment: .leading, spacing: 0) {
@@ -125,9 +126,14 @@ struct LiveActivityPhaseContent: View {
                     .lineLimit(1)
                     .foregroundStyle(dimmed ? Color.secondary : Color.primary)
                 if let detail {
-                    Text(detail)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text(detail)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                        if let kind {
+                            KindLabel(kind: kind)
+                        }
+                    }
                 }
             }
             Spacer(minLength: 0)
@@ -206,7 +212,8 @@ struct LiveActivityPhaseContent: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.accent)
-            .disabled(state.targetSetId == nil || state.isProcessingIntent)
+            // A set the app would refuse (no reps, no time) is entered in the app instead.
+            .disabled(state.targetSetId == nil || state.isProcessingIntent || !state.canComplete)
         }
         .liveActivityRowHeight()
     }
@@ -249,6 +256,44 @@ struct LiveActivityPhaseContent: View {
             .opacity(state.isProcessingIntent ? 0.5 : 1)
             .accessibilityLabel("Add 15 seconds")
 
+            Button(intent: SkipRestTimerIntent()) {
+                Text("Skip")
+                    .font(.footnote.weight(.semibold))
+                    .padding(2)
+            }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
+            .tint(.accent)
+            .disabled(state.isProcessingIntent)
+            .opacity(state.isProcessingIntent ? 0.5 : 1)
+        }
+        .liveActivityRowHeight()
+    }
+
+    /// Row 2 during the short breath before a drop or mini-set: a thin bar filling as it passes,
+    /// not the countdown ring, and Skip. No +15s: the breath is seconds long by design.
+    private func breathRow(until: Date, next: LiveActivitySetTarget?) -> some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 4) {
+                    Text("Breathe")
+                        .foregroundStyle(.primary)
+                    if let label = next?.label(weightUnit: state.weightUnit) {
+                        Text("Next \(label)")
+                            .foregroundStyle(.secondary)
+                            .minimumScaleFactor(0.8)
+                    }
+                }
+                .lineLimit(1)
+                ProgressView(timerInterval: Date()...max(until, Date()), countsDown: false) {
+                    EmptyView()
+                } currentValueLabel: {
+                    EmptyView()
+                }
+                .progressViewStyle(.linear)
+                .tint(.accent)
+            }
+            Spacer(minLength: 4)
             Button(intent: SkipRestTimerIntent()) {
                 Text("Skip")
                     .font(.footnote.weight(.semibold))
@@ -392,6 +437,23 @@ struct RestRing: View {
                         .frame(width: size * Self.countdownWidthScale)
                 }
             }
+    }
+}
+
+/// A set's kind as a small filled label: "Drop", "AMRAP".
+struct KindLabel: View {
+
+    let kind: LiveActivitySetKind
+
+    var body: some View {
+        Text(verbatim: kind.label)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(Color.secondary.opacity(0.2), in: RoundedRectangle(cornerRadius: 4))
+            .fixedSize()
     }
 }
 

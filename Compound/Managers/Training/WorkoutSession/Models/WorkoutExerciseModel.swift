@@ -21,6 +21,14 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
     var chosenVariationId: String?
     var equipmentVariations: [EquipmentVariation]
     var supersetGroupId: String?
+    /// The plan's notes for this exercise, copied from the template. The user's own are `notes`.
+    var planNotes: String?
+    /// The plan's rest for this exercise, ahead of the exercise and global rest settings.
+    var restSeconds: Int?
+    /// The plan's video or reference link.
+    var linkURL: String?
+    /// Exercise ids the plan offers in this one's place.
+    var substituteExerciseIds: [String]
 
     init(
         id: String,
@@ -35,7 +43,11 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         setTargets: [SetTarget] = [],
         chosenVariationId: String? = nil,
         equipmentVariations: [EquipmentVariation] = [],
-        supersetGroupId: String? = nil
+        supersetGroupId: String? = nil,
+        planNotes: String? = nil,
+        restSeconds: Int? = nil,
+        linkURL: String? = nil,
+        substituteExerciseIds: [String] = []
     ) {
         self.id = id
         self.authorId = authorId
@@ -50,6 +62,10 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         self.chosenVariationId = chosenVariationId
         self.equipmentVariations = equipmentVariations
         self.supersetGroupId = supersetGroupId
+        self.planNotes = planNotes
+        self.restSeconds = restSeconds
+        self.linkURL = linkURL
+        self.substituteExerciseIds = substituteExerciseIds
     }
 
     enum CodingKeys: String, CodingKey {
@@ -66,6 +82,10 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         case chosenVariationId = "chosen_variation_id"
         case equipmentVariations = "equipment_variations"
         case supersetGroupId = "superset_group_id"
+        case planNotes = "plan_notes"
+        case restSeconds = "rest_seconds"
+        case linkURL = "link_url"
+        case substituteExerciseIds = "substitute_exercise_ids"
     }
 
     init(from decoder: Decoder) throws {
@@ -83,6 +103,10 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         chosenVariationId = try container.decodeIfPresent(String.self, forKey: .chosenVariationId)
         equipmentVariations = try container.decodeIfPresent([EquipmentVariation].self, forKey: .equipmentVariations) ?? []
         supersetGroupId = try container.decodeIfPresent(String.self, forKey: .supersetGroupId)
+        planNotes = try container.decodeIfPresent(String.self, forKey: .planNotes)
+        restSeconds = try container.decodeIfPresent(Int.self, forKey: .restSeconds)
+        linkURL = try container.decodeIfPresent(String.self, forKey: .linkURL)
+        substituteExerciseIds = try container.decodeIfPresent([String].self, forKey: .substituteExerciseIds) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -100,6 +124,12 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         try container.encodeIfPresent(chosenVariationId, forKey: .chosenVariationId)
         try container.encode(equipmentVariations, forKey: .equipmentVariations)
         try container.encodeIfPresent(supersetGroupId, forKey: .supersetGroupId)
+        try container.encodeIfPresent(planNotes, forKey: .planNotes)
+        try container.encodeIfPresent(restSeconds, forKey: .restSeconds)
+        try container.encodeIfPresent(linkURL, forKey: .linkURL)
+        if !substituteExerciseIds.isEmpty {
+            try container.encode(substituteExerciseIds, forKey: .substituteExerciseIds)
+        }
     }
 
     /// How many working sets are logged, with a left/right pair counted as the one set it is.
@@ -179,5 +209,19 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
                 dateCreated: dateCreated
             )
         }
+    }
+}
+
+extension WorkoutExerciseModel {
+
+    /// The image to show: the one stored with the session, else the library exercise's. A session
+    /// keeps the image its exercises had when it began, so one logged before an exercise was
+    /// bundled with artwork, or repointed at a bundled exercise since, stored none.
+    ///
+    /// The library is an autoclosure because reading it is a SwiftData fetch and a decode of every
+    /// exercise: a stored image returns before it is ever evaluated.
+    func imageName(in library: @autoclosure () -> [ExerciseModel]) -> String? {
+        if let imageName, !imageName.isEmpty { return imageName }
+        return library().first { $0.id == templateId }.flatMap { Constants.exerciseImageName(for: $0) }
     }
 }

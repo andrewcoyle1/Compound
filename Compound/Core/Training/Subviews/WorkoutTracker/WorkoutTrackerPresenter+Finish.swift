@@ -42,8 +42,8 @@ extension WorkoutTrackerPresenter {
 
     /// True once there is something to finish and all of it is logged: at least one set, and every
     /// set, warm-ups included, completed. The tracker then offers Finish Workout at the bottom of the
-    /// screen as well as in its menu. Un-completing a set, or adding a set or an exercise, turns it
-    /// off again, because the new set is open.
+    /// screen as well as in its menu; both open the same notes sheet. Un-completing a set, or adding
+    /// a set or an exercise, turns it off again, because the new set is open.
     var canQuickFinish: Bool {
         let sets = workoutSession.exercises.flatMap(\.sets)
         return !sets.isEmpty && sets.allSatisfy { $0.completedAt != nil }
@@ -58,9 +58,9 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - Finishing
 
-    /// The notes step was confirmed, or the quick-finish button skipped it. A workout with nothing
-    /// logged would go into the history, the streak and Strava as an empty session, so the person
-    /// is asked first.
+    /// The notes step was confirmed, from the menu's Finish or the bottom button's. A workout with
+    /// nothing logged would go into the history, the streak and Strava as an empty session, so the
+    /// person is asked first.
     func onFinishConfirmed() {
         guard !hasLoggedSet else { return finishWorkout() }
         router.showConfirmationDialog(title: String(localized: "No Sets Logged"), subtitle: nil) {
@@ -76,11 +76,14 @@ extension WorkoutTrackerPresenter {
         workoutSession.exercises.contains { $0.sets.contains { $0.completedAt != nil } }
     }
 
-    func finishWorkout() {
-        let now = Date()
+    /// `now` is when the workout ended: earlier than the tap for "Still training?"'s Finish.
+    func finishWorkout(at now: Date = Date()) {
         #if !targetEnvironment(macCatalyst)
         workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         #endif
+        // Written before `isDone` stops further writes, so a save that fails below leaves the
+        // finished session, with its last edit, for Training to resume.
+        flushSave()
         isDone = true
         UIApplication.shared.isIdleTimerDisabled = false
 
@@ -88,6 +91,10 @@ extension WorkoutTrackerPresenter {
         // The session detail is the summary, pushed as the tracker's last page; its Done closes
         // the cover.
         router.showWorkoutSummary(session: sessionSnapshot)
+        // At the moment the person sees the workout finish, not when the save lands behind the
+        // summary. A failed save answers with `.error`; a retried one that works plays this again,
+        // with the "Workout saved." toast as its visible cause.
+        interactor.playHaptic(option: .success)
         // `self` is captured strongly on purpose. Done can close the cover before the save lands,
         // and then the view no longer holds the presenter; a weak capture would drop the save on
         // the floor exactly when it matters. The cycle breaks when the task returns.
@@ -119,10 +126,9 @@ extension WorkoutTrackerPresenter {
         switch await interactor.finishWorkout(session) {
         case .saved:
             interactor.trackEvent(event: Event.finishWorkoutSuccess)
-            interactor.playHaptic(option: .success)
         case .failedPermanently:
             interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
-            interactor.showAppToast(SaveToast.failed)
+            showSaveFailed()
         case .failedTransiently:
             await retrySave(session)
         }
@@ -182,7 +188,7 @@ extension WorkoutTrackerPresenter {
                 return
             case .failedPermanently:
                 interactor.trackEvent(event: Event.finishWorkoutFail(reason: .permanent))
-                interactor.showAppToast(SaveToast.failed)
+                showSaveFailed()
                 return
             case .failedTransiently:
                 attempt += 1
@@ -190,6 +196,11 @@ extension WorkoutTrackerPresenter {
         }
 
         interactor.trackEvent(event: Event.finishWorkoutFail(reason: .retriesExhausted))
+        showSaveFailed()
+    }
+
+    private func showSaveFailed() {
+        interactor.playHaptic(option: .error)
         interactor.showAppToast(SaveToast.failed)
     }
 }

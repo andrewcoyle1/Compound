@@ -373,7 +373,9 @@ private extension ExerciseModelDetailView {
 
     var detailsSection: some View {
         Section {
-            ListRow(title: String(localized: "Body Weight Contribution"), accessory: .value(Format.percent(Double(delegate.exerciseModel.bodyWeightContribution) / 100)))
+            if delegate.exerciseModel.bodyWeightContribution > 0 {
+                ListRow(title: String(localized: "Body Weight Contribution"), accessory: .value(Format.percent(Double(delegate.exerciseModel.bodyWeightContribution) / 100)))
+            }
             ListRow(title: String(localized: "Alternative Names"), accessory: .value(alternateNamesConcatenated))
             ListRow(title: String(localized: "Description"), accessory: .value(delegate.exerciseModel.description ?? String(localized: "None")))
         } header: {

@@ -60,8 +60,6 @@ struct SetKeyboardView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Weight in \(unit). \(stepSummary). \(presenter.context.step.chip ?? "")")
             if presenter.context.step.isPlateLoaded {
                 Button {
                     presenter.showsPlates.toggle()
@@ -73,6 +71,22 @@ struct SetKeyboardView: View {
                 .accessibilityHint("Shows the plates for each side of the bar")
             }
             keyButton(systemImage: Symbol.add, label: "Increase weight") { presenter.stepUp() }
+        }
+        // One element, as a system stepper is: swipe up or down to step, the new weight read back.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Weight in \(unit). \(stepSummary). \(presenter.context.step.chip ?? "")")
+        .accessibilityValue(presenter.spokenWeight ?? "")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: presenter.stepUp()
+            case .decrement: presenter.stepDown()
+            @unknown default: break
+            }
+        }
+        .accessibilityActions {
+            if presenter.context.step.isPlateLoaded {
+                Button("Plates") { presenter.showsPlates.toggle() }
+            }
         }
     }
 
@@ -101,6 +115,7 @@ struct SetKeyboardView: View {
                     ForEach([below, above].compactMap { $0 }, id: \.self) { value in
                         Button("\(WeightStepper.format(value)) \(unit)") {
                             presenter.applyWeight(displayValue: value)
+                            announceValue()
                         }
                         .buttonStyle(.bordered)
                         .accessibilityLabel("Use \(WeightStepper.format(value)) \(unit)")
@@ -120,7 +135,7 @@ struct SetKeyboardView: View {
     @ViewBuilder
     private var repsAccessories: some View {
         chipRow(presenter.repsChips) { presenter.applyReps(Int($0)) }
-        if presenter.context.showsEffort {
+        if presenter.showsEffortChips {
             effortRow
         }
     }
@@ -136,6 +151,9 @@ struct SetKeyboardView: View {
                     let isSelected = presenter.selectedRPE == rpe
                     Button {
                         presenter.toggleRPE(rpe)
+                        if let rpe = presenter.selectedRPE {
+                            AccessibilityNotification.Announcement(String(localized: "RPE \(WeightStepper.format(rpe)), \(WeightStepper.format(EffortScale.rir(fromRPE: rpe))) reps in reserve")).post()
+                        }
                     } label: {
                         Chip(WeightStepper.format(rpe), isSelected: isSelected)
                             .monospacedDigit()
@@ -160,6 +178,7 @@ struct SetKeyboardView: View {
                     ForEach(chips) { chip in
                         Button {
                             apply(chip.value)
+                            announceValue()
                         } label: {
                             Chip(chip.title)
                                 .chipTapTarget()
@@ -194,16 +213,22 @@ struct SetKeyboardView: View {
             GridRow {
                 digit("7"); digit("8"); digit("9")
                 keyButton(title: String(localized: "Done"), label: String(localized: "Done"), prominent: true) { presenter.done() }
+                    .accessibilityHint("Closes the keypad")
             }
             GridRow {
                 if presenter.activeField?.takesDecimals == true {
-                    keyButton(title: presenter.decimalSeparator, label: String(localized: "Decimal point")) { presenter.type(".") }
+                    keyButton(title: presenter.decimalSeparator, label: String(localized: "Decimal point"), isKey: true) { presenter.type(".") }
                 } else {
                     Color.clear.frame(height: 1).accessibilityHidden(true)
                 }
                 digit("0")
-                keyButton(systemImage: "delete.left", label: String(localized: "Delete")) { presenter.backspace() }
-                Color.clear.frame(height: 1).accessibilityHidden(true)
+                keyButton(systemImage: "delete.left", label: String(localized: "Delete"), isKey: true) { presenter.backspace() }
+                if presenter.showsSignKey {
+                    keyButton(title: "±", label: String(localized: "Change sign"), isKey: true) { presenter.toggleSign() }
+                        .accessibilityHint("A negative weight is assistance")
+                } else {
+                    Color.clear.frame(height: 1).accessibilityHidden(true)
+                }
             }
         }
     }
@@ -218,15 +243,25 @@ struct SetKeyboardView: View {
     }
 
     private func digit(_ key: Character) -> some View {
-        keyButton(title: String(key), label: String(key)) { presenter.type(key) }
+        keyButton(title: String(key), label: String(key), isKey: true) { presenter.type(key) }
+    }
+
+    /// The field's new value, read out after a key, a step or a chip. The field is set from the
+    /// presenter rather than typed into, so UIKit's own echo never speaks it.
+    private func announceValue() {
+        guard let value = presenter.spokenValue else { return }
+        AccessibilityNotification.Announcement(value).post()
     }
 
     /// Every key clicks as the system keyboard's do, following the user's Keyboard Clicks
     /// setting. The input view adopts `UIInputViewAudioFeedback`, which is what lets it sound.
-    private func keyButton(title: String, label: String, prominent: Bool = false, action: @escaping () -> Void) -> some View {
+    /// `isKey` marks a typing key: VoiceOver's touch typing then types it on lift, and the new
+    /// value is read back.
+    private func keyButton(title: String, label: String, prominent: Bool = false, isKey: Bool = false, action: @escaping () -> Void) -> some View {
         Button {
             UIDevice.current.playInputClick()
             action()
+            if isKey { announceValue() }
         } label: {
             Text(title)
                 .font(.title3.weight(prominent ? .semibold : .regular))
@@ -237,12 +272,14 @@ struct SetKeyboardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+        .accessibilityAddTraits(isKey ? .isKeyboardKey : [])
     }
 
-    private func keyButton(systemImage: String, label: String, action: @escaping () -> Void) -> some View {
+    private func keyButton(systemImage: String, label: String, isKey: Bool = false, action: @escaping () -> Void) -> some View {
         Button {
             UIDevice.current.playInputClick()
             action()
+            announceValue()
         } label: {
             Image(systemName: systemImage)
                 .font(.title3)
@@ -254,6 +291,7 @@ struct SetKeyboardView: View {
         .buttonStyle(.plain)
         .frame(maxWidth: systemImage == "delete.left" ? .infinity : 64)
         .accessibilityLabel(label)
+        .accessibilityAddTraits(isKey ? .isKeyboardKey : [])
     }
 }
 

@@ -20,7 +20,8 @@ protocol SetTrackerRouter: GlobalRouter {
     func showWarmupSetsView(delegate: WarmupSetsDelegate)
     func showExerciseSettingsView(delegate: ExerciseSettingsDelegate)
     func showSetTargetView(delegate: SetTargetDelegate)
-    func showSwapExercisePickerView(onSelect: @escaping (ExerciseModel) -> Void)
+    /// `alternativeIds` are the plan's substitutions, listed first.
+    func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void)
 }
 
 extension CoreRouter: SetTrackerRouter { }

@@ -15,13 +15,41 @@ struct SetTarget: DataSyncModelProtocol, Equatable, Hashable {
     var rirTarget: Int?
     var setType: SetTargetSetType
 
+    // MARK: - Set plan (Workout Settings › Set Plan)
+    //
+    // What a session started from this target is created with, read only when the set plan is on.
+    // All Optional, so every template saved before the plan existed decodes unchanged.
+
+    /// A drop set's drops after its first piece.
+    var dropCount: Int?
+    /// How much lighter each drop is than the piece before it, in per cent. Read through `dropStep`.
+    var dropStepPercent: Int?
+    var dropStep: Int { dropStepPercent ?? 20 }
+    /// The reps each drop asks for; nil means to failure.
+    var dropReps: Int?
+    /// A myo-rep, rest-pause or cluster set's mini-sets after its first piece.
+    var miniSetCount: Int?
+    /// The reps an AMRAP set sets out to beat.
+    var amrapTargetReps: Int?
+    /// The partial reps after a partials set; nil means to failure.
+    var partialReps: Int?
+    /// How long a stretch or hold after the set lasts, in seconds.
+    var holdSeconds: Int?
+
     init(
         id: String = UUID().uuidString,
         setNumber: Int,
         minReps: Int? = nil,
         maxReps: Int? = nil,
         rirTarget: Int? = nil,
-        setType: SetTargetSetType = .standard
+        setType: SetTargetSetType = .standard,
+        dropCount: Int? = nil,
+        dropStepPercent: Int? = nil,
+        dropReps: Int? = nil,
+        miniSetCount: Int? = nil,
+        amrapTargetReps: Int? = nil,
+        partialReps: Int? = nil,
+        holdSeconds: Int? = nil
     ) {
         self.id = id
         self.setNumber = setNumber
@@ -29,6 +57,13 @@ struct SetTarget: DataSyncModelProtocol, Equatable, Hashable {
         self.maxReps = maxReps
         self.rirTarget = rirTarget
         self.setType = setType
+        self.dropCount = dropCount
+        self.dropStepPercent = dropStepPercent
+        self.dropReps = dropReps
+        self.miniSetCount = miniSetCount
+        self.amrapTargetReps = amrapTargetReps
+        self.partialReps = partialReps
+        self.holdSeconds = holdSeconds
     }
 
     enum CodingKeys: String, CodingKey {
@@ -38,5 +73,12 @@ struct SetTarget: DataSyncModelProtocol, Equatable, Hashable {
         case maxReps = "max_reps"
         case rirTarget = "rir_target"
         case setType = "set_type"
+        case dropCount = "drop_count"
+        case dropStepPercent = "drop_step_percent"
+        case dropReps = "drop_reps"
+        case miniSetCount = "mini_set_count"
+        case amrapTargetReps = "amrap_target_reps"
+        case partialReps = "partial_reps"
+        case holdSeconds = "hold_seconds"
     }
 }

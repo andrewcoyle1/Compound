@@ -76,8 +76,17 @@ struct ProgressionEngine {
             let referenceReps = previousSet?.reps
             let range = repRange(target: setTarget, referenceReps: referenceReps)
 
-            // A drop or myo set is an intensity technique the template author designed. Prefill it
-            // with what was done last time, but never progress it.
+            // An AMRAP set with a planned target follows its own rule (set plan only).
+            if let amrap = input.amrap, let setTarget, let previousSet,
+               SetKind(setTarget.setType) == .amrap, let templateTarget = setTarget.amrapTargetReps {
+                let earlier = input.history.count > 1 ? referenceSet(input.history[1], at: index) : nil
+                return amrap.next(templateTarget: templateTarget, last: previousSet, previous: earlier) { weight in
+                    increasedWeight(weight, rounding: input.rounding)
+                }
+            }
+
+            // A drop, myo, partials, stretch or hold set is an intensity technique the template
+            // author designed. Prefill it with what was done last time, but never progress it.
             guard isProgressable(setTarget) else {
                 return SuggestedSet(weightKg: referenceWeight, reps: referenceReps)
             }
@@ -218,8 +227,8 @@ struct ProgressionEngine {
 
     private func isProgressable(_ target: SetTarget?) -> Bool {
         switch target?.setType ?? .standard {
-        case .standard, .failure: return true
-        case .drop, .myo:         return false
+        case .standard, .failure, .amrap:  return true
+        case .drop, .myo, .restPause, .cluster, .partials, .stretch, .hold: return false
         }
     }
 

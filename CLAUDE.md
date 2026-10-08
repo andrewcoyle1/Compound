@@ -129,6 +129,33 @@ reads of one are never equal — capture the value once and compare against that
 If a build fails with `build.db is locked`, Xcode is building the same DerivedData
 concurrently — wait and retry rather than changing anything.
 
+**The unit runner hangs when started straight after a UI run on the same simulator** ("The
+test runner hung before establishing connection", seen five times on 6 Oct 2026, never on a
+fresh device). Run unit suites first and the UI suite last, or `xcrun simctl shutdown` then
+`boot` the device between them and wait ~10 s after `bootstatus -b` before launching. Shutting
+a simulator also kills every test host on it, so when several agents test at once, each uses
+its own device name and never touches another's.
+
+**An unsigned app bundle means the build failed, not that signing is broken.** When
+`build-for-testing` fails in the test target, the host `Compound.app` is left without its
+signature (`codesign -dv` says "not signed at all"), and every later `test-without-building`
+fails with `Simulator device failed to launch … No such process`, for unit and UI tests alike.
+Erasing the simulator or restarting CoreSimulatorService does not help. Always check
+`xcodebuild`'s own exit status (in zsh a pipeline's is `${pipestatus[1]}`, lower-case) before
+reading test results; on 6 Oct 2026 an unchecked status hid a test-target compile error for an
+afternoon.
+
+**Known unit flakes under a full-bundle run**, each passing alone: the HealthKit import-observer
+suites (`StepsManagerTests`, `MealLogHealthKitImportTests`, `BodyMeasurementsManagerTests`) time
+out one at a time in `TestManagers.eventually`, and the Live Activity suites fail as a block of
+about eight with `ActivityAuthorizationError.visibility` or "the app has pushed nothing"
+(seen twice on 7 Oct 2026, both on a simulator that had just been erased or cycled). Rerun the
+suite alone before blaming a change. The Live Activity suites are nested in a serialized parent,
+so select them by its path: `-only-testing:CompoundUnitTests/WorkoutRestSharedStateTests`
+(`…/LiveActivityManagerTests` alone selects nothing and reports "Executed 0 tests"). Simulator
+names are not unique either — there are two "iPhone 17" and two "iPhone 17e" — so pass a UDID
+(`-destination 'platform=iOS Simulator,id=…'`).
+
 **Deployment target**: iOS 26.0 (26.1 for some targets). The project-level Swift language
 version is 6.0; the test and extension targets are still on 5.0.
 

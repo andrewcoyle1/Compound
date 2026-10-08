@@ -1,0 +1,197 @@
+//
+//  GymProfileDecodingTests.swift
+//  CompoundUnitTests
+//
+//  A gym profile that fails to decode is skipped by Firestore's listener without a word, and the
+//  local cache drops every profile with it. These tests hold the decoder to reading what earlier
+//  builds wrote: CompoundUnitTests/Fixtures/gym-profile-v1.json is the mock and a default profile
+//  as encoded before tolerant decoding (G1), and every later change to the gym models must keep
+//  it readable without losing a stored value.
+//
+
+import Testing
+import Foundation
+@testable import Compound
+
+@MainActor
+struct GymProfileDecodingTests {
+
+    private static let fixtureURL = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appendingPathComponent("Fixtures/gym-profile-v1.json")
+
+    private func fixtureProfile(_ key: String) throws -> [String: Any] {
+        let fixture = try JSONSerialization.jsonObject(with: Data(contentsOf: Self.fixtureURL)) as? [String: Any]
+        return try #require(fixture?[key] as? [String: Any])
+    }
+
+    private func decode(_ object: [String: Any]) throws -> GymProfileModel {
+        try JSONDecoder().decode(GymProfileModel.self, from: JSONSerialization.data(withJSONObject: object))
+    }
+
+    private func decode(_ json: String) throws -> GymProfileModel {
+        try JSONDecoder().decode(GymProfileModel.self, from: Data(json.utf8))
+    }
+
+    /// True when `container` holds everything in `expected`: every key of a dictionary with a
+    /// matching value, every element of an array in order and no more, and equal leaves. Later
+    /// packages add fields, so a re-encoded item may carry keys the fixture does not.
+    private static func contains(_ container: Any, _ expected: Any) -> Bool {
+        switch (container, expected) {
+        case let (container as [String: Any], expected as [String: Any]):
+            return expected.allSatisfy { key, value in container[key].map { contains($0, value) } ?? false }
+        case let (container as [Any], expected as [Any]):
+            return container.count == expected.count && zip(container, expected).allSatisfy { contains($0, $1) }
+        default:
+            return (container as? NSObject)?.isEqual(expected) ?? false
+        }
+    }
+
+    // MARK: - The v1 fixture
+
+    /// Decoding then encoding keeps every stored item first, in order, with every key and value it
+    /// was saved with. Anything after them must be a catalogue item the stored list lacked,
+    /// switched off, which is the merge on decode.
+    @Test("Test The V1 Fixture Decodes And Re-encodes Every Stored Value", arguments: ["mock", "default"])
+    func testFixtureRoundTrip(profileKey: String) throws {
+        let stored = try fixtureProfile(profileKey)
+        let profile = try decode(stored)
+        let encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(profile)) as? [String: Any]
+        let reencoded = try #require(encoded)
+        let catalogueIds = Set(GymProfileModel.allEquipmentCatalog.map(\.ref.equipmentId))
+
+        for (key, value) in stored {
+            guard let storedItems = value as? [[String: Any]] else {
+                #expect(Self.contains(reencoded[key] as Any, value), "\(key)")
+                continue
+            }
+            let items = try #require(reencoded[key] as? [[String: Any]], "\(key)")
+            #expect(items.count >= storedItems.count, "\(key)")
+            for (new, old) in zip(items, storedItems) {
+                #expect(Self.contains(new, old), "\(key) \(old["id"] ?? "")")
+            }
+            let storedIds = Set(storedItems.compactMap { $0["id"] as? String })
+            for extra in items.dropFirst(storedItems.count) {
+                let id = extra["id"] as? String ?? ""
+                #expect(!storedIds.contains(id) && catalogueIds.contains(id), "\(key) \(id)")
+                #expect(extra["isActive"] as? Bool == false, "\(key) \(id)")
+            }
+        }
+    }
+
+    @Test("Test A Profile Missing A List Decodes It As The Catalogue")
+    func testMissingListIsTheCatalogue() throws {
+        var stored = try fixtureProfile("mock")
+        stored["pin_loaded_machines"] = nil
+
+        let profile = try decode(stored)
+
+        let catalogue = PinLoadedMachine.defaultPinLoadedMachines
+        #expect(profile.pinLoadedMachines.map(\.id) == catalogue.map(\.id))
+        #expect(profile.pinLoadedMachines.map(\.isActive) == catalogue.map(\.isActive))
+        #expect(profile.name == "Platinum Gym Malahide")
+    }
+
+    @Test("Test A Profile With Only An Id And Author Decodes With Defaults")
+    func testMinimalProfile() throws {
+        let profile = try decode(#"{"id": "gym-1", "author_id": "author-1"}"#)
+
+        #expect(profile.name.isEmpty)
+        #expect(profile.icon == "dumbbell")
+        #expect(profile.freeWeights.map(\.id) == FreeWeights.defaultFreeWeights.map(\.id))
+        #expect(profile.cableMachines.map(\.id) == CableMachine.defaultCableMachines.map(\.id))
+    }
+
+    @Test("Test A Profile Without An Id Still Fails")
+    func testIdIsRequired() {
+        #expect(throws: DecodingError.self) {
+            try decode(#"{"author_id": "author-1"}"#)
+        }
+    }
+
+    // MARK: - Items
+
+    @Test("Test An Item With An Unknown Field Decodes")
+    func testUnknownFieldIsIgnored() throws {
+        let profile = try decode(#"""
+        {"id": "gym-1", "author_id": "author-1", "pin_loaded_machines": [
+            {"id": "custom_stack", "name": "Custom Stack", "isActive": true, "futureField": {"a": 1},
+             "ranges": [{"id": "r1", "name": "Main", "minWeight": 5, "maxWeight": 100, "increment": 5,
+                         "unit": "kilograms", "isActive": true, "addOns": [2, 2]}]}
+        ]}
+        """#)
+
+        let machine = try #require(profile.pinLoadedMachines.first)
+        #expect(machine.id == "custom_stack")
+        #expect(machine.isActive)
+        #expect(machine.ranges.map(\.id) == ["r1"])
+    }
+
+    @Test("Test A Corrupt Item Is Skipped And Its Siblings Kept")
+    func testCorruptItemIsSkipped() throws {
+        let profile = try decode(#"""
+        {"id": "gym-1", "author_id": "author-1",
+         "pin_loaded_machines": [
+            {"id": "custom_stack", "name": "Custom Stack", "isActive": true, "ranges": [
+                {"id": "r1", "name": "Main", "minWeight": 5, "maxWeight": 100, "increment": 5, "unit": "kilograms", "isActive": true},
+                {"id": "r2", "name": "Broken", "minWeight": "abc", "maxWeight": 100, "increment": 5, "unit": "kilograms", "isActive": true},
+                {"id": "r3", "name": "Pounds", "minWeight": 10, "maxWeight": 200, "increment": 10, "unit": "pounds", "isActive": false}
+            ]}
+         ],
+         "plate_loaded_machines": [
+            {"id": "custom_broken", "name": "Broken", "baseWeight": "heavy", "unit": "kilograms", "isActive": true},
+            {"id": "custom_sled", "name": "Sled", "baseWeight": 30, "unit": "kilograms", "isActive": true}
+         ]}
+        """#)
+
+        #expect(profile.pinLoadedMachines.first?.ranges.map(\.id) == ["r1", "r3"])
+        #expect(profile.plateLoadedMachines.first?.id == "custom_sled")
+        #expect(!profile.plateLoadedMachines.contains { $0.id == "custom_broken" })
+    }
+
+    @Test("Test An Item Missing Optional Fields Decodes With Defaults")
+    func testItemDefaults() throws {
+        let profile = try decode(#"""
+        {"id": "gym-1", "author_id": "author-1",
+         "bands": [{"id": "custom_bands", "name": "Loop Bands",
+                    "range": [{"id": "b1", "name": "Red", "availableResistance": 10}]}]}
+        """#)
+
+        let bands = try #require(profile.bands.first)
+        #expect(bands.id == "custom_bands")
+        // A missing isActive reads as off, so a damaged item never offers unconfirmed equipment.
+        #expect(!bands.isActive)
+        let band = try #require(bands.range.first)
+        #expect(band.unit == .kilograms)
+        #expect(band.bandColour.isEmpty)
+        #expect(!band.isActive)
+    }
+
+    // MARK: - Merge on decode
+
+    @Test("Test A Catalogue Machine Missing From A Stored Profile Is Appended Switched Off")
+    func testMissingCatalogueItemIsAppended() throws {
+        let catalogue = PinLoadedMachine.defaultPinLoadedMachines
+        var first = try #require(catalogue.first)
+        first.isActive = true
+        let stored = GymProfileModel(id: "gym-1", authorId: "author-1", pinLoadedMachines: [first])
+
+        let profile = try JSONDecoder().decode(GymProfileModel.self, from: JSONEncoder().encode(stored))
+
+        #expect(profile.pinLoadedMachines.map(\.id) == catalogue.map(\.id))
+        #expect(profile.pinLoadedMachines.map(\.isActive) == [true] + Array(repeating: false, count: catalogue.count - 1))
+    }
+
+    // MARK: - Equipment index
+
+    @Test("Test The Equipment Index Keeps The First Of Two Items With The Same Ref")
+    func testEquipmentIndexWithDuplicates() throws {
+        let first = try #require(PinLoadedMachine.defaultPinLoadedMachines.first)
+        var second = first
+        second.name = "Second Copy"
+        let profile = GymProfileModel(authorId: "author-1", pinLoadedMachines: [first, second])
+
+        #expect(profile.equipment(for: first.equipmentRef)?.name == first.name)
+    }
+}

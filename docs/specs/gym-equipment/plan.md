@@ -174,3 +174,11 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
 ## Status
 
 - 8 Oct 2026: plan approved; branch cut from `development` at `090e3868`.
+- 8 Oct 2026: **G1 landed** (`wp-g1-tolerant-decoding`). Fixture `CompoundUnitTests/Fixtures/gym-profile-v1.json`
+  (mock + default profile, plain `JSONEncoder`, sorted keys, fixed dates, random range ids
+  replaced). Hand-written `init(from:)` on `GymProfileModel` and all eighteen equipment and range
+  types (keys unchanged, `encode(to:)` synthesized); lossy lists, catalogue merge
+  (`GymEquipmentDecoding.swift`); `equipmentIndex` keeps the first duplicate. Missing `isActive`
+  reads as off; weight figures of ranges, plates and bands stay required. New
+  `GymProfileDecodingTests` (10 cases); one `GymProfileManagerTests` expectation now reflects the
+  merge (an empty stored list gains the catalogue, switched off).

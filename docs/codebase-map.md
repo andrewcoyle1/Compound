@@ -101,19 +101,19 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
 | `Compound/Core/Training` | 272 | 28,224 | Training tab: workouts, tracker, programs, history, create flows |
 | `Compound/Components` | 70 | 6,608 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 276 | 35,055 | App-owned managers, models and services (see Managers table) |
+| `Compound/Managers` | 277 | 35,536 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,663 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 13 | 898 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 316 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 776 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 263 | 2,614 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 347 | 94,728 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 348 | 101,677 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 9 | 1,119 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 20 | 23,295 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 64 | 16,353 | Specs, reviews, audits, this map |
+| `docs` | 64 | 16,538 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
@@ -432,7 +432,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseModelManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseModelManager.swift) | 195 | Collection<ExerciseModel> | BodyRegion, EquipmentVariation, ExerciseDefinitionRules, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MicrocycleSetTargets, MuscleVolume, Muscles, … +6 more |  |  |  |
 | **ExerciseSettingsManager** | [Compound/Managers/Training/Exercise/ExerciseSettings](Compound/Managers/Training/Exercise/ExerciseSettings/ExerciseSettingsManager.swift) | 76 | Collection<ExerciseSettingsModel> | ExerciseSettingsModel |  |  | ExerciseSettingsManagerTests.swift |
 | **ExerciseUnitPreferenceManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseUnitPreferenceManager.swift) | 161 |  | BodyRegion, EquipmentVariation, ExerciseDefinitionRules, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MicrocycleSetTargets, MuscleVolume, Muscles, … +6 more |  |  | ExerciseUnitPreferenceManagerTests.swift |
-| **GymProfileManager** | [Compound/Managers/Training/GymProfile](Compound/Managers/Training/GymProfile/GymProfileManager.swift) | 110 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +22 more |  |  | GymProfileManagerTests.swift |
+| **GymProfileManager** | [Compound/Managers/Training/GymProfile](Compound/Managers/Training/GymProfile/GymProfileManager.swift) | 110 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +23 more |  |  | GymProfileManagerTests.swift |
 | **MacrocycleManager** | [Compound/Managers/Training/Macrocycle](Compound/Managers/Training/Macrocycle/MacrocycleManager.swift) | 311 | Collection<Macrocycle> | Macrocycle |  |  | MacrocycleManagerTests.swift |
 | **MesocycleManager** | [Compound/Managers/Training/Mesocycle](Compound/Managers/Training/Mesocycle/MesocycleManager.swift) | 274 | Collection<Mesocycle> | Mesocycle |  |  | MesocycleManagerTests.swift |
 | **WorkoutSessionManager** | [Compound/Managers/Training/WorkoutSession](Compound/Managers/Training/WorkoutSession/WorkoutSessionManager.swift) | 452 | Collection<WorkoutSessionModel>, CollectionGroup<WorkoutSessionModel> | SetKind, SetSide, WorkoutExerciseModel, WorkoutSessionComment, WorkoutSessionModel, WorkoutSessionModel+Prefill, WorkoutSessionModel+WarmupSets, WorkoutSetModel, WorkoutSetPairing | FirebaseWorkoutSessionLikeService, MockWorkoutSessionLikeService, WorkoutSessionLikeService |  | WorkoutSessionManagerTests.swift |
@@ -632,7 +632,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`CompoundUnitTests/Services/Training/ExerciseTemplate/Models`** (4): `ExerciseTemplateEnumTests`, `ExerciseTemplateModelCodableAndProtocolTests`, `ExerciseTemplateModelInitializationTests`, `ExerciseTemplateModelMockAndEdgeCasesTests`
 
-**`CompoundUnitTests/Services/Training/GymProfile`** (1): `GymProfileManagerTests`
+**`CompoundUnitTests/Services/Training/GymProfile`** (2): `GymProfileDecodingTests`, `GymProfileManagerTests`
 
 **`CompoundUnitTests/Services/Training/Mesocycle`** (2): `MesocycleManagerTests`, `PrebuiltMesocycleTests`
 
@@ -691,6 +691,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [docs/reviews/tab-layout-ux-audit.md](docs/reviews/tab-layout-ux-audit.md) | 184 |
 | [docs/specs/adaptive-expenditure.md](docs/specs/adaptive-expenditure.md) | 281 |
 | [docs/specs/ai-coach.md](docs/specs/ai-coach.md) | 70 |
+| [docs/specs/gym-equipment/plan.md](docs/specs/gym-equipment/plan.md) | 184 |
 | [docs/specs/live-activity-work-packages.md](docs/specs/live-activity-work-packages.md) | 372 |
 | [docs/specs/live-activity.md](docs/specs/live-activity.md) | 316 |
 | [docs/specs/programs/import-format.md](docs/specs/programs/import-format.md) | 127 |

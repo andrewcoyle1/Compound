@@ -33,7 +33,7 @@ private struct FlowResistanceEquipment: GymEquipmentItem {
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private struct FlowSupportEquipment: GymEquipmentItem {
@@ -42,7 +42,7 @@ private struct FlowSupportEquipment: GymEquipmentItem {
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private struct FlowAccessoryEquipment: GymEquipmentItem {
@@ -51,7 +51,7 @@ private struct FlowAccessoryEquipment: GymEquipmentItem {
     let name: String
     var imageName: String? { nil }
     var description: String? { nil }
-    var isActive: Bool { true }
+    var isActive = true
 }
 
 private let dumbbell = AnyEquipment(FlowResistanceEquipment(id: "dumbbell", name: "Dumbbell"))

@@ -102,3 +102,43 @@ struct BandsAvailable: Identifiable, Codable {
     
     var isActive: Bool
 }
+
+// MARK: - Decoding
+
+extension Bands {
+    /// The keys match the property names, which is the wire format these items have always had.
+    /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
+    /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
+    enum CodingKeys: String, CodingKey {
+        case id, name, imageName, description, range, isActive
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        range = container.decodeLossyArray(BandsAvailable.self, forKey: .range) ?? []
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
+    }
+}
+
+extension BandsAvailable {
+    /// The keys match the property names, which is the wire format these items have always had.
+    /// The weights stay required: there is no sensible default for one, and a zero would reach
+    /// arithmetic that divides by it. An entry without them is skipped by its parent's lossy list.
+    enum CodingKeys: String, CodingKey {
+        case id, name, bandColour, availableResistance, unit, isActive
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        bandColour = try container.decodeIfPresent(String.self, forKey: .bandColour) ?? ""
+        availableResistance = try container.decode(Double.self, forKey: .availableResistance)
+        unit = try container.decodeIfPresent(ExerciseWeightUnit.self, forKey: .unit) ?? .kilograms
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
+    }
+}

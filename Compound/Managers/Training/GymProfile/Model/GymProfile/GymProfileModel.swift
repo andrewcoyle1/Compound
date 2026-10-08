@@ -96,7 +96,64 @@ struct GymProfileModel: DataSyncModelProtocol {
         case plateLoadedMachines = "plate_loaded_machines"
         case pinLoadedMachines = "pin_loaded_machines"
     }
-    
+
+    /// Only the id and author are required. Everything else falls back to a default, and each
+    /// equipment list skips items it cannot read and gains any catalogue items it lacks, so a
+    /// profile saved by an older or newer build still loads. `encode(to:)` stays synthesized,
+    /// which keeps the keys written unchanged.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        authorId = try container.decode(String.self, forKey: .authorId)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
+        icon = try container.decodeIfPresent(String.self, forKey: .icon) ?? "dumbbell"
+        dateCreated = try container.decodeIfPresent(Date.self, forKey: .dateCreated) ?? .now
+        dateModified = try container.decodeIfPresent(Date.self, forKey: .dateModified) ?? .now
+        deletedAt = try container.decodeIfPresent(Date.self, forKey: .deletedAt)
+        freeWeights = .mergingCatalogue(
+            container.decodeLossyArray(FreeWeights.self, forKey: .freeWeights),
+            FreeWeights.defaultFreeWeights
+        )
+        loadableBars = .mergingCatalogue(
+            container.decodeLossyArray(LoadableBars.self, forKey: .loadableBars),
+            LoadableBars.defaultLoadableBars
+        )
+        fixedWeightBars = .mergingCatalogue(
+            container.decodeLossyArray(FixedWeightBars.self, forKey: .fixedWeightBars),
+            FixedWeightBars.defaultFixedWeightBars
+        )
+        bands = .mergingCatalogue(container.decodeLossyArray(Bands.self, forKey: .bands), Bands.defaultBands)
+        bodyWeights = .mergingCatalogue(
+            container.decodeLossyArray(BodyWeights.self, forKey: .bodyWeights),
+            BodyWeights.defaultBodyWeights
+        )
+        supportEquipment = .mergingCatalogue(
+            container.decodeLossyArray(SupportEquipment.self, forKey: .supportEquipment),
+            SupportEquipment.defaultSupportEquipment
+        )
+        accessoryEquipment = .mergingCatalogue(
+            container.decodeLossyArray(AccessoryEquipment.self, forKey: .accessoryEquipment),
+            AccessoryEquipment.defaultAccessoryEquipment
+        )
+        loadableAccessoryEquipment = .mergingCatalogue(
+            container.decodeLossyArray(LoadableAccessoryEquipment.self, forKey: .loadableAccessoryEquipment),
+            LoadableAccessoryEquipment.defaultLoadableAccessoryEquipment
+        )
+        cableMachines = .mergingCatalogue(
+            container.decodeLossyArray(CableMachine.self, forKey: .cableMachines),
+            CableMachine.defaultCableMachines
+        )
+        plateLoadedMachines = .mergingCatalogue(
+            container.decodeLossyArray(PlateLoadedMachine.self, forKey: .plateLoadedMachines),
+            PlateLoadedMachine.defaultPlateLoadedMachines
+        )
+        pinLoadedMachines = .mergingCatalogue(
+            container.decodeLossyArray(PinLoadedMachine.self, forKey: .pinLoadedMachines),
+            PinLoadedMachine.defaultPinLoadedMachines
+        )
+    }
+
     var eventParameters: [String: Any] {
         [:]
     }
@@ -165,7 +222,9 @@ extension GymProfileModel {
     }
     
     var equipmentIndex: [EquipmentRef: AnyEquipment] {
-        Dictionary(uniqueKeysWithValues: allEquipment.map { ($0.ref, $0) })
+        // Keeps the first item for a ref rather than trapping, since a decoded profile can hold
+        // the same id twice.
+        Dictionary(allEquipment.map { ($0.ref, $0) }, uniquingKeysWith: { first, _ in first })
     }
     
     func equipment(for ref: EquipmentRef) -> AnyEquipment? {

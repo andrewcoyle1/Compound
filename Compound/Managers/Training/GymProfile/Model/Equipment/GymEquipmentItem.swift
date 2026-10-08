@@ -14,7 +14,7 @@ protocol GymEquipmentItem: Identifiable, Codable {
     var name: String { get }
     var imageName: String? { get }
     var description: String? { get }
-    var isActive: Bool { get }
+    var isActive: Bool { get set }
 }
 
 extension GymEquipmentItem {

@@ -49,9 +49,9 @@ irregular stacks, plate counts & collars, and combined bands.
 
 ## Work packages
 
-Branch `feature/gym-equipment`, cut from `development` at `090e3868` (PR #73 merged 8 Oct 2026). Same workflow as
-programs: one Opus agent per package in its own worktree, PR into the feature branch, I gate (lint,
-three builds, full unit bundle, named suites) and squash-merge. Plan and status log go in
+Branch `feature/gym-equipment`, cut from `development` at `090e3868` (PR #73 merged 8 Oct 2026). One Opus agent per package in its own worktree; the agent pushes its branch (no PR), I gate
+(lint, three builds, full unit bundle, named suites) and squash-merge it into the feature branch
+locally. CI runs once, on the final `feature/gym-equipment` → `development` PR. Plan and status log go in
 `docs/specs/gym-equipment/plan.md`. Order: G1 → G2 → (G3 ∥ G4) → (G5 ∥ G6).
 
 ### G1 — Tolerant decoding (no behaviour change)
@@ -161,7 +161,7 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
 ## Working rules
 
 - One Opus agent per package, in its own worktree, branch `wp-g<n>-<slug>` off the tip of
-  `feature/gym-equipment`, PR into `feature/gym-equipment`. Each agent tests on its own simulator
+  `feature/gym-equipment`, pushed without a PR; the lead squash-merges it locally. Each agent tests on its own simulator
   with `-parallel-testing-enabled NO`; the lead gates on iPhone 17 Pro Max `383E5B75…`.
 - Every new field decodes with a default; `GymProfileDecodingTests` and the v1 fixture stay green.
 - `Localizable.xcstrings` by hand, Spanish for every new string, keys sorted; check for duplicate

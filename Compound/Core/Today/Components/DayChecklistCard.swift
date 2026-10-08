@@ -58,7 +58,10 @@ struct DayChecklistCard: View {
 
         if item.kind == .steps {
             button.contextMenu {
-                Picker("Step Goal", selection: Binding(get: { stepGoal }, set: onStepGoalSelected)) {
+                // A closure literal, not the stored closure itself: handing a `@MainActor @Sendable`
+                // function value to the binding's `@isolated(any)` setter makes Swift 6.3.3 (Xcode
+                // 26.6, which CI runs) crash in IR generation on the reabstraction thunk.
+                Picker("Step Goal", selection: Binding(get: { stepGoal }, set: { onStepGoalSelected($0) })) {
                     ForEach(TodayPresenter.stepGoalChoices, id: \.self) { goal in
                         Text("\(goal.formatted()) steps").tag(goal)
                     }

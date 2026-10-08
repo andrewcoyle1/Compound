@@ -19,4 +19,14 @@ enum GymEquipmentFormat {
         let bounds = "\(min.formatted(.number.precision(.fractionLength(0...2)).locale(locale)))–\(weight(max, unit, locale: locale))"
         return String(localized: "\(bounds), \(weight(increment, unit, locale: locale)) increments")
     }
+
+    /// A stack on one line: `"5–300 lb, 5 lb increments · +2, +2"`, or `"Uneven · 12 weights"`.
+    static func stack(_ stack: WeightStack, locale: Locale = .autoupdatingCurrent) -> String {
+        let pins = stack.weights == nil
+            ? range(min: stack.lightestPin, max: stack.maxWeight, increment: stack.increment, unit: stack.unit, locale: locale)
+            : String(localized: "Uneven · \(stack.pinPositions.count) weights")
+        guard !stack.addOns.isEmpty else { return pins }
+        let addOns = stack.addOns.map { "+" + $0.formatted(.number.precision(.fractionLength(0...2)).locale(locale)) }
+        return "\(pins) · \(addOns.joined(separator: ", "))"
+    }
 }

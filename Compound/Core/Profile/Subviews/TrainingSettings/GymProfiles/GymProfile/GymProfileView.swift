@@ -362,15 +362,15 @@ private struct GymProfileMachineSectionsView: View {
                     imageName: cableMachines.imageName,
                     detail: ActiveSortedWeightSubtitle.format(items: cableMachines.ranges, config: .init(
                         isActive: { $0.isActive },
-                        value: { $0.minWeight },
+                        value: { $0.lightestPin },
                         unit: { $0.unit },
-                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        formatter: { GymEquipmentFormat.stack($0) },
                         separator: "\n"
                     )),
                     editTitle: "Edit Machine",
                     isActive: $cableMachines.isActive
                 ) {
-                    presenter.onEditCableMachinePressed(cableMachine: $cableMachines)
+                    presenter.onEditStackMachinePressed(machine: $cableMachines)
                 }
             }
         } header: {
@@ -406,15 +406,15 @@ private struct GymProfileMachineSectionsView: View {
                     imageName: pinLoadedMachines.imageName,
                     detail: ActiveSortedWeightSubtitle.format(items: pinLoadedMachines.ranges, config: .init(
                         isActive: { $0.isActive },
-                        value: { $0.minWeight },
+                        value: { $0.lightestPin },
                         unit: { $0.unit },
-                        formatter: { GymEquipmentFormat.range(min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) },
+                        formatter: { GymEquipmentFormat.stack($0) },
                         separator: "\n"
                     )),
                     editTitle: "Edit Machine",
                     isActive: $pinLoadedMachines.isActive
                 ) {
-                    presenter.onEditPinLoadedMachinePressed(pinLoadedMachine: $pinLoadedMachines)
+                    presenter.onEditStackMachinePressed(machine: $pinLoadedMachines)
                 }
             }
         } header: {

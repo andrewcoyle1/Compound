@@ -322,6 +322,13 @@ final class SetKeyboardPresenter {
         return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates, sleeves: context.step.sleeves)
     }
 
+    /// "Pin 14 + 2 kg" for the current weight on a stack with add-ons; nil otherwise.
+    var stackSummary: String? {
+        guard context.step.stack != nil, let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
+        let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
+        return context.step.stackText(total: total, unit: context.unit)
+    }
+
     // MARK: - VoiceOver
 
     /// The active field's value as VoiceOver reads it after a key, a step or a chip: "102.5

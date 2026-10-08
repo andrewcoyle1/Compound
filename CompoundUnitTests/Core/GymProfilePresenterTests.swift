@@ -45,9 +45,8 @@ struct GymProfilePresenterTests {
         func showEditBandView(band: Binding<Bands>) { record("editBand") }
         func showEditBodyWeightView(bodyWeight: Binding<BodyWeights>) { record("editBodyWeight") }
         func showEditLoadableAccessoryView(loadableAccessory: Binding<LoadableAccessoryEquipment>) { record("editLoadableAccessory") }
-        func showEditCableMachineView(cableMachine: Binding<CableMachine>) { record("editCableMachine") }
+        func showEditStackMachineView<Machine: StackMachine>(machine: Binding<Machine>) { record("editStackMachine") }
         func showEditPlateLoadedMachineView(plateLoadedMachine: Binding<PlateLoadedMachine>) { record("editPlateLoadedMachine") }
-        func showEditPinLoadedMachineView(pinLoadedMachine: Binding<PinLoadedMachine>) { record("editPinLoadedMachine") }
     }
 
     private struct Screen {

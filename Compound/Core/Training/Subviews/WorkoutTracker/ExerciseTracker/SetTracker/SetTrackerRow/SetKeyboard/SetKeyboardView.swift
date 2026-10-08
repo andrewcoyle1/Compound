@@ -45,6 +45,12 @@ struct SetKeyboardView: View {
         if presenter.showsPlates {
             plateStrip
         }
+        if let stackSummary = presenter.stackSummary {
+            Text(stackSummary)
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, minHeight: plateStripHeight)
+        }
     }
 
     private var stepperRow: some View {

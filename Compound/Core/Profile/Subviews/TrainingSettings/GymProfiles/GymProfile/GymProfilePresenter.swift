@@ -243,18 +243,13 @@ class GymProfilePresenter {
         router.showEditLoadableAccessoryView(loadableAccessory: loadableAccessoryEquipment)
     }
 
-    func onEditCableMachinePressed(cableMachine: Binding<CableMachine>) {
+    func onEditStackMachinePressed<Machine: StackMachine>(machine: Binding<Machine>) {
         isEditorPushed = true
-        router.showEditCableMachineView(cableMachine: cableMachine)
+        router.showEditStackMachineView(machine: machine)
     }
 
     func onEditPlateLoadedMachinePressed(plateLoadedMachine: Binding<PlateLoadedMachine>) {
         router.showEditPlateLoadedMachineView(plateLoadedMachine: plateLoadedMachine)
-    }
-
-    func onEditPinLoadedMachinePressed(pinLoadedMachine: Binding<PinLoadedMachine>) {
-        isEditorPushed = true
-        router.showEditPinLoadedMachineView(pinLoadedMachine: pinLoadedMachine)
     }
     
     func onAddImagePressed() {

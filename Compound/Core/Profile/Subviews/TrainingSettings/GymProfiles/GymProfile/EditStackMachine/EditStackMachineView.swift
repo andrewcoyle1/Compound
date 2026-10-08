@@ -1,14 +1,14 @@
 import SwiftUI
 
-struct EditCableMachineView: View {
-    
-    @State var presenter: EditCableMachinePresenter
-    
+struct EditStackMachineView<Machine: StackMachine>: View {
+
+    @State var presenter: EditStackMachinePresenter<Machine>
+
     var body: some View {
         List {
             weightsList
         }
-        .navigationTitle(presenter.cableMachine.name)
+        .navigationTitle(presenter.machine.name)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
@@ -20,7 +20,7 @@ struct EditCableMachineView: View {
             toolbarContent
         }
     }
-    
+
     private var weightsList: some View {
         Section {
             let unit = presenter.selectedUnit
@@ -38,7 +38,7 @@ struct EditCableMachineView: View {
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
                             Text(weight.wrappedValue.name)
                                 .font(.rowTitle)
-                            Text(GymEquipmentFormat.range(min: weight.wrappedValue.minWeight, max: weight.wrappedValue.maxWeight, increment: weight.wrappedValue.increment, unit: weight.wrappedValue.unit))
+                            Text(GymEquipmentFormat.stack(weight.wrappedValue))
                                 .font(.rowDetail)
                                 .foregroundStyle(.secondary)
                             Button("Edit Range") {
@@ -72,7 +72,7 @@ struct EditCableMachineView: View {
             }
         }
     }
-    
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
@@ -81,31 +81,31 @@ struct EditCableMachineView: View {
             } label: {
                 Image(systemName: Symbol.add)
             }
-            .accessibilityLabel("Add cable machine")
+            .accessibilityLabel("Add Range")
         }
     }
 }
 
 extension CoreBuilder {
-    
-    func editCableMachineView(router: AnyRouter, cableMachine: Binding<CableMachine>) -> some View {
-        EditCableMachineView(
-            presenter: EditCableMachinePresenter(
+
+    func editStackMachineView<Machine: StackMachine>(router: AnyRouter, machine: Binding<Machine>) -> some View {
+        EditStackMachineView(
+            presenter: EditStackMachinePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                cableMachineBinding: cableMachine
+                machineBinding: machine
             )
         )
     }
 }
 
 extension CoreRouter {
-    
-    func showEditCableMachineView(cableMachine: Binding<CableMachine>) {
+
+    func showEditStackMachineView<Machine: StackMachine>(machine: Binding<Machine>) {
         // Pushed inside the Profile sheet: browsing a list is a push, and only the Add form above it
         // is a sheet, so at most one modal sits over Profile.
         router.showScreen(.push) { router in
-            builder.editCableMachineView(router: router, cableMachine: cableMachine)
+            builder.editStackMachineView(router: router, machine: machine)
         }
     }
 }
@@ -113,9 +113,7 @@ extension CoreRouter {
 #Preview {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    let cableMachine = CableMachine.mock
     return RouterView { router in
-        builder.editCableMachineView(router: router, cableMachine: Binding.constant(cableMachine))
+        builder.editStackMachineView(router: router, machine: Binding.constant(CableMachine.mock))
     }
-    
 }

@@ -208,3 +208,16 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   Editors: sleeves picker and the unit fix on the plate-loaded editor, a plate count on the free
   weight edit and add screens, a collar field on the loadable bar editor; gym rows read
   "Base 18 kg · one side". Plate-loaded `mocks` are the catalogue (Part2 deleted).
+- 8 Oct 2026: **G3 landed** (`wp-g3-stacks`). `WeightStack` (`Model/WeightStack/`) replaces both range
+  types (kept as typealiases) and the `WeightRange` protocol; it adds `addOns` and `weights`
+  (decoded with defaults), `lightestPin` (a stored 0 means one increment) and `loads()` (pins ⊕
+  every add-on subset, at most six add-ons). `WeightStepper` gives `.list(loads)` for a stack with
+  add-ons or uneven pins and the grid from the lightest pin otherwise; `WeightStep.stack`
+  (`Loading/PinStack.swift`) breaks a load into pin + add-ons, fewest add-ons first, shown as
+  "Pin 14 + 2 kg" on the set row and keyboard through `WeightStep.stackText`, beside G4's
+  `plateText`. One generic `EditStackMachine` + `AddWeightStack` over `StackMachine` replace the
+  four pin/cable modules; `EditWeightRange` edits a presenter-owned
+  copy and gains add-ons and an uneven list. Deleting the default stack re-points it. Catalogue
+  stacks start at 5 (lb or kg); the pin and cable mock lists are the catalogue. Intended changes: a
+  min-0 stack now starts one increment up, and an equal-distance weight on a list rounds to the
+  lighter load (15 → 14 on 7 kg pins with [2, 2]). New `WeightStackTests`.

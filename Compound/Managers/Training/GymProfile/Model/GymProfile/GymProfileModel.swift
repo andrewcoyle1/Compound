@@ -180,9 +180,9 @@ struct GymProfileModel: DataSyncModelProtocol {
                 supportEquipment: SupportEquipment.mocks,
                 accessoryEquipment: AccessoryEquipment.mocks,
                 loadableAccessoryEquipment: LoadableAccessoryEquipment.mocks,
-                cableMachines: CableMachine.mocks,
+                cableMachines: CableMachine.defaultCableMachines,
                 plateLoadedMachines: PlateLoadedMachine.mocks,
-                pinLoadedMachines: PinLoadedMachine.mocks
+                pinLoadedMachines: PinLoadedMachine.defaultPinLoadedMachines
             )
         ]
     }

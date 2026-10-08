@@ -37,6 +37,9 @@ struct WeightStep: Equatable {
     /// equipment it lacks), body weight and bands only say how far a tap moves the value, so a
     /// prescribed weight is not rounded to them.
     var constrainsWeight = true
+    /// The stack's pins and add-ons when it has add-ons, so the tracker can say how to make a
+    /// weight ("Pin 14 + 2 kg"). `nil` for anything else, a plain stack included.
+    var stack: PinStack?
 
     /// Whether the keyboard offers the plate calculator.
     var isPlateLoaded: Bool { baseWeight != nil && !plates.isEmpty }
@@ -129,6 +132,12 @@ struct WeightStep: Equatable {
         return label + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit.abbreviation)"
     }
 
+    /// "Pin 14 + 2 kg" for `total` on a stack with add-ons (`PinStack`); nil for anything else,
+    /// or a weight the stack cannot make.
+    func stackText(total: Double, unit: ExerciseWeightUnit) -> String? {
+        stack?.summary(total: total, unit: unit)
+    }
+
     /// The band after (or before) `index`, wrapping round: bands cycle rather than stop.
     func band(after index: Int?, forward: Bool) -> Int? {
         guard case .bands(let names) = kind, !names.isEmpty else { return nil }
@@ -191,13 +200,11 @@ enum WeightStepper {
 
         case .cableMachine:
             guard let machine = profile.cableMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
-            let ranges = machine.ranges.filter(\.isActive).map { MachineRange(id: $0.id, min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) }
-            return ranged(ranges, defaultId: machine.defaultRangeId, unit: unit)
+            return ranged(machine.ranges.filter(\.isActive), defaultId: machine.defaultRangeId, unit: unit)
 
         case .pinLoadedMachine:
             guard let machine = profile.pinLoadedMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
-            let ranges = machine.ranges.filter(\.isActive).map { MachineRange(id: $0.id, min: $0.minWeight, max: $0.maxWeight, increment: $0.increment, unit: $0.unit) }
-            return ranged(ranges, defaultId: machine.defaultRangeId, unit: unit)
+            return ranged(machine.ranges.filter(\.isActive), defaultId: machine.defaultRangeId, unit: unit)
 
         case .freeWeight:
             guard let item = profile.freeWeights.first(where: { $0.id == id && $0.isActive }) else { return nil }
@@ -261,34 +268,43 @@ enum WeightStepper {
         .sorted { $0.weight < $1.weight }
     }
 
-    /// A cable or pin-loaded range, read off whichever machine type it came from.
-    private struct MachineRange {
-        let id: String
-        let min: Double
-        let max: Double
-        let increment: Double
-        let unit: ExerciseWeightUnit
-    }
-
-    /// The range in the user's unit when the machine has one, else its default, else the first.
+    /// The stack in the user's unit when the machine has one, else its default, else the first.
+    /// A plain stack steps on its grid from the lightest pin; add-ons or an uneven stack give the
+    /// list of every load it can make (`WeightStack.loads()`).
     private static func ranged(
-        _ ranges: [MachineRange],
+        _ stacks: [WeightStack],
         defaultId: String?,
         unit: ExerciseWeightUnit
     ) -> WeightStep? {
-        guard let range = ranges.first(where: { $0.unit == unit })
-                ?? ranges.first(where: { $0.id == defaultId })
-                ?? ranges.first,
-              range.increment > 0 else { return nil }
+        guard let chosen = stacks.first(where: { $0.unit == unit })
+                ?? stacks.first(where: { $0.id == defaultId })
+                ?? stacks.first else { return nil }
+        var stack = chosen
+        let inUnit = { convert($0, from: chosen.unit, to: unit) }
+        stack.minWeight = inUnit(chosen.minWeight)
+        stack.maxWeight = inUnit(chosen.maxWeight)
+        stack.increment = inUnit(chosen.increment)
+        stack.addOns = chosen.usableAddOns.map(inUnit)
+        stack.weights = chosen.weights?.map(inUnit)
+        stack.unit = unit
+
+        guard !stack.addOns.isEmpty || stack.weights != nil else {
+            guard stack.increment > 0 else { return nil }
+            return WeightStep(
+                kind: .increment(stack.increment, min: stack.lightestPin, max: stack.maxWeight),
+                chip: nil,
+                baseWeight: nil,
+                plates: []
+            )
+        }
+        let loads = stack.loads()
+        guard !loads.isEmpty else { return nil }
         return WeightStep(
-            kind: .increment(
-                convert(range.increment, from: range.unit, to: unit),
-                min: convert(range.min, from: range.unit, to: unit),
-                max: convert(range.max, from: range.unit, to: unit)
-            ),
+            kind: .list(loads),
             chip: nil,
             baseWeight: nil,
-            plates: []
+            plates: [],
+            stack: stack.addOns.isEmpty ? nil : PinStack(pins: stack.pinPositions, addOns: stack.addOns)
         )
     }
 

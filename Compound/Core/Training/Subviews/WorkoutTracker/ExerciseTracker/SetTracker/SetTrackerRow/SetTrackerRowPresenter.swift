@@ -298,13 +298,17 @@ extension SetTrackerRowPresenter {
     }
 
     /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar ("Plates: …" on a
-    /// single-sleeve machine), from the gym's bar and plates. `nil` for anything not plate-loaded or a set with no weight yet.
+    /// single-sleeve machine), from the gym's bar and plates, or "Pin 14 + 2 kg" on a stack with
+    /// add-ons. `nil` for anything else or a set with no weight yet.
     func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
         guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
         let unit = getUnitPreference(for: exercise).weightUnit
         let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
-        guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
+        if step.stack != nil {
+            return step.stackText(total: total, unit: unit).map { PlateSummary(text: $0, nearestKg: nil) }
+        }
+        guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
         switch PlateCalculator.load(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves) {
         case .loadable(let perSide):
             return PlateSummary(text: step.plateText(perSide, unit: unit), nearestKg: nil)

@@ -126,6 +126,23 @@ struct GymProfileDecodingTests {
         #expect(machine.id == "custom_stack")
         #expect(machine.isActive)
         #expect(machine.ranges.map(\.id) == ["r1"])
+        #expect(machine.ranges.first?.addOns == [2, 2])
+    }
+
+    /// Stacks written before add-ons and uneven stacks (G3) read as plain grids, and the new
+    /// fields round-trip.
+    @Test("Test Stacks From The V1 Fixture Have No Add-ons Or Uneven Weights")
+    func testV1StacksDecodeAsPlainGrids() throws {
+        let profile = try decode(try fixtureProfile("mock"))
+        let stacks = profile.pinLoadedMachines.flatMap(\.ranges) + profile.cableMachines.flatMap(\.ranges)
+
+        #expect(!stacks.isEmpty)
+        #expect(stacks.allSatisfy { $0.addOns.isEmpty && $0.weights == nil })
+
+        var stack = try #require(stacks.first)
+        stack.addOns = [2, 2]
+        stack.weights = [5, 12.5]
+        #expect(try JSONDecoder().decode(WeightStack.self, from: JSONEncoder().encode(stack)) == stack)
     }
 
     @Test("Test A Corrupt Item Is Skipped And Its Siblings Kept")

@@ -286,6 +286,32 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.plateLoad == .loadable(perSide: [25, 15]))
     }
 
+    /// A stack with add-ons: the keyboard steps through every load the pin and toggles make, and
+    /// says how to make the one shown.
+    @Test func aStackWithAddOnsStepsThroughItsLoadsAndSaysHowToMakeThem() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        let stack = WeightStack(
+            id: "s", name: "Stack", minWeight: 7, maxWeight: 98, increment: 7, unit: .kilograms, isActive: true, addOns: [2, 2]
+        )
+        let gym = GymProfileModel(authorId: "u", pinLoadedMachines: [PinLoadedMachine(id: "pin", name: "Pin", ranges: [stack], isActive: true)])
+        let step = WeightStepper.steps(for: [EquipmentRef(kind: .pinLoadedMachine, id: "pin")], profile: gym, unit: .kilograms)
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: step))
+        #expect(keyboard.stackSummary == nil)
+
+        var seen: [Double?] = []
+        for _ in 0..<5 {
+            keyboard.stepUp()
+            seen.append(box.value.weightKg)
+        }
+        #expect(seen == [7, 9, 11, 14, 16])
+        #expect(keyboard.stackSummary == "Pin 14 + 2 kg")
+
+        // A plain stack has nothing to explain.
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: WeightStep(kind: .increment(7, min: 7, max: 98), chip: nil, baseWeight: nil, plates: [])))
+        #expect(keyboard.stackSummary == nil)
+    }
+
     // MARK: - Effort
 
     @Test func rpeChipWritesTheSetAndTogglesOff() {
@@ -560,6 +586,26 @@ struct SetTrackerRowKeyboardTests {
         #expect(unloadable?.nearestKg == loadableKg)
 
         set.weightKg = nil
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
+    }
+
+    /// The set row says which pin and toggles make the set on a stack with add-ons.
+    @Test func plateSummaryReadsTheStacksPinAndAddOns() {
+        let row = makeRow()
+        row.exercise.value.equipmentVariations = [EquipmentVariation(id: "v", resistanceEquipment: [EquipmentRef(kind: .pinLoadedMachine, id: "pin")])]
+        let stack = WeightStack(
+            id: "s", name: "Stack", minWeight: 7, maxWeight: 98, increment: 7, unit: .kilograms, isActive: true, addOns: [2, 2]
+        )
+        row.interactor.favouriteGymProfile = GymProfileModel(
+            authorId: "u", pinLoadedMachines: [PinLoadedMachine(id: "pin", name: "Pin", ranges: [stack], isActive: true)]
+        )
+        var set = row.exercise.value.sets[0]
+
+        set.weightKg = 16
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == PlateSummary(text: "Pin 14 + 2 kg", nearestKg: nil))
+
+        // A weight the stack cannot make has no breakdown.
+        set.weightKg = 15
         #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
     }
 

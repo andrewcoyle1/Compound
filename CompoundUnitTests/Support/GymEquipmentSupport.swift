@@ -40,15 +40,13 @@ final class GymEquipmentInteractor: SpyGlobalInteractor,
                                     AddLoadableBarInteractor,
                                     AddFixedWeightBarInteractor,
                                     AddBandInteractor,
-                                    AddCableMachineRangeInteractor,
-                                    AddPinLoadedMachineRangeInteractor,
+                                    AddWeightStackInteractor,
                                     EditFreeWeightInteractor,
                                     EditBodyWeightInteractor,
                                     EditBandInteractor,
                                     EditLoadableBarInteractor,
                                     EditFixedWeightBarInteractor,
-                                    EditCableMachineInteractor,
-                                    EditPinLoadedMachineInteractor,
+                                    EditStackMachineInteractor,
                                     EditPlateLoadedMachineInteractor,
                                     EditLoadableAccessoryInteractor,
                                     EditWeightRangeInteractor { }
@@ -65,15 +63,13 @@ final class GymEquipmentRouter: AddFreeWeightRouter,
                                 AddLoadableBarRouter,
                                 AddFixedWeightBarRouter,
                                 AddBandRouter,
-                                AddCableMachineRangeRouter,
-                                AddPinLoadedMachineRangeRouter,
+                                AddWeightStackRouter,
                                 EditFreeWeightRouter,
                                 EditBodyWeightRouter,
                                 EditBandRouter,
                                 EditLoadableBarRouter,
                                 EditFixedWeightBarRouter,
-                                EditCableMachineRouter,
-                                EditPinLoadedMachineRouter,
+                                EditStackMachineRouter,
                                 EditPlateLoadedMachineRouter,
                                 EditLoadableAccessoryRouter,
                                 EditWeightRangeRouter {
@@ -109,21 +105,20 @@ final class GymEquipmentRouter: AddFreeWeightRouter,
         addUnits.append(delegate.unit)
     }
 
-    func showAddCableMachineRangeView(delegate: AddCableMachineRangeDelegate) {
-        shown.append("addCableMachineRange")
-        addUnits.append(delegate.unit)
-    }
+    /// The last add-a-stack form opened, so a test can save through it as the form would.
+    private(set) var addStackDelegate: AddWeightStackDelegate?
 
-    func showAddPinLoadedMachineRangeView(delegate: AddPinLoadedMachineRangeDelegate) {
-        shown.append("addPinLoadedMachineRange")
+    func showAddWeightStackView(delegate: AddWeightStackDelegate) {
+        shown.append("addWeightStack")
         addUnits.append(delegate.unit)
+        addStackDelegate = delegate
     }
 
     /// The equipment each edit-a-range screen was opened for, so a test can check the range handed
     /// over belongs to the machine whose row was tapped.
     private(set) var editedRangeEquipment: [String] = []
 
-    func showEditWeightRangeView<Range: WeightRange>(delegate: EditWeightRangeDelegate<Range>) {
+    func showEditWeightRangeView(delegate: EditWeightRangeDelegate) {
         shown.append("editWeightRange")
         editedRangeEquipment.append(delegate.equipmentName)
     }
@@ -217,6 +212,14 @@ enum GymEquipmentFixtures {
             unit: unit,
             isActive: true
         )
+    }
+
+    /// The add-a-stack form's hand-off, saving into `box` as the machine editor does.
+    static func addStackDelegate<Machine: StackMachine>(
+        _ box: GymEquipmentBox<Machine>,
+        unit: ExerciseWeightUnit = .kilograms
+    ) -> AddWeightStackDelegate {
+        AddWeightStackDelegate(machineName: box.value.name, stacks: box.value.ranges, unit: unit) { box.value.addStack($0) }
     }
 
     static func pinMachine(_ ranges: [PinLoadedMachineRange] = []) -> PinLoadedMachine {

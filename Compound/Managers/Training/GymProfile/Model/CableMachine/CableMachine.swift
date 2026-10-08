@@ -14,10 +14,6 @@ struct CableMachine: Identifiable, Codable {
     var description: String?
     var defaultRangeId: String?
     var ranges: [CableMachineRange]
-    
-    var defaultRange: CableMachineRange? {
-        ranges.first(where: { $0.id == self.defaultRangeId })
-    }
 
     var isActive: Bool
     
@@ -47,7 +43,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -56,7 +52,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -73,7 +69,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -82,7 +78,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -99,7 +95,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -108,7 +104,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -125,7 +121,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 250,
                     increment: 5,
                     unit: .kilograms,
@@ -134,7 +130,7 @@ struct CableMachine: Identifiable, Codable {
                 CableMachineRange(
                     id: UUID().uuidString,
                     name: "Range 1",
-                    minWeight: 0,
+                    minWeight: 5,
                     maxWeight: 500,
                     increment: 5,
                     unit: .pounds,
@@ -146,129 +142,8 @@ struct CableMachine: Identifiable, Codable {
     ]
     
     static var mock: CableMachine {
-        mocks[0]
+        defaultCableMachines[0]
     }
-    
-    static let mocks: [CableMachine] = [
-        CableMachine(
-            id: "cable_lat_pulldown_machine",
-            name: "Cable Lat Pulldown Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "pin-loaded_dual_cable_machine",
-            name: "Pin-Loaded Dual Cable Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "pin-loaded_single_cable_machine",
-            name: "Pin-Loaded Single Cable Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        ),
-        CableMachine(
-            id: "seated_cable_row_machine",
-            name: "Seated Cable Row Machine",
-            description: nil,
-            ranges: [
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 250,
-                    increment: 5,
-                    unit: .kilograms,
-                    isActive: false
-                ),
-                CableMachineRange(
-                    id: UUID().uuidString,
-                    name: "Range 1",
-                    minWeight: 0,
-                    maxWeight: 500,
-                    increment: 5,
-                    unit: .pounds,
-                    isActive: true
-                )
-            ],
-            isActive: true
-        )
-    ]
-
-}
-
-struct CableMachineRange: Identifiable, Codable, @MainActor WeightRange {
-    var id: String
-    
-    var name: String
-    var minWeight: Double
-    var maxWeight: Double
-    var increment: Double
-    
-    var unit: ExerciseWeightUnit
-
-    var isActive: Bool
 }
 
 // MARK: - Decoding
@@ -289,26 +164,6 @@ extension CableMachine {
         description = try container.decodeIfPresent(String.self, forKey: .description)
         defaultRangeId = try container.decodeIfPresent(String.self, forKey: .defaultRangeId)
         ranges = container.decodeLossyArray(CableMachineRange.self, forKey: .ranges) ?? []
-        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
-    }
-}
-
-extension CableMachineRange {
-    /// The keys match the property names, which is the wire format these items have always had.
-    /// The weights stay required: there is no sensible default for one, and a zero would reach
-    /// arithmetic that divides by it. An entry without them is skipped by its parent's lossy list.
-    enum CodingKeys: String, CodingKey {
-        case id, name, minWeight, maxWeight, increment, unit, isActive
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        name = try container.decode(String.self, forKey: .name)
-        minWeight = try container.decode(Double.self, forKey: .minWeight)
-        maxWeight = try container.decode(Double.self, forKey: .maxWeight)
-        increment = try container.decode(Double.self, forKey: .increment)
-        unit = try container.decodeIfPresent(ExerciseWeightUnit.self, forKey: .unit) ?? .kilograms
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
     }
 }

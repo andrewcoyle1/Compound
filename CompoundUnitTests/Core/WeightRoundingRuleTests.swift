@@ -133,7 +133,7 @@ struct WeightRoundingRuleTests {
         let rule = rule(refs, gym: gym)
 
         #expect(rule.step == keyboard(refs, gym: gym, unit: .kilograms))
-        #expect(rule.step.kind == .increment(2.268, min: 0, max: 226.796))
+        #expect(rule.step.kind == .increment(2.268, min: 2.268, max: 226.796))
         #expect(abs(rule.round(50) - 49.896) < 0.0001)
         #expect(rule.minimumIncrementKg == 2.268)
     }

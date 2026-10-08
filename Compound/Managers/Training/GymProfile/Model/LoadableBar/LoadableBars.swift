@@ -15,7 +15,12 @@ struct LoadableBars: Identifiable, Codable {
     var name: String
     var description: String?
     var imageName: String?
+    /// Set to the first weight when every bar was created and never changeable, so it says
+    /// nothing about the bar a gym uses. Kept only so stored gyms round-trip; read
+    /// `loadedBaseWeight`.
     var defaultBaseWeightId: String?
+    /// The bar the user chose to load, from the plate calculator. `nil` until they choose.
+    var chosenBaseWeightId: String?
     var baseWeights: [LoadableBarsBaseWeight]
     /// What one collar weighs, in kilograms whatever the bar's unit, so one figure serves a kg and
     /// a lb bar alike. Collars are always on: a loaded bar carries two.
@@ -23,6 +28,15 @@ struct LoadableBars: Identifiable, Codable {
     
     var defaultBaseWeight: LoadableBarsBaseWeight? {
         baseWeights.first(where: { $0.id == self.defaultBaseWeightId })
+    }
+
+    /// The bar the gym loads: the user's choice while it is switched on, else the heaviest bar
+    /// switched on. The stored default cannot be used: it was always the first weight, so the
+    /// catalogue barbell meant its 7 kg technique bar and 50 kg could never be stepped to.
+    var loadedBaseWeight: LoadableBarsBaseWeight? {
+        let active = baseWeights.filter(\.isActive)
+        return active.first { $0.id == chosenBaseWeightId }
+            ?? active.max { $0.kilograms < $1.kilograms }
     }
     
     var isActive: Bool
@@ -448,6 +462,8 @@ struct LoadableBarsBaseWeight: Identifiable, Codable {
     var unit: ExerciseWeightUnit
     
     var isActive: Bool
+
+    var kilograms: Double { UnitConversion.convertWeightToKg(baseWeight, from: unit) }
 }
 
 // MARK: - Decoding
@@ -457,7 +473,7 @@ extension LoadableBars {
     /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
     /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
     enum CodingKeys: String, CodingKey {
-        case id, typeId, name, imageName, description, defaultBaseWeightId, baseWeights, collarWeight, isActive
+        case id, typeId, name, imageName, description, defaultBaseWeightId, chosenBaseWeightId, baseWeights, collarWeight, isActive
     }
 
     init(from decoder: Decoder) throws {
@@ -470,6 +486,7 @@ extension LoadableBars {
         imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
         description = try container.decodeIfPresent(String.self, forKey: .description)
         defaultBaseWeightId = try container.decodeIfPresent(String.self, forKey: .defaultBaseWeightId)
+        chosenBaseWeightId = try container.decodeIfPresent(String.self, forKey: .chosenBaseWeightId)
         baseWeights = container.decodeLossyArray(LoadableBarsBaseWeight.self, forKey: .baseWeights) ?? []
         collarWeight = try container.decodeIfPresent(Double.self, forKey: .collarWeight) ?? 0
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false

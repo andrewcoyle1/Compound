@@ -24,6 +24,8 @@ class SetTrackerRowPresenter {
 
     /// The weight and reps keyboards for this row.
     let keyboard = SetKeyboardPresenter()
+    /// The set the keyboard was last opened on, so the plate calculator knows what it is for.
+    @ObservationIgnored private var keyboardDelegate: SetTrackerRowDelegate?
     var defaultRestDurationSeconds: Int {
         interactor.workoutSettings.defaultRestDurationSeconds
     }
@@ -32,6 +34,7 @@ class SetTrackerRowPresenter {
         self.interactor = interactor
         self.router = router
         keyboard.playSelectionHaptic = { [interactor] in interactor.playHaptic(option: .selection) }
+        keyboard.openPlateCalculator = { [weak self] in self?.onPlateCalculatorPressed() }
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a
@@ -270,10 +273,49 @@ extension SetTrackerRowPresenter {
 
     /// A weight or reps field took focus: open its keyboard on what this set and exercise allow.
     func onKeyboardFieldBegan(_ field: SetKeyboardField, delegate: SetTrackerRowDelegate) {
+        keyboardDelegate = delegate
         keyboard.open(field, set: delegate.set, context: keyboardContext(delegate: delegate))
     }
 
-    func keyboardContext(delegate: SetTrackerRowDelegate) -> SetKeyboardContext {
+    /// The loading bar was tapped: the plate calculator for this exercise's bar or plate-loaded
+    /// machine in the workout's gym. Done saves the bar and plates chosen to the gym, and the
+    /// keyboard steps on them from then on.
+    func onPlateCalculatorPressed() {
+        guard let delegate = keyboardDelegate, let gym = interactor.workoutGymProfile else { return }
+        let exercise = delegate.exercise.wrappedValue
+        let unit = getUnitPreference(for: exercise).weightUnit
+        let variation = exercise.equipmentVariations.first { $0.id == exercise.chosenVariationId }
+            ?? exercise.equipmentVariations.first
+        guard let equipment = variation?.resistanceEquipment.first(where: {
+            WeightStepper.steps(for: [$0], profile: gym, unit: unit).isPlateLoaded
+        }) else { return }
+        let total = delegate.set.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: unit) * 1000).rounded() / 1000 }
+        router.showPlateCalculatorView(delegate: PlateCalculatorDelegate(
+            gym: gym,
+            equipment: equipment,
+            unit: unit,
+            total: total
+        ) { [weak self] updated in
+            self?.onGymLoadingChanged(updated)
+        })
+    }
+
+    private func onGymLoadingChanged(_ gym: GymProfileModel) {
+        Task {
+            do {
+                try await interactor.saveWorkoutGymProfile(gym)
+            } catch {
+                router.showSimpleAlert(title: String(localized: "Unable to Save Gym"), subtitle: error.localizedDescription)
+            }
+        }
+        // From the edited gym, not the interactor's: the save has not run yet when this does.
+        if keyboard.activeField != nil, let delegate = keyboardDelegate {
+            keyboard.refresh(context: keyboardContext(delegate: delegate, gym: gym))
+        }
+    }
+
+    /// `gym` overrides the workout's gym, for a change not yet saved back to it.
+    func keyboardContext(delegate: SetTrackerRowDelegate, gym: GymProfileModel? = nil) -> SetKeyboardContext {
         let exercise = delegate.exercise.wrappedValue
         let set = delegate.set.wrappedValue
         let units = getUnitPreference(for: exercise)
@@ -282,7 +324,7 @@ extension SetTrackerRowPresenter {
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
         // An assisted machine steps below zero, and never above it when the exercise cannot be loaded.
         let library = interactor.allExercises.first { $0.id == exercise.templateId }
-        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
+        let step = WeightStepper.steps(for: exercise, profile: gym ?? interactor.workoutGymProfile, unit: unit)
         return SetKeyboardContext(
             unit: unit,
             step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,

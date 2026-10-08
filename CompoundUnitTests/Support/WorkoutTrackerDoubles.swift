@@ -396,6 +396,10 @@ final class SetTrackerRowInteractorDouble: SpyGlobalInteractor, SetTrackerRowInt
     }
 
     func exerciseRestOverride(for exerciseId: String) -> Int? { nil }
+
+    /// Gyms saved from inside the workout, by the plate calculator.
+    private(set) var savedGyms: [GymProfileModel] = []
+    func saveWorkoutGymProfile(_ profile: GymProfileModel) async throws { savedGyms.append(profile) }
 }
 
 /// A set row's router, recording the confirmation dialogs it raises with their messages. The
@@ -403,6 +407,9 @@ final class SetTrackerRowInteractorDouble: SpyGlobalInteractor, SetTrackerRowInt
 final class SetTrackerRowRouterDouble: SetTrackerRowRouter {
     let router: AnyRouter = TestRouting.anyRouter
     private(set) var confirmations: [(title: String, subtitle: String?)] = []
+    private(set) var plateCalculators: [PlateCalculatorDelegate] = []
+
+    func showPlateCalculatorView(delegate: PlateCalculatorDelegate) { plateCalculators.append(delegate) }
 
     func showWarmupSetInfoModal(primaryButtonAction: @escaping () -> Void) { }
     func showRestModal(

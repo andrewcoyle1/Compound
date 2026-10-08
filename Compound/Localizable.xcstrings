@@ -693,6 +693,26 @@
         }
       }
     },
+    "%@ of plates + %@ base = %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ en discos + %@ de base = %@"
+          }
+        }
+      }
+    },
+    "%@ on each side + %@ bar = %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ por lado + %@ de barra = %@"
+          }
+        }
+      }
+    },
     "%@ over %@" : {
       "localizations" : {
         "es" : {
@@ -5880,6 +5900,16 @@
         }
       }
     },
+    "Available Plate Weights" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discos disponibles"
+          }
+        }
+      }
+    },
     "Average" : {
       "localizations" : {
         "es" : {
@@ -6115,6 +6145,16 @@
         }
       }
     },
+    "Bar Weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso de la barra"
+          }
+        }
+      }
+    },
     "Bar shows what you ate, the tick is your target, and a caret means you went over." : {
       "localizations" : {
         "es" : {
@@ -6152,6 +6192,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de código de barras"
+          }
+        }
+      }
+    },
+    "Base" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base"
+          }
+        }
+      }
+    },
+    "Base %@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base %@ %@"
           }
         }
       }
@@ -10862,6 +10922,16 @@
         }
       }
     },
+    "Empty bar = %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra vacía = %@"
+          }
+        }
+      }
+    },
     "Empty, last time %@" : {
       "localizations" : {
         "es" : {
@@ -11051,16 +11121,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Introduce un peso de cero o más."
-          }
-        }
-      }
-    },
-    "Enter a weight to see the plates" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Introduce un peso para ver los discos"
           }
         }
       }
@@ -17870,12 +17930,32 @@
         }
       }
     },
+    "Not loadable with these plates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede cargar con estos discos"
+          }
+        }
+      }
+    },
     "Not loadable. Use %@ %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se puede cargar. Usa %@ %@"
+          }
+        }
+      }
+    },
+    "Not loadable: %@ %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede cargar: %@ %@"
           }
         }
       }
@@ -18665,6 +18745,16 @@
         }
       }
     },
+    "Opens the plate calculator" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la calculadora de discos"
+          }
+        }
+      }
+    },
     "Opens the standings" : {
       "localizations" : {
         "es" : {
@@ -19404,6 +19494,16 @@
         }
       }
     },
+    "Plate Calculator" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calculadora de discos"
+          }
+        }
+      }
+    },
     "Plate Color" : {
       "localizations" : {
         "es" : {
@@ -19441,16 +19541,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "De discos"
-          }
-        }
-      }
-    },
-    "Plates" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discos"
           }
         }
       }
@@ -23228,16 +23318,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muestra la sesión de entrenamiento activa si hay una en curso."
-          }
-        }
-      }
-    },
-    "Shows the plates for each side of the bar" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra los discos de cada lado de la barra"
           }
         }
       }
@@ -27211,6 +27291,16 @@
         }
       }
     },
+    "Unable to Save Gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el gimnasio"
+          }
+        }
+      }
+    },
     "Unable to Save Gym Profile" : {
       "localizations" : {
         "es" : {
@@ -28368,6 +28458,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usa tus pasos para actualizar el gasto antes"
+          }
+        }
+      }
+    },
+    "Used for every exercise on this bar at this gym." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se usa en todos los ejercicios con esta barra en este gimnasio."
           }
         }
       }

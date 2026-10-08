@@ -70,9 +70,11 @@ final class SetKeyboardPresenter {
     /// The first key after a field opens replaces its value, as a selected text field would.
     private var replacesOnNextKey = false
     private(set) var context = SetKeyboardContext()
-    var showsPlates = false
     /// Played when a band chip is toggled. The row sets it, as the keyboard has no interactor.
     var playSelectionHaptic: (@MainActor () -> Void)?
+    /// Opens the plate calculator for the set being edited. The row sets it, as the keyboard has
+    /// no router.
+    var openPlateCalculator: (@MainActor () -> Void)?
 
     private var editingSet: Binding<WorkoutSetModel>?
 
@@ -125,7 +127,6 @@ final class SetKeyboardPresenter {
     /// is deleted would read past the end of the array.
     func close() {
         activeField = nil
-        showsPlates = false
         editingSet = nil
     }
 
@@ -133,7 +134,12 @@ final class SetKeyboardPresenter {
         activeField = field
         text = currentText(for: field)
         replacesOnNextKey = true
-        if field != .weight { showsPlates = false }
+    }
+
+    /// The gym changed under an open keyboard (a bar or plates chosen in the plate calculator):
+    /// step and load on the new equipment without touching what is typed.
+    func refresh(context: SetKeyboardContext) {
+        self.context = context
     }
 
     // MARK: - Keys
@@ -335,6 +341,26 @@ final class SetKeyboardPresenter {
     }
 
     // MARK: - Plates
+
+    /// The loading bar over the weight keypad: on a bar or plate-loaded machine, whatever the
+    /// weight, so the bar and plates being loaded are always in view.
+    var showsLoadingBar: Bool {
+        activeField == .weight && context.step.isPlateLoaded
+    }
+
+    /// The plates on one sleeve and the sum they make, for a weight the bar can carry; the bare
+    /// bar before a weight is entered. `nil` when the weight cannot be loaded (see `plateLoad`).
+    var plateLoading: PlateLoading? {
+        guard context.step.isPlateLoaded, let base = context.step.baseWeight else { return nil }
+        switch plateLoad {
+        case .loadable(let perSide)?:
+            return PlateLoading(perSide: perSide, base: base, sleeves: context.step.sleeves, unit: context.unit)
+        case .notLoadable?:
+            return nil
+        case nil:
+            return PlateLoading(perSide: [], base: base, sleeves: context.step.sleeves, unit: context.unit)
+        }
+    }
 
     /// The per-sleeve breakdown of the current weight, for plate-loaded equipment.
     var plateLoad: PlateCalculator.Result? {

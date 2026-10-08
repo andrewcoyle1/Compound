@@ -116,4 +116,36 @@ struct ExerciseStripTests {
         #expect(ActiveWorkout.entryEdge(from: nil, to: "a", order: order) == .trailing)
         #expect(ActiveWorkout.entryEdge(from: "c", to: "new", order: order) == .trailing)
     }
+
+    // MARK: - Reordering
+
+    /// A dropped block takes the place of the thumbnail it landed on, among the other blocks.
+    @Test("Test A Block Moves Later Or Earlier To The Place It Was Dropped On")
+    func testMovingABlock() {
+        let exercises = [exercise("a"), exercise("b"), exercise("c"), exercise("d")]
+
+        #expect(ActiveWorkout.movingBlock("a", toBlockIndex: 2, in: exercises).map(\.id) == ["b", "c", "a", "d"])
+        #expect(ActiveWorkout.movingBlock("d", toBlockIndex: 1, in: exercises).map(\.id) == ["a", "d", "b", "c"])
+        #expect(ActiveWorkout.movingBlock("a", toBlockIndex: 3, in: exercises).map(\.id) == ["b", "c", "d", "a"])
+    }
+
+    /// A superset is one block: it moves as one, and nothing lands between its members.
+    @Test("Test A Superset Moves As One Block And Is Never Split")
+    func testSupersetMovesAsOne() {
+        let exercises = [exercise("a"), exercise("b", group: "g"), exercise("c", group: "g"), exercise("d")]
+
+        #expect(ActiveWorkout.movingBlock("b", toBlockIndex: 2, in: exercises).map(\.id) == ["a", "d", "b", "c"])
+        #expect(ActiveWorkout.movingBlock("d", toBlockIndex: 1, in: exercises).map(\.id) == ["a", "d", "b", "c"])
+        #expect(ActiveWorkout.movingBlock("d", toBlockIndex: 0, in: exercises).map(\.id) == ["d", "a", "b", "c"])
+    }
+
+    @Test("Test Moving Nowhere, An Unknown Block Or Past The End Changes Nothing Or Clamps")
+    func testMovingNowhere() {
+        let exercises = [exercise("a"), exercise("b"), exercise("c")]
+
+        #expect(ActiveWorkout.movingBlock("b", toBlockIndex: 1, in: exercises).map(\.id) == ["a", "b", "c"])
+        #expect(ActiveWorkout.movingBlock("zz", toBlockIndex: 0, in: exercises).map(\.id) == ["a", "b", "c"])
+        #expect(ActiveWorkout.movingBlock("a", toBlockIndex: 9, in: exercises).map(\.id) == ["b", "c", "a"])
+        #expect(ActiveWorkout.movingBlock("c", toBlockIndex: -3, in: exercises).map(\.id) == ["c", "a", "b"])
+    }
 }

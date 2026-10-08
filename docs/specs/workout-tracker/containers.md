@@ -606,7 +606,10 @@ Notes:
    ignored in `LazyVStack`/`ScrollView`.
 5. **`onMove` exists only on `ForEach` inside `List`** (or `Form`). There is no reorder for a
    ScrollView strip without `draggable`/`dropDestination` and your own insertion logic, so
-   reorder belongs in a List: Up Next, a sheet, or the iPad column.
+   reorder belongs in a List: Up Next, a sheet, or the iPad column. (Done that way on 8 Oct
+   2026: the strip's thumbnails are `draggable` and every thumbnail plus Add is a
+   `dropDestination`; a dropped block takes the place of the thumbnail it landed on, the target
+   is ringed while hovered, and Move Earlier/Later sit in the menu and the actions rotor.)
 6. **`scrollPosition(id:)`** only matches the scroll target layout's *immediate* children
    (CalendarView's note). Wrap a block page in a `Section` or `Group` and it stops resolving.
    Two `scrollPosition` bindings to the same value (strip and pager) feed back while the user

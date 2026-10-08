@@ -495,6 +495,35 @@ struct ActiveWorkoutPresenterTests {
         #expect(presenter.workoutSession.exercises.map(\.index) == [1, 2, 3])
     }
 
+    /// Dragged along the strip: the block takes the place it was dropped on and the card stays.
+    @Test("Test Dragging A Strip Item Reorders The Workout And Keeps The Card")
+    func testStripDragKeepsTheCard() throws {
+        let presenter = try makeWorkout(["squat", "press", "row"])
+        let interactor = try #require(presenter.interactor as? WorkoutTrackerInteractorDouble)
+        #expect(presenter.currentExercise?.id == "squat")
+
+        presenter.onStripItemMoved("squat", toBlockIndex: 2)
+
+        #expect(presenter.workoutSession.exercises.map(\.id) == ["press", "row", "squat"])
+        #expect(presenter.workoutSession.exercises.map(\.index) == [1, 2, 3])
+        #expect(presenter.currentExercise?.id == "squat")
+        #expect(interactor.playedHaptics.last.map { "\($0)" } == "selection")
+        #expect(interactor.trackedEventNames.contains("WorkoutTracker_Exercise_Reordered"))
+    }
+
+    @Test("Test Dropping A Strip Item Where It Was Does Nothing")
+    func testStripDragToSamePlace() throws {
+        let presenter = try makeWorkout(["squat", "press", "row"])
+        let interactor = try #require(presenter.interactor as? WorkoutTrackerInteractorDouble)
+        let before = interactor.playedHaptics.count
+
+        presenter.onStripItemMoved("press", toBlockIndex: 1)
+
+        #expect(presenter.workoutSession.exercises.map(\.id) == ["squat", "press", "row"])
+        #expect(interactor.playedHaptics.count == before)
+        #expect(!interactor.trackedEventNames.contains("WorkoutTracker_Exercise_Reordered"))
+    }
+
     @Test("Test A Superset Is Put Off And Brought Forward Together")
     func testSupersetMovesTogether() throws {
         let presenter = try makeWorkout(["squat", "curl", "dip", "row"], superset: ["curl", "dip"])

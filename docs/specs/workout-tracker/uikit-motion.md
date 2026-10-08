@@ -689,6 +689,7 @@ Causes:
 | Skip / +15s | `.standard` | rest row out; capsule reverts / time jumps | – | instant / fade | – / `.selection` | – |
 | M4 card change | explicit `.standard` (T5: `.push(from:)`) | card replaced as a unit; Up Next/Completed rows move | strip and header bar | instant / opacity | `.selection` (user) / none (auto) | – |
 | M5 Do Later/Next | explicit `.standard` | List move | card (unless from the card) | instant | `.selection` | – |
+| M5 strip drop | `withReducedMotionAnimation(.standard)` | thumbnails move; target ringed while hovered | card | instant | `.selection` on drop | system lift and drag image |
 | M6 finish available | CTA-scoped `.emphasis` (ζ≈0.7) | label + one checkmark bounce | **List** | fade + reduced symbol effect | – (M1's) | – |
 | M6 finish tap | system push | summary pushes | – | system | `.success` at tap; `.error` on failure | – |
 | M7 keyboard | `.quick` | CTA out/in | – | opacity | – | – |

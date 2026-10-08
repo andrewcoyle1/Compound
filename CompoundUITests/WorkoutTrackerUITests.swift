@@ -401,6 +401,32 @@ final class WorkoutTrackerUITests: XCTestCase {
     }
 
     /// One step through a workout: read the note, end the rest, or log the set.
+    /// A thumbnail held and dragged along the strip lands where it was dropped; the card stays.
+    func testAStripThumbnailCanBeDragged() {
+        let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
+        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        acknowledgeNoteIfShown(app)
+        let strip = app.waitFor(app.scrollViews["WorkoutTracker.exerciseStrip"])
+        let thumbnails = strip.buttons.matching(NSPredicate(format: "label != 'Add Exercise'"))
+        XCTAssertGreaterThanOrEqual(thumbnails.count, 3, "the seeded workout has at least three blocks")
+        let first = thumbnails.element(boundBy: 0)
+        let third = thumbnails.element(boundBy: 2)
+        let firstName = first.label
+        let thirdName = third.label
+        XCTAssertLessThan(first.frame.minX, third.frame.minX)
+        attach(app, "0-before-drag")
+
+        first.press(forDuration: 1, thenDragTo: third, withVelocity: .slow, thenHoldForDuration: 0.5)
+
+        let moved = strip.buttons[firstName]
+        let target = strip.buttons[thirdName]
+        XCTAssertTrue(moved.waitForExistence(timeout: UITestApp.timeout))
+        XCTAssertGreaterThan(moved.frame.minX, target.frame.minX, "\(firstName) should now sit after \(thirdName)")
+        XCTAssertFalse(app.buttons["Do Next"].exists, "a drag, not the long-press menu")
+        XCTAssertTrue(logButton.label.hasPrefix("Log"), logButton.label)
+        attach(app, "1-after-drag")
+    }
+
     private func takeNextStep(_ app: XCUIApplication) {
         let gotIt = app.buttons["WorkoutTracker.progressionNote.acknowledge"]
         let skipRest = app.button("WorkoutTracker.skipRestButton")

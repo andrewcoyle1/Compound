@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension WorkoutTrackerPresenter {
 
@@ -47,10 +48,16 @@ struct ExerciseStrip: View {
     /// Up Next's reordering, on the strip's items while the strip stands in for that list.
     var onDoNext: (String) -> Void = { _ in }
     var onDoLater: (String) -> Void = { _ in }
+    /// A block dropped on another's place, or moved a step by its menu or an accessibility action:
+    /// its id and its new index among the other blocks.
+    var onMove: (String, Int) -> Void = { _, _ in }
     /// The strip's last item: Add Exercise, standing in for the list's row while the strip is up.
     var onAddExercise: () -> Void = {}
 
     @ScaledMetric(relativeTo: .body) private var side = ControlSize.thumbnail
+    /// The thumbnail a drag is held over, ringed as the drop's target; `Self.addTarget` for Add.
+    @State private var targetedId: String?
+    private static let addTarget = "add"
 
     private var currentId: String? { items.first(where: \.isCurrent)?.id }
 
@@ -62,25 +69,34 @@ struct ExerciseStrip: View {
                         Button {
                             onSelect(item.id)
                         } label: {
-                            thumbnail(item)
+                            thumbnail(item, targeted: targetedId == item.id)
                         }
                         .buttonStyle(.plain)
-                        .contextMenu {
-                            if !item.isCurrent && !item.isComplete {
-                                Button { onDoNext(item.id) } label: { Label("Do Next", systemImage: Symbol.doNext) }
-                                Button { onDoLater(item.id) } label: { Label("Do Later", systemImage: Symbol.doLater) }
-                            }
+                        .contextMenu { stripMenu(item) }
+                        // Hold still for the menu, move to drag: the system shares one long press.
+                        .draggable(StripDragItem(blockId: item.id))
+                        .dropDestination(for: StripDragItem.self) { dropped, _ in
+                            drop(dropped, at: items.firstIndex { $0.id == item.id })
+                        } isTargeted: { targeted in
+                            target(item.id, targeted)
                         }
                         .id(item.id)
                         .accessibilityLabel(item.names.formatted(.list(type: .and)))
                         .accessibilityValue(accessibilityValue(item))
                         .accessibilityAddTraits(item.isCurrent ? .isSelected : [])
                         .accessibilityHint("Opens this exercise")
+                        .accessibilityActions { stripActions(item) }
                     }
                     Button(action: onAddExercise) {
-                        addThumbnail
+                        addThumbnail(targeted: targetedId == Self.addTarget)
                     }
                     .buttonStyle(.plain)
+                    // Dropped past the last thumbnail: the block goes to the end.
+                    .dropDestination(for: StripDragItem.self) { dropped, _ in
+                        drop(dropped, at: items.count - 1)
+                    } isTargeted: { targeted in
+                        target(Self.addTarget, targeted)
+                    }
                     .accessibilityLabel("Add Exercise")
                     .accessibilityIdentifier("WorkoutTracker.strip.addExercise")
                 }
@@ -100,9 +116,69 @@ struct ExerciseStrip: View {
         .accessibilityIdentifier("WorkoutTracker.exerciseStrip")
     }
 
+    // MARK: - Reordering
+
+    /// The dropped block takes the place of the thumbnail it landed on (`index` among the other
+    /// blocks), as a row dropped in a list does. True when a block landed; the system springs
+    /// anything else back.
+    private func drop(_ dropped: [StripDragItem], at index: Int?) -> Bool {
+        targetedId = nil
+        guard let id = dropped.first?.blockId, let index else { return false }
+        withReducedMotionAnimation(.standard) { onMove(id, index) }
+        return true
+    }
+
+    private func target(_ id: String, _ targeted: Bool) {
+        if targeted {
+            targetedId = id
+        } else if targetedId == id {
+            targetedId = nil
+        }
+    }
+
+    private func position(of item: ActiveWorkout.StripItem) -> Int? {
+        items.firstIndex { $0.id == item.id }
+    }
+
+    /// Do Next and Do Later as before, then a step either way: the visible equivalent of the
+    /// drag, and what Switch Control and Voice Control reach.
+    @ViewBuilder
+    private func stripMenu(_ item: ActiveWorkout.StripItem) -> some View {
+        if !item.isCurrent && !item.isComplete {
+            Button { onDoNext(item.id) } label: { Label("Do Next", systemImage: Symbol.doNext) }
+            Button { onDoLater(item.id) } label: { Label("Do Later", systemImage: Symbol.doLater) }
+        }
+        if let index = position(of: item), index > 0 {
+            Button { step(item.id, to: index - 1) } label: { Label("Move Earlier", systemImage: Symbol.moveEarlier) }
+        }
+        if let index = position(of: item), index < items.count - 1 {
+            Button { step(item.id, to: index + 1) } label: { Label("Move Later", systemImage: Symbol.moveLater) }
+        }
+    }
+
+    /// The same four for VoiceOver's actions rotor, which takes no symbols.
+    @ViewBuilder
+    private func stripActions(_ item: ActiveWorkout.StripItem) -> some View {
+        if !item.isCurrent && !item.isComplete {
+            Button("Do Next") { onDoNext(item.id) }
+            Button("Do Later") { onDoLater(item.id) }
+        }
+        if let index = position(of: item), index > 0 {
+            Button("Move Earlier") { step(item.id, to: index - 1) }
+        }
+        if let index = position(of: item), index < items.count - 1 {
+            Button("Move Later") { step(item.id, to: index + 1) }
+        }
+    }
+
+    private func step(_ id: String, to index: Int) {
+        withReducedMotionAnimation(.standard) { onMove(id, index) }
+    }
+
     /// A superset's members sit side by side under one ring and one progress bar: the strip
-    /// shows it as the one block it is on the card.
-    private func thumbnail(_ item: ActiveWorkout.StripItem) -> some View {
+    /// shows it as the one block it is on the card. Ringed when current, and while a drag is
+    /// held over it as the place the block would take.
+    private func thumbnail(_ item: ActiveWorkout.StripItem, targeted: Bool) -> some View {
         let count = max(item.imageNames.count, 1)
         let width = side * CGFloat(count) + Spacing.xxs * CGFloat(count - 1)
         return VStack(spacing: Spacing.xs) {
@@ -115,7 +191,7 @@ struct ExerciseStrip: View {
             .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
             // The current block is ringed as well as tinted, so it is not marked by colour alone.
             .overlay {
-                if item.isCurrent {
+                if item.isCurrent || targeted {
                     RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
                         .strokeBorder(.tint, lineWidth: 2)
                 }
@@ -136,8 +212,9 @@ struct ExerciseStrip: View {
         .contentShape(.rect)
     }
 
-    /// A plus in a thumbnail's frame, with the bar's space left under it so it lines up.
-    private var addThumbnail: some View {
+    /// A plus in a thumbnail's frame, with the bar's space left under it so it lines up. Ringed
+    /// while a drag is held over it: the block would go to the end.
+    private func addThumbnail(targeted: Bool) -> some View {
         VStack(spacing: Spacing.xs) {
             Image(systemName: Symbol.add)
                 .iconSize(.medium)
@@ -145,6 +222,12 @@ struct ExerciseStrip: View {
                 .frame(width: side, height: side)
                 .background(Color.surface)
                 .clipShape(.rect(cornerRadius: Radius.s, style: .continuous))
+                .overlay {
+                    if targeted {
+                        RoundedRectangle(cornerRadius: Radius.s, style: .continuous)
+                            .strokeBorder(.tint, lineWidth: 2)
+                    }
+                }
             ProgressView(value: 0)
                 .frame(width: side)
                 .hidden()
@@ -172,6 +255,22 @@ struct ExerciseStrip: View {
         let sets = String(localized: "\(item.doneWorkingSets) of \(item.totalWorkingSets) sets")
         return item.isCurrent ? String(localized: "\(sets), current") : sets
     }
+}
+
+// MARK: - The drag
+
+/// What a thumbnail carries while dragged: its block. An app-owned type, so no text field or
+/// other app accepts it and no foreign drag rings the strip.
+private struct StripDragItem: Codable, Sendable, Transferable {
+    let blockId: String
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .stripBlock)
+    }
+}
+
+private extension UTType {
+    static let stripBlock = UTType(exportedAs: "com.andrewcoyle.compound.strip-block")
 }
 
 // MARK: - The card swap

@@ -181,4 +181,14 @@ struct WorkoutTrackerAnnouncementTests {
         // The card's exercise is not in Up Next and does not move.
         #expect(presenter.workoutSession.exercises.first?.id == "bench")
     }
+
+    @Test func movingAStripItemSaysWhereItWent() throws {
+        let (presenter, _) = try makeScreen(["bench", "row", "curl", "dip"])
+        let spy = TrackerAnnouncementSpy()
+
+        spy.listen { presenter.onStripItemMoved("curl", toBlockIndex: 0) }
+
+        #expect(presenter.workoutSession.exercises.map(\.id) == ["curl", "bench", "row", "dip"])
+        #expect(spy.texts == ["Position 1 of 4"])
+    }
 }

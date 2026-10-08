@@ -86,13 +86,34 @@ extension WorkoutTrackerPresenter {
         return workoutSession.exercises.filter { $0.supersetGroupId == groupId }
     }
 
+    /// A thumbnail dropped on another's place on the strip, or moved a step by Move Earlier/Later
+    /// in its menu or VoiceOver's actions: the block goes to `index` among the other blocks, as one.
+    /// The card stays on the exercise it showed; the new place is announced, as the thumbnail
+    /// moves out from under VoiceOver's focus.
+    func onStripItemMoved(_ blockId: String, toBlockIndex index: Int) {
+        let updated = ActiveWorkout.movingBlock(blockId, toBlockIndex: index, in: workoutSession.exercises)
+        guard updated.map(\.id) != workoutSession.exercises.map(\.id) else { return }
+        let from = blockOrder.firstIndex { $0.first == blockId } ?? 0
+        reorder(to: updated)
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.exerciseReordered(fromBlock: from, toBlock: index))
+        refreshLiveActivity()
+        let position = (blockOrder.firstIndex { $0.first == blockId } ?? index) + 1
+        announce(TrackerAnnouncement(text: String(localized: "Position \(position) of \(blockOrder.count)")))
+    }
+
     /// Puts `group` at `index` among the other exercises, keeping the card where it was.
     private func move(_ group: [WorkoutExerciseModel], toIndex index: Int) {
         let ids = Set(group.map(\.id))
         var updated = workoutSession.exercises.filter { !ids.contains($0.id) }
         updated.insert(contentsOf: group, at: min(index, updated.count))
+        reorder(to: updated)
+    }
+
+    /// Applies a new order and puts the card back on the exercise it showed.
+    private func reorder(to updated: [WorkoutExerciseModel]) {
         let card = currentExercise?.id
-        applyReorderedExercises(updated, movedFrom: nil, movedTo: index)
+        applyReorderedExercises(updated, movedFrom: nil, movedTo: 0)
         if let card, let cardIndex = updated.firstIndex(where: { $0.id == card }) {
             expandedExerciseId = card
             currentExerciseIndex = cardIndex

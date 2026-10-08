@@ -121,7 +121,7 @@ extension WorkoutTrackerPresenter {
         announce(TrackerAnnouncement(text: String(localized: "Rest over"), priority: .high))
     }
 
-    private func announce(_ announcement: TrackerAnnouncement) {
+    func announce(_ announcement: TrackerAnnouncement) {
         TrackerAnnouncer.post(announcement)
     }
 

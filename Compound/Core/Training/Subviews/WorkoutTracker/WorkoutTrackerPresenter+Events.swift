@@ -65,6 +65,7 @@ extension WorkoutTrackerPresenter {
         case workoutResumed
         case exerciseSelected
         case exerciseMoved(later: Bool)
+        case exerciseReordered(fromBlock: Int, toBlock: Int)
         case progressionNoteAcknowledged
 
         var eventName: String {
@@ -89,6 +90,7 @@ extension WorkoutTrackerPresenter {
             case .workoutResumed:           return "WorkoutTracker_Workout_Resumed"
             case .exerciseSelected:         return "WorkoutTracker_Exercise_Selected"
             case .exerciseMoved:            return "WorkoutTracker_Exercise_Moved"
+            case .exerciseReordered:        return "WorkoutTracker_Exercise_Reordered"
             case .progressionNoteAcknowledged: return "WorkoutTracker_ProgressionNote_Acknowledged"
             }
         }
@@ -120,6 +122,8 @@ extension WorkoutTrackerPresenter {
                 return ["seconds": seconds]
             case .exerciseMoved(let later):
                 return ["to": later ? "later" : "next"]
+            case .exerciseReordered(let fromBlock, let toBlock):
+                return ["from": fromBlock, "to": toBlock]
             case .restSkipped, .workoutPaused, .workoutResumed, .exerciseSelected, .progressionNoteAcknowledged:
                 return nil
             }

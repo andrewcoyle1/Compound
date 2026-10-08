@@ -16296,6 +16296,26 @@
         }
       }
     },
+    "Move Earlier" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover antes"
+          }
+        }
+      }
+    },
+    "Move Later" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mover después"
+          }
+        }
+      }
+    },
     "Move Up" : {
       "localizations" : {
         "es" : {

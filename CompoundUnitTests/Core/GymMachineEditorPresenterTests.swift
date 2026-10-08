@@ -294,7 +294,28 @@ struct GymEditPlateLoadedMachinePresenterTests {
     func testTheScreenOpensOnTheMachinesUnit() {
         let (presenter, _) = makeScreen(unit: .pounds)
 
-        #expect(presenter.selectedUnit == .pounds)
+        #expect(presenter.plateLoadedMachine.unit == .pounds)
+    }
+
+    /// The unit picker writes the machine's unit; it used to change only the screen's copy, so a
+    /// 25 lb sled stayed a 25 kg one.
+    @Test("Test Choosing A Unit Reaches The Gym Profile")
+    func testChoosingAUnitReachesTheGymProfile() {
+        let (presenter, box) = makeScreen(unit: .kilograms)
+
+        presenter.plateLoadedMachine.unit = .pounds
+
+        #expect(box.value.unit == .pounds)
+    }
+
+    @Test("Test Choosing One Side Reaches The Gym Profile")
+    func testChoosingOneSideReachesTheGymProfile() {
+        let (presenter, box) = makeScreen()
+        #expect(presenter.plateLoadedMachine.sleeves == 2)
+
+        presenter.plateLoadedMachine.sleeves = 1
+
+        #expect(box.value.sleeves == 1)
     }
 
     /// The presenter reads and writes the gym profile's machine directly rather than a copy, so an

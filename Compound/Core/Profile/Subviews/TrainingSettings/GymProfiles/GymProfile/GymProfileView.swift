@@ -384,7 +384,9 @@ private struct GymProfileMachineSectionsView: View {
                 GymEquipmentRow(
                     name: plateLoadedMachines.name,
                     imageName: plateLoadedMachines.imageName,
-                    detail: GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit),
+                    detail: plateLoadedMachines.sleeves == 1
+                        ? String(localized: "Base \(GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit)) · one side")
+                        : GymEquipmentFormat.weight(plateLoadedMachines.baseWeight, plateLoadedMachines.unit),
                     editTitle: "Edit Base Weight",
                     isActive: $plateLoadedMachines.isActive
                 ) {

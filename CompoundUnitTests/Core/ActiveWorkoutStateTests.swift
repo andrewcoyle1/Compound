@@ -316,7 +316,7 @@ struct ActiveWorkoutStateTests {
 
     @Test("Test A Load Rounds To The Nearest Total The Plates Make")
     func testNearestLoadable() {
-        let plates = [1.25, 2.5, 5, 10, 20]
+        let plates = [1.25, 2.5, 5, 10, 20].map { Plate(weight: $0) }
         #expect(PlateCalculator.nearestLoadable(total: 100, bar: 20, plates: plates) == 100)
         #expect(PlateCalculator.nearestLoadable(total: 101, bar: 20, plates: plates) == 100)
         #expect(PlateCalculator.nearestLoadable(total: 102, bar: 20, plates: plates) == 102.5)
@@ -331,7 +331,7 @@ struct ActiveWorkoutStateTests {
     @Test("Test Prescribed Barbell Loads Round To The Plates")
     func testRoundingRuleUsesPlates() {
         let rule = WeightRoundingRule(
-            step: WeightStep(kind: .increment(5, min: 20, max: nil), chip: nil, baseWeight: 20, plates: [2.5, 5, 10, 20]),
+            step: WeightStep(kind: .increment(5, min: 20, max: nil), chip: nil, baseWeight: 20, plates: [2.5, 5, 10, 20].map { Plate(weight: $0) }),
             unit: .kilograms,
             preferredUnit: .kilograms
         )
@@ -347,7 +347,7 @@ struct ActiveWorkoutStateTests {
     @Test("Test Pound Plates Round In Pounds")
     func testRoundingRuleInPounds() {
         let rule = WeightRoundingRule(
-            step: WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [2.5, 5, 10, 25, 45]),
+            step: WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [2.5, 5, 10, 25, 45].map { Plate(weight: $0) }),
             unit: .pounds,
             preferredUnit: .pounds
         )
@@ -361,7 +361,7 @@ struct ActiveWorkoutStateTests {
         GymProfileModel(
             authorId: "u",
             freeWeights: [FreeWeights(
-                id: "weight_plates", name: "Plates", needsColour: true,
+                id: "weight_plates", name: "Plates", needsColour: true, isPlates: true,
                 range: plates.map { FreeWeightsAvailable(id: UUID().uuidString, availableWeights: $0, unit: .kilograms, isActive: true) },
                 isActive: true
             )],

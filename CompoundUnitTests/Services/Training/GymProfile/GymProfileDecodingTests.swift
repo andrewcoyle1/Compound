@@ -183,6 +183,53 @@ struct GymProfileDecodingTests {
         #expect(profile.pinLoadedMachines.map(\.isActive) == [true] + Array(repeating: false, count: catalogue.count - 1))
     }
 
+    // MARK: - Sleeves, plates and collars
+
+    /// A machine saved before sleeves existed takes the catalogue's figure for its type, so the
+    /// v1 fixture's T-bar loads on one post; a machine the catalogue does not know takes two.
+    @Test("Test A Stored Machine Without Sleeves Takes The Catalogues")
+    func testSleevesDefaultFromTheCatalogue() throws {
+        let fixture = try decode(fixtureProfile("mock"))
+        #expect(fixture.plateLoadedMachines.first { $0.id == "chest-supported_t-bar_row_machine" }?.sleeves == 1)
+        #expect(fixture.plateLoadedMachines.first { $0.id == "hack_squat_machine" }?.sleeves == 2)
+
+        let profile = try decode(#"""
+        {"id": "gym-1", "author_id": "author-1", "plate_loaded_machines": [
+            {"id": "standing_t-bar_row_machine_without_chest_support", "name": "T-Bar", "baseWeight": 18, "unit": "kilograms", "isActive": true},
+            {"id": "custom_press", "name": "Press", "baseWeight": 10, "unit": "kilograms", "isActive": true},
+            {"id": "custom_post", "name": "Post", "baseWeight": 10, "unit": "kilograms", "sleeves": 1, "isActive": true}
+        ]}
+        """#)
+        let sleeves = Dictionary(profile.plateLoadedMachines.map { ($0.id, $0.sleeves) }, uniquingKeysWith: { first, _ in first })
+        #expect(sleeves["standing_t-bar_row_machine_without_chest_support"] == 1)
+        #expect(sleeves["custom_press"] == 2)
+        #expect(sleeves["custom_post"] == 1)
+    }
+
+    /// Before the flag, plates were the items whose id ends in "plates"; counts and collars are
+    /// new, so stored entries read as unlimited and collar-less.
+    @Test("Test Plates Counts And Collars Decode Without Their Keys")
+    func testPlatesCountsAndCollarsDefaults() throws {
+        let profile = try decode(#"""
+        {"id": "gym-1", "author_id": "author-1",
+         "free_weights": [
+            {"id": "weight_plates", "name": "Plates", "isActive": true, "range": [{"id": "p1", "availableWeights": 20, "isActive": true}]},
+            {"id": "dumbbells", "name": "Dumbbells", "isActive": true, "range": []},
+            {"id": "change_discs", "name": "Discs", "isPlates": true, "isActive": true,
+             "range": [{"id": "d1", "availableWeights": 0.5, "isActive": true, "count": 4}]}
+         ],
+         "loadable_bars": [{"id": "barbell", "name": "Barbell", "isActive": true, "baseWeights": []}]}
+        """#)
+
+        let items = Dictionary(profile.freeWeights.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        #expect(items["weight_plates"]?.isPlates == true)
+        #expect(items["dumbbells"]?.isPlates == false)
+        #expect(items["change_discs"]?.isPlates == true)
+        #expect(items["weight_plates"]?.range.first?.count == nil)
+        #expect(items["change_discs"]?.range.first?.count == 4)
+        #expect(profile.loadableBars.first { $0.id == "barbell" }?.collarWeight == 0)
+    }
+
     // MARK: - Equipment index
 
     @Test("Test The Equipment Index Keeps The First Of Two Items With The Same Ref")

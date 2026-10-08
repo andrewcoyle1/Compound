@@ -281,7 +281,7 @@ struct SetKeyboardPresenterTests {
     @Test func platesForTheCurrentWeight() {
         let box = set(weightKg: 100)
         let keyboard = SetKeyboardPresenter()
-        let bar = WeightStep(kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20, plates: [1.25, 2.5, 5, 10, 15, 20, 25])
+        let bar = WeightStep(kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20, plates: [1.25, 2.5, 5, 10, 15, 20, 25].map { Plate(weight: $0) })
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bar))
         #expect(keyboard.plateLoad == .loadable(perSide: [25, 15]))
     }
@@ -546,7 +546,7 @@ struct SetTrackerRowKeyboardTests {
         // Read the gym's own bar and heaviest plate, so the figures hold whatever its defaults are.
         let step = WeightStepper.steps(for: row.exercise.value, profile: row.interactor.favouriteGymProfile, unit: .kilograms)
         let bar = try #require(step.baseWeight)
-        let plate = try #require(step.plates.max())
+        let plate = try #require(step.plates.map(\.weight).max())
         let loadableKg = bar + 2 * plate
 
         set.weightKg = loadableKg

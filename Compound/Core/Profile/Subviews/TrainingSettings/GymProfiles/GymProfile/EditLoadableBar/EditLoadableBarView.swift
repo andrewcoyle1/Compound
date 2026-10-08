@@ -8,6 +8,7 @@ struct EditLoadableBarView: View {
         @Bindable var presenter = presenter
         List {
             weightsList
+            collarSection
         }
         .navigationTitle(presenter.loadableBar.name)
         .navigationBarTitleDisplayMode(.inline)
@@ -63,6 +64,21 @@ struct EditLoadableBarView: View {
         }
     }
     
+    private var collarSection: some View {
+        Section {
+            NumberField(
+                "0",
+                value: $presenter.collarWeight,
+                unit: presenter.selectedUnit.abbreviation,
+                label: String(localized: "Each collar")
+            )
+        } header: {
+            Text("Collars")
+        } footer: {
+            Text("Two collars are added to the bar's weight.")
+        }
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {

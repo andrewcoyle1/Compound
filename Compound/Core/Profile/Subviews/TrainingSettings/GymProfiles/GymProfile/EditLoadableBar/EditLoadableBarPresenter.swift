@@ -31,6 +31,19 @@ class EditLoadableBarPresenter {
         interactor.trackEvent(event: Event.onDisappear)
     }
 
+    /// One collar's weight in the unit being viewed, empty for none. Stored in kilograms, so a
+    /// figure typed on the pounds tab reads back the same there.
+    var collarWeight: Double? {
+        get {
+            guard loadableBar.collarWeight > 0 else { return nil }
+            let shown = UnitConversion.convertWeight(loadableBar.collarWeight, from: .kilograms, into: selectedUnit)
+            return (shown * 1000).rounded() / 1000
+        }
+        set {
+            loadableBar.collarWeight = max(UnitConversion.convertWeightToKg(newValue ?? 0, from: selectedUnit), 0)
+        }
+    }
+
     func filteredWeightIDs(for unit: ExerciseWeightUnit) -> [String] {
         loadableBar.baseWeights
             .filter { $0.unit == unit }

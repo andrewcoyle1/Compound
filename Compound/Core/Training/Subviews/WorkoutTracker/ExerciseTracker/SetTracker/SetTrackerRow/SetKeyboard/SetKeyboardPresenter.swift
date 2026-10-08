@@ -314,12 +314,12 @@ final class SetKeyboardPresenter {
 
     // MARK: - Plates
 
-    /// The per-side breakdown of the current weight, for plate-loaded equipment.
+    /// The per-sleeve breakdown of the current weight, for plate-loaded equipment.
     var plateLoad: PlateCalculator.Result? {
         guard context.step.isPlateLoaded, let bar = context.step.baseWeight,
               let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
-        return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates)
+        return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates, sleeves: context.step.sleeves)
     }
 
     // MARK: - VoiceOver

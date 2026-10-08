@@ -191,3 +191,20 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   `roundWeightToPreferredUnit`, `PlateCalculator.nearestLoadableKg` and `SetTrackerPresenter.nearest`
   are gone. Intended changes: inactive ranges are ignored, a machine missing or off no longer borrows
   the catalogue's, racks and fixed bars round to a weight the gym has. New `WeightRoundingRuleTests`.
+- 8 Oct 2026: **G4 landed** (`wp-g4-plates`). `PlateLoadedMachine.sleeves` (stored machines without
+  it take the catalogue's figure, else 2; clamped to 1–2). One sleeve in the catalogue: both T-bar
+  rows (one post), both belt squats (one horn or pin under the belt), both reverse hypers (one
+  pendulum post), the plate-loaded single cable (one carriage pin), the sled (plates need not
+  balance across its posts, so one plate is a real change) and both glute kickbacks (one horn on
+  a one-leg lever). The hip thrusts stay at 2: their lever crosses the hips with a horn each side,
+  loaded evenly. `FreeWeights.isPlates` (missing → the old id suffix rule) and
+  `FreeWeightsAvailable.count` (nil = unlimited). `PlateCalculator` takes `[Plate]` (weight,
+  per-sleeve cap = count / sleeves, floored) and `sleeves`; greedy respects caps, so two 20s on a
+  20 kg bar make 100 kg as 20 + 15 + 5 a side, and with nothing else it is not loadable (nearest
+  60). One weight from iron and bumper items adds counts; nil anywhere is unlimited; a plate too
+  few to go on every sleeve is left out. `LoadableBars.collarWeight` (kg per collar, so one figure
+  serves both units): base = bar + 2 × collar, chip "Bar 20 kg + collars". `WeightStep` carries
+  `plates: [Plate]` and `sleeves`; the set row and keyboard read "Plates: …" on one sleeve.
+  Editors: sleeves picker and the unit fix on the plate-loaded editor, a plate count on the free
+  weight edit and add screens, a collar field on the loadable bar editor; gym rows read
+  "Base 18 kg · one side". Plate-loaded `mocks` are the catalogue (Part2 deleted).

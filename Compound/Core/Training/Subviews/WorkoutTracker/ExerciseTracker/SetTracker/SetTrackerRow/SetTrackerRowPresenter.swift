@@ -297,21 +297,19 @@ extension SetTrackerRowPresenter {
         )
     }
 
-    /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar, from the gym's bar and
-    /// plates. `nil` for anything not plate-loaded or a set with no weight yet.
+    /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar ("Plates: …" on a
+    /// single-sleeve machine), from the gym's bar and plates. `nil` for anything not plate-loaded or a set with no weight yet.
     func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
         guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
         let unit = getUnitPreference(for: exercise).weightUnit
         let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
         guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
         let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
-        switch PlateCalculator.load(total: total, bar: bar, plates: step.plates) {
+        switch PlateCalculator.load(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves) {
         case .loadable(let perSide):
-            guard !perSide.isEmpty else { return PlateSummary(text: String(localized: "Empty bar"), nearestKg: nil) }
-            let text = String(localized: "Per side: ") + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit.abbreviation)"
-            return PlateSummary(text: text, nearestKg: nil)
+            return PlateSummary(text: step.plateText(perSide, unit: unit), nearestKg: nil)
         case .notLoadable:
-            let nearest = PlateCalculator.nearestLoadable(total: total, bar: bar, plates: step.plates)
+            let nearest = PlateCalculator.nearestLoadable(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves)
             return PlateSummary(
                 text: String(localized: "Not loadable. Use \(WeightStepper.format(nearest)) \(unit.abbreviation)"),
                 nearestKg: UnitConversion.convertWeightToKg(nearest, from: unit)

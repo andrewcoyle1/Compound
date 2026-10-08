@@ -14,6 +14,9 @@ struct LoadableBars: Identifiable, Codable {
     var imageName: String?
     var defaultBaseWeightId: String?
     var baseWeights: [LoadableBarsBaseWeight]
+    /// What one collar weighs, in kilograms whatever the bar's unit, so one figure serves a kg and
+    /// a lb bar alike. Collars are always on: a loaded bar carries two.
+    var collarWeight: Double
     
     var defaultBaseWeight: LoadableBarsBaseWeight? {
         baseWeights.first(where: { $0.id == self.defaultBaseWeightId })
@@ -27,6 +30,7 @@ struct LoadableBars: Identifiable, Codable {
         imageName: String? = nil,
         description: String?,
         baseWeights: [LoadableBarsBaseWeight],
+        collarWeight: Double = 0,
         isActive: Bool
     ) {
         self.id = id
@@ -35,6 +39,7 @@ struct LoadableBars: Identifiable, Codable {
         self.description = description
         self.defaultBaseWeightId = baseWeights.first?.id
         self.baseWeights = baseWeights
+        self.collarWeight = collarWeight
         self.isActive = isActive
 
     }
@@ -447,7 +452,7 @@ extension LoadableBars {
     /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
     /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
     enum CodingKeys: String, CodingKey {
-        case id, name, imageName, description, defaultBaseWeightId, baseWeights, isActive
+        case id, name, imageName, description, defaultBaseWeightId, baseWeights, collarWeight, isActive
     }
 
     init(from decoder: Decoder) throws {
@@ -458,6 +463,7 @@ extension LoadableBars {
         description = try container.decodeIfPresent(String.self, forKey: .description)
         defaultBaseWeightId = try container.decodeIfPresent(String.self, forKey: .defaultBaseWeightId)
         baseWeights = container.decodeLossyArray(LoadableBarsBaseWeight.self, forKey: .baseWeights) ?? []
+        collarWeight = try container.decodeIfPresent(Double.self, forKey: .collarWeight) ?? 0
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
     }
 }

@@ -6015,6 +6015,16 @@
         }
       }
     },
+    "Bar %@ %@ + collars" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra %1$@ %2$@ + collarines"
+          }
+        }
+      }
+    },
     "Bar shows what you ate, the tick is your target, and a caret means you went over." : {
       "localizations" : {
         "es" : {
@@ -6052,6 +6062,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de código de barras"
+          }
+        }
+      }
+    },
+    "Base %@ · one side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base %@ · un lado"
           }
         }
       }
@@ -7604,6 +7624,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Código"
+          }
+        }
+      }
+    },
+    "Collars" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collarines"
           }
         }
       }
@@ -10382,6 +10412,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada descenso"
+          }
+        }
+      }
+    },
+    "Each collar" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada collarín"
           }
         }
       }
@@ -13342,6 +13382,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Cómo va este bloque?"
+          }
+        }
+      }
+    },
+    "How many" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuántos"
           }
         }
       }
@@ -17274,6 +17324,16 @@
         }
       }
     },
+    "No limit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin límite"
+          }
+        }
+      }
+    },
     "No local active workout available" : {
       "localizations" : {
         "es" : {
@@ -18319,6 +18379,16 @@
         }
       }
     },
+    "One side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un lado"
+          }
+        }
+      }
+    },
     "One subscription for training, nutrition and progress." : {
       "localizations" : {
         "es" : {
@@ -19161,6 +19231,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discos"
+          }
+        }
+      }
+    },
+    "Plates go on" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los discos van en"
+          }
+        }
+      }
+    },
+    "Plates: " : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discos: "
           }
         }
       }
@@ -26281,6 +26371,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tutoriales"
+          }
+        }
+      }
+    },
+    "Two collars are added to the bar's weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se suman dos collarines al peso de la barra."
+          }
+        }
+      }
+    },
+    "Two sides" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dos lados"
           }
         }
       }

@@ -28,7 +28,7 @@ struct WeightRoundingRuleTests {
 
     private static func rack(_ weights: [Double], id: String = "dumbbells") -> FreeWeights {
         FreeWeights(
-            id: id, name: id, needsColour: false,
+            id: id, name: id, needsColour: false, isPlates: id == "weight_plates",
             range: weights.map { FreeWeightsAvailable(id: UUID().uuidString, availableWeights: $0, unit: .kilograms, isActive: true) },
             isActive: true
         )
@@ -98,6 +98,20 @@ struct WeightRoundingRuleTests {
 
     /// A switched-off range is not on the machine: 23 kg goes to the active 2.5 kg grid, not the
     /// inactive 10 kg one.
+    /// A T-bar row loads on one post: rounding lands on one plate more or less, and progression
+    /// can move by a single 1.25 kg plate.
+    @Test func aSingleSleeveMachineRoundsToOnePlate() {
+        var gym = Self.gym(freeWeights: [Self.rack([1.25, 2.5, 5, 10, 20], id: "weight_plates")])
+        gym.plateLoadedMachines = [
+            PlateLoadedMachine(id: "t_bar", name: "T-Bar", baseWeight: 18, unit: .kilograms, sleeves: 1, isActive: true)
+        ]
+        let rule = rule([EquipmentRef(kind: .plateLoadedMachine, id: "t_bar")], gym: gym)
+
+        #expect(rule.round(20.6) == 20.5)
+        #expect(rule.minimumIncrementKg == 1.25)
+        #expect(rule.forProgression.minimumIncrementKg == 1.25)
+    }
+
     @Test func anInactiveRangeIsIgnored() {
         let gym = Self.gym(cables: [Self.cable(ranges: [
             Self.range("off", min: 0, max: 100, increment: 10, isActive: false),

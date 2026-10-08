@@ -27,7 +27,9 @@ struct WeightStep: Equatable {
     /// What the bar or sled weighs empty, for the plate calculator.
     let baseWeight: Double?
     /// The plates that can go on, ascending. Empty when the equipment is not plate-loaded.
-    let plates: [Double]
+    let plates: [Plate]
+    /// How many sleeves the plates share: 2 on a bar, 1 on a T-bar row.
+    var sleeves = 2
     /// The weight is assistance (`ExerciseModel.isAssisted`), stored negative. An empty field then
     /// steps from zero, and the keyboard offers a ± key.
     var isAssisted = false
@@ -76,7 +78,7 @@ struct WeightStep: Equatable {
     /// carry no weight, so `value` is returned as it was.
     func nearest(to value: Double) -> Double {
         if isPlateLoaded, let baseWeight {
-            return PlateCalculator.nearestLoadable(total: value, bar: baseWeight, plates: plates)
+            return PlateCalculator.nearestLoadable(total: value, bar: baseWeight, plates: plates, sleeves: sleeves)
         }
         switch kind {
         case let .increment(step, min, max):
@@ -88,8 +90,8 @@ struct WeightStep: Equatable {
         }
     }
 
-    /// The smallest change this equipment can make: the grid's step (a pair of the smallest plates
-    /// on a bar), or the smallest gap between listed weights. `nil` for bands or a single weight.
+    /// The smallest change this equipment can make: the grid's step (one of the smallest plates on
+    /// each sleeve), or the smallest gap between listed weights. `nil` for bands or a single weight.
     var smallestStep: Double? {
         switch kind {
         case .increment(let step, _, _):
@@ -117,6 +119,14 @@ struct WeightStep: Equatable {
             return self
         }
         return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true, constrainsWeight: constrainsWeight)
+    }
+
+    /// "Per side: 20 + 10 + 2.5 kg" for a breakdown from `PlateCalculator`; "Plates: …" when
+    /// there is one sleeve, so there is no other side.
+    func plateText(_ perSide: [Double], unit: ExerciseWeightUnit) -> String {
+        guard !perSide.isEmpty else { return String(localized: "Empty bar") }
+        let label = sleeves == 1 ? String(localized: "Plates: ") : String(localized: "Per side: ")
+        return label + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit.abbreviation)"
     }
 
     /// The band after (or before) `index`, wrapping round: bands cycle rather than stop.
@@ -166,11 +176,18 @@ enum WeightStepper {
         case .loadableBar:
             guard let bar = profile.loadableBars.first(where: { $0.id == id && $0.isActive }),
                   let base = bar.defaultBaseWeight ?? bar.baseWeights.first(where: \.isActive) else { return nil }
-            return plateLoaded(base: convert(base.baseWeight, from: base.unit, to: unit), profile: profile, unit: unit)
+            let barWeight = convert(base.baseWeight, from: base.unit, to: unit)
+            let collars = convert(bar.collarWeight * 2, from: .kilograms, to: unit)
+            let chip = collars > 0
+                ? String(localized: "Bar \(format(barWeight)) \(unit.abbreviation) + collars")
+                : String(localized: "Bar \(format(barWeight)) \(unit.abbreviation)")
+            return plateLoaded(base: ((barWeight + collars) * 1000).rounded() / 1000, chip: chip, sleeves: 2, profile: profile, unit: unit)
 
         case .plateLoadedMachine:
             guard let machine = profile.plateLoadedMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
-            return plateLoaded(base: convert(machine.baseWeight, from: machine.unit, to: unit), profile: profile, unit: unit)
+            let base = convert(machine.baseWeight, from: machine.unit, to: unit)
+            let chip = String(localized: "Bar \(format(base)) \(unit.abbreviation)")
+            return plateLoaded(base: base, chip: chip, sleeves: machine.sleeves, profile: profile, unit: unit)
 
         case .cableMachine:
             guard let machine = profile.cableMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
@@ -209,26 +226,39 @@ enum WeightStepper {
         }
     }
 
-    /// A bar is loaded symmetrically, so the smallest change is one of the smallest plates a side.
-    private static func plateLoaded(base: Double, profile: GymProfileModel, unit: ExerciseWeightUnit) -> WeightStep {
-        let plates = availablePlates(profile: profile, unit: unit)
-        let step = (plates.first.map { $0 * 2 }) ?? fallbackStep(unit)
+    /// Every sleeve is loaded alike, so the smallest change is one of the smallest plates on each.
+    private static func plateLoaded(base: Double, chip: String, sleeves: Int, profile: GymProfileModel, unit: ExerciseWeightUnit) -> WeightStep {
+        let plates = availablePlates(profile: profile, unit: unit, sleeves: sleeves)
+        let step = (plates.first.map { $0.weight * Double(sleeves) }) ?? fallbackStep(unit)
         return WeightStep(
             kind: .increment(step, min: base, max: nil),
-            chip: String(localized: "Bar \(format(base)) \(unit.abbreviation)"),
+            chip: chip,
             baseWeight: base,
-            plates: plates
+            plates: plates,
+            sleeves: sleeves
         )
     }
 
-    /// Every active plate in the gym, in the unit it is labelled in when any are, ascending.
-    static func availablePlates(profile: GymProfileModel, unit: ExerciseWeightUnit) -> [Double] {
-        let plates = profile.freeWeights
-            .filter { $0.isActive && $0.id.hasSuffix("plates") }
+    /// Every active plate in the gym, in the unit it is labelled in when any are, ascending, with
+    /// how many of each fit on one of `sleeves`. A weight that both iron and bumper plates come in
+    /// adds their counts, and is unlimited if either is; one too few to put on every sleeve is left
+    /// out.
+    static func availablePlates(profile: GymProfileModel, unit: ExerciseWeightUnit, sleeves: Int = 2) -> [Plate] {
+        let entries = profile.freeWeights
+            .filter { $0.isActive && $0.isPlates }
             .flatMap(\.range)
             .filter(\.isActive)
-            .map { ($0.availableWeights, $0.unit) }
-        return inUnit(plates, unit: unit)
+        let matching = entries.filter { $0.unit == unit }
+        let byWeight = Dictionary(grouping: matching.isEmpty ? entries : matching) {
+            convert($0.availableWeights, from: $0.unit, to: unit)
+        }
+        return byWeight.compactMap { weight, entries -> Plate? in
+            let counts = entries.map(\.count)
+            let perSleeve = counts.contains(nil) ? nil : counts.compactMap { $0 }.reduce(0, +) / max(sleeves, 1)
+            guard weight > 0, (perSleeve ?? 1) > 0 else { return nil }
+            return Plate(weight: weight, perSleeve: perSleeve)
+        }
+        .sorted { $0.weight < $1.weight }
     }
 
     /// A cable or pin-loaded range, read off whichever machine type it came from.

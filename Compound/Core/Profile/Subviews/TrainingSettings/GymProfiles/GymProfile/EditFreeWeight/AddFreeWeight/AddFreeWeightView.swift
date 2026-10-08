@@ -16,6 +16,9 @@ struct AddFreeWeightView: View {
                     colourSection
                 }
                 weightSection
+                if presenter.freeWeight.wrappedValue.isPlates {
+                    countSection
+                }
             }
             .listSectionMargins(.vertical, 0)
             if let message = presenter.validationMessage {
@@ -62,6 +65,17 @@ struct AddFreeWeightView: View {
         }
     }
     
+    /// Empty is no limit, which is what every plate meant before counts existed.
+    private var countSection: some View {
+        VStack(alignment: .leading) {
+            Text("How many")
+                .font(.sectionTitle)
+            TextField("How many", value: $presenter.freeWeightAvailable.count, format: .number, prompt: Text("No limit"))
+                .textFieldStyle(.roundedBorder)
+                .keyboardType(.numberPad)
+        }
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .cancellationAction) {

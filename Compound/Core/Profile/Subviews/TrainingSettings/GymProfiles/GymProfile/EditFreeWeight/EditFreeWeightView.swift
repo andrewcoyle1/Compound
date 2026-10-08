@@ -36,16 +36,26 @@ struct EditFreeWeightView: View {
             } else {
                 ForEach(weightIDs, id: \.self) { weightID in
                     let weight = presenter.bindingForWeight(id: weightID, fallbackUnit: unit)
-                    HStack {
-                        if let colour = weight.wrappedValue.plateColour {
-                            Circle()
-                                .frame(maxHeight: 20)
-                                .foregroundStyle(Color(hex: colour))
+                    VStack {
+                        HStack {
+                            if let colour = weight.wrappedValue.plateColour {
+                                Circle()
+                                    .frame(maxHeight: 20)
+                                    .foregroundStyle(Color(hex: colour))
+                            }
+                            Text(GymEquipmentFormat.weight(weight.wrappedValue.availableWeights, weight.wrappedValue.unit))
+                            Spacer()
+                            Toggle("Available", isOn: weight.isActive)
+                                .labelsHidden()
                         }
-                        Text(GymEquipmentFormat.weight(weight.wrappedValue.availableWeights, weight.wrappedValue.unit))
-                        Spacer()
-                        Toggle("Available", isOn: weight.isActive)
-                            .labelsHidden()
+                        // Plates run out: with two 20s the calculator must reach for the 15s.
+                        if presenter.freeWeight.isPlates {
+                            NumberField(
+                                String(localized: "No limit"),
+                                value: presenter.bindingForCount(id: weightID),
+                                label: String(localized: "How many")
+                            )
+                        }
                     }
                 }
                 .onDelete { offsets in

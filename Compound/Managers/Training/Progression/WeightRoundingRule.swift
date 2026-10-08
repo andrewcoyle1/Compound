@@ -57,7 +57,7 @@ struct WeightRoundingRule: Equatable {
     /// The rule progression uses: this one, except that a bar in a gym without small plates is
     /// rounded as though nothing constrained it (`smallestPlateForProgressionKg`).
     var forProgression: WeightRoundingRule {
-        guard step.isPlateLoaded, let smallest = step.plates.min(),
+        guard step.isPlateLoaded, let smallest = step.plates.map(\.weight).min(),
               UnitConversion.convertWeightToKg(smallest, from: unit) > Self.smallestPlateForProgressionKg else { return self }
         var unconstrained = step
         unconstrained.constrainsWeight = false

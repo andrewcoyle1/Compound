@@ -700,7 +700,7 @@ extension SetTrackerPresenterTests {
     /// Rounded to what the equipment makes in the new unit: the grid from the bar up, or a rack.
     @Test("Test Converted Weights Snap To The Gyms Increment")
     func testConvertedWeightsSnapToTheGymsIncrement() {
-        let bar = WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [2.5])
+        let bar = WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [Plate(weight: 2.5)])
         let rack = WeightStep(kind: .list([10, 12.5, 15]), chip: nil, baseWeight: nil, plates: [])
 
         #expect(bar.nearest(to: 220.46) == 220)

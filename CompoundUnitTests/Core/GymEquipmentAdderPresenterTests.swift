@@ -67,6 +67,18 @@ struct GymAddFreeWeightPresenterTests {
         #expect(box.value.range.last?.isActive == true)
     }
 
+    @Test("Test A Plate Count Travels With The Plate")
+    func testAPlateCountTravelsWithThePlate() {
+        let box = GymEquipmentBox(GymEquipmentFixtures.freeWeights())
+        let presenter = makePresenter(box)
+        presenter.freeWeightAvailable.availableWeights = 20
+        presenter.freeWeightAvailable.count = 2
+
+        presenter.onSavePressed()
+
+        #expect(box.value.range.last?.count == 2)
+    }
+
     /// A gym cannot hold the same dumbbell twice, and a duplicate row could not be told from its
     /// twin when one of them is later edited or deleted.
     @Test("Test A Free Weight Already Held Is Not Added Again")

@@ -13,6 +13,8 @@ struct FreeWeights: Identifiable, Codable, Hashable {
     var imageName: String?
     var description: String?
     var needsColour: Bool
+    /// Plates for a bar or a plate-loaded machine, which the plate calculator loads from.
+    var isPlates: Bool
     var range: [FreeWeightsAvailable]
     
     var isActive: Bool
@@ -23,6 +25,7 @@ struct FreeWeights: Identifiable, Codable, Hashable {
         imageName: String? = nil,
         description: String? = nil,
         needsColour: Bool,
+        isPlates: Bool = false,
         range: [FreeWeightsAvailable],
         isActive: Bool
     ) {
@@ -31,6 +34,7 @@ struct FreeWeights: Identifiable, Codable, Hashable {
         self.imageName = imageName
         self.description = description
         self.needsColour = needsColour
+        self.isPlates = isPlates
         self.range = range
         self.isActive = isActive
     }
@@ -50,8 +54,11 @@ struct FreeWeightsAvailable: Identifiable, Codable {
     var plateColour: String?
     var availableWeights: Double
     var unit: ExerciseWeightUnit
-    
+
     var isActive: Bool
+    /// How many of this plate the gym has, shared between a bar's sleeves. `nil` is as many as
+    /// a load needs, which is what every entry meant before counts existed.
+    var count: Int?
 }
 
 // MARK: - Decoding
@@ -61,7 +68,7 @@ extension FreeWeights {
     /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
     /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
     enum CodingKeys: String, CodingKey {
-        case id, name, imageName, description, needsColour, range, isActive
+        case id, name, imageName, description, needsColour, isPlates, range, isActive
     }
 
     init(from decoder: Decoder) throws {
@@ -71,6 +78,8 @@ extension FreeWeights {
         imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
         description = try container.decodeIfPresent(String.self, forKey: .description)
         needsColour = try container.decodeIfPresent(Bool.self, forKey: .needsColour) ?? false
+        // Before the flag, plates were recognised by their catalogue id ("weight_plates").
+        isPlates = try container.decodeIfPresent(Bool.self, forKey: .isPlates) ?? id.hasSuffix("plates")
         range = container.decodeLossyArray(FreeWeightsAvailable.self, forKey: .range) ?? []
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
     }
@@ -81,7 +90,7 @@ extension FreeWeightsAvailable {
     /// The weights stay required: there is no sensible default for one, and a zero would reach
     /// arithmetic that divides by it. An entry without them is skipped by its parent's lossy list.
     enum CodingKeys: String, CodingKey {
-        case id, plateColour, availableWeights, unit, isActive
+        case id, plateColour, availableWeights, unit, isActive, count
     }
 
     init(from decoder: Decoder) throws {
@@ -91,5 +100,6 @@ extension FreeWeightsAvailable {
         availableWeights = try container.decode(Double.self, forKey: .availableWeights)
         unit = try container.decodeIfPresent(ExerciseWeightUnit.self, forKey: .unit) ?? .kilograms
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
+        count = try container.decodeIfPresent(Int.self, forKey: .count)
     }
 }

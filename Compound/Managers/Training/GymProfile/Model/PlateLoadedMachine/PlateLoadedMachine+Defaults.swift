@@ -10,6 +10,15 @@ import Foundation
 extension PlateLoadedMachine {
 
     static var defaultPlateLoadedMachines: [PlateLoadedMachine] {
-        defaultPlateLoadedMachinesPart1 + defaultPlateLoadedMachinesPart2
+        defaultPlateLoadedMachinesPart1
+    }
+
+    static var mock: PlateLoadedMachine {
+        mocks[0]
+    }
+
+    /// The catalogue itself: no preview or test needs a machine set up differently.
+    static var mocks: [PlateLoadedMachine] {
+        defaultPlateLoadedMachines
     }
 }

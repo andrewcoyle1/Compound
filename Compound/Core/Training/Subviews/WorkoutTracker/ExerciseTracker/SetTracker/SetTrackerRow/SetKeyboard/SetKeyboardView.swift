@@ -107,7 +107,7 @@ struct SetKeyboardView: View {
         Group {
             switch presenter.plateLoad {
             case .loadable(let perSide)?:
-                Text(perSide.isEmpty ? String(localized: "Empty bar") : String(localized: "Per side: ") + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit)")
+                Text(presenter.context.step.plateText(perSide, unit: presenter.context.unit))
             case let .notLoadable(below, above)?:
                 HStack(spacing: Spacing.s) {
                     Label("Not loadable", systemImage: Symbol.warning)

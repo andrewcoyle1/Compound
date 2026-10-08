@@ -1,9 +1,10 @@
 # Program import formats
 
-Mesocycle library › **+** › **Import Program…** reads three formats. Nothing is saved until the
-review screen's **Save Program**: exercise names the library cannot match are listed first, each
-mapped to a library exercise or created as a new one. The result is one mesocycle per block, in a
-macrocycle that is not started.
+Macrocycles › **+** › **Import Program…** (and the same item in the mesocycle library) reads three
+formats. Nothing is saved until the review screen's **Save Program**: exercise names the library
+cannot match are listed first, each mapped to a library exercise or created as a new one. The
+result is one macrocycle named after the sheet, holding one mesocycle per block, not started;
+imported from the Macrocycles screen it opens straight away so it can be started there.
 
 Code: `Compound/Managers/Training/ProgramImport/` (pure, tested in
 `CompoundUnitTests/Services/Training/ProgramImport/`) and the screen in

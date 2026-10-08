@@ -328,6 +328,9 @@ P2 ─┘
   `DayChecklistCard`) was fixed on the tracker branch (`361f8e6e`) and merged here.
 - A TestFlight build of the branch was uploaded on 8 Oct 2026 from `bcea7344` (App Store Connect
   assigns the build number).
+- 8 Oct 2026, later: Import Program… is also on the Macrocycles screen (plus menu and empty
+  state), and a program imported there opens as its macrocycle once saved, ready to Start. The
+  importer hands the saved macrocycle back through `ImportProgramDelegate.onImported`.
 - Follow-ups: the library matcher is strict by design, so a published sheet leaves most names
   to map by hand (89 of the two sheets' names, substitutions included); a suggestions list per
   unmatched name on the review screen would cut that. The two P2 Live Activity labels above.

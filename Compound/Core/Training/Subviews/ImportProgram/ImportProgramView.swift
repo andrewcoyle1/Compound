@@ -135,11 +135,12 @@ struct ImportProgramView: View {
 }
 
 extension CoreBuilder {
-    func importProgramView(router: AnyRouter) -> some View {
+    func importProgramView(router: AnyRouter, delegate: ImportProgramDelegate = ImportProgramDelegate()) -> some View {
         ImportProgramView(
             presenter: ImportProgramPresenter(
                 interactor: interactor,
-                router: CoreRouter(router: router, builder: self)
+                router: CoreRouter(router: router, builder: self),
+                delegate: delegate
             )
         )
     }
@@ -169,8 +170,12 @@ extension CoreBuilder {
 
 extension CoreRouter {
     func showImportProgramView() {
+        showImportProgramView(delegate: ImportProgramDelegate())
+    }
+
+    func showImportProgramView(delegate: ImportProgramDelegate) {
         router.showScreen(.sheet) { router in
-            builder.importProgramView(router: router)
+            builder.importProgramView(router: router, delegate: delegate)
         }
     }
 

@@ -66,11 +66,11 @@ struct ImportProgramPresenterTests {
     }
 
     /// The sample program's library without "Row" and "Leg Press", so two names need mapping.
-    private func makeScreen() -> Screen {
+    private func makeScreen(delegate: ImportProgramDelegate = ImportProgramDelegate()) -> Screen {
         let interactor = Interactor()
         interactor.allExercises = ProgramFixtures.library.filter { !["Row", "Leg Press"].contains($0.name) }
         let router = Router()
-        return Screen(presenter: ImportProgramPresenter(interactor: interactor, router: router), interactor: interactor, router: router)
+        return Screen(presenter: ImportProgramPresenter(interactor: interactor, router: router, delegate: delegate), interactor: interactor, router: router)
     }
 
     private func temporaryFile(_ name: String, _ contents: String) throws -> URL {
@@ -159,6 +159,23 @@ struct ImportProgramPresenterTests {
         #expect(message.contains("Week 2"))
         #expect(!screen.presenter.hasFile)
         #expect(!screen.presenter.canSave)
+    }
+
+    @Test("Test A Saved Program Is Handed Back As Its Macrocycle After The Dismissal")
+    func testSaveHandsBackTheMacrocycle() async throws {
+        var imported: [Macrocycle] = []
+        let screen = makeScreen(delegate: ImportProgramDelegate(onImported: { imported.append($0) }))
+        await screen.presenter.importFile(at: ProgramFixtures.url("sample-program.csv"))
+        screen.presenter.onCreatePressed(name: "Row")
+        screen.presenter.onCreatePressed(name: "Leg Press")
+
+        await screen.presenter.save()
+
+        #expect(screen.router.dismissals == 1)
+        #expect(imported.count == 1)
+        #expect(imported.first?.id == screen.interactor.savedMacrocycles.last?.id)
+        #expect(imported.first?.status == .notStarted)
+        #expect(imported.first?.mesocycleIds == screen.interactor.savedMesocycles.map(\.id))
     }
 
     @Test("Test A Failed Save Shows The Error And Keeps The Screen")

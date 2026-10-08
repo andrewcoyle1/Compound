@@ -10,6 +10,12 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// What the screen that opened the importer hears when a program is saved: the macrocycle it
+/// became, after the importer has dismissed itself.
+struct ImportProgramDelegate {
+    var onImported: (@MainActor (Macrocycle) -> Void)?
+}
+
 @Observable
 @MainActor
 class ImportProgramPresenter {
@@ -56,7 +62,10 @@ class ImportProgramPresenter {
 
     let contentTypes: [UTType] = [UTType(filenameExtension: "xlsx"), .commaSeparatedText, .json].compactMap { $0 }
 
-    init(interactor: ImportProgramInteractor, router: ImportProgramRouter) {
+    private let delegate: ImportProgramDelegate
+
+    init(interactor: ImportProgramInteractor, router: ImportProgramRouter, delegate: ImportProgramDelegate = ImportProgramDelegate()) {
+        self.delegate = delegate
         self.interactor = interactor
         self.router = router
     }
@@ -220,6 +229,7 @@ class ImportProgramPresenter {
             interactor.trackEvent(event: Event.saveSuccess(mesocycles: result.mesocycles.count))
             interactor.playHaptic(option: .success)
             router.dismissEnvironment()
+            delegate.onImported?(result.macrocycle)
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
             interactor.playHaptic(option: .error)

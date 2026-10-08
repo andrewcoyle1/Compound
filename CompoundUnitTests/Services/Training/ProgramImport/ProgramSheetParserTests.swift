@@ -74,6 +74,41 @@ struct ProgramSheetParserTests {
         }
     }
 
+    /// Published sheets put each structural line in a cell merged across the row (so the fill-down
+    /// carries it into the exercise column), put "Rest Day" in whichever column was handy, label
+    /// an intro or deload week on a line of its own above the "Week N" header, and name the RIR
+    /// columns on the line under the header beneath a "Failure?" heading.
+    @Test("Test Merged Lines, A Rest Day In Any Column, An Empty Week Label And RIR Under The Header")
+    func testPublishedSheetShapes() throws {
+        let csv = """
+        Program,,,,,
+        ,,Block A,,,
+        ,,Intro Week,,,
+        Week 1,Exercise,Working Sets,Failure?,,
+        ,,,RIR (Set 1),RIR (Set 2),
+        Push,Press,2,1,2,
+        Rest Day,Rest Day,Rest Day,Rest Day,Rest Day,Rest Day
+        ,,,,Rest Day,
+        Week 2,Exercise,Working Sets,Failure?,,
+        ,,,RIR (Set 1),RIR (Set 2),
+        Push,Press,2,0,0,
+        Ramping,Ramping,Ramping,Ramping,Ramping,Ramping
+        Week 3,Exercise,Working Sets,,,
+        Push,Press,3,,,
+
+        """
+        let sheet = try ProgramSheetParser.parse(CSVReader.grid(from: csv))
+
+        #expect(sheet.title == "Program")
+        #expect(sheet.blocks.map(\.name) == ["Block A", "Ramping"])
+        #expect(sheet.blocks[0].weeks.map(\.label) == ["Week 1", "Week 2"])
+        #expect(sheet.blocks[1].weeks.map(\.label) == ["Week 3"])
+        #expect(sheet.blocks[0].weeks[0].days.map(\.isRest) == [false, true, true])
+        #expect(row(sheet, 0).rirPerSet == [1, 2])
+        #expect(row(sheet, week: 1, 0).rirPerSet == [0, 0])
+        #expect(row(sheet, block: 1, 0).workingSets == 3)
+    }
+
     @Test("Test A Row Without Working Sets Names Its Row")
     func testMissingWorkingSets() {
         #expect(throws: ProgramImportError.missingWorkingSets(row: 3)) {

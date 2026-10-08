@@ -40,7 +40,13 @@ Anything else (`Set 1`… tracking columns, coach columns) is ignored.
 - A later line of its own followed by a week or a header row starts a **block** (a mesocycle,
   named by the line). With no block lines the sheet is one block named after the title.
 - `Week 1`, `Week 2`, `Intro Week`, `Deload Week` start a **week** (a microcycle). With no week
-  lines the sheet is one week.
+  lines the sheet is one week. A week label on a line of its own directly above a `Week N`
+  header ("Intro Week", then the header) is the same week, not an extra one.
+- A line of its own counts whichever column it sits in, and a cell merged across the row counts
+  once, so `Rest Day` in the middle of a row and a block name merged over the full width both
+  read as structure, never as an exercise.
+- `RIR (Set 1)…` named on the line under the header (beneath a `Failure?` heading, with no
+  exercise beside them) are the RIR columns for that header.
 - A name on an exercise row starts a **day**, which carries on over the rows below until another
   name; a merged day cell works the same. `Rest Day` is a rest day.
 - Every week of a block must have week 1's days, each with week 1's exercises by name; otherwise

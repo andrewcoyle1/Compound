@@ -23,6 +23,10 @@ enum ProgramSheetParser {
     /// Where each value is, by column index.
     struct Columns {
         var exercise: Int
+        /// Where the week label sits on the header row, and so where the day names sit on the
+        /// exercise rows: the first named column before Exercise. Nil when Exercise comes first,
+        /// so days can only be lines of their own.
+        var marker: Int?
         var technique: Int?
         var warmupSets: Int?
         var workingSets: Int?
@@ -38,6 +42,7 @@ enum ProgramSheetParser {
             let names = header.map { $0?.text.trimmingCharacters(in: .whitespaces).lowercased() ?? "" }
             guard let exercise = names.firstIndex(of: "exercise") else { return nil }
             self.exercise = exercise
+            marker = names.firstIndex { !$0.isEmpty }.flatMap { $0 < exercise ? $0 : nil }
             // The first rule a name meets places it; a later column of the same kind is ignored.
             let rules: [(WritableKeyPath<Columns, Int?>, (String) -> Bool)] = [
                 (\.technique, { $0.contains("intensity") || $0.contains("technique") }),
@@ -62,6 +67,17 @@ enum ProgramSheetParser {
             }
             rir = rirColumns.sorted { $0.set < $1.set }.map(\.column)
         }
+
+        /// RIR columns named on a line under the header ("Failure?" above, "RIR (Set 1)…" below),
+        /// taken when the header named none. Any other name on such a line is left alone.
+        mutating func absorbRIRColumns(from cells: [SheetCell?]) {
+            guard rir.isEmpty else { return }
+            let names = cells.map { $0?.text.trimmingCharacters(in: .whitespaces).lowercased() ?? "" }
+            let found = names.enumerated().filter { $0.element.hasPrefix("rir") }.map { column, name in
+                (set: name.firstMatch(of: #/\d+/#).flatMap { Int($0.0) } ?? column, column: column)
+            }
+            rir = found.sorted { $0.set < $1.set }.map(\.column)
+        }
     }
 
     static func parse(_ grid: SheetGrid) throws -> ProgramSheet {
@@ -76,21 +92,21 @@ enum ProgramSheetParser {
             }
             guard cells.contains(where: { text($0) != nil }) else { continue }
 
-            let marker = text(cell(0))
             if let header = Columns(header: cells) {
                 columns = header
-                if let marker, isWeek(marker) { builder.startWeek(marker) }
+                if let marker = text(cell(header.marker)), isWeek(marker) { builder.startWeek(marker) }
                 builder.sawHeader = true
                 continue
             }
+            if lineWithoutExercise(cells, at: index, in: grid, columns: &columns, builder: &builder) { continue }
             if let columns, let name = text(cell(columns.exercise)) {
-                if let marker, !isWeek(marker), marker != builder.currentDayName {
+                if let marker = text(cell(columns.marker)).map(dayName), !isWeek(marker), marker != builder.currentDayName {
                     builder.startDay(marker, row: rowNumber)
                 }
                 builder.append(try row(name: name, cells: cell, columns: columns, number: rowNumber), row: rowNumber)
                 continue
             }
-            if let marker { structuralLine(marker, at: index, in: grid, builder: &builder) }
+            if let marker = text(cell(columns?.marker ?? 0)) { structuralLine(marker, at: index, in: grid, builder: &builder) }
         }
 
         guard builder.sawHeader else { throw ProgramImportError.noHeaderRow }
@@ -99,6 +115,30 @@ enum ProgramSheetParser {
             throw ProgramImportError.noExercises
         }
         return sheet
+    }
+
+    /// The lines that carry no exercise: "RIR (Set 1)…" named under the header with no exercise
+    /// beside them, and a line of its own, whichever column it sits in and however far a merged
+    /// cell has carried it across the row (a week, a block, a rest day, the title, or a day).
+    /// True when the line was one of those.
+    private static func lineWithoutExercise(
+        _ cells: [SheetCell?],
+        at index: Int,
+        in grid: SheetGrid,
+        columns: inout Columns?,
+        builder: inout Builder
+    ) -> Bool {
+        let exercise = columns.flatMap { cells.indices.contains($0.exercise) ? text(cells[$0.exercise]) : nil }
+        if var header = columns, exercise == nil,
+           cells.contains(where: { text($0)?.lowercased().hasPrefix("rir") == true }) {
+            header.absorbRIRColumns(from: cells)
+            columns = header
+            return true
+        }
+        let distinct = Set(cells.compactMap(text))
+        guard distinct.count == 1, let only = distinct.first else { return false }
+        structuralLine(only, at: index, in: grid, builder: &builder)
+        return true
     }
 
     /// A line with no exercise: a week, a rest day, the title, a block or a day of its own.
@@ -112,7 +152,7 @@ enum ProgramSheetParser {
         } else if startsBlock(after: index, in: grid) {
             builder.pendingBlockName = marker
         } else if builder.currentWeekStarted {
-            builder.startDay(marker, row: index + 1)
+            builder.startDay(dayName(marker), row: index + 1)
         }
     }
 
@@ -151,6 +191,12 @@ enum ProgramSheetParser {
 
     // MARK: - Structure
 
+    /// A day's name with its line breaks and runs of spaces collapsed: a sheet wraps "Lower
+    /// (Strength Focus)" inside its cell.
+    static func dayName(_ text: String) -> String {
+        text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+    }
+
     static func isWeek(_ text: String) -> Bool {
         let lowered = text.lowercased()
         return lowered.wholeMatch(of: #/week\s*\d+.*/#) != nil || lowered.hasSuffix(" week")
@@ -161,7 +207,8 @@ enum ProgramSheetParser {
     private static func startsBlock(after index: Int, in grid: SheetGrid) -> Bool {
         for cells in grid.dropFirst(index + 1) where cells.contains(where: { text($0) != nil }) {
             if Columns(header: cells) != nil { return true }
-            return text(cells.first ?? nil).map(isWeek) ?? false
+            let distinct = Set(cells.compactMap(text))
+            return distinct.count == 1 && distinct.contains(where: isWeek)
         }
         return false
     }
@@ -215,9 +262,11 @@ enum ProgramSheetParser {
             self.day = nil
         }
 
+        /// A week with no days ("Intro Week" on its own line, then the "Week 1" header) is not a
+        /// week of its own: the header's week takes its place.
         private mutating func closeWeek() {
             closeDay()
-            guard let week else { return }
+            guard let week, !week.days.isEmpty else { self.week = nil; return }
             if blocks.isEmpty { blocks.append(ProgramSheet.Block(name: title ?? String(localized: "Imported Program"), weeks: [])) }
             blocks[blocks.count - 1].weeks.append(week)
             self.week = nil

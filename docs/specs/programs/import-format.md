@@ -82,8 +82,15 @@ Anything else (`Set 1`… tracking columns, coach columns) is ignored.
 **Weeks.** Week 1 is each exercise's base targets. A later week adds a "from week N" override only
 where that exercise's targets differ from the week before (a set added, an RIR changed).
 
-**Exercise names** match the library strictly: the exact name, an alternate name, the same words
-ignoring case and punctuation, then with abbreviations spelled out (`DB` Dumbbell, `BB` Barbell,
+**Exercise names** match the library in tiers, strictest first: the exact name, an alternate name,
+the same words ignoring case and punctuation, the same words with abbreviations spelled out, the
+same words in any order, a library name that only adds a position or equipment word ("Machine Hip
+Adduction" is "Seated Machine Hip Adduction"; a word that makes a different lift, such as
+"incline", "concentration" or a grip, is never waved through), and a sheet name that only adds
+words to a library name ("Chest-Supported T-Bar Row" is "T-Bar Row", the longest such name, never
+a one-word one). Parentheticals on either side are optional. A rule that fits two exercises fits
+neither. Each name still unmatched is listed with up to three suggestions ranked by shared words,
+one tap each. Abbreviations spelled out: (`DB` Dumbbell, `BB` Barbell,
 `SM` Smith Machine, `1-Arm`/`One-Arm` Single-Arm, `Pulldown` Pull-Down, `Flye` Fly). A name that
 loosely matches two exercises matches neither. Substitutions are matched the same way.
 

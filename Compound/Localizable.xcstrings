@@ -24003,6 +24003,16 @@
         }
       }
     },
+    "Suggested: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencias: %@"
+          }
+        }
+      }
+    },
     "Summarise my week" : {
       "localizations" : {
         "es" : {
@@ -27808,6 +27818,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trapecio superior"
+          }
+        }
+      }
+    },
+    "Use \"%@\"" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar \"%@\""
           }
         }
       }

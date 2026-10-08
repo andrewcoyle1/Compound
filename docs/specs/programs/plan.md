@@ -331,8 +331,12 @@ P2 ─┘
 - 8 Oct 2026, later: Import Program… is also on the Macrocycles screen (plus menu and empty
   state), and a program imported there opens as its macrocycle once saved, ready to Start. The
   importer hands the saved macrocycle back through `ImportProgramDelegate.onImported`.
-- Follow-ups: the library matcher is strict by design, so a published sheet leaves most names
-  to map by hand (89 of the two sheets' names, substitutions included); a suggestions list per
-  unmatched name on the review screen would cut that. The two P2 Live Activity labels above.
+- 8 Oct 2026, later still: the matcher gained three safe tiers (same words any order; a library
+  name adding only a position or equipment word; a sheet name adding words to a library name) and
+  more abbreviations, and the review screen offers up to three suggestions per unmatched name.
+  Unmatched names on the two sheets fell from 89 to 51 and 62 to 43, every remaining one absent
+  from the 64-exercise prebuilt library (a plain dumbbell curl, goblet squat, Nordic curl,
+  standing calf raise…). Growing the prebuilt library is the next lever.
+- Follow-ups: The two P2 Live Activity labels above.
   The in-session set-target editor on the tracker does not show the Plan section (edits there
   would be dropped), by design for now.

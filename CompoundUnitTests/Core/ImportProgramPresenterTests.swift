@@ -178,6 +178,26 @@ struct ImportProgramPresenterTests {
         #expect(imported.first?.mesocycleIds == screen.interactor.savedMesocycles.map(\.id))
     }
 
+    @Test("Test An Unmatched Name Offers The Nearest Library Names And One Tap Maps It")
+    func testSuggestions() async {
+        let screen = makeScreen()
+        let angled = ProgramFixtures.exercise("45° Leg Press")
+        screen.interactor.allExercises = ProgramFixtures.library.filter { $0.name != "Leg Press" } + [angled]
+        await screen.presenter.importFile(at: ProgramFixtures.url("sample-program.csv"))
+
+        let unmatched = screen.presenter.reviewNames
+        #expect(!unmatched.contains("Leg Press"))
+        guard let name = unmatched.first else { return }
+        let suggested = screen.presenter.suggestions(for: name)
+        #expect(suggested.count <= 3)
+        if let first = suggested.first {
+            #expect(screen.presenter.subtitle(for: name).contains(first.name))
+            screen.presenter.onSuggestionPressed(name: name, exercise: first)
+            #expect(screen.presenter.status(of: name) == first.name)
+            #expect(screen.interactor.trackedEventNames.contains { $0.contains("UseSuggestion") })
+        }
+    }
+
     @Test("Test A Failed Save Shows The Error And Keeps The Screen")
     func testSaveFailure() async {
         let screen = makeScreen()

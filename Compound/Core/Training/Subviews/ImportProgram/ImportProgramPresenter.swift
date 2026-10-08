@@ -57,6 +57,8 @@ class ImportProgramPresenter {
     /// The names the library did not match, in sheet order. They stay listed once mapped.
     private(set) var reviewNames: [String] = []
     private(set) var mappings: [String: Mapping] = [:]
+    /// The nearest library names for each unmatched one, for the review rows to offer.
+    private(set) var suggestionsByName: [String: [ExerciseModel]] = [:]
     private(set) var summary: Summary?
     private var matcher = ExerciseNameMatcher(library: [])
 
@@ -137,6 +139,7 @@ class ImportProgramPresenter {
         switch file {
         case .sheet(let sheet):
             reviewNames = ProgramImporter.unmatchedNames(in: sheet, resolve: matcher.match)
+            suggestionsByName = Dictionary(uniqueKeysWithValues: reviewNames.map { ($0, matcher.suggestions(for: $0)) })
         case .mesocycles:
             reviewNames = []
         }
@@ -155,6 +158,24 @@ class ImportProgramPresenter {
         case .create: return String(localized: "New exercise")
         case nil: return String(localized: "Not matched")
         }
+    }
+
+    func suggestions(for name: String) -> [ExerciseModel] {
+        suggestionsByName[name] ?? []
+    }
+
+    /// The row's subtitle: what it is mapped to, else the suggestions, else that it is unmatched.
+    func subtitle(for name: String) -> String {
+        if mappings[name] == nil, !suggestions(for: name).isEmpty {
+            return String(localized: "Suggested: \(suggestions(for: name).map(\.name).formatted(.list(type: .or)))")
+        }
+        return status(of: name)
+    }
+
+    func onSuggestionPressed(name: String, exercise: ExerciseModel) {
+        interactor.trackEvent(event: Event.useSuggestion)
+        mappings[name] = .library(exercise)
+        interactor.playHaptic(option: .selection)
     }
 
     func onChooseFromLibraryPressed(name: String) {
@@ -290,6 +311,7 @@ extension ImportProgramPresenter {
         case fileFailed(error: Error)
         case chooseFromLibrary
         case createExercise
+        case useSuggestion
         case saveStart
         case saveSuccess(mesocycles: Int)
         case saveFail(error: Error)
@@ -302,6 +324,7 @@ extension ImportProgramPresenter {
             case .fileFailed:           return "ImportProgramView_File_Fail"
             case .chooseFromLibrary:    return "ImportProgramView_ChooseFromLibrary"
             case .createExercise:       return "ImportProgramView_CreateExercise"
+            case .useSuggestion:        return "ImportProgramView_UseSuggestion"
             case .saveStart:            return "ImportProgramView_Save_Start"
             case .saveSuccess:          return "ImportProgramView_Save_Success"
             case .saveFail:             return "ImportProgramView_Save_Fail"

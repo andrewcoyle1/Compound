@@ -93,6 +93,12 @@ struct ImportProgramView: View {
         Section {
             ForEach(presenter.reviewNames, id: \.self) { name in
                 Menu {
+                    ForEach(presenter.suggestions(for: name)) { exercise in
+                        Button("Use \"\(exercise.name)\"") {
+                            presenter.onSuggestionPressed(name: name, exercise: exercise)
+                        }
+                    }
+                    if !presenter.suggestions(for: name).isEmpty { Divider() }
                     Button("Choose from library") {
                         presenter.onChooseFromLibraryPressed(name: name)
                     }
@@ -102,7 +108,7 @@ struct ImportProgramView: View {
                 } label: {
                     ListRow(
                         title: name,
-                        subtitle: presenter.status(of: name),
+                        subtitle: presenter.subtitle(for: name),
                         accessory: .checkmark(presenter.mappings[name] != nil)
                     )
                 }

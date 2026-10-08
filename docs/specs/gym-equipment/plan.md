@@ -49,9 +49,12 @@ irregular stacks, plate counts & collars, and combined bands.
 
 ## Work packages
 
-Branch `feature/gym-equipment`, cut from `development` at `090e3868` (PR #73 merged 8 Oct 2026). One Opus agent per package in its own worktree; the agent pushes its branch (no PR), I gate
-(lint, three builds, full unit bundle, named suites) and squash-merge it into the feature branch
-locally. CI runs once, on the final `feature/gym-equipment` → `development` PR. Plan and status log go in
+Branch `feature/gym-equipment`, cut from `development` at `090e3868` (PR #73 merged 8 Oct 2026). One Opus agent per package in its own worktree; the agent verifies its own commit (lint, three
+builds, named suites, full unit bundle) and pushes its branch without a PR. I review the diff and
+the agent's xcresult for that exact commit, without rerunning anything, and squash-merge locally.
+Tests run again only on code nobody has tested: a merge combining packages, a conflict fix or a
+follow-up change, and then only the narrowest run that could fail. CI runs once, on the final
+`feature/gym-equipment` → `development` PR. Plan and status log go in
 `docs/specs/gym-equipment/plan.md`. Order: G1 → G2 → (G3 ∥ G4) → (G5 ∥ G6).
 
 ### G1 — Tolerant decoding (no behaviour change)
@@ -147,7 +150,7 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
 
 ## Verification
 
-- Per package: `swiftlint --strict`; build Development, Mock and `WorkoutSessionActivityExtension`
+- Per package, run once by its agent on the commit it pushes: `swiftlint --strict`; build Development, Mock and `WorkoutSessionActivityExtension`
   with only the known `Messaging.token()` warning; named suites above; full unit bundle with
   `-skip-testing:CompoundUITests` (HealthKit and Live Activity flakes rerun alone).
 - G1 proves backwards compatibility with the committed v1 fixture; every later package's new fields

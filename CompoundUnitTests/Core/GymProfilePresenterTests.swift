@@ -47,6 +47,11 @@ struct GymProfilePresenterTests {
         func showEditLoadableAccessoryView(loadableAccessory: Binding<LoadableAccessoryEquipment>) { record("editLoadableAccessory") }
         func showEditStackMachineView<Machine: StackMachine>(machine: Binding<Machine>) { record("editStackMachine") }
         func showEditPlateLoadedMachineView(plateLoadedMachine: Binding<PlateLoadedMachine>) { record("editPlateLoadedMachine") }
+        private(set) var addMachineDelegates: [AddGymMachineDelegate] = []
+        func showAddGymMachineView(delegate: AddGymMachineDelegate) {
+            addMachineDelegates.append(delegate)
+            record("addMachine")
+        }
     }
 
     private struct Screen {
@@ -418,5 +423,149 @@ struct GymProfilePresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["GymProfileView_OnAppear"])
         #expect(screen.interactor.trackedEventNames == ["GymProfileView_OnDisappear"])
+    }
+
+    // MARK: - Custom and duplicate machines
+
+    private static let latPulldown = "cable_lat_pulldown_machine"
+
+    @Test("Test Duplicate Adds A Copy Beside The Original And Opens Nothing")
+    func testDuplicateAddsACopyBesideTheOriginalAndOpensNothing() throws {
+        let screen = makeScreen()
+        let count = screen.presenter.gymProfile.cableMachines.count
+
+        screen.presenter.onDuplicateMachinePressed(in: \.cableMachines, id: Self.latPulldown)
+
+        let machines = screen.presenter.gymProfile.cableMachines
+        let index = try #require(machines.firstIndex { $0.id == Self.latPulldown })
+        #expect(machines.count == count + 1)
+        #expect(machines[index + 1].typeId == Self.latPulldown)
+        #expect(machines[index + 1].name == "Cable Lat Pulldown Machine 2")
+        #expect(screen.router.shown.isEmpty)
+        #expect(screen.interactor.playedHaptics.map { "\($0)" } == ["success"])
+        #expect(screen.presenter.hasUnsavedChanges)
+    }
+
+    @Test("Test A Machine Added As A Catalogue Type Opens Its Stack Editor")
+    func testAMachineAddedAsACatalogueTypeOpensItsStackEditor() throws {
+        let screen = makeScreen()
+        screen.presenter.onAddMachinePressed()
+        let delegate = try #require(screen.router.addMachineDelegates.last)
+
+        delegate.onAdd(GymMachineDraft(kind: .cableMachine, name: "Hammer Pulldown", worksAs: Self.latPulldown))
+
+        let machine = try #require(screen.presenter.gymProfile.cableMachines.last)
+        #expect(machine.name == "Hammer Pulldown")
+        #expect(machine.typeId == Self.latPulldown)
+        #expect(machine.isActive)
+        #expect(screen.router.shown == ["addMachine", "editStackMachine"])
+        #expect(screen.presenter.isEditorPushed)
+    }
+
+    @Test("Test A Plate Loaded Machine Of Its Own Opens Its Editor")
+    func testAPlateLoadedMachineOfItsOwnOpensItsEditor() throws {
+        let screen = makeScreen()
+
+        screen.presenter.addMachine(GymMachineDraft(kind: .plateLoadedMachine, name: "Garage Sled", worksAs: nil))
+
+        let machine = try #require(screen.presenter.gymProfile.plateLoadedMachines.last)
+        #expect(machine.name == "Garage Sled")
+        #expect(machine.typeId == machine.id)
+        #expect(screen.router.shown == ["editPlateLoadedMachine"])
+    }
+
+    @Test("Test Deleting A Machine Of The Users Own Asks First")
+    func testDeletingAMachineOfTheUsersOwnAsksFirst() throws {
+        let screen = makeScreen()
+        screen.presenter.onDuplicateMachinePressed(in: \.cableMachines, id: Self.latPulldown)
+        let copy = try #require(screen.presenter.gymProfile.cableMachines.first { $0.isCustom })
+
+        screen.presenter.onDeleteMachinePressed(machine: copy)
+        #expect(screen.router.alertTitles == ["Delete Machine?"])
+        #expect(screen.presenter.gymProfile.cableMachines.contains { $0.id == copy.id })
+
+        screen.presenter.deleteMachine(kind: .cableMachine, id: copy.id)
+        #expect(!screen.presenter.gymProfile.cableMachines.contains { $0.id == copy.id })
+    }
+
+    @Test("Test A Catalogue Machine Offers No Delete")
+    func testACatalogueMachineOffersNoDelete() throws {
+        let screen = makeScreen()
+        let catalogue = try #require(screen.presenter.gymProfile.cableMachines.first { $0.id == Self.latPulldown })
+
+        screen.presenter.onDeleteMachinePressed(machine: catalogue)
+        screen.presenter.deleteMachine(kind: .cableMachine, id: catalogue.id)
+
+        #expect(screen.router.alertTitles.isEmpty)
+        #expect(screen.presenter.gymProfile.cableMachines.contains { $0.id == Self.latPulldown })
+    }
+
+    /// Rows follow their item by id, so deleting one machine leaves the other rows' bindings on
+    /// the machines they showed, not on whatever slid into their place.
+    @Test("Test A Row's Binding Follows Its Machine After Another Is Deleted")
+    func testARowsBindingFollowsItsMachineAfterAnotherIsDeleted() throws {
+        let screen = makeScreen()
+        screen.presenter.onDuplicateMachinePressed(in: \.cableMachines, id: Self.latPulldown)
+        let copy = try #require(screen.presenter.gymProfile.cableMachines.first { $0.isCustom })
+        let index = try #require(screen.presenter.gymProfile.cableMachines.firstIndex { $0.id == copy.id })
+        let next = screen.presenter.gymProfile.cableMachines[index + 1]
+        let row = try #require(screen.presenter.filteredCableMachines.first { $0.wrappedValue.id == next.id })
+
+        screen.presenter.deleteMachine(kind: .cableMachine, id: copy.id)
+        row.wrappedValue.isActive.toggle()
+
+        #expect(row.wrappedValue.id == next.id)
+        #expect(screen.presenter.gymProfile.cableMachines.first { $0.id == next.id }?.isActive == !next.isActive)
+    }
+}
+
+/// The Add Machine form: a kind, a name and, optionally, the catalogue machine it works as.
+@MainActor
+struct AddGymMachinePresenterTests {
+
+    private func makePresenter(onAdd: @escaping (GymMachineDraft) -> Void = { _ in }) -> (AddGymMachinePresenter, GymEquipmentInteractor) {
+        let interactor = GymEquipmentInteractor()
+        let presenter = AddGymMachinePresenter(interactor: interactor, router: GymEquipmentRouter(), delegate: AddGymMachineDelegate(onAdd: onAdd))
+        return (presenter, interactor)
+    }
+
+    @Test("Test A Name Is Needed To Save")
+    func testANameIsNeededToSave() {
+        var added: [GymMachineDraft] = []
+        let (presenter, _) = makePresenter { added.append($0) }
+
+        presenter.name = "   "
+        presenter.onSavePressed()
+
+        #expect(!presenter.canSave)
+        #expect(added.isEmpty)
+    }
+
+    @Test("Test Saving Hands Back The Draft, Trimmed")
+    func testSavingHandsBackTheDraft() {
+        var added: [GymMachineDraft] = []
+        let (presenter, interactor) = makePresenter { added.append($0) }
+
+        presenter.kind = .pinLoadedMachine
+        presenter.name = " Hip Abductor 2 "
+        presenter.worksAs = presenter.catalogueMachines.first?.ref.equipmentId
+        presenter.onSavePressed()
+
+        #expect(added == [GymMachineDraft(kind: .pinLoadedMachine, name: "Hip Abductor 2", worksAs: presenter.catalogueMachines.first?.ref.equipmentId)])
+        #expect(interactor.playedHaptics.map { "\($0)" } == ["success"])
+    }
+
+    /// "Works as" lists the catalogue of the chosen kind, so changing kind drops a choice from
+    /// another kind's list.
+    @Test("Test Changing Kind Clears Works As")
+    func testChangingKindClearsWorksAs() {
+        let (presenter, _) = makePresenter()
+        presenter.worksAs = "cable_lat_pulldown_machine"
+        #expect(presenter.catalogueMachines.allSatisfy { $0.ref.kind == .cableMachine })
+
+        presenter.kind = .plateLoadedMachine
+
+        #expect(presenter.worksAs == nil)
+        #expect(presenter.catalogueMachines.allSatisfy { $0.ref.kind == .plateLoadedMachine })
     }
 }

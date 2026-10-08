@@ -9,6 +9,9 @@ import Foundation
 
 struct PlateLoadedMachine: Identifiable, Codable {
     var id: String
+    /// The catalogue type this item is, which exercises name. A duplicate shares its original's;
+    /// a machine the user made that works as nothing in the catalogue has its own id.
+    var typeId: String
     var name: String
     var imageName: String?
     var description: String?
@@ -23,6 +26,7 @@ struct PlateLoadedMachine: Identifiable, Codable {
     
     init(
         id: String,
+        typeId: String? = nil,
         name: String,
         imageName: String? = nil,
         description: String? = nil,
@@ -32,6 +36,7 @@ struct PlateLoadedMachine: Identifiable, Codable {
         isActive: Bool
     ) {
         self.id = id
+        self.typeId = typeId ?? id
         self.name = name
         self.imageName = imageName
         self.description = description
@@ -49,12 +54,15 @@ extension PlateLoadedMachine {
     /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
     /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
     enum CodingKeys: String, CodingKey {
-        case id, name, imageName, description, baseWeight, unit, sleeves, isActive
+        case id, typeId, name, imageName, description, baseWeight, unit, sleeves, isActive
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(String.self, forKey: .id)
+        let id = try container.decode(String.self, forKey: .id)
+        self.id = id
+        // Items saved before custom and duplicate machines are their own type.
+        typeId = try container.decodeIfPresent(String.self, forKey: .typeId) ?? id
         name = try container.decode(String.self, forKey: .name)
         imageName = try container.decodeIfPresent(String.self, forKey: .imageName)
         description = try container.decodeIfPresent(String.self, forKey: .description)
@@ -62,9 +70,9 @@ extension PlateLoadedMachine {
         unit = try container.decodeIfPresent(ExerciseWeightUnit.self, forKey: .unit) ?? .kilograms
         // Machines saved before sleeves existed take the catalogue's answer, so a stored T-bar
         // loads on one; anything else is the usual two. Clamped, since the count divides.
-        let id = id
+        let typeId = typeId
         let stored = try container.decodeIfPresent(Int.self, forKey: .sleeves)
-            ?? Self.defaultPlateLoadedMachines.first { $0.id == id }?.sleeves
+            ?? Self.defaultPlateLoadedMachines.first { $0.id == typeId }?.sleeves
             ?? 2
         sleeves = min(max(stored, 1), 2)
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false

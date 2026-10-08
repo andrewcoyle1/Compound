@@ -39,6 +39,7 @@ struct ExerciseModelDetailDeletionTests {
     private final class Interactor: SpyGlobalInteractor, ExerciseModelDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var workoutSessions: [WorkoutSessionModel] = []
+        var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
         var deleteError: Error?
         private(set) var deletedIds: [String] = []
 

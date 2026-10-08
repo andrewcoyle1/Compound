@@ -324,6 +324,17 @@ struct GymProfileView: View {
         }
         
         ToolbarItem(placement: .topBarTrailing) {
+            Menu {
+                Button("Add Machine…", systemImage: Symbol.add) {
+                    presenter.onAddMachinePressed()
+                }
+            } label: {
+                Image(systemName: Symbol.add)
+            }
+            .accessibilityLabel("Add")
+        }
+
+        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddImagePressed()
             } label: {
@@ -372,6 +383,10 @@ private struct GymProfileMachineSectionsView: View {
                 ) {
                     presenter.onEditStackMachinePressed(machine: $cableMachines)
                 }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.cableMachines, machine: cableMachines)
+                }
             }
         } header: {
             Text("Cable Machines")
@@ -392,9 +407,35 @@ private struct GymProfileMachineSectionsView: View {
                 ) {
                     presenter.onEditPlateLoadedMachinePressed(plateLoadedMachine: $plateLoadedMachines)
                 }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.plateLoadedMachines, machine: plateLoadedMachines)
+                }
             }
         } header: {
             Text("Plate Loaded Machines")
+        }
+    }
+
+    /// Duplicate for every machine; Delete, last and destructive, only for the user's own and
+    /// duplicated ones, since a catalogue machine would come back on the next load.
+    @ViewBuilder
+    private func machineActions<Machine: CustomizableMachine>(
+        in list: WritableKeyPath<GymProfileModel, [Machine]>,
+        machine: Machine
+    ) -> some View {
+        Button {
+            presenter.onDuplicateMachinePressed(in: list, id: machine.id)
+        } label: {
+            Label("Duplicate", systemImage: Symbol.duplicate)
+        }
+        .tint(.accentColor)
+        if machine.isCustom {
+            Button(role: .destructive) {
+                presenter.onDeleteMachinePressed(machine: machine)
+            } label: {
+                Label("Delete", systemImage: Symbol.delete)
+            }
         }
     }
 
@@ -415,6 +456,10 @@ private struct GymProfileMachineSectionsView: View {
                     isActive: $pinLoadedMachines.isActive
                 ) {
                     presenter.onEditStackMachinePressed(machine: $pinLoadedMachines)
+                }
+                // One set of actions, so the swipe and the context menu offer the same.
+                .rowActions(allowsFullSwipe: false) {
+                    machineActions(in: \.pinLoadedMachines, machine: pinLoadedMachines)
                 }
             }
         } header: {

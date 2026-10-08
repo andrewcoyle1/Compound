@@ -6,6 +6,12 @@ struct EditPlateLoadedMachineView: View {
     
     var body: some View {
         List {
+            if presenter.isCustom {
+                Section("Name") {
+                    TextField(String(localized: "Name"), text: $presenter.plateLoadedMachine.name)
+                        .font(.rowTitle)
+                }
+            }
             pickerSection
         }
         .navigationTitle(presenter.plateLoadedMachine.name)

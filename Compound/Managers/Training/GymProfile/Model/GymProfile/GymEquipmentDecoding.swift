@@ -39,9 +39,10 @@ private struct SkippedElement: Decodable {
 extension Array where Element: GymEquipmentItem {
 
     /// The stored list, followed by every catalogue item it lacks, switched off. This is how
-    /// equipment added to the catalogue in a later release reaches gyms saved before it. Items
-    /// cannot be deleted from a gym, so an id missing from the stored list was never there, and
-    /// appending it brings back nothing the user removed. A missing list is the catalogue as is.
+    /// equipment added to the catalogue in a later release reaches gyms saved before it. Only the
+    /// user's own and duplicated machines can be deleted, and their ids are ones the catalogue
+    /// never had, so a catalogue id missing from the stored list was never there, and appending
+    /// it brings back nothing the user removed. A missing list is the catalogue as is.
     static func mergingCatalogue(_ stored: [Element]?, _ catalogue: [Element]) -> [Element] {
         guard let stored else { return catalogue }
         let storedIds = Set(stored.map(\.id))

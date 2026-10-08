@@ -258,4 +258,31 @@ struct GymProfileDecodingTests {
 
         #expect(profile.equipment(for: first.equipmentRef)?.name == first.name)
     }
+
+    // MARK: - Type ids
+
+    /// Items saved before custom and duplicate machines carry no `typeId`: each is its own type,
+    /// so every exercise that named it still finds it.
+    @Test("Test Items Without A Type Id Are Their Own Type", arguments: ["mock", "default"])
+    func testItemsWithoutATypeIdAreTheirOwnType(profileKey: String) throws {
+        let profile = try decode(try fixtureProfile(profileKey))
+
+        #expect(!profile.allEquipment.isEmpty)
+        #expect(profile.allEquipment.allSatisfy { $0.ref.equipmentId == $0.instanceId })
+    }
+
+    /// A duplicate keeps its own id and its original's type through a save and a load.
+    @Test("Test A Duplicate Keeps Its Type Id Through Encoding")
+    func testADuplicateKeepsItsTypeIdThroughEncoding() throws {
+        var profile = GymProfileModel(authorId: "author-1")
+        let copyIdResult = profile.duplicateMachine(in: \.cableMachines, id: "cable_lat_pulldown_machine")
+        let copyId = try #require(copyIdResult)
+
+        let decoded = try JSONDecoder().decode(GymProfileModel.self, from: JSONEncoder().encode(profile))
+
+        let copy = try #require(decoded.cableMachines.first { $0.id == copyId })
+        #expect(copy.typeId == "cable_lat_pulldown_machine")
+        #expect(copy.equipmentRef == EquipmentRef(kind: .cableMachine, id: "cable_lat_pulldown_machine"))
+        #expect(decoded.cableMachines.count == profile.cableMachines.count)
+    }
 }

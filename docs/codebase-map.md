@@ -96,29 +96,29 @@ uid, and indexed in `firestore.indexes.json`. Adding one means all three plus a 
 | `Compound/Core/Nutrition` | 142 | 13,398 | Nutrition tab: meal log, foods, recipes, check-in, library picker, AI scanners |
 | `Compound/Core/Onboarding` | 98 | 7,186 | Numbered onboarding steps 0–9 (see OnboardingStepRouter) |
 | `Compound/Core/Paywalls` | 9 | 888 | Paywall screens |
-| `Compound/Core/Profile` | 177 | 12,016 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
+| `Compound/Core/Profile` | 181 | 12,382 | Settings (behind the profile's gear) and every settings screen (training, nutrition, general, edit profile, legal) |
 | `Compound/Core/Sharing` | 8 | 526 | Share-to-follower and shared-item viewer |
 | `Compound/Core/TabBar` | 5 | 518 | Tab bar, DeepLink parsing, tab selection |
-| `Compound/Core/Training` | 270 | 27,957 | Training tab: workouts, tracker, programs, history, create flows |
-| `Compound/Components` | 70 | 6,616 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
-| `Compound/Managers` | 277 | 34,526 | App-owned managers, models and services (see Managers table) |
+| `Compound/Core/Training` | 270 | 27,962 | Training tab: workouts, tracker, programs, history, create flows |
+| `Compound/Components` | 70 | 6,617 | Reusable views, buttons, modals, charts (QuickCharts alias), view modifiers |
+| `Compound/Managers` | 278 | 34,762 | App-owned managers, models and services (see Managers table) |
 | `Compound/Root` | 22 | 3,663 | AppDelegate, CompoundApp, Dependencies DI root, CoreInteractor/Builder/Router, Global protocols |
 | `Compound/Utilities` | 13 | 898 | Constants, Keys, NetworkMonitor, App Check factory, unit conversion, helpers |
 | `Compound/Extensions` | 13 | 622 | Foundation/SwiftUI type extensions (`X+EXT.swift`) |
 | `Compound/SupportingFiles` | 316 | 6,025 | Assets, entitlements, GoogleService plists, privacy manifest, seed JSON |
 | `Shared` | 5 | 776 | Code compiled into both the app and the Live Activity extension |
 | `WorkoutSessionActivity` | 263 | 2,614 | Live Activity / Dynamic Island / home widget extension |
-| `CompoundUnitTests` | 351 | 102,752 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
+| `CompoundUnitTests` | 352 | 103,212 | Swift Testing unit suites (BlueprintName CompoundUnitTests) |
 | `CompoundUITests` | 9 | 1,119 | XCUITest smoke and create-flow tests (launch via STARTSCREEN) |
 | `functions` | 20 | 23,295 | Firebase Cloud Functions v2 (Node ESM, Genkit/Vertex) |
 | `hosting` | 1 | 7 | Firebase Hosting landing page |
 | `scripts` | 6 | 701 | Screenshot, contact-sheet, smoke-test generation, this map |
-| `docs` | 64 | 16,589 | Specs, reviews, audits, this map |
+| `docs` | 64 | 16,606 | Specs, reviews, audits, this map |
 
 ## Screens and VIPER components
 
 Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift`. *Routes to* is what the module's router protocol can open; *Delegate / entry* is the input struct and the `showXView` defined at the bottom of its View file; *Extra files* are presenter splits and helper views.
-197 presenter-backed modules.
+198 presenter-backed modules.
 
 ### `Compound/Components` (3 modules)
 
@@ -262,7 +262,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 |---|---|---:|---|---|---|---|
 | **Paywall** | [Paywall](Compound/Core/Paywalls/Paywall) | 561 |  | `showPaywall` |  | PaywallPresenterTests.swift |
 
-### `Compound/Core/Profile` (43 modules)
+### `Compound/Core/Profile` (44 modules)
 
 | Module | Folder | Lines | Routes to | Delegate / entry | Extra files | Tests |
 |---|---|---:|---|---|---|---|
@@ -287,7 +287,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **StrategySettings** | [Subviews/NutritionSettings/StrategySettings](Compound/Core/Profile/Subviews/NutritionSettings/StrategySettings) | 286 |  | StrategySettingsDelegate, `showStrategySettingsView` |  |  |
 | **ExerciseAssessment** | [Subviews/TrainingSettings/ExerciseAssessment](Compound/Core/Profile/Subviews/TrainingSettings/ExerciseAssessment) | 122 |  | ExerciseAssessmentDelegate, `showExerciseAssessmentView` |  |  |
 | **GymProfiles** | [Subviews/TrainingSettings/GymProfiles](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles) | 397 | GymProfile | `showGymProfilesView` | EquipmentColourPicker.swift, GymEquipmentFormat.swift | GymProfilesListPresenterTests.swift |
-| **GymProfile** | [Subviews/TrainingSettings/GymProfiles/GymProfile](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile) | 901 | EditBand, EditBodyWeight, EditFixedWeightBar, EditFreeWeight, EditLoadableAccessory, EditLoadableBar, EditPlateLoadedMachine | GymProfileDelegate, `showGymProfileView` |  | GymProfilePresenterTests.swift |
+| **GymProfile** | [Subviews/TrainingSettings/GymProfiles/GymProfile](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile) | 1015 | AddGymMachine, EditBand, EditBodyWeight, EditFixedWeightBar, EditFreeWeight, EditLoadableAccessory, EditLoadableBar, EditPlateLoadedMachine | GymProfileDelegate, `showGymProfileView` |  | GymProfilePresenterTests.swift |
+| **AddGymMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/AddGymMachine) | 221 |  | AddGymMachineDelegate, `showAddGymMachineView` |  |  |
 | **CreateGymProfile** | [Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/CreateGymProfile) | 178 | GymProfile | CreateGymProfileDelegate, `showCreateGymProfileView` |  |  |
 | **EditBand** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand) | 248 | AddBand | `showEditBandView` |  |  |
 | **AddBand** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand/AddBand](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditBand/AddBand) | 257 |  | AddBandDelegate, `showAddBandView` |  |  |
@@ -300,8 +301,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **EditLoadableAccessory** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableAccessory](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableAccessory) | 166 |  | `showEditLoadableAccessoryView` |  |  |
 | **EditLoadableBar** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar) | 268 | AddLoadableBar | `showEditLoadableBarView` |  |  |
 | **AddLoadableBar** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar/AddLoadableBar](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditLoadableBar/AddLoadableBar) | 203 |  | AddLoadableBarDelegate, `showAddLoadableBarView` |  |  |
-| **EditPlateLoadedMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine) | 176 |  | `showEditPlateLoadedMachineView` |  |  |
-| **EditStackMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine) | 249 | AddWeightStack, EditWeightRange |  |  |  |
+| **EditPlateLoadedMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditPlateLoadedMachine) | 191 |  | `showEditPlateLoadedMachineView` |  |  |
+| **EditStackMachine** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine) | 265 | AddWeightStack, EditWeightRange |  |  |  |
 | **AddWeightStack** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine/AddWeightStack](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditStackMachine/AddWeightStack) | 216 |  | AddWeightStackDelegate, `showAddWeightStackView` |  |  |
 | **EditWeightRange** | [Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange](Compound/Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/EditWeightRange) | 316 |  | EditWeightRangeDelegate, `showEditWeightRangeView` |  |  |
 | **WorkoutSettings** | [Subviews/TrainingSettings/WorkoutSettings](Compound/Core/Profile/Subviews/TrainingSettings/WorkoutSettings) | 420 | ExerciseAssessment, RestTimerSettings, SmartProgressionSettings | WorkoutSettingsDelegate, `showWorkoutSettingsView` |  |  |
@@ -353,8 +354,8 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ActiveMesocycle** | [Subviews/ActiveMesocycle](Compound/Core/Training/Subviews/ActiveMesocycle) | 582 | EditMesocycle, WorkoutSessionDetail, WorkoutTemplateDetail, WorkoutTracker | ActiveMesocycleDelegate, `showActiveMesocycleView` |  | ActiveMesocyclePresenterTests.swift |
 | **CreateExercise** | [Subviews/AddTraining/CreateExercise](Compound/Core/Training/Subviews/AddTraining/CreateExercise) | 302 | MuscleGroupPicker | `showCreateExerciseView` |  | CreateExerciseEquipmentPresenterTests.swift, CreateExerciseFlowPresenterTests.swift |
 | **EquipmentPicker** | [Subviews/AddTraining/CreateExercise/EquipmentPicker](Compound/Core/Training/Subviews/AddTraining/CreateExercise/EquipmentPicker) | 243 |  | EquipmentPickerDelegate, `showEquipmentPickerView` |  |  |
-| **ExerciseEquipment** | [Subviews/AddTraining/CreateExercise/ExerciseEquipment](Compound/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseEquipment) | 319 | EquipmentPicker, FinalExerciseDetails | ExerciseEquipmentDelegate, `showExerciseEquipmentView` |  |  |
-| **ExerciseSave** | [Subviews/AddTraining/CreateExercise/ExerciseSave](Compound/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseSave) | 368 |  | ExerciseSaveDelegate, `showExerciseSaveView` |  |  |
+| **ExerciseEquipment** | [Subviews/AddTraining/CreateExercise/ExerciseEquipment](Compound/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseEquipment) | 315 | EquipmentPicker, FinalExerciseDetails | ExerciseEquipmentDelegate, `showExerciseEquipmentView` |  |  |
+| **ExerciseSave** | [Subviews/AddTraining/CreateExercise/ExerciseSave](Compound/Core/Training/Subviews/AddTraining/CreateExercise/ExerciseSave) | 369 |  | ExerciseSaveDelegate, `showExerciseSaveView` |  |  |
 | **FinalExerciseDetails** | [Subviews/AddTraining/CreateExercise/FinalExerciseDetails](Compound/Core/Training/Subviews/AddTraining/CreateExercise/FinalExerciseDetails) | 310 | ExerciseSave | FinalExerciseDetailsDelegate, `showFinalExerciseDetailsView` |  |  |
 | **MuscleGroupPicker** | [Subviews/AddTraining/CreateExercise/MuscleGroupPicker](Compound/Core/Training/Subviews/AddTraining/CreateExercise/MuscleGroupPicker) | 300 | ExerciseEquipment | MuscleGroupPickerDelegate, `showMuscleGroupPickerView` |  |  |
 | **CreateMesocycle** | [Subviews/AddTraining/CreateMesocycle/CreateMesocycle](Compound/Core/Training/Subviews/AddTraining/CreateMesocycle/CreateMesocycle) | 273 | NameMesocycle, PrebuiltMesocycleDetail | CreateMesocycleDelegate, `showCreateMesocycleView`, `showOnboardingMesocycleView` |  | CreateMesocycleFlowPresenterTests.swift |
@@ -375,7 +376,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **MicrocycleVariations** | [Subviews/AddTraining/CreateWorkout/SetTarget/MicrocycleVariations](Compound/Core/Training/Subviews/AddTraining/CreateWorkout/SetTarget/MicrocycleVariations) | 296 | SetTarget | MicrocycleVariationsDelegate, `showMicrocycleVariationsView` |  | MicrocycleVariationsPresenterTests.swift |
 | **ExerciseSettings** | [Subviews/ExerciseSettings](Compound/Core/Training/Subviews/ExerciseSettings) | 341 | ExerciseModelDetail, RestModal, RestTimerSettings, WorkoutNotes | ExerciseSettingsDelegate, `showExerciseSettingsView` |  |  |
 | **Exercises** | [Subviews/Exercises](Compound/Core/Training/Subviews/Exercises) | 135 | CreateExercise, ExerciseModelDetail | `showExercisesView` |  |  |
-| **ExerciseTemplateDetail** | [Subviews/Exercises/ExerciseTemplateDetail](Compound/Core/Training/Subviews/Exercises/ExerciseTemplateDetail) | 855 |  | ExerciseModelDetailDelegate, `showDeleteConfirmation`, `showExerciseModelDetailView` | ExerciseModelDetailStats.swift, ExerciseTemplateDetailDelegate.swift |  |
+| **ExerciseTemplateDetail** | [Subviews/Exercises/ExerciseTemplateDetail](Compound/Core/Training/Subviews/Exercises/ExerciseTemplateDetail) | 861 |  | ExerciseModelDetailDelegate, `showDeleteConfirmation`, `showExerciseModelDetailView` | ExerciseModelDetailStats.swift, ExerciseTemplateDetailDelegate.swift |  |
 | **ImportProgram** | [Subviews/ImportProgram](Compound/Core/Training/Subviews/ImportProgram) | 582 | ImportExercisePicker | ImportProgramDelegate, `showImportExercisePickerView`, `showImportProgramView` |  | ImportProgramPresenterTests.swift |
 | **Macrocycles** | [Subviews/Macrocycles](Compound/Core/Training/Subviews/Macrocycles) | 228 | ImportProgram, MacrocycleDetail | `showMacrocyclesView` |  | MacrocyclesPresenterTests.swift |
 | **MacrocycleDetail** | [Subviews/Macrocycles/MacrocycleDetail](Compound/Core/Training/Subviews/Macrocycles/MacrocycleDetail) | 426 |  | MacrocycleDetailDelegate, `showMacrocycleDetailView` |  | MacrocycleDetailPresenterTests.swift |
@@ -393,7 +394,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **SetKeyboard** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard) | 931 |  |  | SetKeyboardTextField.swift | SetKeyboardPresenterTests.swift |
 | **SwapExercisePicker** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SwapExercisePicker) | 199 |  | `showSwapExercisePickerView` |  |  |
 | **WarmupSets** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WarmupSets) | 180 |  | WarmupSetsDelegate, `showWarmupSetsView` |  |  |
-| **WorkoutExerciseEquipmentSheet** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet) | 320 |  | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
+| **WorkoutExerciseEquipmentSheet** | [Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet](Compound/Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/WorkoutExerciseEquipmentSheet) | 322 |  | WorkoutExerciseEquipmentSheetDelegate, `showWorkoutExerciseEquipmentSheetView` |  |  |
 | **WorkoutNotes** | [Subviews/WorkoutTracker/WorkoutNotes](Compound/Core/Training/Subviews/WorkoutTracker/WorkoutNotes) | 183 |  | WorkoutNotesDelegate, `showWorkoutNotesView` |  |  |
 | **Workouts** | [Subviews/Workouts](Compound/Core/Training/Subviews/Workouts) | 151 | WorkoutTemplateDetail, WorkoutTracker | WorkoutsDelegate, `showWorkoutsView` |  |  |
 
@@ -430,7 +431,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | **ExerciseModelManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseModelManager.swift) | 195 | Collection<ExerciseModel> | BodyRegion, EquipmentVariation, ExerciseDefinitionRules, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MicrocycleSetTargets, MuscleVolume, Muscles, … +6 more |  |  |  |
 | **ExerciseSettingsManager** | [Compound/Managers/Training/Exercise/ExerciseSettings](Compound/Managers/Training/Exercise/ExerciseSettings/ExerciseSettingsManager.swift) | 76 | Collection<ExerciseSettingsModel> | ExerciseSettingsModel |  |  | ExerciseSettingsManagerTests.swift |
 | **ExerciseUnitPreferenceManager** | [Compound/Managers/Training/Exercise](Compound/Managers/Training/Exercise/ExerciseUnitPreferenceManager.swift) | 161 |  | BodyRegion, EquipmentVariation, ExerciseDefinitionRules, ExerciseModel, ExerciseType, ExerciseUnitPreference, Laterality, MicrocycleSetTargets, MuscleVolume, Muscles, … +6 more |  |  | ExerciseUnitPreferenceManagerTests.swift |
-| **GymProfileManager** | [Compound/Managers/Training/GymProfile](Compound/Managers/Training/GymProfile/GymProfileManager.swift) | 110 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +20 more |  |  | GymProfileManagerTests.swift |
+| **GymProfileManager** | [Compound/Managers/Training/GymProfile](Compound/Managers/Training/GymProfile/GymProfileManager.swift) | 116 | Collection<GymProfileModel> | AccessoryEquipment, AnyEquipment, Bands, BodyWeights, BodyWeights+Defaults, CableMachine, EquipmentConformances, EquipmentKind, EquipmentRef, FixedWeightBars, … +21 more |  |  | GymProfileManagerTests.swift |
 | **MacrocycleManager** | [Compound/Managers/Training/Macrocycle](Compound/Managers/Training/Macrocycle/MacrocycleManager.swift) | 311 | Collection<Macrocycle> | Macrocycle |  |  | MacrocycleManagerTests.swift |
 | **MesocycleManager** | [Compound/Managers/Training/Mesocycle](Compound/Managers/Training/Mesocycle/MesocycleManager.swift) | 274 | Collection<Mesocycle> | Mesocycle |  |  | MesocycleManagerTests.swift |
 | **WorkoutSessionManager** | [Compound/Managers/Training/WorkoutSession](Compound/Managers/Training/WorkoutSession/WorkoutSessionManager.swift) | 452 | Collection<WorkoutSessionModel>, CollectionGroup<WorkoutSessionModel> | SetKind, SetSide, WorkoutExerciseModel, WorkoutSessionComment, WorkoutSessionModel, WorkoutSessionModel+Prefill, WorkoutSessionModel+WarmupSets, WorkoutSetModel, WorkoutSetPairing | FirebaseWorkoutSessionLikeService, MockWorkoutSessionLikeService, WorkoutSessionLikeService |  | WorkoutSessionManagerTests.swift |
@@ -630,7 +631,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 
 **`CompoundUnitTests/Services/Training/ExerciseTemplate/Models`** (4): `ExerciseTemplateEnumTests`, `ExerciseTemplateModelCodableAndProtocolTests`, `ExerciseTemplateModelInitializationTests`, `ExerciseTemplateModelMockAndEdgeCasesTests`
 
-**`CompoundUnitTests/Services/Training/GymProfile`** (2): `GymProfileDecodingTests`, `GymProfileManagerTests`
+**`CompoundUnitTests/Services/Training/GymProfile`** (3): `GymCustomMachinesTests`, `GymProfileDecodingTests`, `GymProfileManagerTests`
 
 **`CompoundUnitTests/Services/Training/Mesocycle`** (2): `MesocycleManagerTests`, `PrebuiltMesocycleTests`
 
@@ -689,7 +690,7 @@ Each row is one folder holding `<Module>{Interactor,Presenter,Router,View}.swift
 | [docs/reviews/tab-layout-ux-audit.md](docs/reviews/tab-layout-ux-audit.md) | 184 |
 | [docs/specs/adaptive-expenditure.md](docs/specs/adaptive-expenditure.md) | 281 |
 | [docs/specs/ai-coach.md](docs/specs/ai-coach.md) | 70 |
-| [docs/specs/gym-equipment/plan.md](docs/specs/gym-equipment/plan.md) | 237 |
+| [docs/specs/gym-equipment/plan.md](docs/specs/gym-equipment/plan.md) | 254 |
 | [docs/specs/live-activity-work-packages.md](docs/specs/live-activity-work-packages.md) | 372 |
 | [docs/specs/live-activity.md](docs/specs/live-activity.md) | 316 |
 | [docs/specs/programs/import-format.md](docs/specs/programs/import-format.md) | 127 |

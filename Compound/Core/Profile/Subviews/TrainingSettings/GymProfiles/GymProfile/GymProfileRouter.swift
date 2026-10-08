@@ -10,6 +10,7 @@ protocol GymProfileRouter: OnboardingStepRouter {
     func showEditLoadableAccessoryView(loadableAccessory: Binding<LoadableAccessoryEquipment>)
     func showEditStackMachineView<Machine: StackMachine>(machine: Binding<Machine>)
     func showEditPlateLoadedMachineView(plateLoadedMachine: Binding<PlateLoadedMachine>)
+    func showAddGymMachineView(delegate: AddGymMachineDelegate)
     
 }
 

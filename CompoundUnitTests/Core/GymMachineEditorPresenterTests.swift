@@ -241,6 +241,35 @@ struct GymEditStackMachinePresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["EditStackMachineView_Appear"])
     }
+
+    // MARK: - Renaming
+
+    /// Only the user's own machines and duplicates are renamed; a catalogue name is what the
+    /// catalogue merge and exercises expect.
+    @Test("Test A Duplicate Can Be Renamed And A Catalogue Machine Cannot")
+    func testADuplicateCanBeRenamedAndACatalogueMachineCannot() throws {
+        let catalogue = try #require(CableMachine.catalogue.first)
+        var copy = catalogue
+        copy.id = "copy"
+        copy.name = "\(catalogue.name) 2"
+
+        #expect(!makeScreen(catalogue).presenter.isCustom)
+        let screen = makeScreen(copy)
+        #expect(screen.presenter.isCustom)
+
+        screen.presenter.machine.name = "Hammer Pulldown"
+        #expect(screen.box.value.name == "Hammer Pulldown")
+    }
+
+    @Test("Test A Name Cleared To Nothing Is Restored On Leaving")
+    func testANameClearedToNothingIsRestoredOnLeaving() {
+        let screen = cable([])
+
+        screen.presenter.machine.name = "  "
+        screen.presenter.onViewDisappear()
+
+        #expect(screen.box.value.name == "Lat Pulldown")
+    }
 }
 
 /// A plate-loaded machine, which has one number: the weight of the sled before any plates go on.
@@ -296,6 +325,20 @@ struct GymEditPlateLoadedMachinePresenterTests {
         presenter.plateLoadedMachine.sleeves = 1
 
         #expect(box.value.sleeves == 1)
+    }
+
+    /// "hack-squat" is not a catalogue id, so this stands for a machine of the user's own.
+    @Test("Test A Machine Of The Users Own Is Renamed, And Keeps Its Name If Cleared")
+    func testAMachineOfTheUsersOwnIsRenamed() {
+        let (presenter, box) = makeScreen()
+        #expect(presenter.isCustom)
+
+        presenter.plateLoadedMachine.name = "Garage Sled"
+        #expect(box.value.name == "Garage Sled")
+
+        presenter.plateLoadedMachine.name = ""
+        presenter.onViewDisappear()
+        #expect(box.value.name == "Hack Squat")
     }
 
     /// The presenter reads and writes the gym profile's machine directly rather than a copy, so an

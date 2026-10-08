@@ -82,8 +82,7 @@ struct WeightStack: Identifiable, Codable, Hashable {
 // MARK: - Machines with a stack
 
 /// A cable or pin-loaded machine: one or more stacks, and the one it is taken to be set to.
-protocol StackMachine {
-    var name: String { get }
+protocol StackMachine: CustomizableMachine {
     var ranges: [WeightStack] { get set }
     var defaultRangeId: String? { get set }
 }

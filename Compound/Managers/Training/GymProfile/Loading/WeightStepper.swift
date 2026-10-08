@@ -199,10 +199,13 @@ enum WeightStepper {
 
     // swiftlint:disable:next cyclomatic_complexity
     private static func step(for ref: EquipmentRef, profile: GymProfileModel, unit: ExerciseWeightUnit) -> WeightStep? {
+        // Exercises name a type, and a gym can hold several of one (two lat pulldowns), so this
+        // takes the first switched-on item of the type in stored order. Choosing a particular
+        // one in a session belongs to the exercise-variation work.
         let id = ref.equipmentId
         switch ref.kind {
         case .loadableBar:
-            guard let bar = profile.loadableBars.first(where: { $0.id == id && $0.isActive }),
+            guard let bar = profile.loadableBars.first(where: { $0.typeId == id && $0.isActive }),
                   let base = bar.defaultBaseWeight ?? bar.baseWeights.first(where: \.isActive) else { return nil }
             let barWeight = convert(base.baseWeight, from: base.unit, to: unit)
             let collars = convert(bar.collarWeight * 2, from: .kilograms, to: unit)
@@ -212,31 +215,31 @@ enum WeightStepper {
             return plateLoaded(base: ((barWeight + collars) * 1000).rounded() / 1000, chip: chip, sleeves: 2, profile: profile, unit: unit)
 
         case .plateLoadedMachine:
-            guard let machine = profile.plateLoadedMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let machine = profile.plateLoadedMachines.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             let base = convert(machine.baseWeight, from: machine.unit, to: unit)
             let chip = String(localized: "Bar \(format(base)) \(unit.abbreviation)")
             return plateLoaded(base: base, chip: chip, sleeves: machine.sleeves, profile: profile, unit: unit)
 
         case .cableMachine:
-            guard let machine = profile.cableMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let machine = profile.cableMachines.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             return ranged(machine.ranges.filter(\.isActive), defaultId: machine.defaultRangeId, unit: unit)
 
         case .pinLoadedMachine:
-            guard let machine = profile.pinLoadedMachines.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let machine = profile.pinLoadedMachines.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             return ranged(machine.ranges.filter(\.isActive), defaultId: machine.defaultRangeId, unit: unit)
 
         case .freeWeight:
-            guard let item = profile.freeWeights.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let item = profile.freeWeights.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             let weights = inUnit(item.range.filter(\.isActive).map { ($0.availableWeights, $0.unit) }, unit: unit)
             return weights.isEmpty ? nil : WeightStep(kind: .list(weights), chip: nil, baseWeight: nil, plates: [])
 
         case .fixedWeightBar:
-            guard let bar = profile.fixedWeightBars.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let bar = profile.fixedWeightBars.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             let weights = inUnit(bar.baseWeights.filter(\.isActive).map { ($0.baseWeight, $0.unit) }, unit: unit)
             return weights.isEmpty ? nil : WeightStep(kind: .list(weights), chip: nil, baseWeight: nil, plates: [])
 
         case .bands:
-            guard let bands = profile.bands.first(where: { $0.id == id && $0.isActive }) else { return nil }
+            guard let bands = profile.bands.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             let active = bands.range.filter(\.isActive)
                 .sorted { convert($0.availableResistance, from: $0.unit, to: .kilograms) < convert($1.availableResistance, from: $1.unit, to: .kilograms) }
             return active.isEmpty ? nil : WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], constrainsWeight: false, bands: active.map(\.name))

@@ -16,12 +16,18 @@ class EditStackMachinePresenter<Machine: StackMachine> {
         }
     }
     var selectedUnit: ExerciseWeightUnit
+    private let originalName: String
+
+    /// Only a duplicate or the user's own machine can be renamed; catalogue names are what
+    /// exercises and the catalogue merge expect.
+    var isCustom: Bool { machine.isCustom }
 
     init(interactor: EditStackMachineInteractor, router: EditStackMachineRouter, machineBinding: Binding<Machine>) {
         self.interactor = interactor
         self.router = router
         self.machineBinding = machineBinding
         self.machine = machineBinding.wrappedValue
+        self.originalName = machineBinding.wrappedValue.name
         self.selectedUnit = machineBinding.wrappedValue.defaultRange?.unit ?? .kilograms
     }
 
@@ -31,6 +37,10 @@ class EditStackMachinePresenter<Machine: StackMachine> {
 
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
+        // A machine left without a name keeps the one it had.
+        if machine.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            machine.name = originalName
+        }
     }
 
     /// The stacks in `unit`, by name, so the list does not reshuffle as stacks come and go.

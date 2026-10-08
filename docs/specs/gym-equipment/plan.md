@@ -235,3 +235,20 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   suggestion sets the weight; Add Set, the Prev tap and splitting sides carry them. Not changed:
   Strava's description (its own formatter), share cards, drop and mini-sets. New
   `SetBandsDisplayTests`.
+- 8 Oct 2026: **G5 landed** (`wp-g5-custom-machines`). Every item has `typeId` (missing → its `id`, encoded
+  from now on); `equipmentRef` uses it and `AnyEquipment` keeps the type as `ref` but is
+  identified by kind and instance id (`instanceId`). `WeightStepper` matches `typeId` and takes the
+  first active instance in stored order. `CustomizableMachine` (cable, pin-loaded, plate-loaded;
+  `StackMachine` refines it) carries the catalogue and `isCustom` (an id the catalogue lacks).
+  `GymProfileModel+Machines.swift`: `duplicateMachine` (new UUID, same type, "<name> 2" or the next
+  free number, after the original), `addMachine(kind:name:worksAs:)` (a catalogue type's loading,
+  or for one of its own the first catalogue stack, or base 0 kg on two sleeves) and
+  `deleteMachine(kind:id:)` (custom only), and `equipmentTypes(including:)`: the catalogue plus
+  stand-alone machines from the user's gyms, once per ref. Gym screen: Duplicate and (custom only)
+  Delete as row actions on the three machine sections, swipe and context menu alike, Delete
+  confirmed by an alert; "Add Machine…" in the toolbar's + menu opens a form (kind, name, Works as)
+  whose machine is added on dismiss and opens its editor. Both machine editors rename custom
+  machines (a cleared name reverts). Gym rows bind by id, not position. Exercise creation, the
+  equipment sheet, exercise save and exercise detail (which printed ids) name refs through
+  `CoreInteractor.allEquipmentTypes` and `[AnyEquipment].name(for:)`. New `GymCustomMachinesTests`
+  and `AddGymMachinePresenterTests`.

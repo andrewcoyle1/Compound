@@ -6,6 +6,12 @@ struct EditStackMachineView<Machine: StackMachine>: View {
 
     var body: some View {
         List {
+            if presenter.isCustom {
+                Section("Name") {
+                    TextField(String(localized: "Name"), text: $presenter.machine.name)
+                        .font(.rowTitle)
+                }
+            }
             weightsList
         }
         .navigationTitle(presenter.machine.name)

@@ -23,6 +23,16 @@
         }
       }
     },
+    "%@ %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld"
+          }
+        }
+      }
+    },
     "%@ %lld:%@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -923,6 +933,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ quiere seguirte"
+          }
+        }
+      }
+    },
+    "%@ will be removed from this gym." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ se quitará de este gimnasio."
           }
         }
       }
@@ -4077,6 +4097,26 @@
         }
       }
     },
+    "Add Machine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir máquina"
+          }
+        }
+      }
+    },
+    "Add Machine…" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir máquina…"
+          }
+        }
+      }
+    },
     "Add Meal" : {
       "localizations" : {
         "es" : {
@@ -6661,6 +6701,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "COMPOUND"
+          }
+        }
+      }
+    },
+    "Cable" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polea"
           }
         }
       }
@@ -9464,6 +9514,16 @@
         }
       }
     },
+    "Delete Machine?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar máquina?"
+          }
+        }
+      }
+    },
     "Delete Macrocycle" : {
       "localizations" : {
         "es" : {
@@ -10390,6 +10450,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los descensos y las miniseries cuentan con su serie. La progresión se planifica desde la primera parte."
+          }
+        }
+      }
+    },
+    "Duplicate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar"
           }
         }
       }
@@ -11579,6 +11649,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejercicios y entrenamientos"
+          }
+        }
+      }
+    },
+    "Exercises for the chosen machine use this one too. With None, it is a machine of its own that you can pick when creating an exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los ejercicios de la máquina elegida también usan esta. Con Ninguno, es una máquina propia que puedes elegir al crear un ejercicio."
           }
         }
       }
@@ -14238,6 +14318,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kilómetros y metros"
+          }
+        }
+      }
+    },
+    "Kind" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo"
           }
         }
       }
@@ -19230,6 +19320,16 @@
         }
       }
     },
+    "Pin-loaded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De placas"
+          }
+        }
+      }
+    },
     "Plain" : {
       "shouldTranslate" : false
     },
@@ -19331,6 +19431,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Máquinas de discos"
+          }
+        }
+      }
+    },
+    "Plate-loaded" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De discos"
           }
         }
       }
@@ -30173,6 +30283,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamientos, planes y notas"
+          }
+        }
+      }
+    },
+    "Works as" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funciona como"
           }
         }
       }

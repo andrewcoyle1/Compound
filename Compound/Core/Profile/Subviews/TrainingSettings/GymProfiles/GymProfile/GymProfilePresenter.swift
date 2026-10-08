@@ -191,11 +191,79 @@ class GymProfilePresenter {
             return matchesQuery && matchesFilter
         }
         let sortedIndices = sortedIndicesByName(items: items, indices: indices)
-        return sortedIndices.map { index in
-            Binding(
-                get: { self.gymProfile[keyPath: keyPath][index] },
-                set: { self.gymProfile[keyPath: keyPath][index] = $0 }
-            )
+        return sortedIndices.map { binding(for: keyPath, id: items[$0].id, fallback: items[$0]) }
+    }
+
+    /// Follows the item by id rather than position, since machines can now be inserted and
+    /// deleted: a row mid-removal reads as it last was, and writing to it changes nothing.
+    private func binding<T: GymEquipmentItem>(
+        for keyPath: WritableKeyPath<GymProfileModel, [T]>,
+        id: String,
+        fallback: T
+    ) -> Binding<T> {
+        Binding(
+            get: { self.gymProfile[keyPath: keyPath].first { $0.id == id } ?? fallback },
+            set: { updated in
+                guard let index = self.gymProfile[keyPath: keyPath].firstIndex(where: { $0.id == id }) else { return }
+                self.gymProfile[keyPath: keyPath][index] = updated
+            }
+        )
+    }
+
+    // MARK: Machines
+
+    /// A second machine of the same type, such as another lat pulldown, which the user can then
+    /// rename and set up. Nothing opens: the copy appears beside the original.
+    func onDuplicateMachinePressed<Machine: CustomizableMachine>(in list: WritableKeyPath<GymProfileModel, [Machine]>, id: String) {
+        guard gymProfile.duplicateMachine(in: list, id: id) != nil else { return }
+        interactor.playHaptic(option: .success)
+    }
+
+    func onDeleteMachinePressed<Machine: CustomizableMachine>(machine: Machine) {
+        guard machine.isCustom else { return }
+        let id = machine.id
+        let kind = Machine.kind
+        router.showAlert(
+            title: String(localized: "Delete Machine?"),
+            subtitle: String(localized: "\(machine.name) will be removed from this gym."),
+            buttons: {
+                AnyView(
+                    Group {
+                        Button("Delete", role: .destructive) {
+                            self.deleteMachine(kind: kind, id: id)
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    }
+                )
+            }
+        )
+    }
+
+    func deleteMachine(kind: EquipmentKind, id: String) {
+        gymProfile.deleteMachine(kind: kind, id: id)
+    }
+
+    func onAddMachinePressed() {
+        router.showAddGymMachineView(delegate: AddGymMachineDelegate { [weak self] draft in
+            self?.addMachine(draft)
+        })
+    }
+
+    /// Adds the machine and opens its editor, where its stacks or base weight are set up.
+    func addMachine(_ draft: GymMachineDraft) {
+        guard let id = gymProfile.addMachine(kind: draft.kind, name: draft.name, worksAs: draft.worksAs) else { return }
+        switch draft.kind {
+        case .cableMachine:
+            guard let machine = gymProfile.cableMachines.first(where: { $0.id == id }) else { return }
+            onEditStackMachinePressed(machine: binding(for: \.cableMachines, id: id, fallback: machine))
+        case .pinLoadedMachine:
+            guard let machine = gymProfile.pinLoadedMachines.first(where: { $0.id == id }) else { return }
+            onEditStackMachinePressed(machine: binding(for: \.pinLoadedMachines, id: id, fallback: machine))
+        case .plateLoadedMachine:
+            guard let machine = gymProfile.plateLoadedMachines.first(where: { $0.id == id }) else { return }
+            onEditPlateLoadedMachinePressed(plateLoadedMachine: binding(for: \.plateLoadedMachines, id: id, fallback: machine))
+        default:
+            break
         }
     }
         

@@ -317,3 +317,17 @@ P2 ─┘
   and P2 (#68, `66c17918`). Two notes from P2 for a later tidy: a lone partials, stretch or hold
   piece still reads "Mini-set 1 of 1" on the Live Activity (`SetPiece` knows only drop and
   mini-set) and its delete action says "Delete Mini-Set". Wave 2 (P3, P4, P5, P6) dispatched.
+- 8 Oct 2026: Wave 2 merged: P4 (#69), P5 (#70), P3 (#71), P6 (#72). The importer was then run
+  against the two purchased programs (never committed) and needed four parser fixes
+  (`3e812eb8`): sheets that start past column A, structural lines merged across the row, an
+  intro or deload label above the "Week N" header, and RIR columns named under the header. Both
+  now import in full: two blocks each, named days and rest days, warm-up counts, rests,
+  supersets, techniques and week overrides where sets or RIR change. The tip was verified with
+  the full unit bundle (4510 passing) and the WorkoutTracker, CreateWorkout and CreateMesocycle
+  UI suites (20 passing). PR #66's CI failure (Xcode 26.6 crashing on a thunk in
+  `DayChecklistCard`) was fixed on the tracker branch (`361f8e6e`) and merged here.
+- Follow-ups: the library matcher is strict by design, so a published sheet leaves most names
+  to map by hand (89 of the two sheets' names, substitutions included); a suggestions list per
+  unmatched name on the review screen would cut that. The two P2 Live Activity labels above.
+  The in-session set-target editor on the tracker does not show the Plan section (edits there
+  would be dropped), by design for now.

@@ -118,7 +118,7 @@ struct ProgressionPlanner {
             gymProfile: gymProfile,
             preferredWeightUnit: context.preferredWeightUnit,
             resistanceEquipment: context.resistanceEquipment
-        )
+        ).forProgression
     }
 
     /// One exercise's history: its completed working sets out of each session that has any, most

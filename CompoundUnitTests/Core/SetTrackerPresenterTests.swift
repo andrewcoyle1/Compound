@@ -703,9 +703,9 @@ extension SetTrackerPresenterTests {
         let bar = WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [2.5])
         let rack = WeightStep(kind: .list([10, 12.5, 15]), chip: nil, baseWeight: nil, plates: [])
 
-        #expect(SetTrackerPresenter.nearest(220.46, on: bar) == 220)
-        #expect(SetTrackerPresenter.nearest(20, on: bar) == 45)
-        #expect(SetTrackerPresenter.nearest(13.4, on: rack) == 12.5)
+        #expect(bar.nearest(to: 220.46) == 220)
+        #expect(bar.nearest(to: 20) == 45)
+        #expect(rack.nearest(to: 13.4) == 12.5)
     }
 
     /// On the live tracker the swap is the tracker's: the pick is handed to it, and the exercise

@@ -38,13 +38,6 @@ enum PlateCalculator {
         }
     }
 
-    /// `weightKg` as the nearest total a bar with these plates can carry, in kilograms. The plates
-    /// are labelled in `unit`, so the match is made there and converted back.
-    static func nearestLoadableKg(_ weightKg: Double, bar: Double, plates: [Double], unit: ExerciseWeightUnit) -> Double {
-        let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
-        return UnitConversion.convertWeightToKg(nearestLoadable(total: total, bar: bar, plates: plates), from: unit)
-    }
-
     private static func perSide(total: Double, bar: Double, plates: [Double]) -> [Double]? {
         var remaining = (total - bar) / 2
         guard remaining > -epsilon else { return nil }

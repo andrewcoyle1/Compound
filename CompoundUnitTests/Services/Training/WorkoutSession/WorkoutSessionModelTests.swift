@@ -223,34 +223,40 @@ struct WorkoutSessionModelTests {
 
     // MARK: - Rounding to a usable weight
 
+    /// What a weight the equipment does not constrain is rounded to (`WeightRoundingRule`).
+    private func unconstrained(_ unit: ExerciseWeightUnit) -> WeightRoundingRule {
+        WeightRoundingRule(step: WeightStepper.fallback(unit), unit: unit, preferredUnit: unit)
+    }
+
     /// Kilograms round to the half, because that is the smallest plate pair most gyms have.
     @Test("Test Kilograms Round To The Nearest Half")
     func testKilogramsRoundToTheNearestHalf() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.2, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.3, preferredUnit: .kilograms) == 60.5)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.75, preferredUnit: .kilograms) == 61)
+        #expect(unconstrained(.kilograms).round(60.2) == 60)
+        #expect(unconstrained(.kilograms).round(60.3) == 60.5)
+        #expect(unconstrained(.kilograms).round(60.75) == 61)
     }
 
     /// Pounds round to the whole, and the result is stored back in kilograms — so a pounds user
     /// gets a round number on screen rather than 61.23 kg converted from 135.
     @Test("Test Pounds Round To A Whole Pound And Store As Kilograms")
-    func testPoundsRoundToAWholePoundAndStoreAsKilograms() throws {
-        let stored = try #require(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 61.2, preferredUnit: .pounds))
+    func testPoundsRoundToAWholePoundAndStoreAsKilograms() {
+        let stored = unconstrained(.pounds).round(61.2)
         let shown = UnitConversion.convertWeight(stored, to: ExerciseWeightUnit.pounds)
 
         #expect(abs(shown.rounded() - shown) < 0.0001)
         #expect(abs(stored - 61.2) < 0.3)
     }
 
-    @Test("Test Rounding Nothing Gives Nothing")
-    func testRoundingNothingGivesNothing() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: nil, preferredUnit: .kilograms) == nil)
+    /// Without a unit preference nothing says what a round number is, so the weight is kept.
+    @Test("Test Rounding Without A Unit Keeps The Weight")
+    func testRoundingWithoutAUnitKeepsTheWeight() {
+        #expect(WeightRoundingRule(step: WeightStepper.fallback(.kilograms), unit: .kilograms, preferredUnit: nil).round(60.2) == 60.2)
     }
 
     @Test("Test A Weight Already On The Increment Is Left Alone")
     func testAWeightAlreadyOnTheIncrementIsLeftAlone() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 62.5, preferredUnit: .kilograms) == 62.5)
+        #expect(unconstrained(.kilograms).round(60) == 60)
+        #expect(unconstrained(.kilograms).round(62.5) == 62.5)
     }
 
     // MARK: - Editing a session

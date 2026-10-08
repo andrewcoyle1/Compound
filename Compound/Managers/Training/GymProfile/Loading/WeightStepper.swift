@@ -2,8 +2,9 @@
 //  WeightStepper.swift
 //  Compound
 //
-//  What the weight keyboard's − / + buttons do for one exercise in one gym. Pure: the equipment
-//  is resolved once, here, into a `WeightStep` value, and everything after that is arithmetic.
+//  What an exercise may weigh in one gym: the weight keyboard's − / + buttons, and the rounding
+//  that prefill, warm-ups and progression apply (`WeightRoundingRule`). Pure: the equipment is
+//  resolved once, here, into a `WeightStep` value, and everything after that is arithmetic.
 //
 
 import Foundation
@@ -30,6 +31,10 @@ struct WeightStep: Equatable {
     /// The weight is assistance (`ExerciseModel.isAssisted`), stored negative. An empty field then
     /// steps from zero, and the keyboard offers a ± key.
     var isAssisted = false
+    /// Whether the gym's equipment limits what the weight can be. The 2.5 kg fallback (no gym, or
+    /// equipment it lacks), body weight and bands only say how far a tap moves the value, so a
+    /// prescribed weight is not rounded to them.
+    var constrainsWeight = true
 
     /// Whether the keyboard offers the plate calculator.
     var isPlateLoaded: Bool { baseWeight != nil && !plates.isEmpty }
@@ -66,6 +71,36 @@ struct WeightStep: Equatable {
         }
     }
 
+    /// The weight this equipment can make that is closest to `value`: the nearest total the plates
+    /// load, the nearest grid point, or the nearest listed weight (the lighter on a tie). Bands
+    /// carry no weight, so `value` is returned as it was.
+    func nearest(to value: Double) -> Double {
+        if isPlateLoaded, let baseWeight {
+            return PlateCalculator.nearestLoadable(total: value, bar: baseWeight, plates: plates)
+        }
+        switch kind {
+        case let .increment(step, min, max):
+            return clamp(min + ((value - min) / step).rounded() * step, min: min, max: max)
+        case .list(let weights):
+            return weights.min { abs($0 - value) < abs($1 - value) } ?? value
+        case .bands:
+            return value
+        }
+    }
+
+    /// The smallest change this equipment can make: the grid's step (a pair of the smallest plates
+    /// on a bar), or the smallest gap between listed weights. `nil` for bands or a single weight.
+    var smallestStep: Double? {
+        switch kind {
+        case .increment(let step, _, _):
+            return step
+        case .list(let weights):
+            return zip(weights, weights.dropFirst()).map { $1 - $0 }.filter { $0 > Self.epsilon }.min()
+        case .bands:
+            return nil
+        }
+    }
+
     /// The same equipment giving assistance: mirrored below zero, down to the most it gives (or
     /// 200 steps where it has no top), and never above zero for an exercise that cannot be loaded
     /// (`isBodyweight`). −30 kg up one 2.5 kg step is −27.5 kg: less help, a harder set.
@@ -81,7 +116,7 @@ struct WeightStep: Equatable {
         case .bands:
             return self
         }
-        return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true)
+        return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true, constrainsWeight: constrainsWeight)
     }
 
     /// The band after (or before) `index`, wrapping round: bands cycle rather than stop.
@@ -121,7 +156,7 @@ enum WeightStepper {
 
     /// No gym or no equipment: the smallest pair of plates a user would actually add.
     static func fallback(_ unit: ExerciseWeightUnit) -> WeightStep {
-        WeightStep(kind: .increment(unit == .pounds ? 5 : 2.5, min: 0, max: nil), chip: nil, baseWeight: nil, plates: [])
+        WeightStep(kind: .increment(unit == .pounds ? 5 : 2.5, min: 0, max: nil), chip: nil, baseWeight: nil, plates: [], constrainsWeight: false)
     }
 
     // swiftlint:disable:next cyclomatic_complexity
@@ -161,11 +196,13 @@ enum WeightStepper {
             guard let bands = profile.bands.first(where: { $0.id == id && $0.isActive }) else { return nil }
             let active = bands.range.filter(\.isActive)
                 .sorted { convert($0.availableResistance, from: $0.unit, to: .kilograms) < convert($1.availableResistance, from: $1.unit, to: .kilograms) }
-            return active.isEmpty ? nil : WeightStep(kind: .bands(active.map(\.name)), chip: nil, baseWeight: nil, plates: [])
+            return active.isEmpty ? nil : WeightStep(kind: .bands(active.map(\.name)), chip: nil, baseWeight: nil, plates: [], constrainsWeight: false)
 
         case .bodyWeight:
             // External load on top of the body: 1.25 kg, or the nearest round step in pounds.
-            return WeightStep(kind: .increment(unit == .pounds ? 2.5 : 1.25, min: 0, max: nil), chip: "BW", baseWeight: nil, plates: [])
+            return WeightStep(
+                kind: .increment(unit == .pounds ? 2.5 : 1.25, min: 0, max: nil), chip: "BW", baseWeight: nil, plates: [], constrainsWeight: false
+            )
 
         case .supportEquipment, .accessoryEquipment, .loadableAccessoryEquipment:
             return nil

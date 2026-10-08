@@ -100,14 +100,14 @@ extension WorkoutSessionModel {
     private static func createWarmupSet(delegate: WarmupSetDelegate) -> WorkoutSetModel {
         var warmupWeight = delegate.workingWeightKg.map { $0 * delegate.percentage }
         
-        // Round warmup weight to equipment increments if exercise and gym profile are provided
-        if let weight = warmupWeight, let exercise = delegate.exercise {
-            warmupWeight = roundWarmupWeight(
-                weight: weight,
+        // Rounded to a weight the gym can make, by the same rule the keyboard steps by.
+        if let exercise = delegate.exercise {
+            let rule = WeightRoundingRule(
                 exercise: exercise,
                 gymProfile: delegate.gymProfile,
-                unitPreferences: delegate.unitPreferences
+                preferredWeightUnit: delegate.unitPreferences?[exercise.id]?.weightUnit
             )
+            warmupWeight = warmupWeight.map(rule.round)
         }
                 
         return WorkoutSetModel(
@@ -123,35 +123,5 @@ extension WorkoutSessionModel {
             completedAt: nil,
             dateCreated: .now
         )
-    }
-    
-    @MainActor
-    private static func roundWarmupWeight(
-        weight: Double,
-        exercise: ExerciseModel,
-        gymProfile: GymProfileModel?,
-        unitPreferences: [String: ExerciseUnitPreference]?
-    ) -> Double? {
-        let exerciseId = exercise.id
-        let unitPref = unitPreferences?[exerciseId]
-        let preferredUnit = unitPref?.weightUnit
-        
-        // Try equipment rounding first (only applies to pin-loaded/cable machines)
-        let roundedByEquipment = roundWeightToEquipmentIncrement(
-            weightKg: weight,
-            exercise: exercise,
-            gymProfile: gymProfile,
-            preferredWeightUnit: preferredUnit
-        )
-        
-        // If equipment rounding didn't change the weight (free weights), apply unit rounding
-        if roundedByEquipment == weight, let preferredUnit = preferredUnit {
-            return roundWeightToPreferredUnit(
-                weightKg: roundedByEquipment,
-                preferredUnit: preferredUnit
-            )
-        } else {
-            return roundedByEquipment
-        }
     }
 }

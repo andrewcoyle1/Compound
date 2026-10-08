@@ -167,6 +167,33 @@ struct WeightStepperTests {
         #expect(step.next(after: 10) == nil)
     }
 
+    /// Only equipment the gym has limits what a weight may be; the fallback, body weight and bands
+    /// only say how far a tap moves it (`WeightRoundingRule`).
+    @Test func onlyEquipmentTheGymHasConstrainsTheWeight() {
+        for (kind, id) in [(EquipmentKind.cableMachine, "cable"), (.freeWeight, "dumbbells"), (.fixedWeightBar, "fixed"), (.loadableBar, "barbell"), (.plateLoadedMachine, "sled")] {
+            #expect(step(kind, id).constrainsWeight, "\(id)")
+        }
+        for (kind, id) in [(EquipmentKind.cableMachine, "missing"), (.bodyWeight, "vest"), (.bands, "bands")] {
+            #expect(!step(kind, id).constrainsWeight, "\(id)")
+        }
+    }
+
+    @Test func theSmallestStepIsTheGridOrTheSmallestGap() {
+        #expect(step(.cableMachine, "cable").smallestStep == 5)
+        #expect(step(.freeWeight, "dumbbells").smallestStep == 2.5)
+        #expect(step(.fixedWeightBar, "fixed").smallestStep == 10)
+        #expect(step(.loadableBar, "barbell").smallestStep == 2.5)
+        #expect(step(.bands, "bands").smallestStep == nil)
+    }
+
+    @Test func nearestPicksTheLighterOfTwoEquallyCloseWeights() {
+        #expect(step(.freeWeight, "dumbbells").nearest(to: 17.5) == 15)
+        #expect(step(.freeWeight, "dumbbells").nearest(to: 100) == 20)
+        #expect(step(.cableMachine, "cable").nearest(to: 1) == 5)
+        #expect(step(.loadableBar, "barbell").nearest(to: 61) == 60)
+        #expect(step(.bands, "bands").nearest(to: 7) == 7)
+    }
+
     // MARK: - Fallbacks
 
     @Test func noProfileFallsBackTo2_5kgOr5lb() {

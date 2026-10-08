@@ -130,7 +130,7 @@ extension ActiveWorkout {
     static func dropWeightKg(from parentKg: Double?, step: WeightStep, unit: ExerciseWeightUnit) -> Double? {
         guard let parentKg, parentKg > 0 else { return parentKg }
         let target = UnitConversion.convertWeight(parentKg, to: unit) * 0.8
-        let snapped = SetTrackerPresenter.nearest(target, on: step)
+        let snapped = step.nearest(to: target)
         return UnitConversion.convertWeightToKg(snapped, from: unit)
     }
 

@@ -182,3 +182,12 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   reads as off; weight figures of ranges, plates and bands stay required. New
   `GymProfileDecodingTests` (10 cases); one `GymProfileManagerTests` expectation now reflects the
   merge (an empty stored list gains the catalogue, switched off).
+- 8 Oct 2026: **G2 landed** (`wp-g2-one-resolver`). `WeightStepper` and `PlateCalculator` moved to
+  `Managers/Training/GymProfile/Loading/`. `WeightStep` gained `constrainsWeight` (false for the
+  fallback, body weight and bands), `nearest(to:)` and `smallestStep`; `WeightRoundingRule` wraps the
+  resolved step (mirrored for assisted exercises, as the keyboard does) and progression takes
+  `.forProgression`, which keeps the small-plates rule. Prefill and warm-ups round through the rule;
+  `roundWeightToEquipmentIncrement`, both `resolveRange`, `equipmentWeightRange`, `preferredRange`,
+  `roundWeightToPreferredUnit`, `PlateCalculator.nearestLoadableKg` and `SetTrackerPresenter.nearest`
+  are gone. Intended changes: inactive ranges are ignored, a machine missing or off no longer borrows
+  the catalogue's, racks and fixed bars round to a weight the gym has. New `WeightRoundingRuleTests`.

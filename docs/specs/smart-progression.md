@@ -15,7 +15,7 @@ set is completed.
 
 The engine is **pure**: a value-type `ProgressionEngine` in
 `DialedIn/Managers/Training/Progression/` with no manager dependencies, no `@MainActor`, no
-`Date()`. Rounding to gym equipment stays where it is (`WorkoutSessionModel.roundWeightToEquipmentIncrement`); the engine takes a rounding closure so it does not
+`Date()`. Rounding to gym equipment is `WeightRoundingRule`, built from the keyboard's `WeightStepper`; the engine takes a rounding closure so it does not
 need the gym profile.
 
 ## 2. Inputs

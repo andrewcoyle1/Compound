@@ -331,25 +331,25 @@ struct ActiveWorkoutStateTests {
     @Test("Test Prescribed Barbell Loads Round To The Plates")
     func testRoundingRuleUsesPlates() {
         let rule = WeightRoundingRule(
-            equipment: nil,
-            preferredUnit: .kilograms,
-            plateLoading: .init(bar: 20, plates: [2.5, 5, 10, 20], unit: .kilograms)
+            step: WeightStep(kind: .increment(5, min: 20, max: nil), chip: nil, baseWeight: 20, plates: [2.5, 5, 10, 20]),
+            unit: .kilograms,
+            preferredUnit: .kilograms
         )
 
         #expect(rule.round(101.5) == 100)
         #expect(rule.round(103) == 105)
         #expect(rule.minimumIncrementKg == 5)
 
-        let unplated = WeightRoundingRule(equipment: nil, preferredUnit: .kilograms)
+        let unplated = WeightRoundingRule(step: WeightStepper.fallback(.kilograms), unit: .kilograms, preferredUnit: .kilograms)
         #expect(unplated.round(101.5) == 101.5)
     }
 
     @Test("Test Pound Plates Round In Pounds")
     func testRoundingRuleInPounds() {
         let rule = WeightRoundingRule(
-            equipment: nil,
-            preferredUnit: .pounds,
-            plateLoading: .init(bar: 45, plates: [2.5, 5, 10, 25, 45], unit: .pounds)
+            step: WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [2.5, 5, 10, 25, 45]),
+            unit: .pounds,
+            preferredUnit: .pounds
         )
         // 228 lb is not loadable on a 45 lb bar; 225 and 230 are, and 230 is nearer.
         let rounded = UnitConversion.convertWeight(rule.round(UnitConversion.convertWeightToKg(228, from: ExerciseWeightUnit.pounds)), to: ExerciseWeightUnit.pounds)
@@ -374,15 +374,19 @@ struct ActiveWorkoutStateTests {
 
     /// A gym whose lightest plate is 5 kg is probably missing its small plates; rounding to it would
     /// make every progression step 10 kg, so progression keeps its half-kilogram rounding there.
+    /// Prefill still rounds to the plates: a prescribed weight has to go on the bar.
     @Test("Test Progression Only Rounds To Plates With Small Plates In The Gym")
     func testRoundingRuleNeedsSmallPlates() {
         let bar = [EquipmentRef(kind: .loadableBar, id: "barbell")]
         let small = WeightRoundingRule(exercise: nil, gymProfile: gym(plates: [1.25, 2.5, 5, 10, 20]), preferredWeightUnit: .kilograms, resistanceEquipment: bar)
         let coarse = WeightRoundingRule(exercise: nil, gymProfile: gym(plates: [5, 10, 20]), preferredWeightUnit: .kilograms, resistanceEquipment: bar)
 
-        #expect(small.plateLoading != nil)
-        #expect(coarse.plateLoading == nil)
-        #expect(coarse.minimumIncrementKg == 2.5)
+        #expect(small.forProgression == small)
+        #expect(small.forProgression.step.constrainsWeight)
+        #expect(!coarse.forProgression.step.constrainsWeight)
+        #expect(coarse.forProgression.minimumIncrementKg == 2.5)
+        #expect(coarse.forProgression.round(62.5) == 62.5)
+        #expect(coarse.round(62.5) == 60)
     }
 }
 

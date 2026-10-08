@@ -190,17 +190,18 @@ struct SetTrackerPresenterTests {
         #expect(box.value.sets.map(\.index) == [1, 2, 3])
     }
 
-    /// A new set carries the last one's figures forward, since the next set of an exercise is
-    /// usually the same weight and reps as the one before it.
+    /// A new set carries the last one's figures and bands forward, since the next set of an
+    /// exercise is usually the same weight and reps as the one before it.
     @Test("Test A New Set Carries The Last Ones Figures Forward")
     func testANewSetCarriesTheLastOnesFiguresForward() {
         let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: [set(id: "s1", index: 1, reps: 8, weightKg: 80)]))
-
+        var last = set(id: "s1", index: 1, reps: 8, weightKg: 80)
+        last.bands = ["Red"]
+        let box = MutableExercise(exercise(sets: [last]))
         screen.presenter.addSet(exercise: box.binding)
-
         #expect(box.value.sets.last?.reps == 8)
         #expect(box.value.sets.last?.weightKg == 80)
+        #expect(box.value.sets.last?.bands == ["Red"])
     }
 
     /// A new set is never already complete, whatever the set it copied from was.

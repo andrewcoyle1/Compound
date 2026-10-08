@@ -116,7 +116,7 @@ struct AssistedWeightTests {
     }
 
     @Test func bandsAreLeftAlone() {
-        let bands = WeightStep(kind: .bands(["Light"]), chip: nil, baseWeight: nil, plates: [])
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light"])
         #expect(bands.assisted(bodyweightOnly: true) == bands)
     }
 

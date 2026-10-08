@@ -17,8 +17,8 @@ struct WeightStep: Equatable {
         case increment(Double, min: Double, max: Double?)
         /// Only these weights exist (a dumbbell rack, a set of fixed bars), ascending.
         case list([Double])
-        /// Bands carry no weight. The keyboard cycles these names and leaves the weight empty.
-        case bands([String])
+        /// Bands alone, with no load: the weight stays empty and the names are in `bands`.
+        case bands
     }
 
     let kind: Kind
@@ -40,6 +40,10 @@ struct WeightStep: Equatable {
     /// The stack's pins and add-ons when it has add-ons, so the tracker can say how to make a
     /// weight ("Pin 14 + 2 kg"). `nil` for anything else, a plain stack included.
     var stack: PinStack?
+    /// The gym's active bands for the variation, light to heavy, by name. Beside any load: a bar
+    /// with bands offers both, and the keyboard's chips choose bands while ± steps the bar. Empty
+    /// when the variation uses no bands. Bands never constrain the weight.
+    var bands: [String] = []
 
     /// Whether the keyboard offers the plate calculator.
     var isPlateLoaded: Bool { baseWeight != nil && !plates.isEmpty }
@@ -121,7 +125,7 @@ struct WeightStep: Equatable {
         case .bands:
             return self
         }
-        return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true, constrainsWeight: constrainsWeight)
+        return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true, constrainsWeight: constrainsWeight, bands: bands)
     }
 
     /// "Per side: 20 + 10 + 2.5 kg" for a breakdown from `PlateCalculator`; "Plates: …" when
@@ -140,9 +144,9 @@ struct WeightStep: Equatable {
 
     /// The band after (or before) `index`, wrapping round: bands cycle rather than stop.
     func band(after index: Int?, forward: Bool) -> Int? {
-        guard case .bands(let names) = kind, !names.isEmpty else { return nil }
-        guard let index else { return forward ? 0 : names.count - 1 }
-        return (index + (forward ? 1 : -1) + names.count) % names.count
+        guard !bands.isEmpty else { return nil }
+        guard let index else { return forward ? 0 : bands.count - 1 }
+        return (index + (forward ? 1 : -1) + bands.count) % bands.count
     }
 
     private func clamp(_ value: Double, min: Double, max: Double?) -> Double {
@@ -163,14 +167,29 @@ enum WeightStepper {
         return steps(for: variation?.resistanceEquipment, profile: profile, unit: unit)
     }
 
-    /// The step for one equipment variation's resistance equipment, the first that `profile` has.
+    /// The step for one equipment variation's resistance equipment: the load from the first
+    /// non-band item `profile` has, with the bands of every band item beside it. A variation's
+    /// items are used together (`ExerciseFilters.isPerformable`), so a bar with bands offers both.
     static func steps(for refs: [EquipmentRef]?, profile: GymProfileModel?, unit: ExerciseWeightUnit) -> WeightStep {
         guard let profile, let refs else { return fallback(unit) }
 
+        var load: WeightStep?
+        var bands: [String] = []
         for ref in refs {
-            if let step = step(for: ref, profile: profile, unit: unit) { return step }
+            guard let step = step(for: ref, profile: profile, unit: unit) else { continue }
+            if step.kind == .bands {
+                // A name listed in both kg and lb is one band.
+                for name in step.bands where !bands.contains(name) { bands.append(name) }
+            } else if load == nil {
+                load = step
+            }
         }
-        return fallback(unit)
+        if var load {
+            load.bands = bands
+            return load
+        }
+        guard !bands.isEmpty else { return fallback(unit) }
+        return WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], constrainsWeight: false, bands: bands)
     }
 
     /// No gym or no equipment: the smallest pair of plates a user would actually add.
@@ -220,7 +239,7 @@ enum WeightStepper {
             guard let bands = profile.bands.first(where: { $0.id == id && $0.isActive }) else { return nil }
             let active = bands.range.filter(\.isActive)
                 .sorted { convert($0.availableResistance, from: $0.unit, to: .kilograms) < convert($1.availableResistance, from: $1.unit, to: .kilograms) }
-            return active.isEmpty ? nil : WeightStep(kind: .bands(active.map(\.name)), chip: nil, baseWeight: nil, plates: [], constrainsWeight: false)
+            return active.isEmpty ? nil : WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], constrainsWeight: false, bands: active.map(\.name))
 
         case .bodyWeight:
             // External load on top of the body: 1.25 kg, or the nearest round step in pounds.

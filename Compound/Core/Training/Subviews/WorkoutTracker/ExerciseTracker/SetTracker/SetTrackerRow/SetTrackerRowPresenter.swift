@@ -31,6 +31,7 @@ class SetTrackerRowPresenter {
     init(interactor: SetTrackerRowInteractor, router: SetTrackerRowRouter) {
         self.interactor = interactor
         self.router = router
+        keyboard.playSelectionHaptic = { [interactor] in interactor.playHaptic(option: .selection) }
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a

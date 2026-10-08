@@ -18,8 +18,9 @@ struct SetDetailRow: View {
     /// metres whatever that was.
     var distanceUnit: ExerciseDistanceUnit = .meters
 
+    /// "80 kg", "80 kg + Red", "Red + Blue": the weight and any bands.
     var weightText: String? {
-        self.set.weightKg.map { Format.weight(kg: $0, unit: weightUnit) }
+        Format.load(self.set.weightKg.map { Format.weight(kg: $0, unit: weightUnit) }, bands: self.set.bands)
     }
 
     /// What the set was, in the exercise's own terms: "80 kg × 8 reps", "12 reps", "0:45",

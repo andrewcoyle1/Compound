@@ -419,4 +419,51 @@ struct WorkoutSessionModelTests {
         #expect(json["target_reps"] as? Int == 8)
         #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set)).targetReps == 8)
     }
+
+    // MARK: - Bands
+
+    @Test("Test A Set's Bands Round-Trip And Old Sets Decode Without Them")
+    func testBandsCoding() throws {
+        var set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 10, weightKg: 60, isWarmup: false, dateCreated: start)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] == nil)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONSerialization.data(withJSONObject: json)).bands == nil)
+
+        set.bands = ["Red", "Blue"]
+        json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] as? [String] == ["Red", "Blue"])
+        let decoded = try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set))
+        #expect(decoded.bands == ["Red", "Blue"])
+        #expect(decoded.weightKg == 60)
+        // Bands carry no kg: 60 kg × 10 whatever bands are on.
+        #expect(decoded.volumeKg == 600)
+    }
+
+    /// Sets are nested in the session, so an unreadable `bands` (a later build's shape, or
+    /// corruption) must cost the bands and nothing else, as an unreadable side does.
+    @Test("Test A Session Survives A Set With Unreadable Bands")
+    func testUnreadableBandsCostOnlyTheBands() throws {
+        let session = WorkoutSessionModel(
+            id: "session-1",
+            authorId: "author-1",
+            name: "Pull",
+            dateCreated: start,
+            exercises: [WorkoutExerciseModel(
+                id: "e", authorId: "author-1", templateId: "t", name: "Row", trackingMode: .weightReps, index: 0,
+                sets: [set(index: 1), set(index: 2)]
+            )]
+        )
+        var raw = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(session)) as? [String: Any])
+        var exercises = try #require(raw["exercises"] as? [[String: Any]])
+        var sets = try #require(exercises[0]["sets"] as? [[String: Any]])
+        sets[0]["bands"] = 7
+        sets[1]["bands"] = [["name": "Red"]]
+        exercises[0]["sets"] = sets
+        raw["exercises"] = exercises
+
+        let decoded = try JSONDecoder().decode(WorkoutSessionModel.self, from: JSONSerialization.data(withJSONObject: raw))
+        let decodedSets = try #require(decoded.exercises.first?.sets)
+        #expect(decodedSets.map(\.bands) == [nil, nil])
+        #expect(decodedSets.map(\.reps) == [8, 8])
+    }
 }

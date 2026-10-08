@@ -221,3 +221,17 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   stacks start at 5 (lb or kg); the pin and cable mock lists are the catalogue. Intended changes: a
   min-0 stack now starts one increment up, and an equal-distance weight on a list rounds to the
   lighter load (15 → 14 on 7 kg pins with [2, 2]). New `WeightStackTests`.
+- 8 Oct 2026: **G6 landed** (`wp-g6-bands`). `WorkoutSetModel.bands: [String]?` (names, in the order
+  chosen; a hand-written `init(from:)` reads an unreadable value as no bands, so it cannot cost the
+  session). `WeightStep.Kind.bands` lost its payload; `WeightStep.bands` holds the gym's active
+  bands light to heavy (a name active in kg and lb once), and `steps(for refs:)` takes the load from
+  the first non-band item the gym has with every band item's bands beside it, so a bar with bands
+  offers both. Keyboard: `bandIndex` is gone; band chips (`Chip`, selected trait, `.selection`
+  haptic through the row's interactor) write `set.bands`, the last one off writes nil, and ± on
+  bands alone still steps one band at a time from the last chosen, writing `[name]`. One helper,
+  `Format.load`, joins weight and bands for the weight cell and its hint ("60 + Red"), the Prev
+  column and log button (`ActiveWorkout.figures`, "60 kg + Red × 8"), the session detail row and
+  the keyboard's VoiceOver value ("Red + Blue"). Prefill copies last time's bands even when a
+  suggestion sets the weight; Add Set, the Prev tap and splitting sides carry them. Not changed:
+  Strava's description (its own formatter), share cards, drop and mini-sets. New
+  `SetBandsDisplayTests`.

@@ -51,8 +51,8 @@ struct WorkoutSessionPrefillTests {
         )
     }
 
-    /// A finished session of three sets at 60 kg for ten.
-    private func previousSession() -> WorkoutSessionModel {
+    /// A finished session of three sets at 60 kg for ten, with `bands` on each when given.
+    private func previousSession(bands: [String]? = nil) -> WorkoutSessionModel {
         let sets = (1...3).map { index in
             WorkoutSetModel(
                 id: "previous-set-\(index)",
@@ -60,6 +60,7 @@ struct WorkoutSessionPrefillTests {
                 index: index,
                 reps: 10,
                 weightKg: 60,
+                bands: bands,
                 isWarmup: false,
                 completedAt: start,
                 dateCreated: start
@@ -108,6 +109,27 @@ struct WorkoutSessionPrefillTests {
 
         #expect(workingSets(of: session).map(\.weightKg) == [60, 60, 60])
         #expect(workingSets(of: session).map(\.reps) == [10, 10, 10])
+    }
+
+    /// Bands come from last time like the weight, and still do when a suggestion sets the weight:
+    /// a suggestion has no bands to give.
+    @Test("Test Bands Are Carried Over From Last Time")
+    func testBandsAreCarriedOverFromLastTime() {
+        let previous = WorkoutSessionModel(authorId: "author-1", template: template(), previousWorkoutSession: previousSession(bands: ["Red", "Blue"]), dateCreated: start)
+        #expect(workingSets(of: previous).map(\.bands) == Array(repeating: ["Red", "Blue"], count: 3))
+        #expect(workingSets(of: previous).map(\.weightKg) == [60, 60, 60])
+
+        let suggested = WorkoutSessionModel(
+            authorId: "author-1",
+            template: template(),
+            previousWorkoutSession: previousSession(bands: ["Red"]),
+            prefill: .suggestions(["exercise-1#0": ProgressionSuggestion(rationale: .progressWeight, sets: Array(repeating: SuggestedSet(weightKg: 100, reps: 8), count: 3))]),
+            dateCreated: start
+        )
+        #expect(workingSets(of: suggested).map(\.bands) == Array(repeating: ["Red"], count: 3))
+
+        let none = WorkoutSessionModel(authorId: "author-1", template: template(), previousWorkoutSession: previousSession(), dateCreated: start)
+        #expect(workingSets(of: none).allSatisfy { $0.bands == nil })
     }
 
     /// "Leave empty" means empty even when there is a session to copy from. Somebody who wants to

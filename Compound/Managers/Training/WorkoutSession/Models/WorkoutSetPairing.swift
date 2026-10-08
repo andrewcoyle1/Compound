@@ -105,6 +105,7 @@ extension Array where Element == WorkoutSetModel {
                 side: .right,
                 kind: set.kind,
                 parentSetId: set.parentSetId,
+                bands: set.bands,
                 isWarmup: set.isWarmup,
                 completedAt: set.completedAt,
                 dateCreated: set.dateCreated

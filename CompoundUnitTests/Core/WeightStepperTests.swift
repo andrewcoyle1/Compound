@@ -160,11 +160,42 @@ struct WeightStepperTests {
 
     @Test func bandsCycleByNameLightestFirst() {
         let step = step(.bands, "bands")
-        #expect(step.kind == .bands(["Light", "Heavy"]))
+        #expect(step.kind == .bands)
+        #expect(step.bands == ["Light", "Heavy"])
         #expect(step.band(after: nil, forward: true) == 0)
         #expect(step.band(after: 1, forward: true) == 0)
         #expect(step.band(after: 0, forward: false) == 1)
         #expect(step.next(after: 10) == nil)
+    }
+
+    /// A variation's items are used together, so a bar with bands steps the bar and offers the
+    /// bands beside it, whichever is listed first. Before G6 only the first item the gym had counted.
+    @Test func aBarWithBandsOffersTheBarStepAndTheBands() {
+        let bar = step(.loadableBar, "barbell")
+        for refs in [
+            [EquipmentRef(kind: .loadableBar, id: "barbell"), EquipmentRef(kind: .bands, id: "bands")],
+            [EquipmentRef(kind: .bands, id: "bands"), EquipmentRef(kind: .loadableBar, id: "barbell")]
+        ] {
+            let step = WeightStepper.steps(for: refs, profile: Self.profile, unit: .kilograms)
+            #expect(step.kind == bar.kind)
+            #expect(step.baseWeight == 20)
+            #expect(step.constrainsWeight)
+            #expect(step.bands == ["Light", "Heavy"])
+        }
+        #expect(bar.bands.isEmpty)
+    }
+
+    /// A band switched on in both kg and lb is one band, not two chips with the same name.
+    @Test func aBandListedInBothUnitsIsOfferedOnce() {
+        let gym = GymProfileModel(authorId: "u", bands: [
+            Bands(id: "bands", name: "Bands", range: [
+                BandsAvailable(id: "lb", name: "Light", bandColour: "", availableResistance: 18, unit: .pounds, isActive: true),
+                BandsAvailable(id: "kg", name: "Light", bandColour: "", availableResistance: 8, unit: .kilograms, isActive: true),
+                BandsAvailable(id: "h", name: "Heavy", bandColour: "", availableResistance: 30, unit: .kilograms, isActive: true)
+            ], isActive: true)
+        ])
+        let step = WeightStepper.steps(for: [EquipmentRef(kind: .bands, id: "bands")], profile: gym, unit: .kilograms)
+        #expect(step.bands == ["Light", "Heavy"])
     }
 
     /// Only equipment the gym has limits what a weight may be; the fallback, body weight and bands

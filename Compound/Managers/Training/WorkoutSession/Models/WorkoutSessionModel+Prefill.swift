@@ -77,6 +77,8 @@ struct WorkingSetPrefill {
             // The rows were built for `authorId` (`defaultSets`).
             workingSets[index].reps = suggested?.reps ?? previous?.reps ?? workingSets[index].reps
             workingSets[index].weightKg = weightKg
+            // Bands carry no kg, so no suggestion names them: they come from last time.
+            workingSets[index].bands = previous?.bands ?? workingSets[index].bands
             workingSets[index].durationSec = suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec
             workingSets[index].distanceMeters = suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters
             workingSets[index].targetReps = suggested?.targetReps ?? workingSets[index].targetReps

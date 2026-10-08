@@ -35,6 +35,11 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
     /// The reps an AMRAP set sets out to beat, from the template's set plan; nil for every other
     /// set and for every set created without the plan.
     var targetReps: Int?
+    /// The resistance bands used, by name, in the order they were chosen: "Red", "Blue". `nil` for
+    /// every set without bands and every set logged before bands were recorded. Names, not ids, so
+    /// the set still reads right after the gym's bands are renamed or removed. Bands carry no kg,
+    /// so they add nothing to `volumeKg`.
+    var bands: [String]?
 
     var isWarmup: Bool
     var completedAt: Date?
@@ -63,6 +68,7 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         kind: SetKind = .standard,
         parentSetId: String? = nil,
         targetReps: Int? = nil,
+        bands: [String]? = nil,
         isWarmup: Bool,
         completedAt: Date? = nil,
         dateCreated: Date
@@ -79,6 +85,7 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         self.kindRawValue = kind == .standard ? nil : kind.rawValue
         self.parentSetId = parentSetId
         self.targetReps = targetReps
+        self.bands = bands
         self.isWarmup = isWarmup
         self.completedAt = completedAt
         self.dateCreated = dateCreated
@@ -97,9 +104,33 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         case kindRawValue = "kind"
         case parentSetId = "parent_set_id"
         case targetReps = "target_reps"
+        case bands
         case isWarmup
         case completedAt = "completed_at"
         case dateCreated = "date_created"
+    }
+
+    /// Written by hand for `bands` alone: an unreadable value (written by a later build, or
+    /// corrupted) reads as no bands rather than throwing, for the reason `sideRawValue` is stored
+    /// raw. Every other field decodes exactly as the synthesized decoder did.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        authorId = try container.decode(String.self, forKey: .authorId)
+        index = try container.decode(Int.self, forKey: .index)
+        reps = try container.decodeIfPresent(Int.self, forKey: .reps)
+        weightKg = try container.decodeIfPresent(Double.self, forKey: .weightKg)
+        durationSec = try container.decodeIfPresent(Int.self, forKey: .durationSec)
+        distanceMeters = try container.decodeIfPresent(Double.self, forKey: .distanceMeters)
+        rpe = try container.decodeIfPresent(Double.self, forKey: .rpe)
+        sideRawValue = try container.decodeIfPresent(String.self, forKey: .sideRawValue)
+        kindRawValue = try container.decodeIfPresent(String.self, forKey: .kindRawValue)
+        parentSetId = try container.decodeIfPresent(String.self, forKey: .parentSetId)
+        targetReps = try container.decodeIfPresent(Int.self, forKey: .targetReps)
+        bands = (try? container.decodeIfPresent([String].self, forKey: .bands)) ?? nil
+        isWarmup = try container.decode(Bool.self, forKey: .isWarmup)
+        completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
+        dateCreated = try container.decode(Date.self, forKey: .dateCreated)
     }
 
     static var mock: WorkoutSetModel {

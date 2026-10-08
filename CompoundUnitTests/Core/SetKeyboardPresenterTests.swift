@@ -247,7 +247,7 @@ struct SetKeyboardPresenterTests {
     @Test func bandsCycleNamesAndLeaveTheWeightEmpty() {
         let box = set(weightKg: 20)
         let keyboard = SetKeyboardPresenter()
-        let bands = WeightStep(kind: .bands(["Light", "Heavy"]), chip: nil, baseWeight: nil, plates: [])
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light", "Heavy"])
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
         keyboard.stepUp()
         #expect(box.value.weightKg == nil)
@@ -257,6 +257,101 @@ struct SetKeyboardPresenterTests {
         keyboard.stepDown()
         keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "Heavy")
+    }
+
+    /// ± on bands alone keeps stepping one band at a time, as before G6, and now writes it to the
+    /// set: from the last band chosen, so two chosen step on from the second.
+    @Test func plusAndMinusOnBandsAloneChooseOneBand() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light", "Medium", "Heavy"])
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Light"])
+        keyboard.toggleBand("Medium")
+        #expect(box.value.bands == ["Light", "Medium"])
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Heavy"])
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Light"])
+        #expect(box.value.weightKg == nil)
+    }
+
+    private static let barWithBands = WeightStep(
+        kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20,
+        plates: [1.25, 2.5, 5, 10, 20].map { Plate(weight: $0) }, bands: ["Red", "Blue", "Green"]
+    )
+
+    /// Two bands chosen are saved on the set, in the order chosen, and are there when the keyboard
+    /// opens again; the weight is untouched. Each toggle plays the selection haptic.
+    @Test func twoBandsAreSavedOnTheSetAndRestoredOnReopening() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        var haptics = 0
+        keyboard.playSelectionHaptic = { haptics += 1 }
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Blue")
+        keyboard.toggleBand("Red")
+        #expect(box.value.bands == ["Blue", "Red"])
+        #expect(box.value.weightKg == 60)
+        #expect(haptics == 2)
+
+        keyboard.close()
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60 + Blue + Red")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        #expect(keyboard.selectedBands == ["Blue", "Red"])
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60 + Blue + Red")
+    }
+
+    @Test func deselectingEveryBandLeavesNoBands() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        keyboard.toggleBand("Red")
+        #expect(box.value.bands == nil)
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60")
+    }
+
+    /// On a bar with bands, ± steps the bar and leaves the bands; typing a weight keeps them too.
+    @Test func aBarWithBandsKeepsBothWeightAndBands() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Green")
+        keyboard.stepUp()
+        #expect(box.value.weightKg == 62.5)
+        #expect(box.value.bands == ["Green"])
+        type("70", into: keyboard)
+        #expect(box.value.weightKg == 70)
+        #expect(box.value.bands == ["Green"])
+    }
+
+    @Test func voiceOverReadsTheBands() {
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "en_US")
+        let bandsOnly = set(weightKg: nil)
+        keyboard.open(.weight, set: bandsOnly.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        keyboard.toggleBand("Blue")
+        #expect(keyboard.spokenWeight == "Red + Blue")
+        #expect(keyboard.spokenValue == "Red + Blue")
+        keyboard.close()
+
+        let both = set(weightKg: 60)
+        keyboard.open(.weight, set: both.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        #expect(keyboard.spokenWeight == "60 kilograms + Red")
+    }
+
+    /// The greyed hint in an empty weight field shows last time's bands with its weight.
+    @Test func thePlaceholderShowsLastTimesBands() {
+        let keyboard = SetKeyboardPresenter()
+        var previous = set(weightKg: 60).value
+        previous.bands = ["Red"]
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "60 + Red")
+        previous.weightKg = nil
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "Red")
     }
 
     @Test func chipsShowInTheDisplayUnit() {

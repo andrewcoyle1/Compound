@@ -42,6 +42,9 @@ struct SetKeyboardView: View {
     private var weightAccessories: some View {
         chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
         stepperRow
+        if !presenter.context.step.bands.isEmpty {
+            bandRow
+        }
         if presenter.showsPlates {
             plateStrip
         }
@@ -105,6 +108,33 @@ struct SetKeyboardView: View {
         case .bands:
             return String(localized: "Cycle bands")
         }
+    }
+
+    /// The gym's bands for this exercise, any number on at once, light to heavy. Beside the
+    /// stepper, so a bar with bands takes both.
+    private var bandRow: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: Spacing.s) {
+                Text("Bands")
+                    .font(.label)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.secondary)
+                ForEach(presenter.context.step.bands, id: \.self) { band in
+                    let isSelected = presenter.selectedBands.contains(band)
+                    Button {
+                        presenter.toggleBand(band)
+                        announceValue()
+                    } label: {
+                        Chip(band, isSelected: isSelected)
+                            .chipTapTarget()
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(band)
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+        }
+        .scrollIndicators(.hidden)
     }
 
     @ViewBuilder

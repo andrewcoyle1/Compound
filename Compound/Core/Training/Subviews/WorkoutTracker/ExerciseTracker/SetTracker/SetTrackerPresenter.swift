@@ -230,6 +230,7 @@ class SetTrackerPresenter {
                     distanceMeters: lastSet?.distanceMeters,
                     rpe: lastSet?.rpe,
                     side: side,
+                    bands: lastSet?.bands,
                     isWarmup: false,
                     completedAt: nil,
                     dateCreated: Date()

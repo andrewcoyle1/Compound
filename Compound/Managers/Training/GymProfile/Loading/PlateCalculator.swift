@@ -13,6 +13,8 @@ struct Plate: Equatable {
     /// How many fit on one sleeve: the gym's count shared evenly between the sleeves, rounded
     /// down. `nil` is as many as a load needs.
     var perSleeve: Int?
+    /// The plate's colour as hex, from the gym, for drawing it; `nil` draws it plain.
+    var colour: String?
 }
 
 enum PlateCalculator {

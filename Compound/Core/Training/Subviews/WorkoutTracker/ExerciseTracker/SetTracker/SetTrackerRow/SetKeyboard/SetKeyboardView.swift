@@ -32,7 +32,6 @@ struct SetKeyboardView: View {
         .padding(.vertical, Spacing.m)
         .background(.regularMaterial, ignoresSafeAreaEdges: .bottom)
         .reducedMotionAnimation(.quick, value: presenter.activeField)
-        .reducedMotionAnimation(.quick, value: presenter.showsPlates)
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -40,13 +39,13 @@ struct SetKeyboardView: View {
 
     @ViewBuilder
     private var weightAccessories: some View {
+        if presenter.showsLoadingBar {
+            loadingBar
+        }
         chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
         stepperRow
         if !presenter.context.step.bands.isEmpty {
             bandRow
-        }
-        if presenter.showsPlates {
-            plateStrip
         }
         if let stackSummary = presenter.stackSummary {
             Text(stackSummary)
@@ -69,16 +68,6 @@ struct SetKeyboardView: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            if presenter.context.step.isPlateLoaded {
-                Button {
-                    presenter.showsPlates.toggle()
-                } label: {
-                    Text("Plates")
-                        .font(.subheadline.bold())
-                }
-                .buttonStyle(.bordered)
-                .accessibilityHint("Shows the plates for each side of the bar")
-            }
             keyButton(systemImage: Symbol.add, label: "Increase weight") { presenter.stepUp() }
         }
         // One element, as a system stepper is: swipe up or down to step, the new weight read back.
@@ -90,11 +79,6 @@ struct SetKeyboardView: View {
             case .increment: presenter.stepUp()
             case .decrement: presenter.stepDown()
             @unknown default: break
-            }
-        }
-        .accessibilityActions {
-            if presenter.context.step.isPlateLoaded {
-                Button("Plates") { presenter.showsPlates.toggle() }
             }
         }
     }
@@ -137,16 +121,24 @@ struct SetKeyboardView: View {
         .scrollIndicators(.hidden)
     }
 
-    @ViewBuilder
-    private var plateStrip: some View {
+    /// The bar and plates for the weight being typed, over the keypad on any plate-loaded
+    /// exercise. Tapping it opens the plate calculator, where the bar and the plates are chosen.
+    private var loadingBar: some View {
         let unit = presenter.context.unit.abbreviation
-        Group {
-            switch presenter.plateLoad {
-            case .loadable(let perSide)?:
-                Text(presenter.context.step.plateText(perSide, unit: presenter.context.unit))
-            case let .notLoadable(below, above)?:
-                HStack(spacing: Spacing.s) {
+        return HStack(spacing: Spacing.s) {
+            Group {
+                if let loading = presenter.plateLoading {
+                    Button {
+                        presenter.openPlateCalculator?()
+                    } label: {
+                        PlateLoadingView(loading: loading, plates: presenter.context.step.plates)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Opens the plate calculator")
+                } else if case let .notLoadable(below, above)? = presenter.plateLoad {
                     Label("Not loadable", systemImage: Symbol.warning)
+                        .font(.rowDetail)
                         .foregroundStyle(.danger)
                     ForEach([below, above].compactMap { $0 }, id: \.self) { value in
                         Button("\(WeightStepper.format(value)) \(unit)") {
@@ -154,16 +146,26 @@ struct SetKeyboardView: View {
                             announceValue()
                         }
                         .buttonStyle(.bordered)
+                        .font(.rowDetail.monospacedDigit())
                         .accessibilityLabel("Use \(WeightStepper.format(value)) \(unit)")
                     }
                 }
-            case nil:
-                Text("Enter a weight to see the plates")
-                    .foregroundStyle(.secondary)
             }
+            Spacer(minLength: 0)
+            Button {
+                presenter.openPlateCalculator?()
+            } label: {
+                Image(systemName: Symbol.plateCalculator)
+                    .font(.title3)
+                    .tapTarget()
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.tint)
+            .accessibilityLabel("Plate Calculator")
         }
-        .font(.subheadline.monospacedDigit())
-        .frame(maxWidth: .infinity, minHeight: plateStripHeight)
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.s)
+        .background(.fill.tertiary, in: .rect(cornerRadius: Radius.m, style: .continuous))
     }
 
     // MARK: - Reps

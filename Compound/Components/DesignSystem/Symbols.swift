@@ -134,5 +134,7 @@ enum Symbol {
     /// The plain tick: a menu's chosen item, and Finish in a menu.
     static let selected = "checkmark"
     static let warning = "exclamationmark.triangle"
+    /// The plate calculator: the bar and plates for a weight.
+    static let plateCalculator = "slider.horizontal.3"
     static let error = "exclamationmark.circle"
 }

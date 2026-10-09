@@ -206,7 +206,7 @@ enum WeightStepper {
         switch ref.kind {
         case .loadableBar:
             guard let bar = profile.loadableBars.first(where: { $0.typeId == id && $0.isActive }),
-                  let base = bar.defaultBaseWeight ?? bar.baseWeights.first(where: \.isActive) else { return nil }
+                  let base = bar.loadedBaseWeight else { return nil }
             let barWeight = convert(base.baseWeight, from: base.unit, to: unit)
             let collars = convert(bar.collarWeight * 2, from: .kilograms, to: unit)
             let chip = collars > 0
@@ -217,7 +217,7 @@ enum WeightStepper {
         case .plateLoadedMachine:
             guard let machine = profile.plateLoadedMachines.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
             let base = convert(machine.baseWeight, from: machine.unit, to: unit)
-            let chip = String(localized: "Bar \(format(base)) \(unit.abbreviation)")
+            let chip = String(localized: "Base \(format(base)) \(unit.abbreviation)")
             return plateLoaded(base: base, chip: chip, sleeves: machine.sleeves, profile: profile, unit: unit)
 
         case .cableMachine:
@@ -285,7 +285,7 @@ enum WeightStepper {
             let counts = entries.map(\.count)
             let perSleeve = counts.contains(nil) ? nil : counts.compactMap { $0 }.reduce(0, +) / max(sleeves, 1)
             guard weight > 0, (perSleeve ?? 1) > 0 else { return nil }
-            return Plate(weight: weight, perSleeve: perSleeve)
+            return Plate(weight: weight, perSleeve: perSleeve, colour: entries.lazy.compactMap(\.plateColour).first)
         }
         .sorted { $0.weight < $1.weight }
     }

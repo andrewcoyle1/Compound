@@ -211,7 +211,10 @@ private struct Replay {
         let sample = byDay[day]
         var isFirstFilterDay = false
         if filter != nil {
-            filter?.predictOneDay(kcalPerKg: kcalPerKg)
+            // Copied first, as below: passing a stored property of `self` into the mutating call
+            // on `self.filter` is an overlapping access on Darwin's compiler.
+            let density = kcalPerKg
+            filter?.predictOneDay(kcalPerKg: density)
         } else if sample?.weightKg != nil, let seed {
             // The filter starts on the first weigh-in, at the median of the first few.
             filter = ExpenditureFilter(levelKg: seed, priorKcal: prior)

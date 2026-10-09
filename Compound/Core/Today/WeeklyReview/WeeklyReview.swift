@@ -12,7 +12,8 @@ struct WeeklyReview: Equatable {
 
     struct MuscleSets: Equatable {
         let muscle: Muscles
-        /// Primary muscles count a set in full, secondary ones half, as on the Muscle Groups screen.
+        /// Hard sets (`MuscleVolume.hardSets`): primary muscles count a set in full, secondary ones
+        /// half, as on the Muscle Groups screen.
         let sets: Double
     }
 
@@ -63,7 +64,7 @@ struct WeeklyReview: Equatable {
         let interval = calendar.dateInterval(of: .weekOfYear, for: week) ?? DateInterval(start: week, duration: 7 * 86_400)
         let lastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: week) ?? week
         let weekSessions = WorkoutSessionHighlights.sessions(of: userId, inWeekOf: week, history: sessions, calendar: calendar)
-        let weight = weights(measurements, in: interval)
+        let weight = weights(measurements, in: interval, calendar: calendar)
 
         return WeeklyReview(
             week: interval,
@@ -114,19 +115,30 @@ struct WeeklyReview: Equatable {
         return values.isEmpty ? nil : values.reduce(0, +) / Double(values.count)
     }
 
-    /// The week's last weigh-in, and its change from the last one before the week (or, with none
-    /// before, from the week's first).
+    /// The trend weight at the week's last weigh-in, and its change from the trend at the last
+    /// weigh-in before the week (or, with none before, at the week's first).
+    ///
+    /// Trend, not scale: a single weigh-in carries about half a percent of noise, so the raw
+    /// difference between two readings is mostly water (`WeightTrendCalculator`). Only weigh-ins up
+    /// to the week's end feed it, so a past week's review does not change with later readings.
     private static func weights(
         _ measurements: [BodyMeasurementEntry],
-        in interval: DateInterval
+        in interval: DateInterval,
+        calendar: Calendar
     ) -> (latest: Double?, change: Double?) {
         let weighIns = measurements
-            .filter { $0.deletedAt == nil && $0.weightKg != nil }
+            .filter { $0.deletedAt == nil && $0.weightKg != nil && $0.date < interval.end }
             .sorted { $0.date < $1.date }
-        let inWeek = weighIns.filter { $0.date >= interval.start && $0.date < interval.end }
-        guard let latest = inWeek.last?.weightKg else { return (nil, nil) }
-        let baselineEntry = weighIns.last { $0.date < interval.start } ?? (inWeek.count > 1 ? inWeek.first : nil)
-        return (latest, baselineEntry?.weightKg.map { latest - $0 })
+        let trend = WeightTrendCalculator.trend(
+            data: weighIns.compactMap { entry in entry.weightKg.map { (date: entry.date, value: $0) } },
+            calendar: calendar
+        ).map(\.value)
+        guard trend.count == weighIns.count,
+              let lastIndex = weighIns.lastIndex(where: { $0.date >= interval.start }) else { return (nil, nil) }
+        let firstInWeek = weighIns.firstIndex { $0.date >= interval.start } ?? lastIndex
+        let baselineIndex = firstInWeek > 0 ? firstInWeek - 1 : (lastIndex > firstInWeek ? firstInWeek : nil)
+        let latest = trend[lastIndex]
+        return (latest, baselineIndex.map { latest - trend[$0] })
     }
 
     private static func adherence(

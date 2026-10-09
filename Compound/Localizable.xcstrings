@@ -231,6 +231,16 @@
         }
       }
     },
+    "%@ a week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ a la semana"
+          }
+        }
+      }
+    },
     "%@ a week · %@" : {
       "localizations" : {
         "es" : {
@@ -510,12 +520,32 @@
         }
       }
     },
+    "%@ kcal a day (calibrating)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kcal al día (calibrando)"
+          }
+        }
+      }
+    },
     "%@ kcal a day, %@ %@." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ kcal al día, %2$@ %3$@."
+          }
+        }
+      }
+    },
+    "%@ kcal a day, likely %@–%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ kcal al día, probablemente %2$@–%3$@"
           }
         }
       }
@@ -3151,6 +3181,26 @@
         }
       }
     },
+    "1,200 and 1,500 kcal are where the obesity guideline's suggested diet ranges start for women and men. They are conventions, not the least a body can safely run on, and someone eating near them may need more for training." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1200 y 1500 kcal son donde empiezan los rangos de dieta que sugiere la guía sobre obesidad para mujeres y hombres. Son convenciones, no lo mínimo con lo que un cuerpo puede funcionar con seguridad, y quien coma cerca de esas cifras puede necesitar más para entrenar."
+          }
+        }
+      }
+    },
+    "1,350 for an unstated sex is the midpoint, and the 25% deficit cap is Compound's own; neither comes from a study." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las 1350 para un sexo no indicado son el punto medio, y el límite de déficit del 25% es propio de Compound; ninguno de los dos procede de un estudio."
+          }
+        }
+      }
+    },
     "1,850" : {
       "shouldTranslate" : false
     },
@@ -3173,6 +3223,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1RM"
+          }
+        }
+      }
+    },
+    "1.6 g per kg a day: where the benefit for muscle levels off for most people." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1,6 g por kg al día: donde el beneficio para el músculo se estabiliza en la mayoría de las personas."
           }
         }
       }
@@ -3249,6 +3309,56 @@
         }
       }
     },
+    "2.0 g per kg a day: a margin above that for people who train hard." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2,0 g por kg al día: un margen por encima para quienes entrenan duro."
+          }
+        }
+      }
+    },
+    "2.2 g per kg a day: the top of the range studies support for building muscle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2,2 g por kg al día: lo más alto del rango que respaldan los estudios para ganar músculo."
+          }
+        }
+      }
+    },
+    "2.6 g per kg a day: for lean lifters cutting hard. No guideline recommends this much for everyone." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2,6 g por kg al día: para levantadores delgados en una definición agresiva. Ninguna directriz recomienda tanto para todo el mundo."
+          }
+        }
+      }
+    },
+    "20% of calories from carbs, with fat making up the rest." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El 20% de las calorías de los carbohidratos, y la grasa completa el resto."
+          }
+        }
+      }
+    },
+    "20% of calories from fat, the lowest guidelines advise, so more carbs." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El 20% de las calorías de la grasa, lo mínimo que aconsejan las directrices, así que más carbohidratos."
+          }
+        }
+      }
+    },
     "24 Hour" : {
       "localizations" : {
         "es" : {
@@ -3265,6 +3375,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "3-4 veces por semana"
+          }
+        }
+      }
+    },
+    "30% of calories from fat, with carbs making up the rest." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El 30% de las calorías de la grasa, y los carbohidratos completan el resto."
           }
         }
       }
@@ -3361,6 +3481,26 @@
         }
       }
     },
+    "A day's calories count as on target when they land within 10% either side of that day's target. Protein counts once you reach its target. US food labels may understate calories by up to 20% before a product counts as misbranded, so a tighter band would mostly measure label error rather than your eating." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las calorías de un día cuentan como dentro del objetivo cuando quedan dentro de un 10% por encima o por debajo del objetivo de ese día. La proteína cuenta en cuanto alcanzas su objetivo. En EE. UU., las etiquetas de los alimentos pueden subestimar las calorías hasta un 20% antes de que un producto se considere mal etiquetado, así que un margen más estrecho mediría sobre todo el error de la etiqueta en lugar de tu alimentación."
+          }
+        }
+      }
+    },
+    "A deload week keeps about half of each exercise's working sets, at 90% of the planned weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una semana de descarga mantiene aproximadamente la mitad de las series de trabajo de cada ejercicio, al 90% del peso previsto."
+          }
+        }
+      }
+    },
     "A fasting day counts as 0 kcal rather than a day you forgot to log." : {
       "localizations" : {
         "es" : {
@@ -3377,6 +3517,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unos pocos detalles adaptan las recomendaciones a tu progreso."
+          }
+        }
+      }
+    },
+    "A few more weeks of workouts with this muscle will give a suggestion." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unas semanas más de entrenamientos con este músculo darán una sugerencia."
+          }
+        }
+      }
+    },
+    "A formula estimate for one person is typically off by a few hundred calories a day. The resting equation alone is within 10% for about three people in four, and the activity level is a self-reported category. Expenditure falls a little with age after about 60, which these equations only partly capture." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una estimación por fórmula para una persona suele desviarse unos cientos de calorías al día. La ecuación en reposo por sí sola acierta con un margen del 10% en unas tres de cada cuatro personas, y el nivel de actividad es una categoría que eliges tú. El gasto baja un poco con la edad a partir de los 60 años, algo que estas ecuaciones solo recogen en parte."
           }
         }
       }
@@ -3427,6 +3587,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Una fila simple con subtítulo"
+          }
+        }
+      }
+    },
+    "A plan assumes every set will be hard; a set later logged below RPE 6 will not count towards the week." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un plan da por hecho que todas las series serán efectivas; una serie registrada después por debajo de RPE 6 no contará para la semana."
           }
         }
       }
@@ -3602,6 +3772,26 @@
         }
       }
     },
+    "A suggestion for this muscle's weekly hard sets over the next two to three weeks. It starts from your median weekly sets over the last four weeks and looks at three things: how the estimated one-rep max is moving on exercises that train this muscle directly, whether RPE is rising at the same load, and how many of your planned sets you did. If you did fewer than 80% of them, it suggests consistency first. If strength is rising, keep what you are doing. If it is flat with steady effort, add 10–20%. If it is falling, or effort is rising at the same load, take 20–33% off. Nothing changes in your templates unless you change them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una sugerencia de series efectivas semanales para este músculo durante las próximas dos o tres semanas. Parte de la mediana de tus series semanales de las últimas cuatro semanas y tiene en cuenta tres cosas: cómo evoluciona la repetición máxima estimada en los ejercicios que trabajan directamente este músculo, si el RPE sube con la misma carga y cuántas de tus series previstas hiciste. Si hiciste menos del 80%, sugiere primero la constancia. Si la fuerza sube, sigue con lo que estás haciendo. Si se estanca con un esfuerzo estable, añade un 10–20%. Si baja, o el esfuerzo sube con la misma carga, quita un 20–33%. Nada cambia en tus plantillas salvo que las cambies tú."
+          }
+        }
+      }
+    },
+    "A template's target sets per muscle add up its planned sets the way logged sets are counted: the whole set for an exercise's main muscles, half a set for the muscles it only assists. Drops and mini-sets are credited once they are logged, not in the plan." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las series objetivo por músculo de una plantilla suman sus series previstas igual que se cuentan las series registradas: la serie entera para los músculos principales de un ejercicio y media serie para los que solo asisten. Los descensos y las miniseries se cuentan una vez registrados, no en el plan."
+          }
+        }
+      }
+    },
     "A variation's targets apply from its week until the next variation." : {
       "localizations" : {
         "es" : {
@@ -3722,6 +3912,16 @@
         }
       }
     },
+    "About 30 g of carbs a day, with fat making up the rest." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unos 30 g de carbohidratos al día, y la grasa completa el resto."
+          }
+        }
+      }
+    },
     "About Compound" : {
       "localizations" : {
         "es" : {
@@ -3738,6 +3938,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sobre ti"
+          }
+        }
+      }
+    },
+    "About three in four people fall within 10% of a measured value." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aproximadamente tres de cada cuatro personas quedan a menos de un 10% de un valor medido."
+          }
+        }
+      }
+    },
+    "About your intake" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre tu ingesta"
           }
         }
       }
@@ -3895,6 +4115,16 @@
         }
       }
     },
+    "Active lifestyle or manual work, plus training" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo de vida activo o trabajo físico, más entrenamiento"
+          }
+        }
+      }
+    },
     "Active lifestyle, frequent movement, manual work" : {
       "localizations" : {
         "es" : {
@@ -3962,6 +4192,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajusta la estimación a medida que cambian tu ingesta registrada y tu peso."
+          }
+        }
+      }
+    },
+    "Adaptive Expenditure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto adaptativo"
           }
         }
       }
@@ -4264,6 +4504,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añade un comentario…"
+          }
+        }
+      }
+    },
+    "Add a few sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade algunas series"
           }
         }
       }
@@ -4900,6 +5150,16 @@
         }
       }
     },
+    "Adjusts Based on Your Progress" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ajusta según tu progreso"
+          }
+        }
+      }
+    },
     "Advanced" : {
       "localizations" : {
         "es" : {
@@ -4936,6 +5196,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tras superarlo dos veces seguidas"
+          }
+        }
+      }
+    },
+    "After protein, the rest of each day's calories are split by your diet choice: balanced gives 30% of calories to fat, low fat 20%, low carb gives 20% to carbs, and keto caps carbs at about 30 g. Fat never drops below 20% of calories or 0.5 g per kilogram, whichever is more, and carbs take whatever is left." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después de la proteína, el resto de las calorías de cada día se reparte según la dieta que elegiste: equilibrada da el 30% de las calorías a la grasa, baja en grasa el 20%, baja en carbohidratos da el 20% a los carbohidratos y keto limita los carbohidratos a unos 30 g. La grasa nunca baja del 20% de las calorías ni de 0,5 g por kilogramo, lo que sea mayor, y los carbohidratos ocupan lo que quede."
           }
         }
       }
@@ -6186,12 +6456,32 @@
         }
       }
     },
+    "Based on lean mass, so it needs a body fat percentage. Suits muscular, lean builds best." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se basa en la masa magra, así que necesita un porcentaje de grasa corporal. Se ajusta mejor a complexiones musculosas y delgadas."
+          }
+        }
+      }
+    },
     "Based on your selected rate of %@ per week" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Según el ritmo seleccionado de %@ por semana"
+          }
+        }
+      }
+    },
+    "Based on your selected rate of %@ per week. Your calorie target will step down as you lose, or up as you gain, to keep that rate: about 24 kcal a day per kg (11 per lb)." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Según el ritmo que elegiste de %@ por semana. Tu objetivo de calorías bajará a medida que pierdas peso, o subirá a medida que ganes, para mantener ese ritmo: unas 24 kcal al día por kg (11 por lb)."
           }
         }
       }
@@ -6243,6 +6533,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comportamiento"
+          }
+        }
+      }
+    },
+    "Below maintenance" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por debajo del mantenimiento"
+          }
+        }
+      }
+    },
+    "Below the WHO cut-off" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por debajo del umbral de la OMS"
           }
         }
       }
@@ -6476,6 +6786,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medidas corporales, objetivos y fotos de progreso"
+          }
+        }
+      }
+    },
+    "Body weight also follows a weekly rhythm (higher after weekends) and, for some people, the menstrual cycle; the filter does not model either, so the trend can drift a little with them. The 0.5% noise figure comes from a long series of daily weighings in one person, so your own scale and routine may be noisier or quieter." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El peso corporal también sigue un ritmo semanal (más alto después de los fines de semana) y, en algunas personas, el ciclo menstrual; el filtro no modela ninguno de los dos, así que la tendencia puede desviarse un poco con ellos. La cifra de ruido del 0,5% procede de una larga serie de pesajes diarios de una sola persona, así que tu báscula y tu rutina pueden tener más o menos ruido."
           }
         }
       }
@@ -6795,6 +7115,46 @@
         }
       }
     },
+    "Calibrating" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibrando"
+          }
+        }
+      }
+    },
+    "Calibrating: estimated from your profile until %lld days and %lld weigh-ins are logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibrando: estimado a partir de tu perfil hasta que haya %1$lld días y %2$lld pesajes registrados"
+          }
+        }
+      }
+    },
+    "Calorie Distribution" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribución de calorías"
+          }
+        }
+      }
+    },
+    "Calorie Floor" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mínimo de calorías"
+          }
+        }
+      }
+    },
     "Calorie distribution" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6853,6 +7213,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anillo de calorías"
+          }
+        }
+      }
+    },
+    "Calories Spent Digesting Food" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calorías gastadas en la digestión"
+          }
+        }
+      }
+    },
+    "Calories count as on target within 10% either side." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las calorías cuentan como dentro del objetivo con un margen del 10% por encima o por debajo."
           }
         }
       }
@@ -7277,6 +7657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comprueba tu conexión a internet e inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Check-In Rules" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglas de la revisión"
           }
         }
       }
@@ -8015,6 +8405,16 @@
         }
       }
     },
+    "Compound's own choices" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decisiones propias de Compound"
+          }
+        }
+      }
+    },
     "Configure rest duration for different exercise types" : {
       "localizations" : {
         "es" : {
@@ -8164,6 +8564,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Constancia"
+          }
+        }
+      }
+    },
+    "Consistency first" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primero, la constancia"
           }
         }
       }
@@ -8540,6 +8950,16 @@
         }
       }
     },
+    "Counting any day with calories logged as a logged day is Compound's own choice." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contar como registrado cualquier día con calorías registradas es una decisión propia de Compound."
+          }
+        }
+      }
+    },
     "Counts this workout as done and moves the next one up" : {
       "localizations" : {
         "es" : {
@@ -8750,6 +9170,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crea tu primer programa de entrenamiento para empezar"
+          }
+        }
+      }
+    },
+    "Cunningham" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cunningham"
           }
         }
       }
@@ -9042,6 +9472,16 @@
         }
       }
     },
+    "Daily Activity and Exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividad diaria y ejercicio"
+          }
+        }
+      }
+    },
     "Daily Average" : {
       "localizations" : {
         "es" : {
@@ -9078,6 +9518,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nutrición diaria"
+          }
+        }
+      }
+    },
+    "Daily Step Goal" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo diario de pasos"
           }
         }
       }
@@ -9239,6 +9689,16 @@
         }
       }
     },
+    "Day-to-day weight varies by about half a percent of body weight from water and food alone, so the trend lags a real change by a week or two." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El peso varía de un día a otro en torno a medio por ciento del peso corporal solo por el agua y la comida, así que la tendencia refleja un cambio real con una o dos semanas de retraso."
+          }
+        }
+      }
+    },
     "Days" : {
       "localizations" : {
         "es" : {
@@ -9275,6 +9735,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días por microciclo"
+          }
+        }
+      }
+    },
+    "Days you mark as incomplete are left out of your expenditure estimate, as are days logged under half of it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los días que marcas como incompletos quedan fuera de tu estimación del gasto, igual que los días registrados por debajo de la mitad de este."
           }
         }
       }
@@ -9675,6 +10145,16 @@
         }
       }
     },
+    "Deloading is widely practised but little studied. The one trial found that a full week off mid-programme did not change muscle growth and slightly reduced strength gains, so the benefit is mainly recovery and practicality." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La descarga se practica mucho pero se ha estudiado poco. El único ensayo observó que una semana completa de descanso a mitad del programa no cambió el crecimiento muscular y redujo ligeramente las ganancias de fuerza, así que el beneficio es sobre todo la recuperación y la comodidad."
+          }
+        }
+      }
+    },
     "Depending on what your goal is, we will help you by generating a custom plan to help you get there. This can be changed in future, and your plan will be updated accordingly." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9713,6 +10193,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descripción: "
+          }
+        }
+      }
+    },
+    "Desk job, minimal walking, little or no exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trabajo de oficina, poco caminar, poco o nada de ejercicio"
           }
         }
       }
@@ -9787,6 +10277,16 @@
         }
       }
     },
+    "Diet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieta"
+          }
+        }
+      }
+    },
     "Diet Program" : {
       "localizations" : {
         "es" : {
@@ -9809,6 +10309,16 @@
         }
       }
     },
+    "Diets of 800 calories or less are meant to be followed under medical supervision, so Compound doesn't offer a lower floor." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las dietas de 800 calorías o menos deben seguirse bajo supervisión médica, así que Compound no ofrece un mínimo más bajo."
+          }
+        }
+      }
+    },
     "Difference" : {
       "localizations" : {
         "es" : {
@@ -9825,6 +10335,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Digestión de alimentos"
+          }
+        }
+      }
+    },
+    "Digesting and storing food costs about 10% of the energy you take in on a mixed diet. Compound shows it as 10% of your estimated expenditure, then counts the rest above resting as daily activity and exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digerir y almacenar los alimentos cuesta alrededor del 10% de la energía que ingieres con una dieta mixta. Compound lo muestra como el 10% de tu gasto estimado y cuenta el resto por encima del reposo como actividad diaria y ejercicio."
           }
         }
       }
@@ -10293,6 +10813,16 @@
         }
       }
     },
+    "Distribution" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distribución"
+          }
+        }
+      }
+    },
     "Distribution: %@" : {
       "localizations" : {
         "es" : {
@@ -10516,6 +11046,16 @@
         }
       }
     },
+    "Dynamic learns from your logged intake and your weight trend, day by day. Fixed holds the figure where it is." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dinámico aprende de tu ingesta registrada y de la tendencia de tu peso, día a día. Fijo mantiene la cifra donde está."
+          }
+        }
+      }
+    },
     "Dynamic reads your logged intake against your weight trend over the last four weeks. Fixed holds the figure where it is." : {
       "localizations" : {
         "es" : {
@@ -10546,6 +11086,16 @@
         }
       }
     },
+    "Each figure Compound calculates for you has an %@ beside it that opens the same explanation." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada cifra que Compound calcula para ti tiene al lado un %@ que abre la misma explicación."
+          }
+        }
+      }
+    },
     "Each one goes up with its sets. A long history can take a while." : {
       "localizations" : {
         "es" : {
@@ -10563,6 +11113,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada día de entrenamiento también se puede guardar en tu biblioteca para iniciarlo por separado."
+          }
+        }
+      }
+    },
+    "Ease off for a block" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afloja durante un bloque"
           }
         }
       }
@@ -10955,12 +11515,42 @@
         }
       }
     },
+    "Energy balance compares what you ate with what your body spent. Expenditure is your adaptive estimate for each day (the formula figure while it calibrates, and held where it was during a logging break). Intake is averaged only over the days you logged: a day with nothing logged is a day the app knows nothing about, not a day you ate nothing, so it is left out and the card says how many days it used." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El balance energético compara lo que comiste con lo que gastó tu cuerpo. El gasto es tu estimación adaptativa de cada día (la cifra de la fórmula mientras se calibra, y mantenida donde estaba durante una pausa en el registro). La ingesta se promedia solo sobre los días que registraste: un día sin nada registrado es un día del que la app no sabe nada, no un día en el que no comiste nada, así que se deja fuera y la tarjeta indica cuántos días ha usado."
+          }
+        }
+      }
+    },
     "Energy balance, last %lld days" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Balance energético, últimos %lld días"
+          }
+        }
+      }
+    },
+    "Energy in a Kilogram" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energía de un kilogramo"
+          }
+        }
+      }
+    },
+    "Enough to keep muscle; 10–20 sets a week builds more." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suficiente para mantener el músculo; 10–20 series a la semana desarrollan más."
           }
         }
       }
@@ -11318,6 +11908,16 @@
         }
       }
     },
+    "Estimated One-Rep Max" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetición máxima estimada"
+          }
+        }
+      }
+    },
     "Estimated TDEE: %lld kcal/day" : {
       "localizations" : {
         "es" : {
@@ -11380,6 +11980,16 @@
         }
       }
     },
+    "Estimated with the Mifflin-St Jeor equation." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimada con la ecuación de Mifflin-St Jeor."
+          }
+        }
+      }
+    },
     "Estimates can be wrong. Check amounts before logging." : {
       "localizations" : {
         "es" : {
@@ -11400,12 +12010,32 @@
         }
       }
     },
+    "Even gives every day the same target. Varied gives one higher day for each training day in your program, spread as evenly as the week allows, and lowers the other days so the weekly total stays the same. Your program is a queue rather than a calendar, so the higher days aren't tied to the days you actually train: treat them as a preference you can swap around." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uniforme da a todos los días el mismo objetivo. Variada da un día más alto por cada día de entrenamiento de tu programa, repartidos de la forma más uniforme que permita la semana, y baja los demás días para que el total semanal no cambie. Tu programa es una cola y no un calendario, así que los días altos no están ligados a los días en que realmente entrenas: tómalos como una preferencia que puedes cambiar de día."
+          }
+        }
+      }
+    },
     "Even or Varied?" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Uniforme o variada?"
+          }
+        }
+      }
+    },
+    "Even with daily weights and complete logs, weight-based estimates of an individual's energy balance were off by about 200 kcal a day in a two-year trial, and around four weeks of daily weigh-ins are needed for a usable estimate. Logging that changes in accuracy (more careful after a stall), or unlogged days that differ from logged ones (weekends), will bias it. No study has validated an app's Kalman expenditure estimate against doubly labeled water." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incluso con pesajes diarios y registros completos, las estimaciones del balance energético de una persona a partir del peso se desviaron unas 200 kcal al día en un ensayo de dos años, y hacen falta unas cuatro semanas de pesajes diarios para una estimación útil. Un registro cuya precisión cambia (más cuidadoso tras un estancamiento), o días sin registrar que difieren de los registrados (los fines de semana), lo sesgarán. Ningún estudio ha validado la estimación del gasto con filtro de Kalman de una app frente al agua doblemente marcada."
           }
         }
       }
@@ -11430,6 +12060,16 @@
         }
       }
     },
+    "Every muscle is read against the same tiers of weekly hard sets: below maintenance (fewer than 4), maintaining (4 to under 10), productive (10–20) and high (over 20). Muscle growth keeps rising with weekly sets, with smaller gains for each extra set and no clear plateau below about 20. No meta-analysis supports a lower target for small muscles, and the one muscle-level signal, for triceps, pointed the other way. Strength levels off at far fewer sets than size." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada músculo se evalúa con los mismos niveles de series efectivas semanales: por debajo del mantenimiento (menos de 4), mantenimiento (de 4 a menos de 10), productivo (10–20) y alto (más de 20). El crecimiento muscular sigue aumentando con las series semanales, con ganancias menores por cada serie extra y sin una meseta clara por debajo de unas 20. Ningún metaanálisis respalda un objetivo más bajo para los músculos pequeños, y la única señal a nivel de músculo, para el tríceps, apuntaba en sentido contrario. La fuerza se estabiliza con muchas menos series que el tamaño."
+          }
+        }
+      }
+    },
     "Every rep compounds." : {
       "localizations" : {
         "es" : {
@@ -11446,6 +12086,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada paso que das hacia tu objetivo es progreso. Sé constante con tu nutrición y tu ejercicio y alcanzarás tu peso objetivo. Recuerda: los cambios sostenibles dan resultados duraderos."
+          }
+        }
+      }
+    },
+    "Every threshold is Compound's own: the four-week window, the ±0.5% a week flat band (a placeholder until it can be tuned on real training logs), the 80% adherence line, the RPE drift of 1, the 20–33% reduction, and the median across exercises. The 10–20% step follows trials of increases over habitual volume, and the 4-set floor follows the minimal maintenance dose." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos los umbrales son propios de Compound: la ventana de cuatro semanas, el margen de estancamiento de ±0,5% a la semana (provisional hasta que pueda ajustarse con registros de entrenamiento reales), la línea de cumplimiento del 80%, la deriva de RPE de 1, la reducción del 20–33% y la mediana entre ejercicios. El incremento del 10–20% sigue los ensayos de aumentos sobre el volumen habitual, y el mínimo de 4 series sigue la dosis mínima de mantenimiento."
           }
         }
       }
@@ -11898,6 +12548,16 @@
         }
       }
     },
+    "Fat and Carbohydrate Split" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reparto de grasa y carbohidratos"
+          }
+        }
+      }
+    },
     "Fat will be reduced to prioritize carb and protein intake." : {
       "localizations" : {
         "es" : {
@@ -12099,6 +12759,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sesión obtenida"
+          }
+        }
+      }
+    },
+    "Fewer than 4 sets a week may not keep what you have built." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menos de 4 series a la semana puede no bastar para conservar lo que has construido."
+          }
+        }
+      }
+    },
+    "Fewer than 80% of your planned sets were done. Hit the plan before adding more." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se hicieron menos del 80% de tus series previstas. Cumple el plan antes de añadir más."
           }
         }
       }
@@ -12387,6 +13067,16 @@
         }
       }
     },
+    "Fixed at your profile's estimate." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fijado en la estimación de tu perfil."
+          }
+        }
+      }
+    },
     "Fixed unit" : {
       "shouldTranslate" : false
     },
@@ -12623,6 +13313,16 @@
         }
       }
     },
+    "For a lean lifter the conventional 7,700 overstates the energy in a kilogram by roughly 20–30%. The first few weeks of a diet lose glycogen and water, which hold much less energy (about 4,900 kcal per kg at four weeks), so early weight change looks bigger than the energy behind it. Home body fat scales can be several percentage points out. Inside the feedback loop the figure largely cancels out of your targets; it matters most for the expenditure number shown." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para un levantador delgado, las 7700 convencionales sobrestiman la energía de un kilogramo en un 20–30% aproximadamente. Las primeras semanas de una dieta se pierden glucógeno y agua, que contienen mucha menos energía (unas 4900 kcal por kg a las cuatro semanas), así que el cambio de peso inicial parece mayor que la energía que lo explica. Las básculas de grasa corporal domésticas pueden fallar varios puntos porcentuales. Dentro del ciclo de ajuste, la cifra se anula en gran parte en tus objetivos; donde más importa es en el gasto que se muestra."
+          }
+        }
+      }
+    },
     "For a stack whose plates are not all the same weight: list every weight the pin can select." : {
       "localizations" : {
         "es" : {
@@ -12639,6 +13339,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Antebrazos"
+          }
+        }
+      }
+    },
+    "Formula" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fórmula"
+          }
+        }
+      }
+    },
+    "Formula Expenditure Estimate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimación del gasto por fórmula"
           }
         }
       }
@@ -12710,6 +13430,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ganar peso"
+          }
+        }
+      }
+    },
+    "Gaining more than 0.5% of your body weight a week means more of what you put on is likely to be fat rather than muscle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganar más del 0,5% de tu peso corporal a la semana significa que es probable que más de lo que ganes sea grasa y no músculo."
           }
         }
       }
@@ -12932,6 +13662,16 @@
         }
       }
     },
+    "Goal Timeline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plazo de la meta"
+          }
+        }
+      }
+    },
     "Goal hit and %@ %@ set. Great week." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13131,12 +13871,32 @@
         }
       }
     },
+    "Habit studies follow groups over weeks to months; how long a habit takes varies widely between people. A streak measures consistency, not progress." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los estudios sobre hábitos siguen a grupos durante semanas o meses; lo que tarda en formarse un hábito varía mucho entre personas. Una racha mide la constancia, no el progreso."
+          }
+        }
+      }
+    },
     "Habits" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hábitos"
+          }
+        }
+      }
+    },
+    "Half the sets, 90% of the weight (the middle of 85–95%), and keeping warm-ups are Compound's own choices. When the deload falls is set by the mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mitad de las series, el 90% del peso (el punto medio del 85–95%) y mantener los calentamientos son decisiones propias de Compound. Cuándo toca la descarga lo fija el mesociclo."
           }
         }
       }
@@ -13167,6 +13927,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acoso"
+          }
+        }
+      }
+    },
+    "Hard sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series efectivas de los últimos 7 días. Un músculo al que un ejercicio solo asiste cuenta media serie. Toca un músculo para ver su tendencia de 12 semanas."
           }
         }
       }
@@ -13282,6 +14052,26 @@
         }
       }
     },
+    "High confidence" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confianza alta"
+          }
+        }
+      }
+    },
+    "High risk" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo alto"
+          }
+        }
+      }
+    },
     "Highest recommended intake." : {
       "localizations" : {
         "es" : {
@@ -13308,6 +14098,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muy activo durante todo el día"
+          }
+        }
+      }
+    },
+    "Highly active throughout the day, or hard training most days" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muy activo a lo largo del día, o entrenamiento duro la mayoría de los días"
           }
         }
       }
@@ -13401,6 +14201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Horas"
+          }
+        }
+      }
+    },
+    "How %@ is calculated" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo se calcula %@"
           }
         }
       }
@@ -13764,6 +14574,16 @@
         }
       }
     },
+    "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded to your equipment. Reps stay as planned and warm-ups stay. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En la semana de descarga de un mesociclo, cada ejercicio mantiene aproximadamente la mitad de sus series de trabajo (la mitad, redondeando al alza, así que 4 pasan a 2 y 3 pasan a 2) al 90% del peso previsto, redondeado a tu equipo. Las repeticiones se mantienen según lo previsto y los calentamientos también. Sigues entrenando con la frecuencia habitual. Levantadores y entrenadores hacen la descarga sobre todo reduciendo el volumen y el esfuerzo sin cambiar la frecuencia. En una encuesta a atletas de fuerza y de físico, una descarga típica duraba aproximadamente una semana cada 5 o 6 semanas."
+          }
+        }
+      }
+    },
     "In order to for us to help you on your fitness journey, we need to know a few things about you. These will help us tailor our recommendations to your needs." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -13771,6 +14591,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Para ayudarte en tu camino hacia la forma física, necesitamos saber algunas cosas sobre ti. Nos ayudarán a adaptar nuestras recomendaciones a tus necesidades."
+          }
+        }
+      }
+    },
+    "In the 10–20 sets a week band where most growth happens." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En el rango de 10–20 series a la semana, donde se produce la mayor parte del crecimiento."
           }
         }
       }
@@ -13831,6 +14661,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Incluye %1$@%2$@ kcal de tu recuento de pasos reciente"
+          }
+        }
+      }
+    },
+    "Increased risk" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo aumentado"
           }
         }
       }
@@ -14188,6 +15028,16 @@
         }
       }
     },
+    "Keep logging" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue registrando"
+          }
+        }
+      }
+    },
     "Keep the Momentum" : {
       "localizations" : {
         "es" : {
@@ -14236,6 +15086,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La nota debe tener %lld caracteres o menos."
+          }
+        }
+      }
+    },
+    "Keep your current sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén tus series actuales"
           }
         }
       }
@@ -14477,6 +15337,16 @@
         }
       }
     },
+    "Last 7 Days · %lld logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Últimos 7 días · %lld registrados"
+          }
+        }
+      }
+    },
     "Last 7 Entries" : {
       "localizations" : {
         "es" : {
@@ -14601,6 +15471,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lateralidad: "
+          }
+        }
+      }
+    },
+    "Latest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más reciente"
           }
         }
       }
@@ -14894,6 +15774,26 @@
         }
       }
     },
+    "Light movement most of the day, or a few workouts a week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimiento ligero la mayor parte del día, o algunos entrenamientos a la semana"
+          }
+        }
+      }
+    },
+    "Light walking and some daily activity, or a desk job with a few workouts a week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algo de caminar y de actividad diaria, o trabajo de oficina con algunos entrenamientos a la semana"
+          }
+        }
+      }
+    },
     "Light walking, some daily activities, occasional stairs" : {
       "localizations" : {
         "es" : {
@@ -14944,12 +15844,42 @@
         }
       }
     },
+    "Likely %@ to %@, based on what you logged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probablemente entre %1$@ y %2$@, según lo que registraste."
+          }
+        }
+      }
+    },
+    "Likely %@–%@ kcal, based on what you logged" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probablemente %1$@–%2$@ kcal, según lo que registraste"
+          }
+        }
+      }
+    },
     "Likes" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Me gusta"
+          }
+        }
+      }
+    },
+    "Limitations" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limitaciones"
           }
         }
       }
@@ -15553,6 +16483,16 @@
         }
       }
     },
+    "Losing more than 0.75% of your body weight a week makes a lean person more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perder más del 0,75% de tu peso corporal a la semana hace que una persona delgada tenga más probabilidades de perder músculo y de sentir hambre y cansancio. Un ritmo más lento es más fácil de mantener."
+          }
+        }
+      }
+    },
     "Losing this fast makes you more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up." : {
       "localizations" : {
         "es" : {
@@ -15599,6 +16539,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mínimo bajo"
+          }
+        }
+      }
+    },
+    "Low confidence" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confianza baja"
           }
         }
       }
@@ -15755,6 +16705,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantener"
+          }
+        }
+      }
+    },
+    "Maintaining" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantenimiento"
           }
         }
       }
@@ -15972,6 +16932,16 @@
         }
       }
     },
+    "Medium confidence" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confianza media"
+          }
+        }
+      }
+    },
     "Members" : {
       "localizations" : {
         "es" : {
@@ -16141,6 +17111,16 @@
         }
       }
     },
+    "Methods & Sources" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Métodos y fuentes"
+          }
+        }
+      }
+    },
     "Metric" : {
       "localizations" : {
         "es" : {
@@ -16269,6 +17249,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mifflin-St Jeor"
+          }
+        }
+      }
+    },
+    "Mifflin-St Jeor predicts within 10% of measured resting rate for about three people in four, so roughly one in four is further out. Weight-based equations tend to underestimate resting rate in muscular people. Cunningham is only as good as the body fat reading: every kilogram of fat-free mass misjudged moves it by 22 kcal, and home scales can be several percentage points out." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mifflin-St Jeor predice la tasa metabólica en reposo medida con un margen del 10% en unas tres de cada cuatro personas, así que aproximadamente una de cada cuatro se desvía más. Las ecuaciones basadas en el peso tienden a subestimar la tasa en reposo de las personas musculosas. Cunningham es tan buena como la lectura de grasa corporal: cada kilogramo de masa libre de grasa mal estimado la mueve 22 kcal, y las básculas domésticas pueden fallar varios puntos porcentuales."
           }
         }
       }
@@ -16496,6 +17486,16 @@
         }
       }
     },
+    "Mostly sitting; little movement or exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mayormente sentado; poco movimiento o ejercicio"
+          }
+        }
+      }
+    },
     "Motivation" : {
       "localizations" : {
         "es" : {
@@ -16685,6 +17685,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "NUEVO"
+          }
+        }
+      }
+    },
+    "NICE bands: 0.40–0.49 healthy, 0.50–0.59 increased risk, 0.60 or more high risk. Keep your waist to less than half your height. Screening, not diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rangos del NICE: 0,40–0,49 saludable, 0,50–0,59 riesgo aumentado, 0,60 o más riesgo alto. Mantén tu cintura por debajo de la mitad de tu altura. Es un cribado, no un diagnóstico."
+          }
+        }
+      }
+    },
+    "NICE gives these bands for people with a BMI under 35. Whether NICE sets a band below 0.40 could not be confirmed, so Compound shows none. A tape measurement can vary by a centimeter or two with where and how it is taken." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El NICE da estos rangos para personas con un IMC inferior a 35. No se ha podido confirmar si el NICE fija un rango por debajo de 0,40, así que Compound no muestra ninguno. Una medida con cinta puede variar uno o dos centímetros según dónde y cómo se tome."
           }
         }
       }
@@ -17412,12 +18432,32 @@
         }
       }
     },
+    "No approximate end date at this rate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin fecha de finalización aproximada con este ritmo"
+          }
+        }
+      }
+    },
     "No authorization code was returned from Strava." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strava no devolvió ningún código de autorización."
+          }
+        }
+      }
+    },
+    "No closed-loop volume rule has been tested in a trial, so this is defensible in direction only. Session-to-session swings in estimated one-rep max can hide a real trend over four weeks, and sleep, stress and soreness are not taken into account." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna regla de volumen de ciclo cerrado se ha probado en un ensayo, así que esta solo es defendible en su dirección. Las oscilaciones de una sesión a otra en la repetición máxima estimada pueden ocultar una tendencia real en cuatro semanas, y no se tienen en cuenta el sueño, el estrés ni las agujetas."
           }
         }
       }
@@ -17646,6 +18686,26 @@
         }
       }
     },
+    "No study supports fixed high days. Trials of refeed days and diet breaks are small, and a reanalysis of the refeed trial found no clear difference in lean mass. Varying calories mainly helps if it makes the plan easier to follow." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún estudio respalda los días altos fijos. Los ensayos sobre días de recarga y pausas en la dieta son pequeños, y un nuevo análisis del ensayo de recarga no encontró una diferencia clara en la masa magra. Variar las calorías ayuda sobre todo si hace que el plan sea más fácil de seguir."
+          }
+        }
+      }
+    },
+    "No study validates a particular band width. Logging errors and label errors both feed into the figure." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún estudio valida un ancho de margen concreto. Tanto los errores de registro como los de las etiquetas influyen en la cifra."
+          }
+        }
+      }
+    },
     "No subscription options are available right now. Please try again in a moment." : {
       "localizations" : {
         "es" : {
@@ -17672,6 +18732,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin objetivo"
+          }
+        }
+      }
+    },
+    "No trial has compared percentage steps with fixed ones. The rep fallback rests on a trial in which adding reps and adding load built muscle equally. RPE-based loading did at least as well as percentage-based loading, and hypertrophy improves closer to failure while strength responds more to load. RPE is self-reported and tends to underestimate the reps left." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún ensayo ha comparado incrementos porcentuales con incrementos fijos. La alternativa de añadir repeticiones se apoya en un ensayo en el que añadir repeticiones y añadir carga desarrollaron el músculo por igual. La carga basada en el RPE funcionó al menos tan bien como la basada en porcentajes, y la hipertrofia mejora cerca del fallo mientras que la fuerza responde más a la carga. El RPE lo indica uno mismo y tiende a subestimar las repeticiones que quedan."
           }
         }
       }
@@ -17896,6 +18966,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahora no"
+          }
+        }
+      }
+    },
+    "Not peer reviewed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin revisión por pares"
           }
         }
       }
@@ -18509,6 +19589,26 @@
         }
       }
     },
+    "On your feet or moving regularly, with regular workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De pie o en movimiento con regularidad, con entrenamientos regulares"
+          }
+        }
+      }
+    },
+    "On-Target Band" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Margen del objetivo"
+          }
+        }
+      }
+    },
     "Onboarding Complete!" : {
       "localizations" : {
         "es" : {
@@ -18535,6 +19635,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cuando el objetivo llegue a %lld"
+          }
+        }
+      }
+    },
+    "One higher day for each training day in your program, spread through the week, and lower days in between. The weekly total stays the same." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un día más alto por cada día de entrenamiento de tu programa, repartidos a lo largo de la semana, y días más bajos entre medias. El total semanal no cambia."
           }
         }
       }
@@ -18661,6 +19771,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abre el entrenador sobre lo que muestra esta pantalla"
+          }
+        }
+      }
+    },
+    "Opens the source" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la fuente"
           }
         }
       }
@@ -18868,6 +19988,26 @@
         }
       }
     },
+    "Over 20 sets a week is high volume: fine while you keep progressing and recovering." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más de 20 series a la semana es un volumen alto: está bien mientras sigas progresando y recuperándote."
+          }
+        }
+      }
+    },
+    "Over 20 sets a week: fine while you keep progressing and recovering." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más de 20 series a la semana: está bien mientras sigas progresando y recuperándote."
+          }
+        }
+      }
+    },
     "Over goal" : {
       "localizations" : {
         "es" : {
@@ -19068,6 +20208,16 @@
         }
       }
     },
+    "People under-report intake, and the gap is largest on days that are only partly logged, which is why those days are left out rather than averaged in." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La gente declara menos ingesta de la real, y la diferencia es mayor en los días registrados solo en parte, por eso esos días se dejan fuera en lugar de promediarse."
+          }
+        }
+      }
+    },
     "People will show up here once there are some." : {
       "localizations" : {
         "es" : {
@@ -19229,12 +20379,42 @@
         }
       }
     },
+    "Physical Activity Level" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de actividad física"
+          }
+        }
+      }
+    },
     "Physically active work or lifestyle" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trabajo o estilo de vida físicamente activo"
+          }
+        }
+      }
+    },
+    "Physically active work or lifestyle, plus training" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trabajo o estilo de vida físicamente activo, más entrenamiento"
+          }
+        }
+      }
+    },
+    "Physically demanding work or hard training most days" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trabajo físicamente exigente o entrenamiento duro la mayoría de los días"
           }
         }
       }
@@ -19384,12 +20564,32 @@
         }
       }
     },
+    "Planned Sets per Muscle" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series previstas por músculo"
+          }
+        }
+      }
+    },
     "Planned alternatives" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alternativas del plan"
+          }
+        }
+      }
+    },
+    "Planned sets done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series previstas hechas"
           }
         }
       }
@@ -19964,6 +21164,26 @@
         }
       }
     },
+    "Productive" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Productivo"
+          }
+        }
+      }
+    },
+    "Productive range %@ sets a week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rango productivo: %@ series a la semana"
+          }
+        }
+      }
+    },
     "Professional workout templates designed for common training programs." : {
       "localizations" : {
         "es" : {
@@ -20055,6 +21275,16 @@
         }
       }
     },
+    "Progress is how far your trend weight, the smoothed line on the Weight Trend screen, has moved from where the goal started toward its target, from 0% to 100%. Using the trend rather than your last weigh-in means a single heavy or light day barely moves it. Moving away from the target reads as 0%, not negative." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El progreso es cuánto se ha movido tu peso de tendencia, la línea suavizada de la pantalla Tendencia del peso, desde donde empezó la meta hacia su objetivo, del 0% al 100%. Usar la tendencia en lugar de tu último pesaje hace que un solo día de más o menos peso apenas lo mueva. Alejarse del objetivo cuenta como 0%, no como un valor negativo."
+          }
+        }
+      }
+    },
     "Progress photos" : {
       "localizations" : {
         "es" : {
@@ -20132,6 +21362,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anillo de proteína"
+          }
+        }
+      }
+    },
+    "Protein Target" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de proteína"
+          }
+        }
+      }
+    },
+    "Protein is set in grams per kilogram for the level you chose. Gains in muscle from training level off at around 1.6 g/kg for most people, and lean people in a calorie deficit may benefit from more. If your BMI is 30 or over, it is worked out on a reference weight rather than your full weight, because fat mass needs little protein. People aged 65 and over never get less than 1.2 g/kg." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La proteína se fija en gramos por kilogramo según el nivel que elegiste. Las ganancias musculares del entrenamiento se estabilizan en torno a 1,6 g/kg en la mayoría de las personas, y las personas delgadas en déficit calórico pueden beneficiarse de más. Si tu IMC es de 30 o más, se calcula sobre un peso de referencia en lugar de tu peso total, porque la masa grasa necesita poca proteína. Las personas de 65 años o más nunca reciben menos de 1,2 g/kg."
           }
         }
       }
@@ -20329,6 +21579,16 @@
         }
       }
     },
+    "Rates are set as a share of your body weight, since half a kilogram a week asks far more of a 60 kg person than of a 120 kg one. Losing ranges from 0.25% to 1% of body weight a week, starting at 0.5% if your BMI is under 25 and 0.75% otherwise. Gaining starts at 0.25% a week. Compound warns above 0.75% a week when a lean person is losing, and above 0.5% when gaining. The daily calorie change uses 7,700 kcal per kilogram." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los ritmos se fijan como una proporción de tu peso corporal, ya que medio kilogramo a la semana exige mucho más a una persona de 60 kg que a una de 120 kg. Para perder, van del 0,25% al 1% del peso corporal por semana, empezando en el 0,5% si tu IMC es inferior a 25 y en el 0,75% en caso contrario. Para ganar, se empieza en el 0,25% por semana. Compound avisa por encima del 0,75% semanal cuando una persona delgada pierde peso, y por encima del 0,5% cuando gana. El cambio diario de calorías usa 7700 kcal por kilogramo."
+          }
+        }
+      }
+    },
     "Ratios" : {
       "localizations" : {
         "es" : {
@@ -20397,6 +21657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Listo para fijar una meta?"
+          }
+        }
+      }
+    },
+    "Real progress is rarely linear: water and glycogen move the scale, and adherence usually slips over time, which is the main reason plateaus happen. 24 kcal a day per kilogram is an average from modelling, not a measurement of you." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El progreso real rara vez es lineal: el agua y el glucógeno mueven la báscula, y el cumplimiento suele relajarse con el tiempo, que es la principal razón de los estancamientos. Las 24 kcal al día por kilogramo son una media obtenida de modelos, no una medición tuya."
           }
         }
       }
@@ -20567,6 +21837,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cardio regular, corro con comodidad, buena resistencia"
+          }
+        }
+      }
+    },
+    "Regular walking or standing work, with regular workouts" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caminar con regularidad o trabajo de pie, con entrenamientos regulares"
           }
         }
       }
@@ -21237,6 +22517,16 @@
         }
       }
     },
+    "Rest Timers" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temporizadores de descanso"
+          }
+        }
+      }
+    },
     "Rest Timer…" : {
       "localizations" : {
         "es" : {
@@ -21408,12 +22698,42 @@
         }
       }
     },
+    "Resting calories come from the Mifflin-St Jeor equation, using your age, height, weight and sex. They're then multiplied by a physical activity level that already includes your workouts. A calorie floor is applied when your targets are set." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las calorías en reposo proceden de la ecuación de Mifflin-St Jeor, con tu edad, altura, peso y sexo. Después se multiplican por un nivel de actividad física que ya incluye tus entrenamientos. Al fijar tus objetivos se aplica un mínimo de calorías."
+          }
+        }
+      }
+    },
     "Resting calories × (activity + exercise)" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Calorías en reposo × (actividad + ejercicio)"
+          }
+        }
+      }
+    },
+    "Resting calories × activity level" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calorías en reposo × nivel de actividad"
+          }
+        }
+      }
+    },
+    "Resting energy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energía en reposo"
           }
         }
       }
@@ -22064,6 +23384,26 @@
         }
       }
     },
+    "Screening" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cribado"
+          }
+        }
+      }
+    },
+    "Screening Band" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rango de cribado"
+          }
+        }
+      }
+    },
     "Scroll automatically between superset exercises after set completion" : {
       "localizations" : {
         "es" : {
@@ -22402,6 +23742,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selenio"
+          }
+        }
+      }
+    },
+    "Self-reported intake usually runs below what was really eaten, sometimes by a lot, so a logged deficit can be larger than the real one. The expenditure estimate is learned from the same logs, so the two errors partly cancel, but only if you log consistently." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ingesta que se registra uno mismo suele quedarse por debajo de lo que realmente se comió, a veces por mucho, así que un déficit registrado puede ser mayor que el real. La estimación del gasto se aprende de los mismos registros, así que los dos errores se compensan en parte, pero solo si registras de forma constante."
           }
         }
       }
@@ -22847,6 +24197,16 @@
         }
       }
     },
+    "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las series por músculo cuentan solo las series efectivas: terminadas, que no sean de calentamiento y que no se hayan registrado por debajo de RPE 6. Una serie sin RPE cuenta igualmente, así que no registrar el esfuerzo no te penaliza. Los músculos principales de un ejercicio reciben la serie entera y los que solo asisten, media. Una serie izquierda y una derecha cuentan como una. Cada descenso terminado, o cada miniserie de una serie myo-rep o de descanso-pausa, suma media serie, hasta dos series en total. Las semanas son ventanas móviles de siete días."
+          }
+        }
+      }
+    },
     "Settings" : {
       "localizations" : {
         "es" : {
@@ -23232,6 +24592,16 @@
         }
       }
     },
+    "Shows the method and its sources" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra el método y sus fuentes"
+          }
+        }
+      }
+    },
     "Shows the plates for each side of the bar" : {
       "localizations" : {
         "es" : {
@@ -23514,6 +24884,16 @@
         }
       }
     },
+    "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its RPE target. Without a target, a compound set logged at RPE 10 doesn't earn weight. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell, you add a rep each session until your reps carry the heavier weight for the bottom of the range. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La progresión inteligente usa la doble progresión: añade repeticiones dentro de tu rango con el mismo peso, y después añade peso y vuelve a la parte baja del rango. El peso sube cuando la mayoría de las series (primero el peso) o todas las series (primero las repeticiones) llegan a la parte alta del rango y ninguna serie se registró más dura que su RPE objetivo. Sin objetivo, una serie de un ejercicio compuesto registrada con RPE 10 no da derecho a subir peso. Si no registras el RPE, hay que alcanzar la parte alta del rango en dos sesiones seguidas con ese peso. El incremento es una proporción del peso, redondeada a tu equipo: 5% en compuestos de tren inferior, 2,5% en compuestos de tren superior y 5% en aislamiento y core. Nunca es menor que tu disco o placa más pequeños. Cuando incluso ese incremento supera el 10% del peso, como 2 kg en una mancuerna ligera, añades una repetición cada sesión hasta que tus repeticiones permitan mover el peso mayor en la parte baja del rango. Una sesión por debajo del rango repite los pesos. Una segunda seguida, con el mismo peso y sin quedarte corto (RPE 9,5 o más, o sin RPE), reajusta el peso. El nuevo peso se calcula a partir de la repetición máxima estimada de esa serie para la parte baja del rango con 2 repeticiones en reserva, o con el objetivo de la plantilla."
+          }
+        }
+      }
+    },
     "Smart Progression values" : {
       "localizations" : {
         "es" : {
@@ -23584,6 +24964,16 @@
         }
       }
     },
+    "Some days' targets are below your estimated resting calories (%@). That's a steep deficit: a slower rate is easier to sustain and keeps more muscle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los objetivos de algunos días están por debajo de tus calorías en reposo estimadas (%@). Es un déficit muy pronunciado: un ritmo más lento es más fácil de mantener y conserva más músculo."
+          }
+        }
+      }
+    },
     "Something Went Wrong" : {
       "localizations" : {
         "es" : {
@@ -23600,6 +24990,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Algo salió mal. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Sources" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuentes"
           }
         }
       }
@@ -23680,6 +25080,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estándar (recomendado)"
+          }
+        }
+      }
+    },
+    "Standard Floor" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mínimo estándar"
           }
         }
       }
@@ -24050,6 +25460,16 @@
         }
       }
     },
+    "Step goal: %@ a day." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo de pasos: %@ al día."
+          }
+        }
+      }
+    },
     "Step-Informed Updates" : {
       "localizations" : {
         "es" : {
@@ -24242,12 +25662,52 @@
         }
       }
     },
+    "Strength has been flat with steady effort, so 10–20% more sets may help." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fuerza se ha estancado con un esfuerzo estable, así que un 10–20% más de series puede ayudar."
+          }
+        }
+      }
+    },
+    "Strength is slipping or the same weights feel harder, so try 20–33% fewer sets." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fuerza está bajando o los mismos pesos se sienten más duros, así que prueba con un 20–33% menos de series."
+          }
+        }
+      }
+    },
+    "Strength trend" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tendencia de fuerza"
+          }
+        }
+      }
+    },
     "Stretch" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estiramiento"
+          }
+        }
+      }
+    },
+    "Studies found that a warm-up at higher loads with few reps, such as 6 reps at 40% then 80% of the training load, made the first working sets faster than lighter or no warm-ups. They tested squat and bench press in trained people, not every exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los estudios observaron que un calentamiento con cargas más altas y pocas repeticiones, como 6 repeticiones al 40% y luego al 80% de la carga de entrenamiento, hacía más rápidas las primeras series de trabajo que un calentamiento más ligero o ninguno. Probaron la sentadilla y el press de banca en personas entrenadas, no todos los ejercicios."
           }
         }
       }
@@ -24279,6 +25739,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suscripción"
+          }
+        }
+      }
+    },
+    "Substantially increased risk" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo sustancialmente aumentado"
           }
         }
       }
@@ -24329,6 +25799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Azúcares añadidos"
+          }
+        }
+      }
+    },
+    "Suggested" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerido"
           }
         }
       }
@@ -24752,12 +26232,32 @@
         }
       }
     },
+    "Target Suggestions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencias de objetivo"
+          }
+        }
+      }
+    },
     "Target Weight" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Peso objetivo"
+          }
+        }
+      }
+    },
+    "Target and Timeline" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivo y plazo"
           }
         }
       }
@@ -25014,6 +26514,76 @@
         }
       }
     },
+    "The 0.3 kg noise floor, the 0.05 kg/day level noise, the 0.004 kg/day slope noise, the 2.5 robust threshold, the max(3 kg, 4%) hold rule, the median-of-three start and using the first weigh-in of the day are Compound's own choices, to be tuned on real histories." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El ruido mínimo de 0,3 kg, el ruido de nivel de 0,05 kg/día, el ruido de pendiente de 0,004 kg/día, el umbral robusto de 2,5, la regla de retención de máx(3 kg, 4%), el inicio con la mediana de tres y el uso del primer pesaje del día son decisiones propias de Compound, que se ajustarán con historiales reales."
+          }
+        }
+      }
+    },
+    "The 1.6 g/kg plateau is an average, with a confidence interval reaching about 2.2 g/kg. No trials have measured protein needs in obesity, so the reference-weight rule follows clinical practice rather than a trial. Higher intakes showed no harm to kidney function in healthy adults, but people with kidney disease should ask their doctor." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La meseta de 1,6 g/kg es una media, con un intervalo de confianza que llega a unos 2,2 g/kg. Ningún ensayo ha medido las necesidades de proteína en la obesidad, así que la regla del peso de referencia sigue la práctica clínica y no un ensayo. Las ingestas más altas no mostraron daños en la función renal en adultos sanos, pero las personas con enfermedad renal deberían consultar a su médico."
+          }
+        }
+      }
+    },
+    "The 10% band is Compound's own choice, sized to sit inside typical food-label error." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El margen del 10% es una decisión propia de Compound, pensada para quedar dentro del error típico de las etiquetas de alimentos."
+          }
+        }
+      }
+    },
+    "The 10% bonus, the 85% lowest day and the even spread are Compound's choices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El extra del 10%, el día más bajo al 85% y el reparto uniforme son elecciones de Compound."
+          }
+        }
+      }
+    },
+    "The 30% balanced share and the 30 g keto default (inside the usual 20–50 g definition) are Compound's choices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La proporción equilibrada del 30% y los 30 g predeterminados de keto (dentro de la definición habitual de 20–50 g) son elecciones de Compound."
+          }
+        }
+      }
+    },
+    "The 50 kcal minimum, the uncertainty deadband, the 150 kcal step, the 7-day cadence and the 10% adherence margin are Compound's own choices, to be tuned on real histories. Removing the rate-error correction follows the report's reasoning, not a trial." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mínimo de 50 kcal, la banda muerta de incertidumbre, el paso de 150 kcal, la cadencia de 7 días y el margen de cumplimiento del 10% son decisiones propias de Compound, que se ajustarán con historiales reales. Eliminar la corrección por error de ritmo sigue el razonamiento del informe, no un ensayo."
+          }
+        }
+      }
+    },
+    "The 6-rep cut-off and the exact times, chosen within ACSM's 2–3 minutes for heavy core lifts and 1–2 minutes for assistance work, are Compound's own choices. The 60-second core rest is too." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El umbral de 6 repeticiones y los tiempos exactos, elegidos dentro de los 2–3 minutos del ACSM para los levantamientos principales pesados y de 1–2 minutos para el trabajo accesorio, son decisiones propias de Compound. También lo es el descanso de 60 segundos para el core."
+          }
+        }
+      }
+    },
     "The 8-character code from a friend's invite link." : {
       "localizations" : {
         "es" : {
@@ -25031,6 +26601,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo básico"
+          }
+        }
+      }
+    },
+    "The RPE 6 cut-off (about four reps in reserve), the half-set credit per drop or mini-set and the cap of two sets are Compound's own choices. The research shows only that sets nearer failure build more muscle, not where a set stops counting." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El umbral de RPE 6 (unas cuatro repeticiones en reserva), el crédito de media serie por descenso o miniserie y el máximo de dos series son decisiones propias de Compound. La investigación solo muestra que las series más cercanas al fallo desarrollan más músculo, no dónde deja de contar una serie."
+          }
+        }
+      }
+    },
+    "The bodyweight shares in the exercise library (dips 100%, pull-ups 95%, squats and lunges 85%, hinges 60%) and the 75% starting value for a new bodyweight exercise are Compound's own choices. Only the push-up figures are measured." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las proporciones de peso corporal de la biblioteca de ejercicios (fondos 100%, dominadas 95%, sentadillas y zancadas 85%, bisagras de cadera 60%) y el valor inicial del 75% para un nuevo ejercicio con peso corporal son decisiones propias de Compound. Solo las cifras de las flexiones están medidas."
+          }
+        }
+      }
+    },
+    "The calories your body burns at rest, from your weight, height, age and sex. Compound uses the Mifflin-St Jeor equation unless you choose another in Expenditure settings. With a logged body fat percentage and the body-fat aware method (or Cunningham chosen), it uses the Cunningham equation, which works from fat-free mass and suits lean, muscular people better." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las calorías que tu cuerpo quema en reposo, a partir de tu peso, altura, edad y sexo. Compound usa la ecuación de Mifflin-St Jeor salvo que elijas otra en los ajustes de gasto. Con un porcentaje de grasa corporal registrado y el método según grasa corporal (o si eliges Cunningham), usa la ecuación de Cunningham, que parte de la masa libre de grasa y se ajusta mejor a personas delgadas y musculosas."
           }
         }
       }
@@ -25085,12 +26685,132 @@
         }
       }
     },
+    "The cut-offs come from population studies and were not set for any one ethnicity or for very muscular people. Waist-to-height is the better-supported ratio for lifters." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los umbrales proceden de estudios de población y no se fijaron para ninguna etnia en concreto ni para personas muy musculosas. La relación cintura-altura es la que tiene más respaldo para quienes entrenan fuerza."
+          }
+        }
+      }
+    },
+    "The default of 3 sessions a week and the 1–7 range are Compound's own choices. Only the floor of 2 days a week comes from the guidelines." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El valor predeterminado de 3 sesiones por semana y el rango de 1 a 7 son decisiones propias de Compound. Solo el mínimo de 2 días por semana procede de las directrices."
+          }
+        }
+      }
+    },
+    "The defaults, the BMI 25 cut-off, the 0.75% warning, the 0.1% gain minimum and the 1.5 kg ceiling are Compound's choices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores predeterminados, el umbral de IMC 25, el aviso del 0,75%, el mínimo de ganancia del 0,1% y el máximo de 1,5 kg son elecciones de Compound."
+          }
+        }
+      }
+    },
+    "The estimate is the distance to your goal divided by your weekly rate, rounded up to whole weeks. The weekly check-in adjusts your target to keep that rate, which means the target steps down as you lose (or up as you gain): expenditure changes by roughly 24 kcal a day for each kilogram. The timeline assumes you follow those adjustments." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La estimación es la distancia hasta tu meta dividida por tu ritmo semanal, redondeada al alza a semanas completas. La revisión semanal ajusta tu objetivo para mantener ese ritmo, lo que significa que el objetivo baja a medida que pierdes (o sube a medida que ganas): el gasto cambia unas 24 kcal al día por cada kilogramo. El plazo supone que sigues esos ajustes."
+          }
+        }
+      }
+    },
+    "The exact PAL for each answer is Compound's choice within the published bands. The 1,000 kcal minimum is a safeguard, not a physiological figure. Missing figures are read as 70 kg, 175 cm and 30 years, and a missing sex as the midpoint of the male and female equations." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El NAF exacto de cada respuesta es una elección de Compound dentro de los rangos publicados. El mínimo de 1000 kcal es una salvaguarda, no una cifra fisiológica. Los datos que faltan se toman como 70 kg, 175 cm y 30 años, y si falta el sexo se usa el punto medio entre las ecuaciones masculina y femenina."
+          }
+        }
+      }
+    },
+    "The exact defaults of 8,000 and 7,000 are Compound's own picks within the ranges the studies found." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los valores predeterminados exactos de 8000 y 7000 son elecciones propias de Compound dentro de los rangos que encontraron los estudios."
+          }
+        }
+      }
+    },
+    "The exact percentages, reps and counts, and using working reps as a stand-in for how heavy the work is, are Compound's own choices around the 40% and 80% anchors of the studies." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los porcentajes, las repeticiones y los números exactos, y usar las repeticiones de trabajo como indicador de lo pesado que es el trabajo, son decisiones propias de Compound en torno a las referencias del 40% y el 80% de los estudios."
+          }
+        }
+      }
+    },
+    "The fat floor of 0.5 g/kg is expert opinion rather than a tested threshold. Carbohydrate has no floor because studies found it generally did not limit strength training, though endurance athletes may need more." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mínimo de grasa de 0,5 g/kg es una opinión de expertos más que un umbral probado. Los carbohidratos no tienen mínimo porque los estudios observaron que, en general, no limitaban el entrenamiento de fuerza, aunque los deportistas de resistencia pueden necesitar más."
+          }
+        }
+      }
+    },
     "The file has no exercises." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "El archivo no tiene ejercicios."
+          }
+        }
+      }
+    },
+    "The four tiers and the reference-weight formula, max(BMI 30 weight, goal weight), are Compound's choices. No guideline recommends 2.6 g/kg for everyone; it is offered for lean people cutting hard." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los cuatro niveles y la fórmula del peso de referencia, máx(peso con IMC 30, peso objetivo), son elecciones de Compound. Ninguna directriz recomienda 2,6 g/kg para todo el mundo; se ofrece para personas delgadas en una definición agresiva."
+          }
+        }
+      }
+    },
+    "The guidance comes mostly from studies of trained young adults. The best rest also depends on how you feel and how much time you have." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las recomendaciones proceden sobre todo de estudios con adultos jóvenes entrenados. El mejor descanso también depende de cómo te sientas y del tiempo que tengas."
+          }
+        }
+      }
+    },
+    "The half-of-expenditure threshold and the three-day weigh-in window are Compound's own choices." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El umbral de la mitad del gasto y la ventana de tres días para el pesaje son decisiones propias de Compound."
+          }
+        }
+      }
+    },
+    "The half-set credit is the best-supported way to count, but which muscles an exercise lists as assisting is a judgment, and the credit is the same for every exercise. Sets are not weighted by load or reps, and RPE is self-reported." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El crédito de media serie es la forma de contar con más respaldo, pero qué músculos figuran como asistentes en un ejercicio es una valoración, y el crédito es el mismo para todos los ejercicios. Las series no se ponderan por carga ni por repeticiones, y el RPE lo indica uno mismo."
           }
         }
       }
@@ -25121,6 +26841,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El pasador más ligero debe pesar menos que el más pesado."
+          }
+        }
+      }
+    },
+    "The loss band comes from guidance for lean athletes; in people with obesity, faster and slower loss led to similar regain. For gaining, a larger surplus in trained lifters added fat but not more muscle. 7,700 kcal/kg is an average: lean people lose more lean tissue per kilogram, which holds less energy." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El rango de pérdida procede de recomendaciones para deportistas delgados; en personas con obesidad, la pérdida más rápida y la más lenta llevaron a una recuperación del peso similar. Para ganar, un superávit mayor en levantadores entrenados añadió grasa pero no más músculo. 7700 kcal/kg es una media: las personas delgadas pierden más tejido magro por kilogramo, que contiene menos energía."
           }
         }
       }
@@ -25205,6 +26935,26 @@
         }
       }
     },
+    "The share varies from about 5% to 15% between people and diets: protein costs much more to digest than fat. The split is for illustration; only the total is used to set targets." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La proporción varía entre un 5% y un 15% aproximadamente según la persona y la dieta: la proteína cuesta mucho más de digerir que la grasa. El desglose es ilustrativo; solo el total se usa para fijar los objetivos."
+          }
+        }
+      }
+    },
+    "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, and the in-session 5% cut are Compound's own choices. The 10% fallback is the practitioner convention it replaces." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los porcentajes de incremento (elegidos dentro del rango del 2–10% que describe el ACSM), el límite del 10%, la repetición en reserva predeterminada para compuestos, la regla de dos sesiones sin RPE, el reajuste a partir de RPE 9,5, las 2 repeticiones en reserva y los límites del 5–15% de un reajuste, y el recorte del 5% durante la sesión son decisiones propias de Compound. La alternativa del 10% es la convención práctica a la que sustituye."
+          }
+        }
+      }
+    },
     "The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -25236,12 +26986,62 @@
         }
       }
     },
+    "The structure follows clinical weight-management programs that adjust from observed weight and intake, but no trial has tested these exact thresholds. Weight loss also slows as you get lighter, so holding the rate means the target steps down over time." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La estructura sigue la de los programas clínicos de control del peso que ajustan a partir del peso y la ingesta observados, pero ningún ensayo ha probado estos umbrales exactos. La pérdida de peso también se ralentiza a medida que pesas menos, así que mantener el ritmo implica que el objetivo baje con el tiempo."
+          }
+        }
+      }
+    },
+    "The three-part filter itself, its process noises (0.05 kg, 30 kcal and 13 kcal a day), the 300–500 kcal intake noise and its doubling below 60% logged, the half-of-expenditure partial-day rule, the starting SDs, the calibration gate (21 days, 14 weigh-ins, SD under 200 kcal, 80% logged), the 60–160% guard, the 80% interval, and the step nowcast's 300 kcal cap and 1,300–1,400 steps per km behind its 0.0004 constant are Compound's own choices, to be tuned on real histories." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El propio filtro de tres partes, sus ruidos de proceso (0,05 kg, 30 kcal y 13 kcal al día), el ruido de ingesta de 300–500 kcal y su duplicación por debajo del 60% de días registrados, la regla de días parciales por debajo de la mitad del gasto, las desviaciones estándar iniciales, el umbral de calibración (21 días, 14 pesajes, desviación estándar por debajo de 200 kcal, 80% registrado), el límite del 60–160%, el intervalo del 80% y, en el ajuste por pasos, el tope de 300 kcal y los 1300–1400 pasos por km en los que se basa su constante de 0,0004 son decisiones propias de Compound, que se ajustarán con historiales reales."
+          }
+        }
+      }
+    },
+    "The tier names and the 4 and 10 cut-points are Compound's own choices. The 4-set line is anchored loosely on the minimal dose found to maintain strength. Only the 10–20 band rests on the meta-analyses." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los nombres de los niveles y los umbrales de 4 y 10 son decisiones propias de Compound. La línea de 4 series se basa vagamente en la dosis mínima que se ha visto que mantiene la fuerza. Solo el rango de 10–20 se apoya en los metaanálisis."
+          }
+        }
+      }
+    },
+    "The tiers come from group averages, mostly in young adults. People respond differently, and above 20 sets can still be right for someone who keeps progressing and recovering." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los niveles proceden de medias de grupos, sobre todo de adultos jóvenes. Cada persona responde de forma distinta, y más de 20 series puede seguir siendo adecuado para alguien que sigue progresando y recuperándose."
+          }
+        }
+      }
+    },
     "The usual default, and the most accurate for most people." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "La opción habitual y la más precisa para la mayoría de las personas."
+          }
+        }
+      }
+    },
+    "The weekly check-in cleans up the week before your targets are reviewed. Days you mark as incomplete, and days inside a logging break, are left out of your expenditure estimate's intake but still count as weigh-ins. A day you mark as a fast counts as a real, low intake. Any other day logged at under half your expenditure is read as partly logged and skipped, which is why a fast check-in only asks about those days. It asks for a weigh-in if you have none from the last three days." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La revisión semanal limpia la semana antes de revisar tus objetivos. Los días que marcas como incompletos, y los días dentro de una pausa en el registro, quedan fuera de la ingesta de tu estimación del gasto, pero siguen contando como pesajes. Un día que marcas como ayuno cuenta como una ingesta real y baja. Cualquier otro día registrado por debajo de la mitad de tu gasto se interpreta como registrado en parte y se omite, por eso una revisión rápida solo pregunta por esos días. Te pide un pesaje si no tienes ninguno de los últimos tres días."
           }
         }
       }
@@ -25297,6 +27097,16 @@
         }
       }
     },
+    "The −78 used when sex is not stated is the midpoint of the male and female terms, not a published constant, and makes the estimate less certain. Age is never read below 14, though the equations were built on adults." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El −78 que se usa cuando no se indica el sexo es el punto medio entre los términos masculino y femenino, no una constante publicada, y hace que la estimación sea menos segura. La edad nunca se toma por debajo de 14, aunque las ecuaciones se elaboraron con adultos."
+          }
+        }
+      }
+    },
     "Then: %@" : {
       "localizations" : {
         "es" : {
@@ -25344,6 +27154,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay ningún objetivo que editar."
+          }
+        }
+      }
+    },
+    "These are observational studies: people who walk more differ in other ways too, so the figures show association, not cause. Phones and watches count steps differently." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son estudios observacionales: las personas que caminan más también se diferencian en otras cosas, así que las cifras muestran una asociación, no una causa. Los teléfonos y los relojes cuentan los pasos de forma distinta."
           }
         }
       }
@@ -25652,12 +27472,32 @@
         }
       }
     },
+    "This is an estimate, not a tested max, and it is less reliable as reps rise. No single equation is best for every lift or person: people trained for endurance do far more reps at a given share of their max than strength athletes. People also tend to underestimate their reps in reserve by about one rep, which makes the estimate slightly low, the cautious direction." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es una estimación, no un máximo probado, y es menos fiable a medida que suben las repeticiones. Ninguna ecuación es la mejor para todos los ejercicios o personas: quienes entrenan resistencia hacen muchas más repeticiones con un mismo porcentaje de su máximo que los atletas de fuerza. La gente también tiende a subestimar sus repeticiones en reserva en una aproximadamente, lo que hace que la estimación salga algo baja, en la dirección prudente."
+          }
+        }
+      }
+    },
     "This is your estimated total daily energy expenditure." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este es tu gasto energético diario total estimado."
+          }
+        }
+      }
+    },
+    "This is your estimated total daily energy expenditure. Formulas like this are typically within about 10% for three people in four, so Compound refines it from your own logs once you start tracking." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este es tu gasto energético total diario estimado. Las fórmulas como esta suelen acertar con un margen de un 10% en tres de cada cuatro personas, así que Compound lo afina con tus propios registros en cuanto empiezas a registrar."
           }
         }
       }
@@ -25688,6 +27528,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este rango ya está añadido."
+          }
+        }
+      }
+    },
+    "This rate needs a deficit of more than a quarter of what you burn, so your target is capped there and you may lose more slowly." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este ritmo necesita un déficit de más de una cuarta parte de lo que quemas, así que tu objetivo se limita ahí y puede que pierdas peso más despacio."
           }
         }
       }
@@ -26007,6 +27857,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activa esta opción para aportar nuevos alimentos"
+          }
+        }
+      }
+    },
+    "Tonnage is a rough measure of work: it treats a heavy triple and a light set of fifteen alike, and it uses today's bodyweight, so older workouts change with the scale." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tonelaje es una medida aproximada del trabajo: trata igual un triple pesado que una serie ligera de quince, y usa el peso corporal de hoy, así que los entrenamientos antiguos cambian con la báscula."
           }
         }
       }
@@ -26452,6 +28312,16 @@
         }
       }
     },
+    "Treating a body fat reading from the last 90 days as trustworthy is Compound's own choice: the app cannot tell a DEXA scan from a bathroom scale." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dar por fiable una lectura de grasa corporal de los últimos 90 días es una decisión propia de Compound: la app no distingue un escáner DEXA de una báscula de baño."
+          }
+        }
+      }
+    },
     "Treats this device as a subscriber without a purchase. Debug and Mock builds only — it does not exist in a release build." : {
       "localizations" : {
         "es" : {
@@ -26468,6 +28338,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tendencia"
+          }
+        }
+      }
+    },
+    "Trend Weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso de tendencia"
           }
         }
       }
@@ -26601,6 +28481,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Encender linterna"
+          }
+        }
+      }
+    },
+    "Turning a change in weight into calories needs the energy in a kilogram of body weight. That depends on how much of the change is fat: the leaner you are, the more of each kilogram is lean tissue, which holds far less energy. With a body fat reading from the last 90 days, Compound splits the change between fat and lean tissue by Forbes' curve; without one it uses the conventional 7,700 kcal per kilogram, which fits someone carrying roughly 35 kg of fat. The same figure is used for your expenditure estimate and your targets." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convertir un cambio de peso en calorías requiere la energía de un kilogramo de peso corporal. Depende de cuánto del cambio sea grasa: cuanto más delgado estés, más parte de cada kilogramo es tejido magro, que contiene mucha menos energía. Con una lectura de grasa corporal de los últimos 90 días, Compound reparte el cambio entre grasa y tejido magro según la curva de Forbes; sin ella, usa las 7700 kcal por kilogramo convencionales, que corresponden a alguien con unos 35 kg de grasa. La misma cifra se usa para tu estimación del gasto y para tus objetivos."
           }
         }
       }
@@ -27837,6 +29727,16 @@
         }
       }
     },
+    "Under half your height" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menos de la mitad de tu altura"
+          }
+        }
+      }
+    },
     "Undo" : {
       "localizations" : {
         "es" : {
@@ -27950,6 +29850,16 @@
         }
       }
     },
+    "Unless you choose your own goal, it is 8,000 steps a day, or 7,000 from age 60. In pooled cohort studies, the risk of dying early stopped falling at about 8,000–10,000 steps a day under 60, and at about 6,000–8,000 from 60. A later meta-analysis found most of the benefit by about 7,000 steps compared with 2,000." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvo que elijas tu propio objetivo, es de 8000 pasos al día, o 7000 a partir de los 60 años. En estudios de cohortes agrupados, el riesgo de muerte prematura dejó de bajar en torno a 8000–10 000 pasos al día por debajo de los 60 años, y en torno a 6000–8000 a partir de los 60. Un metaanálisis posterior encontró la mayor parte del beneficio hacia los 7000 pasos en comparación con 2000."
+          }
+        }
+      }
+    },
     "Unlike" : {
       "localizations" : {
         "es" : {
@@ -28016,6 +29926,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No leídas"
+          }
+        }
+      }
+    },
+    "Until you set a time for a type, compound sets of 6 reps or fewer rest 3:00." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasta que fijes un tiempo para un tipo, las series de compuestos de 6 repeticiones o menos descansan 3:00."
+          }
+        }
+      }
+    },
+    "Until you set a time, the rest after a set depends on the exercise type: 3 minutes after compound sets of 6 reps or fewer, 2 minutes after other compound sets, 90 seconds after isolation sets and 60 seconds after core work. A time set in the plan, on the exercise or for its whole type takes priority, and so does a rest typed on the set. Longer rests help heavy multi-joint lifts keep their reps across sets. For muscle growth, the benefit of resting longer than about 60–90 seconds is small and uncertain." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasta que fijes un tiempo, el descanso tras una serie depende del tipo de ejercicio: 3 minutos tras series de compuestos de 6 repeticiones o menos, 2 minutos tras otras series de compuestos, 90 segundos tras series de aislamiento y 60 segundos tras el trabajo de core. Un tiempo fijado en el plan, en el ejercicio o para todo su tipo tiene prioridad, y también un descanso introducido en la serie. Los descansos más largos ayudan a mantener las repeticiones entre series en los levantamientos pesados multiarticulares. Para el crecimiento muscular, el beneficio de descansar más de unos 60–90 segundos es pequeño e incierto."
           }
         }
       }
@@ -28352,6 +30282,16 @@
         }
       }
     },
+    "Use your latest logged body fat percentage where one is available, which suits lean, muscular builds better. Only as accurate as that reading." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa tu último porcentaje de grasa corporal registrado cuando lo haya, lo que se ajusta mejor a complexiones delgadas y musculosas. Solo es tan preciso como esa lectura."
+          }
+        }
+      }
+    },
     "Use your logged body fat percentage where one is available, which suits leaner or heavier builds better." : {
       "localizations" : {
         "es" : {
@@ -28409,6 +30349,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usa las tendencias de pasos para acelerar las actualizaciones del gasto cuando los datos de pasos aumentan la fiabilidad"
+          }
+        }
+      }
+    },
+    "Using Epley rather than another equation, and treating a set with no RPE as having no reps in reserve, are Compound's own choices. The 10-rep cap follows Reynolds et al. Showing it as an estimate rather than a tested max is a choice too: there is no published error band for it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar Epley en lugar de otra ecuación, y tratar una serie sin RPE como sin repeticiones en reserva, son decisiones propias de Compound. El límite de 10 repeticiones sigue a Reynolds et al. Mostrarla como una estimación y no como un máximo probado también es una decisión: no hay un margen de error publicado para ella."
+          }
+        }
+      }
+    },
+    "Using the estimate from your profile until %lld days and %lld weigh-ins are logged, with most days logged." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se usa la estimación de tu perfil hasta que haya %1$lld días y %2$lld pesajes registrados, con la mayoría de los días registrados."
           }
         }
       }
@@ -28704,6 +30664,26 @@
         }
       }
     },
+    "Volume (Tonnage)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volumen (tonelaje)"
+          }
+        }
+      }
+    },
+    "Volume is weight × reps summed over working sets, with a weight held in each hand counted twice. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El volumen es peso × repeticiones sumado en las series de trabajo, y un peso en cada mano cuenta dos veces. Con Mostrar contribución del peso corporal activado, tus propios entrenamientos también cuentan la parte de tu peso corporal que levanta un movimiento, fijada en cada ejercicio. Los fondos cuentan el 100%, las dominadas el 95% y las sentadillas el 85%. Los estudios con plataformas de fuerza sitúan una flexión en torno al 64–75% de la masa corporal y una flexión de rodillas en torno al 49–62%. La asistencia se descuenta. Sin esa opción, o en los entrenamientos de otras personas, solo cuenta la carga externa, así que una dominada no suma nada. Los récords de la pestaña Progreso y las clasificaciones de los círculos siempre usan la carga externa, para comparar lo mismo con lo mismo."
+          }
+        }
+      }
+    },
     "Volume up %@ on last week." : {
       "localizations" : {
         "es" : {
@@ -28721,6 +30701,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "C"
+          }
+        }
+      }
+    },
+    "WHO cut-off for men: 0.90 or more is a substantially increased risk. Screening, not diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbral de la OMS para hombres: 0,90 o más supone un riesgo sustancialmente aumentado. Es un cribado, no un diagnóstico."
+          }
+        }
+      }
+    },
+    "WHO cut-off for women: 0.85 or more is a substantially increased risk. Screening, not diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbral de la OMS para mujeres: 0,85 o más supone un riesgo sustancialmente aumentado. Es un cribado, no un diagnóstico."
+          }
+        }
+      }
+    },
+    "WHO cut-offs: 0.90 or more for men, 0.85 or more for women, is a substantially increased risk. Set your sex in your profile to see your band. Screening, not diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbrales de la OMS: 0,90 o más en hombres y 0,85 o más en mujeres suponen un riesgo sustancialmente aumentado. Indica tu sexo en tu perfil para ver tu rango. Es un cribado, no un diagnóstico."
           }
         }
       }
@@ -28752,6 +30762,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cintura-cadera"
+          }
+        }
+      }
+    },
+    "Waist-to-Height Ratio" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relación cintura-altura"
+          }
+        }
+      }
+    },
+    "Waist-to-Hip Ratio" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relación cintura-cadera"
           }
         }
       }
@@ -28806,6 +30836,16 @@
         }
       }
     },
+    "Warm-Up Sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series de calentamiento"
+          }
+        }
+      }
+    },
     "Warm-Ups will be automatically added to exercises in your workout depending on how fresh your muscles are and how heavy the weight is" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -28833,6 +30873,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Series de calentamiento"
+          }
+        }
+      }
+    },
+    "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. A warm-up count set in the plan always wins." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las series de calentamiento son series más ligeras antes de tus series de trabajo que preparan tus músculos y articulaciones. No cuentan para el volumen ni para los récords personales. Compound las sube progresivamente hasta el peso de trabajo con menos repeticiones a medida que aumenta la carga, de modo que el último calentamiento prepara el peso de trabajo sin convertirse en una serie de trabajo más: 8 repeticiones hasta la mitad del peso, 5 hasta el 70%, 3 hasta el 85% y 2 por encima. El trabajo pesado en compuestos de 6 repeticiones o menos lleva 3 calentamientos a aproximadamente el 45, el 65 y el 82%. El trabajo de 7–12 repeticiones lleva 2, al 50 y al 75%. El trabajo más ligero, el aislamiento y los ejercicios de core llevan 1 al 60%. Un número de calentamientos fijado en el plan siempre tiene prioridad."
           }
         }
       }
@@ -29109,6 +31159,26 @@
         }
       }
     },
+    "Weekly Goal and Streak" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meta semanal y racha"
+          }
+        }
+      }
+    },
+    "Weekly Hard Sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series efectivas semanales"
+          }
+        }
+      }
+    },
     "Weekly Rate" : {
       "localizations" : {
         "es" : {
@@ -29135,6 +31205,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Racha semanal"
+          }
+        }
+      }
+    },
+    "Weekly Volume Tiers" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niveles de volumen semanal"
           }
         }
       }
@@ -29963,6 +32043,16 @@
         }
       }
     },
+    "Worked out on your body weight, or on the weight at a BMI of 30 if you're above it. If you have kidney disease, ask your doctor before eating more protein." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se calcula sobre tu peso corporal, o sobre el peso correspondiente a un IMC de 30 si lo superas. Si tienes una enfermedad renal, consulta a tu médico antes de comer más proteína."
+          }
+        }
+      }
+    },
     "Working sets" : {
       "localizations" : {
         "es" : {
@@ -30420,6 +32510,16 @@
         }
       }
     },
+    "You averaged %@ kcal a day against a target of %@. Your target stays where it is: getting closer to it will do more than lowering it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has promediado %1$@ kcal al día frente a un objetivo de %2$@. Tu objetivo se queda donde está: acercarte a él servirá más que bajarlo."
+          }
+        }
+      }
+    },
     "You can convert the rest day into a workout day by add exercises below" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -30834,6 +32934,16 @@
         }
       }
     },
+    "Your calorie target is your expenditure estimate plus the daily share of your goal's weekly change. Compound suggests a new target at most once a week, only once the estimate has finished calibrating, and only when the new figure differs from your current target by more than the estimate's own uncertainty (and at least 50 kcal). A single suggestion moves at most 150 kcal. There is no separate correction for being off your goal rate: the expenditure estimate already absorbs that, and adding it again would count it twice. If the target would come down but you have been eating more than 10% over it while losing slower than planned, the check-in talks about that instead of lowering a target you are not following. Your calorie floor always applies." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo de calorías es tu estimación del gasto más la parte diaria del cambio semanal de tu meta. Compound sugiere un nuevo objetivo como mucho una vez por semana, solo cuando la estimación ha terminado de calibrarse y solo cuando la nueva cifra difiere de tu objetivo actual en más que la propia incertidumbre de la estimación (y al menos 50 kcal). Una sola sugerencia cambia como máximo 150 kcal. No hay una corrección aparte por desviarte del ritmo de tu meta: la estimación del gasto ya lo absorbe, y añadirla de nuevo lo contaría dos veces. Si el objetivo fuera a bajar pero has estado comiendo más de un 10% por encima de él mientras pierdes más despacio de lo previsto, la revisión te habla de eso en lugar de bajar un objetivo que no estás siguiendo. Tu mínimo de calorías siempre se aplica."
+          }
+        }
+      }
+    },
     "Your circle sees your progress towards this as a ring round your face." : {
       "localizations" : {
         "es" : {
@@ -30854,12 +32964,42 @@
         }
       }
     },
+    "Your daily target never goes below 1,200 calories for women or 1,500 for men (1,350 if you'd rather not say), even if your expenditure is lower." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo diario nunca baja de 1200 calorías en mujeres ni de 1500 en hombres (1350 si prefieres no indicarlo), aunque tu gasto sea menor."
+          }
+        }
+      }
+    },
+    "Your daily target never goes below 1,200 calories for women or 1,500 for men, or 1,350 if you'd rather not say, however low your expenditure or fast your goal. A goal's deficit is also capped at a quarter of your expenditure. Diets of 800 calories or less are meant to be followed under medical supervision, so Compound doesn't offer them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo diario nunca baja de 1200 calorías en mujeres ni de 1500 en hombres, o de 1350 si prefieres no indicarlo, por bajo que sea tu gasto o rápida tu meta. El déficit de una meta también se limita a una cuarta parte de tu gasto. Las dietas de 800 calorías o menos deben seguirse bajo supervisión médica, así que Compound no las ofrece."
+          }
+        }
+      }
+    },
     "Your estimate freezes until you end the break, and the check-in stops asking." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu estimación se congela hasta que termines la pausa y la revisión deja de preguntar."
+          }
+        }
+      }
+    },
+    "Your expenditure (TDEE) is learned from what you log and what the scale does. One Kalman filter, updated every day, tracks three things: your trend weight, your usual intake and your expenditure. Each day your trend weight moves by the difference between intake and expenditure, divided by the energy in a kilogram. Weigh-ins correct the trend; completely logged days correct your usual intake; together they reveal expenditure. Days you did not log, marked as incomplete, spent on a logging break, or logged at under half your expenditure (unless you marked a fast) are not read as intake: the filter only becomes less sure. It starts from your profile's formula estimate and shows that figure while it is still calibrating. Because it learns from your logs, it is based on what you logged: if you consistently under-log, it reads lower by the same amount, and targets built on it still work." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu gasto (GET) se aprende de lo que registras y de lo que marca la báscula. Un único filtro de Kalman, actualizado cada día, sigue tres cosas: tu peso de tendencia, tu ingesta habitual y tu gasto. Cada día tu peso de tendencia cambia según la diferencia entre ingesta y gasto, dividida por la energía de un kilogramo. Los pesajes corrigen la tendencia; los días registrados por completo corrigen tu ingesta habitual; juntos revelan el gasto. Los días que no registraste, que marcaste como incompletos, que pasaste en una pausa en el registro o que registraste por debajo de la mitad de tu gasto (salvo que marcaras un ayuno) no se leen como ingesta: el filtro solo se vuelve menos seguro. Empieza con la estimación por fórmula de tu perfil y muestra esa cifra mientras aún se está calibrando. Como aprende de tus registros, se basa en lo que registraste: si registras sistemáticamente de menos, marca más bajo en la misma medida, y los objetivos basados en él siguen funcionando."
           }
         }
       }
@@ -30894,12 +33034,32 @@
         }
       }
     },
+    "Your lifts for this muscle are still climbing." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus levantamientos para este músculo siguen subiendo."
+          }
+        }
+      }
+    },
     "Your note" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu nota"
+          }
+        }
+      }
+    },
+    "Your one-rep max is estimated from each completed working set with Epley's equation, using the reps you could have done: the reps logged plus the reps you had left, read from the RPE you logged (RPE 8 means 2 left). With no RPE, only the reps you did count. A single taken to failure is its own max. Sets that come to more than 10 reps to failure give no estimate, because prediction equations agree closely at low reps and drift apart above about 10. Those sets still count for volume and rep records. Each session shows its best set's estimate." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu repetición máxima se estima a partir de cada serie de trabajo completada con la ecuación de Epley, usando las repeticiones que podrías haber hecho: las registradas más las que te quedaban en reserva, deducidas del RPE que registraste (RPE 8 significa que te quedaban 2). Sin RPE, solo cuentan las repeticiones que hiciste. Una sola repetición llevada al fallo es su propio máximo. Las series que suman más de 10 repeticiones hasta el fallo no dan estimación, porque las ecuaciones de predicción coinciden mucho con pocas repeticiones y se separan a partir de unas 10. Esas series siguen contando para el volumen y los récords de repeticiones. Cada sesión muestra la estimación de su mejor serie."
           }
         }
       }
@@ -30924,6 +33084,16 @@
         }
       }
     },
+    "Your recent weeks" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus últimas semanas"
+          }
+        }
+      }
+    },
     "Your recommendations will never go below 1200 calories per day, even if your TDEE is lower." : {
       "localizations" : {
         "es" : {
@@ -30944,12 +33114,62 @@
         }
       }
     },
+    "Your resting calories are multiplied by a physical activity level (PAL) chosen from your activity answer. This is the starting estimate: once you log food and weigh in, Compound replaces it with one worked out from your own data. The activity levels sit inside the ranges measured in free-living adults, and your workouts are part of the activity answer rather than an extra amount on top, because total expenditure does not keep rising with exercise in a straight line." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus calorías en reposo se multiplican por un nivel de actividad física (NAF) elegido a partir de tu respuesta sobre actividad. Es la estimación inicial: en cuanto registras comida y te pesas, Compound la sustituye por una calculada con tus propios datos. Los niveles de actividad están dentro de los rangos medidos en adultos en su vida cotidiana, y tus entrenamientos forman parte de la respuesta sobre actividad en lugar de sumarse aparte, porque el gasto total no sigue aumentando en línea recta con el ejercicio."
+          }
+        }
+      }
+    },
+    "Your streak is the number of weeks in a row you met your weekly session goal. The week still under way never breaks it. The goal starts at 3 sessions a week and can be set from 1 to 7. The WHO and ACSM guidelines recommend muscle-strengthening work on at least 2 days a week. In habit research, missing a single opportunity did not materially set back forming the habit, and the habit kept strengthening for about two months." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu racha es el número de semanas seguidas en las que cumpliste tu meta semanal de sesiones. La semana en curso nunca la rompe. La meta empieza en 3 sesiones por semana y puede ajustarse de 1 a 7. Las directrices de la OMS y del ACSM recomiendan ejercicios de fortalecimiento muscular al menos 2 días por semana. En la investigación sobre hábitos, saltarse una sola ocasión no retrasó de forma apreciable la formación del hábito, y este siguió reforzándose durante unos dos meses."
+          }
+        }
+      }
+    },
     "Your subscription is billed by Apple and is not canceled by deleting your account. Cancel it here first if you do not want to be charged again." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple factura tu suscripción, y eliminar la cuenta no la cancela. Cancélala aquí primero si no quieres que se te vuelva a cobrar."
+          }
+        }
+      }
+    },
+    "Your target never goes below your calorie floor, and protein is set per kilogram of body weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo nunca baja de tu mínimo de calorías, y la proteína se fija por kilogramo de peso corporal."
+          }
+        }
+      }
+    },
+    "Your target will step down as you lose, to keep this rate: about %@ kcal a day lower by your goal weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo irá bajando a medida que pierdas peso, para mantener este ritmo: unas %@ kcal al día menos al llegar a tu peso objetivo."
+          }
+        }
+      }
+    },
+    "Your target will step up as you gain, to keep this rate: about %@ kcal a day higher by your goal weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu objetivo irá subiendo a medida que ganes peso, para mantener este ritmo: unas %@ kcal al día más al llegar a tu peso objetivo."
           }
         }
       }
@@ -30970,6 +33190,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tu plan de entrenamiento está listo para tu próxima sesión."
+          }
+        }
+      }
+    },
+    "Your trend weight is what your weight is doing once day-to-day water and food swings are filtered out. Compound runs a Kalman filter over your weigh-ins that tracks a level and a rate of change, and uses the real number of days between readings, so weighing daily or weekly gives the same kind of line. Each weigh-in is assumed to carry about half a percent of your body weight in noise. A reading that disagrees with the trend counts for less the further off it is, and one more than 3 kg (or 4%) away is set aside unless your next weigh-in agrees with it. Only your first weigh-in of a day counts. On the chart, each past point is also smoothed using the readings that came after it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu peso de tendencia es lo que hace tu peso una vez filtradas las oscilaciones diarias de agua y comida. Compound aplica un filtro de Kalman a tus pesajes que sigue un nivel y una tasa de cambio, y usa el número real de días entre lecturas, así que pesarte a diario o cada semana da el mismo tipo de línea. Se supone que cada pesaje lleva un ruido de aproximadamente medio por ciento de tu peso corporal. Una lectura que no coincide con la tendencia cuenta menos cuanto más se aleja, y una que se aleja más de 3 kg (o un 4%) se deja a un lado salvo que tu siguiente pesaje la confirme. Solo cuenta tu primer pesaje del día. En el gráfico, cada punto pasado también se suaviza con las lecturas que vinieron después."
+          }
+        }
+      }
+    },
+    "Your waist divided by your height, both in centimeters, from the same day's waist measurement and your profile height. NICE uses it to screen for central fat: 0.40 to 0.49 is the healthy range (keep your waist to less than half your height), 0.50 to 0.59 is increased risk and 0.60 or more is high risk. The bands apply to all sexes and ethnicities, including people with a lot of muscle. This is screening, not a diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cintura dividida por tu altura, ambas en centímetros, a partir de la medida de cintura del mismo día y la altura de tu perfil. El NICE la usa para detectar grasa abdominal: de 0,40 a 0,49 es el rango saludable (mantén tu cintura por debajo de la mitad de tu altura), de 0,50 a 0,59 es riesgo aumentado y 0,60 o más es riesgo alto. Los rangos se aplican a todos los sexos y etnias, incluidas las personas con mucha masa muscular. Es un cribado, no un diagnóstico."
+          }
+        }
+      }
+    },
+    "Your waist divided by your hips, from measurements logged on the same day. A WHO expert consultation marks a substantially increased risk of metabolic complications from 0.90 in men and 0.85 in women. Compound uses the cut-off for the sex in your profile, and shows both when it is not set. This is screening, not a diagnosis." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu cintura dividida por tu cadera, a partir de medidas registradas el mismo día. Una consulta de expertos de la OMS marca un riesgo sustancialmente aumentado de complicaciones metabólicas a partir de 0,90 en hombres y 0,85 en mujeres. Compound usa el umbral del sexo de tu perfil y muestra ambos cuando no está indicado. Es un cribado, no un diagnóstico."
           }
         }
       }

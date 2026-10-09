@@ -54,7 +54,7 @@ struct InsightsAndAnalyticsView: View {
 
     private var energySection: some View {
         let expenditureColor = Color.Metric.expenditure
-        return analyticsSection(title: String(localized: "Energy")) {
+        return analyticsSection(title: String(localized: "Energy"), info: .energyBalance) {
             SparklineAnalyticsCard(
                 title: String(localized: "Expenditure"),
                 subtitle: presenter.expenditureSubtitle,
@@ -84,7 +84,7 @@ struct InsightsAndAnalyticsView: View {
 
     private var bodySection: some View {
         let weightTrendColor = Color.Metric.scaleWeight
-        return analyticsSection(title: String(localized: "Body")) {
+        return analyticsSection(title: String(localized: "Body"), info: .weightTrend) {
             SparklineAnalyticsCard(
                 title: String(localized: "Weight Trend"),
                 subtitle: presenter.weightTrendSubtitle,
@@ -127,12 +127,17 @@ struct InsightsAndAnalyticsView: View {
     /// The section shape this screen repeats four times, and the same one the Analytics tab uses.
     private func analyticsSection<Content: View>(
         title: String,
+        info: MethodInfo? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         Section {
             AnalyticsCardGrid(content: content)
         } header: {
-            SectionHeaderView(title: title)
+            if let info {
+                SectionHeaderView(title: title).methodInfo(info)
+            } else {
+                SectionHeaderView(title: title)
+            }
         }
         .listSectionMargins(.horizontal, 0)
         .listRowSeparator(.hidden)

@@ -166,7 +166,7 @@ struct TodaysWorkoutCardPresenterTests {
     }
 
     /// The first microcycle of a block that deloads at the start is lighter, from Start as from
-    /// the Active Mesocycle screen.
+    /// the Active Mesocycle screen: 90 % of the weight (`MesocycleDeload`).
     @Test("Test Start In A Deload Microcycle Cuts The Weights")
     func testStartInADeloadMicrocycleCutsTheWeights() async {
         let screen = makeScreen(deload: .start)
@@ -175,7 +175,7 @@ struct TodaysWorkoutCardPresenterTests {
         screen.presenter.onStartPressed()
 
         #expect(await TestManagers.eventually { screen.router.shown == ["tracker"] })
-        #expect(screen.interactor.activeSession?.exercises[0].sets[0].weightKg == 65)
+        #expect(screen.interactor.activeSession?.exercises[0].sets[0].weightKg == 90)
     }
 
     /// Push done yesterday filled the first microcycle, so today's Push is week 2: Start, the
@@ -267,7 +267,7 @@ struct TodaysWorkoutCardPresenterTests {
 
         await screen.presenter.loadTargets()
 
-        #expect(screen.presenter.targets == ["Bench Press · 65 kg × 8", "Dumbbell Fly"])
+        #expect(screen.presenter.targets == ["Bench Press · 90 kg × 8", "Dumbbell Fly"])
     }
 
     @Test("Test A Failed Prefill Leaves No Targets")

@@ -40,18 +40,18 @@ struct ExpenditureEstimationMethodTests {
 
     // MARK: - Body-fat aware
 
-    /// Katch-McArdle is the one equation in the app that reads body fat, so "use your logged body
+    /// Cunningham is the one equation in the app that reads body fat, so "use your logged body
     /// fat percentage" means running it.
-    @Test("Test Body-Fat Aware Runs Katch-McArdle When A Percentage Is Logged")
-    func testBodyFatAwareRunsKatchMcArdleWhenAPercentageIsLogged() {
-        #expect(settings(method: .bodyFatAware).resolvedBMREquation(bodyFatPercentage: 18) == .katchMcArdle)
+    @Test("Test Body-Fat Aware Runs Cunningham When A Percentage Is Logged")
+    func testBodyFatAwareRunsCunninghamWhenAPercentageIsLogged() {
+        #expect(settings(method: .bodyFatAware).resolvedBMREquation(bodyFatPercentage: 18) == .cunningham)
         #expect(
             settings(method: .bodyFatAware, equation: .harrisBenedict)
-                .resolvedBMREquation(bodyFatPercentage: 30) == .katchMcArdle
+                .resolvedBMREquation(bodyFatPercentage: 30) == .cunningham
         )
     }
 
-    /// With nothing logged there is nothing to be aware of, and Katch-McArdle would only fall
+    /// With nothing logged there is nothing to be aware of, and Cunningham would only fall
     /// back to Mifflin internally — so the equation the user picked stands instead.
     @Test("Test Body-Fat Aware Keeps The Chosen Equation With No Percentage")
     func testBodyFatAwareKeepsTheChosenEquationWithNoPercentage() {

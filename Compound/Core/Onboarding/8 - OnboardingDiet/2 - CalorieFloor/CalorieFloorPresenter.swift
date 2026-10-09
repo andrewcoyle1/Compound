@@ -106,27 +106,29 @@ class CalorieFloorPresenter {
     }
 }
 
+/// One floor, set by sex (`CalorieFloor.minimumValue(for:)`): 1,200 kcal for women, 1,500 for men
+/// and 1,350 when sex is not given, the bottom of the AHA/ACC/TOS prescription ranges.
+///
+/// There used to be an 800 kcal `low` option. Diets at or under 800 kcal are very-low-calorie
+/// diets, which are run under medical supervision (NIDDK; NICE NG246), so it was removed. Plans
+/// saved with it store "low", which no longer decodes to a case: every reader falls back to
+/// `.standard` (`CalorieFloor(rawValue:) ?? .standard`), so those plans get the standard floor.
 enum CalorieFloor: String, CaseIterable, Identifiable {
     case standard
-    case low
-    
+
     var id: String { rawValue }
-    
+
     var description: String {
         switch self {
         case .standard:
-            return String(localized: "Standard Floor (Recommended)")
-        case .low:
-            return String(localized: "Low Floor")
+            return String(localized: "Standard Floor")
         }
     }
-    
+
     var detailedDescription: String {
         switch self {
         case .standard:
-            return String(localized: "Your recommendations will never go below 1200 calories per day, even if your TDEE is lower.")
-        case .low:
-            return String(localized: "Your recommendations will never go below 800 calories per day. Proceed with caution.")
+            return String(localized: "Your daily target never goes below 1,200 calories for women or 1,500 for men (1,350 if you'd rather not say), even if your expenditure is lower.")
         }
     }
 }

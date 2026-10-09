@@ -42,6 +42,11 @@ struct ActiveMesocycleView: View {
         } header: {
             HStack(spacing: Spacing.s) {
                 Text("Active Mesocycle")
+                // In a deload week, what the deload does to the sessions and why.
+                if presenter.isDeloadCycle {
+                    MethodInfoButton(.mesocycleDeload)
+                        .textCase(nil)
+                }
                 Spacer()
                 microcycleMenu
             }

@@ -201,14 +201,15 @@ struct WeightRoundingRuleTests {
         #expect(rule([EquipmentRef(kind: .freeWeight, id: "dumbbells")], gym: gym).round(23.75) == 22.5)
     }
 
-    /// One warm-up at half of 47 kg is 23.5 kg, which the rack does not have; its nearest is 22.5 kg.
+    /// Two warm-ups for 8 reps, at 50 and 75 % of 47 kg: 23.5 kg and 35.25 kg, which the rack
+    /// does not have; their nearest are 22.5 kg and 30 kg.
     @Test func warmUpsRoundToADumbbellOnTheRack() {
         let warmups = WorkoutSessionModel.generateWarmupSets(
             trackingMode: .weightReps, authorId: "u", workingWeightKg: 47, workingReps: 8, setTargets: [],
             exercise: exercise([EquipmentRef(kind: .freeWeight, id: "dumbbells")]),
             gymProfile: Self.gym(freeWeights: [Self.rack([20, 22.5, 25, 30])])
         )
-        #expect(warmups.map(\.weightKg) == [22.5])
+        #expect(warmups.map(\.weightKg) == [22.5, 30])
     }
 
     // MARK: - Assistance

@@ -32,35 +32,66 @@ class WeightRatePresenter {
         }
     }
     
-    // MARK: - Constants
-    /// The standard calorie floor the diet step applies. No estimate is shown below it.
-    static let lowestCalorieTargetShown: Double = 1200
-    let minWeightChangeRate: Double = 0.25 // kg/week
+    // MARK: - The range, as a share of body weight
+
+    /// Losing or gaining: the two have different ranges. Set by `onAppear`.
+    private(set) var objective: OverarchingObjective = .loseWeight
+    /// Under a BMI of 25 (or no height known): the lower default and the earlier warning apply.
+    private(set) var isLean: Bool = true
+
     /// The slider's step, which the range's ends are snapped to.
     static let rateStep: Double = 0.05
     /// The old fixed maximum, now only a ceiling for heavier people.
-    static let absoluteMaxWeightChangeRate: Double = 1.5
+    static let absoluteMaxWeightChangeRate: Double = GoalTimeline.absoluteMaximumKg
 
-    /// At most 1% of the person's body weight a week, losing or gaining, and never above 1.5 kg
-    /// (decision 3). It was 1.5 kg for everybody. Snapped down to the slider's step so the last
-    /// stop is on the grid, and kept one step above the minimum so the range never collapses.
+    /// `percent` of the person's weight a week, in kilograms.
+    private func kilograms(percent: Double) -> Double {
+        currentWeight * percent / 100
+    }
+
+    /// The rate as a percentage of the person's weight a week.
+    var weeklyPercentOfBodyWeight: Double {
+        currentWeight > 0 ? weightChangeRate / currentWeight * 100 : 0
+    }
+
+    /// 0.25% of body weight a week for losing, 0.1% for gaining, snapped up to the slider's step.
+    var minWeightChangeRate: Double {
+        let percent = objective == .gainWeight ? GoalTimeline.gainMinimumPercent : GoalTimeline.lossMinimumPercent
+        // The epsilon stops 0.2 / 0.05 = 4.000…1 snapping a whole step up.
+        let snapped = (kilograms(percent: percent) / Self.rateStep - 1e-9).rounded(.up) * Self.rateStep
+        return max(snapped, Self.rateStep)
+    }
+
+    /// At most 1% of the person's body weight a week, losing or gaining, and never above 1.5 kg.
+    /// Snapped down to the slider's step so the last stop is on the grid, and kept one step above
+    /// the minimum so the range never collapses.
     var maxWeightChangeRate: Double {
-        let onePercent = min(currentWeight * 0.01, Self.absoluteMaxWeightChangeRate)
+        let onePercent = min(kilograms(percent: GoalTimeline.maximumPercent), Self.absoluteMaxWeightChangeRate)
         // The epsilon stops 0.3 / 0.05 = 5.999… snapping a whole step down.
         let snapped = (onePercent / Self.rateStep + 1e-9).rounded(.down) * Self.rateStep
         return max(snapped, minWeightChangeRate + Self.rateStep)
     }
 
-    // Relative to the person's own range: fixed 0.4 and 0.8 kg bands meant a light person could
-    // never reach "Aggressive" once the maximum became 1% of their weight.
-    var conservativeThreshold: Double { maxWeightChangeRate * 0.5 }
-    /// "Near the top of that person's range": where the warning appears.
-    var aggressiveThreshold: Double { maxWeightChangeRate * 0.8 }
-    
+    /// Below this share of body weight the rate reads as conservative: 0.5% losing, 0.25% gaining.
+    var conservativeThresholdPercent: Double {
+        objective == .gainWeight ? GoalTimeline.gainDefaultPercent : GoalTimeline.leanLossDefaultPercent
+    }
+
+    /// Above this the rate reads as aggressive and the warning appears: 0.75% for a lean person
+    /// losing, 1% (the top of the range, so never) for anyone else losing, 0.5% for gaining.
+    var aggressiveThresholdPercent: Double {
+        switch objective {
+        case .gainWeight: return GoalTimeline.gainWarningPercent
+        case .loseWeight, .maintain: return isLean ? GoalTimeline.leanLossWarningPercent : GoalTimeline.maximumPercent
+        }
+    }
+
     var currentRateCategory: WeightRateCategory {
-        if weightChangeRate <= conservativeThreshold {
+        // A hair of tolerance so a rate snapped onto a threshold reads as that threshold.
+        let percent = weeklyPercentOfBodyWeight
+        if percent < conservativeThresholdPercent - 1e-6 {
             return .conservative
-        } else if weightChangeRate >= aggressiveThreshold {
+        } else if percent > aggressiveThresholdPercent + 1e-6 {
             return .aggressive
         } else {
             return .standard
@@ -91,17 +122,18 @@ class WeightRatePresenter {
         let user = interactor.currentUser
         currentWeight = interactor.currentWeightKilograms ?? 70
         weightUnit = user?.submittedWeightUnitPreference ?? .kilograms
+        objective = delegate.overarchingObjective
+        isLean = GoalTimeline.isLean(weightKg: currentWeight, heightCm: user?.submittedHeightCentimeters)
 
-        let objective = delegate.overarchingObjective
-        // Set default rate based on objective. The default stays below the warning band, which
-        // for a light person is below the old 0.5 kg.
-        let belowWarning = ((aggressiveThreshold / Self.rateStep).rounded(.down) - 1) * Self.rateStep
-        if objective == .maintain {
+        // The default is a share of body weight: 0.5% a week for a lean person losing, 0.75% for
+        // anyone else, and 0.25% for gaining.
+        switch objective {
+        case .maintain:
             weightChangeRate = 0
-        } else if objective == .loseWeight {
-            weightChangeRate = max(minWeightChangeRate, min(0.5, belowWarning))
-        } else if objective == .gainWeight {
-            weightChangeRate = 0.25
+        case .loseWeight:
+            weightChangeRate = snappedIntoRange(kilograms(percent: isLean ? GoalTimeline.leanLossDefaultPercent : GoalTimeline.lossDefaultPercent))
+        case .gainWeight:
+            weightChangeRate = snappedIntoRange(kilograms(percent: GoalTimeline.gainDefaultPercent))
         }
         // Editing a goal toward the same objective keeps its rate.
         if let editing = delegate.editingGoal, editing.objective == objective, editing.weeklyChangeKg > 0 {
@@ -111,20 +143,26 @@ class WeightRatePresenter {
         didInitialize = true
     }
 
+    /// The nearest stop on the slider, inside its range.
+    private func snappedIntoRange(_ kilograms: Double) -> Double {
+        let snapped = (kilograms / Self.rateStep).rounded() * Self.rateStep
+        return min(max(snapped, minWeightChangeRate), maxWeightChangeRate)
+    }
+
     func onContinuePressed(delegate: WeightRateDelegate) {
         let delegate = GoalSummaryDelegate(delegate: delegate, weightChangeRate: weightChangeRate)
         interactor.trackEvent(event: Event.navigate)
         router.showGoalSummaryView(delegate: delegate)
     }
 
-    /// Near the top of the person's range, what the rate costs, in plain words. Nil below it.
+    /// Above the warning share of body weight, what the rate costs, in plain words. Nil below it.
     func rateWarningText(delegate: WeightRateDelegate) -> String? {
         guard currentRateCategory == .aggressive else { return nil }
         switch delegate.overarchingObjective {
         case .loseWeight:
-            return String(localized: "Losing this fast makes you more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up.")
+            return String(localized: "Losing more than 0.75% of your body weight a week makes a lean person more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up.")
         case .gainWeight:
-            return String(localized: "Gaining this fast means more of the weight you put on is likely to be fat rather than muscle.")
+            return String(localized: "Gaining more than 0.5% of your body weight a week means more of what you put on is likely to be fat rather than muscle.")
         case .maintain:
             return nil
         }
@@ -154,45 +192,66 @@ class WeightRatePresenter {
         return String(localized: "\(sign)\(amount) \(unitText) (\(percent)% of body weight) / Month")
     }
     
-    func estimatedCalorieTargetText(delegate: WeightRateDelegate) -> String {
-        let weeklyChangeInKg = weightChangeRate
-        // The 3500 kcal rule is per POUND, so this conversion is arithmetic, not presentation — it
-        // was gated on `weightUnit == .pounds`, which meant a user set to kilograms had their
-        // kilogram figure multiplied by 3500 directly and got a calorie target 2.2x too small.
-        let weeklyChangeInPounds = UnitConversion.kgToLbs(weeklyChangeInKg)
-
-        // Rough estimate: 1 lb = ~3500 calories, so weekly deficit/surplus
-        let weeklyCalorieChange = weeklyChangeInPounds * 3500
-        let dailyCalorieChange = weeklyCalorieChange / 7
-        
-        // The person's own expenditure, the figure they were shown four screens earlier. This
-        // was a fixed 2000 kcal for everyone, so the fastest rate read "~ 346 kcal".
+    /// The person's own expenditure (the figure they were shown on the Expenditure step) plus or
+    /// minus the rate's daily share of the energy in a kilogram (`EnergyDensity`), as the plan will
+    /// set it: a deficit no larger than a quarter of expenditure, and never below their floor.
+    private func estimatedCalorieTarget(delegate: WeightRateDelegate) -> (kcal: Double, isDeficitCapped: Bool) {
+        let dailyChange = EnergyDensity.dailyKcal(forWeeklyChangeKg: weightChangeRate)
         let baseCalories = interactor.estimateTDEE(user: interactor.currentUser)
-        let unclamped = delegate.overarchingObjective == .loseWeight ?
-            baseCalories - dailyCalorieChange :
-            baseCalories + dailyCalorieChange
-        let targetCalories = max(unclamped, Self.lowestCalorieTargetShown)
-
-        return String(localized: "~ \(String(describing: Int(targetCalories))) kcal estimated daily calorie target")
+        let floor = NutritionTargets.calorieFloor(for: interactor.currentUser?.submittedGender)
+        switch delegate.overarchingObjective {
+        case .loseWeight:
+            let largestDeficit = NutritionTargets.maximumDeficitShare * baseCalories
+            let deficit = min(dailyChange, largestDeficit)
+            return (max(baseCalories - deficit, floor), dailyChange > largestDeficit)
+        case .gainWeight:
+            return (max(baseCalories + dailyChange, floor), false)
+        case .maintain:
+            return (max(baseCalories, floor), false)
+        }
     }
-    
+
+    func estimatedCalorieTargetText(delegate: WeightRateDelegate) -> String {
+        let target = Int(estimatedCalorieTarget(delegate: delegate).kcal.rounded())
+        return String(localized: "~ \(String(describing: target)) kcal estimated daily calorie target")
+    }
+
+    /// Said when the deficit this rate needs is more than a quarter of expenditure, so the plan
+    /// will set a smaller one and progress will be slower than the slider says.
+    func deficitCapText(delegate: WeightRateDelegate) -> String? {
+        guard estimatedCalorieTarget(delegate: delegate).isDeficitCapped else { return nil }
+        return String(localized: "This rate needs a deficit of more than a quarter of what you burn, so your target is capped there and you may lose more slowly.")
+    }
+
+    /// The target moves as weight does: holding the rate means about 24 kcal a day less for each
+    /// kilogram lost (more for each gained). Nil when there is no distance to cover.
+    func targetStepText(delegate: WeightRateDelegate) -> String? {
+        let distance = abs(delegate.targetWeight - currentWeight)
+        guard distance.isFinite, distance > 0 else { return nil }
+        let change = Int((GoalTimeline.targetChangeKcal(distanceKg: distance) / 10).rounded() * 10)
+        switch delegate.overarchingObjective {
+        case .loseWeight:
+            return String(localized: "Your target will step down as you lose, to keep this rate: about \(String(describing: change)) kcal a day lower by your goal weight.")
+        case .gainWeight:
+            return String(localized: "Your target will step up as you gain, to keep this rate: about \(String(describing: change)) kcal a day higher by your goal weight.")
+        case .maintain:
+            return nil
+        }
+    }
+
+    /// Distance ÷ rate, in whole weeks rounded up (`GoalTimeline.weeks`), as the goal summary
+    /// counts them.
     func estimatedEndDateText(delegate: WeightRateDelegate) -> String {
-        let target = delegate.targetWeight
-        let totalWeightChange = abs(target - currentWeight)
-        let weeklyChangeInKg = weightChangeRate
-        let weeksToGoal = totalWeightChange / weeklyChangeInKg
+        // A rate of zero has no end: the division is infinite — or NaN, when the target is already
+        // the current weight — and `Int` traps on both while the screen is drawing. Only losing and
+        // gaining reach this screen today, so the rate is never zero through the router.
+        let weeksToGoal = GoalTimeline.weeks(distanceKg: delegate.targetWeight - currentWeight, weeklyRateKg: weightChangeRate)
+        guard weeksToGoal > 0 else { return String(localized: "No approximate end date at this rate") }
 
-        // `Int` traps on a Double that is not finite, and this runs while the screen is drawing.
-        // A rate of zero makes the division infinite — or NaN, when the target is already the
-        // current weight — which is exactly what took the goal summary down before it was
-        // guarded. Only losing and gaining reach this screen today, so the rate is never zero
-        // through the router; a maintain goal arriving here would crash on the first draw.
-        guard weeksToGoal.isFinite else { return "No approximate end date at this rate" }
-
-        let endDate = Calendar.current.date(byAdding: .weekOfYear, value: Int(weeksToGoal), to: Date()) ?? Date()
+        let endDate = Calendar.current.date(byAdding: .weekOfYear, value: weeksToGoal, to: Date()) ?? Date()
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        
+
         return String(localized: "Approximate end date: \(String(describing: formatter.string(from: endDate)))")
     }
 

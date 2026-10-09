@@ -22,9 +22,9 @@ struct NutritionManagerDietPlanTests {
     // MARK: - Fixtures
 
     /// A profile that produces round numbers: 80kg and 180cm at 36 puts Mifflin-St Jeor at 1750,
-    /// and moderate activity with three-to-four sessions multiplies it by 1.6 to 2800. Every
-    /// expectation below is arithmetic on that 2800, so a wrong split is a wrong number rather
-    /// than a wrong-looking one.
+    /// and moderate activity multiplies it by a PAL of 1.7 to 2975 (training frequency no longer
+    /// adds to it). Every expectation below is arithmetic on that 2975, so a wrong split is a wrong
+    /// number rather than a wrong-looking one.
     private func profile(
         weightKilograms: Double? = 80,
         heightCentimeters: Double? = 180,
@@ -100,17 +100,18 @@ struct NutritionManagerDietPlanTests {
     // MARK: - The macro split
 
     /// The exact numbers for the reference profile, so a change to any coefficient is visible
-    /// rather than absorbed by a tolerance. 2800 calories, 2g of protein per kilogram, and the
-    /// balanced diet's 30% fat share — which is 30% of the whole day, 840 calories, 93g.
+    /// rather than absorbed by a tolerance. 2975 calories, 2g of protein per kilogram, and the
+    /// balanced diet's 30% fat share — which is 30% of the whole day, 892.5 calories, 99g — with
+    /// carbohydrate taking the remaining 1442.5 calories, 361g.
     @Test("Test The Balanced Split Produces The Expected Grams")
     func testTheBalancedSplitProducesTheExpectedGrams() throws {
         let plan = manager().computeDietPlan(user: profile(), delegate: delegate())
 
         let day = try #require(plan.days.first)
-        #expect(abs(day.calories - 2800) < 0.01)
+        #expect(abs(day.calories - 2975) < 0.01)
         #expect(abs(day.proteinGrams - 160) < 0.01)
-        #expect(abs(day.fatGrams - 93) < 0.01)
-        #expect(abs(day.carbGrams - 330) < 0.01)
+        #expect(abs(day.fatGrams - 99) < 0.01)
+        #expect(abs(day.carbGrams - 361) < 0.01)
     }
 
     /// One diet's promise: the macro it is named for, and the share of the day it claims.
@@ -129,8 +130,7 @@ struct NutritionManagerDietPlanTests {
         let cases: [NamedShare] = [
             NamedShare(diet: .balanced, macro: \.fatGrams, caloriesPerGram: 9, share: 0.30),
             NamedShare(diet: .lowFat, macro: \.fatGrams, caloriesPerGram: 9, share: 0.20),
-            NamedShare(diet: .lowCarb, macro: \.carbGrams, caloriesPerGram: 4, share: 0.20),
-            NamedShare(diet: .keto, macro: \.carbGrams, caloriesPerGram: 4, share: 0.05)
+            NamedShare(diet: .lowCarb, macro: \.carbGrams, caloriesPerGram: 4, share: 0.20)
         ]
 
         for expectation in cases {
@@ -148,16 +148,16 @@ struct NutritionManagerDietPlanTests {
         }
     }
 
-    /// The headline of the fix: keto used to discard its 5% carbohydrate share entirely and let
-    /// carbs fall out as whatever was left, landing near 150g — about 21% of calories, and
-    /// ketogenic by no definition, while the screen promised carbs would be very restricted.
-    @Test("Test Keto Actually Restricts Carbohydrates")
-    func testKetoActuallyRestrictsCarbohydrates() throws {
+    /// Keto is a gram cap, not a share: 30g of carbohydrate a day, inside the usual 20–50g
+    /// definition (Feinman 2015). A 5% share drifted with calories, to 37g at 2975 kcal and more
+    /// on a high day. Fat takes the other 2215 calories, 246g.
+    @Test("Test Keto Caps Carbohydrates At Thirty Grams")
+    func testKetoCapsCarbohydratesAtThirtyGrams() throws {
         let plan = manager().computeDietPlan(user: profile(), delegate: delegate(preferredDiet: .keto))
 
         let day = try #require(plan.days.first)
-        #expect(abs(day.carbGrams - 35) < 1)
-        #expect(abs(day.fatGrams - 224) < 1)
+        #expect(abs(day.carbGrams - 30) < 0.01)
+        #expect(abs(day.fatGrams - 246) < 0.01)
     }
 
     /// Whatever the split, a day still has to add up to its own calories — the remainder is
@@ -275,7 +275,7 @@ struct NutritionManagerDietPlanTests {
     }
 
     /// The floor binds the low days of a varied week too. A user whose estimate already sits at
-    /// the floor cannot have 7.5% taken off four of their days.
+    /// the floor cannot have calories taken off their lower days. This profile is a man, so 1,500.
     @Test("Test The Floor Holds On The Low Days Of A Varied Week")
     func testTheFloorHoldsOnTheLowDaysOfAVariedWeek() {
         let frail = profile(
@@ -292,7 +292,7 @@ struct NutritionManagerDietPlanTests {
             mesocycle: mesocycle(trainingDays: 4)
         )
 
-        #expect(plan.days.allSatisfy { $0.calories >= 1200 })
+        #expect(plan.days.allSatisfy { $0.calories >= 1500 })
     }
 
     /// With a mesocycle, the plan records the mesocycle's name, so the settings screen can say what
@@ -455,7 +455,7 @@ struct NutritionManagerDietPlanTests {
             targetKcal: 2050
         )
 
-        #expect(plan.tdeeEstimate == 2800)
+        #expect(plan.tdeeEstimate == 2975)
         #expect(plan.days.allSatisfy { $0.calories == 2050 })
     }
 
@@ -469,7 +469,7 @@ struct NutritionManagerDietPlanTests {
             expenditureKcal: nil
         )
 
-        #expect(withoutIt.tdeeEstimate == 2800)
+        #expect(withoutIt.tdeeEstimate == 2975)
         #expect(explicitlyNil.tdeeEstimate == withoutIt.tdeeEstimate)
     }
 
@@ -491,8 +491,8 @@ struct NutritionManagerDietPlanTests {
             targetKcal: 900
         )
 
-        #expect(fromExpenditure.days.allSatisfy { $0.calories >= CalorieFloor.standard.minimumValue })
-        #expect(fromTarget.days.allSatisfy { $0.calories >= CalorieFloor.standard.minimumValue })
+        #expect(fromExpenditure.days.allSatisfy { $0.calories >= CalorieFloor.standard.minimumValue(for: .male) })
+        #expect(fromTarget.days.allSatisfy { $0.calories >= CalorieFloor.standard.minimumValue(for: .male) })
         #expect(fromTarget.tdeeEstimate == 2400)
     }
 
@@ -504,7 +504,7 @@ struct NutritionManagerDietPlanTests {
             user: profile(),
             delegate: delegate(
                 preferredDiet: .keto,
-                calorieFloor: .low,
+                calorieFloor: .standard,
                 calorieDistribution: .varied,
                 proteinIntake: .veryHigh
             )
@@ -513,7 +513,7 @@ struct NutritionManagerDietPlanTests {
         let rebuilt = DietPlanDelegate(plan: original)
 
         #expect(rebuilt.preferredDiet == .keto)
-        #expect(rebuilt.calorieFloor == .low)
+        #expect(rebuilt.calorieFloor == .standard)
         #expect(rebuilt.calorieDistribution == .varied)
         #expect(rebuilt.proteinIntake == .veryHigh)
     }

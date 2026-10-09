@@ -8,9 +8,9 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// Step 3 of goal setting: a slider between a quarter and one and a half kilograms a week, and the
-/// four sentences that tell the user what that means — a weekly figure, a monthly one, a calorie
-/// target and a finish date.
+/// Step 3 of goal setting: a slider whose range is a share of body weight — 0.25% (losing) or 0.1%
+/// (gaining) up to 1% a week, never above 1.5 kg — and the sentences that tell the user what that
+/// means: a weekly figure, a monthly one, a calorie target, a finish date and how the target moves.
 ///
 /// Only losing and gaining reach this screen; maintaining goes straight to the summary. Every line
 /// here divides by something the user chose, which is where this app has already had a crash.
@@ -19,10 +19,12 @@ struct OnboardingWeightRatePresenterTests {
 
     private func rateUser(
         weightKg: Double? = 80,
+        heightCm: Double? = nil,
         weightUnit: WeightUnitPreference? = .kilograms
     ) -> UserModel {
         UserModel(
             userId: "user-1",
+            submittedHeightCentimeters: heightCm,
             submittedWeightKilograms: weightKg,
             submittedWeightUnitPreference: weightUnit
         )
@@ -73,18 +75,48 @@ struct OnboardingWeightRatePresenterTests {
 
     // MARK: - Opening state
 
-    /// Losing opens at half a kilo a week and gaining at a quarter — gaining faster than that is
-    /// mostly fat, so the default is the recommendation.
+    /// Losing opens at 0.5% of body weight a week for a lean person (0.4 kg at 80 kg) and gaining
+    /// at 0.25% (0.2 kg) — gaining faster than that is mostly fat, so the default is the
+    /// recommendation (Helms 2014; Iraki 2019).
     @Test("The default rate depends on the objective")
     func testTheDefaultRateDependsOnTheObjective() {
         let losing = makeScreen()
         losing.presenter.onAppear(delegate: delegate(.loseWeight))
-        #expect(losing.presenter.weightChangeRate == 0.5)
+        #expect(abs(losing.presenter.weightChangeRate - 0.4) < 0.0001)
         #expect(losing.presenter.didInitialize)
 
         let gaining = makeScreen()
         gaining.presenter.onAppear(delegate: delegate(.gainWeight, target: 90))
-        #expect(gaining.presenter.weightChangeRate == 0.25)
+        #expect(abs(gaining.presenter.weightChangeRate - 0.2) < 0.0001)
+    }
+
+    /// Someone with a BMI of 25 or more opens at 0.75% a week, and is not warned below 1%: in
+    /// obesity, faster loss did not lead to more regain (Purcell 2014).
+    @Test("A heavier person opens at three quarters of a percent")
+    func testAHeavierPersonOpensAtThreeQuartersOfAPercent() {
+        // 100 kg at 1.80 m is a BMI of 30.9.
+        let screen = makeScreen(user: rateUser(weightKg: 100, heightCm: 180))
+        screen.presenter.onAppear(delegate: delegate(.loseWeight, target: 85))
+
+        #expect(abs(screen.presenter.weightChangeRate - 0.75) < 0.0001)
+        #expect(screen.presenter.isLean == false)
+
+        screen.presenter.weightChangeRate = 1.0
+        #expect(screen.presenter.currentRateCategory != .aggressive)
+        #expect(screen.presenter.rateWarningText(delegate: delegate(.loseWeight, target: 85)) == nil)
+    }
+
+    /// The slowest rates are a share of body weight too: 0.25% a week losing, 0.1% gaining.
+    @Test("The minimum rate is a share of body weight")
+    func testTheMinimumRateIsAShareOfBodyWeight() {
+        let losing = makeScreen()
+        losing.presenter.onAppear(delegate: delegate(.loseWeight))
+        #expect(abs(losing.presenter.minWeightChangeRate - 0.2) < 0.0001)
+
+        let gaining = makeScreen()
+        gaining.presenter.onAppear(delegate: delegate(.gainWeight, target: 90))
+        // 0.08 kg, snapped up to the slider's 0.05 kg step.
+        #expect(abs(gaining.presenter.minWeightChangeRate - 0.1) < 0.0001)
     }
 
     /// Everything on this screen is a share of the user's weight, so a profile without one falls
@@ -100,9 +132,8 @@ struct OnboardingWeightRatePresenterTests {
     }
 
     /// The category label under the slider is what tells a user their chosen rate is aggressive.
-    /// The thresholds were
-    /// fixed at 0.4 and 0.8 kg; they are now half and four-fifths of the person's own maximum,
-    /// which at 80 kg is 0.8 kg a week, so 0.4 and 0.64.
+    /// The thresholds are shares of body weight: under 0.5% a week is conservative, and above
+    /// 0.75% is aggressive for a lean person losing — at 80 kg, 0.4 and 0.6 kg.
     @Test("The rate category changes at its thresholds")
     func testTheRateCategoryChangesAtItsThresholds() {
         let screen = makeScreen()
@@ -145,8 +176,8 @@ struct OnboardingWeightRatePresenterTests {
         let screen = makeScreen(user: rateUser(weightKg: 50))
         screen.presenter.onAppear(delegate: delegate(.loseWeight, target: 45))
 
-        // The maximum is 0.5 kg; the old 0.5 default would open on the warning.
-        #expect(abs(screen.presenter.weightChangeRate - 0.35) < 0.0001)
+        // 0.5% of 50 kg; the old fixed 0.5 kg default would have been 1% of their weight.
+        #expect(abs(screen.presenter.weightChangeRate - 0.25) < 0.0001)
         #expect(screen.presenter.rateWarningText(delegate: delegate(.loseWeight, target: 45)) == nil)
     }
 
@@ -196,22 +227,24 @@ struct OnboardingWeightRatePresenterTests {
         #expect(screen.presenter.monthlyWeightChangeText(delegate: delegate()).contains("(2.5% of body weight)"))
     }
 
-    /// The 3500 kcal rule is per pound. Half a kilogram a week is 1.10 lb, which is 3858 kcal a
-    /// week or 551 a day off the 2000 kcal this suite's interactor reports as expenditure. Reading the rule as per kilogram would show 1750 —
-    /// a deficit half as large again.
-    @Test("The calorie estimate applies the 3500 rule per pound, not per kilogram")
-    func testTheCalorieEstimateAppliesTheRulePerPound() {
+    /// The calorie change comes from `EnergyDensity`: 7,700 kcal per kilogram, so half a kilogram a
+    /// week is 550 kcal a day (it used to be a separate 3,500 kcal per pound). Off 2,600 kcal of
+    /// expenditure that is 2,050.
+    @Test("The calorie estimate uses the energy in a kilogram")
+    func testTheCalorieEstimateUsesTheEnergyInAKilogram() {
         let screen = makeScreen()
+        screen.interactor.expenditure = 2600
         screen.presenter.onAppear(delegate: delegate())
         screen.presenter.weightChangeRate = 0.5
 
         #expect(
             screen.presenter.estimatedCalorieTargetText(delegate: delegate())
-                == "~ 1448 kcal estimated daily calorie target"
+                == "~ 2050 kcal estimated daily calorie target"
         )
+        #expect(screen.presenter.deficitCapText(delegate: delegate()) == nil)
     }
 
-    /// The same rate in the other direction is a surplus, not a deficit.
+    /// The same rate in the other direction is a surplus, not a deficit, and a surplus is not capped.
     @Test("Gaining adds the same calories losing would subtract")
     func testGainingAddsTheSameCaloriesLosingWouldSubtract() {
         let screen = makeScreen()
@@ -220,37 +253,50 @@ struct OnboardingWeightRatePresenterTests {
 
         #expect(
             screen.presenter.estimatedCalorieTargetText(delegate: delegate(.gainWeight, target: 90))
-                == "~ 2551 kcal estimated daily calorie target"
+                == "~ 2550 kcal estimated daily calorie target"
         )
     }
 
-    /// The baseline was a fixed 2000 kcal, so someone who burns 2600 was shown a target 600 too low.
-    @Test("The calorie estimate starts from the person's own expenditure")
-    func testTheCalorieEstimateStartsFromThePersonsOwnExpenditure() {
+    /// A deficit is capped at a quarter of expenditure, as the plan caps it. 550 kcal off 2,000 is
+    /// more than 500, so the target reads 1,500 and the screen says the rate is capped.
+    @Test("A deficit over a quarter of expenditure is capped and said so")
+    func testADeficitOverAQuarterIsCapped() {
         let screen = makeScreen()
-        screen.interactor.expenditure = 2600
         screen.presenter.onAppear(delegate: delegate())
         screen.presenter.weightChangeRate = 0.5
 
         #expect(
             screen.presenter.estimatedCalorieTargetText(delegate: delegate())
-                == "~ 2048 kcal estimated daily calorie target"
+                == "~ 1500 kcal estimated daily calorie target"
         )
+        #expect(screen.presenter.deficitCapText(delegate: delegate()) != nil)
     }
 
-    /// At 1.5 kg a week the deficit is 1653 kcal a day. Off 2000 that read "~ 346 kcal". The
-    /// slider no longer reaches 1.5 kg for this 80 kg user, but the floor still has to hold for a
-    /// rate the presenter is handed.
+    /// The floor still holds beneath the cap: 1,500 kcal of expenditure less a quarter is 1,125,
+    /// under the 1,350 floor for someone who has not given their sex.
     @Test("The calorie estimate never reads below the calorie floor")
     func testTheCalorieEstimateNeverReadsBelowTheCalorieFloor() {
         let screen = makeScreen()
+        screen.interactor.expenditure = 1500
         screen.presenter.onAppear(delegate: delegate())
-        screen.presenter.weightChangeRate = 1.5
+        screen.presenter.weightChangeRate = 0.8
 
         #expect(
             screen.presenter.estimatedCalorieTargetText(delegate: delegate())
-                == "~ 1200 kcal estimated daily calorie target"
+                == "~ 1350 kcal estimated daily calorie target"
         )
+    }
+
+    /// Holding the rate means the target falls as weight does, about 24 kcal a day per kilogram
+    /// (Hall 2011): ten kilograms to go is about 240 kcal a day lower by the goal.
+    @Test("The screen says the target steps down as you lose")
+    func testTheScreenSaysTheTargetStepsDown() {
+        let screen = makeScreen()
+        screen.presenter.onAppear(delegate: delegate(.loseWeight, target: 70))
+
+        let text = screen.presenter.targetStepText(delegate: delegate(.loseWeight, target: 70))
+        #expect(text?.contains("240") == true)
+        #expect(screen.presenter.targetStepText(delegate: delegate(.maintain, target: 80)) == nil)
     }
 
     /// The calorie line is the same whichever unit the user reads in — the rule is arithmetic on

@@ -327,16 +327,65 @@ struct WorkoutSessionModelTests {
 
     // MARK: - Deloads
 
-    @Test("Test A Deload Takes Every Weight To Sixty-Five Percent")
-    func testADeloadTakesEveryWeightToSixtyFivePercent() {
+    /// Rounds to the half kilo, as the app does for a kg user with nothing constraining the weight.
+    private let halfKilo: (WorkoutExerciseModel) -> (Double) -> Double = { _ in { ($0 * 2).rounded() / 2 } }
+
+    /// A deload keeps half the working sets, rounded up, at 90 % of the weight: practitioners cut
+    /// volume, not a third of the load (`MesocycleDeload`).
+    @Test("Test A Deload Halves The Sets At Ninety Percent")
+    func testADeloadHalvesTheSetsAtNinetyPercent() {
         var session = session(exercises: [
-            exercise(sets: [set(index: 1, weightKg: 100), set(index: 2, weightKg: 80)])
+            exercise(sets: [
+                set(index: 1, weightKg: 100), set(index: 2, weightKg: 80),
+                set(index: 3, weightKg: 80), set(index: 4, weightKg: 80)
+            ])
         ])
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
-        #expect(session.exercises[0].sets[0].weightKg == 65)
-        #expect(session.exercises[0].sets[1].weightKg == 52)
+        #expect(session.exercises[0].sets.map(\.weightKg) == [90, 72])
+        #expect(session.exercises[0].sets.map(\.index) == [1, 2])
+        #expect(session.exercises[0].sets.map(\.reps) == [8, 8])
+    }
+
+    /// Warm-ups are kept, and an odd count rounds up: three sets become two.
+    @Test("Test A Deload Keeps Warm-Ups And Rounds The Set Count Up")
+    func testADeloadKeepsWarmUpsAndRoundsUp() {
+        var session = session(exercises: [
+            exercise(sets: [
+                set(index: 1, weightKg: 40, isWarmup: true),
+                set(index: 2, weightKg: 100), set(index: 3, weightKg: 100), set(index: 4, weightKg: 100)
+            ])
+        ])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.isWarmup) == [true, false, false])
+        #expect(session.exercises[0].sets.map(\.weightKg) == [36, 90, 90])
+        #expect(MesocycleDeload.setCount(from: 1) == 1)
+        #expect(MesocycleDeload.setCount(from: 5) == 3)
+    }
+
+    /// The weight is rounded to what the equipment can make.
+    @Test("Test A Deload Rounds To The Equipment")
+    func testADeloadRoundsToTheEquipment() {
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: 62.5), set(index: 2, weightKg: 62.5)])])
+
+        session.applyDeload { _ in { ($0 / 5).rounded() * 5 } }
+
+        #expect(session.exercises[0].sets.map(\.weightKg) == [55])
+    }
+
+    /// A drop belongs to its set, so it goes with it.
+    @Test("Test A Deload Removes A Set With Its Drops")
+    func testADeloadRemovesASetWithItsDrops() {
+        var drop = set(index: 3, weightKg: 40)
+        drop.parentSetId = "set-2-x"
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: 60), set(index: 2, weightKg: 60), drop])])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.id) == ["set-1-x"])
     }
 
     /// Bodyweight and timed work carry no weight, and a deload must not invent one.
@@ -346,17 +395,26 @@ struct WorkoutSessionModelTests {
             exercise(sets: [set(index: 1, weightKg: nil), set(index: 2, weightKg: 100)])
         ])
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
-        #expect(session.exercises[0].sets[0].weightKg == nil)
-        #expect(session.exercises[0].sets[1].weightKg == 65)
+        #expect(session.exercises[0].sets.map(\.weightKg) == [nil])
+    }
+
+    /// Assistance is a negative weight: a deload gives more of it, not less.
+    @Test("Test A Deload Adds Assistance")
+    func testADeloadAddsAssistance() {
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: -30)])])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.weightKg) == [-33])
     }
 
     @Test("Test A Deload On An Empty Session Does Nothing")
     func testADeloadOnAnEmptySessionDoesNothing() {
         var session = session()
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
         #expect(session.exercises.isEmpty)
     }

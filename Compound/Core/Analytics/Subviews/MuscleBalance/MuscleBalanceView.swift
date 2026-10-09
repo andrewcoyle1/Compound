@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Weekly working sets per muscle against the recommended range, as a heatmap grid. Each tile
-/// carries its status as a colour, an icon and a word, so it never rests on colour alone.
+/// Weekly hard sets per muscle against the volume tiers, as a heatmap grid. Each tile carries its
+/// tier as a colour, an icon and a word, so it never rests on colour alone.
 struct MuscleBalanceView: View {
 
     @State var presenter: MuscleBalancePresenter
@@ -19,6 +19,11 @@ struct MuscleBalanceView: View {
         .navigationTitle("Muscle Balance")
         .navigationBarTitleDisplayMode(.inline)
         .scrollIndicators(.hidden)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                MethodInfoButton(.weeklyVolumeTiers)
+            }
+        }
         .onFirstAppear {
             presenter.loadData()
         }
@@ -47,8 +52,11 @@ struct MuscleBalanceView: View {
             SectionHeaderView(title: presenter.header(for: region))
         } footer: {
             if presenter.showsFooter(for: region) {
-                Text("Working sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.")
-                    .padding(.horizontal)
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("Hard sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend.")
+                    MethodInfoButton(.weeklyHardSets)
+                }
+                .padding(.horizontal)
             }
         }
     }
@@ -59,7 +67,7 @@ struct MuscleBalanceView: View {
         let sets = Format.sets(row.currentSets)
         return Stat.tile(
             value: sets,
-            label: "\(row.muscle.name) · \(row.status.label) \(rangeText(row.range))",
+            label: "\(row.muscle.name) · \(row.status.label)",
             systemImage: row.status.systemImage,
             tint: color
         )
@@ -70,7 +78,7 @@ struct MuscleBalanceView: View {
         // The reference pattern: one element, the muscle and its status first, the target after.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(row.muscle.name), \(sets), \(row.status.label)")
-        .accessibilityValue("Recommended \(rangeText(row.range)) sets a week")
+        .accessibilityValue("Productive range \(rangeText(row.range)) sets a week")
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .anyButton(.press) {
             presenter.onMusclePressed(row.muscle)
@@ -86,7 +94,7 @@ struct MuscleBalanceView: View {
                 color: row.status.color,
                 height: ChartHeight.compact / 2
             )
-            Text("Target \(rangeText(row.range)) sets a week")
+            Text(row.status.explanation)
                 .font(.label)
                 .foregroundStyle(.secondary)
         }
@@ -102,10 +110,11 @@ struct MuscleBalanceView: View {
 extension MuscleBalanceStatus {
     var color: Color {
         switch self {
-        // Under and over are both "attention": the symbol and the word tell them apart.
-        case .below:  return .warning
-        case .within: return .success
-        case .above:  return .warning
+        // Below maintenance and high are both "attention": the symbol and the word tell them apart.
+        case .belowMaintenance: return .warning
+        case .maintaining:      return .secondary
+        case .productive:       return .success
+        case .high:             return .warning
         }
     }
 }

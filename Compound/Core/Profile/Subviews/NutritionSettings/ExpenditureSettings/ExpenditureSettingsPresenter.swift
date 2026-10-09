@@ -33,10 +33,18 @@ class ExpenditureSettingsPresenter {
         case .fixed:
             return String(localized: "Fixed")
         case .prior:
-            return String(localized: "Estimated from your profile until \(ExpenditureEngine.Constants.minWindowDays) days are logged")
+            return String(localized: "Calibrating: estimated from your profile until \(ExpenditureEngine.Constants.minDays) days and \(ExpenditureEngine.Constants.minWeighIns) weigh-ins are logged")
         case .adaptive:
             return String(localized: "Adaptive \u{00B7} \(String(describing: estimate.loggedDays)) of \(String(describing: estimate.windowDays)) days logged")
         }
+    }
+
+    /// The 80% interval, "Likely 2300–2600 kcal", once the estimate is adaptive.
+    var expenditureRangeText: String? {
+        guard let range = estimate.likelyRange else { return nil }
+        let low = String(describing: Int(range.lowerBound))
+        let high = String(describing: Int(range.upperBound))
+        return String(localized: "Likely \(low)–\(high) kcal, based on what you logged")
     }
 
     /// The step nowcast, when one applied, shown separately so the adjustment is never mistaken
@@ -56,11 +64,6 @@ class ExpenditureSettingsPresenter {
     var stepInformedUpdates: Bool {
         get { settings.stepInformedUpdates }
         set { settings.stepInformedUpdates = newValue; save() }
-    }
-
-    var predictiveGoalAdjustments: Bool {
-        get { settings.predictiveGoalAdjustments }
-        set { settings.predictiveGoalAdjustments = newValue; save() }
     }
 
     var estimationMethod: ExpenditureEstimationMethod {

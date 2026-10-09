@@ -10,8 +10,12 @@ struct WeeklyReviewView: View {
         let review = presenter.review
         List {
             Section {
-                Text(review.takeaway)
-                    .font(.sectionTitle)
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text(review.takeaway)
+                        .font(.sectionTitle)
+                    Spacer(minLength: Spacing.xs)
+                    MethodInfoButton(.weeklySessionGoal)
+                }
             } header: {
                 weekHeader(review)
             }
@@ -34,10 +38,12 @@ struct WeeklyReviewView: View {
             }
 
             if !review.setsPerMuscle.isEmpty {
-                Section("Sets per Muscle") {
+                Section {
                     ForEach(review.setsPerMuscle, id: \.muscle) { entry in
                         LabeledContent(entry.muscle.name, value: entry.sets.formatted(.number.precision(.fractionLength(0...1))))
                     }
+                } header: {
+                    MethodInfoHeader(title: "Sets per Muscle", info: .weeklyHardSets)
                 }
             }
 
@@ -69,12 +75,25 @@ struct WeeklyReviewView: View {
             }
 
             if review.weightText != nil || review.nutritionText != nil {
-                Section("Body & Nutrition") {
+                Section {
                     if let weight = review.weightText {
-                        LabeledContent("Weight", value: weight)
+                        LabeledContent {
+                            HStack(spacing: Spacing.xs) {
+                                Text(weight)
+                                MethodInfoButton(.weightTrend)
+                            }
+                        } label: {
+                            Text("Trend Weight")
+                        }
                     }
                     if let nutrition = review.nutritionText {
                         LabeledContent("Calories", value: nutrition)
+                    }
+                } header: {
+                    if review.nutritionText != nil {
+                        MethodInfoHeader(title: "Body & Nutrition", info: .calorieAdherenceBand)
+                    } else {
+                        Text("Body & Nutrition")
                     }
                 }
             }

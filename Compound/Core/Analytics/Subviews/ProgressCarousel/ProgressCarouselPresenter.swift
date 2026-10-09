@@ -32,10 +32,12 @@ class ProgressCarouselPresenter {
 
     func load() async {
         let today = calendar.startOfDay(for: Date())
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
-        let expenditure = Dictionary(
-            interactor.expenditureHistory.map { (calendar.startOfDay(for: $0.day), $0.kcal) },
-            uniquingKeysWith: { _, latest in latest }
+        // The adaptive estimate day by day, carried on through a logging break and the formula
+        // before the history starts (`EnergyBalanceSummary`).
+        let expenditure = EnergyBalanceSummary.expenditureLookup(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser),
+            calendar: calendar
         )
         var days: [ProgressCarouselMetrics.EnergyDay] = []
         for offset in stride(from: Self.energyDayCount - 1, through: 0, by: -1) {
@@ -43,7 +45,7 @@ class ProgressCarouselPresenter {
             days.append(ProgressCarouselMetrics.EnergyDay(
                 date: date,
                 intake: totals(on: date)?.calories ?? 0,
-                expenditure: expenditure[date] ?? tdee,
+                expenditure: expenditure(date),
                 target: await target(on: date)?.calories
             ))
         }

@@ -43,33 +43,21 @@ class ExpenditurePresenter {
         let dateOfBirth: Date
         let gender: Gender
         let activityLevel: ActivityLevel
-        let exerciseFrequency: ExerciseFrequency
     }
 
+    /// Resting, activity and digestion, each rounded so the three add up to the total shown.
+    /// Digestion is 10% of the total (Westerterp 2004); activity is what is left above resting.
+    /// Training is part of the activity answer, so it has no bar of its own.
     func breakdownItems(context: ExpenditureContext) -> [Breakdown] {
-        // Breakdown aligned with the actual formula used for TDEE
-        // TDEE = BMR * (baseActivityMultiplier + exerciseAdjustment)
-        let bmrCals = bmrInt(
-            weight: context.weight,
-            height: context.height,
-            dateOfBirth: context.dateOfBirth,
-            gender: context.gender
-        )
-        let baseBmr = bmr(
-            weight: context.weight,
-            height: context.height,
-            dateOfBirth: context.dateOfBirth,
-            gender: context.gender
-        )
-        let activityCals = max(Int((baseBmr * max(baseActivityMultiplier(activityLevel: context.activityLevel) - 1.0, 0)).rounded()), 0)
-        let exerciseCals = max(Int((baseBmr * max(exerciseAdjustment(exerciseFrequency: context.exerciseFrequency), 0)).rounded()), 0)
-        // Use remainder as TEF to ensure components sum to displayed TDEE (accounts for rounding)
-        let tefCals = max(totalExpenditureKcal - bmrCals - activityCals - exerciseCals, 0)
+        let estimate = formulaEstimate(context)
+        let total = Int(estimate.totalKcal.rounded())
+        let resting = min(Int(estimate.restingKcal.rounded()), total)
+        let digestion = min(Int(estimate.thermicEffectKcal.rounded()), total - resting)
+        let activity = max(total - resting - digestion, 0)
         return [
-            Breakdown(name: String(localized: "Resting Calories"), calories: bmrCals, color: .blue),
-            Breakdown(name: String(localized: "Daily Activity"), calories: activityCals, color: .green),
-            Breakdown(name: String(localized: "Exercise"), calories: exerciseCals, color: .orange),
-            Breakdown(name: String(localized: "Digesting Food"), calories: tefCals, color: .pink)
+            Breakdown(name: String(localized: "Resting Calories"), calories: resting, color: .blue),
+            Breakdown(name: String(localized: "Daily Activity and Exercise"), calories: activity, color: .green),
+            Breakdown(name: String(localized: "Digesting Food"), calories: digestion, color: .pink)
         ]
     }
 
@@ -91,82 +79,55 @@ class ExpenditurePresenter {
     // 100, not 120: the height wheel goes down to 100 cm (`HeightView.swift`), so clamping here
     // any tighter silently substituted someone else's height into their own calorie estimate.
     private func heightCm(height: Double) -> Double { height.clamped(to: 100...260, whenNotFinite: 100) }
-    private func mifflinGenderCoefficient(gender: Gender) -> Double { gender.mifflinStJeorCoefficient }
-    
-    private func bmr(weight: Double, height: Double, dateOfBirth: Date, gender: Gender) -> Double { (10 * weightKg(weight: weight)) + (6.25 * heightCm(height: height)) - (5 * Double(ageYears(dateOfBirth: dateOfBirth))) + mifflinGenderCoefficient(gender: gender) }
+
+    /// The figures this step has collected, in the shape the shared formula takes. Onboarding
+    /// always runs Mifflin-St Jeor: no body fat has been logged and no equation chosen yet.
+    private func formulaBody(weight: Double, height: Double, dateOfBirth: Date, gender: Gender) -> FormulaExpenditure.Body {
+        FormulaExpenditure.Body(
+            gender: gender,
+            weightKg: weightKg(weight: weight),
+            heightCm: heightCm(height: height),
+            ageYears: Double(ageYears(dateOfBirth: dateOfBirth)),
+            bodyFatPercentage: nil
+        )
+    }
+
+    /// The same formula `NutritionManager.estimateTDEE` runs once the profile is saved.
+    private func formulaEstimate(_ context: ExpenditureContext) -> FormulaExpenditure.Estimate {
+        FormulaExpenditure.estimate(
+            equation: .mifflinStJeor,
+            body: formulaBody(weight: context.weight, height: context.height, dateOfBirth: context.dateOfBirth, gender: context.gender),
+            activity: context.activityLevel
+        )
+    }
+
     func bmrInt(
         weight: Double,
         height: Double,
         dateOfBirth: Date,
         gender: Gender
     ) -> Int {
-        Int(
-            bmr(
-                weight: weight,
-                height: height,
-                dateOfBirth: dateOfBirth,
-                gender: gender
-            ).rounded()
-        )
+        let figures = formulaBody(weight: weight, height: height, dateOfBirth: dateOfBirth, gender: gender)
+        return Int(FormulaExpenditure.mifflinStJeor(body: figures).rounded())
     }
 
+    /// The physical activity level for the answer given (`FormulaExpenditure.activityMultiplier`).
     func baseActivityMultiplier(activityLevel: ActivityLevel) -> Double {
-        switch activityLevel {
-        case .sedentary: return 1.2
-        case .light: return 1.35
-        case .moderate: return 1.5
-        case .active: return 1.7
-        case .veryActive: return 1.9
-        }
+        FormulaExpenditure.activityMultiplier(for: activityLevel)
     }
+
     func activityDescription(activityLevel: ActivityLevel) -> String {
         switch activityLevel {
-        case .sedentary: return String(localized: "Mostly sitting; little movement")
-        case .light: return String(localized: "Light movement most of the day")
-        case .moderate: return String(localized: "On feet or moving regularly")
-        case .active: return String(localized: "Physically active work or lifestyle")
-        case .veryActive: return String(localized: "Highly active throughout the day")
+        case .sedentary: return String(localized: "Mostly sitting; little movement or exercise")
+        case .light: return String(localized: "Light movement most of the day, or a few workouts a week")
+        case .moderate: return String(localized: "On your feet or moving regularly, with regular workouts")
+        case .active: return String(localized: "Physically active work or lifestyle, plus training")
+        case .veryActive: return String(localized: "Highly active throughout the day, or hard training most days")
         }
     }
-    
-    func exerciseAdjustment(exerciseFrequency: ExerciseFrequency) -> Double {
-        switch exerciseFrequency {
-        case .never: return 0.0
-        case .oneToTwo: return 0.05
-        case .threeToFour: return 0.10
-        case .fiveToSix: return 0.15
-        case .daily: return 0.20
-        }
-    }
-    
-    func exerciseDescription(exerciseFrequency: ExerciseFrequency) -> String {
-        switch exerciseFrequency {
-        case .never: return String(localized: "No structured exercise")
-        case .oneToTwo: return String(localized: "1–2 sessions per week")
-        case .threeToFour: return String(localized: "3–4 sessions per week")
-        case .fiveToSix: return String(localized: "5–6 sessions per week")
-        case .daily: return String(localized: "Exercise most days")
-        }
-    }
-    
-    private func tdeeFromContext(_ context: ExpenditureContext) -> Double {
-        max(
-            1000,
-            bmr(
-                weight: context.weight,
-                height: context.height,
-                dateOfBirth: context.dateOfBirth,
-                gender: context.gender
-            ) * (
-                baseActivityMultiplier(activityLevel: context.activityLevel) + exerciseAdjustment(exerciseFrequency: context.exerciseFrequency)
-            )
-        )
-    }
-    
+
     func tdeeInt(context: ExpenditureContext) -> Int {
-        Int(
-            tdeeFromContext(context).rounded()
-        )
+        Int(formulaEstimate(context).totalKcal.rounded())
     }
     
     struct Breakdown: Identifiable {
@@ -189,8 +150,7 @@ class ExpenditurePresenter {
             height: delegate.heightInCentimetres,
             dateOfBirth: delegate.dateOfBirth,
             gender: delegate.gender,
-            activityLevel: delegate.activityLevel,
-            exerciseFrequency: delegate.exerciseFrequency
+            activityLevel: delegate.activityLevel
         )
 
         totalExpenditureKcal = tdeeInt(context: context)

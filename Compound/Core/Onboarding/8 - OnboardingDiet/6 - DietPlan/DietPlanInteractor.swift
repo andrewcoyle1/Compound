@@ -9,6 +9,8 @@
 protocol DietPlanInteractor {
     var currentUser: UserModel? { get }
     func computeDietPlan(user: UserModel?, delegate: DietPlanDelegate) -> DietPlan
+    /// The resting rate the formula starts from, for the below-resting warning.
+    func estimateRestingKcal(user: UserModel?) -> Double
     func saveDietPlan(_ plan: DietPlan) async throws
     func saveOnboardingComplete() async throws
     func trackEvent(event: LoggableEvent)

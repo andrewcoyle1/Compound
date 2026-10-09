@@ -16,7 +16,7 @@ struct TargetMusclesSection: View {
     let summaries: [TargetMuscleSummary]
 
     var body: some View {
-        Section("Target Muscles") {
+        Section {
             if summaries.isEmpty {
                 ListRow(
                     title: String(localized: "You haven't added any exercises yet. Once you add an exercise, target muscles will appear here."),
@@ -35,6 +35,8 @@ struct TargetMusclesSection: View {
                 .removeListRowFormatting()
                 .scrollIndicators(.hidden)
             }
+        } header: {
+            MethodInfoHeader(title: "Target Muscles", info: .plannedSetsPerMuscle)
         }
     }
 

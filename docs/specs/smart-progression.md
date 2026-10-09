@@ -60,9 +60,22 @@ applies to the extra sets.
 
 `minimumIncrementKg`: the caller passes the equipment's increment when the exercise is on a
 pin-loaded or cable machine, else 2.5 kg when the preferred unit is kg and 5 lb (2.268 kg) when
-it is lb. The engine adds at least one `minimumIncrementKg` and then rounds through
-`roundWeight`; if rounding brings the weight back to the previous value it adds a second
-increment and rounds again.
+it is lb.
+
+**Percentage increments (2026-10, `LoadIncrement.swift`).** The step is a share of the working
+weight by `ExerciseType` (`ProgressionInput.exerciseType`, from the library exercise): 5 % for
+`compoundLower`, 2.5 % for `compoundUpper` and an untyped exercise, 5 % for isolation and core —
+within ACSM's 2–10 % (ACSM 2009, *Med Sci Sports Exerc* 41:687). The engine adds
+`max(weight × p, minimumIncrementKg)` and rounds through `roundWeight`; if rounding brings the
+weight back to the previous value it adds twice the step and rounds again. Assistance (a
+negative weight) steps by `minimumIncrementKg` alone.
+
+**Rep fallback.** When the rounded step is more than 10 % of the working weight (2 kg on a 12 kg
+dumbbell is 17 %), the set gets `reps + 1` at the same weight instead, until Epley says the reps
+done carry the heavier weight for the bottom of the range:
+`weight × (1 + reps/30) ≥ heavier × (1 + minReps/30)`. Load and rep progression grow muscle
+equally (Plotkin 2022, *PeerJ* 10:e14142). When every progressable set falls back, the
+rationale is `.addReps`. The 10 % limit and the Epley gate are Compound's own choices.
 
 Only sets whose `setType` is `.standard` or `.failure` are progressed. `.drop` and `.myo` sets
 are prefilled with previous values (never progressed) so the intensity technique stays what the
@@ -83,24 +96,40 @@ back to the existing behaviour (template defaults). The engine never invents a s
 Let `top` be the number of working sets in `ref` that reached `maxReps` (reps ≥ maxReps) and
 `missed` the number that fell below `minReps`. Let `rpeOK` be true unless a set has `rpe`
 logged **and** the target has `rirTarget` **and** `rpe > 10 − rirTarget + 0.5` (the set was
-harder than prescribed; RPE and RIR are the same scale from opposite ends).
+harder than prescribed; RPE and RIR are the same scale from opposite ends, Zourdos 2016). A
+compound exercise (`compoundUpper`/`compoundLower`) whose target has no `rirTarget` is held to
+1 RIR (`LoadIncrement.defaultReserve`), the low end of the 1–3 suggested for compounds; RPE 10
+at the top then does not earn weight. Isolation and untyped exercises get no default.
+A **failed miss** is a set below `minReps` that was not stopped short: RPE ≥ 9.5, or no RPE.
 
 | Condition | Class |
 |---|---|
-| `missed > 0` and the previous session (`history[1]`) also had `missed > 0` at a weight ≥ this one | `.deload` |
+| `missed > 0`, the previous session (`history[1]`) at a weight ≥ this one, and both sessions have a failed miss | `.deload` (a reset) |
 | `missed > 0` | `.hold` |
-| `.weightFirst` and `top × 2 > workingSets.count` (a majority) and `rpeOK` | `.progressWeight` |
-| `.repsFirst` and `top == workingSets.count` and `rpeOK` | `.progressWeight` |
-| otherwise | `.addReps` |
+| not `rpeOK`, or the top criterion below not met | `.addReps` |
+| no set of `ref` has an RPE, and `history[1]` (at a weight ≥ this one) did not also meet the top criterion | `.addReps` |
+| otherwise | `.progressWeight` |
+
+Top criterion: `.weightFirst` needs `top × 2 > workingSets.count` (a majority); `.repsFirst`
+needs `top == workingSets.count`. Without RPE the reps alone do not say how hard the top was, so
+the top must be reached on two sessions running at this weight (ACSM 2009's "two consecutive
+sessions"). The RPE 9.5 trigger and the 1-RIR default are Compound's own choices.
 
 ### 3.3 Suggestion per class (weight/reps)
 
-- `.progressWeight`: every progressable set gets `weight = roundUp(refWeight + minimumIncrementKg)` (§2.2) and `reps = minReps`.
+- `.progressWeight`: every progressable set gets the increased weight of §2.2 and
+  `reps = minReps`, or `refReps + 1` at `refWeight` where the step is too big (§2.2).
 - `.addReps`: each set keeps `refWeight`; `reps = min(refReps + 1, maxReps)`. A set that was
   already at `maxReps` keeps `maxReps` (in `.repsFirst` this is the set waiting for the others).
 - `.hold`: every set keeps `refWeight` and `refReps` exactly. One miss is a bad day, not a signal.
-- `.deload`: `weight = roundWeight(refWeight × 0.90)` (rounding down if the rounding is
-  ambiguous), `reps = minReps`.
+- `.deload` (an exercise-level reset): the weight is re-derived from the reference set's
+  estimated one-rep max (§9) at the bottom of the range with reps in reserve —
+  `e1RM ÷ (1 + (minReps + RIR)/30)`, RIR the target's `rirTarget` else 2
+  (`LoadIncrement.resetReserve`) — clamped to 85–95 % of `refWeight`, rounded down if the
+  rounding is ambiguous; `reps = minReps`. With no estimate (more than ten reps to failure)
+  it is `refWeight × 0.90`, the practitioner convention it replaces (Starting Strength,
+  5/3/1). Assistance gets ×1.10 more assistance. The 2-RIR and 85–95 % limits are Compound's
+  own choices.
 
 Reference weight is per set: set `i` progresses from its own `ref` set, so a session logged with
 descending weights stays descending.
@@ -144,7 +173,7 @@ working set is completed (`SetTrackerRowPresenter.onSetComplete`), the engine's
 |---|---|
 | reps < minReps − 1 (missed by two or more) | weight × 0.95 rounded, reps = minReps |
 | reps == minReps − 1 (missed by one) | same weight, reps = minReps |
-| reps ≥ maxReps + 2 and (rpe logged ≤ 8 or no rpe) | weight + one increment, reps = minReps |
+| reps ≥ maxReps + 2 and (rpe logged ≤ 8 or no rpe) | weight + one step (§2.2), reps = minReps; nothing when the step is too big |
 | otherwise | nil (no change) |
 
 Weight/reps mode only in v1; other modes return all-nil.
@@ -200,8 +229,8 @@ Helpers: `sets(_ pairs: [(kg: Double, reps: Int, rpe: Double?)])`, `targets(min:
 3. **Reps-first, same data** → `.addReps`: 60 × (12, 11, 10).
 4. **Reps-first, all at max** → `.progressWeight` 62.5 × 8 ×3.
 5. **Hold on one miss**: ref 60 × (12, 8, 6) with min 8 → `.hold`, values identical to ref.
-6. **Deload on two misses**: history[0] 60 × (7, 7, 6), history[1] 60 × (7, 6, 6) → `.deload`,
-   54 kg (60 × 0.9 rounded to 0.5) × 8.
+6. **Reset on two misses**: history[0] 60 × (7, 7, 6), history[1] 60 × (7, 6, 6) → `.deload`,
+   55.5, 55.5, 54 kg × 8 (each set's e1RM ÷ (1 + 10/30)).
 7. **Second miss at a lighter weight is not a deload**: history[1] at 55 kg with misses → `.hold`.
 8. **RPE gate**: weight-first, top hit but rpe 9.5 with rirTarget 2 (limit 8.5) → `.addReps`.
 9. **Missing rep range**: no targets, ref 60 × 10 → range 10–12; `.addReps` → 60 × 11.
@@ -227,5 +256,33 @@ Helpers: `sets(_ pairs: [(kg: Double, reps: Int, rpe: Double?)])`, `targets(min:
 
 ## 8. Out of scope for v1
 
-Periodisation across weeks, autoregulation from RPE trends, estimated 1RM, per-exercise
-overrides of the increment, and any change to the Smart Progression settings screen.
+Periodisation across weeks, autoregulation from RPE trends, per-exercise overrides of the
+increment, and per-exercise calibration of the e1RM slope (the report's Phase 5: a per-user,
+per-exercise `k` in `%1RM(n) = 1/(1 + n/k)`, prior 30). The calibration is not built: it needs
+heavy sets (n ≤ 3) that most users rarely log, so the prior would dominate, and no source
+validates the update rule.
+
+## 9. Related training methods (2026-10)
+
+Each is shown to the user through a `MethodInfo` (`MethodInfo+Training.swift`) with its sources.
+
+- **Estimated one-rep max** (`ExerciseOneRMAggregator.estimated1RM`, the only copy; mirrored in
+  `functions/coach-maths.js`): Epley on reps to failure `n = reps + (10 − RPE)` (no RPE → reps),
+  the weight itself at `n ≤ 1`, and no estimate above `n = 10` (Reynolds 2006, *J Strength Cond
+  Res* 20:584). Used by the Progress tab, exercise detail, records, the volume recommendation,
+  the reset above and the coach.
+- **Mesocycle deload** (`MesocycleDeload`, `WorkoutSessionModel.applyDeload`): each exercise
+  keeps `⌈working sets × 0.5⌉` (at least one; drops and the right half of a pair go with their
+  set; warm-ups kept), every weight × 0.90 rounded to the exercise's equipment
+  (`CoreInteractor.deloadRounding`), reps as planned. Replaces load × 0.65 with sets unchanged:
+  practitioners cut volume and effort and keep frequency (Rogerson 2024; Bell 2022, 2023;
+  Coleman 2024). 0.5 and 0.90 are Compound's choices within the 0.5–0.6 and 0.85–0.95 bands.
+- **Warm-ups** (`WorkoutSessionModel+WarmupSets.swift`): without a plan count, isolation/core
+  get 1; compounds by working reps (≤ 6 → 3, 7–12 → 2, > 12 → 1, unknown → 2). Ramps 1: 60 %;
+  2: 50/75 %; 3: 45/65/82 %; 4+: 45/60/75/85/90 %. Reps taper by load: ≤ 50 % → 8, ≤ 70 % → 5,
+  ≤ 85 % → 3, above → 2 (weight/reps mode; bodyweight keeps the working reps). Without a plan
+  count, warm-ups that round onto the working weight or the previous warm-up are dropped
+  (Ribeiro 2020, 2021).
+- **Rest defaults** (`RestDurationRules.defaultSeconds`): with no plan, exercise or type time
+  set, compound sets of ≤ 6 reps rest 180 s, other compound 120 s, isolation 90 s, core 60 s;
+  an untyped exercise keeps `defaultRestDurationSeconds` (ACSM 2009; Singer 2024).

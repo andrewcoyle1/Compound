@@ -574,6 +574,37 @@ and `no_drawn_close_button`. They skip comments. Share cards
 the widget (`WorkoutSessionActivity/`) has no design system, so both are exempt where a rule
 cannot apply. If a rule fires, use the token; do not suppress it.
 
+## Calculations and their sources
+
+Every figure the app works out for the user, rather than reads back from their logs, rests on a
+published source and says so. The research behind each choice, with the full reference list
+(R1–R113), is `docs/research/algorithms-evidence.md`; how each DOI and number was checked, and the
+ones still to read in the paper, is `docs/research/citation-verification-checklist.md`.
+
+- `Components/Science/Citations.swift` is the catalogue: one `Citation` per source, named after
+  the first author and year (`Citation.morton2018`), linking to its DOI. Cite only from it.
+- `MethodInfo` (`Components/Science/MethodInfo+Energy|Nutrition|Training|Volume|Habits.swift`)
+  is the user-facing account of one calculation: a plain summary, the formula exactly as the code
+  computes it, its limits, the constants that are Compound's own choices (`ownChoices`), and the
+  citations. Never present a design choice as a finding.
+- `MethodInfoButton(.someMethod)` is the ⓘ beside the figure; `MethodInfoHeader(title:info:)` puts
+  it at a section header's trailing edge. Settings › Methods & Sources lists every method.
+- **A new or changed calculation needs its `MethodInfo` updated in the same change**, and a button
+  wherever it is shown.
+
+What the main calculations now are, and where they are specified:
+
+| Area | Method | Spec |
+|---|---|---|
+| Resting energy | Mifflin-St Jeor (default), revised Harris-Benedict, Cunningham 1980 when body fat is known (stored raw value `katchMcArdle`) | `docs/specs/adaptive-expenditure.md` |
+| Formula expenditure | RMR × FAO/WHO/UNU 2004 PAL band (1.4 / 1.55 / 1.7 / 1.85 / 2.0), no exercise-frequency add-on, TEF shown as 10% | same |
+| kcal per kg | `EnergyDensity`: Forbes/Hall partition when body fat is known, else 7,700. The only conversion | same |
+| Weight trend and expenditure | One Kalman filter (`ExpenditureFilter`, `WeightTrendCalculator`): trend weight, intake, expenditure, with an SD and a calibrating state | same |
+| Calorie target | Deadband controller in `TargetProposal`, at most weekly and ±150 kcal, adherence checked before lowering | same, and `weekly-check-in.md` |
+| Nutrition targets | `NutritionTargets`: protein tiers on a reference weight at BMI ≥ 30, fat floor, keto 30 g, sex-specific floors, rates as % of body weight | `adaptive-expenditure.md` |
+| Strength | `ExerciseOneRMAggregator.estimated1RM` (Epley on reps + RIR, none past ten), `LoadIncrement`, `MesocycleDeload`, tapered warm-ups, rest by exercise type | `docs/specs/smart-progression.md` |
+| Volume | `MuscleVolume.hardSets` (RPE ≥ 6, drops 0.5, secondaries 0.5), one 10–20 band with four tiers, `VolumeRecommendation` | `docs/specs/training-volume.md` |
+
 ## UI and the HIG
 
 Check UI work against Apple's live Human Interface Guidelines with the **`apple-hig` skill**
@@ -663,10 +694,12 @@ order, so a refusal costs nothing:
 
 The model reads data only through the ten tools in `functions/coach.js`, one allowed area each;
 there is no tool for Strava, progress photos or anything social, and tests enforce that. The
-app's expenditure engine, formula TDEE, weight trend, Epley 1RM and weekly muscle sets are copied
-in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`, generated from the
-Swift, is checked by both `CoachParityTests.swift` and `coach-maths.test.js`, so changing either
-copy without the other fails a test. `functions/data/PrebuiltExercises.json` must stay a
+app's expenditure engine, formula TDEE, weight trend, estimated 1RM (Epley on reps + RIR, none past
+ten reps to failure, Reynolds 2006: `ExerciseOneRMAggregator.estimated1RM`, the app's only copy) and
+weekly muscle sets are copied in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`
+is checked by both `CoachParityTests.swift` and `coach-maths.test.js`, so changing either copy
+without the other fails a test. After changing the maths in both, rewrite its expected values with
+`node scripts/coach-parity-expected.mjs`. `functions/data/PrebuiltExercises.json` must stay a
 byte-for-byte copy of the app's file, which a test checks. Run `node scripts/coach-eval.js` from
 `functions/` (application-default credentials, `GCLOUD_PROJECT=compound-development`) after
 changing the prompt, the tools or the model.
@@ -745,6 +778,10 @@ Two file-wide suppressions exist, each documented at the site:
 
 `DesignSystem/Spacing.swift` disables `identifier_name` so `Spacing.s`, `Radius.m` and the
 rest can be one letter.
+
+`Components/Science/Citations.swift`, `Citations+R56.swift` and the five `MethodInfo+*.swift` files
+disable `line_length`:
+they hold full references and user-facing prose, which read worse broken across lines.
 
 Ten single-line `swiftlint:disable:next` comments also exist:
 - `function_body_length` in `DevPreview.swift`, `CoreInteractor.swift` and

@@ -152,12 +152,13 @@ test("exercise progress gives the app's estimated 1RM and marks new bests", asyn
     assert.deepEqual(await COACH_TOOLS.get_exercise_progress(source, env, {}), { error: "Name the exercise." });
 });
 
-test("training volume counts working sets per muscle against the recommended range", async () => {
+test("training volume counts hard sets per muscle against the volume tiers", async () => {
     const { source, env } = await envFor("cutting");
     const volume = await COACH_TOOLS.get_training_volume(source, env, { weeks: 2 });
     assert.deepEqual(Object.keys(volume.muscles).sort(), [...MUSCLES].sort());
     assert.deepEqual(volume.muscles.chest.weeklySets, [3, 3]);
-    assert.equal(volume.muscles.chest.lastWeek, "below");
+    assert.equal(volume.muscles.chest.lastWeekTier, "belowMaintenance");
+    assert.equal(volume.muscles.chest.productivePerWeek, "10-20");
     // The single-arm row's left/right pair is one set for the lats.
     assert.ok(volume.muscles.lats.weeklySets.every((v) => v > 0));
 });

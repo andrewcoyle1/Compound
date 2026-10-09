@@ -123,6 +123,21 @@ struct CircleWeekTests {
         #expect(ranked.map(\.sessions) == [3, 2, 2, 2])
     }
 
+    /// A set planned but never done lifted nothing, so it adds no volume.
+    @Test("Test Volume Counts Only Completed Working Sets")
+    func testVolumeCountsOnlyCompletedWorkingSets() {
+        let day = date(2026, 3, 4)
+        let sets = [
+            WorkoutSetModel(id: "done", authorId: "amy", index: 1, reps: 5, weightKg: 100, isWarmup: false, completedAt: day, dateCreated: day),
+            WorkoutSetModel(id: "skipped", authorId: "amy", index: 2, reps: 5, weightKg: 100, isWarmup: false, dateCreated: day),
+            WorkoutSetModel(id: "warm", authorId: "amy", index: 0, reps: 5, weightKg: 50, isWarmup: true, completedAt: day, dateCreated: day)
+        ]
+        let exercise = WorkoutExerciseModel(id: "ex", authorId: "amy", templateId: "bench", name: "Bench", trackingMode: .weightReps, index: 1, sets: sets)
+        let sessions = [DashboardFixture.session(id: "a1", author: "amy", on: day, exercises: [exercise])]
+
+        #expect(CircleWeek.volumeKg(of: "amy", inWeekOf: day, sessions: sessions, calendar: calendar) == 500)
+    }
+
     // MARK: Monday recap
 
     @Test("Test The Recap Shows On Monday Until Dismissed For That Week")

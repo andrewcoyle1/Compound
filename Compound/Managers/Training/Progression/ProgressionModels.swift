@@ -30,6 +30,10 @@ struct ProgressionInput {
     /// How an AMRAP set with a planned target progresses; nil (set plan off) progresses it as a
     /// standard set.
     let amrap: AMRAPProgression?
+    /// The library exercise's type, which sets the size of a weight increase and the effort a
+    /// compound lift may be logged at before it earns one (`LoadIncrement`). Nil reads as an
+    /// upper-body compound for the increase and sets no effort default.
+    let exerciseType: ExerciseType?
 
     /// The two of them together, for the calls that only need to know what a weight may be.
     var rounding: ProgressionRounding {
@@ -43,7 +47,8 @@ struct ProgressionInput {
         adjustmentMode: ProgressionAdjustmentMode,
         roundWeight: @escaping (Double) -> Double,
         minimumIncrementKg: Double,
-        amrap: AMRAPProgression? = nil
+        amrap: AMRAPProgression? = nil,
+        exerciseType: ExerciseType? = nil
     ) {
         self.trackingMode = trackingMode
         self.setTargets = setTargets
@@ -52,6 +57,7 @@ struct ProgressionInput {
         self.roundWeight = roundWeight
         self.minimumIncrementKg = minimumIncrementKg
         self.amrap = amrap
+        self.exerciseType = exerciseType
     }
 }
 

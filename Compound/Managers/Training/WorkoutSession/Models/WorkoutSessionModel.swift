@@ -276,13 +276,18 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.dateModified = Date()
     }
     
-    mutating func applyDeloadWeightReduction() {
-        for iindex in exercises.indices {
-            for jindex in exercises[iindex].sets.indices {
-                if let weight = exercises[iindex].sets[jindex].weightKg {
-                    exercises[iindex].sets[jindex].weightKg = weight * 0.65
-                }
+    /// A mesocycle's deload week (`MesocycleDeload`): about half of each exercise's working sets,
+    /// every weight at 90 % rounded by `rounding` (the exercise's equipment), reps as planned.
+    /// Warm-ups stay, at 90 % of theirs.
+    mutating func applyDeload(rounding: (WorkoutExerciseModel) -> (Double) -> Double) {
+        for index in exercises.indices {
+            let roundWeight = rounding(exercises[index])
+            var sets = MesocycleDeload.keptSets(exercises[index].sets)
+            for setIndex in sets.indices {
+                guard let weight = sets[setIndex].weightKg, weight != 0 else { continue }
+                sets[setIndex].weightKg = roundWeight(MesocycleDeload.lighter(weight))
             }
+            exercises[index].sets = sets
         }
     }
 

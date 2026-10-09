@@ -9,20 +9,31 @@ import Testing
 import Foundation
 @testable import Compound
 
-/// The exponential moving average behind the Weight Trend chart.
+/// The Kalman trend behind the Weight Trend chart.
 ///
 /// The whole point of the trend line is that it ignores the day-to-day swings a scale shows from
 /// water and food timing, while still following a real change in weight. Those two properties pull
-/// against each other, so both are pinned here.
+/// against each other, so both are pinned here, along with the rules for odd readings and for
+/// readings that are days apart.
 @MainActor
 struct WeightTrendCalculatorTests {
 
     private let day: TimeInterval = 86400
     private let start = Date(timeIntervalSince1970: 0)
 
-    /// `values` on consecutive days.
-    private func series(_ values: [Double]) -> [(date: Date, value: Double)] {
-        values.enumerated().map { (date: start.addingTimeInterval(Double($0.offset) * day), value: $0.element) }
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return calendar
+    }
+
+    /// `values` on consecutive days, or `gapDays` apart.
+    private func series(_ values: [Double], gapDays: Double = 1) -> [(date: Date, value: Double)] {
+        values.enumerated().map { (date: start.addingTimeInterval(Double($0.offset) * day * gapDays), value: $0.element) }
+    }
+
+    private func trend(_ data: [(date: Date, value: Double)]) -> [Double] {
+        WeightTrendCalculator.trend(data: data, calendar: calendar).map(\.value)
     }
 
     private func isClose(_ lhs: Double, _ rhs: Double, within tolerance: Double = 0.0001) -> Bool {
@@ -33,112 +44,136 @@ struct WeightTrendCalculatorTests {
 
     @Test("Test No Readings Give No Trend")
     func testNoReadingsGiveNoTrend() {
-        #expect(WeightTrendCalculator.exponentialMovingAverage(data: []).isEmpty)
+        #expect(WeightTrendCalculator.trend(data: []).isEmpty)
     }
 
-    @Test("Test One Reading Is Its Own Trend")
-    func testOneReadingIsItsOwnTrend() {
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series([72.4]))
+    @Test("Test A Single Reading Is Its Own Trend")
+    func testASingleReadingIsItsOwnTrend() {
+        let result = trend(series([72.4]))
 
-        #expect(trend.count == 1)
-        #expect(trend[0].value == 72.4)
-        #expect(trend[0].date == start)
+        #expect(result.count == 1)
+        #expect(result.first == 72.4)
     }
 
-    @Test("Test The Trend Has A Point Per Reading, On The Same Days")
-    func testTheTrendHasAPointPerReadingOnTheSameDays() {
-        let readings = series([72.0, 72.4, 71.8, 72.1, 71.9])
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: readings)
+    @Test("Test One Trend Point Per Reading At The Reading's Date")
+    func testOneTrendPointPerReadingAtTheReadingsDate() {
+        let readings = series([72.0, 72.5, 71.8, 72.2])
+        let result = WeightTrendCalculator.trend(data: readings, calendar: calendar)
 
-        #expect(trend.count == readings.count)
-        #expect(trend.map(\.date) == readings.map(\.date))
+        #expect(result.count == readings.count)
+        #expect(result.map(\.date) == readings.map(\.date))
     }
 
-    /// It has no earlier reading to smooth against, so the line starts on the scale rather than
-    /// somewhere above or below it.
-    @Test("Test The Trend Starts At The First Reading")
-    func testTheTrendStartsAtTheFirstReading() {
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series([72.0, 80.0, 90.0]))
+    /// The old name still answers, with the new trend, for the callers written against it.
+    @Test("Test The Old Entry Point Returns The Same Trend")
+    func testTheOldEntryPointReturnsTheSameTrend() {
+        let readings = series([80.4, 80.9, 80.1, 79.8, 80.6, 79.5])
 
-        #expect(trend[0].value == 72.0)
+        #expect(WeightTrendCalculator.exponentialMovingAverage(data: readings).map(\.value)
+            == WeightTrendCalculator.trend(data: readings).map(\.value))
     }
 
     // MARK: - Smoothing
 
     @Test("Test A Flat Weight Gives A Flat Trend")
     func testAFlatWeightGivesAFlatTrend() {
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series(Array(repeating: 72.0, count: 10)))
+        let result = trend(series(Array(repeating: 72.0, count: 10)))
 
-        for point in trend {
-            #expect(isClose(point.value, 72.0))
-        }
+        #expect(result.allSatisfy { isClose($0, 72.0) })
     }
 
-    /// The reason the chart draws a trend at all: a single heavy day after a holiday meal should
-    /// barely move the line.
-    @Test("Test One Spike Barely Moves The Trend")
-    func testOneSpikeBarelyMovesTheTrend() throws {
-        let steady = Array(repeating: 72.0, count: 10)
-        let withSpike = steady + [78.0]
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series(withSpike))
-        let last = try #require(trend.last).value
+    /// The trend starts at the median of the first three readings, so one odd first reading does
+    /// not anchor it.
+    @Test("Test The Trend Starts From The Median Of The First Readings")
+    func testTheTrendStartsFromTheMedianOfTheFirstReadings() {
+        let result = trend(series([75.0, 72.0, 72.2, 72.1, 72.0]))
 
-        // The reading jumped 6 kg; the trend follows by alpha (a quarter) of it.
-        #expect(last > 72.0)
-        #expect(last < 74.0)
-        #expect(isClose(last, 72.0 + 6.0 * WeightTrendCalculator.defaultAlpha))
+        #expect(abs(result[0] - 72.2) < 0.5)
     }
 
-    /// And the other half of the bargain: a real, sustained change must be followed, not filtered
-    /// out, or the chart would tell someone losing weight that nothing was happening.
-    @Test("Test A Sustained Change Is Followed")
-    func testASustainedChangeIsFollowed() throws {
-        let losing = (0..<30).map { 80.0 - Double($0) * 0.1 }
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series(losing))
-        let last = try #require(trend.last).value
+    /// Daily swings of a kilogram either side of a steady weight — more than twice the noise the
+    /// filter expects — still leave the trend within about half a kilogram of it.
+    @Test("Test Day To Day Swings Are Smoothed Out")
+    func testDayToDaySwingsAreSmoothedOut() {
+        let values = (0..<28).map { 80.0 + ($0 % 2 == 0 ? 1.0 : -1.0) }
+        let result = trend(series(values))
 
-        // Within a tenth of a kilo of the reading by the end: lagging, but tracking.
-        #expect(isClose(last, losing[losing.count - 1], within: 0.4))
-        #expect(last < trend[0].value)
+        #expect(result.allSatisfy { abs($0 - 80) < 0.6 })
     }
 
-    @Test("Test The Trend Stays Within The Readings")
-    func testTheTrendStaysWithinTheReadings() throws {
-        let values = [72.0, 75.0, 70.0, 73.0, 71.0, 74.0]
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series(values))
-        let lowest = try #require(values.min())
-        let highest = try #require(values.max())
+    @Test("Test A Steady Loss Is Followed")
+    func testASteadyLossIsFollowed() {
+        let losing = (0..<42).map { 90.0 - 0.1 * Double($0) }
+        let result = trend(series(losing))
 
-        for point in trend {
-            #expect(point.value >= lowest)
-            #expect(point.value <= highest)
-        }
+        // A smoother, not a lagging average: the end of the line sits on the readings.
+        #expect(abs(result[41] - losing[41]) < 0.3)
+        #expect(result[41] < result[0])
     }
 
-    // MARK: - Alpha
+    // MARK: - Odd readings
 
-    @Test("Test The Default Alpha Smooths Over Roughly A Week")
-    func testTheDefaultAlphaSmoothsOverRoughlyAWeek() {
-        // 2/(n+1) with n = 7.
-        #expect(WeightTrendCalculator.defaultAlpha == 0.25)
+    /// 90 among 72s is more than max(3 kg, 4%) from the trend and nothing confirms it: ignored.
+    @Test("Test A Reading Far Off The Trend Is Ignored Unless Confirmed")
+    func testAReadingFarOffTheTrendIsIgnoredUnlessConfirmed() {
+        let result = trend(series([72, 72, 72, 90, 72, 72]))
+
+        #expect(result.allSatisfy { isClose($0, 72) })
     }
 
-    @Test("Test A Higher Alpha Follows The Readings More Closely")
-    func testAHigherAlphaFollowsTheReadingsMoreClosely() {
-        let readings = series([72.0, 78.0])
-        let responsive = WeightTrendCalculator.exponentialMovingAverage(data: readings, alpha: 0.9)
-        let smooth = WeightTrendCalculator.exponentialMovingAverage(data: readings, alpha: 0.1)
+    @Test("Test Two Readings Off The Same Way Confirm A Real Shift")
+    func testTwoReadingsOffTheSameWayConfirmARealShift() {
+        let result = trend(series([80, 80, 80, 84, 84.1, 84]))
 
-        #expect(responsive[1].value > smooth[1].value)
-        #expect(isClose(responsive[1].value, 72.0 + 6.0 * 0.9))
-        #expect(isClose(smooth[1].value, 72.0 + 6.0 * 0.1))
+        #expect(result[5] > 83.5)
+        // And the smoother does not drag the readings before the step up with it.
+        #expect(result[1] < 80.5)
     }
 
-    @Test("Test An Alpha Of One Is The Readings Themselves")
-    func testAnAlphaOfOneIsTheReadingsThemselves() {
-        let values = [72.0, 75.0, 70.0]
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: series(values), alpha: 1)
+    /// 82.5 among 80s is within the gross-error band: it counts, down-weighted rather than clamped.
+    @Test("Test A Smaller Spike Is Down Weighted")
+    func testASmallerSpikeIsDownWeighted() {
+        let result = trend(series([80, 80, 80, 80, 82.5, 80, 80, 80]))
 
-        #expect(trend.map(\.value) == values)
+        #expect(result[4] > 80)
+        #expect(result[4] - 80 < 0.5)
+    }
+
+    // MARK: - Time
+
+    /// Only the first weigh-in of a day moves the trend; later ones that day share its value.
+    @Test("Test Only The First Weigh-In Of A Day Counts")
+    func testOnlyTheFirstWeighInOfADayCounts() {
+        let readings: [(date: Date, value: Double)] = [
+            (date: start.addingTimeInterval(7 * 3600), value: 80),
+            (date: start.addingTimeInterval(20 * 3600), value: 85),
+            (date: start.addingTimeInterval(day + 7 * 3600), value: 80),
+            (date: start.addingTimeInterval(2 * day + 7 * 3600), value: 80)
+        ]
+        let result = trend(readings)
+
+        #expect(result.count == 4)
+        #expect(result.allSatisfy { isClose($0, 80) })
+    }
+
+    /// The filter works in days, not readings: weekly weigh-ins follow a change no worse than daily
+    /// ones do, where a per-reading average smoothed weekly data seven times as hard.
+    @Test("Test Weekly Weigh-Ins Are Not Over Smoothed")
+    func testWeeklyWeighInsAreNotOverSmoothed() {
+        let values = [80.0, 79.5, 79.0, 78.5, 78.0]
+        let daily = trend(series(values))
+        let weekly = trend(series(values, gapDays: 7))
+
+        #expect(abs(weekly[4] - 78) <= abs(daily[4] - 78) + 1e-9)
+    }
+
+    // MARK: - Noise model
+
+    @Test("Test The Smoothing Constants")
+    func testTheSmoothingConstants() {
+        #expect(WeighInNoise.noiseFraction == 0.005)
+        #expect(WeighInNoise.noiseFloorKg == 0.3)
+        #expect(WeighInNoise.huberThreshold == 2.5)
+        #expect(WeightTrendCalculator.slopeNoiseKgPerDay == 0.004)
     }
 }

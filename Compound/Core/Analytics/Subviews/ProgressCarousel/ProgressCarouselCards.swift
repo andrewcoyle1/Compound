@@ -188,12 +188,15 @@ struct EnergyBalanceCard: View {
             .frame(maxWidth: .infinity)
             .padding(.top, Spacing.l)
         } toggle: {
-            CarouselToggle(
-                title: String(localized: "Energy Balance"),
-                selection: $presenter.energyComparison,
-                options: ProgressCarouselPresenter.EnergyComparison.allCases,
-                label: \.title
-            )
+            HStack(spacing: Spacing.s) {
+                CarouselToggle(
+                    title: String(localized: "Energy Balance"),
+                    selection: $presenter.energyComparison,
+                    options: ProgressCarouselPresenter.EnergyComparison.allCases,
+                    label: \.title
+                )
+                MethodInfoButton(.energyBalance)
+            }
         }
         .reducedMotionAnimation(.standard, value: presenter.energyComparison)
     }
@@ -337,12 +340,20 @@ struct RecentRecordsCard: View {
             }
             Spacer(minLength: 0)
         } toggle: {
-            CarouselToggle(
-                title: String(localized: "Recent Records"),
-                selection: $presenter.recordKind,
-                options: ProgressCarouselMetrics.RecordKind.allCases,
-                label: \.title
-            )
+            HStack(spacing: Spacing.s) {
+                CarouselToggle(
+                    title: String(localized: "Recent Records"),
+                    selection: $presenter.recordKind,
+                    options: ProgressCarouselMetrics.RecordKind.allCases,
+                    label: \.title
+                )
+                // Reps are a count; the other two are worked out.
+                switch presenter.recordKind {
+                case .oneRepMax: MethodInfoButton(.estimatedOneRepMax)
+                case .volume:    MethodInfoButton(.tonnage)
+                case .reps:      EmptyView()
+                }
+            }
         }
         .reducedMotionAnimation(.standard, value: presenter.recordKind)
     }

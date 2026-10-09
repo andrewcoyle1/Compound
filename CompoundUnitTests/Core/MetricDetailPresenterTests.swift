@@ -173,21 +173,25 @@ struct GoalProgressPresenterTests {
         #expect(screen.presenter.entries.map(\.id) == ["kept"])
     }
 
-    @Test("Test Entries Run Oldest First And The Current Weight Is The Newest")
-    func testEntriesRunOldestFirstAndTheCurrentWeightIsTheNewest() async {
-        let screen = makeScreen(
-            goal: goal(from: 80, target: 70),
-            weighIns: [
-                weighIn(id: "w2", weight: 76, daysAgo: 3),
-                weighIn(id: "w1", weight: 78, daysAgo: 5),
-                weighIn(id: "w3", weight: 74, daysAgo: 1)
-            ]
-        )
+    /// Progress reads the trend weight, not the newest weigh-in, so a day of water does not move it.
+    @Test("Test Entries Run Oldest First And The Current Weight Is The Trend")
+    func testEntriesRunOldestFirstAndTheCurrentWeightIsTheTrend() async throws {
+        let weighIns = [
+            weighIn(id: "w2", weight: 76, daysAgo: 3),
+            weighIn(id: "w1", weight: 78, daysAgo: 5),
+            weighIn(id: "w3", weight: 74, daysAgo: 1)
+        ]
+        let screen = makeScreen(goal: goal(from: 80, target: 70), weighIns: weighIns)
 
         await screen.presenter.onAppear()
 
         #expect(screen.presenter.entries.map(\.id) == ["w1", "w2", "w3"])
-        #expect(screen.presenter.currentWeightKg == 74)
+        let trend = try #require(GoalTimeline.latestTrendWeightKg(of: weighIns))
+        #expect(screen.presenter.currentWeightKg == trend)
+        let latest = try #require(screen.presenter.entries.last)
+        #expect(abs(latest.progressPercent - (80 - trend) / 10 * 100) < 0.0001)
+        // Each entry still shows the weight as it was logged.
+        #expect(latest.weightKg == 74)
     }
 
     /// The screen reads the weigh-ins live rather than caching them on appear, which once had no

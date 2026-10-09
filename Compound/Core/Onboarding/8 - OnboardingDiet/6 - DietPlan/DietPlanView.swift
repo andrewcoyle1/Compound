@@ -73,30 +73,39 @@ struct DietPlanView: View {
     }
 
     private func chartSection(_ plan: DietPlan) -> some View {
-        Section("Weekly Calorie & Macro Breakdown") {
+        Section {
             WeeklyMacroChart(plan: plan)
+            if let warning = presenter.belowRestingWarningText {
+                InlineMessage(.warning, warning)
+            }
+        } header: {
+            MethodInfoHeader(title: "Weekly Calorie & Macro Breakdown", info: .macroSplit)
         }
     }
 
     private func overviewSection(_ plan: DietPlan) -> some View {
-        Section("Overview") {
+        Section {
             if let mesocycleName = presenter.mesocycleName,
                let daysPerWeek = presenter.trainingDaysPerWeek {
                 Text("Mesocycle: \(mesocycleName), \(daysPerWeek) days/week")
             }
             Text("Estimated TDEE: \(Int(plan.tdeeEstimate)) kcal/day")
             Text("Preferred diet: \(plan.preferredDiet.capitalized)")
-            Text("Calorie floor: \(plan.calorieFloor.capitalized)")
+            Text("Calorie floor: \(presenter.calorieFloorText)")
             Text("Training focus: \(plan.trainingType.replacingOccurrences(of: "_", with: " ").capitalized)")
             Text("Distribution: \(plan.calorieDistribution.capitalized)")
             Text("Protein: \(plan.proteinIntake.capitalized)")
+        } header: {
+            MethodInfoHeader(title: "Overview", info: .formulaExpenditure)
+        } footer: {
+            Text("Your target never goes below your calorie floor, and protein is set per kilogram of body weight.")
         }
         .font(.rowDetail)
         .foregroundStyle(.secondary)
     }
 
     private func weeklyBreakdownSection(_ plan: DietPlan) -> some View {
-        Section("7-day targets") {
+        Section {
             ForEach(Array(plan.days.enumerated()), id: \.offset) { idx, day in
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     Text("Day \(idx + 1)")
@@ -112,6 +121,8 @@ struct DietPlanView: View {
                 }
                 .padding(.vertical, Spacing.xs)
             }
+        } header: {
+            MethodInfoHeader(title: "7-day targets", info: .calorieCycling)
         }
     }
 

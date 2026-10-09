@@ -24,6 +24,8 @@ struct PreferredDietView: View {
                         presenter.onDietSelected(diet)
                     }
                 }
+            } header: {
+                MethodInfoHeader(title: "Diet", info: .macroSplit)
             }
         }
         .onAppear { presenter.onViewAppear() }

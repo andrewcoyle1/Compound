@@ -165,9 +165,7 @@ class GoalSummaryPresenter {
     /// screen down as it drew. A rate of zero towards a different target is infinite for the same
     /// reason. The view already reads zero as "maintaining current weight", so that is the answer.
     func estimatedWeeks(delegate: GoalSummaryDelegate) -> Int {
-        let weeks = ceil(abs(weightDifference(targetWeight: delegate.targetWeight)) / delegate.weightChangeRate)
-        guard weeks.isFinite, weeks > 0 else { return 0 }
-        return Int(weeks)
+        GoalTimeline.weeks(distanceKg: weightDifference(targetWeight: delegate.targetWeight), weeklyRateKg: delegate.weightChangeRate)
     }
     
     func estimatedMonths(delegate: GoalSummaryDelegate) -> Int {

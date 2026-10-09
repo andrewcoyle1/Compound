@@ -44,6 +44,9 @@ struct SetTrackerRowView: View {
     @Environment(\.showsBodyweightLoad) private var showsBodyweightLoad
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
 
+    /// The warm-up method and its sources, from the set number's menu.
+    @State private var showsWarmupMethod = false
+
     /// At accessibility sizes five fixed columns truncated every value to "4…", so the row stacks
     /// into two lines and the text keeps growing. Below them the table is as it always was.
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
@@ -128,6 +131,11 @@ struct SetTrackerRowView: View {
             deleteSetButton
         }
         .moveDisabled(true)
+        .sheet(isPresented: $showsWarmupMethod) {
+            MethodInfoSheet(info: .warmupSets)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
     
     /// The plates line under the current row: the colour on the icon only, since coloured or
@@ -223,8 +231,9 @@ struct SetTrackerRowView: View {
                 // A menu toggle draws its own checkmark; the old label asked for a symbol named "".
                 Toggle("Warmup Set", isOn: set.isWarmup)
 
+                // What a warm-up is, how Compound builds them, and the sources.
                 Button {
-                    presenter.onWarmupSetHelpPressed()
+                    showsWarmupMethod = true
                 } label: {
                     Label("What's a warmup set?", systemImage: Symbol.info)
                 }

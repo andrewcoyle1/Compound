@@ -42,7 +42,9 @@ enum CircleWeek {
         WorkoutSessionHighlights.sessions(of: userId, inWeekOf: date, history: sessions, calendar: calendar).count
     }
 
-    /// Working-set weight × reps across the user's sessions that week, the leaderboard's tie-break.
+    /// Completed working-set weight × reps across the user's sessions that week, the leaderboard's
+    /// tie-break. External load only: this device knows no one else's bodyweight, so a pull-up
+    /// adds nothing here for anyone (`MethodInfo.tonnage`).
     static func volumeKg(
         of userId: String,
         inWeekOf date: Date,
@@ -52,7 +54,7 @@ enum CircleWeek {
         WorkoutSessionHighlights.sessions(of: userId, inWeekOf: date, history: sessions, calendar: calendar)
             .flatMap(\.exercises)
             .flatMap(\.sets)
-            .filter { !$0.isWarmup }
+            .filter { !$0.isWarmup && $0.completedAt != nil }
             .reduce(0) { $0 + ($1.volumeKg ?? 0) }
     }
 

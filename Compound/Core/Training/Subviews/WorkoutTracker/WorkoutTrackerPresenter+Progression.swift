@@ -66,16 +66,15 @@ extension WorkoutTrackerPresenter {
         let remaining = workingSets[(position + 1)...].filter { $0.completedAt == nil }
         guard !remaining.isEmpty else { return }
 
-        let rule = ProgressionPlanner.roundingRule(
-            for: progressionContext(for: exercise),
-            gymProfile: interactor.workoutGymProfile
-        )
+        let context = progressionContext(for: exercise)
+        let rule = ProgressionPlanner.roundingRule(for: context, gymProfile: interactor.workoutGymProfile)
         let adjusted = ProgressionEngine().adjustRemaining(
             completed: completed,
             target: setTarget(of: exercise, forWorkingSetAt: perSide ? position / 2 : position),
             remaining: Array(remaining),
             mode: exercise.trackingMode,
-            rounding: rule.progressionRounding
+            rounding: rule.progressionRounding,
+            exerciseType: context.exercise?.type
         )
 
         applyAdjustments(adjusted, to: Array(remaining), in: exerciseIndex)

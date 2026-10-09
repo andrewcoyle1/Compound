@@ -72,6 +72,23 @@ extension CoreInteractor {
         )
     }
 
+    /// What a deload's lighter weights round to for `exercise` (`WorkoutStartInteractor`): the
+    /// equipment chosen for it in the workout's gym, in the exercise's unit, as the keyboard steps.
+    func deloadRounding(for exercise: WorkoutExerciseModel) -> (Double) -> Double {
+        let context = ProgressionPlanner.ExerciseContext(
+            sessionExercise: exercise,
+            exercise: allExercises.first(where: { $0.id == exercise.templateId }),
+            preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit
+        )
+        let rule = WeightRoundingRule(
+            exercise: context.exercise,
+            gymProfile: workoutGymProfile,
+            preferredWeightUnit: context.preferredWeightUnit,
+            resistanceEquipment: context.resistanceEquipment
+        )
+        return rule.round
+    }
+
     /// History is resolved per exercise, because `previousWorkoutReference` is: an exercise this
     /// workout has never held falls back to wherever the user last performed it, and that fallback
     /// is decided one exercise at a time. `ProgressionPlanner.suggestions` takes one session list

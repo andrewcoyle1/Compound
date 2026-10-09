@@ -5,96 +5,59 @@
 
 import Foundation
 
-/// Everything the engine needs to know about one day's window, worked out once.
+/// What the user logged in the 28 days before an estimate, worked out once: the counts the status
+/// line shows, the logged fraction the calibration gate reads, last week's intake for the adherence
+/// check, and the step nowcast.
 ///
-/// Split out of `ExpenditureEngine` because the sufficiency test, the energy balance and the step
-/// nowcast all read the same handful of derived figures, and threading them through as arguments
-/// made every signature longer than the rule it was implementing.
+/// The estimate itself comes from `ExpenditureFilter`; this only describes the window around it.
 struct ExpenditureWindowStats {
 
     typealias Constants = ExpenditureEngine.Constants
 
-    /// The energy balance over the window: what the logs say the body spent.
-    struct EnergyBalance: Equatable {
-        let rawExpenditure: Double
-        let weeklyTrendChangeKg: Double
-    }
-
     private let window: [DailySample]
-    private let trendByDay: [Date: Double]
-    private let calendar: Calendar
+    private let completeIntakeDays: Set<Date>
 
+    /// Complete logged days: logged, not excluded and not read as partial.
     let loggedDays: Int
     let weighInCount: Int
     /// Sample days actually present in the window, which is what the fractions are taken of.
     let daysPresent: Int
     let trendWeightKg: Double?
 
-    init(window: [DailySample], trend: [Date: Double], calendar: Calendar) {
+    /// - Parameters:
+    ///   - window: The samples in the window, oldest first.
+    ///   - completeIntakeDays: The days whose intake the filter read.
+    ///   - trendWeightKg: The filter's trend weight, for the step nowcast.
+    init(window: [DailySample], completeIntakeDays: Set<Date>, trendWeightKg: Double?) {
         self.window = window
-        self.trendByDay = trend
-        self.calendar = calendar
-        self.loggedDays = window.filter { $0.intakeKcal != nil && !$0.isExcluded }.count
+        self.completeIntakeDays = completeIntakeDays
+        self.loggedDays = window.filter { completeIntakeDays.contains($0.day) }.count
         self.weighInCount = window.filter { $0.weightKg != nil }.count
         self.daysPresent = window.count
-        self.trendWeightKg = window.last.flatMap { trend[$0.day] }
+        self.trendWeightKg = trendWeightKg
     }
 
-    // MARK: - Sufficiency
-
-    /// The window is sufficient when there is enough of every kind of evidence to trust it.
-    ///
-    /// All four guards are about the same thing from different sides: an energy balance read off a
-    /// fortnight of half-logged days and two weigh-ins a day apart is arithmetic, not a measurement.
-    func isSufficient(daysSinceFirstSample: Int) -> Bool {
-        daysSinceFirstSample >= Constants.minWindowDays
-            && Double(loggedDays) >= Constants.minLoggedFraction * Double(daysPresent)
-            && weighInCount >= Constants.minWeighIns
-            && weighInSpanDays >= Constants.minWeighInSpanDays
+    /// Complete logged days as a share of the days present; 0 for an empty window.
+    var loggedFraction: Double {
+        daysPresent > 0 ? Double(loggedDays) / Double(daysPresent) : 0
     }
 
-    /// The gap between the first and last weigh-in in the window, in days.
-    var weighInSpanDays: Int {
-        let days = window.filter { $0.weightKg != nil }.map(\.day)
-        guard let first = days.first, let last = days.last else { return 0 }
-        return calendar.dateComponents([.day], from: first, to: last).day ?? 0
-    }
-
-    // MARK: - Energy balance
-
-    /// `intake − (trend change in energy)`, which is what the body must have spent.
-    ///
-    /// Unlogged days are assumed to look like the logged ones; that assumption is exactly what
-    /// `minLoggedFraction` is guarding, and v1 does not try to impute them any other way.
-    func energyBalance() -> EnergyBalance? {
-        let intakes = window.filter { !$0.isExcluded }.compactMap(\.intakeKcal)
-        guard !intakes.isEmpty else { return nil }
-        let meanIntake = intakes.reduce(0, +) / Double(intakes.count)
-
-        let trendDays = window.map(\.day).filter { trendByDay[$0] != nil }
-        guard let firstDay = trendDays.first, let lastDay = trendDays.last,
-              let firstTrend = trendByDay[firstDay], let lastTrend = trendByDay[lastDay] else { return nil }
-        let spanDays = calendar.dateComponents([.day], from: firstDay, to: lastDay).day ?? 0
-        guard spanDays > 0 else { return nil }
-
-        let deltaTrendKg = lastTrend - firstTrend
-        let dailySurplus = deltaTrendKg * Constants.kcalPerKg / Double(spanDays)
-        let raw = meanIntake - dailySurplus
-        guard raw.isFinite else { return nil }
-
-        return EnergyBalance(
-            rawExpenditure: raw,
-            weeklyTrendChangeKg: deltaTrendKg * 7 / Double(spanDays)
-        )
+    /// Mean intake over the complete logged days among the last `recentIntakeDays` samples.
+    var recentIntakeKcal: Double? {
+        let recent = window.suffix(Constants.recentIntakeDays)
+            .filter { completeIntakeDays.contains($0.day) }
+            .compactMap(\.intakeKcal)
+        guard !recent.isEmpty else { return nil }
+        return recent.reduce(0, +) / Double(recent.count)
     }
 
     // MARK: - Step nowcast
 
     /// How far the last week's steps sit above or below the window's, priced in kcal.
     ///
-    /// Additive for display and proposals only — never fed back into the running estimate. The
-    /// energy balance already has the window's steps in it; this only anticipates a change in the
-    /// last week that a 28-day window has not absorbed yet. Double-counting it would chase noise.
+    /// Additive for display and proposals only — never fed back into the filter. The filter has the
+    /// window's steps in it already, through the weight; this only anticipates a change in the
+    /// last week that it has not absorbed yet.
     func stepNowcast() -> Double {
         let stepDays = window.filter { $0.steps != nil }
         guard stepDays.count * 2 >= daysPresent, !stepDays.isEmpty,
@@ -109,30 +72,6 @@ struct ExpenditureWindowStats {
         return raw.clamped(
             to: -Constants.maxStepNowcastKcal...Constants.maxStepNowcastKcal,
             whenNotFinite: 0
-        )
-    }
-
-    // MARK: - Output
-
-    func estimate(
-        day: Date,
-        kcal: Double,
-        source: ExpenditureEstimate.Source,
-        isProvisional: Bool,
-        weeklyTrendChangeKg: Double? = nil,
-        stepAdjustmentKcal: Double = 0
-    ) -> ExpenditureEstimate {
-        ExpenditureEstimate(
-            day: day,
-            kcal: kcal.rounded(),
-            source: source,
-            isProvisional: isProvisional,
-            trendWeightKg: trendWeightKg,
-            weeklyTrendChangeKg: weeklyTrendChangeKg,
-            loggedDays: loggedDays,
-            weighInCount: weighInCount,
-            windowDays: daysPresent,
-            stepAdjustmentKcal: stepAdjustmentKcal
         )
     }
 }

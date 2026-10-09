@@ -26,7 +26,7 @@ extension TodayPresenter {
             weighIn: weighInStatus,
             steps: TodayChecklist.Steps(
                 today: stepsToday,
-                goal: interactor.analyticsSettings.stepGoal,
+                goal: stepGoal,
                 hasStepData: !interactor.stepsHistory.isEmpty
             ),
             weightUnit: weightUnit
@@ -107,13 +107,19 @@ extension TodayPresenter {
         }
     }
 
-    var stepGoal: Int { interactor.analyticsSettings.stepGoal }
+    /// The user's own goal, else the age-adjusted default (`TodayChecklist.ageAdjustedStepGoal`).
+    var stepGoal: Int {
+        interactor.analyticsSettings.dailyStepGoal
+            ?? TodayChecklist.ageAdjustedStepGoal(dateOfBirth: interactor.currentUser?.submittedDateOfBirth)
+    }
 
     static let stepGoalChoices = [5_000, 6_000, 8_000, 10_000, 12_000, 15_000]
 
     func onStepGoalSelected(_ goal: Int) {
         var settings = interactor.analyticsSettings
-        guard settings.stepGoal != goal else { return }
+        // Compared with the stored choice, not the shown goal: picking the default an age-adjusted
+        // goal replaced must still save it.
+        guard settings.dailyStepGoal != goal else { return }
         settings.dailyStepGoal = goal
         interactor.trackEvent(event: Event.stepGoalChanged(goal: goal))
         Task {

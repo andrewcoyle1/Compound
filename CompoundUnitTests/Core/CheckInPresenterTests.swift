@@ -24,6 +24,7 @@ struct CheckInPresenterTests {
         var bodyMeasurements: [BodyMeasurementEntry] = []
         var currentExpenditure: ExpenditureEstimate = .stub
         var targetProposal: TargetProposal?
+        var adherenceNote: AdherenceNote?
         var loggingBreak: LoggingBreak?
         var openLoggingBreak: LoggingBreak?
 
@@ -370,6 +371,37 @@ struct CheckInPresenterTests {
         #expect(presenter.proposalSummary == nil)
         #expect(presenter.expenditureDescription == "2500 kcal a day")
         #expect(presenter.trendChangeDescription == "holding steady")
+    }
+
+    /// Once the estimate is adaptive it comes with its 80% interval; while calibrating it says so.
+    @Test("Test The Expenditure Line Shows Its Interval Or That It Is Calibrating")
+    func testTheExpenditureLineShowsItsIntervalOrThatItIsCalibrating() {
+        let adaptive = makeInteractor()
+        adaptive.currentExpenditure = ExpenditureEstimate(
+            day: Date(), kcal: 2500, source: .adaptive, isProvisional: false, trendWeightKg: 80,
+            weeklyTrendChangeKg: 0, loggedDays: 28, weighInCount: 28, windowDays: 28, stepAdjustmentKcal: 0,
+            sdKcal: 100
+        )
+        #expect(start(adaptive).expenditureDescription == "2500 kcal a day, likely 2372–2628")
+
+        let calibrating = makeInteractor()
+        calibrating.currentExpenditure = ExpenditureEstimate.stub.with(source: .prior, isProvisional: true)
+        #expect(start(calibrating).expenditureDescription == "2500 kcal a day (calibrating)")
+    }
+
+    /// Eating well above the target gets a word about adherence in place of a lower target.
+    @Test("Test The Program Update Talks About Adherence Instead Of Lowering The Target")
+    func testTheProgramUpdateTalksAboutAdherenceInsteadOfLoweringTheTarget() {
+        let interactor = makeInteractor()
+        interactor.adherenceNote = AdherenceNote(
+            targetKcal: 2000, recentIntakeKcal: 2400, weeklyTrendChangeKg: -0.1, goalWeeklyChangeKg: -0.5
+        )
+
+        let presenter = start(interactor)
+
+        #expect(presenter.proposalSummary == nil)
+        #expect(presenter.adherenceSummary?.contains("2400") == true)
+        #expect(presenter.adherenceSummary?.contains("2000") == true)
     }
 
     // MARK: - Walking the flow

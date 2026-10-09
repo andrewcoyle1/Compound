@@ -21,8 +21,9 @@ class CheckInPresenter {
 
     /// How stale a weigh-in may be before the check-in asks for a new one.
     static let weighInRecencyDays = 3
-    /// A day whose intake is below this share of expenditure is the one a fast check-in asks about.
-    static let suspiciousIntakeFraction = 0.5
+    /// A day whose intake is below this share of expenditure is the one a fast check-in asks about:
+    /// the same share below which the engine already reads a day as partly logged.
+    static let suspiciousIntakeFraction = ExpenditureEngine.Constants.partialDayFraction
 
     private(set) var steps: [CheckInStep] = []
     private(set) var stepIndex: Int = 0
@@ -217,8 +218,29 @@ class CheckInPresenter {
         return String(localized: "\(rounded < 0 ? String(localized: "down") : String(localized: "up")) \(String(describing: abs(rounded))) kg")
     }
 
+    /// "2450 kcal a day", with the 80% interval once the estimate is adaptive and has one, or a
+    /// note that it is still the formula figure while calibrating.
     var expenditureDescription: String {
-        String(localized: "\(String(describing: Int(interactor.currentExpenditure.kcal))) kcal a day")
+        let estimate = interactor.currentExpenditure
+        let kcal = String(describing: Int(estimate.kcal))
+        if let range = estimate.likelyRange {
+            let low = String(describing: Int(range.lowerBound))
+            let high = String(describing: Int(range.upperBound))
+            return String(localized: "\(kcal) kcal a day, likely \(low)–\(high)")
+        }
+        if estimate.source == .prior {
+            return String(localized: "\(kcal) kcal a day (calibrating)")
+        }
+        return String(localized: "\(kcal) kcal a day")
+    }
+
+    /// Set when the target would have come down but the user has been eating well above it: the
+    /// check-in says so rather than lowering a target that is not being followed.
+    var adherenceSummary: String? {
+        guard proposal == nil, let note = interactor.adherenceNote else { return nil }
+        let intake = String(describing: Int(note.recentIntakeKcal.rounded()))
+        let target = String(describing: Int(note.targetKcal.rounded()))
+        return String(localized: "You averaged \(intake) kcal a day against a target of \(target). Your target stays where it is: getting closer to it will do more than lowering it.")
     }
 
     var proposal: TargetProposal? {

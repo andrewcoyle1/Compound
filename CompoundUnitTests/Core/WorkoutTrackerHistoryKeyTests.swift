@@ -17,9 +17,9 @@ struct WorkoutTrackerHistoryKeyTests {
 
     private let start = Date(timeIntervalSince1970: 1_000_000)
 
-    private func set(_ id: String, reps: Int, weightKg: Double, done: Bool = true) -> WorkoutSetModel {
+    private func set(_ id: String, reps: Int, weightKg: Double, rpe: Double? = nil, done: Bool = true) -> WorkoutSetModel {
         WorkoutSetModel(
-            id: id, authorId: "author-1", index: 1, reps: reps, weightKg: weightKg,
+            id: id, authorId: "author-1", index: 1, reps: reps, weightKg: weightKg, rpe: rpe,
             isWarmup: false, completedAt: done ? start : nil, dateCreated: start
         )
     }
@@ -77,7 +77,8 @@ struct WorkoutTrackerHistoryKeyTests {
     func testTheSecondAppearanceGetsItsOwnLastTime() async throws {
         let (presenter, interactor) = try makePresenter()
         interactor.completedSessions = [lastSession([
-            exercise("last-heavy", templateId: "bench", index: 1, sets: [set("h1", reps: 8, weightKg: 100)]),
+            // An RPE, so one session at the top is enough to earn weight.
+            exercise("last-heavy", templateId: "bench", index: 1, sets: [set("h1", reps: 8, weightKg: 100, rpe: 8)]),
             exercise("last-row", templateId: "row", index: 2),
             exercise("last-backoff", templateId: "bench", index: 3, sets: [set("b1", reps: 20, weightKg: 60)])
         ])]
@@ -128,7 +129,8 @@ struct WorkoutTrackerHistoryKeyTests {
     @Test("Test The Planner Suggests For Each Appearance From Its Own History")
     func testThePlannerSuggestsForEachAppearanceFromItsOwnHistory() {
         let history = [lastSession([
-            exercise("last-heavy", templateId: "bench", index: 1, sets: [set("h1", reps: 8, weightKg: 100)]),
+            // An RPE, so one session at the top is enough to earn weight.
+            exercise("last-heavy", templateId: "bench", index: 1, sets: [set("h1", reps: 8, weightKg: 100, rpe: 8)]),
             exercise("last-backoff", templateId: "bench", index: 2, sets: [set("b1", reps: 15, weightKg: 60)])
         ])]
         let contexts = [

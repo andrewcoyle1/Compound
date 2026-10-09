@@ -26,7 +26,8 @@ private func currentPlan() -> DietPlan {
         createdAt: Date(timeIntervalSince1970: 1_700_000_000),
         tdeeEstimate: 2500,
         preferredDiet: PreferredDiet.keto.rawValue,
-        calorieFloor: CalorieFloor.low.rawValue,
+        // The 800 kcal floor's stored value, which is no longer offered.
+        calorieFloor: "low",
         trainingType: "moderate",
         calorieDistribution: CalorieDistribution.varied.rawValue,
         proteinIntake: ProteinIntake.veryHigh.rawValue,
@@ -253,32 +254,36 @@ struct OnboardingCalorieFloorPresenterTests {
         #expect(interactor.trackedEventNames == ["Onboarding_CalFloor_Prefilled"])
     }
 
-    @Test("Test Rebuilding A Plan Opens On Its Floor")
+    /// A plan saved with the removed 800 kcal floor reopens on the standard one.
+    @Test("Test Rebuilding A Plan Saved With The Old Low Floor Opens On The Standard One")
     func testRebuildingAPlanOpensOnItsFloor() {
         let interactor = Interactor()
         interactor.currentDietPlan = currentPlan()
         let presenter = CalorieFloorPresenter(interactor: interactor, router: Router())
 
-        #expect(presenter.selectedFloor == .low)
+        #expect(presenter.selectedFloor == .standard)
     }
 
-    /// The two floors are the numbers the plan is clamped to, and the descriptions on the screen
-    /// promise these figures by name.
-    @Test("Test The Floors Are 1200 And 800 Calories")
-    func testTheFloorsAre1200And800Calories() {
-        #expect(CalorieFloor.standard.minimumValue == 1200)
-        #expect(CalorieFloor.low.minimumValue == 800)
+    /// The floor is set by sex, from the AHA/ACC/TOS prescription ranges: 1,200 for women, 1,500
+    /// for men, 1,350 when not given. The screen's description promises these figures by name.
+    @Test("Test The Floors Are 1200, 1500 And 1350 Calories")
+    func testTheFloorsAreSetBySex() {
+        #expect(CalorieFloor.standard.minimumValue(for: .female) == 1200)
+        #expect(CalorieFloor.standard.minimumValue(for: .male) == 1500)
+        #expect(CalorieFloor.standard.minimumValue(for: .preferNotToSay) == 1350)
+        #expect(CalorieFloor.standard.minimumValue(for: nil) == 1350)
+        #expect(CalorieFloor.standard.minimumValue == 1350)
     }
 
     @Test("Test The Chosen Floor And The Earlier Diet Are Both Carried")
     func testTheChosenFloorAndTheEarlierDietAreBothCarried() {
         let router = Router()
         let presenter = makePresenter(router: router)
-        presenter.selectedFloor = .low
+        presenter.selectedFloor = .standard
 
         presenter.onContinuePressed(delegate: CalorieFloorDelegate(preferredDiet: .lowCarb))
 
-        #expect(router.delegates.first?.calorieFloor == .low)
+        #expect(router.delegates.first?.calorieFloor == .standard)
         #expect(router.delegates.first?.preferredDiet == .lowCarb)
     }
 
@@ -443,13 +448,13 @@ struct OnboardingCalorieDistributionTests {
 
         presenter.navigateToProteinIntake(delegate: CalorieDistributionDelegate(
             delegate: CalorieFloorDelegate(preferredDiet: .lowFat, isFromSettings: true),
-            calorieFloor: .low
+            calorieFloor: .standard
         ))
 
         let passed = router.delegates.first
         #expect(passed?.calorieDistrubtion == .varied)
         #expect(passed?.preferredDiet == .lowFat)
-        #expect(passed?.calorieFloor == .low)
+        #expect(passed?.calorieFloor == .standard)
         #expect(passed?.isFromSettings == true)
     }
 }
@@ -477,7 +482,7 @@ struct OnboardingProteinIntakePresenterTests {
         ProteinIntakeDelegate(
             delegate: CalorieDistributionDelegate(
                 delegate: CalorieFloorDelegate(preferredDiet: .lowCarb, isFromSettings: isFromSettings),
-                calorieFloor: .low
+                calorieFloor: .standard
             ),
             calorieDistribution: .varied
         )
@@ -519,7 +524,7 @@ struct OnboardingProteinIntakePresenterTests {
         let passed = router.delegates.first
         #expect(passed?.proteinIntake == .veryHigh)
         #expect(passed?.preferredDiet == .lowCarb)
-        #expect(passed?.calorieFloor == .low)
+        #expect(passed?.calorieFloor == .standard)
         #expect(passed?.calorieDistribution == .varied)
         #expect(passed?.isFromSettings == true)
     }

@@ -199,7 +199,7 @@ private extension ExerciseModelDetailView {
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("Personal Best")
+            MethodInfoHeader(title: "Personal Best", info: .estimatedOneRepMax)
         }
     }
 
@@ -221,7 +221,7 @@ private extension ExerciseModelDetailView {
                 }
             }
         } header: {
-            Text("Recent Records")
+            MethodInfoHeader(title: "Recent Records", info: .estimatedOneRepMax)
         }
     }
 
@@ -234,7 +234,7 @@ private extension ExerciseModelDetailView {
             }
             .padding(.vertical, Spacing.s)
         } header: {
-            Text("All-Time Stats")
+            MethodInfoHeader(title: "All-Time Stats", info: .tonnage)
         }
     }
 

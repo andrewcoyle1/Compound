@@ -18,6 +18,8 @@ class MuscleGroupDetailPresenter {
 
     private(set) var cachedEntries: [MuscleGroupDetailEntry] = []
     private(set) var cachedTimeSeries: [TimeSeries] = []
+    /// The suggestion for the next block's sets (`VolumeRecommendation`), worked out on load.
+    private(set) var recommendation: VolumeRecommendation.Result?
 
     var allExercises: [ExerciseModel] {
         interactor.allExercises
@@ -53,6 +55,13 @@ class MuscleGroupDetailPresenter {
                 sets: setsByDay[day] ?? 0
             )
         }
+        recommendation = VolumeRecommendation.recommend(VolumeRecommendation.inputs(
+            muscle: muscle,
+            sessions: completed,
+            templates: templates,
+            age: userAge,
+            calendar: calendar
+        ))
         cachedTimeSeries = [
             TimeSeries(
                 name: "Sets",
@@ -83,6 +92,11 @@ class MuscleGroupDetailPresenter {
             }
         }
         return setsByDay
+    }
+
+    private var userAge: Int? {
+        guard let dateOfBirth = interactor.currentUser?.submittedDateOfBirth else { return nil }
+        return calendar.dateComponents([.year], from: dateOfBirth, to: Date()).year
     }
 
     func onDismissPressed() {
@@ -127,6 +141,12 @@ extension MuscleGroupDetailPresenter: @MainActor MetricDetailPresenter {
 
     func onAppear() async {
         await loadData()
+    }
+
+    var methodInfo: MethodInfo? { .weeklyHardSets }
+
+    var summarySection: AnyView? {
+        recommendation.map { AnyView(VolumeRecommendationSection(result: $0)) }
     }
 
     func onAddPressed() {

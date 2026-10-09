@@ -69,7 +69,22 @@ struct TodayChecklist: Equatable {
     /// Calories count as on target within this fraction either side, as the weekly review does.
     static let calorieTolerance = WeeklyReview.NutritionAdherence.tolerance
 
+    /// The step goal for anyone who has not chosen one: 8,000 a day, or 7,000 from 60. Mortality
+    /// risk stops falling at about 8,000–10,000 steps under 60 and 6,000–8,000 from 60 (Paluch
+    /// 2022), with most of the benefit by about 7,000 (Ding 2025); the two figures are Compound's
+    /// picks within those ranges (`MethodInfo.dailyStepGoal`).
     static let defaultStepGoal = 8_000
+    static let olderAdultStepGoal = 7_000
+    static let olderAdultAge = 60
+
+    /// The default goal for someone born on `dateOfBirth`; `defaultStepGoal` without one. Only a
+    /// default: a goal the user chose is never replaced.
+    static func ageAdjustedStepGoal(dateOfBirth: Date?, now: Date = .now, calendar: Calendar = .current) -> Int {
+        guard let dateOfBirth,
+              let age = calendar.dateComponents([.year], from: dateOfBirth, to: now).year,
+              age >= olderAdultAge else { return defaultStepGoal }
+        return olderAdultStepGoal
+    }
 
     static func build(
         training: Training,

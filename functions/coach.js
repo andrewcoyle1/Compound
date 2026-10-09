@@ -11,8 +11,9 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { z } from "genkit";
 import { localTime } from "./lib.js";
 import {
-    addDays, daysBetween, estimated1RM, exerciseOneRM, weeklyMuscleSets, weightTrend,
+    addDays, daysBetween, setEstimated1RM, exerciseOneRM, weeklyMuscleSets, weightTrend,
     estimateTDEE, resolvedBMREquation, expenditureSamples, expenditureHistory, completedWorkingSets,
+    energyDensityKcalPerKg,
 } from "./coach-maths.js";
 
 // MARK: - Limits
@@ -287,6 +288,8 @@ export function shapeSession(doc, env) {
                 distanceMeters: set.distance_meters ?? null,
                 rpe: set.rpe ?? null,
                 side: set.side ?? null,
+                id: set.id ?? null,
+                kind: set.kind ?? null,
                 parentSetId: set.parent_set_id ?? null,
                 isWarmup: set.isWarmup === true,
                 completed: set.completed_at != null,
@@ -337,9 +340,25 @@ export const MUSCLES = [
     "triceps", "upperTraps", "obliques", "neck", "lats", "forearms", "sideDelts", "rearDelts", "frontDelts", "chest", "biceps",
     "upperBack", "lowerBack", "abs", "serratus", "quads", "hamstrings", "glutes", "calves", "abductors", "adductors", "tibialis",
 ];
-// MuscleVolume.recommendedWeeklySets.
-const LARGE_MUSCLES = new Set(["chest", "lats", "upperBack", "quads", "hamstrings", "glutes"]);
-const recommendedWeeklySets = (muscle) => (LARGE_MUSCLES.has(muscle) ? [10, 20] : [6, 12]);
+// MuscleVolume.productiveWeeklySets and .tier(sets:): one band for every muscle (Pelland 2026,
+// Baz-Valle 2022), with Compound's own tiers around it.
+const PRODUCTIVE_WEEKLY_SETS = [10, 20];
+const MAINTENANCE_WEEKLY_SETS = 4;
+const volumeTier = (sets) => (sets < MAINTENANCE_WEEKLY_SETS ? "belowMaintenance"
+    : sets < PRODUCTIVE_WEEKLY_SETS[0] ? "maintaining"
+        : sets > PRODUCTIVE_WEEKLY_SETS[1] ? "high" : "productive");
+
+// CoreInteractor.expenditureKcalPerKg: the latest weight, and a body fat reading from the last 90
+// days, through the energy density; 7,700 kcal/kg without one.
+const TRUSTED_BODY_FAT_DAYS = 90;
+function expenditureKcalPerKg(measurements, now, fallbackWeightKg = null) {
+    const dated = measurements.map((m) => ({ ...m, at: asDate(m.date) })).filter((m) => m.at);
+    const latest = (rows) => rows.sort((a, b) => b.at - a.at)[0];
+    const cutoff = now.getTime() - TRUSTED_BODY_FAT_DAYS * 86_400_000;
+    const bodyFat = latest(dated.filter((m) => m.at.getTime() >= cutoff && m.body_fat_percentage > 0))?.body_fat_percentage ?? null;
+    const weightKg = latest(dated.filter((m) => m.weight_kg > 0))?.weight_kg ?? fallbackWeightKg;
+    return energyDensityKcalPerKg(weightKg, bodyFat);
+}
 
 // MARK: - Profile helpers
 
@@ -446,8 +465,9 @@ export const COACH_TOOLS = {
         for (const session of sessions) {
             for (const e of session.exercises.filter((x) => matchesExercise(x, exercise))) {
                 const working = e.sets.filter((set) => !set.isWarmup && set.completed);
-                const scored = working.filter((set) => set.weightKg > 0)
-                    .map((set) => ({ set, e1rm: estimated1RM(set.weightKg, Math.max(1, set.reps ?? 1)) }))
+                const scored = working.filter((set) => set.parentSetId == null)
+                    .map((set) => ({ set, e1rm: setEstimated1RM(set) }))
+                    .filter((entry) => entry.e1rm != null)
                     .sort((a, b) => b.e1rm - a.e1rm)[0];
                 const isRecord = scored != null && scored.e1rm > best;
                 if (scored) best = Math.max(best, scored.e1rm);
@@ -467,7 +487,7 @@ export const COACH_TOOLS = {
         return {
             rangeWeeks: range / 7,
             unit: env.weightUnit,
-            estimated1RMFormula: "Epley: weight × (1 + reps / 30), as the app shows it",
+            estimated1RMFormula: "Epley on reps to failure, as the app shows it: n = reps + (10 − RPE) when RPE was logged, else reps; e1RM = weight when n = 1, weight × (1 + n / 30) for n up to 10; sets past 10 reps to failure give no estimate (Reynolds 2006)",
             sessions: points,
             bestEstimated1RMInRange: weight(best || null, env),
             appLatestEstimated1RM: Object.values(appFigures).map((a) => ({ exercise: a.name, value: weight(a.latest1RM, env) })),
@@ -479,13 +499,13 @@ export const COACH_TOOLS = {
         const [sessions, templates] = await Promise.all([finishedSessions(source, env, count * 7), exerciseMuscles(source)]);
         const weekly = weeklyMuscleSets(sessions.filter((s) => !s.isRestDay), templates, env.today, count, MUSCLES);
         return {
-            note: "Weighted working sets per muscle in rolling 7-day windows ending today, oldest first. A muscle trained directly counts a set as 1, one it assists as 0.5; a left/right pair counts once.",
+            note: "Weighted hard sets per muscle in rolling 7-day windows ending today, oldest first. A hard set is a finished, non-warm-up set not logged below RPE 6 (sets without RPE count); each drop or myo/rest-pause mini-set adds 0.5, up to 2 per set. A muscle trained directly counts a set as 1, one it assists as 0.5; a left/right pair counts once. Every muscle has the same tiers: below 4 below maintenance, 4 to under 10 maintaining, 10-20 productive, over 20 high (fine if still progressing and recovering). The 4 and 10 cut-points are the app's own; the 10-20 band is from meta-analyses.",
             weeks: count,
             muscles: Object.fromEntries(MUSCLES.map((muscle) => {
                 const sets = weekly[muscle].map((v) => round(v, 1));
-                const [low, high] = recommendedWeeklySets(muscle);
-                const last = sets[sets.length - 1];
-                return [muscle, { weeklySets: sets, recommendedPerWeek: `${low}-${high}`, lastWeek: last < low ? "below" : last > high ? "above" : "within" }];
+                const [low, high] = PRODUCTIVE_WEEKLY_SETS;
+                const last = weekly[muscle][weekly[muscle].length - 1];
+                return [muscle, { weeklySets: sets, productivePerWeek: `${low}-${high}`, lastWeekTier: volumeTier(last) }];
             })),
         };
     },
@@ -546,7 +566,7 @@ export const COACH_TOOLS = {
         const all = (await source.measurements(null)).filter((m) => !m.deleted_at)
             .map((m) => ({ ...m, at: asDate(m.date) })).filter((m) => m.at).sort((a, b) => a.at - b.at);
         const weighIns = all.filter((m) => Number.isFinite(m.weight_kg) && m.weight_kg > 0);
-        const trend = weightTrend(weighIns.map((m) => m.weight_kg));
+        const trend = weightTrend(weighIns.map((m) => m.weight_kg), weighIns.map((m) => dayOf(m.at, env)));
         const inRange = (m) => daysBetween(dayOf(m.at, env), env.today) < range;
         const shown = weighIns.map((m, i) => ({ m, trend: trend[i] })).filter(({ m }) => inRange(m));
         const circumferenceFields = Object.keys(all.reduce((acc, m) => Object.assign(acc, m), {})).filter((k) => k.endsWith("_circumference"));
@@ -561,7 +581,7 @@ export const COACH_TOOLS = {
         return {
             rangeDays: range,
             units: { weight: env.weightUnit, length: env.lengthUnit },
-            trendNote: "The trend is the app's 7-day exponential moving average of weigh-ins (alpha 0.25), the line on its Weight Trend screen.",
+            trendNote: "The trend is the line on the app's Weight Trend screen: a Kalman filter over the weigh-ins (level and slope, with the real gap in days between readings), smoothed with the readings after each point. One weigh-in is taken to carry about 0.5% of body weight of noise (at least 0.3 kg); only the first weigh-in of a day counts; an odd reading is down-weighted, and one more than max(3 kg, 4%) off the trend is ignored unless the next weigh-in agrees.",
             weighIns: shown.slice(-60).map(({ m, trend: t }) => ({ day: dayOf(m.at, env), weight: weight(m.weight_kg, env), trend: weight(t, env) })),
             trendChangeInRange: shown.length >= 2 ? weight(shown[shown.length - 1].trend - shown[0].trend, env) : null,
             latestBodyFatPercent: bodyFat.length ? round(bodyFat[bodyFat.length - 1].body_fat_percentage, 1) : null,
@@ -587,7 +607,7 @@ export const COACH_TOOLS = {
         const live = (m) => !m.deleted_at;
         const samples = expenditureSamples({
             meals: meals.map((m) => ({ dayKey: m.day_key ?? dayOf(m.date, env), calories: mealTotals(m).calories })),
-            measurements: measurements.map((m) => ({ day: dayOf(m.date, env), weightKg: m.weight_kg, deleted: !live(m) })),
+            measurements: measurements.map((m) => ({ day: dayOf(m.date, env), weightKg: m.weight_kg, deleted: !live(m), at: asDate(m.date)?.getTime() ?? 0 })),
             steps: steps.map((s) => ({ day: dayOf(s.date, env), number: s.number ?? 0, deleted: !live(s) })),
             annotations: (annotations ?? []).map((a) => ({ dayKey: a.day_key, isPartiallyLogged: a.is_partially_logged === true, isFastingDay: a.is_fasting_day === true })),
             loggingBreak: sampleBreak,
@@ -603,7 +623,6 @@ export const COACH_TOOLS = {
             heightCm: user?.submitted_height_centimeters,
             ageYears: age == null ? 30 : Math.max(14, age),
             activity: user?.submitted_daily_activity_level ?? "moderate",
-            exerciseFrequency: user?.submitted_exercise_frequency ?? "3-4",
         }, { equation: resolvedBMREquation(strategy, latestBodyFat), bodyFatPercentage: latestBodyFat });
 
         const history = expenditureHistory({
@@ -615,16 +634,20 @@ export const COACH_TOOLS = {
                 stepInformedUpdates: strategy?.step_informed_updates === true,
             },
             today,
+            kcalPerKg: expenditureKcalPerKg(measurements.filter(live), env.now, user?.submitted_weight_kilograms ?? null),
         });
         const shape = (e) => ({
             day: e.day, kcal: e.kcal, source: e.source, provisional: e.isProvisional,
             trendWeight: weight(e.trendWeightKg, env), weeklyTrendChange: weight(e.weeklyTrendChangeKg, env),
             loggedDaysInWindow: e.loggedDays, weighInsInWindow: e.weighInCount, stepAdjustmentKcal: round(e.stepAdjustmentKcal, 0),
+            sdKcal: round(e.sdKcal, 0), likely80PercentRangeKcal: e.source === "adaptive" && e.sdKcal != null ? [round(e.kcal - 1.28 * e.sdKcal, 0), round(e.kcal + 1.28 * e.sdKcal, 0)] : null,
+            weeklyTrendChangeSD: weight(e.weeklyTrendChangeSDKg, env), recentLoggedIntakeKcal: round(e.recentIntakeKcal, 0),
         });
         return {
-            note: "The app's adaptive expenditure: a 28-day energy balance of logged intake against the smoothed weight trend, blended slowly and kept within 60-160% of the formula estimate. 'prior' means there is not yet enough data and the formula figure stands; 'provisional' marks the same.",
+            note: "The app's adaptive expenditure: a daily Kalman filter over trend weight, habitual intake and expenditure, fed by weigh-ins and completely logged days (days in a logging break, flagged partial, or under half the estimate unless marked as a fast are skipped). It is on the scale the user logs, so it is 'based on what you logged'. 'prior' (and 'provisional') means it is still calibrating, which lasts until 21 days, 14 weigh-ins, an SD under 200 kcal and 80% of the last 28 days logged; the formula figure stands meanwhile. The shown figure stays within 60-160% of the formula. sdKcal is the filter's 1-SD uncertainty; the likely range is the 80% interval (±1.28 SD). Even with good data, individual estimates carry about ±200 kcal of error.",
             current: shape(history[history.length - 1]),
             formulaEstimateKcal: round(prior, 0),
+            formulaNote: "The formula estimate is resting metabolic rate (Mifflin-St Jeor by default; Cunningham, 500 + 22 x fat-free mass, when body fat is logged and the user opted in) times a physical activity level for the user's activity answer: sedentary 1.4, light 1.55, moderate 1.7, active 1.85, very active 2.0, with workouts counted inside that answer. Typical error is a few hundred kcal a day.",
             frozenByOpenLoggingBreak: openBreak != null,
             dietPlanBuiltOnKcal: round(plan?.tdeeEstimate, 0),
             history: history.slice(-range).map(shape),
@@ -671,6 +694,7 @@ export const COACH_TOOLS = {
                 startedOn: dayOf(startedAt, env),
                 currentMicrocycle: progress.currentCycle + 1,
                 isDeloadWeek: (mesocycle.deload === "start" && progress.currentCycle === 0) || (mesocycle.deload === "end" && progress.currentCycle + 1 === mesocycle.num_microcycles),
+                deloadWeekRule: "A deload week keeps about half of each exercise's working sets (rounded up, at least one) at 90% of the planned weight, reps as planned; frequency is unchanged.",
                 complete: progress.next == null,
                 nextWorkout: progress.next ? dayPlan(progress.next) : null,
                 trainedToday: sessions.some((s) => s.day === env.today),
@@ -724,7 +748,7 @@ const TOOL_SPECS = {
     get_profile_and_targets: { description: "The user's profile, units, weekly session goal, weight goal, diet plan with daily calorie and macro targets, and nutrition strategy. Call this first in most conversations.", input: z.object({}) },
     get_workout_history: { description: "Finished workouts in the last N days with every set (weight, reps, RPE, warm-ups) and notes. Optionally only one exercise (name or id).", input: z.object({ days: z.number().optional(), exercise: z.string().optional() }) },
     get_exercise_progress: { description: "One exercise over the last N weeks: best set and estimated 1RM per session, working sets, volume, and new bests.", input: z.object({ exercise: z.string(), weeks: z.number().optional() }) },
-    get_training_volume: { description: "Weighted working sets per muscle per week over the last N weeks (1-12), against the app's recommended weekly range.", input: z.object({ weeks: z.number().optional() }) },
+    get_training_volume: { description: "Weighted hard sets per muscle per week over the last N weeks (1-12), with the app's volume tier for the last week (10-20 productive for every muscle).", input: z.object({ weeks: z.number().optional() }) },
     get_nutrition: { description: "Daily calories and macros against that day's targets over the last N days, with meals and notes for ranges up to 14 days, partial or fasting days, and logging breaks.", input: z.object({ days: z.number().optional() }) },
     get_body_metrics: { description: "Weigh-ins with the smoothed trend, body fat and body circumferences over the last N days.", input: z.object({ days: z.number().optional() }) },
     get_expenditure: { description: "The app's adaptive daily energy expenditure (TDEE): today's estimate, how it was reached, and its recent history.", input: z.object({ days: z.number().optional() }) },

@@ -14,6 +14,8 @@ class DietPlanPresenter {
     private let router: DietPlanRouter
 
     private(set) var plan: DietPlan?
+    /// The formula's resting calories, set with the plan, when some day's target is below them.
+    private(set) var restingKcalAboveTarget: Double?
     var mesocycleName: String?
     var trainingDaysPerWeek: Int?
     private var isFromSettings: Bool = false
@@ -41,7 +43,24 @@ class DietPlanPresenter {
 
     func createPlan(delegate: DietPlanDelegate) {
         isFromSettings = delegate.isFromSettings
-        plan = interactor.computeDietPlan(user: currentUser, delegate: delegate)
+        let plan = interactor.computeDietPlan(user: currentUser, delegate: delegate)
+        self.plan = plan
+        let resting = interactor.estimateRestingKcal(user: currentUser)
+        let lowestDay = plan.days.map(\.calories).min() ?? 0
+        restingKcalAboveTarget = resting.isFinite && lowestDay > 0 && lowestDay < resting ? resting : nil
+    }
+
+    /// The floor this user's plan is held to, which depends on sex. Plans saved with the removed
+    /// 800 kcal option store "low" and get the standard floor, so the figure is shown, not the name.
+    var calorieFloorText: String {
+        Format.kcal(CalorieFloor.standard.minimumValue(for: currentUser?.submittedGender))
+    }
+
+    /// Said when a day's target is under the estimated resting rate: allowed, since it is above the
+    /// floor, but a steep deficit worth knowing about. Compound's own warning, not a clinical rule.
+    var belowRestingWarningText: String? {
+        guard let resting = restingKcalAboveTarget else { return nil }
+        return String(localized: "Some days' targets are below your estimated resting calories (\(Format.kcal(resting))). That's a steep deficit: a slower rate is easier to sustain and keeps more muscle.")
     }
     
     func navigate() {

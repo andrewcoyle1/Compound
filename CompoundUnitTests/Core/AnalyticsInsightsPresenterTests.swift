@@ -224,8 +224,8 @@ struct AnalyticsInsightsPresenterTests {
         #expect(screen.presenter.goalProgressLatestValueText == Format.placeholder)
     }
 
-    @Test("Test Progress Is Measured From The Latest Weigh In")
-    func testProgressIsMeasuredFromTheLatestWeighIn() {
+    @Test("Test Progress Is Measured From The Trend Weight")
+    func testProgressIsMeasuredFromTheTrendWeight() {
         let goal = WeightGoal(
             userId: "user-1",
             objective: .loseWeight,
@@ -234,10 +234,12 @@ struct AnalyticsInsightsPresenterTests {
             weeklyChangeKg: 0.5,
             createdAt: date(day: 1)
         )
-        let screen = makeScreen(measurements: [weighIn(kilograms: 88, day: 2), weighIn(kilograms: 85, day: 6)], goal: goal)
+        let measurements = [weighIn(kilograms: 88, day: 2), weighIn(kilograms: 85, day: 6)]
+        let screen = makeScreen(measurements: measurements, goal: goal)
+        let trend = GoalTimeline.latestTrendWeightKg(of: measurements) ?? 0
 
-        #expect(screen.presenter.goalProgressPercent == 50)
-        #expect(screen.presenter.goalProgressLatestValueText == "50")
+        // The trend, not the last weigh-in: a single low reading does not count in full.
+        #expect(abs(screen.presenter.goalProgressPercent - (90 - trend) / 10 * 100) < 0.0001)
         #expect(screen.presenter.goalProgressUnitText == "%")
     }
 
@@ -348,25 +350,47 @@ struct AnalyticsInsightsPresenterTests {
         #expect(screen.presenter.energyBalanceIntake.data.last?.value == 2200)
     }
 
-    /// The deficit is the week's average intake against expenditure, and it is only stated once a
-    /// full week has been read.
-    @Test("Test The Deficit Compares A Weeks Average With Expenditure")
-    func testTheDeficitComparesAWeeksAverageWithExpenditure() async {
-        let screen = makeScreen(logged: [0: 7000], tdee: 3000)
+    /// The deficit is the average of the week's logged days against expenditure. An unlogged day
+    /// is left out, not counted as eating nothing, and the subtitle says how many days there were.
+    @Test("Test The Deficit Averages Only The Logged Days")
+    func testTheDeficitAveragesOnlyTheLoggedDays() async {
+        let screen = makeScreen(logged: [0: 2000, 1: 2000, 2: 2000], tdee: 3000)
 
         await screen.presenter.onFirstTask()
 
-        // 7,000 kcal over seven days averages 1,000 against a 3,000 expenditure.
-        #expect(screen.presenter.energyBalanceLatestValueText == "\(2000.formatted()) kcal deficit")
+        // Three days of 2,000 against 3,000; dividing by seven would have claimed 2,143.
+        #expect(screen.presenter.energyBalanceLatestValueText == "\(1000.formatted()) kcal deficit")
+        #expect(screen.presenter.energyBalanceSubtitle == "Last 7 Days \u{00B7} 3 logged")
     }
 
     @Test("Test Eating Over Expenditure Reads As A Surplus")
     func testEatingOverExpenditureReadsAsASurplus() async {
-        let screen = makeScreen(logged: [0: 28_000], tdee: 3000)
+        let screen = makeScreen(logged: [0: 4000], tdee: 3000)
 
         await screen.presenter.onFirstTask()
 
         #expect(screen.presenter.energyBalanceLatestValueText == "\(1000.formatted()) kcal surplus")
+    }
+
+    /// Expenditure is the adaptive estimate where there is one, not the formula.
+    @Test("Test The Balance Reads The Adaptive Estimate")
+    func testTheBalanceReadsTheAdaptiveEstimate() async {
+        let screen = makeScreen(logged: [0: 2000], tdee: 3000)
+        screen.interactor.expenditureHistory = [ExpenditureEstimate.stub.with(kcal: 2500)]
+
+        await screen.presenter.onFirstTask()
+
+        #expect(screen.presenter.energyBalanceLatestValueText == "500 kcal deficit")
+        #expect(screen.presenter.expenditureLatestValueText == 2500.formatted())
+    }
+
+    @Test("Test A Week With Nothing Logged States No Balance")
+    func testAWeekWithNothingLoggedStatesNoBalance() async {
+        let screen = makeScreen(tdee: 3000)
+
+        await screen.presenter.onFirstTask()
+
+        #expect(screen.presenter.energyBalanceLatestValueText == Format.placeholder)
     }
 
     /// Before the week has been read there is no average to state.

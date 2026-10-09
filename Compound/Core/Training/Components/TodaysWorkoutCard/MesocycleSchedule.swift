@@ -77,7 +77,7 @@ enum MesocycleSchedule {
     }
 
     /// Whether the microcycle numbered `cycleIndex` (1-based, as the header shows it) is the
-    /// mesocycle's deload, when every working weight is cut.
+    /// mesocycle's deload, when each session keeps about half its sets at 90 % (`MesocycleDeload`).
     static func isDeload(cycleIndex: Int, of mesocycle: Mesocycle) -> Bool {
         switch mesocycle.deload {
         case .none:  return false

@@ -116,7 +116,7 @@ struct ProgressionEngineTests {
     func testWeightFirstAddsWeightWhenMostSetsReachTheTop() {
         let suggestion = engine.suggest(input(
             targets: targets(min: 8, max: 12, count: 4),
-            history: [sets([(60, 12, nil), (60, 12, nil), (60, 12, nil), (60, 10, nil)])]
+            history: [sets([(60, 12, 8), (60, 12, 8), (60, 12, 8), (60, 10, 8)])]
         ))
 
         #expect(suggestion.rationale == .progressWeight)
@@ -180,7 +180,7 @@ struct ProgressionEngineTests {
     func testRepsFirstAddsWeightOnceEverySetIsAtTheTop() {
         let suggestion = engine.suggest(input(
             targets: targets(min: 8, max: 12, count: 3),
-            history: [sets([(60, 12, nil), (60, 12, nil), (60, 12, nil)])],
+            history: [sets([(60, 12, 8), (60, 12, 8), (60, 12, 8)])],
             adjustmentMode: .repsFirst
         ))
 
@@ -208,9 +208,10 @@ struct ProgressionEngineTests {
         ])
     }
 
-    /// Two sessions running below the range, the second at the same weight: ten per cent comes
-    /// off and the reps go back to the bottom of the range.
-    @Test("Test Two Missed Sessions Deload")
+    /// Two sessions running below the range, the second at the same weight: the weight is
+    /// worked back from each set's estimated one-rep max to the bottom of the range with two reps
+    /// in reserve. 60 kg × 7 is 74 kg, and 74 / (1 + 10/30) is 55.5 kg; 60 × 6 gives 54 kg.
+    @Test("Test Two Missed Sessions Reset From The Estimated One-Rep Max")
     func testTwoMissedSessionsDeload() {
         let suggestion = engine.suggest(input(
             targets: targets(min: 8, max: 12, count: 3),
@@ -221,8 +222,57 @@ struct ProgressionEngineTests {
         ))
 
         #expect(suggestion.rationale == .deload)
-        let allDeloaded = suggestion.sets.allSatisfy { $0 == SuggestedSet(weightKg: 54, reps: 8) }
-        #expect(allDeloaded)
+        #expect(suggestion.sets == [
+            SuggestedSet(weightKg: 55.5, reps: 8),
+            SuggestedSet(weightKg: 55.5, reps: 8),
+            SuggestedSet(weightKg: 54, reps: 8)
+        ])
+    }
+
+    /// The derived weight is kept within 5–15 % under the weight missed: a near miss still takes
+    /// something off, and a bad one never more than 15 %.
+    @Test("Test A Reset Takes Between Five And Fifteen Per Cent Off")
+    func testAResetIsClamped() {
+        let nearMiss = engine.suggest(input(
+            targets: targets(min: 5, max: 6, count: 1, rir: 0),
+            history: [sets([(100, 4, nil)]), sets([(100, 4, nil)])]
+        ))
+        // 100 × (1 + 4/30) = 113.3, and 113.3 / (1 + 5/30) = 97.1: held to 95.
+        #expect(nearMiss.sets == [SuggestedSet(weightKg: 95, reps: 5)])
+
+        let badMiss = engine.suggest(input(
+            targets: targets(min: 10, max: 12, count: 1, rir: 3),
+            history: [sets([(100, 2, nil)]), sets([(100, 2, nil)])]
+        ))
+        #expect(badMiss.sets == [SuggestedSet(weightKg: 85, reps: 10)])
+    }
+
+    /// Past ten reps to failure there is no estimate to work back from, so the reset takes the
+    /// ten per cent it always did.
+    @Test("Test A Reset Without An Estimate Takes Ten Per Cent")
+    func testAResetWithoutAnEstimateTakesTenPerCent() {
+        let suggestion = engine.suggest(input(
+            targets: targets(min: 12, max: 15, count: 1),
+            history: [sets([(60, 11, nil)]), sets([(60, 11, nil)])]
+        ))
+
+        #expect(suggestion.rationale == .deload)
+        #expect(suggestion.sets == [SuggestedSet(weightKg: 54, reps: 12)])
+    }
+
+    /// Misses logged at an RPE under 9.5 left reps in reserve: the set was stopped short, not
+    /// failed, so it holds rather than resets.
+    @Test("Test Misses Stopped Short Of Failure Do Not Reset")
+    func testMissesStoppedShortDoNotReset() {
+        let suggestion = engine.suggest(input(
+            targets: targets(min: 8, max: 12, count: 2),
+            history: [
+                sets([(60, 7, 8), (60, 7, 8)]),
+                sets([(60, 7, 8), (60, 6, 8)])
+            ]
+        ))
+
+        #expect(suggestion.rationale == .hold)
     }
 
     /// The earlier misses were at a lighter weight, so they are not the same failure repeating —
@@ -241,6 +291,54 @@ struct ProgressionEngineTests {
     }
 
     // MARK: - Effort
+
+    /// With no RPE logged, reaching the top once is not enough: it has to happen on two sessions
+    /// running at this weight before weight goes on.
+    @Test("Test Without An RPE The Top Must Be Reached Twice")
+    func testWithoutAnRPETheTopMustBeReachedTwice() {
+        let once = engine.suggest(input(
+            targets: targets(min: 8, max: 12, count: 2),
+            history: [sets([(60, 12, nil), (60, 12, nil)]), sets([(60, 11, nil), (60, 10, nil)])]
+        ))
+        #expect(once.rationale == .addReps)
+        #expect(once.sets.map(\.weightKg) == [60, 60])
+
+        let twice = engine.suggest(input(
+            targets: targets(min: 8, max: 12, count: 2),
+            history: [sets([(60, 12, nil), (60, 12, nil)]), sets([(60, 12, nil), (60, 12, nil)])]
+        ))
+        #expect(twice.rationale == .progressWeight)
+        #expect(twice.sets.map(\.weightKg) == [62.5, 62.5])
+
+        // Reaching the top at a lighter weight last time is not this weight's second time.
+        let lighter = engine.suggest(input(
+            targets: targets(min: 8, max: 12, count: 1),
+            history: [sets([(60, 12, nil)]), sets([(57.5, 12, nil)])]
+        ))
+        #expect(lighter.rationale == .addReps)
+    }
+
+    /// A compound lift with no RIR target is held to one rep in reserve: RPE 10 at the top of the
+    /// range does not earn weight, RPE 9.5 does.
+    @Test("Test A Compound Lift Without A Target Needs A Rep In Reserve")
+    func testACompoundLiftNeedsARepInReserve() {
+        func suggestion(rpe: Double, type: ExerciseType?) -> ProgressionSuggestion {
+            engine.suggest(ProgressionInput(
+                trackingMode: .weightReps,
+                setTargets: targets(min: 8, max: 12, count: 1),
+                history: [ProgressionHistorySession(workingSets: sets([(60, 12, rpe)]))],
+                adjustmentMode: .weightFirst,
+                roundWeight: roundToHalfKg,
+                minimumIncrementKg: 2.5,
+                exerciseType: type
+            ))
+        }
+
+        #expect(suggestion(rpe: 10, type: .compoundUpper).rationale == .addReps)
+        #expect(suggestion(rpe: 9.5, type: .compoundUpper).rationale == .progressWeight)
+        #expect(suggestion(rpe: 10, type: .isolationUpper).rationale == .progressWeight)
+        #expect(suggestion(rpe: 10, type: nil).rationale == .progressWeight)
+    }
 
     /// The top of the range was reached, but at an RPE harder than the two reps in reserve the
     /// target asked for. Reps rather than weight until it comes back down.
@@ -272,12 +370,52 @@ struct ProgressionEngineTests {
     func testRoundingThatSwallowsTheIncrementAddsASecondOne() {
         let suggestion = engine.suggest(input(
             targets: targets(min: 8, max: 12, count: 1),
-            history: [sets([(60, 12, nil)])],
+            history: [sets([(60, 12, 8)])],
             round: roundToFiveKgDown
         ))
 
         #expect(suggestion.rationale == .progressWeight)
         #expect(suggestion.sets == [SuggestedSet(weightKg: 65, reps: 8)])
+    }
+
+    /// The step is a share of the working weight by exercise type: 5 % on a lower-body compound,
+    /// so 140 kg goes to 147 kg rather than 142.5 kg.
+    @Test("Test The Step Is A Share Of The Working Weight")
+    func testTheStepIsAShareOfTheWorkingWeight() {
+        let squat = engine.suggest(ProgressionInput(
+            trackingMode: .weightReps,
+            setTargets: targets(min: 5, max: 8, count: 1),
+            history: [ProgressionHistorySession(workingSets: sets([(140, 8, 8)]))],
+            adjustmentMode: .weightFirst,
+            roundWeight: roundToHalfKg,
+            minimumIncrementKg: 2.5,
+            exerciseType: .compoundLower
+        ))
+
+        #expect(squat.sets == [SuggestedSet(weightKg: 147, reps: 5)])
+    }
+
+    /// 2 kg on a 12 kg lateral raise is a 17 % jump, more than the 10 % allowed: a rep more
+    /// instead, until the reps done carry 14 kg for 8 (15 reps at 12 kg, by Epley).
+    @Test("Test A Step Too Big For The Weight Adds A Rep Instead")
+    func testAStepTooBigAddsARepInstead() {
+        func suggestion(reps: Int) -> ProgressionSuggestion {
+            engine.suggest(ProgressionInput(
+                trackingMode: .weightReps,
+                setTargets: targets(min: 8, max: 12, count: 1),
+                history: [ProgressionHistorySession(workingSets: sets([(12, reps, 8)]))],
+                adjustmentMode: .weightFirst,
+                roundWeight: { ($0 / 2).rounded() * 2 },
+                minimumIncrementKg: 2,
+                exerciseType: .isolationUpper
+            ))
+        }
+
+        #expect(suggestion(reps: 12).rationale == .addReps)
+        #expect(suggestion(reps: 12).sets == [SuggestedSet(weightKg: 12, reps: 13)])
+        #expect(suggestion(reps: 14).sets == [SuggestedSet(weightKg: 12, reps: 15)])
+        #expect(suggestion(reps: 15).rationale == .progressWeight)
+        #expect(suggestion(reps: 15).sets == [SuggestedSet(weightKg: 14, reps: 8)])
     }
 
     /// Each set progresses from its own reference set, so a session logged with descending
@@ -286,7 +424,7 @@ struct ProgressionEngineTests {
     func testEachSetProgressesFromItsOwnReference() {
         let suggestion = engine.suggest(input(
             targets: targets(min: 8, max: 12, count: 3),
-            history: [sets([(100, 12, nil), (90, 12, nil), (80, 12, nil)])]
+            history: [sets([(100, 12, 8), (90, 12, 8), (80, 12, 8)])]
         ))
 
         #expect(suggestion.sets.map(\.weightKg) == [102.5, 92.5, 82.5])
@@ -301,7 +439,7 @@ struct ProgressionEngineTests {
 
         let suggestion = engine.suggest(input(
             targets: setTargets,
-            history: [sets([(60, 12, nil), (60, 12, nil), (60, 9, nil)])]
+            history: [sets([(60, 12, 8), (60, 12, 8), (60, 9, 8)])]
         ))
 
         #expect(suggestion.rationale == .progressWeight)
@@ -320,7 +458,7 @@ struct ProgressionEngineTests {
 
         let suggestion = engine.suggest(input(
             targets: setTargets,
-            history: [sets([(60, 12, nil), (60, 12, nil), (60, 9, nil)])]
+            history: [sets([(60, 12, 8), (60, 12, 8), (60, 9, 8)])]
         ))
 
         #expect(suggestion.rationale == .progressWeight)
@@ -338,7 +476,7 @@ struct ProgressionEngineTests {
 
         let suggestion = engine.suggest(input(
             targets: setTargets,
-            history: [sets([(60, 12, nil), (60, 8, nil), (60, 8, nil)])]
+            history: [sets([(60, 12, 8), (60, 8, 8), (60, 8, 8)])]
         ))
 
         #expect(suggestion.rationale == .progressWeight)
@@ -354,7 +492,7 @@ struct ProgressionEngineTests {
         let suggestion = engine.suggest(input(
             mode: .repsOnly,
             targets: targets(min: 8, max: 12, count: 3),
-            history: [sets([(nil, 12, nil), (nil, 12, nil), (nil, 12, nil)])]
+            history: [sets([(nil, 12, 8), (nil, 12, 8), (nil, 12, 8)])]
         ))
 
         #expect(suggestion.rationale == .progressWeight)

@@ -42,6 +42,8 @@ struct CalorieDistributionView: View {
                         presenter.onDistributionSelected(distribution)
                     }
                 }
+            } header: {
+                MethodInfoHeader(title: "Distribution", info: .calorieCycling)
             }
         }
         .onAppear { presenter.onViewAppear(isFromSettings: delegate.isFromSettings) }

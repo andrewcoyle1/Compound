@@ -17,6 +17,8 @@ class ExpenditureDetailPresenter {
 
     private(set) var cachedEntries: [ExpenditureDetailEntry] = []
     private(set) var cachedTimeSeries: [TimeSeries] = []
+    /// Today's estimate, for the interval and confidence above the list.
+    private(set) var currentEstimate: ExpenditureEstimate?
 
     init(interactor: ExpenditureDetailInteractor, router: ExpenditureDetailRouter) {
         self.interactor = interactor
@@ -40,6 +42,7 @@ class ExpenditureDetailPresenter {
     /// flat line, which is the honest picture of what the app knows about them.
     private func rebuildCaches() {
         let history = interactor.expenditureHistory.suffix(90)
+        currentEstimate = history.last
         guard !history.isEmpty else {
             rebuildFlatCaches(kcal: interactor.estimateTDEE(user: interactor.currentUser))
             return
@@ -89,6 +92,22 @@ extension ExpenditureDetailPresenter: @MainActor MetricDetailPresenter {
 
     var timeSeries: [TimeSeries] {
         cachedTimeSeries
+    }
+
+    var methodInfo: MethodInfo? {
+        .adaptiveExpenditure
+    }
+
+    /// Today's figure with its 80% interval and confidence, or that it is still calibrating.
+    var summarySection: AnyView? {
+        guard let currentEstimate else { return nil }
+        return AnyView(
+            Section {
+                ExpenditureEstimateSummary(estimate: currentEstimate)
+            } header: {
+                Text("Today")
+            }
+        )
     }
 
     var configuration: MetricConfiguration {

@@ -89,6 +89,8 @@ struct WeightRateView: View {
             if let warning = presenter.rateWarningText(delegate: delegate) {
                 InlineMessage(.warning, warning)
             }
+        } header: {
+            MethodInfoHeader(title: "Weekly Rate", info: .weightChangeRate)
         }
     }
 
@@ -103,7 +105,15 @@ struct WeightRateView: View {
     private var additionalInfoSection: some View {
         Section {
             Text(presenter.estimatedCalorieTargetText(delegate: delegate))
+            if let capText = presenter.deficitCapText(delegate: delegate) {
+                Text(capText)
+            }
             Text(presenter.estimatedEndDateText(delegate: delegate))
+            if let stepText = presenter.targetStepText(delegate: delegate) {
+                Text(stepText)
+            }
+        } header: {
+            MethodInfoHeader(title: "Target and Timeline", info: .goalTimeline)
         }
         .font(.callout)
         .foregroundStyle(.secondary)

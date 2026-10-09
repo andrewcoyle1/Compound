@@ -392,6 +392,7 @@ private extension AnalyticsView {
                 title: String(localized: "Muscle Groups"),
                 onActionPressed: { presenter.onSeeAllMuscleGroupsPressed() }
             )
+            .methodInfo(.weeklyHardSets)
         }
     }
 
@@ -426,6 +427,7 @@ private extension AnalyticsView {
                 title: String(localized: "Exercises"),
                 onActionPressed: { presenter.onSeeAllExercisesPressed() }
             )
+            .methodInfo(.estimatedOneRepMax)
         }
     }
 

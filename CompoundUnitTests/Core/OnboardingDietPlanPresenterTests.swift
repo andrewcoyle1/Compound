@@ -138,9 +138,9 @@ struct OnboardingDietPlanMathTests {
         #expect(abs(flatTotal - variedTotal) <= 4)
     }
 
-    /// The higher days are the training days, and there are three of them against four lower.
-    @Test("Test A Varied Week Has Three Higher Days")
-    func testAVariedWeekHasThreeHigherDays() {
+    /// One higher day per training day in the program: four training days, four higher days.
+    @Test("Test A Varied Week Has One Higher Day Per Training Day")
+    func testAVariedWeekHasOneHigherDayPerTrainingDay() {
         let plan = manager().computeDietPlan(
             user: dietPlanUser(),
             delegate: dietPlanDelegate(calorieDistribution: .varied),
@@ -148,8 +148,20 @@ struct OnboardingDietPlanMathTests {
         )
 
         let highest = plan.days.map(\.calories).max() ?? 0
-        #expect(plan.days.filter { $0.calories == highest }.count == 3)
+        #expect(plan.days.filter { $0.calories == highest }.count == 4)
         #expect(highest > plan.tdeeEstimate)
+    }
+
+    /// A program that trains every day has no rest day to move calories from, so the week is flat.
+    @Test("Test Training Every Day Leaves A Flat Week")
+    func testTrainingEveryDayLeavesAFlatWeek() {
+        let plan = manager().computeDietPlan(
+            user: dietPlanUser(),
+            delegate: dietPlanDelegate(calorieDistribution: .varied),
+            mesocycle: mesocycle(trainingDays: 7)
+        )
+
+        #expect(Set(plan.days.map(\.calories)).count == 1)
     }
 
     /// Asking to vary the week with no training mesocycle to vary it around leaves a flat week
@@ -165,12 +177,16 @@ struct OnboardingDietPlanMathTests {
     }
 
     /// The whole point of the floor: a small, old, sedentary user whose estimate lands under it
-    /// is fed the floor, not the estimate. The estimate is still reported honestly alongside.
-    @Test("Test A Target Below The Floor Is Raised To The Floor")
-    func testATargetBelowTheFloorIsRaisedToTheFloor() {
+    /// is fed the floor, not the estimate. The estimate is still reported honestly alongside. The
+    /// floor is set by sex: 1,500 for men, 1,200 for women, 1,350 when not given (AHA/ACC/TOS).
+    @Test("Test A Target Below The Floor Is Raised To The Floor For That Sex", arguments: [
+        (Gender?.some(.male), 1500.0), (Gender?.some(.female), 1200.0), (Gender?.some(.preferNotToSay), 1350.0), (Gender?.none, 1350.0)
+    ])
+    func testATargetBelowTheFloorIsRaisedToTheFloor(gender: Gender?, floor: Double) {
         let frail = dietPlanUser(
             weightKilograms: 30,
             heightCentimeters: 120,
+            gender: gender,
             exerciseFrequency: .never,
             dailyActivity: .sedentary,
             yearOfBirth: 1930
@@ -178,26 +194,16 @@ struct OnboardingDietPlanMathTests {
 
         let plan = manager().computeDietPlan(user: frail, delegate: dietPlanDelegate(calorieFloor: .standard))
 
-        #expect(plan.tdeeEstimate < 1200)
-        #expect(plan.days.allSatisfy { $0.calories == 1200 })
+        #expect(plan.tdeeEstimate < floor)
+        #expect(plan.days.allSatisfy { $0.calories == floor })
     }
 
-    /// Choosing the lower floor lets the same user's plan sit below 1200 — that is what the
-    /// option is for — but never below its own limit either.
-    @Test("Test The Low Floor Lets The Target Sit Lower")
-    func testTheLowFloorLetsTheTargetSitLower() {
-        let frail = dietPlanUser(
-            weightKilograms: 30,
-            heightCentimeters: 120,
-            exerciseFrequency: .never,
-            dailyActivity: .sedentary,
-            yearOfBirth: 1930
-        )
-
-        let plan = manager().computeDietPlan(user: frail, delegate: dietPlanDelegate(calorieFloor: .low))
-
-        #expect(plan.days.allSatisfy { $0.calories >= 800 })
-        #expect(plan.days.allSatisfy { $0.calories < 1200 })
+    /// The 800 kcal floor is gone: very-low-calorie diets are for medical supervision. A plan saved
+    /// with it reads back as the standard floor.
+    @Test("Test There Is No Floor Below The Standard One")
+    func testThereIsNoFloorBelowTheStandardOne() {
+        #expect(CalorieFloor.allCases == [.standard])
+        #expect((CalorieFloor(rawValue: "low") ?? .standard) == .standard)
     }
 
     /// Protein is grams per kilogram of bodyweight, and the four levels have to be ordered — a
@@ -270,7 +276,7 @@ struct OnboardingDietPlanMathTests {
         for diet in PreferredDiet.allCases {
             let plan = manager().computeDietPlan(
                 user: dietPlanUser(weightKilograms: 140),
-                delegate: dietPlanDelegate(preferredDiet: diet, calorieFloor: .low, proteinIntake: .veryHigh)
+                delegate: dietPlanDelegate(preferredDiet: diet, calorieFloor: .standard, proteinIntake: .veryHigh)
             )
 
             #expect(plan.days.allSatisfy { $0.proteinGrams >= 0 && $0.carbGrams >= 0 && $0.fatGrams >= 0 })
@@ -349,7 +355,7 @@ struct OnboardingDietPlanMathTests {
     private func isFiniteAndSane(_ day: DailyMacroTarget) -> Bool {
         let figures = [day.calories, day.proteinGrams, day.carbGrams, day.fatGrams]
         guard figures.allSatisfy({ $0.isFinite && $0 >= 0 }) else { return false }
-        return day.calories >= 800 && day.proteinGrams > 0
+        return day.calories >= 1200 && day.proteinGrams > 0
     }
 
     /// A profile with nothing filled in reaches here when the plan is rebuilt from settings by a
@@ -374,7 +380,7 @@ struct OnboardingDietPlanMathTests {
             user: dietPlanUser(),
             delegate: dietPlanDelegate(
                 preferredDiet: .keto,
-                calorieFloor: .low,
+                calorieFloor: .standard,
                 calorieDistribution: .varied,
                 proteinIntake: .high
             ),
@@ -382,7 +388,7 @@ struct OnboardingDietPlanMathTests {
         )
 
         #expect(plan.preferredDiet == PreferredDiet.keto.rawValue)
-        #expect(plan.calorieFloor == CalorieFloor.low.rawValue)
+        #expect(plan.calorieFloor == CalorieFloor.standard.rawValue)
         #expect(plan.calorieDistribution == CalorieDistribution.varied.rawValue)
         #expect(plan.proteinIntake == ProteinIntake.high.rawValue)
         #expect(plan.trainingType == "Upper/Lower")
@@ -426,6 +432,9 @@ struct OnboardingDietPlanScreenTests {
             computedFor.append(user)
             return plan
         }
+
+        var restingKcal: Double = 1750
+        func estimateRestingKcal(user: UserModel?) -> Double { restingKcal }
 
         func saveDietPlan(_ plan: DietPlan) async throws {
             if let saveError {
@@ -483,6 +492,19 @@ struct OnboardingDietPlanScreenTests {
 
         #expect(screen.interactor.computedFor.first??.userId == "user-1")
         #expect(screen.presenter.plan?.planId == "plan-1")
+    }
+
+    /// A day under the resting estimate is allowed above the floor, but the screen says so.
+    @Test("Test A Target Below Resting Calories Is Flagged")
+    func testATargetBelowRestingCaloriesIsFlagged() {
+        let screen = makeScreen()
+
+        screen.presenter.createPlan(delegate: dietPlanDelegate())
+        #expect(screen.presenter.belowRestingWarningText == nil)
+
+        screen.interactor.restingKcal = 3000
+        screen.presenter.createPlan(delegate: dietPlanDelegate())
+        #expect(screen.presenter.belowRestingWarningText != nil)
     }
 
     /// Nothing computed yet means nothing to save, and certainly nothing to move on from.

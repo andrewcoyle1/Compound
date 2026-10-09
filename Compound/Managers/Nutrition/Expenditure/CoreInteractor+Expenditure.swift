@@ -21,7 +21,8 @@ extension CoreInteractor {
             priorKcal: estimateTDEE(user: currentUser),
             settings: nutritionStrategySettings,
             today: expenditureToday,
-            calendar: .current
+            calendar: .current,
+            kcalPerKg: expenditureKcalPerKg
         )
     }
 
@@ -32,9 +33,33 @@ extension CoreInteractor {
             priorKcal: estimateTDEE(user: currentUser),
             settings: nutritionStrategySettings,
             today: expenditureToday,
-            calendar: .current
+            calendar: .current,
+            kcalPerKg: expenditureKcalPerKg
         )
     }
+
+    /// The energy in a kilogram of this user's weight change (`EnergyDensity`): Forbes-partitioned
+    /// from their latest weight and a body fat reading from the last 90 days, else 7,700 kcal.
+    ///
+    /// The app cannot tell a DEXA scan from a bathroom-scale reading, so "recent" is the only trust
+    /// test it can apply; 90 days is a design choice. Within the closed loop the figure largely
+    /// cancels out of the target, so an imperfect reading mostly moves the displayed estimate.
+    var expenditureKcalPerKg: Double {
+        let live = bodyMeasurements.filter { $0.deletedAt == nil }
+        let cutoff = Calendar.current.date(byAdding: .day, value: -Self.trustedBodyFatDays, to: Date()) ?? .distantPast
+        let bodyFat = live
+            .filter { $0.date >= cutoff && ($0.bodyFatPercentage ?? 0) > 0 }
+            .max { $0.date < $1.date }?
+            .bodyFatPercentage
+        let weight = live
+            .filter { ($0.weightKg ?? 0) > 0 }
+            .max { $0.date < $1.date }?
+            .weightKg ?? currentUser?.submittedWeightKilograms
+        return EnergyDensity.kcalPerKg(weightKg: weight, bodyFatPercent: bodyFat)
+    }
+
+    /// How old a body fat reading may be and still set the energy density.
+    static let trustedBodyFatDays = 90
 
     /// The day the estimate is for — which during an open logging break is the day the break
     /// began.
@@ -70,7 +95,23 @@ extension CoreInteractor {
             plan: currentDietPlan,
             goal: currentGoal,
             settings: nutritionStrategySettings,
-            dismissedKcal: dismissedTargetProposalKcal
+            dismissedKcal: dismissedTargetProposalKcal,
+            kcalPerKg: expenditureKcalPerKg,
+            gender: currentUser?.submittedGender
+        )
+    }
+
+    /// Set instead of a proposal when the target would come down but the user has been eating
+    /// well above it: the honest message is about adherence, not a lower number.
+    var adherenceNote: AdherenceNote? {
+        guard openLoggingBreak == nil else { return nil }
+        return AdherenceNote.make(
+            estimate: currentExpenditure,
+            plan: currentDietPlan,
+            goal: currentGoal,
+            settings: nutritionStrategySettings,
+            kcalPerKg: expenditureKcalPerKg,
+            gender: currentUser?.submittedGender
         )
     }
 

@@ -107,13 +107,13 @@ enum ProteinIntake: String, CaseIterable, Identifiable {
     var detailedDescription: String {
         switch self {
         case .low:
-            return String(localized: "On the low side of the optimal range.")
+            return String(localized: "1.6 g per kg a day: where the benefit for muscle levels off for most people.")
         case .moderate:
-            return String(localized: "In the middle of the optimal range.")
+            return String(localized: "2.0 g per kg a day: a margin above that for people who train hard.")
         case .high:
-            return String(localized: "On the high end of the optimal range.")
+            return String(localized: "2.2 g per kg a day: the top of the range studies support for building muscle.")
         case .veryHigh:
-            return String(localized: "Highest recommended intake.")
+            return String(localized: "2.6 g per kg a day: for lean lifters cutting hard. No guideline recommends this much for everyone.")
         }
     }
 }

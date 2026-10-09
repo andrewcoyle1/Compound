@@ -49,7 +49,7 @@ class WeightTrendPresenter {
             return (date: entry.date, value: weightKg)
         }
 
-        let trendPairs = WeightTrendCalculator.exponentialMovingAverage(data: sortedPairs)
+        let trendPairs = WeightTrendCalculator.trend(data: sortedPairs)
 
         cachedTrendEntries = zip(sortedEntries, trendPairs).map { entry, pair in
             WeightTrendEntry(id: entry.id, date: pair.date, trendValue: pair.value)
@@ -79,6 +79,10 @@ extension WeightTrendPresenter: @MainActor MetricDetailPresenter {
 
     var timeSeries: [TimeSeries] {
         cachedTimeSeries
+    }
+
+    var methodInfo: MethodInfo? {
+        .weightTrend
     }
 
     /// Weight is stored in kilograms. The smoothing runs in kilograms and converts afterwards —

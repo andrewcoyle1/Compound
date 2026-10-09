@@ -106,15 +106,15 @@ enum ActivityLevel: String, CaseIterable, Codable {
     var detailDescription: String {
         switch self {
         case .sedentary:
-            return String(localized: "Desk job, minimal walking, mostly sitting")
+            return String(localized: "Desk job, minimal walking, little or no exercise")
         case .light:
-            return String(localized: "Light walking, some daily activities, occasional stairs")
+            return String(localized: "Light walking and some daily activity, or a desk job with a few workouts a week")
         case .moderate:
-            return String(localized: "Regular walking, standing work, daily movement")
+            return String(localized: "Regular walking or standing work, with regular workouts")
         case .active:
-            return String(localized: "Active lifestyle, frequent movement, manual work")
+            return String(localized: "Active lifestyle or manual work, plus training")
         case .veryActive:
-            return String(localized: "Highly active, constant movement, physically demanding")
+            return String(localized: "Physically demanding work or hard training most days")
         }
     }
 }

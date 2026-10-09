@@ -12,6 +12,7 @@ protocol MuscleGroupDetailInteractor: GlobalInteractor {
     var auth: UserAuthInfo? { get }
     var workoutSessions: [WorkoutSessionModel] { get }
     var allExercises: [ExerciseModel] { get }
+    var currentUser: UserModel? { get }
 }
 
 extension CoreInteractor: MuscleGroupDetailInteractor { }

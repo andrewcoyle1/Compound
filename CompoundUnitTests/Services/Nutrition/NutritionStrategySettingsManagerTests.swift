@@ -82,10 +82,10 @@ struct NutritionStrategySettingsManagerTests {
         try await manager.signIn(userId: "user-1", isNewUser: true)
 
         var settings = manager.nutritionStrategySettings
-        settings.bmrEquation = .katchMcArdle
+        settings.bmrEquation = .cunningham
         try await manager.saveSettings(settings)
 
-        #expect(await TestManagers.eventually { manager.nutritionStrategySettings.bmrEquation == .katchMcArdle })
+        #expect(await TestManagers.eventually { manager.nutritionStrategySettings.bmrEquation == .cunningham })
     }
 
     /// A date is the one non-primitive field in this document, so it is the one most likely to be
@@ -125,8 +125,8 @@ struct NutritionStrategySettingsManagerTests {
 
     /// The saved pair is what the estimate actually runs, so the manager's round trip has to
     /// preserve the combination, not just each field.
-    @Test("Test The Saved Pair Still Resolves To Katch McArdle")
-    func testTheSavedPairStillResolvesToKatchMcArdle() async throws {
+    @Test("Test The Saved Pair Still Resolves To Cunningham")
+    func testTheSavedPairStillResolvesToCunningham() async throws {
         let manager = TestManagers.nutritionStrategySettingsManager(stored: nil)
         try await manager.signIn(userId: "user-1", isNewUser: true)
 
@@ -138,7 +138,7 @@ struct NutritionStrategySettingsManagerTests {
         #expect(await TestManagers.eventually {
             manager.nutritionStrategySettings.estimationMethod == .bodyFatAware
         })
-        #expect(manager.nutritionStrategySettings.resolvedBMREquation(bodyFatPercentage: 18) == .katchMcArdle)
+        #expect(manager.nutritionStrategySettings.resolvedBMREquation(bodyFatPercentage: 18) == .cunningham)
         #expect(manager.nutritionStrategySettings.resolvedBMREquation(bodyFatPercentage: nil) == .mifflinStJeor)
     }
 

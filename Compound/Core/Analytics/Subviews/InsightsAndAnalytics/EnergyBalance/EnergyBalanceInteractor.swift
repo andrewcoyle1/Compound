@@ -14,6 +14,7 @@ protocol EnergyBalanceInteractor: GlobalInteractor {
     func getDailyTotals(dayKey: String) throws -> DailyMacroTarget
     func getDailyTotals(startDayKey: String, endDayKey: String) throws -> [(dayKey: String, totals: DailyMacroTarget)]
     func estimateTDEE(user: UserModel?) -> Double
+    var expenditureHistory: [ExpenditureEstimate] { get }
 }
 
 extension CoreInteractor: EnergyBalanceInteractor { }

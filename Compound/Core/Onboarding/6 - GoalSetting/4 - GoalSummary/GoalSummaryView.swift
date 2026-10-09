@@ -102,7 +102,7 @@ struct GoalSummaryView: View {
                 LabeledContent("Weekly Rate", value: presenter.weeklyRateText(delegate: delegate))
             }
         } header: {
-            Text("Weight Details")
+            MethodInfoHeader(title: "Weight Details", info: .weightChangeRate)
         }
         .font(.rowDetail)
     }
@@ -113,14 +113,14 @@ struct GoalSummaryView: View {
                 summaryRow(
                     title: "Estimated Timeline",
                     value: Text(presenter.estimatedTimelineText(delegate: delegate)),
-                    detail: Text("Based on your selected rate of \(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit)) per week"),
+                    detail: Text("Based on your selected rate of \(presenter.formatWeight(delegate.weightChangeRate, unit: presenter.weightUnit)) per week. Your calorie target will step down as you lose, or up as you gain, to keep that rate: about 24 kcal a day per kg (11 per lb)."),
                     systemImage: Symbol.calendar
                 )
             } else {
                 summaryRow(title: "Estimated Timeline", value: Text("Maintaining current weight"), detail: nil, systemImage: Symbol.calendar)
             }
         } header: {
-            Text("Timeline")
+            MethodInfoHeader(title: "Timeline", info: .goalTimeline)
         }
     }
 

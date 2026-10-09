@@ -104,7 +104,8 @@ struct ProgressionPlanner {
                 adjustmentMode: adjustmentMode,
                 roundWeight: rule.round,
                 minimumIncrementKg: rule.minimumIncrementKg,
-                amrap: amrap
+                amrap: amrap,
+                exerciseType: context.exercise?.type
             )
             result[context.historyKey] = engine.suggest(input)
         }

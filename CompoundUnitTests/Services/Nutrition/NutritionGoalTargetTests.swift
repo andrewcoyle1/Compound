@@ -47,6 +47,15 @@ struct NutritionGoalTargetTests {
         #expect(NutritionManager.goalTarget(expenditureKcal: 2_500, goal: goal(target: 75, status: .abandoned)) == 2_500)
     }
 
+    /// A deficit is capped at a quarter of expenditure, so the fastest rate on a small expenditure
+    /// cannot ask for a crash diet. A kilogram a week is 1,100 kcal a day; a quarter of 1,800 is 450.
+    /// A surplus is not capped.
+    @Test("Test A Deficit Is Capped At A Quarter Of Expenditure")
+    func testDeficitCap() {
+        #expect(NutritionManager.goalTarget(expenditureKcal: 1_800, goal: goal(target: 70, rate: 1)) == 1_350)
+        #expect(NutritionManager.goalTarget(expenditureKcal: 1_800, goal: goal(target: 95, rate: 1)) == 2_900)
+    }
+
     @Test("Test A Plan Built With A Goal Eats To Its Pace")
     func testPlanUsesGoal() {
         let manager = TestManagers.nutritionManager()

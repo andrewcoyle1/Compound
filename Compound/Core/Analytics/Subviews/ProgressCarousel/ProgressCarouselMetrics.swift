@@ -55,7 +55,8 @@ enum ProgressCarouselMetrics {
         case volume
         /// The most reps in one working set.
         case reps
-        /// The best estimated one-rep max, by the Epley formula the exercise screens use.
+        /// The best estimated one-rep max, by the estimate the exercise screens use
+        /// (`ExerciseOneRMAggregator.estimated1RM`).
         case oneRepMax
     }
 
@@ -101,10 +102,7 @@ enum ProgressCarouselMetrics {
         case .reps:
             return sets.compactMap(\.reps).max().map(Double.init)
         case .oneRepMax:
-            return sets.compactMap { set -> Double? in
-                guard let weightKg = set.weightKg, weightKg > 0 else { return nil }
-                return ExerciseOneRMAggregator.estimated1RM(weightKg: weightKg, reps: max(1, set.reps ?? 1))
-            }.max()
+            return sets.compactMap { ExerciseOneRMAggregator.estimated1RM(of: $0) }.max()
         }
     }
 

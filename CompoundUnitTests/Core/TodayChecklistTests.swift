@@ -200,6 +200,36 @@ struct TodayChecklistTests {
         #expect(screen.presenter.stepGoal == 10_000)
     }
 
+    /// 8,000 under 60 and 7,000 from 60 (Paluch 2022; Ding 2025), and only as a default.
+    @Test("Test The Default Step Goal Follows Age")
+    func testTheDefaultStepGoalFollowsAge() throws {
+        let calendar = Calendar(identifier: .gregorian)
+        let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 10, day: 9)))
+        func born(_ year: Int, _ month: Int, _ day: Int) -> Date? {
+            calendar.date(from: DateComponents(year: year, month: month, day: day))
+        }
+        #expect(TodayChecklist.ageAdjustedStepGoal(dateOfBirth: nil, now: now, calendar: calendar) == 8_000)
+        #expect(TodayChecklist.ageAdjustedStepGoal(dateOfBirth: born(1990, 1, 1), now: now, calendar: calendar) == 8_000)
+        #expect(TodayChecklist.ageAdjustedStepGoal(dateOfBirth: born(1966, 10, 10), now: now, calendar: calendar) == 8_000)
+        #expect(TodayChecklist.ageAdjustedStepGoal(dateOfBirth: born(1966, 10, 9), now: now, calendar: calendar) == 7_000)
+    }
+
+    @Test("Test An Older User's Chosen Step Goal Is Kept")
+    func testAnOlderUsersChosenStepGoalIsKept() async {
+        let screen = makeScreen()
+        screen.interactor.currentUser = UserModel(
+            userId: "me",
+            submittedDateOfBirth: Calendar.current.date(byAdding: .year, value: -70, to: .now)
+        )
+        #expect(screen.presenter.stepGoal == TodayChecklist.olderAdultStepGoal)
+
+        // Choosing the under-60 default is a choice, so it is saved rather than taken as no change.
+        screen.presenter.onStepGoalSelected(8_000)
+
+        #expect(await TestManagers.eventually { screen.interactor.savedAnalyticsSettings.last?.dailyStepGoal == 8_000 })
+        #expect(screen.presenter.stepGoal == 8_000)
+    }
+
     /// Celebrated once a day, however often Today redraws a completed day.
     @Test("Test A Completed Day Is Celebrated Once")
     func testDayCompleteOnce() {

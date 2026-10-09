@@ -135,7 +135,7 @@ enum CalorieDistribution: String, CaseIterable, Identifiable {
         case .even:
             return String(localized: "Distribute calories evenly across all days of the week.")
         case .varied:
-            return String(localized: "Distribute calories to increase energy on training days.")
+            return String(localized: "One higher day for each training day in your program, spread through the week, and lower days in between. The weekly total stays the same.")
         }
     }
 }

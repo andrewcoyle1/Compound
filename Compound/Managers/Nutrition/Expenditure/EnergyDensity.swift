@@ -9,7 +9,7 @@
 //  With a body fat percentage, the change is split between fat and fat-free mass by Forbes' curve
 //  as Hall formulated it: the leaner the person, the more of each kilogram is lean tissue, which
 //  holds far less energy. Without one it falls back to the conventional 7,700 kcal/kg, which is the
-//  Forbes figure for roughly 25–30 kg of fat mass.
+//  Forbes figure for about 35 kg of fat mass (ρ(35) ≈ 7,690).
 //
 //  Sources: Forbes 1987 (R27) and Hall 2008 (R24) for the partition and the two densities;
 //  Wishnofsky 1958 (R23) for the 7,700 convention. See MethodInfo.energyDensity.

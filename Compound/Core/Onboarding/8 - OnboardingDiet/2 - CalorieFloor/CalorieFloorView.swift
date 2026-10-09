@@ -35,6 +35,10 @@ struct CalorieFloorView: View {
                         presenter.onFloorSelected(floor)
                     }
                 }
+            } header: {
+                MethodInfoHeader(title: "Calorie Floor", info: .calorieFloor)
+            } footer: {
+                Text("Diets of 800 calories or less are meant to be followed under medical supervision, so Compound doesn't offer a lower floor.")
             }
         }
         .onAppear { presenter.onViewAppear(isFromSettings: delegate.isFromSettings) }

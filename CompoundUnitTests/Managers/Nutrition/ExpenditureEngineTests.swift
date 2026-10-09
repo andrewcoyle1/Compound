@@ -10,7 +10,8 @@ import Foundation
 /// The adaptive expenditure engine, tested the way it was built to be tested: a fixed calendar, a
 /// fixed today, samples handed in as data, and no manager anywhere near it.
 ///
-/// Every case here is one of the fifteen in `docs/specs/adaptive-expenditure.md` §6, in order.
+/// The cases follow `docs/specs/adaptive-expenditure.md` §6. Expected figures were worked out by
+/// running the same data through `functions/coach-maths.js`, the engine's JavaScript port.
 struct ExpenditureEngineTests {
 
     // MARK: - Fixtures
@@ -65,14 +66,16 @@ struct ExpenditureEngineTests {
     private func history(
         _ samples: [DailySample],
         settings: NutritionStrategySettings? = nil,
-        prior: Double? = nil
+        prior: Double? = nil,
+        kcalPerKg: Double = EnergyDensity.conventionalKcalPerKg
     ) -> [ExpenditureEstimate] {
         engine.history(
             samples: samples,
             priorKcal: prior ?? self.prior,
             settings: settings ?? self.settings(),
             today: today,
-            calendar: calendar
+            calendar: calendar,
+            kcalPerKg: kcalPerKg
         )
     }
 
@@ -92,17 +95,33 @@ struct ExpenditureEngineTests {
         #expect(result.first?.source == .prior)
         #expect(result.first?.isProvisional == true)
         #expect(result.first?.day == today)
+        #expect(result.first?.sdKcal == nil)
     }
 
-    // MARK: - 2. Below the minimum window
+    // MARK: - 2. Calibrating
 
-    @Test("Test Thirteen Days Of Perfect Data Is Still Provisional")
-    func testThirteenDaysOfPerfectDataIsStillProvisional() {
-        let result = history(maintenanceDays(13))
+    @Test("Test Twenty Days Of Perfect Data Is Still Calibrating")
+    func testTwentyDaysOfPerfectDataIsStillCalibrating() {
+        let result = history(maintenanceDays(20))
 
         #expect(result.last?.isProvisional == true)
         #expect(result.last?.source == .prior)
         #expect(result.last?.kcal == prior)
+        // The filter has been learning all along; it is only the figure shown that waits.
+        #expect(result.last?.sdKcal != nil)
+    }
+
+    /// 21 days of data and 14 weigh-ins, an SD under 200 kcal and 80% of the window logged: the
+    /// day all four first hold is the day the estimate switches from the formula.
+    @Test("Test The Estimate Calibrates On Day Twenty One")
+    func testTheEstimateCalibratesOnDayTwentyOne() throws {
+        let result = history(maintenanceDays(30))
+
+        #expect(result[20].isProvisional == true)
+        #expect(result[21].isProvisional == false)
+        #expect(result[21].source == .adaptive)
+        let deviation = try #require(result[21].sdKcal)
+        #expect(deviation < ExpenditureEngine.Constants.maxCalibratedSDKcal)
     }
 
     // MARK: - 3. Maintenance
@@ -117,6 +136,10 @@ struct ExpenditureEngineTests {
         #expect(abs(last.kcal - 2400) < 15)
         let weekly = try #require(last.weeklyTrendChangeKg)
         #expect(abs(weekly) < 0.01)
+        let deviation = try #require(last.sdKcal)
+        #expect(deviation < 120)
+        #expect(last.confidence == .high)
+        #expect(last.likelyRange != nil)
     }
 
     // MARK: - 4. Deficit
@@ -134,6 +157,17 @@ struct ExpenditureEngineTests {
         #expect(abs(last.kcal - 2550) < 40)
         let weekly = try #require(last.weeklyTrendChangeKg)
         #expect(abs(weekly - (-0.5)) < 0.05)
+        #expect(last.weeklyTrendChangeSDKg != nil)
+    }
+
+    /// The same loss priced at a lean person's energy density (`EnergyDensity`) reads as less spent.
+    @Test("Test A Leaner Energy Density Reads The Same Loss As Less Spent")
+    func testALeanerEnergyDensityReadsTheSameLossAsLessSpent() throws {
+        let samples = days(60, intake: { _ in 2000 }, weight: { index in 80 - 0.5 * Double(index) / 7 })
+        let last = try #require(history(samples, kcalPerKg: 6300).last)
+
+        // 2,000 + 0.5 · 6,300 / 7 = 2,450.
+        #expect(abs(last.kcal - 2450) < 40)
     }
 
     // MARK: - 5. Surplus
@@ -153,73 +187,136 @@ struct ExpenditureEngineTests {
         #expect(abs(weekly - 0.5) < 0.05)
     }
 
-    // MARK: - 6. Sparse logging
+    // MARK: - Noise
 
-    @Test("Test Fewer Than Half The Window's Days Logged Stays Provisional")
-    func testFewerThanHalfTheWindowsDaysLoggedStaysProvisional() {
-        let sparse = days(28, intake: { $0 < 10 ? 2400 : nil }, weight: { _ in 80 })
-        let enough = days(28, intake: { $0 < 15 ? 2400 : nil }, weight: { _ in 80 })
+    /// A deterministic Gaussian source, so the noisy case is the same every run.
+    private struct Gaussians {
+        var state: Int
+        mutating func uniform() -> Double {
+            state = (state * 16_807) % 2_147_483_647
+            return Double(state) / 2_147_483_647
+        }
+        mutating func next() -> Double {
+            let first = uniform()
+            let second = uniform()
+            return (-2 * log(first)).squareRoot() * cos(2 * Double.pi * second)
+        }
+    }
+
+    /// The filter's reason to exist: through realistic noise on both the scale and the food log, it
+    /// finds the true expenditure, and its own interval says how close it is.
+    @Test("Test The Filter Converges On The True Expenditure Through Noise")
+    func testTheFilterConvergesOnTheTrueExpenditureThroughNoise() throws {
+        var noise = Gaussians(state: 7)
+        // True expenditure 2,700: eating 2,200 ± 400 and losing 500/7700 kg a day; the scale reads
+        // 0.5% either side. The prior is 400 kcal low.
+        var samples: [DailySample] = []
+        for index in 0..<90 {
+            let intake = 2200 + 400 * noise.next()
+            let weight = 85 - (500.0 / 7700) * Double(index) + 0.005 * 85 * noise.next()
+            samples.append(DailySample(day: day(index, of: 90), intakeKcal: intake, weightKg: weight))
+        }
+        let last = try #require(history(samples, prior: 2300).last)
+        let deviation = try #require(last.sdKcal)
+
+        #expect(last.source == .adaptive)
+        #expect(deviation < 150)
+        #expect(abs(last.kcal - 2700) < 1.28 * deviation + 50)
+    }
+
+    // MARK: - 6. Logging
+
+    @Test("Test Under Eighty Percent Of The Window Logged Stays Calibrating")
+    func testUnderEightyPercentOfTheWindowLoggedStaysCalibrating() {
+        let sparse = days(28, intake: { $0 < 20 ? 2400 : nil }, weight: { _ in 80 })
+        let enough = days(28, intake: { $0 < 23 ? 2400 : nil }, weight: { _ in 80 })
 
         #expect(history(sparse).last?.isProvisional == true)
         #expect(history(enough).last?.isProvisional == false)
-        #expect(history(enough).last?.loggedDays == 15)
+        #expect(history(enough).last?.loggedDays == 23)
     }
 
-    // MARK: - 7. Weigh-in span
+    /// Weigh-ins alone tell the filter the slope, E − T, but never E and T apart. Someone who only
+    /// weighs in gets a trend and a rate, and the formula for expenditure.
+    @Test("Test Weigh-Ins Without Food Logs Give A Rate But Never Calibrate")
+    func testWeighInsWithoutFoodLogsGiveARateButNeverCalibrate() throws {
+        let result = history(days(60, intake: { _ in nil }, weight: { 80 - 0.05 * Double($0) }))
 
-    @Test("Test Weigh-Ins Must Span A Week Before The Estimate Adapts")
-    func testWeighInsMustSpanAWeekBeforeTheEstimateAdapts() {
-        let wideEnough = days(28, intake: { _ in 2400 }, weight: { $0 >= 20 ? 80 : nil })
-        let tooNarrow = days(28, intake: { _ in 2400 }, weight: { $0 >= 24 ? 80 : nil })
-
-        #expect(history(wideEnough).last?.isProvisional == false)
-        #expect(history(tooNarrow).last?.isProvisional == true)
+        #expect(result.allSatisfy { $0.isProvisional })
+        let weekly = try #require(result.last?.weeklyTrendChangeKg)
+        #expect(weekly < -0.2)
     }
 
-    // MARK: - 8. Outlier
+    /// Nothing logged and nothing weighed: the filter predicts through the days and its SD grows
+    /// every one of them. Nothing is imputed.
+    @Test("Test Days With No Data Only Widen The Uncertainty")
+    func testDaysWithNoDataOnlyWidenTheUncertainty() throws {
+        let silent = days(40, intake: { $0 >= 33 ? nil : 2400 }, weight: { $0 >= 33 ? nil : 80 })
+        let result = history(silent)
 
-    @Test("Test One Wild Weigh-In Barely Moves The Trend Or The Estimate")
-    func testOneWildWeighInBarelyMovesTheTrendOrTheEstimate() throws {
-        let samples = days(60, intake: { _ in 2400 }, weight: { $0 == 40 ? 95 : 80 })
-        let result = history(samples)
+        for index in 35...40 {
+            let previous = try #require(result[index - 1].sdKcal)
+            let current = try #require(result[index].sdKcal)
+            #expect(current > previous)
+        }
+        let logged = try #require(history(maintenanceDays(40)).last?.sdKcal)
+        let gap = try #require(result.last?.sdKcal)
+        #expect(gap > logged)
+    }
+
+    // MARK: - 7. Weigh-ins
+
+    @Test("Test Fewer Than Fourteen Weigh-Ins Stays Calibrating")
+    func testFewerThanFourteenWeighInsStaysCalibrating() {
+        let tooFew = days(28, intake: { _ in 2400 }, weight: { $0 >= 20 ? 80 : nil })
+        let enough = days(28, intake: { _ in 2400 }, weight: { _ in 80 })
+
+        #expect(history(tooFew).last?.isProvisional == true)
+        #expect(history(enough).last?.isProvisional == false)
+    }
+
+    // MARK: - 8. Outliers
+
+    /// 95 kg among 80s is more than max(3 kg, 4%) off the trend and the next weigh-in does not
+    /// agree, so it is held and then dropped: the trend does not move at all.
+    @Test("Test A Wild Weigh-In Is Held And Dropped")
+    func testAWildWeighInIsHeldAndDropped() throws {
+        let result = history(days(60, intake: { _ in 2400 }, weight: { $0 == 40 ? 95 : 80 }))
 
         // `trendWeightKg` on day D is the trend as at D - 1, so these two read days 39 and 40.
         let before = try #require(result[40].trendWeightKg)
         let after = try #require(result[41].trendWeightKg)
-        #expect(abs(after - before) < 0.25)
-
+        #expect(abs(after - before) < 0.01)
         let last = try #require(result.last)
         #expect(abs(last.kcal - 2400) < 20)
     }
 
+    /// 81.5 kg is within the gross-error band, so it counts — down-weighted, not clamped.
+    @Test("Test An Odd Weigh-In Is Down Weighted")
+    func testAnOddWeighInIsDownWeighted() throws {
+        let result = history(days(60, intake: { _ in 2400 }, weight: { $0 == 40 ? 81.5 : 80 }))
+
+        let before = try #require(result[40].trendWeightKg)
+        let after = try #require(result[41].trendWeightKg)
+        #expect(after > before)
+        #expect(after - before < 0.25)
+    }
+
     // MARK: - 9. Prior bound
 
-    @Test("Test Garbage Logging Cannot Push The Estimate Below The Prior Band")
-    func testGarbageLoggingCannotPushTheEstimateBelowThePriorBand() {
-        let result = history(days(60, intake: { _ in 200 }, weight: { _ in 80 }))
+    @Test("Test The Shown Figure Stays Inside The Prior Band")
+    func testTheShownFigureStaysInsideThePriorBand() {
+        let result = history(days(60, intake: { _ in 1300 }, weight: { _ in 80 }))
         let floor = prior * ExpenditureEngine.Constants.priorBoundLow
 
         #expect(result.allSatisfy { $0.kcal >= floor })
         #expect(result.last?.kcal == floor)
     }
 
-    // MARK: - 10. Daily step cap
-
-    @Test("Test The Running Estimate Moves At Most One Cap Per Day")
-    func testTheRunningEstimateMovesAtMostOneCapPerDay() throws {
-        // Flat weight, so the raw estimate is the mean intake: 1000 above the prior.
-        let result = history(maintenanceDays(20, intake: 3500))
-
-        #expect(result[13].kcal == prior)
-        #expect(result[13].isProvisional == true)
-        #expect(result[14].isProvisional == false)
-        #expect(result[14].kcal == prior + ExpenditureEngine.Constants.maxDailyStepKcal)
-    }
-
     // MARK: - 11. Calculation start date
 
-    @Test("Test A Start Date Restarts The Replay And The Sufficiency Count")
-    func testAStartDateRestartsTheReplayAndTheSufficiencyCount() throws {
+    @Test("Test A Start Date Restarts The Replay And The Calibration")
+    func testAStartDateRestartsTheReplayAndTheCalibration() throws {
         let samples = days(
             60,
             intake: { _ in 2000 },
@@ -242,17 +339,16 @@ struct ExpenditureEngineTests {
         #expect(result.allSatisfy { $0.kcal == prior })
         #expect(result.allSatisfy { $0.source == .fixed })
         #expect(result.allSatisfy { !$0.isProvisional })
+        #expect(result.allSatisfy { $0.sdKcal == nil })
         let trend = try #require(result.last?.trendWeightKg)
-        #expect(trend == 80)
+        #expect(abs(trend - 80) < 0.05)
     }
 
     // MARK: - 13. Step nowcast
 
-    /// The spec's worked example reads the baseline as the 8,000-step stretch alone and lands on
-    /// 160 kcal. The rule it is worked from compares the recent week against the **whole** window,
-    /// which here already contains that week: 21 days at 8,000 and 7 at 12,000 average 9,000, so
-    /// the gap is 3,000 steps and the nowcast is 120. The rule is what shipped; the arithmetic in
-    /// the spec is what slipped.
+    /// The recent week (12,000) against the whole window, which already contains it: 21 days at
+    /// 8,000 and 7 at 12,000 average 9,000, a gap of 3,000 steps, priced at the net 0.0004 kcal per
+    /// step per kg at the trend weight of about 80 kg: ≈96 kcal.
     @Test("Test A Busier Week Than The Window Adds A Capped Step Nowcast")
     func testABusierWeekThanTheWindowAddsACappedStepNowcast() throws {
         let samples = days(
@@ -263,11 +359,11 @@ struct ExpenditureEngineTests {
         )
 
         let enabled = try #require(history(samples, settings: settings(stepInformedUpdates: true)).last)
-        #expect(abs(enabled.stepAdjustmentKcal - 120) < 0.001)
+        #expect(abs(enabled.stepAdjustmentKcal - 96) < 0.5)
 
         let disabled = try #require(history(samples).last)
         #expect(disabled.stepAdjustmentKcal == 0)
-        #expect(enabled.kcal == (disabled.kcal + 120))
+        #expect(abs(enabled.kcal - disabled.kcal - 96) <= 1)
     }
 
     @Test("Test The Step Nowcast Is Capped In Either Direction")
@@ -341,7 +437,7 @@ struct ExpenditureEngineTests {
         #expect(last.loggedDays == 27)
     }
 
-    // MARK: - Excluded, fasting and broken-off days
+    // MARK: - Excluded, partial, fasting and broken-off days
 
     /// Rebuilds `samples` with `isExcluded` set on the days `shouldExclude` picks out.
     private func excluding(_ samples: [DailySample], where shouldExclude: (Int) -> Bool) -> [DailySample] {
@@ -351,7 +447,8 @@ struct ExpenditureEngineTests {
                 intakeKcal: sample.intakeKcal,
                 weightKg: sample.weightKg,
                 steps: sample.steps,
-                isExcluded: shouldExclude(index)
+                isExcluded: shouldExclude(index),
+                isFastingDay: sample.isFastingDay
             )
         }
     }
@@ -360,20 +457,20 @@ struct ExpenditureEngineTests {
     /// however wild the figure on it happens to be.
     @Test("Test Excluded Days With Wild Intake Do Not Move The Estimate")
     func testExcludedDaysWithWildIntakeDoNotMoveTheEstimate() throws {
-        let base = days(60, intake: { index in index >= 50 ? 6000 : 2400 }, weight: { _ in 80 })
-        let excluded = excluding(base) { $0 >= 50 }
+        let base = days(60, intake: { index in index >= 55 ? 6000 : 2400 }, weight: { _ in 80 })
+        let excluded = excluding(base) { $0 >= 55 }
 
         let last = try #require(history(excluded).last)
 
         #expect(last.source == .adaptive)
         #expect(abs(last.kcal - 2400) < 15)
-        // The same data without the exclusions is what the guard is saving the estimate from.
+        // The same data without the exclusions is what the flag is saving the estimate from.
         let unguarded = try #require(history(base).last)
         #expect(unguarded.kcal > last.kcal + 100)
     }
 
     /// The scale did not stop being true because the food log did: an excluded day is unlogged
-    /// for the mean, and still a weigh-in for the trend.
+    /// for the intake, and still a weigh-in for the trend.
     @Test("Test An Excluded Day Still Counts As A Weigh In")
     func testAnExcludedDayStillCountsAsAWeighIn() throws {
         let excluded = excluding(maintenanceDays(60)) { $0 >= 53 }
@@ -385,46 +482,67 @@ struct ExpenditureEngineTests {
         #expect(last.trendWeightKg != nil)
     }
 
-    /// A fasting day is evidence we do have. It is a logged zero, not an absence, so it pulls the
-    /// mean down rather than being imputed at the mean it is supposed to lower.
-    @Test("Test Fasting Days Pull The Mean Down")
-    func testFastingDaysPullTheMeanDown() throws {
-        let fasted = days(60, intake: { index in index >= 53 ? 0 : 2400 }, weight: { _ in 80 })
+    /// A logged day under half the estimate looks like a forgotten meal, not a real intake, so the
+    /// filter skips it — the same estimate as without it.
+    @Test("Test A Day Logged Under Half The Estimate Is Read As Partial")
+    func testADayLoggedUnderHalfTheEstimateIsReadAsPartial() throws {
+        let base = maintenanceDays(40)
+        let partial = days(40, intake: { $0 == 35 ? 300 : 2400 }, weight: { _ in 80 })
 
-        let last = try #require(history(fasted).last)
-
-        #expect(last.source == .adaptive)
-        #expect(last.loggedDays == 28)
-        #expect(last.kcal < 2350)
-        // And it is the zeros doing it, not the days going missing.
-        let unlogged = days(60, intake: { index in index >= 53 ? nil : 2400 }, weight: { _ in 80 })
-        let imputed = try #require(history(unlogged).last)
-        #expect(imputed.kcal > last.kcal)
+        let withPartial = try #require(history(partial).last)
+        let without = try #require(history(base).last)
+        #expect(withPartial.kcal == without.kcal)
+        #expect(withPartial.loggedDays == without.loggedDays - 1)
     }
 
-    /// A week-long break on top of a half-logged fortnight takes the window under the
-    /// logged-fraction guard, and the estimate goes back to carrying the prior forward.
-    @Test("Test A Week Long Break Can Make The Window Insufficient")
-    func testAWeekLongBreakCanMakeTheWindowInsufficient() throws {
-        let halfLogged = days(60, intake: { index in index >= 45 ? 2400 : nil }, weight: { _ in 80 })
+    /// A fasting day is evidence we do have. Marked as a fast, its zero is read and pulls the
+    /// estimate down; unmarked, the same zero is read as a partly logged day and skipped.
+    @Test("Test Marked Fasting Days Pull The Estimate Down")
+    func testMarkedFastingDaysPullTheEstimateDown() throws {
+        let marked = days(60, intake: { $0 >= 53 ? 0 : 2400 }, weight: { _ in 80 }).enumerated().map { index, sample in
+            DailySample(day: sample.day, intakeKcal: sample.intakeKcal, weightKg: sample.weightKg, isFastingDay: index >= 53)
+        }
+        let fasted = try #require(history(marked).last)
 
-        // Fifteen logged days out of twenty-eight clears the guard on its own.
-        let before = try #require(history(halfLogged).last)
-        #expect(before.loggedDays == 15)
+        #expect(fasted.source == .adaptive)
+        #expect(fasted.loggedDays == 28)
+        #expect(fasted.kcal < 2350)
+
+        let unmarked = try #require(history(days(60, intake: { $0 >= 53 ? 0 : 2400 }, weight: { _ in 80 })).last)
+        #expect(unmarked.loggedDays == 21)
+    }
+
+    /// A week-long break takes a fully logged window under the 80% gate, and the estimate goes
+    /// back to the formula until the logs catch up.
+    @Test("Test A Week Long Break Can Send The Estimate Back To Calibrating")
+    func testAWeekLongBreakCanSendTheEstimateBackToCalibrating() throws {
+        let logged = maintenanceDays(60)
+        let before = try #require(history(logged).last)
         #expect(before.isProvisional == false)
 
-        let withBreak = excluding(halfLogged) { $0 >= 53 }
+        let withBreak = excluding(logged) { $0 >= 53 }
         let after = try #require(history(withBreak).last)
 
-        #expect(after.loggedDays == 8)
+        #expect(after.loggedDays == 21)
         #expect(after.isProvisional == true)
         #expect(after.source == .prior)
     }
 
-    /// The flag defaults to false, so every sample built without it reads exactly as before.
-    @Test("Test Exclusion Defaults To Off")
-    func testExclusionDefaultsToOff() {
+    /// The flags default to false, so every sample built without them reads exactly as before.
+    @Test("Test Exclusion And Fasting Default To Off")
+    func testExclusionAndFastingDefaultToOff() {
         #expect(DailySample(day: today).isExcluded == false)
+        #expect(DailySample(day: today).isFastingDay == false)
+    }
+
+    // MARK: - Adherence input
+
+    @Test("Test Recent Intake Averages The Last Week's Complete Days")
+    func testRecentIntakeAveragesTheLastWeeksCompleteDays() throws {
+        let samples = days(40, intake: { $0 >= 33 ? 3000 : 2400 }, weight: { _ in 80 })
+        let last = try #require(history(samples).last)
+
+        #expect(last.recentIntakeKcal == 3000)
     }
 
     // MARK: - current(...)

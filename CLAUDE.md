@@ -663,8 +663,9 @@ order, so a refusal costs nothing:
 
 The model reads data only through the ten tools in `functions/coach.js`, one allowed area each;
 there is no tool for Strava, progress photos or anything social, and tests enforce that. The
-app's expenditure engine, formula TDEE, weight trend, Epley 1RM and weekly muscle sets are copied
-in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`, generated from the
+app's expenditure engine, formula TDEE, weight trend, estimated 1RM (Epley on reps + RIR, none past
+ten reps to failure, Reynolds 2006: `ExerciseOneRMAggregator.estimated1RM`, the app's only copy) and
+weekly muscle sets are copied in `functions/coach-maths.js`. `CompoundUnitTests/Fixtures/coach-parity.json`, generated from the
 Swift, is checked by both `CoachParityTests.swift` and `coach-maths.test.js`, so changing either
 copy without the other fails a test. `functions/data/PrebuiltExercises.json` must stay a
 byte-for-byte copy of the app's file, which a test checks. Run `node scripts/coach-eval.js` from

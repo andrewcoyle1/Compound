@@ -65,7 +65,8 @@ struct NutritionOverviewView: View {
                     title: "New targets suggested",
                     message: Text(summary),
                     primary: ("Accept", presenter.onAcceptProposalPressed),
-                    secondary: ("Not now", presenter.onDismissProposalPressed)
+                    secondary: ("Not now", presenter.onDismissProposalPressed),
+                    info: .targetProposal
                 )
             }
         }
@@ -75,11 +76,18 @@ struct NutritionOverviewView: View {
         title: LocalizedStringKey,
         message: Text,
         primary: (LocalizedStringKey, () -> Void),
-        secondary: (LocalizedStringKey, () -> Void)
+        secondary: (LocalizedStringKey, () -> Void),
+        info: MethodInfo? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(title)
-                .font(.sectionTitle)
+            HStack(spacing: Spacing.xs) {
+                Text(title)
+                    .font(.sectionTitle)
+                if let info {
+                    Spacer(minLength: Spacing.xs)
+                    MethodInfoButton(info)
+                }
+            }
             message
                 .font(.rowDetail)
                 .foregroundStyle(.secondary)
@@ -157,7 +165,7 @@ struct NutritionOverviewView: View {
             macroRow(.carbs, grams: presenter.totals.carbGrams, target: presenter.target?.carbGrams, progress: presenter.carbsProgress)
             macroRow(.fat, grams: presenter.totals.fatGrams, target: presenter.target?.fatGrams, progress: presenter.fatProgress)
         } header: {
-            Text("Macros")
+            MethodInfoHeader(title: "Macros", info: .macroSplit)
         }
     }
 

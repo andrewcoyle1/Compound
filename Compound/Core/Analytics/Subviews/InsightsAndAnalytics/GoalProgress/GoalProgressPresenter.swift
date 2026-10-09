@@ -43,8 +43,17 @@ class GoalProgressPresenter {
             .sorted { $0.date < $1.date }
     }
 
+    /// Every weigh-in's trend weight, smoothed over the whole history so the first ones after the
+    /// goal was set are not a fresh start (`GoalTimeline.trend`).
+    private var trendSinceGoal: [(entry: BodyMeasurementEntry, trendKg: Double)] {
+        guard let goal = activeGoal else { return [] }
+        return GoalTimeline.trend(of: interactor.bodyMeasurements).filter { $0.entry.date >= goal.createdAt }
+    }
+
+    /// The trend weight now, not the last weigh-in: progress should not jump with a day of water.
     var currentWeightKg: Double? {
-        weightEntriesSinceGoal.last?.weightKg
+        guard !weightEntriesSinceGoal.isEmpty else { return nil }
+        return GoalTimeline.latestTrendWeightKg(of: interactor.bodyMeasurements)
     }
 
     func onSetGoalPressed() {
@@ -79,15 +88,16 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
     
     typealias Entry = GoalProgressEntry
 
+    /// Each weigh-in as logged, with the progress its trend weight stood at.
     var entries: [GoalProgressEntry] {
         guard let goal = activeGoal else { return [] }
-        return weightEntriesSinceGoal.compactMap { entry in
-            guard let weightKg = entry.weightKg else { return nil }
+        return trendSinceGoal.compactMap { point in
+            guard let weightKg = point.entry.weightKg else { return nil }
             return GoalProgressEntry(
-                id: entry.id,
-                date: entry.date,
+                id: point.entry.id,
+                date: point.entry.date,
                 weightKg: weightKg,
-                progressPercent: goal.calculateProgress(currentWeight: weightKg) * 100,
+                progressPercent: goal.calculateProgress(currentWeight: point.trendKg) * 100,
                 weightUnit: weightUnit
             )
         }
@@ -139,7 +149,7 @@ extension GoalProgressPresenter: @MainActor MetricDetailPresenter {
                     weightLabel("Start", goal.startingWeightKg)
                     Spacer()
                     if let current = currentWeightKg {
-                        weightLabel("Current", current)
+                        weightLabel("Trend", current)
                         Spacer()
                     }
                     weightLabel("Target", goal.targetWeightKg)

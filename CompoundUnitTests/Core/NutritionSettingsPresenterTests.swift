@@ -305,11 +305,11 @@ struct NutritionSettingsExpenditureTests {
     func testTheBMREquationIsSaved() async {
         let screen = makeScreen()
 
-        screen.presenter.bmrEquation = .katchMcArdle
+        screen.presenter.bmrEquation = .cunningham
         await TestManagers.eventually { !screen.interactor.savedSettings.isEmpty }
 
-        #expect(screen.interactor.savedSettings.last?.bmrEquation == .katchMcArdle)
-        #expect(screen.presenter.bmrEquation == .katchMcArdle)
+        #expect(screen.interactor.savedSettings.last?.bmrEquation == .cunningham)
+        #expect(screen.presenter.bmrEquation == .cunningham)
     }
 
     /// This screen and the Strategy screen write the same document. Saving one field here must
@@ -324,14 +324,14 @@ struct NutritionSettingsExpenditureTests {
         screen.presenter.estimationMethod = .bodyFatAware
         screen.presenter.calculationMode = .fixed
         screen.presenter.stepInformedUpdates = true
-        screen.presenter.predictiveGoalAdjustments = false
-        await TestManagers.eventually { screen.interactor.savedSettings.count == 4 }
+        await TestManagers.eventually { screen.interactor.savedSettings.count == 3 }
 
         let saved = screen.interactor.savedSettings.last
         #expect(saved?.estimationMethod == .bodyFatAware)
         #expect(saved?.calculationMode == .fixed)
         #expect(saved?.stepInformedUpdates == true)
-        #expect(saved?.predictiveGoalAdjustments == false)
+        // No longer on the screen, but still carried, so stored documents round-trip.
+        #expect(saved?.predictiveGoalAdjustments == true)
         #expect(saved?.checkInWeekday == 6)
         #expect(saved?.fastingEnabled == false)
     }
@@ -411,7 +411,7 @@ struct NutritionSettingsExpenditureTests {
         interactor.currentExpenditure = .stub.with(source: .prior, isProvisional: true)
         let presenter = ExpenditureSettingsPresenter(interactor: interactor, router: Router())
 
-        #expect(presenter.expenditureStatusText == "Estimated from your profile until 14 days are logged")
+        #expect(presenter.expenditureStatusText == "Calibrating: estimated from your profile until 21 days and 14 weigh-ins are logged")
     }
 
     @Test("Test A Fixed Estimate Says Fixed")

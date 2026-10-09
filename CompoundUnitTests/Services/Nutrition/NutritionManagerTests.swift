@@ -256,21 +256,32 @@ struct NutritionManagerTests {
 
     /// The plan can be rebuilt from settings by a profile that never finished onboarding, so a
     /// missing one has to estimate from the documented defaults rather than return zero: 70kg,
-    /// 175cm, 30 years old, male, moderately active, training three to four times a week.
+    /// 175cm, 30 years old, moderately active (PAL 1.7), and the midpoint of the two sexes rather
+    /// than a man's figure: 700 + 1093.75 − 150 − 78 = 1565.75, × 1.7.
     @Test("Test A Missing Profile Still Estimates")
     func testAMissingProfileStillEstimates() {
         let tdee = TestManagers.nutritionManager().estimateTDEE(user: nil)
 
-        let expected = mifflinTDEE(weightKg: 70, heightCm: 175, age: 30, isMale: true, multiplier: 1.6)
-        #expect(abs(tdee - expected) < 0.01)
-        #expect(abs(tdee - 2638) < 0.01)
+        #expect(abs(tdee - 1565.75 * 1.7) < 0.01)
+        #expect(abs(tdee - 2661.775) < 0.01)
+    }
+
+    /// A missing sex reads as the midpoint, not as male: guessing male biased every such estimate up.
+    @Test("Test A Missing Sex Reads As The Midpoint")
+    func testAMissingSexReadsAsTheMidpoint() {
+        let manager = TestManagers.nutritionManager()
+
+        let missing = manager.estimateTDEE(user: profile(gender: nil))
+        let unstated = manager.estimateTDEE(user: profile(gender: .preferNotToSay))
+
+        #expect(abs(missing - unstated) < 0.01)
     }
 
     @Test("Test Mifflin St Jeor Uses The Stored Figures")
     func testMifflinStJeorUsesTheStoredFigures() {
         let tdee = TestManagers.nutritionManager().estimateTDEE(user: profile())
 
-        let expected = mifflinTDEE(weightKg: 80, heightCm: 180, age: 36, isMale: true, multiplier: 1.6)
+        let expected = mifflinTDEE(weightKg: 80, heightCm: 180, age: 36, isMale: true, multiplier: 1.7)
         #expect(abs(tdee - expected) < 0.01)
     }
 
@@ -283,7 +294,7 @@ struct NutritionManagerTests {
         let male = manager.estimateTDEE(user: profile(gender: .male))
         let female = manager.estimateTDEE(user: profile(gender: .female))
 
-        #expect(abs((male - female) - (166 * 1.6)) < 0.01)
+        #expect(abs((male - female) - (166 * 1.7)) < 0.01)
     }
 
     /// Decision 8a: "Prefer not to say" sits halfway between the two, in both equations that
@@ -315,28 +326,38 @@ struct NutritionManagerTests {
         #expect(harris > mifflin)
     }
 
-    /// Katch-McArdle works from lean mass, so with no logged body fat percentage it has nothing to
-    /// work from. Falling back to Mifflin is the documented behaviour; inventing a percentage
+    /// Cunningham works from fat-free mass, so with no logged body fat percentage it has nothing
+    /// to work from. Falling back to Mifflin is the documented behaviour; inventing a percentage
     /// would quietly change every calorie figure in the app.
-    @Test("Test Katch McArdle Without A Body Fat Falls Back To Mifflin")
-    func testKatchMcArdleWithoutABodyFatFallsBackToMifflin() {
+    @Test("Test Cunningham Without A Body Fat Falls Back To Mifflin")
+    func testCunninghamWithoutABodyFatFallsBackToMifflin() {
         let manager = TestManagers.nutritionManager()
         let user = profile()
 
-        let katch = manager.estimateTDEE(user: user, equation: .katchMcArdle, bodyFatPercentage: nil)
+        let cunningham = manager.estimateTDEE(user: user, equation: .cunningham, bodyFatPercentage: nil)
         let mifflin = manager.estimateTDEE(user: user, equation: .mifflinStJeor)
 
-        #expect(abs(katch - mifflin) < 0.01)
+        #expect(abs(cunningham - mifflin) < 0.01)
     }
 
-    @Test("Test Katch McArdle Estimates From Lean Mass")
-    func testKatchMcArdleEstimatesFromLeanMass() {
+    /// Cunningham 1980, 500 + 22 × fat-free mass, replaced Katch-McArdle (370 + 21.6 × lean mass),
+    /// which no validation in athletes supports.
+    @Test("Test Cunningham Estimates From Fat-Free Mass")
+    func testCunninghamEstimatesFromFatFreeMass() {
         let tdee = TestManagers.nutritionManager()
-            .estimateTDEE(user: profile(), equation: .katchMcArdle, bodyFatPercentage: 30)
+            .estimateTDEE(user: profile(), equation: .cunningham, bodyFatPercentage: 30)
 
-        // 80kg at 30% body fat is 56kg of lean mass.
-        let expected = (370 + (21.6 * 56)) * 1.6
+        // 80kg at 30% body fat is 56kg of fat-free mass.
+        let expected = (500 + (22 * 56)) * 1.7
         #expect(abs(tdee - expected) < 0.01)
+    }
+
+    /// A choice of the old lean-mass equation was saved as "katchMcArdle". That string still
+    /// decodes, and now runs Cunningham, so no saved setting is lost.
+    @Test("Test A Saved Katch McArdle Choice Runs Cunningham")
+    func testASavedKatchMcArdleChoiceRunsCunningham() {
+        #expect(BMREquation(rawValue: "katchMcArdle") == .cunningham)
+        #expect(BMREquation.cunningham.rawValue == "katchMcArdle")
     }
 
     /// A percentage outside 0–100 is not a body composition — it is a bad read off a weigh-in, and
@@ -348,19 +369,17 @@ struct NutritionManagerTests {
         let mifflin = manager.estimateTDEE(user: user, equation: .mifflinStJeor)
 
         for percentage in [0, -5, 100, 150] as [Double] {
-            let katch = manager.estimateTDEE(
+            let cunningham = manager.estimateTDEE(
                 user: user,
-                equation: .katchMcArdle,
+                equation: .cunningham,
                 bodyFatPercentage: percentage
             )
 
-            #expect(abs(katch - mifflin) < 0.01)
+            #expect(abs(cunningham - mifflin) < 0.01)
         }
     }
 
-    /// Both activity questions feed one multiplier, and both are asked because the user is told
-    /// they matter. An answer that changes nothing — or changes the estimate the wrong way — makes
-    /// the question a lie.
+    /// The activity answer sets the PAL, and each step up has to raise the estimate.
     @Test("Test The Estimate Rises With Every Step Of Daily Activity")
     func testTheEstimateRisesWithEveryStepOfDailyActivity() {
         let manager = TestManagers.nutritionManager()
@@ -373,16 +392,30 @@ struct NutritionManagerTests {
         #expect(Set(estimates).count == ActivityLevel.allCases.count)
     }
 
-    @Test("Test The Estimate Rises With Every Step Of Exercise Frequency")
-    func testTheEstimateRisesWithEveryStepOfExerciseFrequency() {
+    /// The PALs sit inside the FAO/WHO/UNU 2004 bands: sedentary 1.4 (not the 1.2 of bed rest),
+    /// light 1.55, moderate 1.7, active 1.85, very active 2.0.
+    @Test("Test Each Activity Level Is Its PAL")
+    func testEachActivityLevelIsItsPAL() {
+        let manager = TestManagers.nutritionManager()
+        let pal: [ActivityLevel: Double] = [.sedentary: 1.4, .light: 1.55, .moderate: 1.7, .active: 1.85, .veryActive: 2.0]
+
+        for (level, multiplier) in pal {
+            let expected = mifflinTDEE(weightKg: 80, heightCm: 180, age: 36, isMale: true, multiplier: multiplier)
+            #expect(abs(manager.estimateTDEE(user: profile(dailyActivity: level)) - expected) < 0.01)
+        }
+    }
+
+    /// Training frequency no longer adds to the PAL: the activity categories already include
+    /// habitual exercise, and stacking a bonus on them counted it twice (Pontzer 2016).
+    @Test("Test Exercise Frequency Does Not Change The Estimate")
+    func testExerciseFrequencyDoesNotChangeTheEstimate() {
         let manager = TestManagers.nutritionManager()
 
         let estimates = ExerciseFrequency.allCases.map { frequency in
             manager.estimateTDEE(user: profile(exerciseFrequency: frequency))
         }
 
-        #expect(estimates == estimates.sorted())
-        #expect(Set(estimates).count == ExerciseFrequency.allCases.count)
+        #expect(Set(estimates).count == 1)
     }
 
     /// The estimate has a floor of its own, below the calorie floor the user picks. It exists so

@@ -250,9 +250,11 @@ struct CoachParityTests {
                     name: exercise["name"] as? String ?? "", trackingMode: .weightReps, index: position,
                     sets: (exercise["sets"] as? [[String: Any]] ?? []).enumerated().map { setIndex, set in
                         WorkoutSetModel(
-                            id: "s\(index)-\(position)-\(setIndex)", authorId: "parity", index: setIndex,
+                            id: set["id"] as? String ?? "s\(index)-\(position)-\(setIndex)", authorId: "parity", index: setIndex,
                             reps: set["reps"] as? Int, weightKg: set["weightKg"] as? Double,
+                            rpe: set["rpe"] as? Double,
                             side: (set["side"] as? String).flatMap(SetSide.init(rawValue:)),
+                            kind: (set["kind"] as? String).flatMap(SetKind.init(rawValue:)) ?? .standard,
                             parentSetId: set["parentSetId"] as? String,
                             isWarmup: set["isWarmup"] as? Bool ?? false,
                             completedAt: set["completed"] as? Bool == true ? date : nil, dateCreated: date

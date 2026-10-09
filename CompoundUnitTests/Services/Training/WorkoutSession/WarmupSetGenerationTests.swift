@@ -11,9 +11,10 @@ import Foundation
 
 /// The warm-up sets the app offers before the working sets.
 ///
-/// Two judgements are encoded here and neither is obvious from reading the call site: how many
-/// warm-ups a weight deserves, and what weight each one should be. A heavy squat wants a full ramp;
-/// a light accessory lift wants one set, not three that waste the session.
+/// Three judgements are encoded here and none is obvious from reading the call site: how many
+/// warm-ups the work deserves, what weight each one is, and how many reps. Heavy, low-rep work
+/// wants a full ramp; a light accessory lift wants one set. Reps fall as the load rises (8, 5, 3),
+/// so the last warm-up primes the working weight without being an extra working set.
 @MainActor
 struct WarmupSetGenerationTests {
 
@@ -22,6 +23,7 @@ struct WarmupSetGenerationTests {
         reps: Int? = 8,
         mode: TrackingMode = .weightReps,
         targets: [SetTarget] = [],
+        exercise: ExerciseModel? = nil,
         count: Int? = nil
     ) -> [WorkoutSetModel] {
         WorkoutSessionModel.generateWarmupSets(
@@ -30,83 +32,101 @@ struct WarmupSetGenerationTests {
             workingWeightKg: weight,
             workingReps: reps,
             setTargets: targets,
+            exercise: exercise,
             count: count
         )
     }
 
     /// Each warm-up's weight as a whole percentage of a 100 kg working weight.
-    private func percentages(count: Int?) -> [Int] {
-        warmups(weight: 100, count: count).map { Int(($0.weightKg ?? 0).rounded()) }
+    private func percentages(reps: Int? = 8, count: Int?) -> [Int] {
+        warmups(weight: 100, reps: reps, count: count).map { Int(($0.weightKg ?? 0).rounded()) }
+    }
+
+    private func exercise(type: ExerciseType) -> ExerciseModel {
+        ExerciseModel(
+            id: "lift", authorId: "author-1", name: "Lift", trackableMetrics: [.weight, .reps], type: type,
+            laterality: .bilateral, muscleGroups: [.sideDelts: .primary], isBodyweight: false,
+            rangeOfMotion: 4, stability: 4, bodyWeightContribution: 0, alternateNames: []
+        )
     }
 
     // MARK: - How many
 
-    /// A light lift does not need a ramp — one set to feel the movement is enough.
-    @Test("Test A Light Weight Gets One Warm-Up")
-    func testALightWeightGetsOneWarmUp() {
-        #expect(warmups(weight: 20).count == 1)
-        #expect(warmups(weight: 49.9).count == 1)
+    /// Heavy work (six reps or fewer, about 83 % of a max or more) gets the full ramp.
+    @Test("Test Heavy Low-Rep Work Gets Three Warm-Ups")
+    func testHeavyLowRepWorkGetsThreeWarmUps() {
+        #expect(warmups(weight: 100, reps: 5).count == 3)
+        #expect(warmups(weight: 100, reps: 6).count == 3)
     }
 
-    @Test("Test A Moderate Weight Gets Two Warm-Ups")
-    func testAModerateWeightGetsTwoWarmUps() {
-        #expect(warmups(weight: 50).count == 2)
-        #expect(warmups(weight: 99.9).count == 2)
+    @Test("Test Moderate Work Gets Two Warm-Ups")
+    func testModerateWorkGetsTwoWarmUps() {
+        #expect(warmups(weight: 100, reps: 7).count == 2)
+        #expect(warmups(weight: 100, reps: 12).count == 2)
     }
 
-    @Test("Test A Heavy Weight Gets The Full Ramp")
-    func testAHeavyWeightGetsTheFullRamp() {
-        #expect(warmups(weight: 100).count == 3)
-        #expect(warmups(weight: 200).count == 3)
+    /// Light, high-rep work is far from the lifter's max, so one set to feel the movement is enough.
+    @Test("Test Light High-Rep Work Gets One Warm-Up")
+    func testLightHighRepWorkGetsOneWarmUp() {
+        #expect(warmups(weight: 100, reps: 15).count == 1)
     }
 
-    /// With nothing to go on, two is the middle answer rather than none.
-    @Test("Test An Unknown Weight Gets Two Warm-Ups")
-    func testAnUnknownWeightGetsTwoWarmUps() {
-        #expect(warmups(weight: nil).count == 2)
-        #expect(warmups(weight: 0).count == 2)
+    /// The count follows the work relative to the lifter, not the kilograms on the bar.
+    @Test("Test The Count Does Not Depend On The Weight")
+    func testTheCountDoesNotDependOnTheWeight() {
+        #expect(warmups(weight: 40, reps: 5).count == 3)
+        #expect(warmups(weight: 200, reps: 15).count == 1)
+    }
+
+    /// Isolation and core work needs one warm-up, however heavy.
+    @Test("Test Isolation Work Gets One Warm-Up")
+    func testIsolationWorkGetsOneWarmUp() {
+        #expect(warmups(weight: 30, reps: 5, exercise: exercise(type: .isolationUpper)).count == 1)
+        #expect(warmups(weight: 30, reps: 5, exercise: exercise(type: .core)).count == 1)
+    }
+
+    /// With no reps to go on, two is the middle answer rather than none.
+    @Test("Test Unknown Reps Get Two Warm-Ups")
+    func testUnknownRepsGetTwoWarmUps() {
+        #expect(warmups(weight: 100, reps: nil).count == 2)
+        #expect(warmups(weight: nil, reps: nil).count == 2)
     }
 
     // MARK: - What weight
 
-    /// Half, then seventy per cent, then ninety — the ramp is in the percentages, not the reps.
+    /// About 45, 65 and 82 % for a full ramp.
     @Test("Test Warm-Ups Ramp Up To The Working Weight")
     func testWarmUpsRampUpToTheWorkingWeight() {
-        let sets = warmups(weight: 100)
-
-        #expect(sets.count == 3)
-        #expect(sets[0].weightKg == 50)
-        #expect(sets[1].weightKg == 70)
-        #expect(sets[2].weightKg == 90)
+        #expect(warmups(weight: 100, reps: 5).map(\.weightKg) == [45, 65, 82])
     }
 
-    @Test("Test A Two-Set Ramp Takes The First Two Percentages")
-    func testATwoSetRampTakesTheFirstTwoPercentages() {
-        let sets = warmups(weight: 60)
-
-        #expect(sets.map(\.weightKg) == [30, 42])
+    @Test("Test A Two-Set Ramp Is Half And Three Quarters")
+    func testATwoSetRampIsHalfAndThreeQuarters() {
+        #expect(warmups(weight: 60).map(\.weightKg) == [30, 45])
     }
 
-    @Test("Test A One-Set Ramp Is Half The Working Weight")
-    func testAOneSetRampIsHalfTheWorkingWeight() {
-        #expect(warmups(weight: 40).map(\.weightKg) == [20])
+    @Test("Test A One-Set Ramp Is Sixty Percent")
+    func testAOneSetRampIsSixtyPercent() {
+        #expect(warmups(weight: 40, reps: 15).map(\.weightKg) == [24])
     }
 
     /// Every warm-up is below the working weight, or it is not a warm-up.
     @Test("Test Every Warm-Up Is Lighter Than The Working Set")
     func testEveryWarmUpIsLighterThanTheWorkingSet() {
         for working in [30.0, 60.0, 100.0, 180.0] {
-            for set in warmups(weight: working) {
-                let weight = set.weightKg ?? 0
-                #expect(weight < working)
-                #expect(weight > 0)
+            for reps in [3, 8, 15] {
+                for set in warmups(weight: working, reps: reps) {
+                    let weight = set.weightKg ?? 0
+                    #expect(weight < working)
+                    #expect(weight > 0)
+                }
             }
         }
     }
 
     @Test("Test Warm-Ups Get Heavier In Order")
     func testWarmUpsGetHeavierInOrder() {
-        let weights = warmups(weight: 120).compactMap(\.weightKg)
+        let weights = warmups(weight: 120, reps: 5).compactMap(\.weightKg)
 
         #expect(weights == weights.sorted())
         #expect(Set(weights).count == weights.count)
@@ -120,6 +140,35 @@ struct WarmupSetGenerationTests {
         #expect(allBlank)
     }
 
+    // MARK: - How many reps
+
+    /// Reps taper as the load rises: 8 at up to half the working weight, 5 up to 70 %, 3 up to 85 %.
+    @Test("Test Warm-Up Reps Taper As The Load Rises")
+    func testWarmUpRepsTaper() {
+        #expect(warmups(weight: 100, reps: 5).map(\.reps) == [8, 5, 3])
+        #expect(warmups(weight: 100, reps: 10).map(\.reps) == [8, 3])
+        #expect(WorkoutSessionModel.warmupReps(percentage: 0.9) == 2)
+    }
+
+    /// The taper does not depend on the working reps: a triple still warms up with eight light reps.
+    @Test("Test The Taper Ignores The Working Reps")
+    func testTheTaperIgnoresTheWorkingReps() {
+        #expect(warmups(weight: 100, reps: 3).map(\.reps) == [8, 5, 3])
+        #expect(warmups(weight: 100, reps: nil).map(\.reps) == [8, 3])
+    }
+
+    /// Bodyweight work has no load to taper against, so it warms up at the working reps, or the
+    /// programme's target when there are none from last time.
+    @Test("Test Bodyweight Warm-Ups Take The Working Reps")
+    func testBodyweightWarmUpsTakeTheWorkingReps() {
+        let allTens = warmups(weight: nil, reps: 10, mode: .repsOnly).allSatisfy { $0.reps == 10 }
+        #expect(allTens)
+
+        let targets = [SetTarget(setNumber: 1, minReps: 6, maxReps: 10)]
+        let allSixes = warmups(weight: nil, reps: nil, mode: .repsOnly, targets: targets).allSatisfy { $0.reps == 6 }
+        #expect(allSixes)
+    }
+
     // MARK: - Shape of the sets
 
     @Test("Test Warm-Ups Are Marked As Warm-Ups")
@@ -131,7 +180,7 @@ struct WarmupSetGenerationTests {
 
     @Test("Test Warm-Ups Are Numbered From One And Not Yet Done")
     func testWarmUpsAreNumberedFromOneAndNotYetDone() {
-        let sets = warmups(weight: 100)
+        let sets = warmups(weight: 100, reps: 5)
 
         let noneDone = sets.allSatisfy { $0.completedAt == nil }
 
@@ -140,41 +189,17 @@ struct WarmupSetGenerationTests {
         #expect(Set(sets.map(\.id)).count == sets.count)
     }
 
-    @Test("Test Warm-Ups Take The Working Reps")
-    func testWarmUpsTakeTheWorkingReps() {
-        let allFives = warmups(weight: 100, reps: 5).allSatisfy { $0.reps == 5 }
-
-        #expect(allFives)
-    }
-
-    /// With no reps from last time, the target from the programme is the next best thing.
-    @Test("Test Reps Fall Back To The Set Target")
-    func testRepsFallBackToTheSetTarget() {
-        let targets = [SetTarget(setNumber: 1, minReps: 6, maxReps: 10)]
-        let sets = warmups(weight: 100, reps: nil, targets: targets)
-        let allSixes = sets.allSatisfy { $0.reps == 6 }
-
-        #expect(allSixes)
-    }
-
-    @Test("Test Reps Can Be Unknown")
-    func testRepsCanBeUnknown() {
-        let noneSet = warmups(weight: 100, reps: nil).allSatisfy { $0.reps == nil }
-
-        #expect(noneSet)
-    }
-
     // MARK: - A count from the plan
 
-    /// The plan's warm-up count overrides the weight rule, each count with its own ramp; past four,
-    /// each extra set is another at 90 %.
+    /// The plan's warm-up count overrides the rule, each count with its own ramp; past four, each
+    /// extra set is another at 90 %.
     @Test(
         "Test A Planned Warm-Up Count Sets The Ramp",
         arguments: [
             (0, [Int]()),
             (1, [60]),
-            (2, [50, 70]),
-            (3, [45, 65, 85]),
+            (2, [50, 75]),
+            (3, [45, 65, 82]),
             (4, [45, 60, 75, 85]),
             (5, [45, 60, 75, 85, 90])
         ]
@@ -183,20 +208,12 @@ struct WarmupSetGenerationTests {
         #expect(percentages(count: count) == expected)
     }
 
-    @Test("Test No Planned Count Leaves The Weight Rule Unchanged")
-    func testNoPlannedCountLeavesTheWeightRuleUnchanged() {
-        #expect(percentages(count: nil) == [50, 70, 90])
-        #expect(warmups(weight: 40, count: nil).map(\.weightKg) == [20])
-    }
-
-    /// A planned count still takes the working reps, and still gives timed work none.
-    @Test("Test A Planned Count Keeps The Reps And The Tracking-Mode Rule")
-    func testAPlannedCountKeepsTheRepsAndTheTrackingModeRule() {
-        let allFives = warmups(weight: 100, reps: 5, count: 4).allSatisfy { $0.reps == 5 && $0.isWarmup }
-
-        #expect(allFives)
+    /// A planned count is the user's choice: light work keeps every warm-up the plan asks for.
+    @Test("Test A Planned Count Is Kept Whole")
+    func testAPlannedCountIsKeptWhole() {
+        #expect(warmups(weight: 20, reps: 15, count: 3).count == 3)
         #expect(warmups(weight: 100, mode: .timeOnly, count: 3).isEmpty)
-        #expect(warmups(weight: 20, count: 3).count == 3)
+        #expect(warmups(weight: 100, reps: 5, count: 4).map(\.reps) == [8, 5, 3, 3])
     }
 
     // MARK: - When there are none

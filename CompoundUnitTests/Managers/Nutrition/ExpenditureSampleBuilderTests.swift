@@ -116,14 +116,31 @@ struct ExpenditureSampleBuilderTests {
         #expect(result.first?.intakeKcal == 0)
     }
 
-    @Test("Test Several Weigh-Ins In One Day Are Averaged")
-    func testSeveralWeighInsInOneDayAreAveraged() async throws {
-        let result = await samples(entries: [
-            weighIn(daysAgo: 1, weightKg: 80),
-            weighIn(daysAgo: 1, weightKg: 82)
-        ])
+    /// The morning reading is the day's: the evening one carries the day's food and drink.
+    @Test("Test The First Weigh-In Of A Day Is The Day's Reading")
+    func testTheFirstWeighInOfADayIsTheDaysReading() async throws {
+        let evening = BodyMeasurementEntry(authorId: "author-1", weightKg: 82, date: day(1).addingTimeInterval(20 * 3600))
+        let morning = BodyMeasurementEntry(authorId: "author-1", weightKg: 80, date: day(1).addingTimeInterval(7 * 3600))
+        let result = await samples(entries: [evening, morning])
 
-        #expect(result.first?.weightKg == 81)
+        #expect(result.first?.weightKg == 80)
+    }
+
+    @Test("Test A Fasting Annotation Marks The Sample")
+    func testAFastingAnnotationMarksTheSample() {
+        let date = day(1)
+        let annotation = NutritionDayAnnotation(dayKey: date.dayKey, authorId: "author-1", isPartiallyLogged: false, isFastingDay: true)
+        let result = ExpenditureSampleBuilder.samples(
+            mealLogs: [],
+            measurements: [BodyMeasurementEntry(authorId: "author-1", weightKg: 80, date: date)],
+            steps: [],
+            annotations: [annotation],
+            today: Date(),
+            calendar: calendar
+        )
+
+        #expect(result.first?.isFastingDay == true)
+        #expect(result.first?.intakeKcal == 0)
     }
 
     @Test("Test Deleted And Weightless Entries Are Skipped")

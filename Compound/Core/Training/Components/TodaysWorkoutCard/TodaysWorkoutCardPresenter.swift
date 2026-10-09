@@ -184,7 +184,7 @@ class TodaysWorkoutCardPresenter {
                 in: interactor.activeMesocycle?.id,
                 microcycleIndex: slot.cycleIndex + 1
             )
-            if isTodayDeload { session.applyDeloadWeightReduction() }
+            if isTodayDeload { session.applyDeload { interactor.deloadRounding(for: $0) } }
             targets = session.exercises.prefix(4).map { exercise in
                 let unit = interactor.getPreference(templateId: exercise.templateId)
                 guard let detail = Self.targetDetail(exercise.workingSets.first, mode: exercise.trackingMode, unit: unit) else {

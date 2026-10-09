@@ -12,6 +12,7 @@ protocol CheckInInteractor: GlobalInteractor {
     var bodyMeasurements: [BodyMeasurementEntry] { get }
     var currentExpenditure: ExpenditureEstimate { get }
     var targetProposal: TargetProposal? { get }
+    var adherenceNote: AdherenceNote? { get }
     var loggingBreak: LoggingBreak? { get }
     var openLoggingBreak: LoggingBreak? { get }
 

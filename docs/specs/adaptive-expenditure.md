@@ -1,6 +1,7 @@
-# Adaptive expenditure — algorithm spec (v1)
+# Adaptive expenditure — algorithm spec
 
-Status: specification for implementation. Written 2026-09-22. Companion to
+Status: implemented. Written 2026-09-22; the estimator and the proposal were rebuilt on
+2026-10-09 as one Kalman filter and a deadband controller (§3, §4). Companion to
 `docs/dead-settings-audit.md`, which lists the eleven settings this engine gives meaning to.
 
 ## 1. Purpose
@@ -9,6 +10,22 @@ Replace the one-shot formula TDEE (`NutritionManager.estimateTDEE`) with an esti
 to what the user actually logs: daily energy intake from meal logs and the trend in scale weight.
 The formula stays as the **prior** — the estimate before there is enough data, and the anchor that
 bounds the adaptive figure. Nothing in this spec deletes or bypasses the existing formula code.
+
+The prior itself is `FormulaExpenditure` (`Managers/Nutrition/NutritionManager/`), which the
+onboarding Expenditure step also runs: resting rate × a physical activity level (PAL).
+
+- Resting rate: Mifflin-St Jeor by default (Mifflin 1990; within 10% for about three in four people,
+  Frankenfield 2005, Madden 2016), −78 as the midpoint when sex is not given, revised
+  Harris-Benedict as an option, and Cunningham 1980 (500 + 22 × fat-free mass) when body fat is
+  logged and opted into. Cunningham replaced Katch-McArdle (O'Neill 2023; Tinsley 2019); its stored
+  value is still `katchMcArdle`.
+- PAL: sedentary 1.40, light 1.55, moderate 1.70, active 1.85, very active 2.00 — values Compound
+  chose inside the FAO/WHO/UNU 2004 bands (1.40–1.69 / 1.70–1.99 / 2.00–2.40). The old table started
+  at 1.2 and added up to 0.20 for training frequency; the frequency term is gone, because the bands
+  include habitual exercise and expenditure plateaus at high activity (Pontzer 2016). The 2023 DRI
+  EER equations were not adopted: several of their coefficients and band edges are unverified
+  (`reports/Citation verification checklist.md`, discrepancies 1–2).
+- Digestion is shown as 10% of the total (Westerterp 2004). Floor: 1,000 kcal.
 
 The engine is **pure**: a value-type `ExpenditureEngine` in
 `DialedIn/Managers/Nutrition/Expenditure/` that takes daily samples and settings and returns a
@@ -35,8 +52,8 @@ struct DailySample {
 - `intakeKcal` = sum of `MealLogModel.totalCalories` over all meal logs whose `dayKey` is that
   day. A day with one or more meal logs but zero total calories counts as **logged with 0 kcal**,
   not as unlogged; a day with no meal logs is `nil`.
-- `weightKg` = mean of `BodyMeasurementEntry.weightKg` over entries on that day with
-  `weightKg != nil` and `deletedAt == nil`. Multiple weigh-ins in a day are averaged.
+- `weightKg` = the day's earliest `BodyMeasurementEntry.weightKg` with `deletedAt == nil` (the
+  morning reading; a tie keeps the entry listed first).
 - `steps` = `StepsModel.number` for that day, ignoring records with `deletedAt != nil`. If more
   than one record exists for a day, take the largest.
 
@@ -44,176 +61,133 @@ struct DailySample {
 
 | Setting | Meaning in this engine |
 |---|---|
-| `calculationMode` | `.dynamic`: run the algorithm. `.fixed`: every day's estimate is the prior; the engine still returns a history so the chart draws a flat line, and `isProvisional` is `false` with `source = .fixed`. |
+| `calculationMode` | `.dynamic`: run the filter. `.fixed`: every day's estimate is the prior; the engine still returns a history (and still runs the filter, so the trend weight is there), with `isProvisional = false` and `source = .fixed`. |
 | `calculationStartDate` | Samples strictly before this day are discarded before anything else runs. The replay starts fresh (prior only) from this day. `nil` means use all samples. |
-| `algorithmVersion` | `.version1` selects this algorithm. There is no other version; the engine `switch`es on it so a v2 has an obvious home. |
-| `stepInformedUpdates` | Enables the step nowcast in §3.6. |
-| `predictiveGoalAdjustments` | Only affects the **proposal** in §4, not the estimate. |
-| `estimationMethod`, `bmrEquation` | Already live; they shape the **prior** through the existing `resolvedBMREquation` path. The engine takes the prior as a number and does not know about them. |
+| `algorithmVersion` | `.version1` (stored `"v1"`) selects the filter below. The raw value is kept so stored settings decode; the 2026-10 rewrite replaced what v1 computes rather than adding a v2. |
+| `stepInformedUpdates` | Enables the step nowcast in §3.7. |
+| `predictiveGoalAdjustments` | **No longer read** and no longer on the Expenditure screen. It switched on a rate-error correction in the proposal that counted the same gap twice (§4). Kept in the model so stored documents decode and round-trip. |
+| `estimationMethod`, `bmrEquation` | Shape the **prior** through `resolvedBMREquation`. The engine takes the prior as a number. |
 
 ### 2.3 Other inputs
 
-- `priorKcal: Double` — the formula TDEE for this user, computed by the existing code path.
-- `today: Date` — the day the estimate is for. Samples must end the day before.
-- `calendar: Calendar`.
+- `priorKcal: Double` — the formula TDEE (`NutritionManager.estimateTDEE`).
+- `kcalPerKg: Double` — the energy in a kilogram of weight change, from `EnergyDensity`
+  (`CoreInteractor.expenditureKcalPerKg`: Forbes-partitioned with a body fat reading from the
+  last 90 days, else 7,700). Defaults to 7,700.
+- `today: Date`, `calendar: Calendar`.
 
-## 3. Algorithm (version 1)
+A sample also carries `isExcluded` (partial or in a logging break) and `isFastingDay` (the user
+marked a fast). `weightKg` is the day's **first** weigh-in, not the mean.
 
-Constants, all in one `ExpenditureEngine.Constants` namespace so tests and a future v2 can see them:
+## 3. Algorithm
 
-| Name | Value | Why |
-|---|---|---|
-| `kcalPerKg` | 7700 | Energy content of a kilogram of body-mass change; the conventional figure. |
-| `trendAlpha` | 0.10 | EMA smoothing for scale weight; ≈10-day time constant. |
-| `outlierFraction` | 0.025 | A weigh-in more than 2.5 % from the trend is clamped to that band before it updates the trend. |
-| `windowDays` | 28 | The energy-balance regression window. |
-| `minWindowDays` | 14 | Fewer days than this since the first sample → provisional. |
-| `minLoggedFraction` | 0.5 | Fewer logged days than half the window → provisional. |
-| `minWeighIns` | 4 | Fewer weigh-ins in the window → provisional. |
-| `minWeighInSpanDays` | 7 | First and last weigh-in in the window closer than this → provisional. |
-| `blendAlpha` | 0.30 | Daily blend of the raw estimate into the running estimate. |
-| `maxDailyStepKcal` | 150 | The running estimate never moves more than this per day. |
-| `priorBoundLow` / `priorBoundHigh` | 0.60 / 1.60 | The estimate is clamped to this band around the prior; guards against garbage logging. |
-| `kcalPerStepPerKg` | 0.0005 | Step nowcast: kcal per step per kg of body weight (≈35 kcal per 1000 steps at 70 kg). |
-| `maxStepNowcastKcal` | 300 | Cap on the step nowcast in either direction. |
+The 2026-10 rewrite follows `reports/Defensible fitness app algorithms.md`, "One filter replaces
+two EMAs, a blend, a clamp and a second loop". It replaced: a 0.10/day EMA trend with a ±2.5%
+clamp (and a separate 0.25-per-weigh-in EMA on the Weight Trend screen), a raw 28-day energy
+balance at 7,700 kcal/kg, a 0.30 daily blend capped at ±150 kcal, and a 14-day minimum.
 
-### 3.1 Trend weight
+Constants live in `ExpenditureEngine.Constants`, `ExpenditureFilter` and `WeighInNoise`. Every
+value marked *design choice* has no published source and is to be tuned by replaying anonymised
+histories (one-step weigh-in prediction error, 80%-interval coverage, proposals per user-month).
 
-Replay day by day over the (start-date-filtered) samples:
+### 3.1 The weight trend (`WeightTrendCalculator`, `WeighInNoise`)
 
-1. Seed: the trend on the first day with a weigh-in is the mean of the weigh-ins in the first
-   seven days that have any (so a single first reading does not anchor everything).
-2. For each later day with a weigh-in `w`: let `t` be the current trend. Clamp `w` to
-   `[t·(1−outlierFraction), t·(1+outlierFraction)]`, then `t ← t + trendAlpha·(w_clamped − t)`.
-3. Days without a weigh-in leave the trend unchanged (carried forward), and are recorded as
-   `trendWeightKg` for that day so the chart has a value.
-4. Before the first weigh-in `trendWeightKg` is `nil`.
+One trend for the chart and the engine. Weigh-in noise R = max((0.005·L)², 0.3²): 0.5% of body
+weight from Schneditz 2023's 0.53% day-to-day SD (R30); the 0.3 kg floor is a design choice.
 
-### 3.2 Window
+- **Robust update.** Innovation v = y − L, S = P_LL + R. R_eff = R·max(1, (|v|/(2.5·√S))²) (a
+  Huber-type robust Kalman update; 2.5 is a design choice). A reading with |v| > max(3 kg, 4%·L)
+  is **held**; if the next weigh-in is also that far off in the same direction, the shift is
+  confirmed (P_LL += v², then a plain update), otherwise the held reading is dropped. This
+  replaces the ±2.5% clamp.
+- **The chart** (`WeightTrendCalculator.trend(data:calendar:)`): a local-linear-trend filter
+  [L, b] with the real gap Δt in calendar days, Q = 0.004²·[[Δt³/3, Δt²/2],[Δt²/2, Δt]] +
+  diag(0.05²·Δt, 0) (design choices; 0.004 kg/day ≈ (q_E + q_T)/ρ² of the engine, giving a 7–10
+  day time constant like the Hacker's Diet, R39), started at the median of the first three
+  weigh-ins with slope 0 ± 0.1 kg/day, then a Rauch–Tung–Striebel smoothing pass (R41). Only the
+  first weigh-in of a day updates it. `exponentialMovingAverage(data:)` is kept as an alias.
 
-For the estimate on day **D** (each day of the replay, and finally `today`), the window is the
-`windowDays` days ending the day before D, intersected with the available samples.
+### 3.2 The filter (`ExpenditureFilter`)
 
-Sufficiency — the window is **sufficient** when all hold:
-- days from the first sample (after start-date filtering) to D−1 ≥ `minWindowDays`;
-- logged days in the window ≥ `minLoggedFraction` × (days present in the window);
-- weigh-ins in the window ≥ `minWeighIns`;
-- last weigh-in day − first weigh-in day in the window ≥ `minWeighInSpanDays`.
+State x = [L (kg), E (kcal/day), T (kcal/day)], E and T on the user's logging scale. One step a
+day: L ← L + (E − T)/ρ; E, T carried. Process SDs per day (design choices): L 0.05 kg, E 30 kcal,
+T 13 kcal (≈35 kcal a week). A weigh-in observes L (rules of §3.1); a complete logged day observes
+E with SD σ_I. Start (on the first weigh-in): L = median of the first three weigh-ins with
+P_LL = R; E = T = prior; SD(E) = 500; SD(T) = max(0.15·prior, 340) (340 is NASEM 2023's RMSE,
+R14; 15% is a design choice). Mass-driven TDEE drift (ε ≈ 24 kcal/day per kg) is **not**
+modelled: the citation checklist flags its interpretation, and q_T absorbs it.
 
-If insufficient, the day's estimate is the running estimate carried forward (initially the
-prior) and `isProvisional = true`.
+### 3.3 Intake observations
 
-### 3.3 Raw energy balance
+A day's intake is read when it is logged, not excluded, and either marked as a fast or at least
+`partialDayFraction` (0.5, design choice) of the current T. Every other logged day is treated as
+partly logged: predicted through, not observed. σ_I is the SD of the complete logged days in the
+28 days ending that day, held in 300–500 kcal (400 with fewer than seven), doubled when fewer than
+60% of those days are complete (design choices). Unlogged days need no rule: the filter predicts
+through them and its variance grows.
 
-When sufficient:
+### 3.4 Calibration
 
-```
-meanIntake     = mean(intakeKcal over logged days in window)
-deltaTrendKg   = trend(last day of window) − trend(first day of window that has a trend)
-spanDays       = number of days between those two trend readings
-dailySurplus   = deltaTrendKg · kcalPerKg / spanDays
-rawExpenditure = meanIntake − dailySurplus
-```
+The estimate for day D is read from the filter after day D−1. It is **calibrated** when all hold
+(design choices; Hall & Chow 2011, R34, for the four-week order of magnitude):
 
-Unlogged days are assumed to look like the logged days' mean; that is what the
-`minLoggedFraction` guard is for. Do not attempt to impute them any other way in v1.
+- at least `minDays` (21) days since the first sample;
+- at least `minWeighIns` (14) weigh-ins used;
+- √P_TT < `maxCalibratedSDKcal` (200);
+- complete logged days ≥ `calibratedLoggedFraction` (0.8) of the sample days in the 28-day window.
 
-### 3.4 Running estimate
+While calibrating, `kcal` is the prior, `source = .prior`, `isProvisional = true`. Someone who
+only weighs in never calibrates: without logs only E − T is identifiable. They still get the
+trend and the rate.
 
-```
-running ← running + clamp(blendAlpha · (rawExpenditure − running), −maxDailyStepKcal, +maxDailyStepKcal)
-running ← clamp(running, prior · priorBoundLow, prior · priorBoundHigh)
-```
+### 3.5 Output
 
-`running` starts at `priorKcal`. This is applied once per replay day. The blend, not the raw
-figure, is what the user sees, so one bad week moves the number slowly and reversibly.
+`kcal = clamp(T, 0.6·prior, 1.6·prior) + nowcast`, rounded (the band is a guard only; the filter
+state is not clamped). `sdKcal = √P_TT` (nil in Fixed mode and before the first weigh-in).
+`weeklyTrendChangeKg = 7·(E − T)/ρ` and its SD once there are 21 days and 14 weigh-ins.
+`recentIntakeKcal` is the mean of the last seven window days' complete logged intakes.
+`likelyRange` is the 80% interval kcal ± 1.28·SD; `confidence` is high below 120 kcal SD, medium
+to 250, low above (design choices). Sanghvi 2015 (R35) found ≈215 kcal/day individual RMSD even
+with good data, so nothing tighter is claimed.
 
-### 3.5 Fixed mode
+### 3.6 Fixed mode
 
-`calculationMode == .fixed`: skip §3.2–3.4; every day's `kcal = priorKcal`,
-`source = .fixed`, `isProvisional = false`. Trend weight (§3.1) is still computed so the chart
-and the goal screens keep their trend line.
+`kcal = prior`, `source = .fixed`, `isProvisional = false`, `sdKcal = nil`. The filter still
+runs, so trend weight and rate are populated.
 
-### 3.6 Step nowcast (optional)
+### 3.7 Step nowcast (optional)
 
-Only when `stepInformedUpdates` is on **and** steps exist for at least half the window days
-**and** the window is sufficient:
+Unchanged in shape: when `stepInformedUpdates` is on, the estimate is calibrated and at least half
+the window's days have steps, `(mean of the last 7 step days − mean of the window's step days) ×
+kcalPerStepPerKg × trend weight`, capped at ±300 kcal, added for display and proposals only.
+`kcalPerStepPerKg` is now **0.0004**, the net walking cost (≈0.49 kcal/kg/km from the ACSM walking
+equation, R21, at 1,300–1,400 steps/km — the step length is an assumption); 0.0005 was roughly the
+gross figure.
 
-```
-recentSteps  = mean(steps over the last 7 days that have steps)
-windowSteps  = mean(steps over the window days that have steps)   // all of them, the last 7 included
-nowcast      = clamp((recentSteps − windowSteps) · kcalPerStepPerKg · trendWeightKg, −maxStepNowcastKcal, +maxStepNowcastKcal)
-kcal         = running + nowcast
-```
+## 4. Proposal (`TargetProposal`)
 
-The nowcast is additive on top of the running estimate for **display and proposals only**; it is
-not fed back into `running`. The reason: the energy balance already captures steps over the
-window; the nowcast only anticipates a change in the last week that the 28-day window has not
-yet absorbed. `ExpenditureEstimate.stepAdjustmentKcal` carries it so the UI can show it.
-
-### 3.7 Output
-
-```
-struct ExpenditureEstimate: Equatable {
-    let day: Date
-    let kcal: Double                 // what the app uses; rounded to the nearest 1 kcal
-    let source: Source               // .prior, .adaptive, .fixed
-    let isProvisional: Bool          // true while the window is insufficient
-    let trendWeightKg: Double?
-    let weeklyTrendChangeKg: Double? // deltaTrendKg · 7 / spanDays over the window; nil when provisional
-    let loggedDays: Int
-    let weighInCount: Int
-    let windowDays: Int
-    let stepAdjustmentKcal: Double   // 0 unless the nowcast applied
-}
-
-struct ExpenditureEngine {
-    func history(samples: [DailySample], priorKcal: Double, settings: NutritionStrategySettings,
-                 today: Date, calendar: Calendar) -> [ExpenditureEstimate]   // one per replay day, ascending, last is `today`
-    func current(...) -> ExpenditureEstimate                                 // history(...).last
-}
-```
-
-The history is recomputed from scratch on every call. It is deterministic given the inputs, so
-nothing about the estimate is persisted. This keeps the engine free of a migration story; the
-cost is O(days × window) per call, which is fine for years of data.
-
-## 4. Proposal (propose-and-confirm, per product decision)
-
-The estimate **never** silently rewrites `DietPlan`. Instead `CoreInteractor` exposes a
-`targetProposal: TargetProposal?`:
+Propose-and-confirm is unchanged: the estimate never rewrites a `DietPlan` by itself. The
+controller is feedforward with a deadband, evaluated at most weekly:
 
 ```
-struct TargetProposal: Equatable {
-    let expenditureKcal: Double
-    let currentTargetKcal: Double     // mean of the current plan's 7 days
-    let proposedTargetKcal: Double
-    let weeklyTrendChangeKg: Double?
-    let goalWeeklyChangeKg: Double?
-    let reason: Reason                // .expenditureMoved, .rateOffTarget
-}
+target = T + ρ·r_goal/7            r_goal = active goal's signedWeeklyChangeKg (0 without one)
+target = max(target, CalorieFloor.minimumValue(for: sex))
+nil unless calibrated, not Fixed, a plan exists
+nil unless |target − current| > max(50, sdKcal)
+adherence: if target < current, recentIntakeKcal > 1.10·current and weeklyTrendChangeKg > r_goal
+           → AdherenceNote (shown in the check-in), no proposal
+nil unless the plan is ≥ 7 days old (createdAt to the estimate's day)
+proposed = current + clamp(target − current, −150, +150), rounded
+dismissal: hidden while within 50 kcal of the dismissed figure
 ```
 
-Rules:
-- Nil when there is no current diet plan, when the estimate is provisional, or when
-  `calculationMode == .fixed`.
-- `proposedTargetKcal = expenditureKcal + goalWeeklyChangeKg · kcalPerKg / 7` where
-  `goalWeeklyChangeKg` comes from `GoalManager.currentGoal` with `status == .active`
-  (`weeklyChangeKg` is negative for loss). With no active goal it is `expenditureKcal`
-  (maintenance).
-- When `predictiveGoalAdjustments` is on and there is an active goal and `weeklyTrendChangeKg`
-  is available: add `correction = clamp((goalWeeklyChangeKg − weeklyTrendChangeKg) · kcalPerKg / 7, −200, +200)`.
-  This nudges the target when the observed rate is off the goal rate even if expenditure looks
-  right. When off, no correction.
-- Apply the plan's calorie floor: `proposedTargetKcal = max(proposed, plan.calorieFloor.minimumValue)`.
-- Nil when `|proposedTargetKcal − currentTargetKcal| < 50`. A proposal must be worth a tap.
-
-Accepting a proposal calls the existing `computeDietPlan` with the new expenditure in place of
-the formula figure (see §5) and saves the plan. Dismissing records the dismissed value in
-`UserDefaults` under `dismissedTargetProposalKcal`, and the proposal stays hidden until the
-proposed target differs from the dismissed one by ≥ 50 kcal. The weekly check-in cadence
-(`checkInWeekday`, `fastCheckIn`, and friends) is a separate piece of work and is not part of
-this spec; for now the proposal is visible whenever it is non-nil.
+The old rate-error term, clamp((goal − trend rate)·7700/7, ±200), is **deleted**: the filter is
+already an integral-type estimator, so when the rate was off because TDEE was wrong it counted the
+gap twice, and when it was off because the user ate above target it lowered a target they were
+already missing. `Reason` keeps only `.expenditureMoved`. The 50 kcal, the SD deadband, the 150 kcal
+step, the 7 days and the 10% margin are design choices; the structure follows SmartLoss (R43) and
+MacroFactor's published logic (R42, unreviewed). The optional maintenance band and the
+glycogen-burst level noise from the report are not implemented.
 
 ## 5. Integration points
 
@@ -227,55 +201,35 @@ this spec; for now the proposal is visible whenever it is non-nil.
    - `var currentExpenditure: ExpenditureEstimate`.
    - `var targetProposal: TargetProposal?`.
    - `func acceptTargetProposal() async throws` and `func dismissTargetProposal()`.
-3. Expenditure Settings screen: show `currentExpenditure.kcal` with a one-line status
-   ("Adaptive · 21 of 28 days logged", "Estimated from your profile until 14 days are logged",
-   "Fixed"). Replace the flat expenditure chart figure with `expenditureHistory` so the chart
-   moves. Keep every existing control.
+3. Expenditure Settings screen: show `currentExpenditure.kcal` with its 80% interval and a
+   one-line status ("Adaptive · 21 of 28 days logged", "Calibrating: estimated from your profile
+   until 21 days and 14 weigh-ins are logged", "Fixed"). The expenditure detail screen charts
+   `expenditureHistory` with today's interval and confidence badge above the list. The Energy
+   Balance screen, the Progress deficit cards and the carousel read the adaptive estimate per day
+   and average intake over logged days only (`EnergyBalanceSummary`).
+6. Every figure here has an ⓘ (`MethodInfo.weightTrend`, `.adaptiveExpenditure`,
+   `.energyDensity`, `.energyBalance`, `.targetProposal`, `.checkInRules` in
+   `MethodInfo+Energy.swift`).
 4. Nutrition overview: a dismissible "New targets suggested" card driven by `targetProposal` with
    Accept and Not now. Minimal; the check-in flow will restyle it later.
 5. `DietPlan` needs no schema change.
 
-## 6. Test cases (unit, `DialedInUnitTests/Managers/Nutrition/ExpenditureEngineTests.swift`)
+## 6. Test cases
 
-Build samples with a helper `days(_ n: Int, intake: (Int) -> Double?, weight: (Int) -> Double?, steps: (Int) -> Int? = { _ in nil })`. Prior 2500 unless stated. Use a fixed `Calendar(identifier: .gregorian)` with UTC and a fixed `today`.
+`CompoundUnitTests/Managers/Nutrition/ExpenditureEngineTests.swift` (the replay),
+`ExpenditureFilterTests.swift` (the filter on its own), `TargetProposalTests.swift`,
+`CompoundUnitTests/Utilities/WeightTrendCalculatorTests.swift`, and the same rules in
+`functions/coach-maths.test.js`. Among them: convergence to the true expenditure through noise on
+the scale and the log; calibration on day 21 and not before; weigh-ins without logs never
+calibrate but give a rate; unlogged days only widen the SD; a wild weigh-in is held and dropped, a
+smaller one is down-weighted; a partial day is skipped and a marked fast is read; the 80% gate
+after a logging break; Fixed mode; the nowcast at 0.0004; feedforward without double counting; the
+SD deadband, the 150 kcal step and the 7-day cadence; adherence before lowering.
 
-1. **No samples** → one estimate, `kcal == prior`, `.prior`, provisional.
-2. **Thirteen days of perfect data** → still provisional (below `minWindowDays`).
-3. **Maintenance**: 60 days, intake 2400 every day, weight flat at 80 → after day 14 the
-   estimate converges toward 2400; on the last day `abs(kcal − 2400) < 15`, `.adaptive`,
-   not provisional, `weeklyTrendChangeKg ≈ 0`.
-4. **Deficit**: 60 days, intake 2000, weight falling linearly 0.5 kg/week from 80 →
-   converges toward 2000 + 550 = 2550 (±40 by the last day).
-5. **Surplus** mirror of 4.
-6. **Sparse logging**: 28 days, only 10 logged → provisional. 15 logged → adaptive.
-7. **Weigh-in span**: 28 days, all logged, weigh-ins only on days 20–27 (span 7) → adaptive;
-   weigh-ins only on days 24–27 → provisional.
-8. **Outlier**: as case 3, but one weigh-in of 95 on day 40 → the trend on day 40 moves by
-   less than 0.25 kg, and the last-day estimate is still within 20 of 2400.
-9. **Prior bound**: intake logged as 200 every day, weight flat → estimate never goes below
-   `0.6 · prior`.
-10. **Daily step cap**: raw estimate 1000 above running → running moves exactly 150 on the
-    first sufficient day.
-11. **Start date**: case 4 data, but `calculationStartDate` set to day 50 → the estimate on
-    the last day is provisional (only 10 days after the start).
-12. **Fixed mode** → every day's `kcal == prior`, `.fixed`, not provisional, trend still populated.
-13. **Step nowcast on**: case 3 plus steps 8000 for the earlier window days and 12000 for the
-    last 7, weight 80 → `stepAdjustmentKcal = 3000 · 0.0005 · 80 = 120`, and `kcal` includes it.
-    Off → 0. `windowSteps` in §3.6 is the mean over **all** the window's days, the trailing week
-    included, so the baseline here is (21 · 8000 + 7 · 12000) / 28 = 9000 rather than 8000 — the
-    recent week is compared against a window it is part of, which is what stops the nowcast
-    double-counting a change the energy balance has already absorbed.
-14. **Today excluded**: a sample dated `today` must be ignored (assert via a huge intake on
-    today not moving the estimate).
-15. **Determinism**: same inputs twice → identical arrays.
+## 7. Not done
 
-Proposal tests (`TargetProposalTests`): nil when provisional; nil under fixed; maintenance with
-no goal → proposed == expenditure; loss goal −0.5 kg/wk → expenditure − 550; predictive
-correction applied and clamped at ±200; below-50 delta → nil; floor respected; dismissal hides
-until the value moves ≥ 50.
-
-## 7. Out of scope for v1
-
-Weekly check-in scheduling, partial-logging day exclusion, fasting-day handling, logging breaks
-(all `NutritionStrategySettings` strategy fields), body-fat-driven lean-mass tracking, and any
-persistence of estimates. Each of those consumes this engine's output; none changes it.
+Any persistence of estimates; running the old engine in shadow behind a flag (the report suggests
+it until replay shows the intervals are calibrated); tuning the design choices on replayed
+histories; the opt-in menstrual-window R inflation (its source is unconfirmed, checklist item 15);
+the post-target-change glycogen burst in q_L; the optional maintenance band; mass-driven TDEE drift
+ε; a BMI-based body fat estimate for ρ when none is logged.

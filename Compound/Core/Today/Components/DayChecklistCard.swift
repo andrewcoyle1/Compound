@@ -32,6 +32,24 @@ struct DayChecklistCard: View {
                         .foregroundStyle(.secondary)
                 }
             }
+        } footer: {
+            footer
+        }
+    }
+
+    /// How "on target" and the step goal are judged, each with its sources.
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                Text("Calories count as on target within 10% either side.")
+                MethodInfoButton(.calorieAdherenceBand)
+            }
+            if checklist.items.contains(where: { $0.kind == .steps }) {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("Step goal: \(stepGoal.formatted()) a day.")
+                    MethodInfoButton(.dailyStepGoal)
+                }
+            }
         }
     }
 

@@ -51,7 +51,8 @@ enum ExpenditureSampleBuilder {
                     intakeKcal: isFastingWithNoLogs ? 0 : intake[day],
                     weightKg: weights[day],
                     steps: stepCounts[day],
-                    isExcluded: (annotation?.isPartiallyLogged ?? false) || isInBreak
+                    isExcluded: (annotation?.isPartiallyLogged ?? false) || isInBreak,
+                    isFastingDay: annotation?.isFastingDay ?? false
                 )
             )
             guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
@@ -75,7 +76,7 @@ enum ExpenditureSampleBuilder {
     }
 
     /// A day with meal logs is logged even when they add up to zero calories; a day with none is
-    /// not logged at all. That is the whole difference `minLoggedFraction` is measuring.
+    /// not logged at all.
     private static func intakeByDay(_ mealLogs: [MealLogModel], calendar: Calendar) -> [Date: Double] {
         var result: [Date: Double] = [:]
         for meal in mealLogs {
@@ -85,19 +86,20 @@ enum ExpenditureSampleBuilder {
         return result
     }
 
-    /// Several weigh-ins in one day are averaged; the trend cares about the day, not the scale trip.
+    /// The first weigh-in of each day is the day's reading: morning, before food and drink, is the
+    /// least noisy and the most comparable from day to day. A tie keeps the entry listed first.
     private static func weightByDay(
         _ measurements: [BodyMeasurementEntry],
         calendar: Calendar
     ) -> [Date: Double] {
-        var totals: [Date: (sum: Double, count: Int)] = [:]
+        var earliest: [Date: (date: Date, weight: Double)] = [:]
         for entry in measurements where entry.deletedAt == nil {
             guard let weight = entry.weightKg, weight.isFinite, weight > 0 else { continue }
             let day = calendar.startOfDay(for: entry.date)
-            totals[day, default: (0, 0)].sum += weight
-            totals[day, default: (0, 0)].count += 1
+            if let current = earliest[day], current.date <= entry.date { continue }
+            earliest[day] = (entry.date, weight)
         }
-        return totals.mapValues { $0.sum / Double($0.count) }
+        return earliest.mapValues { $0.weight }
     }
 
     /// HealthKit and a manual entry can both land on one day; the larger is the fuller count.

@@ -39,6 +39,7 @@ struct ExerciseAnalyticsView: View {
                 }
             } header: {
                 SectionHeaderView(title: String(localized: "Exercises"))
+                    .methodInfo(.estimatedOneRepMax)
             }
             .listSectionMargins(.horizontal, 0)
             .listRowSeparator(.hidden)

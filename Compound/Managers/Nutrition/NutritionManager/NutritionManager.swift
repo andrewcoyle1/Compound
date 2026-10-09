@@ -8,11 +8,17 @@
 import SwiftUI
 
 extension CalorieFloor {
-    var minimumValue: Double {
+    /// The floor for someone of this sex: 1,200 kcal for women, 1,500 for men, 1,350 when not
+    /// given (`NutritionTargets.calorieFloor(for:)`).
+    func minimumValue(for gender: Gender?) -> Double {
         switch self {
-        case .standard: return 1200
-        case .low: return 800
+        case .standard: return NutritionTargets.calorieFloor(for: gender)
         }
+    }
+
+    /// The floor when sex is not known. Prefer `minimumValue(for:)` wherever the user is at hand.
+    var minimumValue: Double {
+        minimumValue(for: nil)
     }
 }
 
@@ -72,12 +78,18 @@ class NutritionManager {
     // MARK: - Core logic
 
     /// What to eat to move at an active goal's weekly pace: expenditure plus the pace's daily share
-    /// of 7,700 kcal per kg. Maintenance with no goal, or one that is not active. The plan used to
-    /// be built at expenditure whatever the goal, so a goal to lose 0.5 kg a week set no deficit.
+    /// of the energy in a kilogram of weight change (`EnergyDensity`). Maintenance with no goal, or
+    /// one that is not active. The plan used to be built at expenditure whatever the goal, so a
+    /// goal to lose 0.5 kg a week set no deficit.
+    ///
+    /// A deficit is capped at a quarter of expenditure (`NutritionTargets.maximumDeficitShare`), so
+    /// the fastest rate on a small expenditure cannot ask for a crash diet; a surplus is not capped.
     static func goalTarget(expenditureKcal: Double, goal: WeightGoal?) -> Double {
         guard let goal, goal.status == .active else { return expenditureKcal }
-        return expenditureKcal + goal.signedWeeklyChangeKg * ExpenditureEngine.Constants.kcalPerKg / 7
+        let change = EnergyDensity.dailyKcal(forWeeklyChangeKg: goal.signedWeeklyChangeKg)
+        return expenditureKcal + max(change, -NutritionTargets.maximumDeficitShare * expenditureKcal)
     }
+
     /// `expenditureKcal` is what the body spends; `targetKcal` is what the plan asks the user to
     /// eat. They are two different numbers and the plan records both.
     ///
@@ -101,35 +113,42 @@ class NutritionManager {
         let now = Date()
         let userId = user?.userId
         let tdee = expenditureKcal ?? estimateTDEE(user: user)
-        let minimumCalories = delegate.calorieFloor.minimumValue
+        let minimumCalories = delegate.calorieFloor.minimumValue(for: user?.submittedGender)
         // The floor applies to the target whichever way it arrived: an engine that has watched
         // someone eat 900 kcal a day for a month must not be allowed to write that down.
         let targetCalories = max(targetKcal ?? Self.goalTarget(expenditureKcal: tdee, goal: goal), minimumCalories)
 
-        let proteinGrams = calculateProteinGrams(user: user, proteinIntake: delegate.proteinIntake)
-        let macroPercentages = calculateMacroPercentages(
-            preferredDiet: delegate.preferredDiet,
-            targetCalories: targetCalories,
-            proteinGrams: proteinGrams
+        let referenceWeight = NutritionTargets.referenceWeightKg(
+            weightKg: Self.clampedWeightKilograms(user?.submittedWeightKilograms),
+            heightCm: user?.submittedHeightCentimeters,
+            goalWeightKg: goal?.status == .active ? goal?.targetWeightKg : nil
+        )
+        let proteinGrams = NutritionTargets.proteinGrams(
+            intake: delegate.proteinIntake,
+            referenceWeightKg: referenceWeight,
+            ageYears: user?.submittedDateOfBirth.map { calculateAge(from: $0) }
         )
 
-        // Derive training context from the user's active training mesocycle.
-        // A day plan with at least one exercise counts as a training day.
-        let trainingDaysPerWeek = mesocycle?.workoutTemplates.filter { !$0.exercises.isEmpty }.count ?? 0
-        let hasTraining = trainingDaysPerWeek > 0
+        // Training context from the user's active mesocycle: a day plan with at least one exercise
+        // counts as a training day. The mesocycle is a queue, not a calendar, so this says how many
+        // high days a varied week gets, not which weekdays they fall on.
+        let trainingDaysPerWeek = mesocycle.map(CalorieDistribution.trainingDays(in:)) ?? 0
 
-        let dailyCalories = calculateDailyCalories(
-            targetCalories: targetCalories,
-            minimumCalories: minimumCalories,
-            calorieDistribution: delegate.calorieDistribution,
-            hasTraining: hasTraining
+        let dailyCalories = NutritionTargets.dailyCalories(
+            target: targetCalories,
+            floor: minimumCalories,
+            distribution: delegate.calorieDistribution,
+            trainingDaysPerWeek: trainingDaysPerWeek
         )
 
-        let dailyMacros = computeDailyMacros(
-            dailyCalories: dailyCalories,
-            proteinGrams: proteinGrams,
-            macroPercentages: macroPercentages
-        )
+        let dailyMacros = dailyCalories.map { calories in
+            NutritionTargets.macros(
+                calories: calories,
+                proteinGrams: proteinGrams,
+                diet: delegate.preferredDiet,
+                referenceWeightKg: referenceWeight
+            )
+        }
 
         let trainingTypeDescription = mesocycle?.name ?? trainingFocusDescription(
             exerciseFrequency: user?.submittedExerciseFrequency
@@ -185,204 +204,44 @@ class NutritionManager {
         (height ?? 175).clamped(to: 120...260, whenNotFinite: 175)
     }
 
-    private func calculateProteinGrams(user: UserModel?, proteinIntake: ProteinIntake) -> Double {
-        let userKg = Self.clampedWeightKilograms(user?.submittedWeightKilograms)
-        let proteinPerKg: Double
-        switch proteinIntake {
-        case .low: proteinPerKg = 1.6
-        case .moderate: proteinPerKg = 2.0
-        case .high: proteinPerKg = 2.2
-        case .veryHigh: proteinPerKg = 2.6
-        }
-        return proteinPerKg * userKg
-    }
-
-    private func calculateMacroPercentages(
-        preferredDiet: PreferredDiet,
-        targetCalories: Double,
-        proteinGrams: Double
-    ) -> (fatPercent: Double, carbPercent: Double) {
-        let proteinCalories = proteinGrams * 4
-        let fatPercent: Double
-        let carbPercent: Double
-
-        switch preferredDiet {
-        case .balanced:
-            fatPercent = 0.30
-            carbPercent = 1.0 - fatPercent - (proteinCalories / max(targetCalories, 1))
-        case .lowFat:
-            fatPercent = 0.20
-            carbPercent = 1.0 - fatPercent - (proteinCalories / max(targetCalories, 1))
-        case .lowCarb:
-            carbPercent = 0.20
-            fatPercent = 1.0 - carbPercent - (proteinCalories / max(targetCalories, 1))
-        case .keto:
-            carbPercent = 0.05
-            fatPercent = 1.0 - carbPercent - (proteinCalories / max(targetCalories, 1))
-        }
-
-        return (fatPercent, carbPercent)
-    }
-
-    /// Generates 7 daily calorie targets (Mon–Sun).
-    /// When `calorieDistribution == .varied` and the user has training days,
-    /// higher calories are assigned to training days (days 1, 3, 5) and lower to rest days.
-    private func calculateDailyCalories(
-        targetCalories: Double,
-        minimumCalories: Double,
-        calorieDistribution: CalorieDistribution,
-        hasTraining: Bool
-    ) -> [Double] {
-        guard calorieDistribution == .varied && hasTraining else {
-            return Array(repeating: max(targetCalories, minimumCalories), count: 7)
-        }
-
-        let high = targetCalories * 1.10
-        let low = targetCalories * 0.925
-        return [high, low, high, low, high, low, low].map { max($0, minimumCalories) }
-    }
-
-    /// Splits each day's non-protein calories between fat and carbs.
-    ///
-    /// `calculateMacroPercentages` returns shares of the day's *total* calories, so applying
-    /// `fatPercent` straight to the post-protein remainder understated fat — balanced came out at
-    /// 23% of the day rather than 30% — and `carbPercent` was not read at all, which left keto at
-    /// roughly 150g of carbs, about 21% of calories and ketogenic by no definition.
-    ///
-    /// Protein is a fixed number of grams and the day's calories vary, so the two shares cannot
-    /// both be applied to the total and still sum to it. Splitting the remainder by the fat:carb
-    /// ratio honours the diet's intent exactly on a day at the target, keeps every day summing to
-    /// its own calories, and degrades sensibly on the high and low days of a varied week.
-    private func computeDailyMacros(
-        dailyCalories: [Double],
-        proteinGrams: Double,
-        macroPercentages: (fatPercent: Double, carbPercent: Double)
-    ) -> [DailyMacroTarget] {
-        let proteinCalories = proteinGrams * 4
-
-        // A protein target large enough to swallow the day can drive either share negative.
-        // Clamping first keeps the ratio inside 0...1; an even split is the neutral fallback when
-        // protein has claimed everything and there is nothing left to divide anyway.
-        let fatShare = max(macroPercentages.fatPercent, 0)
-        let carbShare = max(macroPercentages.carbPercent, 0)
-        let totalShare = fatShare + carbShare
-        let fatRatio = totalShare > 0 ? fatShare / totalShare : 0.5
-
-        return dailyCalories.map { cals in
-            let remainingCalories = max(cals - proteinCalories, 0)
-            let fatCalories = max(remainingCalories * fatRatio, 0)
-            let carbCalories = max(remainingCalories - fatCalories, 0)
-            let fatGrams = fatCalories / 9
-            let carbGrams = carbCalories / 4
-            return DailyMacroTarget(
-                calories: round(cals),
-                proteinGrams: round(proteinGrams),
-                carbGrams: round(carbGrams),
-                fatGrams: round(fatGrams)
-            )
-        }
-    }
-
     // MARK: - Estimation
+
+    /// The formula estimate of daily expenditure (`FormulaExpenditure`): the resting rate from
+    /// `equation`, multiplied by the PAL for the user's activity answer. A missing weight or height
+    /// reads as 70 kg or 175 cm, a missing age as 30, and a missing sex as the midpoint of the two.
     func estimateTDEE(
         user: UserModel?,
         equation: BMREquation = .mifflinStJeor,
         bodyFatPercentage: Double? = nil
     ) -> Double {
-        let gender = user?.submittedGender ?? .male
-        let weightKg = Self.clampedWeightKilograms(user?.submittedWeightKilograms)
-        let heightCm = Self.clampedHeightCentimeters(user?.submittedHeightCentimeters)
-        let ageYears = calculateAge(from: user?.submittedDateOfBirth)
+        formulaEstimate(user: user, equation: equation, bodyFatPercentage: bodyFatPercentage).totalKcal
+    }
 
-        let bmr = basalMetabolicRate(
+    /// The estimate with its parts: resting, activity and digestion.
+    func formulaEstimate(
+        user: UserModel?,
+        equation: BMREquation = .mifflinStJeor,
+        bodyFatPercentage: Double? = nil
+    ) -> FormulaExpenditure.Estimate {
+        FormulaExpenditure.estimate(
             equation: equation,
-            body: BodyComposition(
-                gender: gender,
-                weightKg: weightKg,
-                heightCm: heightCm,
-                age: Double(ageYears),
+            body: FormulaExpenditure.Body(
+                // The midpoint rather than a man's figure when sex is not given: guessing male
+                // biased every such estimate upward.
+                gender: user?.submittedGender ?? .preferNotToSay,
+                weightKg: Self.clampedWeightKilograms(user?.submittedWeightKilograms),
+                heightCm: Self.clampedHeightCentimeters(user?.submittedHeightCentimeters),
+                ageYears: Double(calculateAge(from: user?.submittedDateOfBirth)),
                 bodyFatPercentage: bodyFatPercentage
-            )
+            ),
+            activity: user?.submittedDailyActivityLevel ?? .moderate
         )
-
-        let activityMultiplier = calculateActivityMultiplier(
-            dailyActivity: user?.submittedDailyActivityLevel ?? .moderate,
-            exerciseFrequency: user?.submittedExerciseFrequency ?? .threeToFour
-        )
-
-        let tdee = bmr * activityMultiplier
-        return max(1000, tdee)
-    }
-
-    /// The equation the user picked on the Expenditure settings screen. Katch-McArdle works from
-    /// lean mass, so without a logged body fat percentage it has nothing to work from and falls
-    /// back to Mifflin-St Jeor rather than inventing a figure.
-    /// The body inputs every BMR equation draws on, grouped so the equation helpers stay within
-    /// the parameter-count limit.
-    private struct BodyComposition {
-        let gender: Gender
-        let weightKg: Double
-        let heightCm: Double
-        let age: Double
-        let bodyFatPercentage: Double?
-    }
-
-    private func basalMetabolicRate(equation: BMREquation, body: BodyComposition) -> Double {
-        switch equation {
-        case .mifflinStJeor:
-            return mifflinStJeorBMR(body: body)
-        case .harrisBenedict:
-            let male = 88.362 + (13.397 * body.weightKg) + (4.799 * body.heightCm) - (5.677 * body.age)
-            let female = 447.593 + (9.247 * body.weightKg) + (3.098 * body.heightCm) - (4.330 * body.age)
-            switch body.gender {
-            case .male: return male
-            case .female: return female
-            // Harris-Benedict has two whole equations rather than one sex term, so the midpoint
-            // here is the average of the two, as Mifflin-St Jeor's -78 is of +5 and -161.
-            case .preferNotToSay: return (male + female) / 2
-            }
-        case .katchMcArdle:
-            guard let bodyFat = body.bodyFatPercentage, bodyFat > 0, bodyFat < 100 else {
-                return mifflinStJeorBMR(body: body)
-            }
-            let leanMassKg = body.weightKg * (1 - (bodyFat / 100))
-            return 370 + (21.6 * leanMassKg)
-        }
-    }
-
-    private func mifflinStJeorBMR(body: BodyComposition) -> Double {
-        (10 * body.weightKg) + (6.25 * body.heightCm) - (5 * body.age) + body.gender.mifflinStJeorCoefficient
     }
 
     private func calculateAge(from dateOfBirth: Date?) -> Int {
         guard let dob = dateOfBirth else { return 30 }
         let years = Calendar.current.dateComponents([.year], from: dob, to: Date()).year ?? 30
         return max(14, years)
-    }
-
-    private func calculateActivityMultiplier(
-        dailyActivity: ActivityLevel,
-        exerciseFrequency: ExerciseFrequency
-    ) -> Double {
-        let baseMultiplier: Double
-        switch dailyActivity {
-        case .sedentary: baseMultiplier = 1.2
-        case .light: baseMultiplier = 1.35
-        case .moderate: baseMultiplier = 1.5
-        case .active: baseMultiplier = 1.7
-        case .veryActive: baseMultiplier = 1.9
-        }
-
-        let exerciseAdj: Double
-        switch exerciseFrequency {
-        case .never: exerciseAdj = 0.0
-        case .oneToTwo: exerciseAdj = 0.05
-        case .threeToFour: exerciseAdj = 0.10
-        case .fiveToSix: exerciseAdj = 0.15
-        case .daily: exerciseAdj = 0.20
-        }
-
-        return baseMultiplier + exerciseAdj
     }
 }
 
@@ -429,15 +288,25 @@ extension CoreInteractor {
 
     // Estimation
     func estimateTDEE(user: UserModel?) -> Double {
+        formulaEstimate(user: user).totalKcal
+    }
+
+    /// The formula estimate with its parts, on the equation the Expenditure settings resolve to.
+    func formulaEstimate(user: UserModel?) -> FormulaExpenditure.Estimate {
         let bodyFatPercentage = latestBodyFatPercentage
-        return nutritionManager.estimateTDEE(
+        return nutritionManager.formulaEstimate(
             user: user,
             equation: nutritionStrategySettings.resolvedBMREquation(bodyFatPercentage: bodyFatPercentage),
             bodyFatPercentage: bodyFatPercentage
         )
     }
 
-    /// Katch-McArdle needs lean mass, so it needs the most recent weigh-in that recorded a body
+    /// The resting rate the formula estimate starts from, for the below-resting warning.
+    func estimateRestingKcal(user: UserModel?) -> Double {
+        formulaEstimate(user: user).restingKcal
+    }
+
+    /// Cunningham needs fat-free mass, so it needs the most recent weigh-in that recorded a body
     /// fat percentage. Nil for everyone who has never logged one.
     private var latestBodyFatPercentage: Double? {
         let entries = bodyMeasurements.filter { $0.bodyFatPercentage != nil && $0.deletedAt == nil }

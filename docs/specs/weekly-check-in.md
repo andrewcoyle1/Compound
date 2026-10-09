@@ -58,11 +58,13 @@ Extend `DailySample` with `let isExcluded: Bool` (default `false`). `CoreInterac
 - `isFastingDay == true` → **not** excluded; instead, a day with no meal logs is treated as
   logged with 0 kcal (`intakeKcal = 0`). Without the flag such a day is `nil`.
 
-Engine change: an excluded day counts as **unlogged** for `meanIntake` and for the
-`minLoggedFraction` guard, but its weigh-in still feeds the trend. That is the only engine
-change; add it to the engine's tests (excluded days with wild intake do not move the estimate;
-fasting days pull the mean down; a week-long break makes the window insufficient when it eats
-past the logged-fraction guard).
+Engine rule: an excluded day's intake is **not observed** by the expenditure filter, and it
+counts as unlogged for the 80% calibration gate, but its weigh-in still feeds the trend. Since the
+2026-10 filter (`docs/specs/adaptive-expenditure.md` §3.3), any other logged day below half the
+current expenditure is treated the same way unless it is marked as a fast: `DailySample` carries
+`isFastingDay` so a marked fast's low intake is read as real. Tests: excluded days with wild
+intake do not move the estimate; marked fasting days pull it down while the same unmarked zeros
+are skipped; a week-long break takes a fully logged window under the 80% gate.
 
 During an open logging break the running estimate is frozen: `CoreInteractor` passes
 `today = break.startDate` to the engine so the history stops there, and `TargetProposal` is nil.
@@ -95,12 +97,20 @@ and it has something to ask; the presenter computes `steps` once at start:
 | Weigh-in | `weighInEnabled` and no weigh-in in the last 3 days | Inline weight entry (reuse the existing log-weight sheet's input, not a new picker). Log or Skip. |
 | Fasting | `fastingEnabled` and the week has ≥1 day with no meal logs | Those days listed with a toggle "Fasted". Saves annotations. |
 | Logging break | `loggingBreakEnabled` | "Take a break from logging?" Start a break (open-ended; the card and the estimate freeze) or Continue. Shown only if no break is open; if one is open the step offers to end it. |
-| Program update | always | The `TargetProposal` if non-nil (Accept applies it via the existing accept path); otherwise "Your targets are unchanged this week" with the current expenditure and trend. Done. |
+| Program update | always | The `TargetProposal` if non-nil (Accept applies it via the existing accept path). Otherwise "Your targets are unchanged this week" with the current expenditure (its 80% interval once adaptive, "calibrating" before) and the trend; and, when the target would have come down but the last week's logged intake ran more than 10% over it while the trend is behind the goal, an `AdherenceNote` saying so instead of lowering the target (`docs/specs/adaptive-expenditure.md` §4). Done. |
 
 `fastCheckIn` skips Introduction and, for Partial logging and Fasting, pre-collapses the lists
-to only the days that look suspicious (intake < 50 % of the current expenditure for partial;
+to only the days that look suspicious (intake < 50 % of the current expenditure for partial —
+`ExpenditureEngine.Constants.partialDayFraction`, the same threshold the engine already skips;
 no logs for fasting), so a fast check-in with nothing suspicious is two taps: Weigh-in (if
 needed) and Program update.
+
+Each step's header carries an ⓘ: the weight trend (Introduction), the check-in rules (Partial
+logging, Fasting), the target controller (Program update with a proposal or an adherence note) and
+adaptive expenditure (Program update without one). These rules rest on under-reporting being
+common and largest on partly logged days (Lichtman 1992) and on the filter treating missing intake
+as missing rather than imputed (Guo 2017); the 50% threshold and the three-day weigh-in window are
+design choices.
 
 Completing the last step sets `lastCompletedWeekStart`. Dismissing the sheet part-way keeps
 annotations already saved and leaves the check-in due.

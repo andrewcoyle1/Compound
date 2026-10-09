@@ -73,13 +73,10 @@ class ExerciseDetailPresenter {
             let sessionDate = session.endedAt ?? session.dateCreated
             let day = startOfDay(sessionDate)
             for exercise in session.exercises where exercise.templateId == templateId {
+                // The same sets and estimate as the Progress tab's card (`ExerciseOneRMAggregator`).
                 let best1RM = exercise.sets
-                    .filter { !$0.isWarmup && $0.completedAt != nil }
-                    .compactMap { set -> Double? in
-                        guard let weight = set.weightKg, weight > 0 else { return nil }
-                        let reps = set.reps ?? 1
-                        return ExerciseOneRMAggregator.estimated1RM(weightKg: weight, reps: max(1, reps))
-                    }
+                    .filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
+                    .compactMap { ExerciseOneRMAggregator.estimated1RM(of: $0) }
                     .max()
                 if let oneRM = best1RM, oneRM > 0 {
                     oneRMByDay[day] = max(oneRMByDay[day] ?? 0, oneRM)
@@ -96,6 +93,8 @@ class ExerciseDetailPresenter {
 
 extension ExerciseDetailPresenter: @MainActor MetricDetailPresenter {
     typealias Entry = ExerciseDetailEntry
+
+    var methodInfo: MethodInfo? { .estimatedOneRepMax }
 
     var entries: [ExerciseDetailEntry] {
         cachedEntries

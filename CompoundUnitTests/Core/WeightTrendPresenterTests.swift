@@ -150,10 +150,10 @@ struct WeightTrendPresenterTests {
 
     // MARK: - The trend itself
 
-    /// The rows under the chart are the smoothed values, not the raw readings, and the first of
-    /// them starts on the scale.
-    @Test("Test The Trend Starts At The First Reading")
-    func testTheTrendStartsAtTheFirstReading() throws {
+    /// The rows under the chart are the smoothed values, not the raw readings. The trend starts at
+    /// the median of the first three, so one odd first reading does not anchor it.
+    @Test("Test The Trend Starts At The Median Of The First Readings")
+    func testTheTrendStartsAtTheMedianOfTheFirstReadings() throws {
         let screen = makeScreen([
             entry(id: "e1", weightKg: 80.0, daysAgo: 2),
             entry(id: "e2", weightKg: 70.0, daysAgo: 1),
@@ -162,19 +162,31 @@ struct WeightTrendPresenterTests {
 
         let first = try #require(screen.presenter.entries.first)
 
-        #expect(first.trendValue == 80.0)
+        #expect(abs(first.trendValue - 70.0) < 0.5)
     }
 
     /// A single heavy day barely moves the trend — the whole reason the screen shows one.
     @Test("Test A Spike Barely Moves The Trend")
     func testASpikeBarelyMovesTheTrend() throws {
         let steady = (2...10).reversed().map { entry(id: "e\($0)", weightKg: 72.0, daysAgo: $0) }
-        let screen = makeScreen(steady + [entry(id: "spike", weightKg: 78.0, daysAgo: 0)])
+        let screen = makeScreen(steady + [entry(id: "spike", weightKg: 74.5, daysAgo: 0)])
 
         let last = try #require(screen.presenter.entries.last)
 
         #expect(last.trendValue > 72.0)
-        #expect(last.trendValue < 74.0)
+        #expect(last.trendValue < 73.0)
+    }
+
+    /// A reading more than max(3 kg, 4%) off the trend, with nothing after it to confirm it, is
+    /// taken for a typo or another scale and left out of the trend.
+    @Test("Test A Wild Reading Is Left Out Of The Trend")
+    func testAWildReadingIsLeftOutOfTheTrend() throws {
+        let steady = (2...10).reversed().map { entry(id: "e\($0)", weightKg: 72.0, daysAgo: $0) }
+        let screen = makeScreen(steady + [entry(id: "typo", weightKg: 7.2, daysAgo: 0)])
+
+        let last = try #require(screen.presenter.entries.last)
+
+        #expect(abs(last.trendValue - 72.0) < 1e-9)
     }
 
     @Test("Test The Trend Has A Row Per Weigh-In, Oldest First")

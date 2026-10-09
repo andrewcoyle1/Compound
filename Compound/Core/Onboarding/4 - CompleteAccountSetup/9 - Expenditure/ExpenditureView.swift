@@ -71,9 +71,9 @@ struct ExpenditureView: View {
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("An estimate of calories burned per day")
+            MethodInfoHeader(title: "An estimate of calories burned per day", info: .formulaExpenditure)
         } footer: {
-            Text("This is your estimated total daily energy expenditure.")
+            Text("This is your estimated total daily energy expenditure. Formulas like this are typically within about 10% for three people in four, so Compound refines it from your own logs once you start tracking.")
         }
     }
     
@@ -84,14 +84,13 @@ struct ExpenditureView: View {
             height: delegate.heightInCentimetres,
             dateOfBirth: delegate.dateOfBirth,
             gender: delegate.gender,
-            activityLevel: delegate.activityLevel,
-            exerciseFrequency: delegate.exerciseFrequency
+            activityLevel: delegate.activityLevel
         )
         return presenter.breakdownItems(context: context)
     }
     
     private var breakdownSection: some View {
-        Section("Breakdown") {
+        Section {
             ForEach(breakdownItems) { item in
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
@@ -108,6 +107,8 @@ struct ExpenditureView: View {
                 }
                 .padding(.vertical, Spacing.xs)
             }
+        } header: {
+            MethodInfoHeader(title: "Breakdown", info: .thermicEffectOfFood)
         }
     }
     
@@ -124,7 +125,7 @@ struct ExpenditureView: View {
                 Divider()
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("Activity Level Multiplier")
+                        Text("Physical Activity Level")
                         Text(activityDescriptionText)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -133,22 +134,11 @@ struct ExpenditureView: View {
                     Text("× \(calculatedBaseActivityMultiplier, format: .number.precision(.fractionLength(2)))")
                         .foregroundStyle(.secondary)
                 }
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("Exercise Frequency Adjustment")
-                        Text(exerciseDescriptionText)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Text("+ \(calculatedExerciseAdjustment, format: .number.precision(.fractionLength(2)))")
-                        .foregroundStyle(.secondary)
-                }
                 Divider()
                 HStack {
                     Text("Daily Calories Burned")
                     Spacer()
-                    Text("Resting calories × (activity + exercise)")
+                    Text("Resting calories × activity level")
                         .foregroundStyle(.secondary)
                 }
                 HStack {
@@ -160,9 +150,9 @@ struct ExpenditureView: View {
                 }
             }
         } header: {
-            Text("How This Is Calculated")
+            MethodInfoHeader(title: "How This Is Calculated", info: .restingMetabolicRate)
         } footer: {
-            Text("Resting calories are based on your age, height, weight and sex, then scaled by daily activity and how often you exercise. Minimum safeguards may apply elsewhere when setting calorie targets.")
+            Text("Resting calories come from the Mifflin-St Jeor equation, using your age, height, weight and sex. They're then multiplied by a physical activity level that already includes your workouts. A calorie floor is applied when your targets are set.")
         }
     }
     
@@ -185,14 +175,6 @@ struct ExpenditureView: View {
         return presenter.baseActivityMultiplier(activityLevel: delegate.activityLevel)
     }
     
-    private var exerciseDescriptionText: String {
-        return presenter.exerciseDescription(exerciseFrequency: delegate.exerciseFrequency)
-    }
-    
-    private var calculatedExerciseAdjustment: Double {
-        return presenter.exerciseAdjustment(exerciseFrequency: delegate.exerciseFrequency)
-    }
-    
     private var calculatedTdeeInt: Int {
 
         let context = ExpenditurePresenter.ExpenditureContext(
@@ -200,8 +182,7 @@ struct ExpenditureView: View {
             height: delegate.heightInCentimetres,
             dateOfBirth: delegate.dateOfBirth,
             gender: delegate.gender,
-            activityLevel: delegate.activityLevel,
-            exerciseFrequency: delegate.exerciseFrequency
+            activityLevel: delegate.activityLevel
         )
         return presenter.tdeeInt(context: context)
     }

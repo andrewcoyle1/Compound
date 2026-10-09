@@ -13,13 +13,17 @@ struct TargetProposalTests {
 
     // MARK: - Fixtures
 
+    private static let today = Date(timeIntervalSince1970: 1_750_000_000)
+
     private func estimate(
         kcal: Double,
         isProvisional: Bool = false,
-        weeklyTrendChangeKg: Double? = nil
+        weeklyTrendChangeKg: Double? = nil,
+        sdKcal: Double? = 100,
+        recentIntakeKcal: Double? = nil
     ) -> ExpenditureEstimate {
         ExpenditureEstimate(
-            day: Date(timeIntervalSince1970: 1_750_000_000),
+            day: Self.today,
             kcal: kcal,
             source: isProvisional ? .prior : .adaptive,
             isProvisional: isProvisional,
@@ -28,15 +32,17 @@ struct TargetProposalTests {
             loggedDays: 24,
             weighInCount: 20,
             windowDays: 28,
-            stepAdjustmentKcal: 0
+            stepAdjustmentKcal: 0,
+            sdKcal: sdKcal,
+            recentIntakeKcal: recentIntakeKcal
         )
     }
 
-    private func plan(targetKcal: Double, floor: CalorieFloor = .standard) -> DietPlan {
+    private func plan(targetKcal: Double, floor: CalorieFloor = .standard, createdDaysAgo: Int = 30) -> DietPlan {
         DietPlan(
             planId: "plan-1",
             userId: "user-1",
-            createdAt: Date(timeIntervalSince1970: 1_700_000_000),
+            createdAt: Self.today.addingTimeInterval(-Double(createdDaysAgo) * 86_400),
             tdeeEstimate: targetKcal,
             preferredDiet: PreferredDiet.balanced.rawValue,
             calorieFloor: floor.rawValue,
@@ -62,14 +68,37 @@ struct TargetProposalTests {
         )
     }
 
-    private func settings(
-        mode: ExpenditureCalculationMode = .dynamic,
-        predictive: Bool = false
-    ) -> NutritionStrategySettings {
+    private func settings(mode: ExpenditureCalculationMode = .dynamic) -> NutritionStrategySettings {
         var settings = NutritionStrategySettings(authorId: "user-1")
         settings.calculationMode = mode
-        settings.predictiveGoalAdjustments = predictive
         return settings
+    }
+
+    private var utc: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        return calendar
+    }
+
+    private func make(
+        _ estimate: ExpenditureEstimate,
+        plan: DietPlan?,
+        goal: WeightGoal? = nil,
+        settings: NutritionStrategySettings? = nil,
+        dismissedKcal: Double? = nil,
+        kcalPerKg: Double = EnergyDensity.conventionalKcalPerKg,
+        gender: Gender? = nil
+    ) -> TargetProposal? {
+        TargetProposal.make(
+            estimate: estimate,
+            plan: plan,
+            goal: goal,
+            settings: settings ?? self.settings(),
+            dismissedKcal: dismissedKcal,
+            kcalPerKg: kcalPerKg,
+            gender: gender,
+            calendar: utc
+        )
     }
 
     // MARK: - When there is nothing to say
@@ -124,125 +153,116 @@ struct TargetProposalTests {
 
     // MARK: - What it proposes
 
-    @Test("Test With No Active Goal The Proposal Is Maintenance")
-    func testWithNoActiveGoalTheProposalIsMaintenance() throws {
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800),
-                plan: plan(targetKcal: 2000),
-                goal: nil,
-                settings: settings()
-            )
-        )
+    /// Feedforward: the target is the estimate plus the goal rate's daily share of the energy in a
+    /// kilogram, reached in steps of at most 150 kcal a week.
+    @Test("Test With No Active Goal The Proposal Steps Towards Maintenance")
+    func testWithNoActiveGoalTheProposalStepsTowardsMaintenance() throws {
+        let proposal = try #require(make(estimate(kcal: 2800), plan: plan(targetKcal: 2000)))
 
-        #expect(proposal.proposedTargetKcal == 2800)
+        #expect(proposal.proposedTargetKcal == 2000 + TargetProposal.maximumStepKcal)
         #expect(proposal.expenditureKcal == 2800)
         #expect(proposal.currentTargetKcal == 2000)
         #expect(proposal.goalWeeklyChangeKg == nil)
         #expect(proposal.reason == .expenditureMoved)
     }
 
+    @Test("Test A Move Inside The Step Limit Lands On The Target")
+    func testAMoveInsideTheStepLimitLandsOnTheTarget() throws {
+        let proposal = try #require(make(estimate(kcal: 2120), plan: plan(targetKcal: 2000)))
+
+        #expect(proposal.proposedTargetKcal == 2120)
+    }
+
     @Test("Test A Paused Goal Does Not Count As A Goal")
     func testAPausedGoalDoesNotCountAsAGoal() throws {
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800),
-                plan: plan(targetKcal: 2000),
-                goal: lossGoal(status: .paused),
-                settings: settings()
-            )
-        )
+        let proposal = try #require(make(estimate(kcal: 2120), plan: plan(targetKcal: 2000), goal: lossGoal(status: .paused)))
 
-        #expect(proposal.proposedTargetKcal == 2800)
+        #expect(proposal.proposedTargetKcal == 2120)
         #expect(proposal.goalWeeklyChangeKg == nil)
     }
 
     @Test("Test A Half Kilo A Week Loss Goal Takes Five Hundred And Fifty Off")
     func testAHalfKiloAWeekLossGoalTakesFiveHundredAndFiftyOff() throws {
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800),
-                plan: plan(targetKcal: 2000),
-                goal: lossGoal(),
-                settings: settings()
-            )
-        )
+        // 2,800 − 0.5 · 7,700 / 7 = 2,250: inside the step limit from 2,140.
+        let proposal = try #require(make(estimate(kcal: 2800), plan: plan(targetKcal: 2140), goal: lossGoal()))
 
         #expect(proposal.proposedTargetKcal == 2250)
         #expect(proposal.goalWeeklyChangeKg == -0.5)
     }
 
-    // MARK: - The predictive correction
-
-    @Test("Test A Rate Behind The Goal Nudges The Target Down")
-    func testARateBehindTheGoalNudgesTheTargetDown() throws {
-        // Goal is −0.5 kg/wk, the scale is only doing −0.4, so the target comes down by
-        // (−0.5 − −0.4) · 7700 / 7 = −110.
+    @Test("Test A Leaner Energy Density Takes Less Off For The Same Rate")
+    func testALeanerEnergyDensityTakesLessOffForTheSameRate() throws {
+        // 6,300 kcal/kg: 2,800 − 0.5 · 6,300 / 7 = 2,350.
         let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800, weeklyTrendChangeKg: -0.4),
-                plan: plan(targetKcal: 2000),
-                goal: lossGoal(),
-                settings: settings(predictive: true)
-            )
+            make(estimate(kcal: 2800), plan: plan(targetKcal: 2240), goal: lossGoal(), kcalPerKg: 6300)
         )
 
-        #expect(proposal.proposedTargetKcal == 2140)
-        #expect(proposal.weeklyTrendChangeKg == -0.4)
+        #expect(proposal.proposedTargetKcal == 2350)
     }
 
-    @Test("Test The Predictive Correction Is Clamped At Two Hundred Kcal")
-    func testThePredictiveCorrectionIsClampedAtTwoHundredKcal() throws {
-        // A raw correction of (−0.5 − 1.5) · 7700 / 7 = −2200, which is the algorithm arguing
-        // with the goal rather than serving it.
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800, weeklyTrendChangeKg: 1.5),
-                plan: plan(targetKcal: 2000),
-                goal: lossGoal(),
-                settings: settings(predictive: true)
-            )
+    // MARK: - No double counting
+
+    /// The old controller added (goal rate − observed rate) · 7700 / 7 on top. The filter already
+    /// absorbs that gap, so the observed rate no longer changes what is proposed.
+    @Test("Test The Observed Rate Does Not Add A Second Correction")
+    func testTheObservedRateDoesNotAddASecondCorrection() throws {
+        let onPace = try #require(
+            make(estimate(kcal: 2800, weeklyTrendChangeKg: -0.5), plan: plan(targetKcal: 2140), goal: lossGoal())
+        )
+        let behind = try #require(
+            make(estimate(kcal: 2800, weeklyTrendChangeKg: -0.2), plan: plan(targetKcal: 2140), goal: lossGoal())
         )
 
-        #expect(proposal.proposedTargetKcal == 2250 - TargetProposal.maximumCorrectionKcal)
+        #expect(onPace.proposedTargetKcal == 2250)
+        #expect(behind.proposedTargetKcal == 2250)
     }
 
-    @Test("Test The Correction Is Skipped When Predictive Adjustments Are Off")
-    func testTheCorrectionIsSkippedWhenPredictiveAdjustmentsAreOff() throws {
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2800, weeklyTrendChangeKg: -0.1),
-                plan: plan(targetKcal: 2000),
-                goal: lossGoal(),
-                settings: settings(predictive: false)
-            )
-        )
+    // MARK: - The deadband and cadence
 
-        #expect(proposal.proposedTargetKcal == 2250)
+    @Test("Test The Deadband Grows With The Estimate's Uncertainty")
+    func testTheDeadbandGrowsWithTheEstimatesUncertainty() {
+        // 120 kcal apart: past the 50 kcal floor, but inside a 150 kcal SD.
+        #expect(make(estimate(kcal: 2120, sdKcal: 100), plan: plan(targetKcal: 2000)) != nil)
+        #expect(make(estimate(kcal: 2120, sdKcal: 150), plan: plan(targetKcal: 2000)) == nil)
     }
 
-    @Test("Test A Proposal The Correction Alone Earned Says So")
-    func testAProposalTheCorrectionAloneEarnedSaysSo() throws {
-        // Without the correction the move is 20 kcal — too small to show. The correction of
-        // (−0.5 − −0.4) · 7700 / 7 = −110 is what makes it worth saying.
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 2820, weeklyTrendChangeKg: -0.4),
-                plan: plan(targetKcal: 2270),
-                goal: lossGoal(),
-                settings: settings(predictive: true)
-            )
-        )
+    @Test("Test No Proposal Within A Week Of The Last Change")
+    func testNoProposalWithinAWeekOfTheLastChange() {
+        #expect(make(estimate(kcal: 2200), plan: plan(targetKcal: 2000, createdDaysAgo: 6)) == nil)
+        #expect(make(estimate(kcal: 2200), plan: plan(targetKcal: 2000, createdDaysAgo: 7)) != nil)
+    }
 
-        #expect(proposal.reason == .rateOffTarget)
-        #expect(proposal.proposedTargetKcal == 2160)
+    // MARK: - Adherence before lowering
+
+    /// Eating well over the target and losing slower than planned: lowering the target would chase
+    /// the eating, so the check-in talks about adherence instead.
+    @Test("Test Eating Over The Target Gets A Note Not A Lower Target")
+    func testEatingOverTheTargetGetsANoteNotALowerTarget() throws {
+        let overEating = estimate(kcal: 2500, weeklyTrendChangeKg: -0.1, recentIntakeKcal: 2500)
+        let current = plan(targetKcal: 2150)
+
+        #expect(make(overEating, plan: current, goal: lossGoal()) == nil)
+        let note = try #require(
+            AdherenceNote.make(estimate: overEating, plan: current, goal: lossGoal(), settings: settings(), calendar: utc)
+        )
+        #expect(note.targetKcal == 2150)
+        #expect(note.recentIntakeKcal == 2500)
+    }
+
+    @Test("Test Eating On Target Still Lets The Target Come Down")
+    func testEatingOnTargetStillLetsTheTargetComeDown() throws {
+        let onTarget = estimate(kcal: 2500, weeklyTrendChangeKg: -0.1, recentIntakeKcal: 2200)
+        let proposal = try #require(make(onTarget, plan: plan(targetKcal: 2150), goal: lossGoal()))
+
+        #expect(proposal.proposedTargetKcal == 2000)
+        #expect(AdherenceNote.make(estimate: onTarget, plan: plan(targetKcal: 2150), goal: lossGoal(), settings: settings(), calendar: utc) == nil)
     }
 
     // MARK: - The floor
 
-    @Test("Test The Plan's Calorie Floor Holds The Proposal Up")
-    func testThePlansCalorieFloorHoldsTheProposalUp() throws {
-        // 1400 expenditure against a 1 kg/wk loss goal would propose 300 kcal a day.
+    @Test("Test The Calorie Floor Holds The Proposal Up By Sex")
+    func testTheCalorieFloorHoldsTheProposalUpBySex() throws {
+        // 1,400 expenditure against a 1 kg/wk loss goal would propose 300 kcal a day.
         let steepGoal = WeightGoal(
             userId: "user-1",
             objective: .loseWeight,
@@ -251,38 +271,12 @@ struct TargetProposalTests {
             weeklyChangeKg: 1.0,
             status: .active
         )
+        let floor = CalorieFloor.standard.minimumValue(for: .male)
         let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 1400),
-                plan: plan(targetKcal: 2000, floor: .standard),
-                goal: steepGoal,
-                settings: settings()
-            )
+            make(estimate(kcal: 1400), plan: plan(targetKcal: floor + 140), goal: steepGoal, gender: .male)
         )
 
-        #expect(proposal.proposedTargetKcal == CalorieFloor.standard.minimumValue)
-    }
-
-    @Test("Test A Low Floor Lets The Proposal Go Lower")
-    func testALowFloorLetsTheProposalGoLower() throws {
-        let steepGoal = WeightGoal(
-            userId: "user-1",
-            objective: .loseWeight,
-            startingWeightKg: 85,
-            targetWeightKg: 70,
-            weeklyChangeKg: 1.0,
-            status: .active
-        )
-        let proposal = try #require(
-            TargetProposal.make(
-                estimate: estimate(kcal: 1400),
-                plan: plan(targetKcal: 2000, floor: .low),
-                goal: steepGoal,
-                settings: settings()
-            )
-        )
-
-        #expect(proposal.proposedTargetKcal == CalorieFloor.low.minimumValue)
+        #expect(proposal.proposedTargetKcal == floor)
     }
 
     // MARK: - Dismissal
@@ -294,7 +288,7 @@ struct TargetProposalTests {
             plan: plan(targetKcal: 2000),
             goal: nil,
             settings: settings(),
-            dismissedKcal: 2790
+            dismissedKcal: 2140
         )
 
         #expect(proposal == nil)
@@ -308,11 +302,11 @@ struct TargetProposalTests {
                 plan: plan(targetKcal: 2000),
                 goal: nil,
                 settings: settings(),
-                dismissedKcal: 2700
+                dismissedKcal: 2050
             )
         )
 
-        #expect(proposal.proposedTargetKcal == 2800)
+        #expect(proposal.proposedTargetKcal == 2150)
     }
 
     /// Two people on one device, or one person with two accounts: a dismissal belongs to whoever

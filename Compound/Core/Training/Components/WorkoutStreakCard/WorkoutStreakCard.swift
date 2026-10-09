@@ -17,13 +17,15 @@ struct WorkoutStreakCard: View {
     let delegate: WorkoutStreakDelegate
     
     var body: some View {
-        Section("Weekly Streak") {
+        Section {
             VStack(alignment: .leading, spacing: Spacing.l) {
                 streakHeader
                 weeklyDotsRow
                 Divider()
                 streakStats
             }
+        } header: {
+            MethodInfoHeader(title: "Weekly Streak", info: .weeklySessionGoal)
         }
     }
     

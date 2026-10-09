@@ -8,10 +8,11 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// Muscle Balance: weekly working sets per muscle against a recommended range.
+/// Muscle Balance: weekly hard sets per muscle against the volume tiers.
 ///
 /// What is pinned is the weighting (a muscle an exercise only assists earns half a set, a left and
-/// right pair is one set), which week a session lands in, and where the range boundaries fall.
+/// right pair is one set), which sets are hard, which week a session lands in, and where the tier
+/// boundaries fall.
 @MainActor
 struct MuscleBalanceTests {
 
@@ -131,28 +132,87 @@ struct MuscleBalanceTests {
 
     // MARK: - Range classification
 
-    @Test("Test A Large Muscle Aims For Ten To Twenty Sets", arguments: [
-        (9.5, MuscleBalanceStatus.below), (10, .within), (20, .within), (20.5, .above)
+    @Test("Test Every Muscle Shares The Same Tiers", arguments: [
+        (0.0, MuscleBalanceStatus.belowMaintenance), (3.5, .belowMaintenance), (4, .maintaining),
+        (9.5, .maintaining), (10, .productive), (20, .productive), (20.5, .high)
     ])
-    func testALargeMuscleAimsForTenToTwentySets(sets: Double, expected: MuscleBalanceStatus) {
-        #expect(MuscleVolume.recommendedWeeklySets(for: .chest) == 10...20)
-        #expect(MuscleVolume.classify(sets: sets, for: .chest) == expected)
+    func testEveryMuscleSharesTheSameTiers(sets: Double, expected: MuscleBalanceStatus) {
+        for muscle in [Muscles.chest, .biceps, .calves, .sideDelts] {
+            #expect(MuscleVolume.recommendedWeeklySets(for: muscle) == 10...20)
+            #expect(MuscleVolume.classify(sets: sets, for: muscle) == expected)
+        }
     }
 
-    @Test("Test A Small Muscle Aims For Six To Twelve Sets", arguments: [
-        (5.5, MuscleBalanceStatus.below), (6, .within), (12, .within), (12.5, .above)
-    ])
-    func testASmallMuscleAimsForSixToTwelveSets(sets: Double, expected: MuscleBalanceStatus) {
-        #expect(MuscleVolume.recommendedWeeklySets(for: .biceps) == 6...12)
-        #expect(MuscleVolume.classify(sets: sets, for: .biceps) == expected)
+    /// Each tier has its own icon and word, so the tile does not rest on colour alone.
+    @Test("Test Every Tier Has A Distinct Icon And Label")
+    func testEveryTierHasADistinctIconAndLabel() {
+        let statuses = MuscleBalanceStatus.allCases
+        #expect(Set(statuses.map(\.systemImage)).count == statuses.count)
+        #expect(Set(statuses.map(\.label)).count == statuses.count)
     }
 
-    /// Each status has its own icon and word, so the tile does not rest on colour alone.
-    @Test("Test Every Status Has A Distinct Icon And Label")
-    func testEveryStatusHasADistinctIconAndLabel() {
-        let statuses: [MuscleBalanceStatus] = [.below, .within, .above]
-        #expect(Set(statuses.map(\.systemImage)).count == 3)
-        #expect(Set(statuses.map(\.label)).count == 3)
+    // MARK: - Hard sets
+
+    private func loggedSet(
+        _ id: String,
+        rpe: Double? = nil,
+        side: SetSide? = nil,
+        kind: SetKind = .standard,
+        parent: String? = nil,
+        isWarmup: Bool = false,
+        completed: Bool = true
+    ) -> WorkoutSetModel {
+        WorkoutSetModel(
+            id: id, authorId: "author-1", index: 1, reps: 8, weightKg: 60, rpe: rpe, side: side, kind: kind,
+            parentSetId: parent, isWarmup: isWarmup, completedAt: completed ? endDate : nil, dateCreated: endDate
+        )
+    }
+
+    private func hardSets(_ sets: [WorkoutSetModel]) -> Double {
+        MuscleVolume.hardSets(WorkoutExerciseModel(
+            id: "we", authorId: "author-1", templateId: "bench", name: "Bench Press", trackingMode: .weightReps, index: 1, sets: sets
+        ))
+    }
+
+    /// A set logged below RPE 6 is too easy to count; a set without RPE is not penalised.
+    @Test("Test Easy Sets Drop Out And Sets Without RPE Count")
+    func testEasySetsDropOutAndSetsWithoutRPECount() {
+        #expect(hardSets([loggedSet("a", rpe: 8), loggedSet("b", rpe: 5.5), loggedSet("c")]) == 2)
+        #expect(hardSets([loggedSet("a", rpe: 6)]) == 1)
+        #expect(hardSets([loggedSet("w", isWarmup: true), loggedSet("u", completed: false)]) == 0)
+    }
+
+    @Test("Test Drops And Mini-Sets Add Half A Set Up To Two")
+    func testDropsAndMiniSetsAddHalfASetUpToTwo() {
+        let drop = [loggedSet("d", kind: .drop), loggedSet("d1", kind: .drop, parent: "d"), loggedSet("d2", kind: .drop, parent: "d")]
+        #expect(hardSets(drop) == 2)
+        let oneDrop = [loggedSet("d", kind: .drop), loggedSet("d1", kind: .drop, parent: "d")]
+        #expect(hardSets(oneDrop) == 1.5)
+        let myo = [loggedSet("m", kind: .myo)] + (1...4).map { loggedSet("m\($0)", parent: "m") }
+        #expect(hardSets(myo) == 2)
+        // A cluster is one set split up, not extra sets.
+        #expect(hardSets([loggedSet("k", kind: .cluster), loggedSet("k1", parent: "k")]) == 1)
+    }
+
+    @Test("Test A Pair Is One Set Worth Its Better Half")
+    func testAPairIsOneSetWorthItsBetterHalf() {
+        #expect(hardSets([loggedSet("l", side: .left), loggedSet("r", side: .right)]) == 1)
+        let dropOnOneSide = [
+            loggedSet("l", side: .left, kind: .drop), loggedSet("r", side: .right, kind: .drop),
+            loggedSet("ld", side: .left, kind: .drop, parent: "l")
+        ]
+        #expect(hardSets(dropOnOneSide) == 1.5)
+        #expect(hardSets([loggedSet("l", rpe: 4, side: .left), loggedSet("r", rpe: 7, side: .right)]) == 1)
+    }
+
+    @Test("Test Weekly Sets Count Only Hard Sets")
+    func testWeeklySetsCountOnlyHardSets() {
+        let session = Fixture.session(id: "s", day: 30, exercises: [
+            Fixture.LoggedExercise(templateId: "bench", sets: [loggedSet("a", rpe: 9), loggedSet("b", rpe: 4)])
+        ])
+        let result = weekly([session])
+        #expect(result[.chest]?.last == 1)
+        #expect(result[.triceps]?.last == 0.5)
     }
 
     // MARK: - Presenter
@@ -177,11 +237,11 @@ struct MuscleBalanceTests {
         #expect(presenter.upperRows.count + presenter.lowerRows.count == Muscles.allCases.count)
         let chest = try #require(presenter.rows.first { $0.muscle == .chest })
         #expect(chest.currentSets == 12)
-        #expect(chest.status == .within)
+        #expect(chest.status == .productive)
         let triceps = try #require(presenter.rows.first { $0.muscle == .triceps })
-        #expect(triceps.status == .within)
+        #expect(triceps.status == .maintaining)
         let quads = try #require(presenter.rows.first { $0.muscle == .quads })
-        #expect(quads.status == .below)
+        #expect(quads.status == .belowMaintenance)
     }
 
     /// The footer used to be shown by comparing the header to the English "Lower", so it

@@ -35,14 +35,17 @@ enum RestDurationRules {
     }
 
     /// The unscaled rest for this exercise, narrowest setting first: the plan's rest on this
-    /// exercise in this workout, then the rest set on the exercise everywhere, then the one set
-    /// for its whole type, then the global default.
+    /// exercise in this workout, then the rest set on the exercise everywhere, then the one the
+    /// user set for its whole type, then the type's default (`defaultSeconds(for:reps:)`), then
+    /// the global default for an exercise with no type.
     ///
     /// A zero-second rest from the plan or override is treated as none at all. Both screens that
     /// write the override clear to `nil` on an empty picker, but a document written by an older
     /// build can still carry a literal zero, and resting for no time is not something a user can
     /// have meant.
-    static func baseRestDuration(settings: WorkoutSettings, context: ExerciseContext) -> Int {
+    ///
+    /// `reps` are the reps of the set just done, which separate heavy compound work from the rest.
+    static func baseRestDuration(settings: WorkoutSettings, context: ExerciseContext, reps: Int? = nil) -> Int {
         if let planDuration = context.planRestSeconds, planDuration > 0 {
             return planDuration
         }
@@ -53,8 +56,35 @@ enum RestDurationRules {
            let typeDuration = settings.restDurationsByExerciseType[typeRawValue] {
             return typeDuration
         }
+        if let type = context.exerciseTypeRawValue.flatMap(ExerciseType.init(rawValue:)) {
+            return defaultSeconds(for: type, reps: reps)
+        }
         return settings.defaultRestDurationSeconds
     }
+
+    /// The rest a type gets until the user sets their own, after ACSM's 2–3 minutes for heavy
+    /// multi-joint lifts and 1–2 minutes for assistance work (ACSM 2009), and the small, uncertain
+    /// hypertrophy benefit of resting beyond about 90 s (Singer 2024):
+    ///
+    /// - multi-joint work of 6 reps or fewer: 180 s; other multi-joint work: 120 s;
+    /// - isolation: 90 s; core: 60 s.
+    ///
+    /// With the reps unknown, multi-joint work gets 120 s. Sources and Compound's own choices:
+    /// `MethodInfo.restIntervals`.
+    static func defaultSeconds(for type: ExerciseType, reps: Int?) -> Int {
+        switch type {
+        case .compoundUpper, .compoundLower:
+            if let reps, reps > 0, reps <= heavyRepCeiling { return 180 }
+            return 120
+        case .isolationUpper, .isolationLower:
+            return 90
+        case .core:
+            return 60
+        }
+    }
+
+    /// Sets of this many reps or fewer on a multi-joint lift count as heavy.
+    static let heavyRepCeiling = 6
 
     /// How long to rest after this set, or `nil` when the settings say not to rest here at all.
     ///
@@ -76,7 +106,10 @@ enum RestDurationRules {
             return customRestSeconds
         }
 
-        let base = baseRestDuration(settings: settings, context: context)
+        // The reps of the working set (its parent's, for a drop) decide heavy from moderate. A
+        // warm-up's few reps are not heavy work.
+        let parentReps = set.parentSetId.flatMap { parentId in exercise.sets.first { $0.id == parentId } }?.reps
+        let base = baseRestDuration(settings: settings, context: context, reps: set.isWarmup ? nil : parentReps ?? set.reps)
 
         if set.isWarmup {
             // Warm-ups run straight into each other: they are a ramp, not work. The one rest a
@@ -147,11 +180,12 @@ enum RestDurationRules {
         }
 
         let blockHasMore = ([exercise] + partners).contains { $0.sets.contains(where: isOpen) }
+        let base = baseRestDuration(settings: settings, context: context, reps: set.reps)
         if blockHasMore {
-            return baseRestDuration(settings: settings, context: context)
+            return base
         }
         guard settings.restBetweenExercises else { return nil }
-        return scale(baseRestDuration(settings: settings, context: context), by: settings.betweenExercisesRestScaling)
+        return scale(base, by: settings.betweenExercisesRestScaling)
     }
 
     /// Scaling to nothing means no rest rather than a zero-second one.

@@ -51,6 +51,9 @@ struct MuscleGroupsView: View {
         .scrollIndicators(.hidden)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                MethodInfoButton(.weeklyHardSets)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button("Muscle Balance", systemImage: "square.grid.3x3.fill") {
                     presenter.onMuscleBalancePressed()
                 }

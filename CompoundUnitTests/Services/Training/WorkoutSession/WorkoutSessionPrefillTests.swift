@@ -150,13 +150,13 @@ struct WorkoutSessionPrefillTests {
         #expect(allBlank)
     }
 
-    /// The suggestion wins over the previous session, and the warm-ups follow it: three sets of
-    /// warm-up for a hundred kilos rather than the two the old sixty earned.
+    /// The suggestion wins over the previous session, and the warm-ups follow it: a full ramp of
+    /// three for a heavy hundred kilos for five, rather than the two that sixty for ten earned.
     @Test("Test Suggestions Fill The Working Sets And The Warm-Ups Follow")
     func testSuggestionsFillTheWorkingSetsAndTheWarmUpsFollow() {
         let suggestion = ProgressionSuggestion(
             rationale: .progressWeight,
-            sets: Array(repeating: SuggestedSet(weightKg: 100, reps: 8), count: 3)
+            sets: Array(repeating: SuggestedSet(weightKg: 100, reps: 5), count: 3)
         )
 
         let session = WorkoutSessionModel(
@@ -168,8 +168,8 @@ struct WorkoutSessionPrefillTests {
         )
 
         #expect(workingSets(of: session).map(\.weightKg) == [100, 100, 100])
-        #expect(workingSets(of: session).map(\.reps) == [8, 8, 8])
-        #expect(warmupSets(of: session).map(\.weightKg) == [50, 70, 90])
+        #expect(workingSets(of: session).map(\.reps) == [5, 5, 5])
+        #expect(warmupSets(of: session).map(\.weightKg) == [45, 65, 82])
     }
 
     /// An exercise the engine had nothing to say about falls back to the previous session rather

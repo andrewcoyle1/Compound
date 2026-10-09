@@ -278,3 +278,61 @@ struct SetTrackerRowPlateCalculatorTests {
         #expect(!row.presenter.keyboard.showsLoadingBar)
     }
 }
+
+/// The loading bar follows the field: whatever + steps to, or the digits typed, is what it loads,
+/// and reading it makes the keyboard redraw when either happens. The keyboard view never reads the
+/// field's text (the row's text field shows it), so a loading bar read only through the set's
+/// binding was never redrawn as + stepped the field.
+@MainActor
+struct LoadingBarFollowsTheFieldTests {
+
+    private final class Flag: @unchecked Sendable {
+        var raised = false
+    }
+
+    private func keyboard(on weightKg: Double) -> (SetKeyboardPresenter, GymEquipmentBox<WorkoutSetModel>) {
+        let gym = GymProfileModel(
+            authorId: "u",
+            freeWeights: [FreeWeights(
+                id: "weight_plates", name: "Plates", needsColour: true, isPlates: true,
+                range: [1.25, 2.5, 5, 10, 20].map { FreeWeightsAvailable(id: "p\($0)", availableWeights: $0, unit: .kilograms, isActive: true) },
+                isActive: true
+            )],
+            loadableBars: [LoadableBars(id: "barbell", name: "Barbell", description: nil, baseWeights: [
+                LoadableBarsBaseWeight(id: "b20", baseWeight: 20, unit: .kilograms, isActive: true)
+            ], isActive: true)]
+        )
+        let step = WeightStepper.steps(for: [EquipmentRef(kind: .loadableBar, id: "barbell")], profile: gym, unit: .kilograms)
+        let box = GymEquipmentBox(WorkoutSetModel(id: "s", authorId: "u", index: 0, weightKg: weightKg, isWarmup: false, dateCreated: .now))
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "en_US")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: step))
+        return (keyboard, box)
+    }
+
+    @Test func theLoadingBarFollowsPlusAndTyping() {
+        let (keyboard, box) = keyboard(on: 60)
+        #expect(keyboard.plateLoading?.total == 60)
+
+        keyboard.stepUp()
+        #expect(box.value.weightKg == 62.5)
+        #expect(keyboard.plateLoading?.perSide == [20, 1.25])
+
+        "100".forEach { keyboard.type($0) }
+        #expect(keyboard.plateLoading?.total == 100)
+        #expect(keyboard.plateLoading?.perSide == [20, 20])
+    }
+
+    /// The redraw itself: what the loading bar reads changes when + is pressed.
+    @Test func plusRedrawsTheLoadingBar() {
+        let (keyboard, _) = keyboard(on: 60)
+        let changed = Flag()
+        withObservationTracking {
+            _ = keyboard.plateLoading
+        } onChange: {
+            changed.raised = true
+        }
+        keyboard.stepUp()
+        #expect(changed.raised)
+    }
+}

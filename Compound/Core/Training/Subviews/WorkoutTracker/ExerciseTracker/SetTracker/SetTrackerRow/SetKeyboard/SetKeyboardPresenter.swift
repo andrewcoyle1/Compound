@@ -362,19 +362,27 @@ final class SetKeyboardPresenter {
         }
     }
 
-    /// The per-sleeve breakdown of the current weight, for plate-loaded equipment.
+    /// The per-sleeve breakdown of the weight in the field, for plate-loaded equipment.
     var plateLoad: PlateCalculator.Result? {
-        guard context.step.isPlateLoaded, let bar = context.step.baseWeight,
-              let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
-        let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
+        guard context.step.isPlateLoaded, let bar = context.step.baseWeight, let total = shownWeight else { return nil }
         return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates, sleeves: context.step.sleeves)
     }
 
-    /// "Pin 14 + 2 kg" for the current weight on a stack with add-ons; nil otherwise.
+    /// "Pin 14 + 2 kg" for the weight in the field on a stack with add-ons; nil otherwise.
     var stackSummary: String? {
-        guard context.step.stack != nil, let weightKg = editingSet?.wrappedValue.weightKg else { return nil }
-        let total = (UnitConversion.convertWeight(weightKg, to: context.unit) * 1000).rounded() / 1000
+        guard context.step.stack != nil, let total = shownWeight else { return nil }
         return context.step.stackText(total: total, unit: context.unit)
+    }
+
+    /// The weight the field shows, in the display unit, read from the field's own text while it
+    /// is open. Every key, step and chip rewrites `text`, which this presenter observes; a weight
+    /// read through the set's binding is not observed, so the loading bar stayed on the weight the
+    /// keyboard opened with while + stepped the field.
+    private var shownWeight: Double? {
+        if activeField == .weight {
+            return Double.typed(text, locale: locale)
+        }
+        return editingSet?.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: context.unit) * 1000).rounded() / 1000 }
     }
 
     // MARK: - VoiceOver

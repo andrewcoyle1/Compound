@@ -7742,11 +7742,71 @@
     {
       "endDay": "2026-03-28",
       "expected": {
+        "abductors": [
+          0
+        ],
+        "abs": [
+          0
+        ],
+        "adductors": [
+          0
+        ],
+        "biceps": [
+          0
+        ],
+        "calves": [
+          0
+        ],
         "chest": [
           3
         ],
+        "forearms": [
+          0
+        ],
+        "frontDelts": [
+          0
+        ],
+        "glutes": [
+          0
+        ],
+        "hamstrings": [
+          0
+        ],
+        "lats": [
+          0
+        ],
+        "lowerBack": [
+          0
+        ],
+        "neck": [
+          0
+        ],
+        "obliques": [
+          0
+        ],
+        "quads": [
+          0
+        ],
+        "rearDelts": [
+          0
+        ],
+        "serratus": [
+          0
+        ],
+        "sideDelts": [
+          0
+        ],
+        "tibialis": [
+          0
+        ],
         "triceps": [
           1.5
+        ],
+        "upperBack": [
+          0
+        ],
+        "upperTraps": [
+          0
         ]
       },
       "name": "easy sets and a double drop",

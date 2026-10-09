@@ -104,3 +104,4 @@ extension MethodInfo {
         citations: [.ebben2011, .suprak2011]
     )
 }
+// swiftlint:enable line_length

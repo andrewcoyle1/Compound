@@ -232,7 +232,10 @@ private struct Replay {
         if !sample.isFastingDay && intake < Constants.partialDayFraction * expenditure { return }
         completeIntakeDays.insert(day)
         if filter != nil {
-            filter?.observeIntake(intake, sdKcal: intakeNoise(endingOn: day))
+            // Worked out first: reading `self` inside the mutating call on `self.filter` is an
+            // overlapping access.
+            let noiseSD = intakeNoise(endingOn: day)
+            filter?.observeIntake(intake, sdKcal: noiseSD)
         }
     }
 

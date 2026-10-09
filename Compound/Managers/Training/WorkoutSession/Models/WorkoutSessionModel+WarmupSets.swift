@@ -61,7 +61,7 @@ extension WorkoutSessionModel {
         var kept: [WorkoutSetModel] = []
         for set in warmupSets {
             guard let weight = set.weightKg, weight > 0, weight < workingWeightKg,
-                  weight > (kept.last?.weightKg ?? 0) else { continue }
+                  weight > kept.last?.weightKg ?? 0 else { continue }
             var set = set
             set.index = kept.count + 1
             kept.append(set)

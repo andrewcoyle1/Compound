@@ -113,7 +113,8 @@ struct ExpenditureEstimate: Equatable, Sendable {
 
     /// The 80% interval, rounded, once the estimate is adaptive.
     var likelyRange: ClosedRange<Double>? {
-        guard source == .adaptive, let sdKcal else { return nil }
+        // Finite only: callers print the bounds through `Int(_:)`, which traps on NaN.
+        guard source == .adaptive, let sdKcal, sdKcal.isFinite, kcal.isFinite else { return nil }
         let half = Self.eightyPercentZ * sdKcal
         return (kcal - half).rounded()...(kcal + half).rounded()
     }

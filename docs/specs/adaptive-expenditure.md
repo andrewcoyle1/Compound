@@ -24,7 +24,7 @@ onboarding Expenditure step also runs: resting rate × a physical activity level
   at 1.2 and added up to 0.20 for training frequency; the frequency term is gone, because the bands
   include habitual exercise and expenditure plateaus at high activity (Pontzer 2016). The 2023 DRI
   EER equations were not adopted: several of their coefficients and band edges are unverified
-  (`reports/Citation verification checklist.md`, discrepancies 1–2).
+  (`docs/research/citation-verification-checklist.md`, discrepancies 1–2).
 - Digestion is shown as 10% of the total (Westerterp 2004). Floor: 1,000 kcal.
 
 The engine is **pure**: a value-type `ExpenditureEngine` in
@@ -81,7 +81,7 @@ marked a fast). `weightKg` is the day's **first** weigh-in, not the mean.
 
 ## 3. Algorithm
 
-The 2026-10 rewrite follows `reports/Defensible fitness app algorithms.md`, "One filter replaces
+The 2026-10 rewrite follows `docs/research/algorithms-evidence.md`, "One filter replaces
 two EMAs, a blend, a clamp and a second loop". It replaced: a 0.10/day EMA trend with a ±2.5%
 clamp (and a separate 0.25-per-weigh-in EMA on the Weight Trend screen), a raw 28-day energy
 balance at 7,700 kcal/kg, a 0.30 daily blend capped at ±150 kcal, and a 14-day minimum.

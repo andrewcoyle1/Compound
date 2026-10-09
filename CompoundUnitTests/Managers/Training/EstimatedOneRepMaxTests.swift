@@ -18,9 +18,9 @@ struct EstimatedOneRepMaxTests {
 
     private let start = Date(timeIntervalSince1970: 1_000_000)
 
-    private func set(_ kg: Double?, _ reps: Int?, rpe: Double? = nil, warmup: Bool = false) -> WorkoutSetModel {
+    private func set(_ weightKg: Double?, _ reps: Int?, rpe: Double? = nil, warmup: Bool = false) -> WorkoutSetModel {
         WorkoutSetModel(
-            id: UUID().uuidString, authorId: "author-1", index: 1, reps: reps, weightKg: kg, rpe: rpe,
+            id: UUID().uuidString, authorId: "author-1", index: 1, reps: reps, weightKg: weightKg, rpe: rpe,
             isWarmup: warmup, completedAt: start, dateCreated: start
         )
     }

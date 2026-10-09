@@ -122,8 +122,10 @@ struct NutritionTargetsTests {
     func testAVariedWeekKeepsItsTotal(trainingDays: Int) {
         let days = NutritionTargets.dailyCalories(target: 2400, floor: 1200, distribution: .varied, trainingDaysPerWeek: trainingDays)
 
+        // Totalled first: inside #expect the literals left the type checker to time out.
+        let weekTotal: Double = days.reduce(0, +)
         #expect(days.count == 7)
-        #expect(abs(days.reduce(0, +) - 7 * 2400) < 0.001)
+        #expect(abs(weekTotal - 7 * 2400) < 0.001)
         #expect(days.allSatisfy { $0 >= 0.85 * 2400 - 0.001 })
         #expect(days.filter { $0 > 2400 }.count == trainingDays)
     }

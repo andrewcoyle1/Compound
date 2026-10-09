@@ -1,7 +1,7 @@
 # Training volume — hard sets, tiers and the per-muscle suggestion
 
 Where weekly sets per muscle come from, how they are read, and the suggestion on a muscle's
-detail screen. Sources are the report's (`reports/Defensible fitness app algorithms.md`, Volume
+detail screen. Sources are the report's (`docs/research/algorithms-evidence.md`, Volume
 section) and are listed in the app under each ⓘ (`MethodInfo+Volume.swift`).
 
 ## Hard sets (`MuscleVolume.hardSets`)

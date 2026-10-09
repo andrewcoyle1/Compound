@@ -127,3 +127,4 @@ extension MethodInfo {
         citations: [.lichtman1992, .guo2017, .hall2011b]
     )
 }
+// swiftlint:enable line_length

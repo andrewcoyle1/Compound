@@ -58,7 +58,8 @@ enum GoalTimeline {
     /// to cover or no rate to cover it at.
     static func weeks(distanceKg: Double, weeklyRateKg: Double) -> Int {
         let weeks = (abs(distanceKg) / weeklyRateKg).rounded(.up)
-        guard weeks.isFinite, weeks > 0 else { return 0 }
+        // `Int(_:)` traps past Int.max, which a near-zero stored rate would reach.
+        guard weeks.isFinite, weeks > 0, weeks < Double(Int32.max) else { return 0 }
         return Int(weeks)
     }
 

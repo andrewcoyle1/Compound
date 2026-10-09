@@ -184,7 +184,7 @@ extension Citation {
     static let hall2011 = Citation(
         reportNumber: 25,
         reference: "Hall KD, Sacks G, Chandramohan D, Chow CC, Wang YC, Gortmaker SL, Swinburn BA (2011). Quantification of the effect of energy imbalance on bodyweight. Lancet 378(9793):826–837.",
-        doi: "10.1016/S0140-6736(11"
+        doi: "10.1016/S0140-6736(11)60812-X"
     )
 
     /// R26
@@ -466,7 +466,7 @@ extension Citation {
     static let purcell2014 = Citation(
         reportNumber: 65,
         reference: "Purcell K, Sumithran P, Prendergast LA, Bouniu CJ, Delbridge E, Proietto J (2014). The effect of rate of weight loss on long-term weight management: a randomised controlled trial. Lancet Diabetes Endocrinol 2(12):954–962.",
-        doi: "10.1016/S2213-8587(14"
+        doi: "10.1016/S2213-8587(14)70200-1"
     )
 
     /// R66
@@ -789,14 +789,14 @@ extension Citation {
     static let paluch2022 = Citation(
         reportNumber: 111,
         reference: "Paluch AE, et al. (2022). Daily steps and all-cause mortality: a meta-analysis of 15 international cohorts. Lancet Public Health 7(3):e219–e228.",
-        doi: "10.1016/S2468-2667(21"
+        doi: "10.1016/S2468-2667(21)00302-9"
     )
 
     /// R112
     static let ding2025 = Citation(
         reportNumber: 112,
         reference: "Ding D, et al. (2025). Daily steps and health outcomes in adults: a systematic review and dose-response meta-analysis. Lancet Public Health 10(8):e668–e681.",
-        doi: "10.1016/S2468-2667(25"
+        doi: "10.1016/S2468-2667(25)00164-1"
     )
 
     /// R113

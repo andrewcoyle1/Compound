@@ -16,11 +16,16 @@ class SetTrackerRowPresenter {
     /// Handed the set that was just logged. Smart progression uses it to re-suggest the sets of
     /// this exercise that are still to come.
     var onSetCompleted: (@MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void)?
+    /// See `SetTrackerRowDelegate.onLogSet`.
+    var onLogSet: (@MainActor (String, Int?) -> Void)?
+    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
 
     var previousLookup: [PreviousSetKey: WorkoutSetModel] = [:]
 
     /// The weight and reps keyboards for this row.
     let keyboard = SetKeyboardPresenter()
+    /// The set the keyboard was last opened on, so the plate calculator knows what it is for.
+    @ObservationIgnored private var keyboardDelegate: SetTrackerRowDelegate?
     var defaultRestDurationSeconds: Int {
         interactor.workoutSettings.defaultRestDurationSeconds
     }
@@ -28,19 +33,63 @@ class SetTrackerRowPresenter {
     init(interactor: SetTrackerRowInteractor, router: SetTrackerRowRouter) {
         self.interactor = interactor
         self.router = router
+        keyboard.playSelectionHaptic = { [interactor] in interactor.playHaptic(option: .selection) }
+        keyboard.openPlateCalculator = { [weak self] in self?.onPlateCalculatorPressed() }
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a
-    /// surviving half would number and rest as a set of its own.
+    /// surviving half would number and rest as a set of its own. Its drops and mini-sets go too.
     func deleteSet(setId: String, exercise: Binding<WorkoutExerciseModel>) {
-        let removing = Set(exercise.wrappedValue.sets.pairedSetIds(for: setId))
+        let removing = Set(ActiveWorkout.idsRemovedByDeleting(setId, in: exercise.wrappedValue.sets))
         guard !removing.isEmpty else { return }
         exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
     }
+
+    /// Deletes the set, asking first when its drops or mini-sets would go with it: "Delete Set 2?
+    /// This also deletes its 2 drop sets."
+    func onDeleteSetPressed(setId: String, setName: String, exercise: Binding<WorkoutExerciseModel>) {
+        let removed = ActiveWorkout.subSetsRemovedByDeleting(setId, in: exercise.wrappedValue.sets)
+        let message: String
+        switch (removed.drops, removed.minis) {
+        case (0, 0): return deleteSet(setId: setId, exercise: exercise)
+        case (let drops, 0): message = String(localized: "This also deletes its \(drops) drop sets.")
+        case (0, let minis): message = String(localized: "This also deletes its \(minis) mini-sets.")
+        case (let drops, let minis): message = String(localized: "This also deletes its \(drops + minis) drop sets and mini-sets.")
+        }
+        router.showConfirmationDialog(title: String(localized: "Delete \(setName)?"), subtitle: message) {
+            AnyView(VStack(spacing: Spacing.s) {
+                Button("Delete", role: .destructive) { self.deleteSet(setId: setId, exercise: exercise) }
+                Button("Cancel", role: .cancel) { }
+            })
+        }
+    }
+
+    /// A drop or mini-set under the set, after any it has: a drop 20 % lighter
+    /// (`ActiveWorkout.dropWeightKg`), a mini-set at the set's weight, the reps left to fill in.
+    func addSubSet(_ subKind: SubSetKind, to setId: String, exercise: Binding<WorkoutExerciseModel>) {
+        let current = exercise.wrappedValue
+        guard let parent = current.sets.first(where: { $0.id == setId }) else { return }
+        let weightKg: Double?
+        switch subKind {
+        case .drop:
+            let unit = getUnitPreference(for: current).weightUnit
+            let step = WeightStepper.steps(for: current, profile: interactor.workoutGymProfile, unit: unit)
+            weightKg = ActiveWorkout.dropWeightKg(from: parent.weightKg, step: step, unit: unit)
+        case .mini:
+            weightKg = parent.weightKg
+        }
+        let sets = ActiveWorkout.addingSubSet(subKind, to: setId, in: current.sets, id: UUID().uuidString, weightKg: weightKg)
+        withReducedMotionAnimation(.standard) {
+            exercise.wrappedValue.sets = sets
+        }
+        interactor.playHaptic(option: .selection)
+    }
     
     func onSetComplete(_ exercise: WorkoutExerciseModel, _ set: Binding<WorkoutSetModel>) {
-        if set.wrappedValue.completedAt == nil {
-            guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue) else {
+        if set.wrappedValue.completedAt == nil, let onLogSet {
+            onLogSet(set.wrappedValue.id, restBeforeSetIdToSec[set.wrappedValue.id])
+        } else if set.wrappedValue.completedAt == nil {
+            guard validateSetData(trackingMode: exercise.trackingMode, set: set.wrappedValue, isAssisted: isAssisted(exercise)) else {
                 interactor.playHaptic(option: .error)
                 return
             }
@@ -85,7 +134,8 @@ class SetTrackerRowPresenter {
     private func restContext(for exercise: WorkoutExerciseModel) -> RestDurationRules.ExerciseContext {
         RestDurationRules.ExerciseContext(
             restOverrideSeconds: interactor.exerciseRestOverride(for: exercise.templateId),
-            exerciseTypeRawValue: interactor.allExercises.first(where: { $0.id == exercise.templateId })?.type?.rawValue
+            exerciseTypeRawValue: interactor.allExercises.first(where: { $0.id == exercise.templateId })?.type?.rawValue,
+            planRestSeconds: exercise.restSeconds
         )
     }
 
@@ -130,6 +180,7 @@ class SetTrackerRowPresenter {
         } else {
             restBeforeSetIdToSec.removeValue(forKey: setId)
         }
+        onCustomRestChanged?(setId, seconds)
     }
 
     func onWarmupSetHelpPressed() {
@@ -145,66 +196,39 @@ class SetTrackerRowPresenter {
         return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
 
-    func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        switch trackingMode {
-        case .weightReps:
-            if let weight = set.weightKg, weight < 0 {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a weight of zero or more."))
-                return false
-            }
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
-                return false
-            }
-            return true
-        case .repsOnly:
-            guard let reps = set.reps, reps > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter at least one rep."))
-                return false
-            }
-            return true
-        case .timeOnly:
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
-                return false
-            }
-            return true
-        case .distanceTime:
-            guard let distance = set.distanceMeters, distance > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a distance for this set."))
-                return false
-            }
-            guard let duration = set.durationSec, duration > 0 else {
-                router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: String(localized: "Enter a time for this set."))
-                return false
-            }
-            return true
-        }
+    func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
+        guard let problem = SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted) else { return true }
+        router.showSimpleAlert(title: String(localized: "Unable to Log Set"), subtitle: problem)
+        return false
     }
 
-    func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel) -> Bool {
-        switch trackingMode {
-        case .weightReps:
-            let hasValidWeight = set.weightKg == nil || set.weightKg! >= 0
-            let hasValidReps = set.reps != nil && set.reps! > 0
-            return hasValidWeight && hasValidReps
-        case .repsOnly:
-            return set.reps != nil && set.reps! > 0
-        case .timeOnly:
-            return set.durationSec != nil && set.durationSec! > 0
-        case .distanceTime:
-            let hasValidDistance = set.distanceMeters != nil && set.distanceMeters! > 0
-            let hasValidTime = set.durationSec != nil && set.durationSec! > 0
-            return hasValidDistance && hasValidTime
-        }
+    /// See `SetValidation.problem(with:trackingMode:isAssisted:)`.
+    static func problem(with set: WorkoutSetModel, trackingMode: TrackingMode, isAssisted: Bool = false) -> String? {
+        SetValidation.problem(with: set, trackingMode: trackingMode, isAssisted: isAssisted)
+    }
+
+    func canComplete(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
+        SetValidation.canLog(set, trackingMode: trackingMode, isAssisted: isAssisted)
+    }
+
+    /// Whether `exercise`'s weight is assistance, stored negative (`ExerciseModel.isAssisted`).
+    func isAssisted(_ exercise: WorkoutExerciseModel) -> Bool {
+        interactor.allExercises.first { $0.id == exercise.templateId }?.isAssisted ?? false
     }
 
     /// What the Done column shows. Each state has its own symbol and spoken value, so none of them
     /// is told apart by colour alone.
-    func completionState(trackingMode: TrackingMode, set: WorkoutSetModel) -> SetCompletionState {
+    func completionState(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> SetCompletionState {
         if set.completedAt != nil { return .completed }
-        return canComplete(trackingMode: trackingMode, set: set) ? .ready : .notReady
+        return canComplete(trackingMode: trackingMode, set: set, isAssisted: isAssisted) ? .ready : .notReady
     }
+}
+
+/// The line under the set being logged on a bar. `nearestKg` is set when the weight cannot be
+/// loaded, and a tap uses it.
+struct PlateSummary: Equatable {
+    let text: String
+    let nearestKg: Double?
 }
 
 enum SetCompletionState: Equatable {
@@ -249,22 +273,63 @@ extension SetTrackerRowPresenter {
 
     /// A weight or reps field took focus: open its keyboard on what this set and exercise allow.
     func onKeyboardFieldBegan(_ field: SetKeyboardField, delegate: SetTrackerRowDelegate) {
-        keyboard.onOfferCompletion = { [weak self] in self?.offerCompletion(delegate: delegate) }
+        keyboardDelegate = delegate
         keyboard.open(field, set: delegate.set, context: keyboardContext(delegate: delegate))
     }
 
-    func keyboardContext(delegate: SetTrackerRowDelegate) -> SetKeyboardContext {
+    /// The loading bar was tapped: the plate calculator for this exercise's bar or plate-loaded
+    /// machine in the workout's gym. Done saves the bar and plates chosen to the gym, and the
+    /// keyboard steps on them from then on.
+    func onPlateCalculatorPressed() {
+        guard let delegate = keyboardDelegate, let gym = interactor.workoutGymProfile else { return }
+        let exercise = delegate.exercise.wrappedValue
+        let unit = getUnitPreference(for: exercise).weightUnit
+        let variation = exercise.equipmentVariations.first { $0.id == exercise.chosenVariationId }
+            ?? exercise.equipmentVariations.first
+        guard let equipment = variation?.resistanceEquipment.first(where: {
+            WeightStepper.steps(for: [$0], profile: gym, unit: unit).isPlateLoaded
+        }) else { return }
+        let total = delegate.set.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: unit) * 1000).rounded() / 1000 }
+        router.showPlateCalculatorView(delegate: PlateCalculatorDelegate(
+            gym: gym,
+            equipment: equipment,
+            unit: unit,
+            total: total
+        ) { [weak self] updated in
+            self?.onGymLoadingChanged(updated)
+        })
+    }
+
+    private func onGymLoadingChanged(_ gym: GymProfileModel) {
+        Task {
+            do {
+                try await interactor.saveWorkoutGymProfile(gym)
+            } catch {
+                router.showSimpleAlert(title: String(localized: "Unable to Save Gym"), subtitle: error.localizedDescription)
+            }
+        }
+        // From the edited gym, not the interactor's: the save has not run yet when this does.
+        if keyboard.activeField != nil, let delegate = keyboardDelegate {
+            keyboard.refresh(context: keyboardContext(delegate: delegate, gym: gym))
+        }
+    }
+
+    /// `gym` overrides the workout's gym, for a change not yet saved back to it.
+    func keyboardContext(delegate: SetTrackerRowDelegate, gym: GymProfileModel? = nil) -> SetKeyboardContext {
         let exercise = delegate.exercise.wrappedValue
         let set = delegate.set.wrappedValue
         let units = getUnitPreference(for: exercise)
         let unit = units.weightUnit
         let lastSet = exercise.sets.firstIndex { $0.id == set.id }.flatMap { $0 > 0 ? exercise.sets[$0 - 1] : nil }
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
+        // An assisted machine steps below zero, and never above it when the exercise cannot be loaded.
+        let library = interactor.allExercises.first { $0.id == exercise.templateId }
+        let step = WeightStepper.steps(for: exercise, profile: gym ?? interactor.workoutGymProfile, unit: unit)
         return SetKeyboardContext(
             unit: unit,
-            step: WeightStepper.steps(for: exercise, profile: interactor.favouriteGymProfile, unit: unit),
+            step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,
             distanceUnit: units.distanceUnit,
-            fields: SetKeyboardField.fields(for: exercise.trackingMode),
+            fields: SetKeyboardField.fields(for: set, trackingMode: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
             lastSetWeightKg: lastSet?.weightKg,
             lastSetReps: lastSet?.reps,
@@ -275,42 +340,55 @@ extension SetTrackerRowPresenter {
         )
     }
 
-    /// Done on a set that is ready logs it, as the row's circle does, with no question in between:
-    /// tapping the circle again is the undo. A set that is not ready, or is already logged, just
-    /// closes. The event keeps its name so the funnel reading it stays whole.
-    private func offerCompletion(delegate: SetTrackerRowDelegate) {
-        let exercise = delegate.exercise.wrappedValue
-        guard completionState(trackingMode: exercise.trackingMode, set: delegate.set.wrappedValue) == .ready else { return }
-        interactor.trackEvent(event: Event.keyboardOfferedCompletion)
-        onSetComplete(exercise, delegate.set)
+    /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar ("Plates: …" on a
+    /// single-sleeve machine), from the gym's bar and plates, or "Pin 14 + 2 kg" on a stack with
+    /// add-ons. `nil` for anything else or a set with no weight yet.
+    func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
+        guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
+        let unit = getUnitPreference(for: exercise).weightUnit
+        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
+        let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
+        if step.stack != nil {
+            return step.stackText(total: total, unit: unit).map { PlateSummary(text: $0, nearestKg: nil) }
+        }
+        guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
+        switch PlateCalculator.load(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves) {
+        case .loadable(let perSide):
+            return PlateSummary(text: step.plateText(perSide, unit: unit), nearestKg: nil)
+        case .notLoadable:
+            let nearest = PlateCalculator.nearestLoadable(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves)
+            return PlateSummary(
+                text: String(localized: "Not loadable. Use \(WeightStepper.format(nearest)) \(unit.abbreviation)"),
+                nearestKg: UnitConversion.convertWeightToKg(nearest, from: unit)
+            )
+        }
     }
 }
 
 extension SetTrackerRowPresenter {
     
     enum Event: LoggableEvent {
-        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool)
-        case keyboardOfferedCompletion
+        /// Every set logged, from a row, the set keyboard or the tracker's log button, which
+        /// `source` tells apart.
+        case setCompleted(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, onStartRestIsNil: Bool, source: String = "row")
 
         var eventName: String {
             switch self {
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
-            case .keyboardOfferedCompletion: return "SetTrackerRow_Keyboard_OfferedCompletion"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil):
+            case .setCompleted(let setId, let exerciseId, let useRestTimers, let restDurationSeconds, let onStartRestIsNil, let source):
                 return [
+                    "source": source,
                     "set_id": setId,
                     "exercise_id": exerciseId,
                     "use_rest_timers": useRestTimers,
                     "rest_duration_seconds": restDurationSeconds,
                     "on_start_rest_is_nil": onStartRestIsNil
                 ]
-            case .keyboardOfferedCompletion:
-                return nil
             }
         }
 

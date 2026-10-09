@@ -49,8 +49,9 @@ class PreferredDietPresenter {
             if isFromSettings {
                 router.showCalorieFloorView(delegate: delegate)
             } else {
-                // Onboarding applies the standard 1,200 kcal floor without asking (decision 3b):
-                // the 800 kcal floor is offered only from settings, which leaves this step one option.
+                // Onboarding applies the standard floor without asking (decision 3b): it is the only
+                // floor (1,200 kcal for women, 1,500 for men, 1,350 unstated), so there is nothing to
+                // choose. Settings still shows the step, to explain the floor.
                 router.showCalorieDistributionView(delegate: CalorieDistributionDelegate(delegate: delegate, calorieFloor: .standard))
             }
         }
@@ -115,13 +116,13 @@ enum PreferredDiet: String, CaseIterable, Identifiable {
     var detailedDescription: String {
         switch self {
         case .balanced:
-            return String(localized: "Standard distribution of carbs and fat.")
+            return String(localized: "30% of calories from fat, with carbs making up the rest.")
         case .lowFat:
-            return String(localized: "Fat will be reduced to prioritize carb and protein intake.")
+            return String(localized: "20% of calories from fat, the lowest guidelines advise, so more carbs.")
         case .lowCarb:
-            return String(localized: "Carbs will be reduced to prioritize fat and protein intake.")
+            return String(localized: "20% of calories from carbs, with fat making up the rest.")
         case .keto:
-            return String(localized: "Carbs will be very restricted to allow for higher fat intake.")
+            return String(localized: "About 30 g of carbs a day, with fat making up the rest.")
         }
     }
 }

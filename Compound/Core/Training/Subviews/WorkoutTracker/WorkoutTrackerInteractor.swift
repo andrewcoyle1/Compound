@@ -26,15 +26,27 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
 
     /// The current logged-in user, or nil if not available.
     var currentUser: UserModel? { get }
-    /// The favourite gym profile of the user, or nil if not available
-    var favouriteGymProfile: GymProfileModel? { get }
+    /// The gym this workout is at: the one set with `setActiveWorkoutGymProfile`, else the
+    /// favourite.
+    var workoutGymProfile: GymProfileModel? { get }
 
     func setActiveWorkoutGymProfile(_ profile: GymProfileModel?)
 
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel
+
+    /// A workout template held on this device, for the gym it was written for.
+    func getWorkoutTemplate(id: String) -> WorkoutTemplateModel?
+
+    /// Where the tracker keeps `ActiveWorkoutScreenState`.
+    var activeWorkoutScreenStateStore: UserDefaults { get }
     
     /// The current rest end time for the active session, if any.
     var restEndTime: Date? { get }
+    /// When that rest began, as the rest's owner recorded it, wherever it was started. Kept after
+    /// it runs out, so the inline timer reads Ready until the next set.
+    var restStartedAt: Date? { get }
+    /// The last session finished on this device, from here or from the Live Activity.
+    var lastFinishedSession: WorkoutSessionModel? { get }
 
     /// The current active workout session, if any.
     var activeSession: WorkoutSessionModel? { get }
@@ -117,6 +129,9 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     func finishWorkout(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome
 
     var allExercises: [ExerciseModel] { get }
+
+    /// Today's bodyweight, which a movement's bodyweight contribution is a share of.
+    var currentWeightKilograms: Double? { get }
     
     // MARK: - Workout History
 
@@ -138,7 +153,7 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     ) async throws -> [WorkoutSessionModel]
 
     /// What smart progression suggests for each exercise of a session already under way, keyed
-    /// by the exercise's `templateId`.
+    /// by `ActiveWorkout.historyKey`.
     func progressionSuggestions(
         for session: WorkoutSessionModel,
         gymProfile: GymProfileModel?
@@ -156,10 +171,26 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
 
     /// Load unit preferences for an exercise template.
     func getPreference(templateId: String) -> ExerciseUnitPreference
+
+    /// The rest set on this exercise itself, which wins over the settings' defaults.
+    func exerciseRestOverride(for exerciseId: String) -> Int?
+}
+
+extension WorkoutTrackerInteractor {
+
+    /// Whether the library exercise `templateId` is tracked as assistance, so its sets store a
+    /// negative weight (`ExerciseModel.isAssisted`). Unknown exercises are not.
+    func isAssisted(templateId: String) -> Bool {
+        allExercises.first { $0.id == templateId }?.isAssisted ?? false
+    }
 }
 
 extension CoreInteractor: WorkoutTrackerInteractor {
-                                
+
+    var activeWorkoutScreenStateStore: UserDefaults {
+        ActiveWorkoutScreenState.appGroupStore
+    }
+
     func finishWorkout(_ session: WorkoutSessionModel) async -> WorkoutSaveOutcome {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
         await Compound.finishWorkout(session, using: WorkoutFinishManagers(

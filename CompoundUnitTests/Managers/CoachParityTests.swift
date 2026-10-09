@@ -127,7 +127,8 @@ struct CoachParityTests {
                 intakeKcal: sample["intakeKcal"] as? Double,
                 weightKg: sample["weightKg"] as? Double,
                 steps: sample["steps"] as? Int,
-                isExcluded: sample["isExcluded"] as? Bool ?? false
+                isExcluded: sample["isExcluded"] as? Bool ?? false,
+                isFastingDay: sample["isFastingDay"] as? Bool ?? false
             )
         }
         let settingsJSON = testCase["settings"] as? [String: Any] ?? [:]
@@ -141,7 +142,8 @@ struct CoachParityTests {
             priorKcal: testCase["priorKcal"] as? Double ?? 0,
             settings: settings,
             today: noon(testCase["today"]),
-            calendar: .current
+            calendar: .current,
+            kcalPerKg: testCase["kcalPerKg"] as? Double ?? EnergyDensity.conventionalKcalPerKg
         )
         return history.map { estimate -> [String: Any] in
             [
@@ -154,7 +156,10 @@ struct CoachParityTests {
                 "loggedDays": estimate.loggedDays,
                 "weighInCount": estimate.weighInCount,
                 "windowDays": estimate.windowDays,
-                "stepAdjustmentKcal": estimate.stepAdjustmentKcal
+                "stepAdjustmentKcal": estimate.stepAdjustmentKcal,
+                "sdKcal": json(estimate.sdKcal),
+                "weeklyTrendChangeSDKg": json(estimate.weeklyTrendChangeSDKg),
+                "recentIntakeKcal": json(estimate.recentIntakeKcal)
             ]
         }
     }
@@ -213,7 +218,8 @@ struct CoachParityTests {
                 "intakeKcal": json(sample.intakeKcal),
                 "weightKg": json(sample.weightKg),
                 "steps": json(sample.steps),
-                "isExcluded": sample.isExcluded
+                "isExcluded": sample.isExcluded,
+                "isFastingDay": sample.isFastingDay
             ]
         }
     }
@@ -237,8 +243,13 @@ struct CoachParityTests {
 
     static func weightTrend(_ testCase: [String: Any]) -> Any {
         let values = testCase["values"] as? [Double] ?? []
-        let data = values.enumerated().map { (date: Date(timeIntervalSince1970: Double($0.offset) * 86_400), value: $0.element) }
-        return WeightTrendCalculator.exponentialMovingAverage(data: data).map(\.value)
+        // Without `days`, one weigh-in a day from the first; with them, each value's own day.
+        let days = testCase["days"] as? [String]
+        let first = noon("2026-01-01")
+        let data = values.enumerated().map { index, value in
+            (date: days.map { noon($0[index]) } ?? first.addingTimeInterval(Double(index) * 86_400), value: value)
+        }
+        return WeightTrendCalculator.trend(data: data, calendar: .current).map(\.value)
     }
 
     private static func sessions(_ testCase: [String: Any]) -> [WorkoutSessionModel] {
@@ -250,9 +261,12 @@ struct CoachParityTests {
                     name: exercise["name"] as? String ?? "", trackingMode: .weightReps, index: position,
                     sets: (exercise["sets"] as? [[String: Any]] ?? []).enumerated().map { setIndex, set in
                         WorkoutSetModel(
-                            id: "s\(index)-\(position)-\(setIndex)", authorId: "parity", index: setIndex,
+                            id: set["id"] as? String ?? "s\(index)-\(position)-\(setIndex)", authorId: "parity", index: setIndex,
                             reps: set["reps"] as? Int, weightKg: set["weightKg"] as? Double,
+                            rpe: set["rpe"] as? Double,
                             side: (set["side"] as? String).flatMap(SetSide.init(rawValue:)),
+                            kind: (set["kind"] as? String).flatMap(SetKind.init(rawValue:)) ?? .standard,
+                            parentSetId: set["parentSetId"] as? String,
                             isWarmup: set["isWarmup"] as? Bool ?? false,
                             completedAt: set["completed"] as? Bool == true ? date : nil, dateCreated: date
                         )

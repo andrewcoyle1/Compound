@@ -1,0 +1,6749 @@
+{
+  "default" : {
+    "accessory_equipment" : [
+      {
+        "id" : "ab_wheel",
+        "isActive" : true,
+        "name" : "Ab Wheel"
+      },
+      {
+        "id" : "aerobic_steps",
+        "isActive" : true,
+        "name" : "Aerobic Steps"
+      },
+      {
+        "id" : "anchor_point_for_elastic_band",
+        "isActive" : true,
+        "name" : "Anchor Point For Elastic Band"
+      },
+      {
+        "id" : "anchor_point_for_suspension_trainer",
+        "isActive" : true,
+        "name" : "Anchor Point For Suspension Trainer"
+      },
+      {
+        "id" : "bench_press_board_block",
+        "isActive" : true,
+        "name" : "Bench Press Board\/Block"
+      },
+      {
+        "id" : "calf_raise_block",
+        "isActive" : true,
+        "name" : "Calf Raise Block"
+      },
+      {
+        "id" : "cuff_cable_attachment",
+        "isActive" : true,
+        "name" : "Cuff Cable Attachment"
+      },
+      {
+        "id" : "deadlift_blocks",
+        "isActive" : true,
+        "name" : "Deadlift Blocks"
+      },
+      {
+        "id" : "gymnastics_rings",
+        "isActive" : true,
+        "name" : "Gymnastics Rings"
+      },
+      {
+        "id" : "landmine_attachment_wall_corner",
+        "isActive" : true,
+        "name" : "Landmine Attachment\/Wall Corner"
+      },
+      {
+        "id" : "neutral_grip_landmine_row_attachment",
+        "isActive" : true,
+        "name" : "Neutral Grip Landmine Row Attachment"
+      },
+      {
+        "id" : "nordic_hamstring_curl_strap",
+        "isActive" : true,
+        "name" : "Nordic Hamstring Curl Strap"
+      },
+      {
+        "id" : "overhand_grip_landmine_attachment",
+        "isActive" : true,
+        "name" : "Overhand Grip Landmine Attachment"
+      },
+      {
+        "id" : "plyometric_boxes",
+        "isActive" : true,
+        "name" : "Plyometric Boxes"
+      },
+      {
+        "id" : "pull_up_bar",
+        "isActive" : true,
+        "name" : "Pull-Up Bar"
+      },
+      {
+        "id" : "push_up_handles",
+        "isActive" : true,
+        "name" : "Push-Up Handles"
+      },
+      {
+        "id" : "slant_board",
+        "isActive" : true,
+        "name" : "Slant Board"
+      },
+      {
+        "id" : "slingshot",
+        "isActive" : true,
+        "name" : "Slingshot"
+      },
+      {
+        "id" : "split_squat_roller_stand",
+        "isActive" : true,
+        "name" : "Split Squat Roller Stand"
+      },
+      {
+        "id" : "squat_box",
+        "isActive" : true,
+        "name" : "Squat Box"
+      },
+      {
+        "id" : "stability_ball",
+        "isActive" : true,
+        "name" : "Stability Ball"
+      },
+      {
+        "id" : "staircase",
+        "isActive" : true,
+        "name" : "Staircase"
+      },
+      {
+        "id" : "suspension_trainer",
+        "isActive" : true,
+        "name" : "Suspension Trainer"
+      },
+      {
+        "id" : "v_bar_row_grip_attachment",
+        "isActive" : true,
+        "name" : "V-Bar Row Grip Attachment"
+      },
+      {
+        "id" : "yoga_blocks",
+        "isActive" : true,
+        "name" : "Yoga Blocks"
+      }
+    ],
+    "author_id" : "fixture",
+    "bands" : [
+      {
+        "id" : "long_elastic_bands",
+        "isActive" : true,
+        "name" : "Long Elastic Bands",
+        "range" : [
+          {
+            "availableResistance" : 4,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-001",
+            "isActive" : true,
+            "name" : "Extra Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 8,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-002",
+            "isActive" : true,
+            "name" : "Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 14,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-003",
+            "isActive" : true,
+            "name" : "Medium Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-004",
+            "isActive" : true,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-005",
+            "isActive" : true,
+            "name" : "Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 43,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-006",
+            "isActive" : true,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 52,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-007",
+            "isActive" : true,
+            "name" : "Super Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 102,
+            "bandColour" : "#8E8E93",
+            "id" : "fixture-id-008",
+            "isActive" : true,
+            "name" : "Heaviest Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 9,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-009",
+            "isActive" : false,
+            "name" : "Extra Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-010",
+            "isActive" : false,
+            "name" : "Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-011",
+            "isActive" : false,
+            "name" : "Medium Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 40,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-012",
+            "isActive" : false,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 65,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-013",
+            "isActive" : false,
+            "name" : "Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 95,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-014",
+            "isActive" : false,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 115,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-015",
+            "isActive" : false,
+            "name" : "Super Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 225,
+            "bandColour" : "#8E8E93",
+            "id" : "fixture-id-016",
+            "isActive" : false,
+            "name" : "Heaviest Resistance",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "short_elastic_bands",
+        "isActive" : true,
+        "name" : "Short Elastic Bands",
+        "range" : [
+          {
+            "availableResistance" : 4,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-017",
+            "isActive" : true,
+            "name" : "Extra Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 8,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-018",
+            "isActive" : true,
+            "name" : "Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 14,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-019",
+            "isActive" : true,
+            "name" : "Medium Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-020",
+            "isActive" : true,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-021",
+            "isActive" : true,
+            "name" : "Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 43,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-022",
+            "isActive" : true,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 9,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-023",
+            "isActive" : false,
+            "name" : "Extra Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-024",
+            "isActive" : false,
+            "name" : "Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-025",
+            "isActive" : false,
+            "name" : "Medium Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 40,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-026",
+            "isActive" : false,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 65,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-027",
+            "isActive" : false,
+            "name" : "Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 95,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-028",
+            "isActive" : false,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "body_weights" : [
+      {
+        "id" : "ankle_weights",
+        "isActive" : true,
+        "name" : "Ankle Weights",
+        "range" : [
+          {
+            "availableWeights" : 2.5,
+            "id" : "fixture-id-029",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-030",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7.5,
+            "id" : "fixture-id-031",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-032",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-033",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-034",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 17.5,
+            "id" : "fixture-id-035",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-036",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22.5,
+            "id" : "fixture-id-037",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-038",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 27.5,
+            "id" : "fixture-id-039",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-040",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32.5,
+            "id" : "fixture-id-041",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-042",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 37.5,
+            "id" : "fixture-id-043",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-044",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42.5,
+            "id" : "fixture-id-045",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-046",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 47.5,
+            "id" : "fixture-id-047",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-048",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-049",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-050",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-051",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-052",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-053",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-054",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-055",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-056",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-057",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-058",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-059",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 65,
+            "id" : "fixture-id-060",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 70,
+            "id" : "fixture-id-061",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 75,
+            "id" : "fixture-id-062",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-063",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 85,
+            "id" : "fixture-id-064",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 90,
+            "id" : "fixture-id-065",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 95,
+            "id" : "fixture-id-066",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 100,
+            "id" : "fixture-id-067",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 105,
+            "id" : "fixture-id-068",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 110,
+            "id" : "fixture-id-069",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 115,
+            "id" : "fixture-id-070",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 120,
+            "id" : "fixture-id-071",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "weighted_vest",
+        "isActive" : true,
+        "name" : "Weighted Vest",
+        "range" : [
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-072",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-073",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-074",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-075",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-076",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-077",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-078",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-079",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-080",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 7.5,
+            "id" : "fixture-id-081",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-082",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-083",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-084",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-085",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 60,
+            "id" : "fixture-id-086",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "cable_machines" : [
+      {
+        "defaultRangeId" : "fixture-id-087",
+        "id" : "cable_lat_pulldown_machine",
+        "isActive" : true,
+        "name" : "Cable Lat Pulldown Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-087",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-088",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-089",
+        "id" : "pin-loaded_dual_cable_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Dual Cable Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-089",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-090",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-091",
+        "id" : "pin-loaded_single_cable_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Single Cable Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-091",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-092",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-093",
+        "id" : "seated_cable_row_machine",
+        "isActive" : true,
+        "name" : "Seated Cable Row Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-093",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-094",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "date_created" : 812000000,
+    "date_modified" : 812000000,
+    "fixed_weight_bars" : [
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 10,
+            "id" : "fixture-id-095",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-096",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-097",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-098",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 30,
+            "id" : "fixture-id-099",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 35,
+            "id" : "fixture-id-100",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 40,
+            "id" : "fixture-id-101",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 45,
+            "id" : "fixture-id-102",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 50,
+            "id" : "fixture-id-103",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-095",
+        "id" : "fixed_weight_ez_bar",
+        "isActive" : true,
+        "name" : "Fixed Weight Ez Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 10,
+            "id" : "fixture-id-104",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-105",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-106",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-107",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 30,
+            "id" : "fixture-id-108",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 35,
+            "id" : "fixture-id-109",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 40,
+            "id" : "fixture-id-110",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 45,
+            "id" : "fixture-id-111",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 50,
+            "id" : "fixture-id-112",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-104",
+        "id" : "fixed_weight_straight_bar",
+        "isActive" : true,
+        "name" : "Fixed Weight Straight Bar"
+      }
+    ],
+    "free_weights" : [
+      {
+        "id" : "bumper_plates",
+        "imageName" : "bumper_plates_icon",
+        "isActive" : true,
+        "name" : "Bumper Plates",
+        "needsColour" : true,
+        "range" : [
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-113",
+            "isActive" : true,
+            "plateColour" : "#8E8E93",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-114",
+            "isActive" : true,
+            "plateColour" : "#8E8E93",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-115",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-116",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-117",
+            "isActive" : true,
+            "plateColour" : "#FFCC00",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-118",
+            "isActive" : true,
+            "plateColour" : "#FFCC00",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-119",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-120",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-121",
+            "isActive" : true,
+            "plateColour" : "#FF383C",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-122",
+            "isActive" : true,
+            "plateColour" : "#FF383C",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "dumbbells",
+        "imageName" : "dumbbells_icon",
+        "isActive" : true,
+        "name" : "Dumbbells",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 1,
+            "id" : "fixture-id-123",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2,
+            "id" : "fixture-id-124",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 3,
+            "id" : "fixture-id-125",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-126",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-127",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-128",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-129",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-130",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-131",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-132",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-133",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-134",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-135",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-136",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-137",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-138",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 17.5,
+            "id" : "fixture-id-139",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-140",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-141",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22,
+            "id" : "fixture-id-142",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22.5,
+            "id" : "fixture-id-143",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 24,
+            "id" : "fixture-id-144",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-145",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-146",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 27.5,
+            "id" : "fixture-id-147",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 28,
+            "id" : "fixture-id-148",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-149",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32,
+            "id" : "fixture-id-150",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32.5,
+            "id" : "fixture-id-151",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 34,
+            "id" : "fixture-id-152",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 36,
+            "id" : "fixture-id-153",
+            "isActive" : false,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 37.5,
+            "id" : "fixture-id-154",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 38,
+            "id" : "fixture-id-155",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-156",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42,
+            "id" : "fixture-id-157",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42.5,
+            "id" : "fixture-id-158",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-159",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-160",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 46,
+            "id" : "fixture-id-161",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 47.5,
+            "id" : "fixture-id-162",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 48,
+            "id" : "fixture-id-163",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-164",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 57.5,
+            "id" : "fixture-id-165",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ]
+      },
+      {
+        "id" : "kettlebells",
+        "imageName" : "kettlebells_icon",
+        "isActive" : true,
+        "name" : "Kettlebells",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-166",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-167",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-168",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-169",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-170",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-171",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-172",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-173",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-174",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22,
+            "id" : "fixture-id-175",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 24,
+            "id" : "fixture-id-176",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-177",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 28,
+            "id" : "fixture-id-178",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-179",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32,
+            "id" : "fixture-id-180",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 36,
+            "id" : "fixture-id-181",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-182",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-183",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 48,
+            "id" : "fixture-id-184",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 52,
+            "id" : "fixture-id-185",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 56,
+            "id" : "fixture-id-186",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 60,
+            "id" : "fixture-id-187",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 64,
+            "id" : "fixture-id-188",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 68,
+            "id" : "fixture-id-189",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 72,
+            "id" : "fixture-id-190",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 76,
+            "id" : "fixture-id-191",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-192",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 84,
+            "id" : "fixture-id-193",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-194",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 92,
+            "id" : "fixture-id-195",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-196",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-197",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-198",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 13,
+            "id" : "fixture-id-199",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-200",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-201",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-202",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-203",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-204",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-205",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-206",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-207",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-208",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-209",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-210",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 53,
+            "id" : "fixture-id-211",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 62,
+            "id" : "fixture-id-212",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 70,
+            "id" : "fixture-id-213",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-214",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-215",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-216",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 97,
+            "id" : "fixture-id-217",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 106,
+            "id" : "fixture-id-218",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 124,
+            "id" : "fixture-id-219",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 150,
+            "id" : "fixture-id-220",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 176,
+            "id" : "fixture-id-221",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 203,
+            "id" : "fixture-id-222",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "medicine_ball",
+        "imageName" : "medicine_ball_icon",
+        "isActive" : true,
+        "name" : "Medicine Ball",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 1,
+            "id" : "fixture-id-223",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2,
+            "id" : "fixture-id-224",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 3,
+            "id" : "fixture-id-225",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-226",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-227",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-228",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-229",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-230",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-231",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-232",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-233",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-234",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-235",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-236",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-237",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-238",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-239",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-240",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-241",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-242",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-243",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-244",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-245",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-246",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-247",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "weight_plates",
+        "imageName" : "weight_plates_icon",
+        "isActive" : true,
+        "name" : "Weight Plates",
+        "needsColour" : true,
+        "range" : [
+          {
+            "availableWeights" : 1.25,
+            "id" : "fixture-id-248",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2.5,
+            "id" : "fixture-id-249",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-250",
+            "isActive" : false,
+            "plateColour" : "#8E8E93",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-251",
+            "isActive" : true,
+            "plateColour" : "#8E8E93",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-252",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-253",
+            "isActive" : false,
+            "plateColour" : "#34C759",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-254",
+            "isActive" : true,
+            "plateColour" : "#FFCC00",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-255",
+            "isActive" : false,
+            "plateColour" : "#FFCC00",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-256",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-257",
+            "isActive" : false,
+            "plateColour" : "#0088FF",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-258",
+            "isActive" : true,
+            "plateColour" : "#FF383C",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-259",
+            "isActive" : false,
+            "plateColour" : "#FF383C",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "icon" : "dumbell",
+    "id" : "fixture-default",
+    "loadable_accessory_equipment" : [
+      {
+        "baseWeight" : 0,
+        "id" : "fat_grip_attachments",
+        "isActive" : false,
+        "name" : "Fat Grip Attachments",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "head_harness",
+        "isActive" : true,
+        "name" : "Head Harness",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "loadable_dip_pull-up_belt",
+        "isActive" : false,
+        "name" : "Loadable Dip\/Pull-Up Belt",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "wrist_roller",
+        "isActive" : true,
+        "name" : "Wrist Roller",
+        "unit" : "kilograms"
+      }
+    ],
+    "loadable_bars" : [
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 7.5,
+            "id" : "fixture-id-260",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 11.5,
+            "id" : "fixture-id-261",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-262",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-260",
+        "id" : "axle_bar",
+        "imageName" : "axle_bar_icon",
+        "isActive" : true,
+        "name" : "Axle Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 7,
+            "id" : "fixture-id-263",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-264",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-265",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-263",
+        "id" : "barbell",
+        "imageName" : "barbell_icon",
+        "isActive" : true,
+        "name" : "Barbell"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-266",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-266",
+        "id" : "cambered_bench_bar",
+        "isActive" : true,
+        "name" : "Cambered Bench Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-267",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-267",
+        "id" : "cambered_squat_bar",
+        "isActive" : true,
+        "name" : "Cambered Squat Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 9,
+            "id" : "fixture-id-268",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-268",
+        "id" : "ez_bar",
+        "isActive" : true,
+        "name" : "EZ Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-269",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 27.5,
+            "id" : "fixture-id-270",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 29.5,
+            "id" : "fixture-id-271",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 32,
+            "id" : "fixture-id-272",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-269",
+        "id" : "safety_squat_bar",
+        "isActive" : true,
+        "name" : "Safety Squat Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 22.5,
+            "id" : "fixture-id-273",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 32,
+            "id" : "fixture-id-274",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 61,
+            "id" : "fixture-id-275",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-273",
+        "id" : "strongman_log",
+        "isActive" : true,
+        "name" : "Strongman Log"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 17.5,
+            "id" : "fixture-id-276",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-277",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-276",
+        "id" : "swiss_bar",
+        "imageName" : "swiss_bar_icon",
+        "isActive" : true,
+        "name" : "Swiss Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-278",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-278",
+        "id" : "trap_bar",
+        "imageName" : "trap_bar_icon",
+        "isActive" : true,
+        "name" : "Trap Bar"
+      }
+    ],
+    "name" : "Default",
+    "pin_loaded_machines" : [
+      {
+        "defaultRangeId" : "fixture-id-279",
+        "id" : "biceps_curl_machine_with_arms_at_side",
+        "isActive" : true,
+        "name" : "Biceps Curl Machine With Arms At Side",
+        "ranges" : [
+          {
+            "id" : "fixture-id-279",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-280",
+        "id" : "chest-supported_pin-loaded_row_machine",
+        "isActive" : true,
+        "name" : "Chest-Supported Pin-Loaded Row Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-280",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-281",
+        "id" : "kneeling_lower_trunk_rotation_machine",
+        "isActive" : false,
+        "name" : "Kneeling Lower Trunk Rotation Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-281",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-282",
+        "id" : "kneeling_pin-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Kneeling Pin-Loaded Glute Kickback Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-282",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-283",
+        "id" : "lying_pin-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Lying Pin-Loaded Chest Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-283",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-284",
+        "id" : "lying_pin-loaded_leg_curl_machine",
+        "isActive" : true,
+        "name" : "Lying Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-284",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-285",
+        "id" : "multi_hip_machine",
+        "isActive" : false,
+        "name" : "Multi-Hip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-285",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-286",
+        "id" : "pec_deck",
+        "isActive" : true,
+        "name" : "Pec Deck",
+        "ranges" : [
+          {
+            "id" : "fixture-id-286",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-287",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Chest Pad)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-287",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-288",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_front_handles",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Front Handles)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-288",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-289",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_overhead_handles",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Overhead Handles)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-289",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-290",
+        "id" : "pin-loaded_assisted_pull-up_dip_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Assisted Pull-Up\/Dip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-290",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-291",
+        "id" : "pin-loaded_back_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Back Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-291",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-292",
+        "id" : "pin-loaded_chest_fly_machine_with_arm_pads",
+        "isActive" : false,
+        "name" : "Pin-Loaded Chest Fly Machine With Arm Pads",
+        "ranges" : [
+          {
+            "id" : "fixture-id-292",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-293",
+        "id" : "pin-loaded_dip_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Dip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-293",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-294",
+        "id" : "pin-loaded_hip_thrust_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Hip Thrust Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-294",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-295",
+        "id" : "pin-loaded_leg_extension_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Leg Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-295",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-296",
+        "id" : "pin-loaded_leg_press_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Leg Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-296",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-297",
+        "id" : "pin-loaded_overhead_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Overhead Triceps Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-297",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-298",
+        "id" : "pin-loaded_preacher_curl_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Preacher Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-298",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-299",
+        "id" : "pin-loaded_preacher_curl_triceps_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Preacher Curl\/Triceps Extension Combo Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-299",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-300",
+        "id" : "pin-loaded_pulldown_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Pulldown Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-300",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-301",
+        "id" : "pin-loaded_pullover_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Pullover Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-301",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-302",
+        "id" : "pin-loaded_reverse_hyperextension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Reverse Hyperextension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-302",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-303",
+        "id" : "pin-loaded_row_machine_without_chest_support",
+        "isActive" : false,
+        "name" : "Pin-Loaded Row Machine (Without Chest Support)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-303",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-304",
+        "id" : "pin-loaded_shoulder_press_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Shoulder Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-304",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-305",
+        "id" : "pin-loaded_tricep_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Tricep Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-305",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-306",
+        "id" : "reclined_pin-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Reclined Pin-Loaded Incline Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-306",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-307",
+        "id" : "seated_lower_trunk_rotation_machine",
+        "isActive" : false,
+        "name" : "Seated Lower Trunk Rotation Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-307",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-308",
+        "id" : "seated_pin-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Calf Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-308",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-309",
+        "id" : "seated_pin-loaded_chest_press_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Chest Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-309",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-310",
+        "id" : "seated_pin-loaded_hip_abduction_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Hip Abduction Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-310",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-311",
+        "id" : "seated_pin-loaded_hip_abduction_adduction_combo_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Hip Abduction\/Adduction Combo Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-311",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-312",
+        "id" : "seated_pin-loaded_hip_adduction_machine",
+        "isActive" : false,
+        "name" : "Seated Pin Loaded Hip Adduction Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-312",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-313",
+        "id" : "seated_pin-loaded_incline_press_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Incline Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-313",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-314",
+        "id" : "seated_pin-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Lateral Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-314",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-315",
+        "id" : "seated_pin-loaded_leg_curl_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-315",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-316",
+        "id" : "seated_pin-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Seated Pin Loaded Shrug Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-316",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-317",
+        "id" : "standing_pin-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Calf Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-317",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-318",
+        "id" : "standing_pin-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Glute Kickback Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-318",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-319",
+        "id" : "standing_pin-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Lateral Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-319",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-320",
+        "id" : "standing_pin-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-320",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-321",
+        "id" : "upper_trunk_rotation_machine_with_arm_or_shoulder_pads",
+        "isActive" : false,
+        "name" : "Upper Trunk Rotation Machine With Arm Or Shoulder Pads",
+        "ranges" : [
+          {
+            "id" : "fixture-id-321",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-322",
+        "id" : "upper_trunk_rotation_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Upper Trunk Rotation Machine With Chest Pad",
+        "ranges" : [
+          {
+            "id" : "fixture-id-322",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "plate_loaded_machines" : [
+      {
+        "baseWeight" : 9,
+        "id" : "ab_coaster_machine",
+        "isActive" : false,
+        "name" : "Ab Coaster Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "center_pendulum_reverse_hyperextension_machine",
+        "isActive" : true,
+        "name" : "Center Pendulum Reverse Hyperextension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "chest-supported_plate-loaded_row_machine",
+        "isActive" : false,
+        "name" : "Chest-Supported Plate-Loaded Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "chest-supported_t-bar_row_machine",
+        "isActive" : true,
+        "name" : "Chest-Supported T-Bar Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 9,
+        "id" : "hack_squat_machine",
+        "isActive" : true,
+        "name" : "Hack Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "kneeling_plate-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Kneeling Plate-Loaded Glute Kickback Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 20.4,
+        "id" : "lever-arm_belt_squat_machine",
+        "isActive" : true,
+        "name" : "Lever-Arm Belt Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_decline_press_machine",
+        "isActive" : false,
+        "name" : "Lying Decline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Lying Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Lying Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 40.8,
+        "id" : "pendulum_squat_machine",
+        "isActive" : true,
+        "name" : "Pendulum Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_abdominal_crunch_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Plate-Loaded Abdominal Crunch Machine (with Chest Pad)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_assisted_pull-up_dip_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Assisted Pull-Up\/Dip Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_back_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Back Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_crunch_back_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Crunch\/Back Extension Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_donkey_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Donkey Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_dual_cable_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Dual Cable Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 7,
+        "id" : "plate-loaded_hip_thrust_machine_starting_from_the_bottom",
+        "isActive" : false,
+        "name" : "Plate-Loaded Hip Thrust Machine (Starting From The Bottom)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 7,
+        "id" : "plate-loaded_hip_thrust_machine_starting_from_the_top",
+        "isActive" : true,
+        "name" : "Plate-Loaded Hip Thrust Machine (Starting From The Top)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_leg_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Leg Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 53.5,
+        "id" : "plate-loaded_leg_press_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Leg Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_low_row_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Low Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_overhead_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Overhead Triceps Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_preacher_curl_machine",
+        "isActive" : true,
+        "name" : "Plate-Loaded Preacher Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_preacher_curl_triceps_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Preacher Curl\/Triceps Extension Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_pulldown_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Pulldown Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_pullover_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Pullover Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_shoulder_press_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Shoulder Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_single_cable_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Single Cable Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Triceps Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "pulley_belt_squat_machine",
+        "isActive" : false,
+        "name" : "Pulley Belt Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "reclined_plate-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Reclined Plate-Loaded Incline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_decline_press_machine",
+        "isActive" : false,
+        "name" : "Seated Decline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "seated_plate-loaded_calf_raise_machine",
+        "isActive" : true,
+        "name" : "Seated Plate-Loaded Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_dip_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Dip Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_abduction_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Abduction Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Abduction\/Adduction Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_adduction_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Adduction Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Incline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Lateral Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "seated_plate-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Shrug Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 9,
+        "id" : "side_plate-loaded_reverse_hyperextension_machine",
+        "isActive" : true,
+        "name" : "Side-Plate-Loaded Reverse Hyperextension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 36.3,
+        "id" : "sled",
+        "isActive" : true,
+        "name" : "Sled",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 20,
+        "id" : "smith_machine",
+        "isActive" : false,
+        "name" : "Smith Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 30.4,
+        "id" : "standing_plate-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_finger_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Finger Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Glute Kickback Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Lateral Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "standing_plate-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Shrug Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 18,
+        "id" : "standing_t-bar_row_machine_without_chest_support",
+        "isActive" : false,
+        "name" : "Standing T-bar Row Machine (Without Chest Support)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 24.5,
+        "id" : "v-squat_machine",
+        "isActive" : false,
+        "name" : "V-Squat Machine",
+        "unit" : "kilograms"
+      }
+    ],
+    "support_equipment" : [
+      {
+        "id" : "adjustable_bench",
+        "imageName" : "adjustable_bench_icon",
+        "isActive" : true,
+        "name" : "Adjustable Bench"
+      },
+      {
+        "id" : "captains_chair",
+        "isActive" : true,
+        "name" : "Captain's Chair"
+      },
+      {
+        "id" : "decline_bench",
+        "isActive" : true,
+        "name" : "Decline Bench"
+      },
+      {
+        "id" : "decline_bench_press_station",
+        "isActive" : false,
+        "name" : "Decline Bench Press Station"
+      },
+      {
+        "id" : "flat_bench",
+        "isActive" : true,
+        "name" : "Flat Bench"
+      },
+      {
+        "id" : "flat_bench_press_station",
+        "isActive" : true,
+        "name" : "Flat Bench Press Station"
+      },
+      {
+        "id" : "glute_ham_developer",
+        "isActive" : true,
+        "name" : "Glute Ham Developer"
+      },
+      {
+        "id" : "hip_thrust_bench",
+        "isActive" : false,
+        "name" : "Hip Thrust Bench"
+      },
+      {
+        "id" : "incline_bench_press_station",
+        "isActive" : true,
+        "name" : "Incline Bench Press Station"
+      },
+      {
+        "id" : "multi-grip_pull-up_bar",
+        "isActive" : true,
+        "name" : "Multi-Grip Pull-Up Bar"
+      },
+      {
+        "id" : "nordic_hamstring_curl_bench",
+        "isActive" : false,
+        "name" : "Nordic Hamstring Curl Bench"
+      },
+      {
+        "id" : "parallel_bars",
+        "isActive" : true,
+        "name" : "Parallel Bars"
+      },
+      {
+        "id" : "power_rack",
+        "isActive" : true,
+        "name" : "Power Rack"
+      },
+      {
+        "id" : "preacher_curl_bench",
+        "isActive" : true,
+        "name" : "Preacher Curl Bench"
+      },
+      {
+        "id" : "roman_chair",
+        "isActive" : false,
+        "name" : "Roman Chair"
+      },
+      {
+        "id" : "seal_row_bench",
+        "isActive" : false,
+        "name" : "Seal Row Bench"
+      },
+      {
+        "id" : "seated_bench",
+        "isActive" : true,
+        "name" : "Seated Bench"
+      },
+      {
+        "id" : "seated_overhead_press_station",
+        "isActive" : false,
+        "name" : "Seated Overhead Press Station"
+      },
+      {
+        "id" : "squat_stand",
+        "isActive" : false,
+        "name" : "Squat Stand"
+      }
+    ]
+  },
+  "mock" : {
+    "accessory_equipment" : [
+      {
+        "id" : "ab_wheel",
+        "isActive" : true,
+        "name" : "Ab Wheel"
+      },
+      {
+        "id" : "aerobic_steps",
+        "isActive" : true,
+        "name" : "Aerobic Steps"
+      },
+      {
+        "id" : "anchor_point_for_elastic_band",
+        "isActive" : true,
+        "name" : "Anchor Point For Elastic Band"
+      },
+      {
+        "id" : "anchor_point_for_suspension_trainer",
+        "isActive" : true,
+        "name" : "Anchor Point For Suspension Trainer"
+      },
+      {
+        "id" : "bench_press_board_block",
+        "isActive" : true,
+        "name" : "Bench Press Board\/Block"
+      },
+      {
+        "id" : "calf_raise_block",
+        "isActive" : true,
+        "name" : "Calf Raise Block"
+      },
+      {
+        "id" : "cuff_cable_attachment",
+        "isActive" : true,
+        "name" : "Cuff Cable Attachment"
+      },
+      {
+        "id" : "deadlift_blocks",
+        "isActive" : true,
+        "name" : "Deadlift Blocks"
+      },
+      {
+        "id" : "gymnastics_rings",
+        "isActive" : true,
+        "name" : "Gymnastics Rings"
+      },
+      {
+        "id" : "landmine_attachment_wall_corner_attachment",
+        "isActive" : true,
+        "name" : "Landmine Attachment\/Wall Corner"
+      },
+      {
+        "id" : "neutral_grip_landmine_row_attachment",
+        "isActive" : true,
+        "name" : "Neutral Grip Landmine Row Attachment"
+      },
+      {
+        "id" : "nordic_hamstring_curl_strap",
+        "isActive" : true,
+        "name" : "Nordic Hamstring Curl Strap"
+      },
+      {
+        "id" : "overhand_grip_landmine_row_attachment",
+        "isActive" : true,
+        "name" : "Overhand Grip Landmine Row Attachment"
+      },
+      {
+        "id" : "plyometric_boxes",
+        "isActive" : true,
+        "name" : "Plyometric Boxes"
+      },
+      {
+        "id" : "pull_up_bar",
+        "isActive" : true,
+        "name" : "Pull-Up Bar"
+      },
+      {
+        "id" : "push_up_handles",
+        "isActive" : true,
+        "name" : "Push-Up Handles"
+      },
+      {
+        "id" : "slant_board",
+        "isActive" : true,
+        "name" : "Slant Board"
+      },
+      {
+        "id" : "slingshot",
+        "isActive" : true,
+        "name" : "Slingshot"
+      },
+      {
+        "id" : "split_squat_roller_stand",
+        "isActive" : true,
+        "name" : "Split Squat Roller Stand"
+      },
+      {
+        "id" : "squat_box",
+        "isActive" : true,
+        "name" : "Squat Box"
+      },
+      {
+        "id" : "stability_ball",
+        "isActive" : true,
+        "name" : "Stability Ball"
+      },
+      {
+        "id" : "staircase",
+        "isActive" : true,
+        "name" : "Staircase"
+      },
+      {
+        "id" : "suspension_trainer",
+        "isActive" : true,
+        "name" : "Suspension Trainer"
+      },
+      {
+        "id" : "v_bar_row_grip_attachment",
+        "isActive" : true,
+        "name" : "V-Bar Row Grip Attachment"
+      },
+      {
+        "id" : "yoga_blocks",
+        "isActive" : true,
+        "name" : "Yoga Blocks"
+      }
+    ],
+    "author_id" : "user123",
+    "bands" : [
+      {
+        "id" : "long_elastic_bands",
+        "isActive" : true,
+        "name" : "Long Elastic Bands",
+        "range" : [
+          {
+            "availableResistance" : 4,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-001",
+            "isActive" : true,
+            "name" : "Extra Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 8,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-002",
+            "isActive" : true,
+            "name" : "Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 14,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-003",
+            "isActive" : true,
+            "name" : "Medium Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-004",
+            "isActive" : true,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-005",
+            "isActive" : true,
+            "name" : "Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 43,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-006",
+            "isActive" : true,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 52,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-007",
+            "isActive" : true,
+            "name" : "Super Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 102,
+            "bandColour" : "#8E8E93",
+            "id" : "fixture-id-008",
+            "isActive" : true,
+            "name" : "Heaviest Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 9,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-009",
+            "isActive" : false,
+            "name" : "Extra Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-010",
+            "isActive" : false,
+            "name" : "Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-011",
+            "isActive" : false,
+            "name" : "Medium Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 40,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-012",
+            "isActive" : false,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 65,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-013",
+            "isActive" : false,
+            "name" : "Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 95,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-014",
+            "isActive" : false,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 115,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-015",
+            "isActive" : false,
+            "name" : "Super Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 225,
+            "bandColour" : "#8E8E93",
+            "id" : "fixture-id-016",
+            "isActive" : false,
+            "name" : "Heaviest Resistance",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "short_elastic_bands",
+        "isActive" : true,
+        "name" : "Short Elastic Bands",
+        "range" : [
+          {
+            "availableResistance" : 4,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-017",
+            "isActive" : true,
+            "name" : "Extra Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 8,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-018",
+            "isActive" : true,
+            "name" : "Light Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 14,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-019",
+            "isActive" : true,
+            "name" : "Medium Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-020",
+            "isActive" : true,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-021",
+            "isActive" : true,
+            "name" : "Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 43,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-022",
+            "isActive" : true,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "kilograms"
+          },
+          {
+            "availableResistance" : 9,
+            "bandColour" : "#FF8D28",
+            "id" : "fixture-id-023",
+            "isActive" : false,
+            "name" : "Extra Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 18,
+            "bandColour" : "#FF383C",
+            "id" : "fixture-id-024",
+            "isActive" : false,
+            "name" : "Light Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 30,
+            "bandColour" : "#0088FF",
+            "id" : "fixture-id-025",
+            "isActive" : false,
+            "name" : "Medium Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 40,
+            "bandColour" : "#34C759",
+            "id" : "fixture-id-026",
+            "isActive" : false,
+            "name" : "Medium-Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 65,
+            "bandColour" : "#000000",
+            "id" : "fixture-id-027",
+            "isActive" : false,
+            "name" : "Heavy Resistance",
+            "unit" : "pounds"
+          },
+          {
+            "availableResistance" : 95,
+            "bandColour" : "#CB30E0",
+            "id" : "fixture-id-028",
+            "isActive" : false,
+            "name" : "Extra Heavy Resistance",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "body_weights" : [
+      {
+        "id" : "ankle_weights",
+        "isActive" : true,
+        "name" : "Ankle Weights",
+        "range" : [
+          {
+            "availableWeights" : 2.5,
+            "id" : "fixture-id-323",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-324",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7.5,
+            "id" : "fixture-id-325",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-326",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-327",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-328",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 17.5,
+            "id" : "fixture-id-329",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-330",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22.5,
+            "id" : "fixture-id-331",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-332",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 27.5,
+            "id" : "fixture-id-333",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-334",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32.5,
+            "id" : "fixture-id-335",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-336",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 37.5,
+            "id" : "fixture-id-337",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-338",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42.5,
+            "id" : "fixture-id-339",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-340",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 47.5,
+            "id" : "fixture-id-341",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-342",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-343",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-344",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-345",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-346",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-347",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-348",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-349",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-350",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-351",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-352",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-353",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 65,
+            "id" : "fixture-id-354",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 70,
+            "id" : "fixture-id-355",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 75,
+            "id" : "fixture-id-356",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-357",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 85,
+            "id" : "fixture-id-358",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 90,
+            "id" : "fixture-id-359",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 95,
+            "id" : "fixture-id-360",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 100,
+            "id" : "fixture-id-361",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 105,
+            "id" : "fixture-id-362",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 110,
+            "id" : "fixture-id-363",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 115,
+            "id" : "fixture-id-364",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 120,
+            "id" : "fixture-id-365",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "weighted_vest",
+        "isActive" : true,
+        "name" : "Weighted Vest",
+        "range" : [
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-366",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-367",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-368",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-369",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-370",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-371",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-372",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-373",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-374",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 7.5,
+            "id" : "fixture-id-375",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-376",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-377",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-378",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-379",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 60,
+            "id" : "fixture-id-380",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "cable_machines" : [
+      {
+        "defaultRangeId" : "fixture-id-381",
+        "id" : "cable_lat_pulldown_machine",
+        "isActive" : true,
+        "name" : "Cable Lat Pulldown Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-381",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-382",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-383",
+        "id" : "pin-loaded_dual_cable_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Dual Cable Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-383",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-384",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-385",
+        "id" : "pin-loaded_single_cable_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Single Cable Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-385",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-386",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-387",
+        "id" : "seated_cable_row_machine",
+        "isActive" : true,
+        "name" : "Seated Cable Row Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-387",
+            "increment" : 5,
+            "isActive" : false,
+            "maxWeight" : 250,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "kilograms"
+          },
+          {
+            "id" : "fixture-id-388",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 500,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "date_created" : 812000000,
+    "date_modified" : 812000000,
+    "fixed_weight_bars" : [
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 10,
+            "id" : "fixture-id-389",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-390",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-391",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-392",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 30,
+            "id" : "fixture-id-393",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 35,
+            "id" : "fixture-id-394",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 40,
+            "id" : "fixture-id-395",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 45,
+            "id" : "fixture-id-396",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 50,
+            "id" : "fixture-id-397",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-389",
+        "id" : "fixed_weight_ez_bar",
+        "isActive" : true,
+        "name" : "Fixed Weight Ez Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 10,
+            "id" : "fixture-id-398",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-399",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-400",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-401",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 30,
+            "id" : "fixture-id-402",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 35,
+            "id" : "fixture-id-403",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 40,
+            "id" : "fixture-id-404",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 45,
+            "id" : "fixture-id-405",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 50,
+            "id" : "fixture-id-406",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-398",
+        "id" : "fixed_weight_straight_bar",
+        "isActive" : true,
+        "name" : "Fixed Weight Straight Bar"
+      }
+    ],
+    "free_weights" : [
+      {
+        "id" : "bumper_plates",
+        "imageName" : "bumper_plates_icon",
+        "isActive" : true,
+        "name" : "Bumper Plates",
+        "needsColour" : true,
+        "range" : [
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-407",
+            "isActive" : true,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-408",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-409",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-410",
+            "isActive" : true,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-411",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-412",
+            "isActive" : true,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-413",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-414",
+            "isActive" : true,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-415",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-416",
+            "isActive" : true,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "dumbbells",
+        "imageName" : "dumbbells_icon",
+        "isActive" : true,
+        "name" : "Dumbbells",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 1,
+            "id" : "fixture-id-417",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2,
+            "id" : "fixture-id-418",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 3,
+            "id" : "fixture-id-419",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-420",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-421",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-422",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-423",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-424",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-425",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-426",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-427",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-428",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-429",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-430",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-431",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-432",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 17.5,
+            "id" : "fixture-id-433",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-434",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-435",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22,
+            "id" : "fixture-id-436",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22.5,
+            "id" : "fixture-id-437",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 24,
+            "id" : "fixture-id-438",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-439",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-440",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 27.5,
+            "id" : "fixture-id-441",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 28,
+            "id" : "fixture-id-442",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-443",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32,
+            "id" : "fixture-id-444",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32.5,
+            "id" : "fixture-id-445",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 34,
+            "id" : "fixture-id-446",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 36,
+            "id" : "fixture-id-447",
+            "isActive" : false,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 37.5,
+            "id" : "fixture-id-448",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 38,
+            "id" : "fixture-id-449",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-450",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42,
+            "id" : "fixture-id-451",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 42.5,
+            "id" : "fixture-id-452",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-453",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-454",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 46,
+            "id" : "fixture-id-455",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 47.5,
+            "id" : "fixture-id-456",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 48,
+            "id" : "fixture-id-457",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-458",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 57.5,
+            "id" : "fixture-id-459",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ]
+      },
+      {
+        "id" : "kettlebells",
+        "imageName" : "kettlebells_icon",
+        "isActive" : true,
+        "name" : "Kettlebells",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-460",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-461",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-462",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-463",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-464",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-465",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-466",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-467",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-468",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 22,
+            "id" : "fixture-id-469",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 24,
+            "id" : "fixture-id-470",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-471",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 28,
+            "id" : "fixture-id-472",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-473",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 32,
+            "id" : "fixture-id-474",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 36,
+            "id" : "fixture-id-475",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-476",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-477",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 48,
+            "id" : "fixture-id-478",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 52,
+            "id" : "fixture-id-479",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 56,
+            "id" : "fixture-id-480",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 60,
+            "id" : "fixture-id-481",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 64,
+            "id" : "fixture-id-482",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 68,
+            "id" : "fixture-id-483",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 72,
+            "id" : "fixture-id-484",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 76,
+            "id" : "fixture-id-485",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-486",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 84,
+            "id" : "fixture-id-487",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-488",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 92,
+            "id" : "fixture-id-489",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-490",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-491",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-492",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 13,
+            "id" : "fixture-id-493",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-494",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-495",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-496",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-497",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 26,
+            "id" : "fixture-id-498",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-499",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-500",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 40,
+            "id" : "fixture-id-501",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 44,
+            "id" : "fixture-id-502",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-503",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 50,
+            "id" : "fixture-id-504",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 53,
+            "id" : "fixture-id-505",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 62,
+            "id" : "fixture-id-506",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 70,
+            "id" : "fixture-id-507",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 80,
+            "id" : "fixture-id-508",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-509",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 88,
+            "id" : "fixture-id-510",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 97,
+            "id" : "fixture-id-511",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 106,
+            "id" : "fixture-id-512",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 124,
+            "id" : "fixture-id-513",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 150,
+            "id" : "fixture-id-514",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 176,
+            "id" : "fixture-id-515",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 203,
+            "id" : "fixture-id-516",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "medicine_ball",
+        "imageName" : "medicine_ball_icon",
+        "isActive" : true,
+        "name" : "Medicine Ball",
+        "needsColour" : false,
+        "range" : [
+          {
+            "availableWeights" : 1,
+            "id" : "fixture-id-517",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2,
+            "id" : "fixture-id-518",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 3,
+            "id" : "fixture-id-519",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-520",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-521",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-522",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-523",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 7,
+            "id" : "fixture-id-524",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-525",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 9,
+            "id" : "fixture-id-526",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-527",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-528",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 12.5,
+            "id" : "fixture-id-529",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-530",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 4,
+            "id" : "fixture-id-531",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 6,
+            "id" : "fixture-id-532",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 8,
+            "id" : "fixture-id-533",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-534",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 12,
+            "id" : "fixture-id-535",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 14,
+            "id" : "fixture-id-536",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 16,
+            "id" : "fixture-id-537",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 18,
+            "id" : "fixture-id-538",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-539",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-540",
+            "isActive" : false,
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 30,
+            "id" : "fixture-id-541",
+            "isActive" : false,
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "id" : "weight_plates",
+        "imageName" : "weight_plates_icon",
+        "isActive" : true,
+        "name" : "Weight Plates",
+        "needsColour" : true,
+        "range" : [
+          {
+            "availableWeights" : 1.25,
+            "id" : "fixture-id-542",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 2.5,
+            "id" : "fixture-id-543",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-544",
+            "isActive" : false,
+            "plateColour" : "#8E8E93",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 5,
+            "id" : "fixture-id-545",
+            "isActive" : true,
+            "plateColour" : "#8E8E93",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 10,
+            "id" : "fixture-id-546",
+            "isActive" : true,
+            "plateColour" : "#34C759",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-547",
+            "isActive" : false,
+            "plateColour" : "#34C759",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 15,
+            "id" : "fixture-id-548",
+            "isActive" : true,
+            "plateColour" : "#FFCC00",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 35,
+            "id" : "fixture-id-549",
+            "isActive" : false,
+            "plateColour" : "#FFCC00",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 20,
+            "id" : "fixture-id-550",
+            "isActive" : true,
+            "plateColour" : "#0088FF",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 45,
+            "id" : "fixture-id-551",
+            "isActive" : false,
+            "plateColour" : "#0088FF",
+            "unit" : "pounds"
+          },
+          {
+            "availableWeights" : 25,
+            "id" : "fixture-id-552",
+            "isActive" : true,
+            "plateColour" : "#FF383C",
+            "unit" : "kilograms"
+          },
+          {
+            "availableWeights" : 55,
+            "id" : "fixture-id-553",
+            "isActive" : false,
+            "plateColour" : "#FF383C",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "icon" : "dumbbell",
+    "id" : "1",
+    "loadable_accessory_equipment" : [
+      {
+        "baseWeight" : 0,
+        "id" : "fat_grip_attachments",
+        "isActive" : false,
+        "name" : "Fat Grip Attachments",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "head_harness",
+        "isActive" : true,
+        "name" : "Head Harness",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "loadable_dip_pull-up_belt",
+        "isActive" : false,
+        "name" : "Loadable Dip\/Pull-Up Belt",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "wrist_roller",
+        "isActive" : true,
+        "name" : "Wrist Roller",
+        "unit" : "kilograms"
+      }
+    ],
+    "loadable_bars" : [
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 7.5,
+            "id" : "fixture-id-554",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 11.5,
+            "id" : "fixture-id-555",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-556",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-554",
+        "id" : "axle_bar",
+        "imageName" : "axle_bar_icon",
+        "isActive" : true,
+        "name" : "Axle Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 7,
+            "id" : "fixture-id-557",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 15,
+            "id" : "fixture-id-558",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-559",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-557",
+        "id" : "barbell",
+        "imageName" : "barbell_icon",
+        "isActive" : true,
+        "name" : "Barbell"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-560",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-560",
+        "id" : "cambered_bench_bar",
+        "isActive" : true,
+        "name" : "Cambered Bench Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-561",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-561",
+        "id" : "cambered_squat_bar",
+        "isActive" : true,
+        "name" : "Cambered Squat Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 9,
+            "id" : "fixture-id-562",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-562",
+        "id" : "ez_bar",
+        "isActive" : true,
+        "name" : "EZ Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 25,
+            "id" : "fixture-id-563",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 27.5,
+            "id" : "fixture-id-564",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 29.5,
+            "id" : "fixture-id-565",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 32,
+            "id" : "fixture-id-566",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-563",
+        "id" : "safety_squat_bar",
+        "isActive" : true,
+        "name" : "Safety Squat Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 22.5,
+            "id" : "fixture-id-567",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 32,
+            "id" : "fixture-id-568",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 61,
+            "id" : "fixture-id-569",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-567",
+        "id" : "strongman_log",
+        "isActive" : true,
+        "name" : "Strongman Log"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 17.5,
+            "id" : "fixture-id-570",
+            "isActive" : true,
+            "unit" : "kilograms"
+          },
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-571",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-570",
+        "id" : "swiss_bar",
+        "imageName" : "swiss_bar_icon",
+        "isActive" : true,
+        "name" : "Swiss Bar"
+      },
+      {
+        "baseWeights" : [
+          {
+            "baseWeight" : 20,
+            "id" : "fixture-id-572",
+            "isActive" : true,
+            "unit" : "kilograms"
+          }
+        ],
+        "defaultBaseWeightId" : "fixture-id-572",
+        "id" : "trap_bar",
+        "imageName" : "trap_bar_icon",
+        "isActive" : true,
+        "name" : "Trap Bar"
+      }
+    ],
+    "name" : "Platinum Gym Malahide",
+    "pin_loaded_machines" : [
+      {
+        "defaultRangeId" : "fixture-id-573",
+        "id" : "biceps_curl_machine_with_arms_at_side",
+        "isActive" : true,
+        "name" : "Biceps Curl Machine With Arms At Side",
+        "ranges" : [
+          {
+            "id" : "fixture-id-573",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-574",
+        "id" : "chest-supported_pin-loaded_row_machine",
+        "isActive" : true,
+        "name" : "Chest-Supported Pin-Loaded Row Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-574",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-575",
+        "id" : "kneeling_lower_trunk_rotation_machine",
+        "isActive" : false,
+        "name" : "Kneeling Lower Trunk Rotation Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-575",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-576",
+        "id" : "kneeling_pin-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Kneeling Pin-Loaded Glute Kickback Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-576",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-577",
+        "id" : "lying_pin-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Lying Pin-Loaded Chest Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-577",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-578",
+        "id" : "lying_pin-loaded_leg_curl_machine",
+        "isActive" : true,
+        "name" : "Lying Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-578",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-579",
+        "id" : "multi_hip_machine",
+        "isActive" : false,
+        "name" : "Multi-Hip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-579",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-580",
+        "id" : "pec_deck",
+        "isActive" : true,
+        "name" : "Pec Deck",
+        "ranges" : [
+          {
+            "id" : "fixture-id-580",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-581",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Chest Pad)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-581",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-582",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_front_handles",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Front Handles)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-582",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-583",
+        "id" : "pin-loaded_abdominal_crunch_machine_with_overhead_handles",
+        "isActive" : false,
+        "name" : "Pin-Loaded Abdominal Crunch Machine (With Overhead Handles)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-583",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-584",
+        "id" : "pin-loaded_assisted_pull-up_dip_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Assisted Pull-Up\/Dip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-584",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-585",
+        "id" : "pin-loaded_back_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Back Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-585",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-586",
+        "id" : "pin-loaded_chest_fly_machine_with_arm_pads",
+        "isActive" : false,
+        "name" : "Pin-Loaded Chest Fly Machine With Arm Pads",
+        "ranges" : [
+          {
+            "id" : "fixture-id-586",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-587",
+        "id" : "pin-loaded_dip_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Dip Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-587",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-588",
+        "id" : "pin-loaded_hip_thrust_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Hip Thrust Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-588",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-589",
+        "id" : "pin-loaded_leg_extension_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Leg Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-589",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-590",
+        "id" : "pin-loaded_leg_press_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Leg Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-590",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-591",
+        "id" : "pin-loaded_overhead_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Overhead Triceps Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-591",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-592",
+        "id" : "pin-loaded_preacher_curl_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Preacher Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-592",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-593",
+        "id" : "pin-loaded_preacher_curl_triceps_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Preacher Curl\/Triceps Extension Combo Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-593",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-594",
+        "id" : "pin-loaded_pulldown_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Pulldown Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-594",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-595",
+        "id" : "pin-loaded_pullover_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Pullover Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-595",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-596",
+        "id" : "pin-loaded_reverse_hyperextension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Reverse Hyperextension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-596",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-597",
+        "id" : "pin-loaded_row_machine_without_chest_support",
+        "isActive" : false,
+        "name" : "Pin-Loaded Row Machine (Without Chest Support)",
+        "ranges" : [
+          {
+            "id" : "fixture-id-597",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-598",
+        "id" : "pin-loaded_shoulder_press_machine",
+        "isActive" : true,
+        "name" : "Pin-Loaded Shoulder Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-598",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-599",
+        "id" : "pin-loaded_tricep_extension_machine",
+        "isActive" : false,
+        "name" : "Pin-Loaded Tricep Extension Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-599",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-600",
+        "id" : "reclined_pin-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Reclined Pin-Loaded Incline Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-600",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-601",
+        "id" : "seated_lower_trunk_rotation_machine",
+        "isActive" : false,
+        "name" : "Seated Lower Trunk Rotation Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-601",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-602",
+        "id" : "seated_pin-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Calf Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-602",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-603",
+        "id" : "seated_pin-loaded_chest_press_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Chest Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-603",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-604",
+        "id" : "seated_pin-loaded_hip_abduction_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Hip Abduction Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-604",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-605",
+        "id" : "seated_pin-loaded_hip_abduction_adduction_combo_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Hip Abduction\/Adduction Combo Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-605",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-606",
+        "id" : "seated_pin-loaded_hip_adduction_machine",
+        "isActive" : false,
+        "name" : "Seated Pin Loaded Hip Adduction Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-606",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-607",
+        "id" : "seated_pin-loaded_incline_press_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Incline Press Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-607",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-608",
+        "id" : "seated_pin-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Pin-Loaded Lateral Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-608",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-609",
+        "id" : "seated_pin-loaded_leg_curl_machine",
+        "isActive" : true,
+        "name" : "Seated Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-609",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-610",
+        "id" : "seated_pin-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Seated Pin Loaded Shrug Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-610",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-611",
+        "id" : "standing_pin-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Calf Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-611",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-612",
+        "id" : "standing_pin-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Glute Kickback Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-612",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-613",
+        "id" : "standing_pin-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Lateral Raise Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-613",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-614",
+        "id" : "standing_pin-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Pin-Loaded Leg Curl Machine",
+        "ranges" : [
+          {
+            "id" : "fixture-id-614",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-615",
+        "id" : "upper_trunk_rotation_machine_with_arm_or_shoulder_pads",
+        "isActive" : false,
+        "name" : "Upper Trunk Rotation Machine With Arm Or Shoulder Pads",
+        "ranges" : [
+          {
+            "id" : "fixture-id-615",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      },
+      {
+        "defaultRangeId" : "fixture-id-616",
+        "id" : "upper_trunk_rotation_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Upper Trunk Rotation Machine With Chest Pad",
+        "ranges" : [
+          {
+            "id" : "fixture-id-616",
+            "increment" : 5,
+            "isActive" : true,
+            "maxWeight" : 300,
+            "minWeight" : 0,
+            "name" : "Range 1",
+            "unit" : "pounds"
+          }
+        ]
+      }
+    ],
+    "plate_loaded_machines" : [
+      {
+        "baseWeight" : 9,
+        "id" : "ab_coaster_machine",
+        "isActive" : false,
+        "name" : "Ab Coaster Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "center_pendulum_reverse_hyperextension_machine",
+        "isActive" : true,
+        "name" : "Center Pendulum Reverse Hyperextension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "chest-supported_plate-loaded_row_machine",
+        "isActive" : false,
+        "name" : "Chest-Supported Plate-Loaded Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "chest-supported_t-bar_row_machine",
+        "isActive" : true,
+        "name" : "Chest-Supported T-Bar Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 9,
+        "id" : "hack_squat_machine",
+        "isActive" : true,
+        "name" : "Hack Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "kneeling_plate-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Kneeling Plate-Loaded Glute Kickback Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 20.4,
+        "id" : "lever-arm_belt_squat_machine",
+        "isActive" : true,
+        "name" : "Lever-Arm Belt Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_decline_press_machine",
+        "isActive" : false,
+        "name" : "Lying Decline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Lying Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "lying_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Lying Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 40.8,
+        "id" : "pendulum_squat_machine",
+        "isActive" : true,
+        "name" : "Pendulum Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_abdominal_crunch_machine_with_chest_pad",
+        "isActive" : false,
+        "name" : "Plate-Loaded Abdominal Crunch Machine (with Chest Pad)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_assisted_pull-up_dip_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Assisted Pull-Up\/Dip Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_back_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Back Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_crunch_back_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Crunch\/Back Extension Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_donkey_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Donkey Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_dual_cable_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Dual Cable Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 7,
+        "id" : "plate-loaded_hip_thrust_machine_starting_from_the_bottom",
+        "isActive" : false,
+        "name" : "Plate-Loaded Hip Thrust Machine (Starting From The Bottom)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 7,
+        "id" : "plate-loaded_hip_thrust_machine_starting_from_the_top",
+        "isActive" : true,
+        "name" : "Plate-Loaded Hip Thrust Machine (Starting From The Top)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_leg_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Leg Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 53.5,
+        "id" : "plate-loaded_leg_press_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Leg Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_low_row_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Low Row Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_overhead_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Overhead Triceps Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_preacher_curl_machine",
+        "isActive" : true,
+        "name" : "Plate-Loaded Preacher Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_preacher_curl_triceps_extension_combo_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Preacher Curl\/Triceps Extension Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_pulldown_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Pulldown Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_pullover_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Pullover Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_shoulder_press_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Shoulder Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_single_cable_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Single Cable Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "plate-loaded_triceps_extension_machine",
+        "isActive" : false,
+        "name" : "Plate-Loaded Triceps Extension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "pulley_belt_squat_machine",
+        "isActive" : false,
+        "name" : "Pulley Belt Squat Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "reclined_plate-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Reclined Plate-Loaded Incline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_decline_press_machine",
+        "isActive" : false,
+        "name" : "Seated Decline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "seated_plate-loaded_calf_raise_machine",
+        "isActive" : true,
+        "name" : "Seated Plate-Loaded Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_dip_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Dip Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_abduction_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Abduction Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_abduction_adduction_combo_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Abduction\/Adduction Combo Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_hip_adduction_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Hip Adduction Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_incline_press_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Incline Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Lateral Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "seated_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "seated_plate-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Seated Plate-Loaded Shrug Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 9,
+        "id" : "side_plate-loaded_reverse_hyperextension_machine",
+        "isActive" : true,
+        "name" : "Side-Plate-Loaded Reverse Hyperextension Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 36.3,
+        "id" : "sled",
+        "isActive" : true,
+        "name" : "Sled",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 20,
+        "id" : "smith_machine",
+        "isActive" : false,
+        "name" : "Smith Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 30.4,
+        "id" : "standing_plate-loaded_calf_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Calf Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_chest_press_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Chest Press Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_finger_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Finger Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_glute_kickback_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Glute Kickback Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_lateral_raise_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Lateral Raise Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 0,
+        "id" : "standing_plate-loaded_leg_curl_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Leg Curl Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 22.7,
+        "id" : "standing_plate-loaded_shrug_machine",
+        "isActive" : false,
+        "name" : "Standing Plate-Loaded Shrug Machine",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 18,
+        "id" : "standing_t-bar_row_machine_without_chest_support",
+        "isActive" : false,
+        "name" : "Standing T-bar Row Machine (Without Chest Support)",
+        "unit" : "kilograms"
+      },
+      {
+        "baseWeight" : 24.5,
+        "id" : "v-squat_machine",
+        "isActive" : false,
+        "name" : "V-Squat Machine",
+        "unit" : "kilograms"
+      }
+    ],
+    "support_equipment" : [
+      {
+        "id" : "adjustable_bench",
+        "isActive" : true,
+        "name" : "Adjustable Bench"
+      },
+      {
+        "id" : "captains_chair",
+        "isActive" : true,
+        "name" : "Captain's Chair"
+      },
+      {
+        "id" : "decline_bench",
+        "isActive" : true,
+        "name" : "Decline Bench"
+      },
+      {
+        "id" : "decline_bench_press_station",
+        "isActive" : false,
+        "name" : "Decline Bench Press Station"
+      },
+      {
+        "id" : "flat_bench",
+        "isActive" : true,
+        "name" : "Flat Bench"
+      },
+      {
+        "id" : "flat_bench_press_station",
+        "isActive" : true,
+        "name" : "Flat Bench Press Station"
+      },
+      {
+        "id" : "glute_ham_developer",
+        "isActive" : true,
+        "name" : "Glute Ham Developer"
+      },
+      {
+        "id" : "hip_thrust_bench",
+        "isActive" : false,
+        "name" : "Hip Thrust Bench"
+      },
+      {
+        "id" : "incline_bench_press_station",
+        "isActive" : true,
+        "name" : "Incline Bench Press Station"
+      },
+      {
+        "id" : "multi-grip_pull-up_bar",
+        "isActive" : true,
+        "name" : "Multi-Grip Pull-Up Bar"
+      },
+      {
+        "id" : "nordic_hamstring_curl_bench",
+        "isActive" : false,
+        "name" : "Nordic Hamstring Curl Bench"
+      },
+      {
+        "id" : "parallel_bars",
+        "isActive" : true,
+        "name" : "Parallel Bars"
+      },
+      {
+        "id" : "power_rack",
+        "isActive" : true,
+        "name" : "Power Rack"
+      },
+      {
+        "id" : "preacher_curl_bench",
+        "isActive" : true,
+        "name" : "Preacher Curl Bench"
+      },
+      {
+        "id" : "roman_chair",
+        "isActive" : false,
+        "name" : "Roman Chair"
+      },
+      {
+        "id" : "seal_row_bench",
+        "isActive" : false,
+        "name" : "Seal Row Bench"
+      },
+      {
+        "id" : "seated_bench",
+        "isActive" : true,
+        "name" : "Seated Bench"
+      },
+      {
+        "id" : "seated_overhead_press_station",
+        "isActive" : false,
+        "name" : "Seated Overhead Press Station"
+      },
+      {
+        "id" : "squat_stand",
+        "isActive" : false,
+        "name" : "Squat Stand"
+      }
+    ]
+  }
+}

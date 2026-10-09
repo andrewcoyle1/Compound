@@ -269,8 +269,15 @@ struct CoreInteractor: GlobalInteractor {
         logManager.deleteUserProfile()
     }
     
+    /// A template started on its own, outside any microcycle: the base targets.
     func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
-        let session = try await plannedSession(for: template, in: mesocycleId)
+        try await startWorkout(for: template, in: mesocycleId, microcycleIndex: nil)
+    }
+
+    /// `microcycleIndex` is the 1-based microcycle the day belongs to, which picks each exercise's
+    /// targets for that week; nil for a template started on its own.
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws {
+        let session = try await plannedSession(for: template, in: mesocycleId, microcycleIndex: microcycleIndex)
         try self.updateActiveSession(session)
         #if !targetEnvironment(macCatalyst)
         hkWorkoutManager.startWorkout(workout: session)
@@ -280,8 +287,16 @@ struct CoreInteractor: GlobalInteractor {
 
     /// The session starting `template` would begin, prefilled as the tracker prefills it, without
     /// starting anything. Today's card reads its targets from this, so they are the tracker's own.
-    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel {
+    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws -> WorkoutSessionModel {
         guard let userId = self.userId else { throw CoreError.noCurrentUser }
+        // The planner reads each exercise's base targets, so it is handed the week's: a set the
+        // plan adds in week 2 gets a suggestion like the others.
+        var week = template
+        week.exercises = template.exercises.map { exercise in
+            var exercise = exercise
+            exercise.setTargets = exercise.setTargets(forMicrocycle: microcycleIndex)
+            return exercise
+        }
         var unitPreferences: [String: ExerciseUnitPreference] = [:]
         for exerciseModel in template.exercises {
             let preference = self.getPreference(templateId: exerciseModel.exercise.id)
@@ -289,7 +304,7 @@ struct CoreInteractor: GlobalInteractor {
         }
         let previousSession = try await self.workoutSessionManager.getLastWorkoutSessionForTemplate(templateId: template.id)
         let prefill = await sessionPrefill(
-            for: template,
+            for: week,
             authorId: userId,
             mesocycleId: mesocycleId,
             unitPreferences: unitPreferences
@@ -300,9 +315,11 @@ struct CoreInteractor: GlobalInteractor {
             template: template,
             notes: nil,
             mesocycleId: mesocycleId,
+            microcycleIndex: microcycleIndex,
             previousWorkoutSession: previousSession,
             unitPreferences: unitPreferences,
-            prefill: prefill
+            prefill: prefill,
+            plansSets: workoutSettings.plansSets
         )
     }
     

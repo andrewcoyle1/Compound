@@ -9,8 +9,8 @@ import Foundation
 /// controls discarded every change.
 ///
 /// The expenditure fields are read by `ExpenditureEngine`: `calculationMode`,
-/// `calculationStartDate`, `algorithmVersion` and `stepInformedUpdates` shape the estimate, and
-/// `predictiveGoalAdjustments` shapes the `TargetProposal` built on it. `estimationMethod` and
+/// `calculationStartDate`, `algorithmVersion` and `stepInformedUpdates` shape the estimate.
+/// `predictiveGoalAdjustments` is no longer read (see the property). `estimationMethod` and
 /// `bmrEquation` still shape the prior through `resolvedBMREquation`. The strategy fields above
 /// them — the check-in cadence, partial logging, fasting and logging breaks — drive the weekly
 /// check-in: `CheckInSchedule` reads `checkInWeekday`, and `CheckInPresenter` builds its step
@@ -38,6 +38,9 @@ struct NutritionStrategySettings: DataSyncModelProtocol {
 
     // MARK: - Expenditure Modifiers
     var stepInformedUpdates: Bool = false
+    /// No longer read, and no longer on the Expenditure screen. It switched on a rate-error
+    /// correction on top of the target proposal, which counted the same gap twice: the expenditure
+    /// filter already absorbs it. Kept so stored settings still decode and round-trip.
     var predictiveGoalAdjustments: Bool = true
 
     enum CodingKeys: String, CodingKey {
@@ -69,8 +72,8 @@ struct NutritionStrategySettings: DataSyncModelProtocol {
     /// Which BMR equation the expenditure estimate actually runs, given what has been logged.
     ///
     /// `estimationMethod` sits above `bmrEquation` on the same screen and promises to "use your
-    /// logged body fat percentage where one is available". Katch-McArdle is the only equation in
-    /// the app that reads body fat, so being body-fat aware means running it.
+    /// logged body fat percentage where one is available". Cunningham is the only equation in the
+    /// app that reads body fat, so being body-fat aware means running it.
     ///
     /// Without a usable percentage there is nothing to be aware of, and inventing one is worse
     /// than the equation the user picked — so the choice stands. `.standard`, the default, always
@@ -79,7 +82,7 @@ struct NutritionStrategySettings: DataSyncModelProtocol {
         guard estimationMethod == .bodyFatAware,
               let bodyFat = bodyFatPercentage,
               bodyFat > 0, bodyFat < 100 else { return bmrEquation }
-        return .katchMcArdle
+        return .cunningham
     }
 
     /// Monday-first weekday names, indexed by `Calendar`'s 1-based `weekday`.
@@ -108,7 +111,7 @@ enum ExpenditureEstimationMethod: String, DataSyncModelProtocol, CaseIterable {
         case .standard:
             return String(localized: "Estimate from height, weight, age and activity.")
         case .bodyFatAware:
-            return String(localized: "Use your logged body fat percentage where one is available, which suits leaner or heavier builds better.")
+            return String(localized: "Use your latest logged body fat percentage where one is available, which suits lean, muscular builds better. Only as accurate as that reading.")
         }
     }
 }
@@ -118,13 +121,17 @@ enum BMREquation: String, DataSyncModelProtocol, CaseIterable {
 
     case mifflinStJeor
     case harrisBenedict
-    case katchMcArdle
+    /// Cunningham 1980, from fat-free mass. It replaced Katch-McArdle, which no validation in
+    /// athletes supports (O'Neill 2023; Tinsley 2019). The stored value keeps Katch-McArdle's raw
+    /// string, so every saved choice of the old lean-mass equation now runs Cunningham and older
+    /// builds still decode what newer ones write.
+    case cunningham = "katchMcArdle"
 
     var title: String {
         switch self {
         case .mifflinStJeor:  return String(localized: "Mifflin-St Jeor")
         case .harrisBenedict: return String(localized: "Harris-Benedict")
-        case .katchMcArdle:   return String(localized: "Katch-McArdle")
+        case .cunningham:     return String(localized: "Cunningham")
         }
     }
 
@@ -134,8 +141,8 @@ enum BMREquation: String, DataSyncModelProtocol, CaseIterable {
             return String(localized: "The usual default, and the most accurate for most people.")
         case .harrisBenedict:
             return String(localized: "Older, and tends to read slightly high.")
-        case .katchMcArdle:
-            return String(localized: "Based on lean mass, so it needs a body fat percentage to mean anything.")
+        case .cunningham:
+            return String(localized: "Based on lean mass, so it needs a body fat percentage. Suits muscular, lean builds best.")
         }
     }
 }

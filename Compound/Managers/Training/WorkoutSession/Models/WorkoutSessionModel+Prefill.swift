@@ -2,8 +2,7 @@
 //  WorkoutSessionModel+Prefill.swift
 //  Compound
 //
-//  How a new session's working sets are filled in before the user touches them, and the two
-//  pieces of equipment arithmetic the progression engine needs handed to it as plain numbers.
+//  How a new session's working sets are filled in before the user touches them.
 //
 
 import Foundation
@@ -19,10 +18,11 @@ extension SessionPrefill {
     }
 
     /// The suggestion for one exercise, or `nil` when there is none worth applying — which
-    /// includes `.noHistory`, since the engine never invents a starting weight.
-    func suggestion(for templateId: String) -> ProgressionSuggestion? {
+    /// includes `.noHistory`, since the engine never invents a starting weight. Looked up by
+    /// `ActiveWorkout.historyKey`, so an exercise listed twice gets each appearance's own.
+    func suggestion(for templateId: String, occurrence: Int = 0) -> ProgressionSuggestion? {
         guard case .suggestions(let byExercise) = self,
-              let suggestion = byExercise[templateId],
+              let suggestion = byExercise[ActiveWorkout.historyKey(templateId: templateId, occurrence: occurrence)],
               suggestion.rationale != .noHistory else { return nil }
         return suggestion
     }
@@ -46,6 +46,8 @@ struct WorkingSetPrefill {
     let exercise: ExerciseModel
     let gymProfile: GymProfileModel?
     let unitPreferences: [String: ExerciseUnitPreference]?
+    /// Which appearance of `exercise` in the workout this is, from 0 (`ActiveWorkout.historyKey`).
+    var occurrence = 0
 
     /// Fills `workingSets` from the suggestion for this exercise, falling back per field to what
     /// was logged last time. A set with neither is left exactly as it was built.
@@ -57,121 +59,32 @@ struct WorkingSetPrefill {
     func apply(to workingSets: inout [WorkoutSetModel]) {
         guard prefill.fillsWorkingSets else { return }
 
-        let suggestion = prefill.suggestion(for: exercise.id)
-        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right }
-        let preferredUnit = unitPreferences?[exercise.id]?.weightUnit
+        let suggestion = prefill.suggestion(for: exercise.id, occurrence: occurrence)
+        // A drop or mini-set is part of the set before it, and filled by hand when it is added:
+        // matched by position, last time's drop would hand its lighter weight to the next set.
+        let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right && !$0.isSubSet }
+        // The same rule the keyboard steps by, so a prefilled weight is one the gym can make.
+        let rule = WeightRoundingRule(exercise: exercise, gymProfile: gymProfile, preferredWeightUnit: unitPreferences?[exercise.id]?.weightUnit)
 
-        for index in workingSets.indices {
-            let suggested = suggestion?.set(at: index)
-            let previous = index < previousWorkingSets.count ? previousWorkingSets[index] : nil
+        for (position, index) in workingSets.indices.filter({ !workingSets[$0].isSubSet }).enumerated() {
+            let suggested = suggestion?.set(at: position)
+            let previous = position < previousWorkingSets.count ? previousWorkingSets[position] : nil
             guard suggested != nil || previous != nil else { continue }
 
-            var weightKg = suggested?.weightKg ?? previous?.weightKg ?? workingSets[index].weightKg
-            if let weight = weightKg {
-                weightKg = WorkoutSessionModel.roundWeightForLogging(
-                    weightKg: weight,
-                    exercise: exercise,
-                    gymProfile: gymProfile,
-                    preferredWeightUnit: preferredUnit
-                )
-            }
+            let weightKg = (suggested?.weightKg ?? previous?.weightKg ?? workingSets[index].weightKg).map(rule.round)
 
-            workingSets[index] = WorkoutSetModel(
-                id: workingSets[index].id,
-                authorId: authorId,
-                index: workingSets[index].index,
-                reps: suggested?.reps ?? previous?.reps ?? workingSets[index].reps,
-                weightKg: weightKg,
-                durationSec: suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec,
-                distanceMeters: suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters,
-                rpe: workingSets[index].rpe,
-                side: workingSets[index].side,
-                isWarmup: false,
-                completedAt: nil,
-                dateCreated: .now
-            )
+            // Changed in place rather than rebuilt field by field, so its kind and parent survive.
+            // The rows were built for `authorId` (`defaultSets`).
+            workingSets[index].reps = suggested?.reps ?? previous?.reps ?? workingSets[index].reps
+            workingSets[index].weightKg = weightKg
+            // Bands carry no kg, so no suggestion names them: they come from last time.
+            workingSets[index].bands = previous?.bands ?? workingSets[index].bands
+            workingSets[index].durationSec = suggested?.durationSec ?? previous?.durationSec ?? workingSets[index].durationSec
+            workingSets[index].distanceMeters = suggested?.distanceMeters ?? previous?.distanceMeters ?? workingSets[index].distanceMeters
+            workingSets[index].targetReps = suggested?.targetReps ?? workingSets[index].targetReps
+            workingSets[index].isWarmup = false
+            workingSets[index].completedAt = nil
+            workingSets[index].dateCreated = .now
         }
-    }
-}
-
-extension WorkoutSessionModel {
-
-    /// Equipment first, then the user's unit: a pin stack can only be moved a pin at a time, and
-    /// anything the equipment does not constrain is rounded to something a user would type.
-    @MainActor
-    static func roundWeightForLogging(
-        weightKg: Double,
-        exercise: ExerciseModel,
-        gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
-    ) -> Double {
-        let roundedByEquipment = roundWeightToEquipmentIncrement(
-            weightKg: weightKg,
-            exercise: exercise,
-            gymProfile: gymProfile,
-            preferredWeightUnit: preferredWeightUnit
-        )
-
-        if roundedByEquipment == weightKg, let preferredWeightUnit {
-            return roundWeightToPreferredUnit(
-                weightKg: roundedByEquipment,
-                preferredUnit: preferredWeightUnit
-            ) ?? roundedByEquipment
-        }
-        return roundedByEquipment
-    }
-
-    /// The weight range this exercise's weight would be rounded to, or `nil` when nothing about
-    /// its equipment constrains the weight. It mirrors the range resolution
-    /// `roundWeightToEquipmentIncrement` does, because a step the machine cannot be set to is
-    /// not a step at all.
-    @MainActor
-    static func equipmentWeightRange(
-        exercise: ExerciseModel,
-        gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
-    ) -> (any WeightRange)? {
-        let refs = exercise.equipmentVariations.first?.resistanceEquipment ?? []
-        let gym = gymProfile ?? GymProfileModel(authorId: "")
-        let fallbackGym = GymProfileModel(authorId: "")
-
-        for equipmentRef in refs {
-            let range: (any WeightRange)?
-            switch equipmentRef.kind {
-            case .pinLoadedMachine:
-                let machine = gym.pinLoadedMachines.first(where: { $0.id == equipmentRef.equipmentId && $0.isActive })
-                    ?? fallbackGym.pinLoadedMachines.first(where: { $0.id == equipmentRef.equipmentId })
-                range = machine.flatMap { machine in
-                    preferredRange(machine.ranges, defaultRange: machine.defaultRange, unit: preferredWeightUnit)
-                }
-            case .cableMachine:
-                let machine = gym.cableMachines.first(where: { $0.id == equipmentRef.equipmentId && $0.isActive })
-                    ?? fallbackGym.cableMachines.first(where: { $0.id == equipmentRef.equipmentId })
-                range = machine.flatMap { machine in
-                    preferredRange(machine.ranges, defaultRange: machine.defaultRange, unit: preferredWeightUnit)
-                }
-            default:
-                range = nil
-            }
-
-            if let range {
-                return range
-            }
-        }
-
-        return nil
-    }
-
-    /// First range whose unit matches the user's, else the machine's default, else the first
-    /// active one — the same order the rounding uses.
-    private static func preferredRange<Range: WeightRange>(
-        _ ranges: [Range],
-        defaultRange: Range?,
-        unit: ExerciseWeightUnit?
-    ) -> (any WeightRange)? {
-        if let unit, let match = ranges.first(where: { $0.unit == unit }) {
-            return match
-        }
-        return defaultRange ?? ranges.first
     }
 }

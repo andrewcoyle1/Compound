@@ -240,8 +240,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/andrewcoyle1/SwiftfulDataManagers.git",
       "state" : {
-        "revision" : "89c517cabc8fbe8f4c4dd390125920bc7735760c",
-        "version" : "1.2.0"
+        "revision" : "86413d7c52cb2c0fb068e6656f7e1e70d7a712aa",
+        "version" : "1.2.1"
       }
     },
     {

@@ -64,9 +64,16 @@ private final class DialogRouter: SetTargetRouter, ExercisesPickerRouter {
     func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) {
         dialogTitles.append(title)
     }
+
+    func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
+    func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
+    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
 }
 
-private final class SetTargetSpyInteractor: SpyGlobalInteractor, SetTargetInteractor { }
+private final class SetTargetSpyInteractor: SpyGlobalInteractor, SetTargetInteractor {
+    var workoutSettings = WorkoutSettings(authorId: "user-1")
+    var allExercises: [ExerciseModel] = []
+}
 private final class PickerSpyInteractor: SpyGlobalInteractor, ExercisesPickerInteractor { }
 private final class WrapperSpyInteractor: SpyGlobalInteractor, DefineWorkoutWrapperInteractor, DefineWorkoutInteractor {
     var currentUser: UserModel? = UserModel(userId: "user-1")

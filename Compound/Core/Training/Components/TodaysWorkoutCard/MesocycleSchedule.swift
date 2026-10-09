@@ -77,7 +77,7 @@ enum MesocycleSchedule {
     }
 
     /// Whether the microcycle numbered `cycleIndex` (1-based, as the header shows it) is the
-    /// mesocycle's deload, when every working weight is cut.
+    /// mesocycle's deload, when each session keeps about half its sets at 90 % (`MesocycleDeload`).
     static func isDeload(cycleIndex: Int, of mesocycle: Mesocycle) -> Bool {
         switch mesocycle.deload {
         case .none:  return false
@@ -187,7 +187,7 @@ enum MesocycleSchedule {
             // A workout over a rest day ticked the same day: the card shows what was trained.
             .max { ($0.0.isRest ? 0 : 1, $0.1) < ($1.0.isRest ? 0 : 1, $1.1) }
         if let (slot, _) = doneToday {
-            return item(slot.dayPlan, on: today, sessionId: slot.completedSessionId)
+            return item(slot.dayPlan, on: today, sessionId: slot.completedSessionId, cycleIndex: slot.cycleIndex + 1)
         }
 
         let restToday = sessions.first { session in
@@ -195,19 +195,23 @@ enum MesocycleSchedule {
                 && calendar.isDate(session.dateCreated, inSameDayAs: today)
         }
         if let restToday, let plan = run.mesocycle.workoutTemplates.first(where: { $0.id == restToday.workoutTemplateId }) {
-            return item(plan, on: today, sessionId: restToday.id)
+            // Pre-logged for later today, so not ticked yet: its microcycle is where it will tick.
+            let ticked = Self.progress(of: run, sessions: sessions, now: max(now, restToday.dateCreated))
+                .cycles.joined().first { $0.completedSessionId == restToday.id }
+            return item(plan, on: today, sessionId: restToday.id, cycleIndex: ticked.map { $0.cycleIndex + 1 })
         }
 
         guard let next = progress.next else { return nil }
-        return item(next.dayPlan, on: today, sessionId: nil)
+        return item(next.dayPlan, on: today, sessionId: nil, cycleIndex: next.cycleIndex + 1)
     }
 
-    private static func item(_ plan: WorkoutTemplateModel, on day: Date, sessionId: String?) -> MicrocycleWorkoutTemplateModelItem {
+    private static func item(_ plan: WorkoutTemplateModel, on day: Date, sessionId: String?, cycleIndex: Int?) -> MicrocycleWorkoutTemplateModelItem {
         MicrocycleWorkoutTemplateModelItem(
             id: "\(day.timeIntervalSince1970)-\(plan.id)",
             date: day,
             dayPlan: plan,
-            completedSessionId: sessionId
+            completedSessionId: sessionId,
+            cycleIndex: cycleIndex
         )
     }
 

@@ -8,7 +8,10 @@
 import Foundation
 
 /// Aggregates estimated 1-RM per exercise (by templateId) from workout sessions.
-/// Uses Epley formula: 1RM = weight * (1 + reps/30) for weight+reps sets.
+///
+/// `estimated1RM` is the app's one estimate of a one-rep max: every screen, record and the AI
+/// coach's port (`functions/coach-maths.js`) read it, so they cannot disagree. Epley's form on
+/// reps to failure (reps done plus reps in reserve), capped at ten (`MethodInfo.estimatedOneRepMax`).
 enum ExerciseOneRMAggregator {
 
     struct Workout1RMPoint {
@@ -39,12 +42,9 @@ enum ExerciseOneRMAggregator {
                 let name = exercise.name
 
                 let best1RMForWorkout = exercise.sets
-                    .filter { !$0.isWarmup && $0.completedAt != nil }
-                    .compactMap { set -> Double? in
-                        guard let weight = set.weightKg, weight > 0 else { return nil }
-                        let reps = set.reps ?? 1
-                        return estimated1RM(weightKg: weight, reps: max(1, reps))
-                    }
+                    // A drop or mini-set is part of its set, and lighter or shorter than it.
+                    .filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
+                    .compactMap { estimated1RM(of: $0) }
                     .max()
 
                 if let oneRM = best1RMForWorkout, oneRM > 0 {
@@ -60,10 +60,41 @@ enum ExerciseOneRMAggregator {
         return result
     }
 
-    /// Epley formula: 1RM = weight * (1 + reps/30). Public for reuse in detail presenters.
-    static func estimated1RM(weightKg: Double, reps: Int) -> Double {
-        guard reps >= 1 else { return weightKg }
-        if reps == 1 { return weightKg }
-        return weightKg * (1 + Double(reps) / 30)
+    /// The most reps to failure an estimate is made from. Prediction equations agree closely at
+    /// low reps and drift apart above ten; Reynolds et al. (2006) concluded no more than ten
+    /// should be used. A longer set is still logged, and still counts for volume and rep records.
+    static let maxRepsToFailure: Double = 10
+
+    /// Reps done plus the reps left in reserve. RIR comes from the logged RPE (RIR = 10 − RPE,
+    /// Zourdos et al. 2016); with no RPE the set earns no reserve, rather than being read as an
+    /// all-out set or as an easy one.
+    static func repsToFailure(reps: Int, rpe: Double?) -> Double {
+        let reserve = rpe.map { max(0, EffortScale.rir(fromRPE: $0)) } ?? 0
+        return Double(reps) + reserve
+    }
+
+    /// Epley's form on reps to failure: weight × (1 + n / 30), and the weight itself at n = 1, so
+    /// a single is its own one-rep max rather than 3 % more. `nil` with no weight, or past
+    /// `maxRepsToFailure`, where no estimate is trustworthy enough to show.
+    static func estimated1RM(weightKg: Double, reps: Int, rpe: Double? = nil) -> Double? {
+        guard weightKg > 0, reps >= 1 else { return nil }
+        let toFailure = repsToFailure(reps: reps, rpe: rpe)
+        guard toFailure <= maxRepsToFailure else { return nil }
+        guard toFailure > 1 else { return weightKg }
+        return weightKg * (1 + toFailure / 30)
+    }
+
+    /// One logged set's estimate. A weight with no reps typed reads as a single, as it always has.
+    static func estimated1RM(of set: WorkoutSetModel) -> Double? {
+        guard let weight = set.weightKg, weight > 0 else { return nil }
+        return estimated1RM(weightKg: weight, reps: max(1, set.reps ?? 1), rpe: set.rpe)
+    }
+
+    /// The load to put on the bar for `reps` with `reserve` reps left, from a one-rep max: Epley
+    /// turned round. The weight itself at one rep to failure.
+    static func load(forOneRepMax oneRepMaxKg: Double, reps: Int, reserve: Double) -> Double {
+        let toFailure = Double(max(reps, 1)) + max(reserve, 0)
+        guard toFailure > 1 else { return oneRepMaxKg }
+        return oneRepMaxKg / (1 + toFailure / 30)
     }
 }

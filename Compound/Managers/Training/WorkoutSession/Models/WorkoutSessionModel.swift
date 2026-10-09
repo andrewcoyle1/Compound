@@ -93,10 +93,12 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         template: WorkoutTemplateModel,
         notes: String? = nil,
         mesocycleId: String? = nil,
+        microcycleIndex: Int? = nil,
         previousWorkoutSession: WorkoutSessionModel? = nil,
         gymProfile: GymProfileModel? = nil,
         unitPreferences: [String: ExerciseUnitPreference]? = nil,
         prefill: SessionPrefill = .previousValues,
+        plansSets: Bool = false,
         dateCreated: Date = .now
     ) {
         self.id = id
@@ -113,10 +115,14 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.likedByUserIds = []
         self.exercises = template.exercises.enumerated().map { (idx, exerciseModel) in
             let mode = WorkoutSessionModel.trackingMode(for: exerciseModel.exercise)
-            let targetCount = exerciseModel.setTargets.count
-                        
-            // Find matching exercise in previous workout session
-            let previousExercise = previousWorkoutSession?.exercises.first(where: { $0.templateId == exerciseModel.exercise.id })
+            // The week's targets: the template's override for this microcycle, else its base.
+            let setTargets = exerciseModel.setTargets(forMicrocycle: microcycleIndex)
+            let targetCount = setTargets.count
+
+            // The matching exercise last time, by occurrence: an exercise the template lists twice
+            // (a heavy set, then a back-off) matches each entry to its own previous exercise.
+            let occurrence = template.exercises[..<idx].filter { $0.exercise.id == exerciseModel.exercise.id }.count
+            let previousExercise = previousWorkoutSession?.exercise(templateId: exerciseModel.exercise.id, occurrence: occurrence)
             let previousSets = previousExercise?.sets
                         
             // Estimate working weight and reps from previous workout
@@ -127,7 +133,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 trackingMode: mode,
                 authorId: authorId,
                 targetCount: max(targetCount, 1),
-                perSide: WorkoutSessionModel.isPerSide(exerciseModel.exercise)
+                perSide: WorkoutSessionModel.isPerSide(exerciseModel.exercise),
+                setTargets: setTargets
             )
             
             // Fill the working sets the way the Initial Log Fill setting asks for: the
@@ -139,8 +146,19 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences
+                unitPreferences: unitPreferences,
+                occurrence: occurrence
             ).apply(to: &workingSets)
+
+            // With Workout Settings › Set Plan on, the template's drops, mini-sets and AMRAP
+            // targets, laid onto the prefilled sets so each drop steps down from its set's weight.
+            if plansSets {
+                workingSets = WorkoutSessionModel.applyingSetPlan(
+                    to: workingSets,
+                    setTargets: setTargets,
+                    authorId: authorId
+                )
+            }
             
             // Use the first working set's weight/reps for warmup calculation, or fall back to estimated values
             let firstWorkingSet = workingSets.first
@@ -153,10 +171,11 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 workingWeightKg: workingWeightKg,
                 workingReps: workingReps,
-                setTargets: exerciseModel.setTargets,
+                setTargets: setTargets,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences
+                unitPreferences: unitPreferences,
+                count: exerciseModel.warmupSetCount
             )
             
             // Prepend warmup sets to working sets
@@ -164,23 +183,12 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             
             // Re-index all sets: warmup sets first, then working sets
             let reindexedSets = allSets.enumerated().map { index, set in
-                WorkoutSetModel(
-                    id: set.id,
-                    authorId: set.authorId,
-                    index: index + 1,
-                    reps: set.reps,
-                    weightKg: set.weightKg,
-                    durationSec: set.durationSec,
-                    distanceMeters: set.distanceMeters,
-                    rpe: set.rpe,
-                    side: set.side,
-                    isWarmup: set.isWarmup,
-                    completedAt: set.completedAt,
-                    dateCreated: set.dateCreated
-                )
+                var set = set
+                set.index = index + 1
+                return set
             }
             
-            let imageName = Constants.exerciseImageName(for: exerciseModel.exercise.name)
+            let imageName = Constants.exerciseImageName(for: exerciseModel.exercise)
             return WorkoutExerciseModel(
                 id: UUID().uuidString,
                 authorId: authorId,
@@ -191,11 +199,32 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 notes: nil,
                 imageName: imageName,
                 sets: reindexedSets,
-                setTargets: exerciseModel.setTargets,
+                setTargets: setTargets,
                 chosenVariationId: nil,
-                equipmentVariations: exerciseModel.exercise.equipmentVariations
+                equipmentVariations: exerciseModel.exercise.equipmentVariations,
+                supersetGroupId: exerciseModel.supersetGroupId,
+                planNotes: exerciseModel.notes,
+                restSeconds: exerciseModel.restSeconds,
+                linkURL: exerciseModel.linkURL,
+                substituteExerciseIds: exerciseModel.substituteExerciseIds
             )
         }
+    }
+
+    /// Which appearance of its exercise `exercise` is in this workout, from 0, in `index` order:
+    /// the second bench press of a workout is occurrence 1.
+    func occurrence(of exercise: WorkoutExerciseModel) -> Int {
+        exercises(templateId: exercise.templateId).firstIndex { $0.id == exercise.id } ?? 0
+    }
+
+    /// The `occurrence`th appearance of the exercise `templateId` in this workout, from 0.
+    func exercise(templateId: String, occurrence: Int) -> WorkoutExerciseModel? {
+        let matches = exercises(templateId: templateId)
+        return matches.indices.contains(occurrence) ? matches[occurrence] : nil
+    }
+
+    private func exercises(templateId: String) -> [WorkoutExerciseModel] {
+        exercises.filter { $0.templateId == templateId }.sorted { $0.index < $1.index }
     }
 
     static func trackingMode(for exercise: ExerciseModel) -> TrackingMode {
@@ -247,13 +276,18 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.dateModified = Date()
     }
     
-    mutating func applyDeloadWeightReduction() {
-        for iindex in exercises.indices {
-            for jindex in exercises[iindex].sets.indices {
-                if let weight = exercises[iindex].sets[jindex].weightKg {
-                    exercises[iindex].sets[jindex].weightKg = weight * 0.65
-                }
+    /// A mesocycle's deload week (`MesocycleDeload`): about half of each exercise's working sets,
+    /// every weight at 90 % rounded by `rounding` (the exercise's equipment), reps as planned.
+    /// Warm-ups stay, at 90 % of theirs.
+    mutating func applyDeload(rounding: (WorkoutExerciseModel) -> (Double) -> Double) {
+        for index in exercises.indices {
+            let roundWeight = rounding(exercises[index])
+            var sets = MesocycleDeload.keptSets(exercises[index].sets)
+            for setIndex in sets.indices {
+                guard let weight = sets[setIndex].weightKg, weight != 0 else { continue }
+                sets[setIndex].weightKg = roundWeight(MesocycleDeload.lighter(weight))
             }
+            exercises[index].sets = sets
         }
     }
 
@@ -313,152 +347,24 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         return (nil, nil)
     }
     
-    /// Rounds weight to match equipment constraints (pin-loaded/cable machines).
-    /// Uses template resistance equipment. Optional preferred unit selects first range matching that unit.
-    /// Returns rounded weight in kg, or original weight if no matching equipment found.
-    @MainActor
-    static func roundWeightToEquipmentIncrement(
-        weightKg: Double,
-        exercise: ExerciseModel,
-        gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit? = nil
-    ) -> Double {
-        let firstVariation = exercise.equipmentVariations.first
-        let refs = firstVariation?.resistanceEquipment ?? []
-        return roundWeightToEquipmentIncrement(
-            weightKg: weightKg,
-            equipmentRefs: refs,
-            gymProfile: gymProfile,
-            preferredWeightUnit: preferredWeightUnit
-        )
-    }
-
-    /// Rounds weight using the workout exercise's chosen variation resistance equipment.
-    /// Uses first range whose unit matches preferredWeightUnit; if none, uses default or first active range.
-    /// Returns rounded weight in kg, or original weight if no variation or equipment found.
-    @MainActor
-    static func roundWeightToEquipmentIncrement(
-        weightKg: Double,
-        workoutExercise: WorkoutExerciseModel,
-        exerciseTemplate: ExerciseModel?,
-        gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
-    ) -> Double {
-        let variation = exerciseTemplate?.equipmentVariations.first(where: { $0.id == workoutExercise.chosenVariationId })
-            ?? exerciseTemplate?.equipmentVariations.first
-        let refs = variation?.resistanceEquipment ?? []
-        guard !refs.isEmpty else {
-            return weightKg
-        }
-        return roundWeightToEquipmentIncrement(
-            weightKg: weightKg,
-            equipmentRefs: refs,
-            gymProfile: gymProfile,
-            preferredWeightUnit: preferredWeightUnit
-        )
-    }
-
-    /// Internal: rounds weight using equipment refs, with gym fallback and optional preferred unit for range selection.
-    @MainActor
-    private static func roundWeightToEquipmentIncrement(
-        weightKg: Double,
-        equipmentRefs: [EquipmentRef],
-        gymProfile: GymProfileModel?,
-        preferredWeightUnit: ExerciseWeightUnit?
-    ) -> Double {
-        let gym = gymProfile ?? GymProfileModel(authorId: "")
-        let fallbackGym = GymProfileModel(authorId: "")
-
-        for equipmentRef in equipmentRefs {
-            guard equipmentRef.kind == .pinLoadedMachine || equipmentRef.kind == .cableMachine else {
-                continue
-            }
-
-            let weightRange: (any WeightRange)?
-
-            switch equipmentRef.kind {
-            case .pinLoadedMachine:
-                let machine = gym.pinLoadedMachines.first(where: { $0.id == equipmentRef.equipmentId && $0.isActive })
-                    ?? fallbackGym.pinLoadedMachines.first(where: { $0.id == equipmentRef.equipmentId })
-                weightRange = machine.flatMap { resolveRange(for: $0, preferredWeightUnit: preferredWeightUnit) }
-            case .cableMachine:
-                let machine = gym.cableMachines.first(where: { $0.id == equipmentRef.equipmentId && $0.isActive })
-                    ?? fallbackGym.cableMachines.first(where: { $0.id == equipmentRef.equipmentId })
-                weightRange = machine.flatMap { resolveRange(for: $0, preferredWeightUnit: preferredWeightUnit) }
-            default:
-                weightRange = nil
-            }
-
-            guard let range = weightRange else {
-                continue
-            }
-
-            let weightInEquipmentUnit = UnitConversion.convertWeight(weightKg, to: range.unit)
-            let roundedInEquipmentUnit = (weightInEquipmentUnit / range.increment).rounded() * range.increment
-            let clampedWeight = max(range.minWeight, min(range.maxWeight, roundedInEquipmentUnit))
-            let roundedWeightKg = UnitConversion.convertWeightToKg(clampedWeight, from: range.unit)
-
-            return roundedWeightKg
-        }
-
-        return weightKg
-    }
-
-    /// First range where unit matches preferredWeightUnit; else defaultRange or first active.
-    @MainActor
-    private static func resolveRange(for machine: CableMachine, preferredWeightUnit: ExerciseWeightUnit?) -> (any WeightRange)? {
-        if let preferred = preferredWeightUnit,
-           let match = machine.ranges.first(where: { $0.unit == preferred }) {
-            return match
-        }
-        return machine.defaultRange ?? machine.ranges.first(where: { $0.isActive })
-    }
-
-    /// First range where unit matches preferredWeightUnit; else defaultRange or first active.
-    @MainActor
-    private static func resolveRange(for machine: PinLoadedMachine, preferredWeightUnit: ExerciseWeightUnit?) -> (any WeightRange)? {
-        if let preferred = preferredWeightUnit,
-           let match = machine.ranges.first(where: { $0.unit == preferred }) {
-            return match
-        }
-        return machine.defaultRange ?? machine.ranges.first(where: { $0.isActive })
-    }
-    
-    /// Rounds weight to user's preferred unit (0.5kg increments for kg, whole numbers for lbs)
-    static func roundWeightToPreferredUnit(
-        weightKg: Double?,
-        preferredUnit: ExerciseWeightUnit
-    ) -> Double? {
-        guard let weightKg = weightKg else { return nil }
-        
-        // Convert to preferred unit
-        let weightInPreferredUnit = UnitConversion.convertWeight(weightKg, to: preferredUnit)
-        
-        // Round based on unit
-        let roundedWeight: Double
-        switch preferredUnit {
-        case .kilograms:
-            // Round to nearest 0.5kg
-            roundedWeight = round(weightInPreferredUnit * 2) / 2.0
-        case .pounds:
-            // Round to nearest whole number
-            roundedWeight = round(weightInPreferredUnit)
-        }
-        
-        // Convert back to kg for storage
-        return UnitConversion.convertWeightToKg(roundedWeight, from: preferredUnit)
-    }
-    
     /// The empty sets an exercise starts a session with.
+    ///
+    /// Every figure starts empty, timed and distance work included: a stored default would log as
+    /// though it had been done. The fields show last time's figures as a greyed placeholder instead.
     ///
     /// `targetCount` is how many sets the user is being asked to do. An exercise worked one limb
     /// at a time gets one `both` row per set, which the tracker's Split chip can turn into a left
     /// and a right row when the sides differ.
+    ///
+    /// Each set takes the kind its set target asks for, so a template's drop set is logged as a
+    /// drop set wherever the exercise is added, at the start or part-way through. A set beyond the
+    /// targets stays standard.
     static func defaultSets(
         trackingMode: TrackingMode,
         authorId: String,
         targetCount: Int = 3,
-        perSide: Bool = false
+        perSide: Bool = false,
+        setTargets: [SetTarget] = []
     ) -> [WorkoutSetModel] {
         let count = max(targetCount, 1)
         return (1...count).map { index in
@@ -468,10 +374,11 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 index: index,
                 reps: nil,
                 weightKg: nil,
-                durationSec: defaultDurationSec(for: trackingMode),
-                distanceMeters: defaultDistanceMeters(for: trackingMode),
+                durationSec: nil,
+                distanceMeters: nil,
                 rpe: nil,
                 side: perSide ? .both : nil,
+                kind: index <= setTargets.count ? SetKind(setTargets[index - 1].setType) : .standard,
                 isWarmup: false,
                 completedAt: nil,
                 dateCreated: .now
@@ -479,19 +386,50 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         }
     }
 
-    /// Timed and distance work starts from a figure worth showing; weight and reps start empty.
-    private static func defaultDurationSec(for trackingMode: TrackingMode) -> Int? {
-        switch trackingMode {
-        case .weightReps, .repsOnly: return nil
-        case .timeOnly:              return 60
-        case .distanceTime:          return 120
+    /// The template's set plan laid onto working sets already built and prefilled, one row per
+    /// target in order: a drop target is followed by its drops, each `dropStep` per cent lighter
+    /// than the piece before (to the nearest 0.5 kg; the tracker snaps to the equipment later), a
+    /// myo-rep, rest-pause or cluster target by its mini-sets at the set's weight, and an AMRAP set
+    /// carries the reps it sets out to beat unless the prefill already raised them. Partials, a
+    /// stretch or a hold is one piece after the set: partials and a hold at its weight, a stretch
+    /// with none, and the stretch and hold timed.
+    static func applyingSetPlan(to workingSets: [WorkoutSetModel], setTargets: [SetTarget], authorId: String) -> [WorkoutSetModel] {
+        workingSets.enumerated().flatMap { position, set -> [WorkoutSetModel] in
+            guard position < setTargets.count, !set.isSubSet else { return [set] }
+            let target = setTargets[position]
+            func piece(kind: SetKind, weightKg: Double?, reps: Int? = nil, durationSec: Int? = nil) -> WorkoutSetModel {
+                WorkoutSetModel(
+                    id: UUID().uuidString, authorId: authorId, index: set.index, reps: reps, weightKg: weightKg,
+                    durationSec: durationSec, side: set.side, kind: kind, parentSetId: set.id, isWarmup: false, dateCreated: .now
+                )
+            }
+            switch target.setType {
+            case .standard:
+                return [set]
+            case .failure, .amrap:
+                var amrap = set
+                amrap.targetReps = set.targetReps ?? target.amrapTargetReps
+                return [amrap]
+            case .drop:
+                var weight = set.weightKg
+                return [set] + (0..<max(target.dropCount ?? 0, 0)).map { _ in
+                    weight = weight.map { ($0 * (1 - Double(target.dropStep) / 100) * 2).rounded() / 2 }
+                    return piece(kind: .drop, weightKg: weight, reps: target.dropReps)
+                }
+            case .myo, .restPause, .cluster:
+                return [set] + (0..<max(target.miniSetCount ?? 0, 0)).map { _ in
+                    piece(kind: .standard, weightKg: set.weightKg)
+                }
+            case .partials:
+                return [set, piece(kind: .partials, weightKg: set.weightKg, reps: target.partialReps)]
+            case .stretch:
+                return [set, piece(kind: .stretch, weightKg: nil, durationSec: target.holdSeconds)]
+            case .hold:
+                return [set, piece(kind: .hold, weightKg: set.weightKg, durationSec: target.holdSeconds)]
+            }
         }
     }
 
-    private static func defaultDistanceMeters(for trackingMode: TrackingMode) -> Double? {
-        trackingMode == .distanceTime ? 400 : nil
-    }
-    
     @MainActor
     static var mock: WorkoutSessionModel {
         mocks[0]

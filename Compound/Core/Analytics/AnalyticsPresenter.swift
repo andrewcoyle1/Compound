@@ -266,8 +266,13 @@ class AnalyticsPresenter {
         weightUnit.abbreviation
     }
 
+    /// The adaptive estimate day by day (`EnergyBalanceSummary`), not the static formula.
     var energyBalanceExpenditure: TimeSeries {
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
+        let expenditure = EnergyBalanceSummary.expenditureLookup(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser),
+            calendar: calendar
+        )
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: startOfToday) else {
@@ -276,7 +281,7 @@ class AnalyticsPresenter {
         var data: [TimeSeriesDatapoint] = []
         for offset in -1..<7 {
             guard let date = calendar.date(byAdding: .day, value: offset, to: startDate) else { continue }
-            data.append(TimeSeriesDatapoint(id: "exp-\(offset)", date: date, value: tdee))
+            data.append(TimeSeriesDatapoint(id: "exp-\(offset)", date: date, value: expenditure(date)))
         }
         return TimeSeries(name: "Expenditure", data: data)
     }
@@ -295,22 +300,26 @@ class AnalyticsPresenter {
         return TimeSeries(name: "Intake", data: data)
     }
 
+    /// Says how many days the average was taken over, since unlogged days are left out of it.
     var energyBalanceSubtitle: String {
-        String(localized: "Last 7 Days")
+        guard macrosLast7Days.count == 7 else { return String(localized: "Last 7 Days") }
+        return EnergyBalanceSummary.loggedDaysSubtitle(
+            days: EnergyBalanceSummary.loggedAverage(macrosLast7Days.map(\.calories))?.days
+        )
     }
 
+    /// The week's average over its logged days against the adaptive estimate. An unlogged day is
+    /// a day we know nothing about, so it is left out rather than counted as eating nothing.
     var energyBalanceLatestValueText: String {
-        guard macrosLast7Days.count == 7 else { return Format.placeholder }
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
-        let avgIntake = macrosLast7Days.map(\.calories).reduce(0, +) / 7
-        let deficit = tdee - avgIntake
-        let value = Int(deficit.rounded())
-        if value > 0 {
-            return String(localized: "\(value.formatted()) kcal deficit")
-        } else if value < 0 {
-            return String(localized: "\((-value).formatted()) kcal surplus")
+        guard macrosLast7Days.count == 7,
+              let average = EnergyBalanceSummary.loggedAverage(macrosLast7Days.map(\.calories)) else {
+            return Format.placeholder
         }
-        return String(localized: "Balanced")
+        let expenditure = EnergyBalanceSummary.currentExpenditure(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser)
+        )
+        return EnergyBalanceSummary.balanceText(expenditureKcal: expenditure, intakeKcal: average.meanKcal)
     }
 
     var bodyFatSparklineData: [(date: Date, value: Double)] {
@@ -373,14 +382,14 @@ class AnalyticsPresenter {
         guard let startDate = calendar.date(byAdding: .day, value: -6, to: startOfToday) else {
             return []
         }
-        let recentHistory = Dictionary(
-            interactor.expenditureHistory.map { (calendar.startOfDay(for: $0.day), $0.kcal) },
-            uniquingKeysWith: { _, latest in latest }
+        let expenditure = EnergyBalanceSummary.expenditureLookup(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser),
+            calendar: calendar
         )
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
         return (0..<7).compactMap { offset -> (date: Date, value: Double)? in
             guard let date = calendar.date(byAdding: .day, value: offset, to: startDate) else { return nil }
-            return (date: date, value: recentHistory[date] ?? tdee)
+            return (date: date, value: expenditure(date))
         }
     }
 
@@ -388,8 +397,12 @@ class AnalyticsPresenter {
         String(localized: "Last 7 Days")
     }
 
+    /// Today's adaptive estimate, or the formula figure before there is one.
     var expenditureLatestValueText: String {
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
+        let tdee = EnergyBalanceSummary.currentExpenditure(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser)
+        )
         return tdee > 0 ? tdee.formatted(.number.precision(.fractionLength(0))) : Format.placeholder
     }
 
@@ -434,17 +447,18 @@ class AnalyticsPresenter {
         }
 
         let live = measurements.filter { $0.deletedAt == nil }
-        let weightEntries = Array(
-            live.filter { $0.weightKg != nil }.sorted { $0.date < $1.date }.suffix(7)
-        )
+        let allWeightEntries = live.filter { $0.weightKg != nil }.sorted { $0.date < $1.date }
+        let weightEntries = Array(allWeightEntries.suffix(7))
         let bodyFatEntries = Array(
             live.filter { $0.bodyFatPercentage != nil }.sorted { $0.date < $1.date }.suffix(7)
         )
-        let pairs = weightEntries.compactMap { entry -> (date: Date, value: Double)? in
+        // The trend runs over every weigh-in and the card shows its last seven points, so the line
+        // is the Weight Trend screen's rather than one restarted from a week of readings.
+        let pairs = allWeightEntries.compactMap { entry -> (date: Date, value: Double)? in
             guard let weightKg = entry.weightKg else { return nil }
             return (date: entry.date, value: weightKg)
         }
-        let trend = WeightTrendCalculator.exponentialMovingAverage(data: pairs)
+        let trend = WeightTrendCalculator.trend(data: pairs).suffix(7)
             .map { (date: $0.date, value: UnitConversion.convertWeight($0.value, to: weightUnit)) }
 
         let rebuilt = BodyMetricsCache(
@@ -474,10 +488,12 @@ class AnalyticsPresenter {
 
     /// Clamped to 0...100: the card draws it as a bar, and a goal overshot or moved away from
     /// should read as full or empty rather than send the bar off either end.
+    ///
+    /// Measured from the trend weight, not the last weigh-in, so a day of water does not move it.
     var goalProgressPercent: Double {
-        guard let goal = interactor.currentGoal,
-              let latestWeight = goalWeightEntries.last?.weightKg else { return 0 }
-        return min(max(goal.calculateProgress(currentWeight: latestWeight) * 100, 0), 100)
+        guard let goal = interactor.currentGoal, !goalWeightEntries.isEmpty,
+              let trendWeight = GoalTimeline.latestTrendWeightKg(of: interactor.bodyMeasurements) else { return 0 }
+        return min(max(goal.calculateProgress(currentWeight: trendWeight) * 100, 0), 100)
     }
 
     var goalProgressSubtitle: String {

@@ -24,6 +24,8 @@ struct WeeklyGoalView: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .disabled(presenter.isSaving)
+            } header: {
+                MethodInfoHeader(title: "Weekly Goal", info: .weeklySessionGoal)
             } footer: {
                 Text("Your circle sees your progress towards this as a ring round your face.")
             }

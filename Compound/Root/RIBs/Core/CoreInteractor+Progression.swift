@@ -27,10 +27,11 @@ extension CoreInteractor {
         case .empty:
             return .empty
         case .smartProgression:
-            let contexts = template.exercises.map { templateExercise in
+            let contexts = template.exercises.enumerated().map { index, templateExercise in
                 ProgressionPlanner.ExerciseContext(
                     templateExercise: templateExercise,
-                    preferredWeightUnit: unitPreferences[templateExercise.exercise.id]?.weightUnit
+                    preferredWeightUnit: unitPreferences[templateExercise.exercise.id]?.weightUnit,
+                    occurrence: template.exercises[..<index].filter { $0.exercise.id == templateExercise.exercise.id }.count
                 )
             }
             return .suggestions(
@@ -46,7 +47,7 @@ extension CoreInteractor {
     }
 
     /// The suggestions for a session already under way, so the tracker can show why a set reads
-    /// the way it does and re-suggest the sets still to come.
+    /// the way it does and re-suggest the sets still to come. Keyed by `ActiveWorkout.historyKey`.
     func progressionSuggestions(
         for session: WorkoutSessionModel,
         gymProfile: GymProfileModel?
@@ -57,7 +58,8 @@ extension CoreInteractor {
             ProgressionPlanner.ExerciseContext(
                 sessionExercise: exercise,
                 exercise: allExercises.first(where: { $0.id == exercise.templateId }),
-                preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit
+                preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit,
+                occurrence: session.occurrence(of: exercise)
             )
         }
 
@@ -68,6 +70,23 @@ extension CoreInteractor {
             mesocycleId: session.mesocycleId,
             gymProfile: gymProfile ?? workoutGymProfile
         )
+    }
+
+    /// What a deload's lighter weights round to for `exercise` (`WorkoutStartInteractor`): the
+    /// equipment chosen for it in the workout's gym, in the exercise's unit, as the keyboard steps.
+    func deloadRounding(for exercise: WorkoutExerciseModel) -> (Double) -> Double {
+        let context = ProgressionPlanner.ExerciseContext(
+            sessionExercise: exercise,
+            exercise: allExercises.first(where: { $0.id == exercise.templateId }),
+            preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit
+        )
+        let rule = WeightRoundingRule(
+            exercise: context.exercise,
+            gymProfile: workoutGymProfile,
+            preferredWeightUnit: context.preferredWeightUnit,
+            resistanceEquipment: context.resistanceEquipment
+        )
+        return rule.round
     }
 
     /// History is resolved per exercise, because `previousWorkoutReference` is: an exercise this
@@ -95,7 +114,8 @@ extension CoreInteractor {
                 for: [context],
                 history: history,
                 adjustmentMode: workoutSettings.smartProgressionAdjustmentMode,
-                gymProfile: gymProfile
+                gymProfile: gymProfile,
+                amrap: workoutSettings.amrapProgression
             )
             result.merge(suggestion) { _, latest in latest }
         }

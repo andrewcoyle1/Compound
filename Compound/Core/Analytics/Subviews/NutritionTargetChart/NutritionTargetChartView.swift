@@ -15,6 +15,7 @@ struct NutritionTargetChartView: View {
             // Nothing on screen named this chart or its custom marks before: a bar's fill is what
             // was eaten, the tick is the target, and the caret is for going well over it.
             SectionHeaderView(title: String(localized: "This Week Against Your Targets"))
+                .methodInfo(.macroSplit)
                 .carouselTitleStyle()
             Group {
                 if let planDays = presenter.planDays {

@@ -39,7 +39,7 @@ struct NutritionStrategyStaleSnapshotTests {
 
         // The Expenditure screen saves while this one is still on the stack behind it.
         var changedElsewhere = interactor.nutritionStrategySettings
-        changedElsewhere.bmrEquation = .katchMcArdle
+        changedElsewhere.bmrEquation = .cunningham
         changedElsewhere.stepInformedUpdates = true
         interactor.nutritionStrategySettings = changedElsewhere
 
@@ -47,7 +47,7 @@ struct NutritionStrategyStaleSnapshotTests {
         presenter.fastCheckInEnabled = true
 
         #expect(await TestManagers.eventually { interactor.nutritionStrategySettings.fastCheckIn })
-        #expect(interactor.nutritionStrategySettings.bmrEquation == .katchMcArdle)
+        #expect(interactor.nutritionStrategySettings.bmrEquation == .cunningham)
         #expect(interactor.nutritionStrategySettings.stepInformedUpdates)
     }
 

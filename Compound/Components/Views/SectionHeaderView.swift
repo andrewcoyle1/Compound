@@ -23,6 +23,8 @@ struct SectionHeaderView: View {
     /// (the Progress tab's card grids). In a list with the standard margins that indents it
     /// twice, so pass `false` there.
     var padsEdges: Bool = true
+    /// The method behind the section's figures, as an ⓘ after the title (`methodInfo(_:)`).
+    var info: MethodInfo?
 
     /// A literal title is looked up in the string catalog, so a call site cannot ship English by
     /// passing a bare string.
@@ -43,6 +45,11 @@ struct SectionHeaderView: View {
         HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
             Text(title)
 
+            if let info {
+                MethodInfoButton(info)
+                    .textCase(nil)
+            }
+
             if let onActionPressed {
                 Spacer(minLength: Spacing.s)
                 // A link, so it takes the accent (CONTRACT.md § Accent). The caption-sized label
@@ -59,6 +66,13 @@ struct SectionHeaderView: View {
             }
         }
         .padding(.horizontal, padsEdges ? nil : 0)
+    }
+
+    /// The same header with an ⓘ for the method behind the section's figures.
+    func methodInfo(_ info: MethodInfo) -> SectionHeaderView {
+        var header = self
+        header.info = info
+        return header
     }
 }
 

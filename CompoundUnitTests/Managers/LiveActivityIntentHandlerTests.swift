@@ -28,6 +28,7 @@ private struct Rig {
     let hkWorkoutManager: HKWorkoutManager
     let activity: LiveActivityUpdaterSpy
     let users: UserManager
+    let screenStateStore: UserDefaults
 }
 
 extension WorkoutRestSharedStateTests {
@@ -52,7 +53,7 @@ struct LiveActivityIntentHandlerTests {
         )
     }
 
-    private func exercise(id: String = "e1", index: Int = 1, sets: [WorkoutSetModel]) -> WorkoutExerciseModel {
+    private func exercise(id: String = "e1", index: Int = 1, sets: [WorkoutSetModel], group: String? = nil) -> WorkoutExerciseModel {
         WorkoutExerciseModel(
             id: id,
             authorId: "author-1",
@@ -60,7 +61,8 @@ struct LiveActivityIntentHandlerTests {
             name: "Exercise \(index)",
             trackingMode: .weightReps,
             index: index,
-            sets: sets
+            sets: sets,
+            supersetGroupId: group
         )
     }
 
@@ -110,6 +112,7 @@ struct LiveActivityIntentHandlerTests {
         let settingsManager = try await TestManagers.signedInWorkoutSettingsManager(workoutSettings)
         let activity = LiveActivityUpdaterSpy()
         let hkWorkoutManager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: activity, restOverNotifier: RestOverNotifierSpy())
+        let screenStateStore = UserDefaults(suiteName: "LiveActivityIntentHandlerTests-\(UUID().uuidString)") ?? .standard
 
         let handler = AppLiveActivityIntentHandler(
             workoutSessionManager: sessions,
@@ -120,10 +123,18 @@ struct LiveActivityIntentHandlerTests {
             exerciseModelManager: TestManagers.exerciseModelManager(),
             gymProfileManager: TestManagers.gymProfileManager(),
             mesocycleManager: mesocycles,
-            userManager: users
+            userManager: users,
+            screenStateStore: screenStateStore
         )
 
-        return Rig(handler: handler, sessions: sessions, hkWorkoutManager: hkWorkoutManager, activity: activity, users: users)
+        return Rig(
+            handler: handler,
+            sessions: sessions,
+            hkWorkoutManager: hkWorkoutManager,
+            activity: activity,
+            users: users,
+            screenStateStore: screenStateStore
+        )
     }
 
     /// The sets of the one exercise on the active session.
@@ -193,6 +204,32 @@ struct LiveActivityIntentHandlerTests {
         rig.hkWorkoutManager.cancelRest()
     }
 
+    /// Set plan: Complete on a myo-rep set's own row breathes the myo rest, not the full rest, and
+    /// the push it makes leaves the first mini-set as the target, which the banner names.
+    @Test("Test Completing A Myo Set Breathes And Targets Its First Mini-Set")
+    func testCompletingAMyoSetBreathesAndTargetsItsFirstMiniSet() async throws {
+        var parent = set("s1", index: 1)
+        parent.kind = .myo
+        var mini = set("s1-m1", index: 2)
+        mini.parentSetId = "s1"
+        let rig = try await makeRig(sets: [parent, mini, set("s2", index: 3)]) { $0.intraSetRestMyoSeconds = 12 }
+
+        await rig.handler.completeSet(id: "s1")
+
+        let seconds = try #require(rig.hkWorkoutManager.restEndTime).timeIntervalSinceNow
+        #expect(seconds > 7 && seconds <= 12)
+        let pushed = try #require(rig.activity.fullUpdates.last)
+        let state = LiveActivityManager(logger: LogManager(), activityLookup: { _ in nil }, plansSets: { true })
+            .makeContentState(session: pushed.session, isActive: true, currentExerciseIndex: 0, restEndsAt: pushed.restEndsAt)
+        #expect(state.targetSetId == "s1-m1")
+        let restEndsAt = try #require(pushed.restEndsAt)
+        let position = SetPosition(index: 1, total: 2, piece: SetPiece(index: 2, count: 2, isDrop: false))
+        let expected = LiveActivityPhase.breathing(until: restEndsAt, next: LiveActivitySetTarget(weightKg: 60, reps: 8), position: position)
+        #expect(LiveActivityPhase(state: state, now: Date(), isStale: false) == expected)
+
+        rig.hkWorkoutManager.cancelRest()
+    }
+
     /// A set that is already logged, or one this session does not have, is dropped rather than
     /// logged twice or against the wrong workout.
     @Test("Test An Unknown Or Already Logged Set Is Dropped")
@@ -250,9 +287,11 @@ struct LiveActivityIntentHandlerTests {
 
     @Test("Test The Correction Is Clamped To Zero And Ninety Nine")
     func testTheCorrectionIsClampedToZeroAndNinetyNine() async throws {
-        let rig = try await makeRig(sets: [set("s1", index: 1, reps: 0), set("s2", index: 2)])
+        // One rep, as a set with none is not logged at all.
+        let rig = try await makeRig(sets: [set("s1", index: 1, reps: 1), set("s2", index: 2)])
         await rig.handler.completeSet(id: "s1")
 
+        await rig.handler.adjustLastSetReps(id: "s1", delta: -1)
         await rig.handler.adjustLastSetReps(id: "s1", delta: -1)
         let floored = try savedSets(rig)[0]
         #expect(floored.reps == 0)
@@ -437,6 +476,92 @@ struct LiveActivityIntentHandlerTests {
 
         let pushed = try #require(rig.activity.fullUpdates.last)
         #expect(pushed.currentExerciseIndex == 1)
+    }
+
+    // MARK: - One log rule with the tracker (WP-K)
+
+    private func superset(transitionRest: Int? = nil) async throws -> Rig {
+        try await makeRig(exercises: [
+            exercise(id: "a", index: 1, sets: [set("a1", index: 1), set("a2", index: 2)], group: "g"),
+            exercise(id: "b", index: 2, sets: [set("b1", index: 1), set("b2", index: 2)], group: "g")
+        ]) { $0.supersetTransitionRestSeconds = transitionRest }
+    }
+
+    private func storedFocus(_ rig: Rig) -> String? {
+        ActiveWorkoutScreenState.load(sessionId: "session-1", from: rig.screenStateStore).focusExerciseId
+    }
+
+    /// Worked in rounds from the Lock Screen too: A1 hands on to B, as the tracker's log does,
+    /// and the exercise is kept for the tracker to open on.
+    @Test("Test A1 From The Lock Screen Moves Focus To B")
+    func testA1MovesFocusToB() async throws {
+        let rig = try await superset()
+
+        await rig.handler.completeSet(id: "a1")
+
+        let pushed = try #require(rig.activity.fullUpdates.last)
+        #expect(pushed.currentExerciseIndex == 1)
+        #expect(storedFocus(rig) == "b")
+        // The walk to the partner rests not at all by default.
+        #expect(rig.hkWorkoutManager.restEndTime == nil)
+    }
+
+    @Test("Test No Rest After The Workout's Final Set")
+    func testNoRestAfterTheFinalSet() async throws {
+        let rig = try await makeRig(sets: [set("s1", index: 1, done: true), set("s2", index: 2)])
+
+        await rig.handler.completeSet(id: "s2")
+
+        #expect(try savedSets(rig)[1].completedAt != nil)
+        #expect(rig.hkWorkoutManager.restEndTime == nil)
+    }
+
+    /// A set with no reps is refused, as the tracker refuses it, and the session is left as it was;
+    /// the push still comes, to re-enable the button.
+    @Test("Test An Invalid Set Is Refused And The State Unchanged")
+    func testAnInvalidSetIsRefused() async throws {
+        var empty = set("s1", index: 1)
+        empty.reps = nil
+        let rig = try await makeRig(sets: [empty, set("s2", index: 2)])
+        let before = rig.sessions.activeSession
+
+        await rig.handler.completeSet(id: "s1")
+
+        #expect(rig.sessions.activeSession == before)
+        #expect(rig.hkWorkoutManager.restEndTime == nil)
+        #expect(rig.activity.fullUpdates.count == 1)
+        #expect(storedFocus(rig) == nil)
+    }
+
+    /// "+15s", the reps correction and Skip keep the activity on the exercise the user is on, not
+    /// the first with work left.
+    @Test("Test The Rest Buttons Keep The Exercise")
+    func testTheRestButtonsKeepTheExercise() async throws {
+        let rig = try await superset(transitionRest: 30)
+        await rig.handler.completeSet(id: "a1")
+        #expect(rig.hkWorkoutManager.restEndTime != nil)
+
+        await rig.handler.adjustRest(by: 15)
+        #expect(rig.activity.fullUpdates.last?.currentExerciseIndex == 1)
+
+        await rig.handler.adjustLastSetReps(id: "a1", delta: -1)
+        #expect(rig.activity.fullUpdates.last?.currentExerciseIndex == 1)
+
+        await rig.handler.skipRest()
+        #expect(rig.activity.fullUpdates.last?.currentExerciseIndex == 1)
+    }
+
+    /// A rest set by hand on the row in the tracker is the rest the Lock Screen starts.
+    @Test("Test The Row's Own Rest Is Used")
+    func testTheRowsOwnRestIsUsed() async throws {
+        let rig = try await makeRig(sets: [set("s1", index: 1), set("s2", index: 2)])
+        ActiveWorkoutScreenState(sessionId: "session-1", customRestSeconds: ["s1": 30]).save(to: rig.screenStateStore)
+
+        await rig.handler.completeSet(id: "s1")
+
+        let seconds = try #require(rig.hkWorkoutManager.restEndTime).timeIntervalSinceNow
+        #expect(seconds > 25 && seconds <= 30)
+        rig.hkWorkoutManager.cancelRest()
     }
 }
 

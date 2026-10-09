@@ -163,16 +163,16 @@ struct WorkoutSessionModelTests {
         #expect(WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a", targetCount: -3).count == 1)
     }
 
-    /// Timed and distance work start from something usable; weights and reps are left blank for the
-    /// user to fill in, since a guess there would be wrong for everyone.
-    @Test("Test Timed And Distance Sets Are Prefilled")
-    func testTimedAndDistanceSetsArePrefilled() {
+    /// Every figure starts blank, timed and distance work included: a stored default of 1:00 or
+    /// 400 m would log as though it had been done. The fields show a greyed placeholder instead.
+    @Test("Test New Sets Start Empty")
+    func testNewSetsStartEmpty() {
         let timed = WorkoutSessionModel.defaultSets(trackingMode: .timeOnly, authorId: "a")
         let distance = WorkoutSessionModel.defaultSets(trackingMode: .distanceTime, authorId: "a")
         let weights = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "a")
 
-        #expect(timed.allSatisfy { $0.durationSec == 60 })
-        #expect(distance.allSatisfy { $0.distanceMeters == 400 && $0.durationSec == 120 })
+        #expect(timed.allSatisfy { $0.durationSec == nil })
+        #expect(distance.allSatisfy { $0.distanceMeters == nil && $0.durationSec == nil })
         #expect(weights.allSatisfy { $0.weightKg == nil && $0.reps == nil })
     }
 
@@ -223,34 +223,40 @@ struct WorkoutSessionModelTests {
 
     // MARK: - Rounding to a usable weight
 
+    /// What a weight the equipment does not constrain is rounded to (`WeightRoundingRule`).
+    private func unconstrained(_ unit: ExerciseWeightUnit) -> WeightRoundingRule {
+        WeightRoundingRule(step: WeightStepper.fallback(unit), unit: unit, preferredUnit: unit)
+    }
+
     /// Kilograms round to the half, because that is the smallest plate pair most gyms have.
     @Test("Test Kilograms Round To The Nearest Half")
     func testKilogramsRoundToTheNearestHalf() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.2, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.3, preferredUnit: .kilograms) == 60.5)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60.75, preferredUnit: .kilograms) == 61)
+        #expect(unconstrained(.kilograms).round(60.2) == 60)
+        #expect(unconstrained(.kilograms).round(60.3) == 60.5)
+        #expect(unconstrained(.kilograms).round(60.75) == 61)
     }
 
     /// Pounds round to the whole, and the result is stored back in kilograms — so a pounds user
     /// gets a round number on screen rather than 61.23 kg converted from 135.
     @Test("Test Pounds Round To A Whole Pound And Store As Kilograms")
-    func testPoundsRoundToAWholePoundAndStoreAsKilograms() throws {
-        let stored = try #require(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 61.2, preferredUnit: .pounds))
+    func testPoundsRoundToAWholePoundAndStoreAsKilograms() {
+        let stored = unconstrained(.pounds).round(61.2)
         let shown = UnitConversion.convertWeight(stored, to: ExerciseWeightUnit.pounds)
 
         #expect(abs(shown.rounded() - shown) < 0.0001)
         #expect(abs(stored - 61.2) < 0.3)
     }
 
-    @Test("Test Rounding Nothing Gives Nothing")
-    func testRoundingNothingGivesNothing() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: nil, preferredUnit: .kilograms) == nil)
+    /// Without a unit preference nothing says what a round number is, so the weight is kept.
+    @Test("Test Rounding Without A Unit Keeps The Weight")
+    func testRoundingWithoutAUnitKeepsTheWeight() {
+        #expect(WeightRoundingRule(step: WeightStepper.fallback(.kilograms), unit: .kilograms, preferredUnit: nil).round(60.2) == 60.2)
     }
 
     @Test("Test A Weight Already On The Increment Is Left Alone")
     func testAWeightAlreadyOnTheIncrementIsLeftAlone() {
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 60, preferredUnit: .kilograms) == 60)
-        #expect(WorkoutSessionModel.roundWeightToPreferredUnit(weightKg: 62.5, preferredUnit: .kilograms) == 62.5)
+        #expect(unconstrained(.kilograms).round(60) == 60)
+        #expect(unconstrained(.kilograms).round(62.5) == 62.5)
     }
 
     // MARK: - Editing a session
@@ -321,16 +327,65 @@ struct WorkoutSessionModelTests {
 
     // MARK: - Deloads
 
-    @Test("Test A Deload Takes Every Weight To Sixty-Five Percent")
-    func testADeloadTakesEveryWeightToSixtyFivePercent() {
+    /// Rounds to the half kilo, as the app does for a kg user with nothing constraining the weight.
+    private let halfKilo: (WorkoutExerciseModel) -> (Double) -> Double = { _ in { ($0 * 2).rounded() / 2 } }
+
+    /// A deload keeps half the working sets, rounded up, at 90 % of the weight: practitioners cut
+    /// volume, not a third of the load (`MesocycleDeload`).
+    @Test("Test A Deload Halves The Sets At Ninety Percent")
+    func testADeloadHalvesTheSetsAtNinetyPercent() {
         var session = session(exercises: [
-            exercise(sets: [set(index: 1, weightKg: 100), set(index: 2, weightKg: 80)])
+            exercise(sets: [
+                set(index: 1, weightKg: 100), set(index: 2, weightKg: 80),
+                set(index: 3, weightKg: 80), set(index: 4, weightKg: 80)
+            ])
         ])
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
-        #expect(session.exercises[0].sets[0].weightKg == 65)
-        #expect(session.exercises[0].sets[1].weightKg == 52)
+        #expect(session.exercises[0].sets.map(\.weightKg) == [90, 72])
+        #expect(session.exercises[0].sets.map(\.index) == [1, 2])
+        #expect(session.exercises[0].sets.map(\.reps) == [8, 8])
+    }
+
+    /// Warm-ups are kept, and an odd count rounds up: three sets become two.
+    @Test("Test A Deload Keeps Warm-Ups And Rounds The Set Count Up")
+    func testADeloadKeepsWarmUpsAndRoundsUp() {
+        var session = session(exercises: [
+            exercise(sets: [
+                set(index: 1, weightKg: 40, isWarmup: true),
+                set(index: 2, weightKg: 100), set(index: 3, weightKg: 100), set(index: 4, weightKg: 100)
+            ])
+        ])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.isWarmup) == [true, false, false])
+        #expect(session.exercises[0].sets.map(\.weightKg) == [36, 90, 90])
+        #expect(MesocycleDeload.setCount(from: 1) == 1)
+        #expect(MesocycleDeload.setCount(from: 5) == 3)
+    }
+
+    /// The weight is rounded to what the equipment can make.
+    @Test("Test A Deload Rounds To The Equipment")
+    func testADeloadRoundsToTheEquipment() {
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: 62.5), set(index: 2, weightKg: 62.5)])])
+
+        session.applyDeload { _ in { ($0 / 5).rounded() * 5 } }
+
+        #expect(session.exercises[0].sets.map(\.weightKg) == [55])
+    }
+
+    /// A drop belongs to its set, so it goes with it.
+    @Test("Test A Deload Removes A Set With Its Drops")
+    func testADeloadRemovesASetWithItsDrops() {
+        var drop = set(index: 3, weightKg: 40)
+        drop.parentSetId = "set-2-x"
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: 60), set(index: 2, weightKg: 60), drop])])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.id) == ["set-1-x"])
     }
 
     /// Bodyweight and timed work carry no weight, and a deload must not invent one.
@@ -340,18 +395,133 @@ struct WorkoutSessionModelTests {
             exercise(sets: [set(index: 1, weightKg: nil), set(index: 2, weightKg: 100)])
         ])
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
-        #expect(session.exercises[0].sets[0].weightKg == nil)
-        #expect(session.exercises[0].sets[1].weightKg == 65)
+        #expect(session.exercises[0].sets.map(\.weightKg) == [nil])
+    }
+
+    /// Assistance is a negative weight: a deload gives more of it, not less.
+    @Test("Test A Deload Adds Assistance")
+    func testADeloadAddsAssistance() {
+        var session = session(exercises: [exercise(sets: [set(index: 1, weightKg: -30)])])
+
+        session.applyDeload(rounding: halfKilo)
+
+        #expect(session.exercises[0].sets.map(\.weightKg) == [-33])
     }
 
     @Test("Test A Deload On An Empty Session Does Nothing")
     func testADeloadOnAnEmptySessionDoesNothing() {
         var session = session()
 
-        session.applyDeloadWeightReduction()
+        session.applyDeload(rounding: halfKilo)
 
         #expect(session.exercises.isEmpty)
+    }
+
+    // MARK: - WP-S1 set plan
+
+    /// A drop on a per-side set is per-side too, and a set with no weight yet has drops with none.
+    @Test("Test Planned Drops Take Their Set's Side And Leave A Missing Weight Missing")
+    func testPlannedDropsTakeSideAndMissingWeight() {
+        let targets = [SetTarget(setNumber: 1, setType: .drop, dropCount: 2), SetTarget(setNumber: 2)]
+        let sets = WorkoutSessionModel.defaultSets(
+            trackingMode: .weightReps, authorId: "author-1", targetCount: 2, perSide: true, setTargets: targets
+        )
+
+        let planned = WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")
+
+        #expect(planned.count == 4)
+        #expect(planned.allSatisfy { $0.side == .both })
+        #expect(planned.allSatisfy { $0.weightKg == nil })
+        #expect(planned[1].parentSetId == planned[0].id && planned[2].parentSetId == planned[0].id)
+        #expect(planned[3].parentSetId == nil)
+    }
+
+    /// No count, or a nonsense one, adds nothing; a set past the targets is left alone.
+    @Test("Test A Plan Without Counts Adds No Sub-Sets")
+    func testPlanWithoutCountsAddsNothing() {
+        let targets = [
+            SetTarget(setNumber: 1, setType: .drop),
+            SetTarget(setNumber: 2, setType: .myo, miniSetCount: -1)
+        ]
+        let sets = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "author-1", targetCount: 3, setTargets: targets)
+
+        let planned = WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")
+
+        #expect(planned.map(\.id) == sets.map(\.id))
+    }
+
+    /// The plan's AMRAP target stands unless the prefill already raised it.
+    @Test("Test An AMRAP Target Raised By The Prefill Is Kept")
+    func testRaisedAMRAPTargetIsKept() {
+        let targets = [SetTarget(setNumber: 1, setType: .amrap, amrapTargetReps: 8)]
+        var sets = WorkoutSessionModel.defaultSets(trackingMode: .weightReps, authorId: "author-1", targetCount: 1, setTargets: targets)
+        #expect(WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")[0].targetReps == 8)
+
+        sets[0].targetReps = 9
+
+        #expect(WorkoutSessionModel.applyingSetPlan(to: sets, setTargets: targets, authorId: "author-1")[0].targetReps == 9)
+    }
+
+    @Test("Test A Set's Target Reps Round-Trip And Old Sets Decode Without One")
+    func testTargetRepsCoding() throws {
+        var set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, kind: .amrap, isWarmup: false, dateCreated: start)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["target_reps"] == nil)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONSerialization.data(withJSONObject: json)).targetReps == nil)
+
+        set.targetReps = 8
+        json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+
+        #expect(json["target_reps"] as? Int == 8)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set)).targetReps == 8)
+    }
+
+    // MARK: - Bands
+
+    @Test("Test A Set's Bands Round-Trip And Old Sets Decode Without Them")
+    func testBandsCoding() throws {
+        var set = WorkoutSetModel(id: "s1", authorId: "author-1", index: 1, reps: 10, weightKg: 60, isWarmup: false, dateCreated: start)
+        var json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] == nil)
+        #expect(try JSONDecoder().decode(WorkoutSetModel.self, from: JSONSerialization.data(withJSONObject: json)).bands == nil)
+
+        set.bands = ["Red", "Blue"]
+        json = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(set)) as? [String: Any])
+        #expect(json["bands"] as? [String] == ["Red", "Blue"])
+        let decoded = try JSONDecoder().decode(WorkoutSetModel.self, from: JSONEncoder().encode(set))
+        #expect(decoded.bands == ["Red", "Blue"])
+        #expect(decoded.weightKg == 60)
+        // Bands carry no kg: 60 kg × 10 whatever bands are on.
+        #expect(decoded.volumeKg == 600)
+    }
+
+    /// Sets are nested in the session, so an unreadable `bands` (a later build's shape, or
+    /// corruption) must cost the bands and nothing else, as an unreadable side does.
+    @Test("Test A Session Survives A Set With Unreadable Bands")
+    func testUnreadableBandsCostOnlyTheBands() throws {
+        let session = WorkoutSessionModel(
+            id: "session-1",
+            authorId: "author-1",
+            name: "Pull",
+            dateCreated: start,
+            exercises: [WorkoutExerciseModel(
+                id: "e", authorId: "author-1", templateId: "t", name: "Row", trackingMode: .weightReps, index: 0,
+                sets: [set(index: 1), set(index: 2)]
+            )]
+        )
+        var raw = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(session)) as? [String: Any])
+        var exercises = try #require(raw["exercises"] as? [[String: Any]])
+        var sets = try #require(exercises[0]["sets"] as? [[String: Any]])
+        sets[0]["bands"] = 7
+        sets[1]["bands"] = [["name": "Red"]]
+        exercises[0]["sets"] = sets
+        raw["exercises"] = exercises
+
+        let decoded = try JSONDecoder().decode(WorkoutSessionModel.self, from: JSONSerialization.data(withJSONObject: raw))
+        let decodedSets = try #require(decoded.exercises.first?.sets)
+        #expect(decodedSets.map(\.bands) == [nil, nil])
+        #expect(decodedSets.map(\.reps) == [8, 8])
     }
 }

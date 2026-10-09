@@ -20,10 +20,12 @@ Things that must be true before a build goes to the App Store. Each is marked in
 
 - [ ] Maximum weekly rate of weight change: 1% of body weight.
 - [ ] Lowest selectable target weight: BMI 18.5 for the person's height.
-- [ ] Calorie floors: 1,200 kcal standard; 800 kcal offered only in settings.
+- [ ] Calorie floors: 1,200 kcal (women), 1,500 (men), 1,350 (not stated); the 800 kcal option
+      was removed. A goal's deficit is capped at 25% of expenditure.
 - [ ] The midpoint coefficient used for "Prefer not to say" in the calorie estimate.
 - [ ] For "Prefer not to say", the Harris-Benedict estimate uses the average of its two equations.
-- [ ] The weekly-rate bands: warning from 80% of the person's maximum, "Conservative" at 50% or less.
+- [ ] The weekly-rate bands, as % of body weight a week: losing 0.25–1%, default 0.5% (BMI < 25)
+      or 0.75%, warning above 0.75% for BMI < 25; gaining 0.1–1%, default 0.25%, warning above 0.5%.
 - [ ] Spanish for the two health consent texts (marked `needs_review` in the string catalog).
 - [ ] Whether health consent may be one "Agree and Continue" button or needs separate toggles.
 

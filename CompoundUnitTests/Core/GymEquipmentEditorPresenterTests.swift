@@ -159,6 +159,22 @@ struct GymEditFreeWeightPresenterTests {
 
         #expect(screen.interactor.trackedScreenEventNames == ["EditFreeWeightView_Appear"])
     }
+
+    /// A plate's count is a whole number written to that plate alone; clearing the field puts it
+    /// back to no limit.
+    @Test("Test A Plate Count Is Written To Its Own Plate")
+    func testAPlateCountIsWrittenToItsOwnPlate() {
+        let screen = makeScreen(mixedRack)
+        let count = screen.presenter.bindingForCount(id: "plate-15.0-kilograms")
+        #expect(count.wrappedValue == nil)
+
+        count.wrappedValue = 4.7
+        #expect(screen.box.value.range.map(\.count) == [nil, nil, 4])
+        #expect(count.wrappedValue == 4)
+
+        count.wrappedValue = nil
+        #expect(screen.box.value.range.map(\.count) == [nil, nil, nil])
+    }
 }
 
 /// The weights that can be hung from a dip belt or vest.
@@ -399,6 +415,25 @@ struct GymEditLoadableBarPresenterTests {
         screen.presenter.onAddPressed()
 
         #expect(screen.router.addUnits == [.pounds])
+    }
+
+    /// Collars are stored in kilograms, so one typed on the pounds tab reads back there as typed
+    /// and the same collar shows its kilogram weight on the other tab.
+    @Test("Test A Collar Weight Is Stored In Kilograms")
+    func testACollarWeightIsStoredInKilograms() {
+        let screen = makeScreen(mixedRack)
+        #expect(screen.presenter.collarWeight == nil)
+
+        screen.presenter.selectedUnit = .pounds
+        screen.presenter.collarWeight = 5.512
+        #expect(abs(screen.box.value.collarWeight - 2.5) < 0.001)
+        #expect(screen.presenter.collarWeight == 5.512)
+
+        screen.presenter.selectedUnit = .kilograms
+        #expect(screen.presenter.collarWeight == 2.5)
+
+        screen.presenter.collarWeight = nil
+        #expect(screen.box.value.collarWeight == 0)
     }
 }
 

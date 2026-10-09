@@ -15,7 +15,7 @@ struct WeightStepperTests {
 
     private static func plates(_ weights: [Double], unit: ExerciseWeightUnit = .kilograms) -> FreeWeights {
         FreeWeights(
-            id: "weight_plates", name: "Plates", needsColour: true,
+            id: "weight_plates", name: "Plates", needsColour: true, isPlates: true,
             range: weights.map { FreeWeightsAvailable(id: UUID().uuidString, availableWeights: $0, unit: unit, isActive: true) },
             isActive: true
         )
@@ -124,11 +124,32 @@ struct WeightStepperTests {
         #expect(step.previous(before: testCase.from) == testCase.expectedDown)
     }
 
+    /// An assisted machine on the cable stack (5–50 kg in fives): the stack's range, below zero,
+    /// stopping at zero for an exercise that cannot be loaded.
+    @Test func anAssistedMachineStepsBelowZeroToItsDeepest() {
+        let step = step(.cableMachine, "cable").assisted(bodyweightOnly: true)
+        #expect(step.next(after: -30) == -25)
+        #expect(step.previous(before: -30) == -35)
+        #expect(step.previous(before: -50) == -50)
+        #expect(step.next(after: -5) == 0)
+        #expect(step.next(after: 0) == 0)
+        #expect(step.previous(before: nil) == -5)
+    }
+
+    /// Without assistance nothing steps below zero, whatever the equipment.
+    @Test(arguments: [EquipmentKind.cableMachine, .freeWeight, .bodyWeight, .supportEquipment])
+    func nothingElseStepsBelowZero(_ kind: EquipmentKind) {
+        let ids: [EquipmentKind: String] = [.cableMachine: "cable", .freeWeight: "dumbbells", .bodyWeight: "vest", .supportEquipment: "bench"]
+        let step = step(kind, ids[kind] ?? "")
+        #expect((step.previous(before: 0) ?? 0) >= 0)
+        #expect((step.previous(before: nil) ?? 0) >= 0)
+    }
+
     @Test func barShowsItsWeightAndPlates() {
         let step = step(.loadableBar, "barbell")
         #expect(step.chip == "Bar 20 kg")
         #expect(step.baseWeight == 20)
-        #expect(step.plates == [1.25, 2.5, 5, 10, 20])
+        #expect(step.plates.map(\.weight) == [1.25, 2.5, 5, 10, 20])
         #expect(step.isPlateLoaded)
     }
 
@@ -139,11 +160,69 @@ struct WeightStepperTests {
 
     @Test func bandsCycleByNameLightestFirst() {
         let step = step(.bands, "bands")
-        #expect(step.kind == .bands(["Light", "Heavy"]))
+        #expect(step.kind == .bands)
+        #expect(step.bands == ["Light", "Heavy"])
         #expect(step.band(after: nil, forward: true) == 0)
         #expect(step.band(after: 1, forward: true) == 0)
         #expect(step.band(after: 0, forward: false) == 1)
         #expect(step.next(after: 10) == nil)
+    }
+
+    /// A variation's items are used together, so a bar with bands steps the bar and offers the
+    /// bands beside it, whichever is listed first. Before G6 only the first item the gym had counted.
+    @Test func aBarWithBandsOffersTheBarStepAndTheBands() {
+        let bar = step(.loadableBar, "barbell")
+        for refs in [
+            [EquipmentRef(kind: .loadableBar, id: "barbell"), EquipmentRef(kind: .bands, id: "bands")],
+            [EquipmentRef(kind: .bands, id: "bands"), EquipmentRef(kind: .loadableBar, id: "barbell")]
+        ] {
+            let step = WeightStepper.steps(for: refs, profile: Self.profile, unit: .kilograms)
+            #expect(step.kind == bar.kind)
+            #expect(step.baseWeight == 20)
+            #expect(step.constrainsWeight)
+            #expect(step.bands == ["Light", "Heavy"])
+        }
+        #expect(bar.bands.isEmpty)
+    }
+
+    /// A band switched on in both kg and lb is one band, not two chips with the same name.
+    @Test func aBandListedInBothUnitsIsOfferedOnce() {
+        let gym = GymProfileModel(authorId: "u", bands: [
+            Bands(id: "bands", name: "Bands", range: [
+                BandsAvailable(id: "lb", name: "Light", bandColour: "", availableResistance: 18, unit: .pounds, isActive: true),
+                BandsAvailable(id: "kg", name: "Light", bandColour: "", availableResistance: 8, unit: .kilograms, isActive: true),
+                BandsAvailable(id: "h", name: "Heavy", bandColour: "", availableResistance: 30, unit: .kilograms, isActive: true)
+            ], isActive: true)
+        ])
+        let step = WeightStepper.steps(for: [EquipmentRef(kind: .bands, id: "bands")], profile: gym, unit: .kilograms)
+        #expect(step.bands == ["Light", "Heavy"])
+    }
+
+    /// Only equipment the gym has limits what a weight may be; the fallback, body weight and bands
+    /// only say how far a tap moves it (`WeightRoundingRule`).
+    @Test func onlyEquipmentTheGymHasConstrainsTheWeight() {
+        for (kind, id) in [(EquipmentKind.cableMachine, "cable"), (.freeWeight, "dumbbells"), (.fixedWeightBar, "fixed"), (.loadableBar, "barbell"), (.plateLoadedMachine, "sled")] {
+            #expect(step(kind, id).constrainsWeight, "\(id)")
+        }
+        for (kind, id) in [(EquipmentKind.cableMachine, "missing"), (.bodyWeight, "vest"), (.bands, "bands")] {
+            #expect(!step(kind, id).constrainsWeight, "\(id)")
+        }
+    }
+
+    @Test func theSmallestStepIsTheGridOrTheSmallestGap() {
+        #expect(step(.cableMachine, "cable").smallestStep == 5)
+        #expect(step(.freeWeight, "dumbbells").smallestStep == 2.5)
+        #expect(step(.fixedWeightBar, "fixed").smallestStep == 10)
+        #expect(step(.loadableBar, "barbell").smallestStep == 2.5)
+        #expect(step(.bands, "bands").smallestStep == nil)
+    }
+
+    @Test func nearestPicksTheLighterOfTwoEquallyCloseWeights() {
+        #expect(step(.freeWeight, "dumbbells").nearest(to: 17.5) == 15)
+        #expect(step(.freeWeight, "dumbbells").nearest(to: 100) == 20)
+        #expect(step(.cableMachine, "cable").nearest(to: 1) == 5)
+        #expect(step(.loadableBar, "barbell").nearest(to: 61) == 60)
+        #expect(step(.bands, "bands").nearest(to: 7) == 7)
     }
 
     // MARK: - Fallbacks
@@ -194,15 +273,114 @@ struct WeightStepperTests {
     @Test func platesInTheUsersUnitAreUsedWhenThereAreAny() {
         var profile = Self.profile
         profile.freeWeights = [Self.plates([1.25, 20]), Self.plates([2.5, 45], unit: .pounds)]
-        #expect(WeightStepper.availablePlates(profile: profile, unit: .pounds) == [2.5, 45])
-        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms) == [1.25, 20])
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .pounds).map(\.weight) == [2.5, 45])
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms).map(\.weight) == [1.25, 20])
+    }
+
+    // MARK: - Sleeves, counts and collars
+
+    private func step(_ kind: EquipmentKind, _ id: String, in profile: GymProfileModel) -> WeightStep {
+        WeightStepper.steps(for: exercise(kind, id), profile: profile, unit: .kilograms)
+    }
+
+    private static func counted(_ plates: [(weight: Double, count: Int?)], id: String = "weight_plates") -> FreeWeights {
+        FreeWeights(
+            id: id, name: id, needsColour: false, isPlates: true,
+            range: plates.map {
+                FreeWeightsAvailable(id: UUID().uuidString, availableWeights: $0.weight, unit: .kilograms, isActive: true, count: $0.count)
+            },
+            isActive: true
+        )
+    }
+
+    /// A T-bar row takes its plates on one post, so a tap adds one plate rather than a pair, and
+    /// 18 kg + 2.5 kg is a load it can make.
+    @Test func aSingleSleeveMachineStepsOnePlate() {
+        var profile = Self.profile
+        profile.plateLoadedMachines = [
+            PlateLoadedMachine(id: "t_bar", name: "T-Bar", baseWeight: 18, unit: .kilograms, sleeves: 1, isActive: true)
+        ]
+        let step = step(.plateLoadedMachine, "t_bar", in: profile)
+
+        #expect(step.sleeves == 1)
+        #expect(step.smallestStep == 1.25)
+        #expect(step.next(after: 18) == 19.25)
+        #expect(step.nearest(to: 20.5) == 20.5)
+        #expect(PlateCalculator.load(total: 20.5, bar: 18, plates: step.plates, sleeves: 1) == .loadable(perSide: [2.5]))
+        #expect(step.plateText([2.5], unit: .kilograms) == "Plates: 2.5 kg")
+    }
+
+    @Test func aTwoSleeveMachineStillStepsAPair() {
+        let step = step(.plateLoadedMachine, "sled")
+
+        #expect(step.sleeves == 2)
+        #expect(step.smallestStep == 2.5)
+        #expect(step.plateText([2.5], unit: .kilograms) == "Per side: 2.5 kg")
+    }
+
+    /// Two 20s are one a side, so 100 kg on a 20 kg bar takes 20 + 15 + 5 a side.
+    @Test func limitedPlatesFallToTheNextOneDown() {
+        var profile = Self.profile
+        profile.freeWeights = [Self.counted([(5, nil), (15, nil), (20, 2)])]
+        let step = step(.loadableBar, "barbell", in: profile)
+
+        #expect(step.plates == [Plate(weight: 5), Plate(weight: 15), Plate(weight: 20, perSleeve: 1)])
+        #expect(PlateCalculator.load(total: 100, bar: 20, plates: step.plates, sleeves: 2) == .loadable(perSide: [20, 15, 5]))
+    }
+
+    /// Iron and bumper plates of one weight are one pile: their counts add, and either having no
+    /// limit leaves the pile without one.
+    @Test func ironAndBumperPlatesOfOneWeightAddUp() {
+        var profile = Self.profile
+        profile.freeWeights = [Self.counted([(10, 1), (20, 2)]), Self.counted([(10, nil), (20, 2)], id: "bumper_plates")]
+
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms) == [Plate(weight: 10), Plate(weight: 20, perSleeve: 2)])
+    }
+
+    /// One 1.25 kg plate cannot go on both sides of a bar, so the bar steps by the 2.5s; a
+    /// single-sleeve machine can still use it.
+    @Test func aPlateTooFewForEverySleeveIsLeftOut() {
+        var profile = Self.profile
+        profile.freeWeights = [Self.counted([(1.25, 1), (2.5, nil)])]
+
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms).map(\.weight) == [2.5])
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms, sleeves: 1) == [Plate(weight: 1.25, perSleeve: 1), Plate(weight: 2.5)])
+        #expect(step(.loadableBar, "barbell", in: profile).smallestStep == 5)
+    }
+
+    /// Plates are whatever the gym marks as plates, not whatever its id ends in.
+    @Test func anItemMarkedAsPlatesIsLoaded() {
+        var profile = Self.profile
+        profile.freeWeights = [
+            FreeWeights(id: "change_discs", name: "Change Discs", needsColour: false, isPlates: true, range: [
+                FreeWeightsAvailable(id: "c", availableWeights: 0.5, unit: .kilograms, isActive: true)
+            ], isActive: true),
+            FreeWeights(id: "fractional_plates", name: "Fractional", needsColour: false, isPlates: false, range: [
+                FreeWeightsAvailable(id: "f", availableWeights: 0.25, unit: .kilograms, isActive: true)
+            ], isActive: true)
+        ]
+
+        #expect(WeightStepper.availablePlates(profile: profile, unit: .kilograms).map(\.weight) == [0.5])
+    }
+
+    /// A 20 kg bar with 2.5 kg collars weighs 25 kg empty, so nothing lighter can be loaded.
+    @Test func collarsAreAddedToTheBar() {
+        var profile = Self.profile
+        profile.loadableBars[0].collarWeight = 2.5
+        let step = step(.loadableBar, "barbell", in: profile)
+
+        #expect(step.baseWeight == 25)
+        #expect(step.chip == "Bar 20 kg + collars")
+        #expect(step.next(after: nil) == 25)
+        #expect(step.nearest(to: 22) == 25)
+        #expect(step.nearest(to: 61) == 60)
     }
 }
 
 /// The plates for each side of a bar.
 struct PlateCalculatorTests {
 
-    private let plates: [Double] = [1.25, 2.5, 5, 10, 15, 20, 25]
+    private let plates = [1.25, 2.5, 5, 10, 15, 20, 25].map { Plate(weight: $0) }
 
     @Test func greedyFromTheHeaviest() {
         #expect(PlateCalculator.load(total: 100, bar: 20, plates: plates) == .loadable(perSide: [25, 15]))
@@ -223,11 +401,23 @@ struct PlateCalculatorTests {
 
     @Test func greedyMissIsNotLoadable() {
         // 15 + 15 would do it, but greedy takes a 20 first and cannot finish.
-        let result = PlateCalculator.load(total: 80, bar: 20, plates: [15, 20])
+        let result = PlateCalculator.load(total: 80, bar: 20, plates: [Plate(weight: 15), Plate(weight: 20)])
         #expect(result == .notLoadable(below: 60, above: 90))
     }
 
     @Test func noPlatesAtAll() {
         #expect(PlateCalculator.load(total: 60, bar: 20, plates: []) == .notLoadable(below: nil, above: nil))
+    }
+
+    /// With only two 20s and nothing else, 100 kg cannot be loaded; 60 kg, one a side, is the most.
+    @Test func runningOutOfPlatesIsNotLoadable() {
+        let plates = [Plate(weight: 20, perSleeve: 1)]
+        #expect(PlateCalculator.load(total: 100, bar: 20, plates: plates) == .notLoadable(below: 60, above: nil))
+        #expect(PlateCalculator.nearestLoadable(total: 100, bar: 20, plates: plates) == 60)
+    }
+
+    @Test func oneSleeveTakesTheWholeLoad() {
+        #expect(PlateCalculator.load(total: 58, bar: 18, plates: plates, sleeves: 1) == .loadable(perSide: [25, 15]))
+        #expect(PlateCalculator.nearestLoadable(total: 19, bar: 18, plates: plates, sleeves: 1) == 19.25)
     }
 }

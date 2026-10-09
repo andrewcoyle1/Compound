@@ -10,14 +10,20 @@ import Foundation
 /// The estimate never silently rewrites a `DietPlan`. Someone who has been told 2,400 kcal for a
 /// month and finds 2,150 there one morning has no way to tell a working algorithm from a bug, so
 /// the engine proposes and the user confirms.
+///
+/// The controller is feedforward with a deadband, evaluated at most weekly: the target is the
+/// estimate plus the goal rate's daily share of the energy in a kilogram, and it only moves when
+/// that differs from the current target by more than the estimate's own uncertainty. There is no
+/// separate rate-error correction: the expenditure filter already absorbs a persistent gap between
+/// predicted and observed weight change, so a second loop would count it twice — and when the gap
+/// is the user eating above target, it would lower a target they are already missing. That case
+/// gets an `AdherenceNote` instead. See `MethodInfo.targetProposal`.
 struct TargetProposal: Equatable {
 
     /// Why the target should move, which is what the card says out loud.
     enum Reason: String, Equatable {
-        /// Expenditure itself has drifted away from what the plan was built on.
+        /// The expenditure estimate, or the goal, has moved away from what the plan was built on.
         case expenditureMoved
-        /// Expenditure looks right, but the observed rate of change is off the goal rate.
-        case rateOffTarget
     }
 
     let expenditureKcal: Double
@@ -28,10 +34,18 @@ struct TargetProposal: Equatable {
     let goalWeeklyChangeKg: Double?
     let reason: Reason
 
-    /// The smallest move worth interrupting someone for.
+    // MARK: Design choices — tune by replay
+
+    /// The smallest move worth interrupting someone for; the deadband is the larger of this and
+    /// the estimate's SD.
     static let minimumMeaningfulDeltaKcal: Double = 50
-    /// The most the predictive correction may add or take away in a day.
-    static let maximumCorrectionKcal: Double = 200
+    /// The most one proposal moves the target: 150 kcal, at most once a week.
+    static let maximumStepKcal: Double = 150
+    /// A proposal waits until the plan is at least this many days old.
+    static let minimumDaysBetweenChanges: Int = 7
+    /// Mean logged intake more than 10% over the target counts as eating above it.
+    static let adherenceMargin: Double = 0.10
+
     /// Where the dismissed figure is remembered, so a waved-away card stays away.
     static let dismissedDefaultsKeyPrefix = "dismissedTargetProposalKcal"
 
@@ -53,59 +67,111 @@ struct TargetProposal: Equatable {
         plan: DietPlan?,
         goal: WeightGoal?,
         settings: NutritionStrategySettings,
-        dismissedKcal: Double? = nil
+        dismissedKcal: Double? = nil,
+        kcalPerKg: Double = EnergyDensity.conventionalKcalPerKg,
+        gender: Gender? = nil,
+        calendar: Calendar = .current
     ) -> TargetProposal? {
+        guard case .propose(let proposal) = evaluate(
+            estimate: estimate, plan: plan, goal: goal, settings: settings,
+            kcalPerKg: kcalPerKg, gender: gender, calendar: calendar
+        ) else { return nil }
+        if let dismissedKcal, abs(proposal.proposedTargetKcal - dismissedKcal) < minimumMeaningfulDeltaKcal { return nil }
+        return proposal
+    }
+
+    // MARK: - The controller
+
+    enum Outcome: Equatable {
+        case none
+        case propose(TargetProposal)
+        case adherence(AdherenceNote)
+    }
+
+    /// Target_raw = T̂ + ρ·r_goal/7, floored by sex; propose only past the deadband, a week after the
+    /// last change and once the estimate is calibrated; move at most 150 kcal; and before lowering
+    /// a target the user is eating well above, say so instead.
+    static func evaluate(
+        estimate: ExpenditureEstimate,
+        plan: DietPlan?,
+        goal: WeightGoal?,
+        settings: NutritionStrategySettings,
+        kcalPerKg: Double = EnergyDensity.conventionalKcalPerKg,
+        gender: Gender? = nil,
+        calendar: Calendar = .current
+    ) -> Outcome {
         guard let plan, !plan.days.isEmpty,
               !estimate.isProvisional,
-              settings.calculationMode != .fixed else { return nil }
+              estimate.source == .adaptive,
+              settings.calculationMode != .fixed else { return .none }
 
         let currentTarget = plan.days.map(\.calories).reduce(0, +) / Double(plan.days.count)
         let activeGoal = goal.flatMap { $0.status == .active ? $0 : nil }
         let goalWeekly = activeGoal?.signedWeeklyChangeKg
 
         // With no active goal the right target is maintenance: spend what you spend.
-        let base = estimate.kcal + (goalWeekly ?? 0) * ExpenditureEngine.Constants.kcalPerKg / 7
-        let correction = self.correction(
-            goalWeeklyChangeKg: goalWeekly,
-            weeklyTrendChangeKg: estimate.weeklyTrendChangeKg,
-            settings: settings
-        )
+        let raw = estimate.kcal + EnergyDensity.dailyKcal(forWeeklyChangeKg: goalWeekly ?? 0, kcalPerKg: kcalPerKg)
+        let floor = (CalorieFloor(rawValue: plan.calorieFloor) ?? .standard).minimumValue(for: gender)
+        let delta = max(raw, floor) - currentTarget
 
-        let floor = (CalorieFloor(rawValue: plan.calorieFloor) ?? .standard).minimumValue
-        let proposed = max(base + correction, floor).rounded()
+        let deadband = max(minimumMeaningfulDeltaKcal, estimate.sdKcal ?? 0)
+        guard abs(delta) > deadband else { return .none }
 
-        guard abs(proposed - currentTarget) >= minimumMeaningfulDeltaKcal else { return nil }
-        if let dismissedKcal, abs(proposed - dismissedKcal) < minimumMeaningfulDeltaKcal { return nil }
+        // Adherence first: lowering a target the user is already well over would chase their
+        // eating rather than their expenditure.
+        if delta < 0,
+           let intake = estimate.recentIntakeKcal, intake > currentTarget * (1 + adherenceMargin),
+           let rate = estimate.weeklyTrendChangeKg, rate > (goalWeekly ?? 0) {
+            return .adherence(AdherenceNote(
+                targetKcal: currentTarget,
+                recentIntakeKcal: intake,
+                weeklyTrendChangeKg: rate,
+                goalWeeklyChangeKg: goalWeekly
+            ))
+        }
 
-        // The correction earned the card whenever the move without it would have been too small
-        // to show — that is the case the rate, not the expenditure, is driving.
-        let withoutCorrection = max(base, floor).rounded()
-        let rateDriven = correction != 0
-            && abs(withoutCorrection - currentTarget) < minimumMeaningfulDeltaKcal
+        let planAgeDays = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: plan.createdAt),
+            to: calendar.startOfDay(for: estimate.day)
+        ).day ?? 0
+        guard planAgeDays >= minimumDaysBetweenChanges else { return .none }
 
-        return TargetProposal(
+        let step = delta.clamped(to: -maximumStepKcal...maximumStepKcal, whenNotFinite: 0)
+        return .propose(TargetProposal(
             expenditureKcal: estimate.kcal,
             currentTargetKcal: currentTarget,
-            proposedTargetKcal: proposed,
+            proposedTargetKcal: (currentTarget + step).rounded(),
             weeklyTrendChangeKg: estimate.weeklyTrendChangeKg,
             goalWeeklyChangeKg: goalWeekly,
-            reason: rateDriven ? .rateOffTarget : .expenditureMoved
-        )
+            reason: .expenditureMoved
+        ))
     }
+}
 
-    /// Nudges the target when the scale is not moving at the goal's rate even though expenditure
-    /// looks right. Capped hard: a correction big enough to matter on its own would be the
-    /// algorithm arguing with the goal rather than serving it.
-    private static func correction(
-        goalWeeklyChangeKg: Double?,
-        weeklyTrendChangeKg: Double?,
-        settings: NutritionStrategySettings
-    ) -> Double {
-        guard settings.predictiveGoalAdjustments,
-              let goalWeekly = goalWeeklyChangeKg,
-              let trendWeekly = weeklyTrendChangeKg else { return 0 }
-        let raw = (goalWeekly - trendWeekly) * ExpenditureEngine.Constants.kcalPerKg / 7
-        return raw.clamped(to: -maximumCorrectionKcal...maximumCorrectionKcal, whenNotFinite: 0)
+/// The user is eating well above their target and the scale shows it, so the honest message is
+/// about the logging, not a lower number. Shown in the weekly check-in instead of a proposal.
+struct AdherenceNote: Equatable {
+    let targetKcal: Double
+    /// Mean of the last week's complete logged days.
+    let recentIntakeKcal: Double
+    let weeklyTrendChangeKg: Double
+    let goalWeeklyChangeKg: Double?
+
+    static func make(
+        estimate: ExpenditureEstimate,
+        plan: DietPlan?,
+        goal: WeightGoal?,
+        settings: NutritionStrategySettings,
+        kcalPerKg: Double = EnergyDensity.conventionalKcalPerKg,
+        gender: Gender? = nil,
+        calendar: Calendar = .current
+    ) -> AdherenceNote? {
+        guard case .adherence(let note) = TargetProposal.evaluate(
+            estimate: estimate, plan: plan, goal: goal, settings: settings,
+            kcalPerKg: kcalPerKg, gender: gender, calendar: calendar
+        ) else { return nil }
+        return note
     }
 }
 

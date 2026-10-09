@@ -13,7 +13,7 @@ struct DayChecklistCard: View {
     let checklist: TodayChecklist
     let stepGoal: Int
     let onItemPressed: (TodayChecklist.Kind) -> Void
-    let onStepGoalSelected: (Int) -> Void
+    let onStepGoalSelected: @MainActor @Sendable (Int) -> Void
 
     var body: some View {
         Section {
@@ -30,6 +30,24 @@ struct DayChecklistCard: View {
                     Text("\(checklist.doneCount) of \(checklist.items.count) done")
                         .font(.label)
                         .foregroundStyle(.secondary)
+                }
+            }
+        } footer: {
+            footer
+        }
+    }
+
+    /// How "on target" and the step goal are judged, each with its sources.
+    private var footer: some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                Text("Calories count as on target within 10% either side.")
+                MethodInfoButton(.calorieAdherenceBand)
+            }
+            if checklist.items.contains(where: { $0.kind == .steps }) {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
+                    Text("Step goal: \(stepGoal.formatted()) a day.")
+                    MethodInfoButton(.dailyStepGoal)
                 }
             }
         }
@@ -58,7 +76,10 @@ struct DayChecklistCard: View {
 
         if item.kind == .steps {
             button.contextMenu {
-                Picker("Step Goal", selection: Binding(get: { stepGoal }, set: onStepGoalSelected)) {
+                // A closure literal, not the stored closure itself: handing a `@MainActor @Sendable`
+                // function value to the binding's `@isolated(any)` setter makes Swift 6.3.3 (Xcode
+                // 26.6, which CI runs) crash in IR generation on the reabstraction thunk.
+                Picker("Step Goal", selection: Binding(get: { stepGoal }, set: { onStepGoalSelected($0) })) {
                     ForEach(TodayPresenter.stepGoalChoices, id: \.self) { goal in
                         Text("\(goal.formatted()) steps").tag(goal)
                     }

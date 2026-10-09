@@ -28,7 +28,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     #endif
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        
+        // Before any manager reads the rest or the started HealthKit session.
+        if let legacy = UserDefaults(suiteName: SharedWorkoutStorage.legacyAppGroupIdentifier),
+           let current = SharedWorkoutStorage.sharedDefaults {
+            SharedWorkoutStorage.migrateLegacy(from: legacy, to: current)
+        }
+
         var config: BuildConfiguration
         
         #if MOCK
@@ -53,6 +58,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         self.dependencies = dependencies
         self.builder = CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
         registerLiveActivityIntentHandler(container: dependencies.container)
+        restoreActiveWorkout(container: dependencies.container)
         seedPushPayloadFromLaunchArguments()
         registerAppIntents()
         return true
@@ -89,6 +95,21 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         )
         liveActivityIntentHandler = handler
         LiveActivityIntentHandler.current = handler
+        #endif
+    }
+
+    /// A workout that was running when the process was killed: its rest, its pause and its Apple
+    /// Health session come back before any screen or Live Activity intent reads them
+    /// (docs/specs/workout-tracker/system.md §5, "App killed mid-set").
+    private func restoreActiveWorkout(container: DependencyContainer) {
+        #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
+        guard let hkWorkoutManager = container.resolve(HKWorkoutManager.self),
+              let workoutSessionManager = container.resolve(WorkoutSessionManager.self) else { return }
+        let activeSession = workoutSessionManager.activeSession
+        hkWorkoutManager.restoreAfterLaunch(activeSession: activeSession)
+        if let activeSession {
+            Task { await hkWorkoutManager.recoverHealthKitSession(for: activeSession) }
+        }
         #endif
     }
 

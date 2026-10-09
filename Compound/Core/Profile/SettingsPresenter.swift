@@ -164,6 +164,10 @@ class SettingsPresenter {
     func onLegalPressed() {
         router.showLegalView(delegate: LegalDelegate())
     }
+
+    func onMethodsAndSourcesPressed() {
+        router.showMethodsAndSourcesView(delegate: MethodsAndSourcesDelegate())
+    }
     
     /// Straight to the system review prompt. The row used to open a "Are you enjoying AIChat?"
     /// modal first and only asked the App Store after a "Yes".

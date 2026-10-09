@@ -10,6 +10,7 @@ protocol WorkoutExerciseEquipmentSheetInteractor: GlobalInteractor {
     var userId: String? { get }
     var workoutGymProfile: GymProfileModel? { get }
     var allExercises: [ExerciseModel] { get }
+    var allEquipmentTypes: [AnyEquipment] { get }
 }
 
 extension CoreInteractor: WorkoutExerciseEquipmentSheetInteractor { }

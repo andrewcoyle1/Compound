@@ -64,9 +64,16 @@ struct WorkoutSettingsView: View {
                 systemImage: "arrow.trianglehead.2.clockwise",
                 isOn: $presenter.supersetAutoScroll
             )
+            Picker(selection: $presenter.supersetTransitionRestSeconds) {
+                ForEach(presenter.supersetTransitionRestOptions, id: \.self) { seconds in
+                    Text(presenter.supersetTransitionRestTitle(seconds)).tag(seconds)
+                }
+            } label: {
+                Label("Rest between superset partners", systemImage: Symbol.rest)
+            }
             ListRowToggle(
                 title: String(localized: "Exercise Auto-Next"),
-                subtitle: String(localized: "Scroll next automatically when an exercise is completed"),
+                subtitle: String(localized: "Move to the next exercise when its rest ends"),
                 systemImage: "arrow.right.to.line.compact",
                 isOn: $presenter.exerciseAutoNext
             )
@@ -122,6 +129,18 @@ struct WorkoutSettingsView: View {
                 subtitle: String(localized: "Follow each workout on the Lock Screen and in the Dynamic Island"),
                 systemImage: "platter.filled.bottom.iphone",
                 isOn: $presenter.showOnLockScreen
+            )
+            ListRowToggle(
+                title: String(localized: "Exercise Strip"),
+                subtitle: String(localized: "Show the workout's exercises as thumbnails above the current one"),
+                systemImage: "rectangle.split.3x1",
+                isOn: $presenter.showExerciseStrip
+            )
+            ListRowToggle(
+                title: String(localized: "Set Plan"),
+                subtitle: String(localized: "Plan drops, mini-sets and AMRAP targets in your workouts"),
+                systemImage: "list.number",
+                isOn: $presenter.setPlanning
             )
 
         } header: {

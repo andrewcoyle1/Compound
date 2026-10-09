@@ -32,6 +32,33 @@ struct AppIntentsTests {
         _ = try await stub.startWorkoutFromIntent(templateId: template.id)
 
         #expect(stub.startedMesocycleIds == [mesocycle.id])
+        #expect(stub.startedMicrocycles == [1])
+    }
+
+    /// Legs done twice already: the next Legs is in the third microcycle, and starts on its targets.
+    @Test func startWorkoutPassesTheMicrocycleTheDayIsOpenIn() async throws {
+        let template = Self.template(name: "Legs")
+        let mesocycle = Mesocycle(id: "program-1", authorId: "me", name: "Block", icon: "dumbbell", colour: "#FF0000",
+                                  numMicrocycles: 4, workoutTemplates: [template])
+        let done = (1...2).map { day in
+            let date = Date().addingTimeInterval(Double(day - 3) * 86_400)
+            return WorkoutSessionModel(authorId: "me", name: "Legs", workoutTemplateId: template.id, mesocycleId: mesocycle.id,
+                                       dateCreated: date, endedAt: date, exercises: [])
+        }
+        let stub = StubAppIntentsInteractor(user: Self.user(), mesocycle: mesocycle, sessions: done)
+
+        _ = try await stub.startWorkoutFromIntent(templateId: template.id)
+
+        #expect(stub.startedMicrocycles == [3])
+    }
+
+    @Test func startWorkoutPassesNoMicrocycleForALibraryTemplate() async throws {
+        let template = Self.template(name: "Push Day")
+        let stub = StubAppIntentsInteractor(user: Self.user(), templates: [template])
+
+        _ = try await stub.startWorkoutFromIntent(templateId: template.id)
+
+        #expect(stub.startedMicrocycles == [nil])
     }
 
     @Test func startWorkoutKeepsAnActiveSession() async throws {
@@ -194,6 +221,7 @@ private final class StubAppIntentsInteractor: AppIntentsInteractor {
     private(set) var trackerOpenCount = 0
     private(set) var startedTemplateIds: [String] = []
     private(set) var startedMesocycleIds: [String?] = []
+    private(set) var startedMicrocycles: [Int?] = []
     private(set) var savedMeasurements: [BodyMeasurementEntry] = []
     private(set) var updatedWeights: [(kilograms: Double, unit: WeightUnitPreference)] = []
 
@@ -209,9 +237,10 @@ private final class StubAppIntentsInteractor: AppIntentsInteractor {
         workoutSessions = sessions
     }
 
-    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
+    func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws {
         startedTemplateIds.append(template.id)
         startedMesocycleIds.append(mesocycleId)
+        startedMicrocycles.append(microcycleIndex)
     }
 
     func saveBodyMeasurement(bodyMeasurement: BodyMeasurementEntry) async throws {

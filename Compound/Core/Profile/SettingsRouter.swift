@@ -23,6 +23,7 @@ protocol SettingsRouter: GlobalRouter, ShareSheetRouter, WeightGoalFlowRouter {
     func showIntegrationsView(delegate: IntegrationsDelegate)
     func showSiriView(delegate: SiriDelegate)
     func showLegalView(delegate: LegalDelegate)
+    func showMethodsAndSourcesView(delegate: MethodsAndSourcesDelegate)
     func showPaywall(isOnboarding: Bool)
     func showCustomiseAnalyticsView(delegate: CustomiseAnalyticsDelegate)
     func showFoodLogSettingsView(delegate: FoodLogSettingsDelegate)

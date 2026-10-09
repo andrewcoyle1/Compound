@@ -84,11 +84,14 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
     
     private var workoutDetailsSection: some View {
         Section {
-            ListRow(
-                title: String(localized: "Volume"),
-                systemImage: Symbol.volume,
-                accessory: .value(presenter.volumeFormatted(session: session))
-            )
+            HStack(spacing: Spacing.s) {
+                ListRow(
+                    title: String(localized: "Volume"),
+                    systemImage: Symbol.volume,
+                    accessory: .value(presenter.volumeFormatted(session: session))
+                )
+                MethodInfoButton(.tonnage)
+            }
             if presenter.isAuthor(sessionAuthorId: session.authorId) {
                 if presenter.canAskCoach(session: session) && !presenter.isEditMode {
                     ListRowButton(title: String(localized: "Ask Coach About This Workout"), systemImage: Symbol.coach) {
@@ -232,7 +235,7 @@ struct WorkoutSessionDetailView<AuthorHeader: View, ExerciseEditor: View>: View 
                     ListRow(
                         title: exercise.name,
                         subtitle: presenter.exerciseSummary(exercise),
-                        imageName: exercise.imageName,
+                        imageName: presenter.imageName(for: exercise),
                         initialsWhenMissing: true
                     )
                 }

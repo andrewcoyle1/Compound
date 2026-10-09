@@ -192,10 +192,11 @@ struct WorkoutTrackerSupersetTests {
         #expect(screen.presenter.expandedExerciseId == "e1")
     }
 
-    /// Finishing the exercise outright is the other rule's job, and it wins: the user is done
-    /// with this lift, so what happens next is auto-next's business, not this setting's.
-    @Test("Test Finishing A Superset Exercise Still Advances Normally")
-    func testFinishingASupersetExerciseStillAdvancesNormally() throws {
+    /// A member finished while its partner still has this round's set is not the superset
+    /// finished: the round goes on to the partner, whatever auto-next says. Auto-next is about
+    /// leaving the superset, not moving within it.
+    @Test("Test Finishing One Member Goes On To The Partner's Set In The Round")
+    func testFinishingOneMemberGoesOnToThePartner() throws {
         let screen = try makeScreen(
             exercises: [
                 exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
@@ -208,8 +209,49 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        // Auto-next is off, so nothing moves — the superset rule does not smuggle it back in.
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.expandedExerciseId == "e2")
+    }
+
+    // MARK: - The log button through a superset
+
+    /// T6: the log button alternates A, B, A, B; nothing rests between partners, and the round's
+    /// rest comes after B. The last round ends the workout, so it rests not at all.
+    @Test("Test The Log Button Alternates And Rests After The Round")
+    func testTheLogButtonAlternatesAndRestsAfterTheRound() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
+        ])
+        var logged: [String] = []
+        var rests: [[Int]] = []
+
+        for _ in 0..<4 {
+            guard case let .logSet(exerciseId, setId)? = screen.presenter.primaryAction else { break }
+            logged.append("\(exerciseId)/\(setId)")
+            screen.presenter.onPrimaryActionPressed()
+            rests.append(screen.interactor.startedRests)
+        }
+
+        #expect(logged == ["e1/e1-set-1", "e2/e2-set-1", "e1/e1-set-2", "e2/e2-set-2"])
+        #expect(rests == [[], [90], [90], [90]])
+        #expect(screen.presenter.primaryAction == .finish)
+    }
+
+    /// With a transition rest chosen, A1 earns it and B1 the round's rest.
+    @Test("Test A Transition Rest Runs Between Partners When Chosen")
+    func testATransitionRestRunsBetweenPartners() throws {
+        let screen = try makeScreen(
+            exercises: [
+                exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+                exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
+            ],
+            settings: { $0.supersetTransitionRestSeconds = 15 }
+        )
+
+        screen.presenter.onPrimaryActionPressed()
+        screen.presenter.onPrimaryActionPressed()
+
+        #expect(screen.interactor.startedRests == [15, 90])
     }
 
     /// Correcting the weight on a set already logged is not logging a set, and must not move the
@@ -220,12 +262,103 @@ struct WorkoutTrackerSupersetTests {
             exercise(id: "e1", index: 1, sets: [set(1, done: true), set(2)], supersetGroupId: "group-1"),
             exercise(id: "e2", index: 2, sets: [set(1), set(2)], supersetGroupId: "group-1")
         ])
-        screen.presenter.onExerciseExpansionChanged(exerciseId: "e1", isExpanded: true)
+        screen.presenter.onExerciseSelected("e1")
         var logged = try #require(screen.presenter.workoutSession.exercises.first).sets[0]
         logged.weightKg = 90
 
         screen.presenter.updateSet(logged, in: "e1")
 
         #expect(screen.presenter.expandedExerciseId == "e1")
+    }
+
+    // MARK: - Labels and the block card
+
+    /// Two supersets in one workout read "Superset A" and "Superset B": the letter is the
+    /// superset's, not the member's, which used to make both read A/B. Inside a card the rows
+    /// letter the member and number the set.
+    @Test("Test Two Supersets Are Lettered Apart And Their Rows Badged")
+    func testTwoSupersetsAreLetteredApartAndTheirRowsBadged() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1), set(2)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)]),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e5", index: 5, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+        let exercises = screen.presenter.workoutSession.exercises
+
+        let labels = exercises.map { ActiveWorkout.supersetLabel(for: $0, in: exercises) }
+        #expect(labels == ["Superset A", "Superset A", nil, "Superset B", "Superset B"])
+
+        let members = try #require(ActiveWorkout.supersetBlock(containing: screen.presenter.currentExercise?.id, in: exercises))
+        let badges = ActiveWorkout.blockRows(members).compactMap { row -> String? in
+            if case let .set(_, badge) = row.kind { return badge }
+            return nil
+        }
+        #expect(badges == ["A1", "B1", "A2"])
+    }
+
+    /// The card holds both members of a superset, and only a superset: an exercise on its own,
+    /// or the last of a group, keeps the single card.
+    @Test("Test The Block Card Is Chosen Only For A Superset Of Two Or More")
+    func testTheBlockCardIsChosenOnlyForASupersetOfTwoOrMore() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)]),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+        let exercises = screen.presenter.workoutSession.exercises
+
+        #expect(ActiveWorkout.supersetBlock(containing: "e1", in: exercises)?.map(\.id) == ["e1", "e2"])
+        #expect(ActiveWorkout.supersetBlock(containing: "e3", in: exercises) == nil)
+        #expect(ActiveWorkout.supersetBlock(containing: "e4", in: exercises) == nil)
+        // The partner on the card is not listed again under Up Next.
+        #expect(screen.presenter.upNextExercises.map(\.id) == ["e3", "e4"])
+    }
+
+    // MARK: - Deleting a member
+
+    /// A superset of one is not a superset: the partner left behind loses its group and reads
+    /// as a plain exercise. A group of three keeps its two.
+    @Test("Test Deleting A Partner Dissolves A Superset Of Two")
+    func testDeletingAPartnerDissolvesTheSuperset() throws {
+        let screen = try makeScreen(exercises: [
+            exercise(id: "e1", index: 1, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e2", index: 2, sets: [set(1)], supersetGroupId: "group-1"),
+            exercise(id: "e3", index: 3, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e4", index: 4, sets: [set(1)], supersetGroupId: "group-2"),
+            exercise(id: "e5", index: 5, sets: [set(1)], supersetGroupId: "group-2")
+        ])
+
+        screen.presenter.deleteExercise("e2")
+        screen.presenter.deleteExercise("e5")
+
+        let groups = screen.presenter.workoutSession.exercises.map(\.supersetGroupId)
+        #expect(groups == [nil, "group-2", "group-2"])
+    }
+
+    // MARK: - From a template
+
+    /// A plan's superset arrives on the session with its group, so the tracker draws the pair as
+    /// one block, and the exercise after it as its own.
+    @Test("Test A Template Superset Is One Block")
+    func testATemplateSupersetIsOneBlock() throws {
+        let library = ExerciseModel.mocks
+        try #require(library.count > 2)
+        var first = WorkoutTemplateExercise(exercise: library[0], setRestTimers: false)
+        var second = WorkoutTemplateExercise(exercise: library[1], setRestTimers: false)
+        first.supersetGroupId = "S1"
+        second.supersetGroupId = "S1"
+        let template = WorkoutTemplateModel(
+            authorId: "author-1",
+            name: "Push",
+            exercises: [first, second, WorkoutTemplateExercise(exercise: library[2], setRestTimers: false)]
+        )
+
+        let session = WorkoutSessionModel(authorId: "author-1", template: template)
+
+        let ids = session.exercises.map(\.id)
+        #expect(ActiveWorkout.blocks(session.exercises) == [[ids[0], ids[1]], [ids[2]]])
     }
 }

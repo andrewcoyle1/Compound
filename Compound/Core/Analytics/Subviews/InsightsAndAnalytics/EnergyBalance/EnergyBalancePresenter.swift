@@ -80,7 +80,11 @@ class EnergyBalancePresenter {
     }
 
     private func rebuildCaches() {
-        let tdee = interactor.estimateTDEE(user: interactor.currentUser)
+        let expenditure = EnergyBalanceSummary.expenditureLookup(
+            history: interactor.expenditureHistory,
+            formulaKcal: interactor.estimateTDEE(user: interactor.currentUser),
+            calendar: calendar
+        )
         let now = Date()
         let startOfToday = calendar.startOfDay(for: now)
         guard let startDate = calendar.date(byAdding: .day, value: -89, to: startOfToday) else {
@@ -106,8 +110,10 @@ class EnergyBalancePresenter {
         for (index, dayKey) in dateKeys.enumerated() {
             guard let date = Date(dayKey: dayKey) else { continue }
 
-            // Expenditure is known for every day: it is the user's TDEE, so the line runs unbroken
-            // across the whole range.
+            // Expenditure is known for every day, so the line runs unbroken across the range. It is
+            // the adaptive estimate, not the static formula, so the balance is against what the
+            // logs and the scale say the body spends.
+            let tdee = expenditure(date)
             expenditureData.append(TimeSeriesDatapoint(id: "exp-\(index)", date: date, value: tdee))
 
             // `getDailyTotals` answers for every day in the range, totalling zero where nothing was
@@ -134,6 +140,10 @@ extension EnergyBalancePresenter: @MainActor MetricDetailPresenter {
 
     var entries: [EnergyBalanceEntry] {
         cachedEntries
+    }
+
+    var methodInfo: MethodInfo? {
+        .energyBalance
     }
 
     /// Intake first: it is the series the chart's bars and its Latest row describe, and the combo

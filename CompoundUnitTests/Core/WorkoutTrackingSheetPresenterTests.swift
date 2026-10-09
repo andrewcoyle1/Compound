@@ -23,6 +23,7 @@ struct WorkoutEquipmentSheetPresenterTests {
         var userId: String? = "user-1"
         var workoutGymProfile: GymProfileModel?
         var allExercises: [ExerciseModel] = []
+        var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
     }
 
     /// `WorkoutExerciseEquipmentSheetRouter` adds nothing to `GlobalRouter`, so the dismissals both
@@ -444,6 +445,7 @@ struct SwapExercisePickerPresenterTests {
 struct ExerciseTrackerPresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
+        var allExercises: [ExerciseModel] = []
         var notes: [String: String] = [:]
 
         func exerciseNote(for exerciseId: String) -> String? {

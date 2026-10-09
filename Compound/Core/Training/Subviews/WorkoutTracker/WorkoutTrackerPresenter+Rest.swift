@@ -19,6 +19,12 @@ extension WorkoutTrackerPresenter {
         interactor.restEndTime
     }
 
+    /// When the rest on screen began, for the inline timer's progress: the rest owner's, so a rest
+    /// started from the Lock Screen or before a relaunch has one too.
+    var restStartedAt: Date? {
+        interactor.restStartedAt
+    }
+
     var isRestActive: Bool {
         guard let end = interactor.restEndTime else { return false }
         return Date() < end
@@ -32,21 +38,27 @@ extension WorkoutTrackerPresenter {
     /// what last time was.
     ///
     /// Resolved one exercise at a time because the fallback is per exercise: an exercise this
-    /// template has never held still shows the last time it was performed anywhere.
+    /// template has never held still shows the last time it was performed anywhere. Kept by
+    /// `ActiveWorkout.historyKey`, so an exercise the workout holds twice has a last time for each.
     func loadPreviousWorkoutSession() {
-        guard let authorId = interactor.currentUser?.userId else {
-            previousExercises = [:]
-            return
-        }
+        loadPrevious(for: workoutSession.exercises)
+    }
+
+    /// The same, for some exercises only: those added part-way through. What is already loaded
+    /// for the others is kept. The nth appearance of an exercise is matched to the nth appearance
+    /// of it in the session found.
+    func loadPrevious(for exercises: [WorkoutExerciseModel]) {
+        guard let authorId = interactor.currentUser?.userId else { return }
 
         let workoutTemplateId = workoutSession.workoutTemplateId
         let mesocycleId = workoutSession.mesocycleId
-        let exerciseTemplateIds = Array(Set(workoutSession.exercises.map(\.templateId)))
+        let session = workoutSession
+        let wanted = exercises.map { (templateId: $0.templateId, occurrence: session.occurrence(of: $0)) }
 
         Task {
             var resolved: [String: WorkoutExerciseModel] = [:]
 
-            for exerciseTemplateId in exerciseTemplateIds {
+            for exerciseTemplateId in Set(wanted.map(\.templateId)) {
                 let sessions = await interactor.previousSessions(
                     forExerciseTemplateId: exerciseTemplateId,
                     workoutTemplateId: workoutTemplateId,
@@ -54,17 +66,29 @@ extension WorkoutTrackerPresenter {
                     mesocycleId: mesocycleId,
                     limit: 1
                 )
-                let match = sessions
-                    .lazy
-                    .compactMap { $0.exercises.first(where: { $0.templateId == exerciseTemplateId }) }
-                    .first
-                if let match {
-                    resolved[exerciseTemplateId] = match
+                for occurrence in Set(wanted.filter { $0.templateId == exerciseTemplateId }.map(\.occurrence)) {
+                    let match = sessions
+                        .lazy
+                        .compactMap { $0.exercise(templateId: exerciseTemplateId, occurrence: occurrence) }
+                        .first
+                    if let match {
+                        resolved[ActiveWorkout.historyKey(templateId: exerciseTemplateId, occurrence: occurrence)] = match
+                    }
                 }
             }
 
-            previousExercises = resolved
+            previousExercises.merge(resolved) { $1 }
         }
+    }
+
+    /// What `exercise` was last time, for its Prev column, summaries and note hint.
+    func previousExercise(for exercise: WorkoutExerciseModel) -> WorkoutExerciseModel? {
+        previousExercises[ActiveWorkout.historyKey(for: exercise, in: workoutSession)]
+    }
+
+    /// Smart progression's suggestion for `exercise`, by the same key as last time.
+    func progressionSuggestion(for exercise: WorkoutExerciseModel) -> ProgressionSuggestion? {
+        progressionSuggestions[ActiveWorkout.historyKey(for: exercise, in: workoutSession)]
     }
 
     /// What the rest pill's "+15s" adds, the same step the Live Activity offers.
@@ -84,14 +108,25 @@ extension WorkoutTrackerPresenter {
     func onSkipRestPressed() {
         interactor.trackEvent(event: Event.restSkipped)
         cancelRestTimer()
+        // A skipped rest is over as surely as one that ran out.
+        onRestEnded()
+    }
+
+    /// A rest follows the set logged last. Once that set is gone, deleted on its own or with its
+    /// exercise, there is nothing left to rest from.
+    func cancelRestIfRestedSetRemoved(comparedTo oldSession: WorkoutSessionModel) {
+        guard restStartedAt != nil || interactor.restEndTime != nil,
+              let rested = ActiveWorkout.latestCompletedSet(in: oldSession.exercises),
+              !workoutSession.exercises.contains(where: { $0.sets.contains { $0.id == rested.id } })
+        else { return }
+        cancelRestTimer()
     }
 
     func cancelRestTimer() {
         #if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
-        // Cancel in manager (will also update Live Activity)
+        // Cancel in manager (will also update Live Activity, and forget when the rest began)
         interactor.cancelRest()
         #endif
-
     }
 
     /// Announces every rest that runs out while this screen is up. Driven from its own `.task` so
@@ -100,6 +135,7 @@ extension WorkoutTrackerPresenter {
     func observeRestCompletions() async {
         for await _ in NotificationCenter.default.notifications(named: Constants.workoutRestDidComplete) {
             announceRestCompletion()
+            onRestEnded()
         }
     }
 

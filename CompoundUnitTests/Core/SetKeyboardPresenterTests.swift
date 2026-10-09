@@ -9,7 +9,7 @@ import SwiftUI
 @testable import Compound
 
 /// The weight and reps keyboards: every key writes into the set as it is pressed, Next and Prev
-/// move between the two fields, and Done offers to log a set that is ready.
+/// move between the two fields, and Done only closes.
 @MainActor
 struct SetKeyboardPresenterTests {
 
@@ -128,15 +128,16 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.weightKg == 70)
     }
 
-    @Test func doneOffersToLogAReadySet() {
+    /// Done only closes, even on a set that is ready: the log button is the one way to log.
+    @Test func doneClosesAndLetsGoOfTheSet() {
         let box = set(weightKg: 60, reps: 8)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
         keyboard.open(.reps, set: box.binding, context: SetKeyboardContext())
         keyboard.done()
         #expect(keyboard.activeField == nil)
-        #expect(offers == 1)
+        #expect(box.value.completedAt == nil)
+        keyboard.applyReps(12)
+        #expect(box.value.reps == 8)
     }
 
     // MARK: - Distance and duration
@@ -185,27 +186,48 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.activeField == .distance)
     }
 
-    /// Whether the set is ready is the row's call, since it depends on the tracking mode; the
-    /// keyboard hands over on every Done.
-    @Test func doneAlwaysHandsOverToTheRow() {
-        let box = set(weightKg: 60, reps: nil)
+    // MARK: - VoiceOver
+
+    /// What is read back after a key: the value with its unit in words, never the key alone.
+    @Test func theNewValueIsSpokenInWords() {
+        let box = set(weightKg: 100, reps: 6)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
+        keyboard.locale = Locale(identifier: "en_US")
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
-        keyboard.done()
-        #expect(offers == 1)
+        type("102.5", into: keyboard)
+        #expect(keyboard.spokenValue == "102.5 kilograms")
+        #expect(keyboard.spokenWeight == "102.5 kilograms")
+        keyboard.next()
+        #expect(keyboard.spokenValue == "6 reps")
+        keyboard.backspace()
+        #expect(keyboard.spokenValue == nil)
     }
 
-    @Test func closeOffersNothing() {
-        let box = set(weightKg: 60, reps: 8)
+    @Test func aDurationIsSpokenInMinutesAndSeconds() {
+        let box = set(weightKg: nil)
         let keyboard = SetKeyboardPresenter()
-        var offers = 0
-        keyboard.onOfferCompletion = { offers += 1 }
+        keyboard.locale = Locale(identifier: "en_US")
+        keyboard.open(.duration, set: box.binding, context: SetKeyboardContext(fields: [.duration]))
+        type("130", into: keyboard)
+        #expect(keyboard.spokenValue == "1 minute, 30 seconds")
+    }
+
+    /// The set binding reads its set by index, so a keyboard that kept it after an earlier set was
+    /// deleted would read past the end of the array (perf audit #8). Closing lets go of it.
+    @Test func closeLetsGoOfTheSet() {
+        let box = set(weightKg: 60, reps: 8)
+        box.value.rpe = 8
+        let keyboard = SetKeyboardPresenter()
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(keyboard.selectedRPE == 8)
+
         keyboard.close()
-        #expect(keyboard.activeField == nil)
-        #expect(offers == 0)
+        keyboard.stepUp()
+        keyboard.toggleRPE(9)
+
+        #expect(keyboard.selectedRPE == nil)
+        #expect(box.value.weightKg == 60)
+        #expect(box.value.rpe == 8)
     }
 
     // MARK: - Stepper, chips, plates
@@ -225,14 +247,111 @@ struct SetKeyboardPresenterTests {
     @Test func bandsCycleNamesAndLeaveTheWeightEmpty() {
         let box = set(weightKg: 20)
         let keyboard = SetKeyboardPresenter()
-        let bands = WeightStep(kind: .bands(["Light", "Heavy"]), chip: nil, baseWeight: nil, plates: [])
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light", "Heavy"])
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
         keyboard.stepUp()
         #expect(box.value.weightKg == nil)
         keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "Light")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
         keyboard.stepDown()
+        keyboard.close()
         #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "Heavy")
+    }
+
+    /// ± on bands alone keeps stepping one band at a time, as before G6, and now writes it to the
+    /// set: from the last band chosen, so two chosen step on from the second.
+    @Test func plusAndMinusOnBandsAloneChooseOneBand() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        let bands = WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], bands: ["Light", "Medium", "Heavy"])
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bands))
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Light"])
+        keyboard.toggleBand("Medium")
+        #expect(box.value.bands == ["Light", "Medium"])
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Heavy"])
+        keyboard.stepUp()
+        #expect(box.value.bands == ["Light"])
+        #expect(box.value.weightKg == nil)
+    }
+
+    private static let barWithBands = WeightStep(
+        kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20,
+        plates: [1.25, 2.5, 5, 10, 20].map { Plate(weight: $0) }, bands: ["Red", "Blue", "Green"]
+    )
+
+    /// Two bands chosen are saved on the set, in the order chosen, and are there when the keyboard
+    /// opens again; the weight is untouched. Each toggle plays the selection haptic.
+    @Test func twoBandsAreSavedOnTheSetAndRestoredOnReopening() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        var haptics = 0
+        keyboard.playSelectionHaptic = { haptics += 1 }
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Blue")
+        keyboard.toggleBand("Red")
+        #expect(box.value.bands == ["Blue", "Red"])
+        #expect(box.value.weightKg == 60)
+        #expect(haptics == 2)
+
+        keyboard.close()
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60 + Blue + Red")
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        #expect(keyboard.selectedBands == ["Blue", "Red"])
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60 + Blue + Red")
+    }
+
+    @Test func deselectingEveryBandLeavesNoBands() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        keyboard.toggleBand("Red")
+        #expect(box.value.bands == nil)
+        #expect(keyboard.displayText(for: .weight, set: box.value, unit: .kilograms) == "60")
+    }
+
+    /// On a bar with bands, ± steps the bar and leaves the bands; typing a weight keeps them too.
+    @Test func aBarWithBandsKeepsBothWeightAndBands() {
+        let box = set(weightKg: 60)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Green")
+        keyboard.stepUp()
+        #expect(box.value.weightKg == 62.5)
+        #expect(box.value.bands == ["Green"])
+        type("70", into: keyboard)
+        #expect(box.value.weightKg == 70)
+        #expect(box.value.bands == ["Green"])
+    }
+
+    @Test func voiceOverReadsTheBands() {
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "en_US")
+        let bandsOnly = set(weightKg: nil)
+        keyboard.open(.weight, set: bandsOnly.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        keyboard.toggleBand("Blue")
+        #expect(keyboard.spokenWeight == "Red + Blue")
+        #expect(keyboard.spokenValue == "Red + Blue")
+        keyboard.close()
+
+        let both = set(weightKg: 60)
+        keyboard.open(.weight, set: both.binding, context: SetKeyboardContext(step: Self.barWithBands))
+        keyboard.toggleBand("Red")
+        #expect(keyboard.spokenWeight == "60 kilograms + Red")
+    }
+
+    /// The greyed hint in an empty weight field shows last time's bands with its weight.
+    @Test func thePlaceholderShowsLastTimesBands() {
+        let keyboard = SetKeyboardPresenter()
+        var previous = set(weightKg: 60).value
+        previous.bands = ["Red"]
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "60 + Red")
+        previous.weightKg = nil
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "Red")
     }
 
     @Test func chipsShowInTheDisplayUnit() {
@@ -257,9 +376,35 @@ struct SetKeyboardPresenterTests {
     @Test func platesForTheCurrentWeight() {
         let box = set(weightKg: 100)
         let keyboard = SetKeyboardPresenter()
-        let bar = WeightStep(kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20, plates: [1.25, 2.5, 5, 10, 15, 20, 25])
+        let bar = WeightStep(kind: .increment(2.5, min: 20, max: nil), chip: "Bar 20 kg", baseWeight: 20, plates: [1.25, 2.5, 5, 10, 15, 20, 25].map { Plate(weight: $0) })
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: bar))
         #expect(keyboard.plateLoad == .loadable(perSide: [25, 15]))
+    }
+
+    /// A stack with add-ons: the keyboard steps through every load the pin and toggles make, and
+    /// says how to make the one shown.
+    @Test func aStackWithAddOnsStepsThroughItsLoadsAndSaysHowToMakeThem() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        let stack = WeightStack(
+            id: "s", name: "Stack", minWeight: 7, maxWeight: 98, increment: 7, unit: .kilograms, isActive: true, addOns: [2, 2]
+        )
+        let gym = GymProfileModel(authorId: "u", pinLoadedMachines: [PinLoadedMachine(id: "pin", name: "Pin", ranges: [stack], isActive: true)])
+        let step = WeightStepper.steps(for: [EquipmentRef(kind: .pinLoadedMachine, id: "pin")], profile: gym, unit: .kilograms)
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: step))
+        #expect(keyboard.stackSummary == nil)
+
+        var seen: [Double?] = []
+        for _ in 0..<5 {
+            keyboard.stepUp()
+            seen.append(box.value.weightKg)
+        }
+        #expect(seen == [7, 9, 11, 14, 16])
+        #expect(keyboard.stackSummary == "Pin 14 + 2 kg")
+
+        // A plain stack has nothing to explain.
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext(step: WeightStep(kind: .increment(7, min: 7, max: 98), chip: nil, baseWeight: nil, plates: [])))
+        #expect(keyboard.stackSummary == nil)
     }
 
     // MARK: - Effort
@@ -275,11 +420,105 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.rpe == nil)
     }
 
+    /// Effort is recorded after the set, in the correction row; the keypad offers its RPE chips
+    /// only to correct a set already logged.
+    @Test(arguments: [(false, false, false), (true, false, false), (true, true, true)])
+    func rpeChipsOnlyOnALoggedSet(showsEffort: Bool, logged: Bool, shown: Bool) {
+        let box = set(reps: 8, done: logged)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(showsEffort: showsEffort))
+        #expect(keyboard.showsEffortChips == shown)
+    }
+
     @Test func rpeAndRirAreOneScale() {
         #expect(EffortScale.rpeChoices == [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10])
         #expect(EffortScale.rir(fromRPE: 8) == 2)
         #expect(EffortScale.rir(fromRPE: 10) == 0)
         #expect(EffortScale.rpe(fromRIR: 3) == 7)
+    }
+
+    // MARK: - WP-N: assistance and placeholders
+
+    private func assistedContext(bodyweightOnly: Bool = true) -> SetKeyboardContext {
+        SetKeyboardContext(step: WeightStepper.fallback(.kilograms).assisted(bodyweightOnly: bodyweightOnly))
+    }
+
+    /// The ± key shows only on an assisted exercise's weight field.
+    @Test func theSignKeyShowsOnlyForAnAssistedWeight() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        #expect(!keyboard.showsSignKey)
+        keyboard.close()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        #expect(keyboard.showsSignKey)
+        keyboard.open(.reps, set: box.binding, context: assistedContext())
+        #expect(!keyboard.showsSignKey)
+    }
+
+    /// "± 3 0" types −30, ± flips a stored weight, and typing over a negative keeps it negative.
+    @Test func signKeyTypesAndFlipsAssistance() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        keyboard.toggleSign()
+        #expect(keyboard.text == "-")
+        #expect(box.value.weightKg == nil)
+        type("30", into: keyboard)
+        #expect(box.value.weightKg == -30)
+
+        keyboard.toggleSign()
+        #expect(box.value.weightKg == 30)
+        keyboard.toggleSign()
+        #expect(box.value.weightKg == -30)
+        #expect(keyboard.text == "-30")
+
+        // The first key after a flip replaces the value, but assistance stays assistance.
+        type("25", into: keyboard)
+        #expect(box.value.weightKg == -25)
+    }
+
+    /// A hardware keyboard's minus key is the ± key, and does nothing on an ordinary weight.
+    @Test func aHardwareMinusFlipsOnlyAnAssistedWeight() {
+        let box = set(weightKg: 20)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
+        keyboard.type("-")
+        #expect(box.value.weightKg == 20)
+        keyboard.close()
+        keyboard.open(.weight, set: box.binding, context: assistedContext(bodyweightOnly: false))
+        keyboard.type("-")
+        #expect(box.value.weightKg == -20)
+    }
+
+    /// − on an empty assisted field gives one step of assistance, not the deepest there is.
+    @Test func steppingDownAnEmptyAssistedFieldGivesOneStepOfHelp() {
+        let box = set(weightKg: nil)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.weight, set: box.binding, context: assistedContext())
+        keyboard.stepDown()
+        #expect(box.value.weightKg == -2.5)
+        keyboard.stepUp()
+        keyboard.stepUp()
+        #expect(box.value.weightKg == 0)
+    }
+
+    /// An empty field's hint is last time's value, greyed; it is never written into the set.
+    @Test func placeholdersShowLastTimeAndAreNeverValues() {
+        let keyboard = SetKeyboardPresenter()
+        keyboard.locale = Locale(identifier: "en_US")
+        let previous = WorkoutSetModel(
+            id: "p", authorId: "u", index: 0, reps: 8, weightKg: -30, durationSec: 45,
+            isWarmup: false, completedAt: start, dateCreated: start
+        )
+        #expect(keyboard.placeholder(for: .duration, previous: previous, unit: .kilograms) == "0:45")
+        #expect(keyboard.placeholder(for: .weight, previous: previous, unit: .kilograms) == "-30")
+        #expect(keyboard.placeholder(for: .reps, previous: previous, unit: .kilograms) == "8")
+        #expect(keyboard.placeholder(for: .distance, previous: previous, unit: .kilograms) == Format.placeholder)
+        #expect(keyboard.placeholder(for: .duration, previous: nil, unit: .kilograms) == Format.placeholder)
+
+        let empty = set(weightKg: nil)
+        #expect(keyboard.displayText(for: .weight, set: empty.value, unit: .kilograms).isEmpty)
     }
 }
 
@@ -364,10 +603,13 @@ struct SetTrackerRowKeyboardTests {
         #expect(presenter.keyboardContext(delegate: delegate).step == WeightStepper.fallback(.kilograms))
     }
 
-    /// Done logs a ready set outright; it used to raise a "Complete Set?" alert first.
-    @Test func doneOnAReadySetLogsIt() {
+    /// Done never logs, however ready the set: decision T1 reverses 5d, which logged it here and
+    /// turned weight changes made before a set into logged sets.
+    @Test func doneNeverLogsAReadySet() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
+        var logged: [String] = []
+        presenter.onLogSet = { setId, _ in logged.append(setId) }
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         "80".forEach { presenter.keyboard.type($0) }
         presenter.keyboard.next()
@@ -377,11 +619,13 @@ struct SetTrackerRowKeyboardTests {
 
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
-        #expect(exercise.value.sets[1].completedAt != nil)
+        #expect(logged.isEmpty)
+        #expect(exercise.value.sets[1].completedAt == nil)
+        #expect(presenter.keyboard.activeField == nil)
     }
 
     @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
-    func doneOffersNothingWithoutRepsOrOnceLogged(reps: Int?, completed: Bool) {
+    func doneLeavesALoggedSetLogged(reps: Int?, completed: Bool) {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.sets[1].reps = reps
@@ -389,11 +633,10 @@ struct SetTrackerRowKeyboardTests {
         presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
-        #expect((exercise.value.sets[1].completedAt != nil) == completed)
+        #expect(exercise.value.sets[1].completedAt == (completed ? start : nil))
     }
 
-    /// Logged by Done, rather than offered as it was before, once it has a time.
-    @Test func aTimedSetIsLoggedOnceItHasATime() {
+    @Test func aTimedSetIsNotLoggedByDone() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.trackingMode = .timeOnly
@@ -403,7 +646,7 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(exercise.value.sets[1].durationSec == 45)
         #expect(router.alerts.isEmpty)
-        #expect(exercise.value.sets[1].completedAt != nil)
+        #expect(exercise.value.sets[1].completedAt == nil)
     }
 
     @Test func doneOnAnUnfinishedSetJustCloses() {
@@ -413,5 +656,67 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
         #expect(presenter.keyboard.activeField == nil)
+    }
+
+    /// The line under the set being logged: what goes on each side of the bar, or the nearest
+    /// total the plates make when the weight cannot be loaded.
+    @Test func plateSummaryReadsTheGymsPlates() throws {
+        let row = makeRow()
+        row.interactor.favouriteGymProfile = GymProfileModel(authorId: "u")
+        var set = row.exercise.value.sets[0]
+        // Read the gym's own bar and heaviest plate, so the figures hold whatever its defaults are.
+        let step = WeightStepper.steps(for: row.exercise.value, profile: row.interactor.favouriteGymProfile, unit: .kilograms)
+        let bar = try #require(step.baseWeight)
+        let plate = try #require(step.plates.map(\.weight).max())
+        let loadableKg = bar + 2 * plate
+
+        set.weightKg = loadableKg
+        let loadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
+        #expect(loadable?.nearestKg == nil)
+        #expect(loadable?.text.hasPrefix("Per side:") == true)
+
+        // A hair over: nothing in the rack makes it, and the nearest total is the one below.
+        set.weightKg = loadableKg + 0.1
+        let unloadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
+        #expect(unloadable?.nearestKg == loadableKg)
+
+        set.weightKg = nil
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
+    }
+
+    /// The set row says which pin and toggles make the set on a stack with add-ons.
+    @Test func plateSummaryReadsTheStacksPinAndAddOns() {
+        let row = makeRow()
+        row.exercise.value.equipmentVariations = [EquipmentVariation(id: "v", resistanceEquipment: [EquipmentRef(kind: .pinLoadedMachine, id: "pin")])]
+        let stack = WeightStack(
+            id: "s", name: "Stack", minWeight: 7, maxWeight: 98, increment: 7, unit: .kilograms, isActive: true, addOns: [2, 2]
+        )
+        row.interactor.favouriteGymProfile = GymProfileModel(
+            authorId: "u", pinLoadedMachines: [PinLoadedMachine(id: "pin", name: "Pin", ranges: [stack], isActive: true)]
+        )
+        var set = row.exercise.value.sets[0]
+
+        set.weightKg = 16
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == PlateSummary(text: "Pin 14 + 2 kg", nearestKg: nil))
+
+        // A weight the stack cannot make has no breakdown.
+        set.weightKg = 15
+        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
+    }
+
+    // MARK: - WP-N: assistance
+
+    /// The row opens an assisted exercise's keypad on the assisted step.
+    @Test func anAssistedExerciseOpensOnTheAssistedStep() {
+        let row = makeRow()
+        row.interactor.allExercises = [ExerciseModel(
+            id: "t", authorId: "u", name: "Assisted Pull-Up", trackableMetrics: [.reps, .weightPerSideAssistance],
+            type: .compoundUpper, laterality: .bilateral, muscleGroups: [.lats: .primary], isBodyweight: true,
+            equipmentVariations: [], rangeOfMotion: 4, stability: 4, bodyWeightContribution: 100, alternateNames: []
+        )]
+        let context = row.presenter.keyboardContext(delegate: row.delegate)
+        #expect(context.step.isAssisted)
+        #expect(context.step.next(after: 0) == 0)
+        #expect(row.presenter.isAssisted(row.exercise.value))
     }
 }

@@ -23,6 +23,9 @@ import SwiftUI
 struct WorkoutSessionDetailPresenterTests {
 
     final class Interactor: SpyGlobalInteractor, WorkoutSessionDetailInteractor {
+        var allExercises: [ExerciseModel] = []
+        var workoutSettings = WorkoutSettings(authorId: "author-1")
+        var currentWeightKilograms: Double?
         var currentUser: UserModel? = UserModel(userId: "author-1")
         var preferences: [String: ExerciseUnitPreference] = [:]
         private(set) var savedSessions: [WorkoutSessionModel] = []

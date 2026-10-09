@@ -88,7 +88,7 @@ struct ExerciseModelDetailStats {
 
             guard let weight = set.weightKg, weight > 0 else { continue }
             volume += weight * Double(setReps)
-            bestOneRM = max(bestOneRM, ExerciseOneRMAggregator.estimated1RM(weightKg: weight, reps: setReps))
+            bestOneRM = max(bestOneRM, ExerciseOneRMAggregator.estimated1RM(of: set) ?? 0)
             // At equal weight the set with more reps is the better one.
             if weight > heaviest || (weight == heaviest && setReps > repsAtHeaviest) {
                 heaviest = weight

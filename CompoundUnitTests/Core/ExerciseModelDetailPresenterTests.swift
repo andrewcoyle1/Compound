@@ -25,6 +25,7 @@ struct ExerciseModelDetailPresenterTests {
     private final class Interactor: SpyGlobalInteractor, ExerciseModelDetailInteractor {
         var currentUser: UserModel? = UserModel(userId: "user-1")
         var workoutSessions: [WorkoutSessionModel] = []
+        var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
         var preferences: [String: ExerciseUnitPreference] = [:]
         private(set) var preferenceReads: [String] = []
 

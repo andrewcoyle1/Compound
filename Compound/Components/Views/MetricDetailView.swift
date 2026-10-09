@@ -31,12 +31,19 @@ protocol MetricDetailPresenter {
     func onAddPressed()
     func onDismissPressed()
     func onDeleteEntry(_ entry: Entry) async
+    /// The method behind a derived figure, for an ⓘ in the toolbar. `nil` for logged values.
+    var methodInfo: MethodInfo? { get }
+    /// A section shown above Show All Data, for a figure that needs a reading as well as a chart
+    /// (a ratio's screening band, say). `nil` for most screens.
+    var summarySection: AnyView? { get }
 }
 
 extension MetricDetailPresenter {
     var customChartView: AnyView? { nil }
     var contributionSeries: TimeSeries? { nil }
     var supportsDeletion: Bool { false }
+    var methodInfo: MethodInfo? { nil }
+    var summarySection: AnyView? { nil }
 
     func displayValue(for entry: Entry) -> String {
         entry.displayValue
@@ -141,6 +148,12 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
             }
         }
 
+        if let info = presenter.methodInfo {
+            ToolbarItem(placement: .topBarTrailing) {
+                MethodInfoButton(info)
+            }
+        }
+
         if presenter.configuration.showsAddButton {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -160,6 +173,9 @@ struct MetricDetailView<Presenter: MetricDetailPresenter>: View {
         if entries.isEmpty {
             emptySection(configuration: configuration)
         } else {
+            if let summary = presenter.summarySection {
+                summary
+            }
             Section {
                 // Pushed with the sheet's own router rather than through each of the thirty-odd
                 // presenters that share this view, which would each need the same route.

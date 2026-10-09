@@ -82,7 +82,13 @@ class WorkoutTemplateDetailPresenter {
         }
     }
 
-    func onStartWorkoutPressed(onStartWorkout: (@Sendable () -> Void)?, workoutTemplate: WorkoutTemplateModel, mesocycleId: String?, isDeloadCycle: Bool = false) {
+    func onStartWorkoutPressed(
+        onStartWorkout: (@Sendable () -> Void)?,
+        workoutTemplate: WorkoutTemplateModel,
+        mesocycleId: String?,
+        microcycleIndex: Int? = nil,
+        isDeloadCycle: Bool = false
+    ) {
         let shouldProceed = checkForActiveWorkout(
             onResumeWorkout: { [weak self] in
                 Task { @MainActor in
@@ -91,13 +97,25 @@ class WorkoutTemplateDetailPresenter {
             },
             onStartNewWorkout: { [weak self] in
                 Task { @MainActor in
-                    self?.performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, mesocycleId: mesocycleId, isDeloadCycle: isDeloadCycle)
+                    self?.performStartWorkout(
+                        onStartWorkout: onStartWorkout,
+                        workoutTemplate: workoutTemplate,
+                        mesocycleId: mesocycleId,
+                        microcycleIndex: microcycleIndex,
+                        isDeloadCycle: isDeloadCycle
+                    )
                 }
             }
         )
 
         if shouldProceed {
-            performStartWorkout(onStartWorkout: onStartWorkout, workoutTemplate: workoutTemplate, mesocycleId: mesocycleId, isDeloadCycle: isDeloadCycle)
+            performStartWorkout(
+                onStartWorkout: onStartWorkout,
+                workoutTemplate: workoutTemplate,
+                mesocycleId: mesocycleId,
+                microcycleIndex: microcycleIndex,
+                isDeloadCycle: isDeloadCycle
+            )
         }
     }
     
@@ -132,14 +150,25 @@ class WorkoutTemplateDetailPresenter {
         router.showWorkoutTrackerView()
     }
     
-    private func performStartWorkout(onStartWorkout: (() -> Void)?, workoutTemplate: WorkoutTemplateModel, mesocycleId: String?, isDeloadCycle: Bool = false) {
+    private func performStartWorkout(
+        onStartWorkout: (() -> Void)?,
+        workoutTemplate: WorkoutTemplateModel,
+        mesocycleId: String?,
+        microcycleIndex: Int?,
+        isDeloadCycle: Bool
+    ) {
         guard !isStarting else { return }
         isStarting = true
         interactor.trackEvent(event: Event.startWorkoutStart(templateId: workoutTemplate.id))
         Task {
             defer { isStarting = false }
             do {
-                try await self.interactor.startWorkout(for: workoutTemplate, in: mesocycleId, isDeloadCycle: isDeloadCycle)
+                try await self.interactor.startWorkout(
+                    for: workoutTemplate,
+                    in: mesocycleId,
+                    microcycleIndex: microcycleIndex,
+                    isDeloadCycle: isDeloadCycle
+                )
                 self.interactor.trackEvent(event: Event.startWorkoutSuccess(templateId: workoutTemplate.id))
                 self.router.dismissEnvironment()
                 self.router.dismissScreen()
@@ -156,6 +185,30 @@ class WorkoutTemplateDetailPresenter {
     func onExercisePressed(_ exercise: ExerciseModel) {
         interactor.trackEvent(eventName: "WorkoutTemplateDetailView_Exercise_Press", parameters: ["exercise_id": exercise.id], type: .analytic)
         router.showExerciseModelDetailView(delegate: ExerciseModelDetailDelegate(exerciseModel: exercise))
+    }
+
+    // MARK: - The plan
+
+    /// "Week 3 · 3 sets · 8–10 · RIR 1" for the week the screen was opened on, or the base
+    /// targets for a template on its own.
+    func weekSummary(for exercise: WorkoutTemplateExercise, delegate: WorkoutTemplateDetailDelegate) -> String {
+        exercise.weekSummary(microcycle: delegate.microcycleIndex)
+    }
+
+    /// The exercise with that week's targets in place of its base ones, for the row to draw.
+    func exerciseForWeek(_ exercise: WorkoutTemplateExercise, delegate: WorkoutTemplateDetailDelegate) -> WorkoutTemplateExercise {
+        var week = exercise
+        week.setTargets = exercise.setTargets(forMicrocycle: delegate.microcycleIndex)
+        return week
+    }
+
+    func alternativeNames(for exercise: WorkoutTemplateExercise) -> [String] {
+        exercise.alternativeNames(in: interactor.allExercises)
+    }
+
+    /// "Superset A", "Superset B" by group id, lettered in the order the groups first appear.
+    func supersetLabels(in exercises: [WorkoutTemplateExercise]) -> [String: String] {
+        WorkoutTemplateExercise.supersetLetters(in: exercises).mapValues { "\(String(localized: "Superset")) \($0)" }
     }
 
     func onDismissPressed() {

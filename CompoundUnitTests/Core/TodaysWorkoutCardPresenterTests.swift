@@ -19,6 +19,8 @@ struct TodaysWorkoutCardPresenterTests {
         var workoutSessions: [WorkoutSessionModel] = []
         var activeSession: WorkoutSessionModel?
         private(set) var startedTemplateIds: [String] = []
+        private(set) var startedMicrocycles: [Int?] = []
+        private(set) var plannedMicrocycles: [Int?] = []
         var startError: Error?
 
         func skipScheduledWorkout(_ slot: MesocycleSchedule.Slot) async throws { }
@@ -42,8 +44,9 @@ struct TodaysWorkoutCardPresenterTests {
             preferences[templateId] ?? ExerciseUnitPreference(exerciseModelId: templateId)
         }
 
-        func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel {
+        func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws -> WorkoutSessionModel {
             if let startError { throw startError }
+            plannedMicrocycles.append(microcycleIndex)
             return WorkoutSessionModel(
                 id: "started",
                 authorId: "author-1",
@@ -55,9 +58,10 @@ struct TodaysWorkoutCardPresenterTests {
             )
         }
 
-        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws {
-            activeSession = try await plannedSession(for: template, in: mesocycleId)
+        func startWorkout(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws {
+            activeSession = try await plannedSession(for: template, in: mesocycleId, microcycleIndex: microcycleIndex)
             startedTemplateIds.append(template.id)
+            startedMicrocycles.append(microcycleIndex)
         }
 
         func updateActiveSession(_ session: WorkoutSessionModel) throws {
@@ -162,7 +166,7 @@ struct TodaysWorkoutCardPresenterTests {
     }
 
     /// The first microcycle of a block that deloads at the start is lighter, from Start as from
-    /// the Active Mesocycle screen.
+    /// the Active Mesocycle screen: 90 % of the weight (`MesocycleDeload`).
     @Test("Test Start In A Deload Microcycle Cuts The Weights")
     func testStartInADeloadMicrocycleCutsTheWeights() async {
         let screen = makeScreen(deload: .start)
@@ -171,7 +175,27 @@ struct TodaysWorkoutCardPresenterTests {
         screen.presenter.onStartPressed()
 
         #expect(await TestManagers.eventually { screen.router.shown == ["tracker"] })
-        #expect(screen.interactor.activeSession?.exercises[0].sets[0].weightKg == 65)
+        #expect(screen.interactor.activeSession?.exercises[0].sets[0].weightKg == 90)
+    }
+
+    /// Push done yesterday filled the first microcycle, so today's Push is week 2: Start, the
+    /// preview and the card's targets all run week 2's targets.
+    @Test("Test Today's Workout Runs Its Own Microcycle")
+    func testTodaysWorkoutRunsItsOwnMicrocycle() async {
+        let screen = makeScreen()
+        let yesterday = Date().addingTimeInterval(-86_400)
+        screen.interactor.workoutSessions = [
+            WorkoutSessionModel(authorId: "author-1", name: "Push", workoutTemplateId: "push", mesocycleId: "meso-1",
+                                dateCreated: yesterday, endedAt: yesterday, exercises: [])
+        ]
+
+        screen.presenter.onTodaysWorkoutPressed()
+        await screen.presenter.loadTargets()
+        screen.presenter.onStartPressed()
+
+        #expect(await TestManagers.eventually { screen.interactor.startedMicrocycles == [2] })
+        #expect(screen.router.detailDelegates.first?.microcycleIndex == 2)
+        #expect(screen.interactor.plannedMicrocycles.first == 2)
     }
 
     @Test("Test Tapping The Card Passes The Deload To The Preview")
@@ -243,7 +267,7 @@ struct TodaysWorkoutCardPresenterTests {
 
         await screen.presenter.loadTargets()
 
-        #expect(screen.presenter.targets == ["Bench Press · 65 kg × 8", "Dumbbell Fly"])
+        #expect(screen.presenter.targets == ["Bench Press · 90 kg × 8", "Dumbbell Fly"])
     }
 
     @Test("Test A Failed Prefill Leaves No Targets")

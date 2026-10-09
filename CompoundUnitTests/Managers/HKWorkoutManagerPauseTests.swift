@@ -52,6 +52,21 @@ struct HKWorkoutManagerPauseTests {
         #expect(afterResume < 5)
     }
 
+    /// Written where a relaunch reads it, so a paused workout comes back paused (system.md #4).
+    @Test("Test Pausing And Resuming Are Kept Beyond The Process")
+    func testPauseIsKeptBeyondTheProcess() throws {
+        let store = SharedWorkoutStorage.Store(defaults: UserDefaults(suiteName: "HKWorkoutManagerPauseTests-\(UUID().uuidString)"))
+        let manager = HKWorkoutManager(logger: LogManager(), liveActivityUpdater: LiveActivityUpdaterSpy(), restOverNotifier: RestOverNotifierSpy(), storage: store)
+
+        manager.pause()
+        // Kept as seconds since 1970, like the rest's end, so the same instant to well under a millisecond.
+        #expect(try #require(store.pausedAt).timeIntervalSince(try #require(manager.pausedAt)).magnitude < 0.001)
+
+        manager.resume()
+        #expect(store.pausedAt == nil)
+        #expect(store.pausedDuration == manager.pausedDuration)
+    }
+
     /// A finished or discarded workout's pause does not carry into the next one.
     @Test("Test Ending Or Discarding Clears The Pause", arguments: [true, false])
     func testEndingOrDiscardingClearsThePause(ends: Bool) {

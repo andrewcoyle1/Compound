@@ -14,7 +14,7 @@ protocol TodaysWorkoutCardInteractor: GlobalInteractor, WorkoutStartInteractor {
     func deleteActiveSession() throws
     var currentUser: UserModel? { get }
     func getPreference(templateId: String) -> ExerciseUnitPreference
-    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?) async throws -> WorkoutSessionModel
+    func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws -> WorkoutSessionModel
 }
 
 extension CoreInteractor: TodaysWorkoutCardInteractor { }

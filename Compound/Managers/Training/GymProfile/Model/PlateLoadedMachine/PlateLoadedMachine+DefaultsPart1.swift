@@ -24,6 +24,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: true
         ),
         PlateLoadedMachine(
@@ -40,6 +41,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: true
         ),
         PlateLoadedMachine(
@@ -56,6 +58,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: false
         ),
         PlateLoadedMachine(
@@ -64,6 +67,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 20.4,
             unit: .kilograms,
+            sleeves: 1,
             isActive: true
         ),
         PlateLoadedMachine(
@@ -240,6 +244,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: false
         ),
         PlateLoadedMachine(
@@ -256,6 +261,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: false
         ),
         PlateLoadedMachine(
@@ -360,6 +366,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 9,
             unit: .kilograms,
+            sleeves: 1,
             isActive: true
         ),
         PlateLoadedMachine(
@@ -368,6 +375,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 36.3,
             unit: .kilograms,
+            sleeves: 1,
             isActive: true
         ),
         PlateLoadedMachine(
@@ -408,6 +416,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 0,
             unit: .kilograms,
+            sleeves: 1,
             isActive: false
         ),
         PlateLoadedMachine(
@@ -440,6 +449,7 @@ extension PlateLoadedMachine {
             description: nil,
             baseWeight: 18,
             unit: .kilograms,
+            sleeves: 1,
             isActive: false
         ),
         PlateLoadedMachine(

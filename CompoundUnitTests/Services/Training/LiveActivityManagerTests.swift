@@ -473,7 +473,8 @@ struct LiveActivityManagerTests {
             Issue.record("expected .ready, got \(LiveActivityPhase(state: state, now: logged, isStale: false))")
             return
         }
-        #expect(position == SetPosition(index: 2, total: 2))
+        // The right arm of set 2: "Set 2R of 2".
+        #expect(position == SetPosition(index: 2, total: 2, side: "R"))
     }
 
     /// Two warm-ups then four working sets read as "Warmup 1 of 2" ... "Set 1 of 4", never as six.

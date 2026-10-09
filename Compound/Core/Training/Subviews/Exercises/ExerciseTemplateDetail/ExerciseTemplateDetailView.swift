@@ -199,7 +199,7 @@ private extension ExerciseModelDetailView {
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("Personal Best")
+            MethodInfoHeader(title: "Personal Best", info: .estimatedOneRepMax)
         }
     }
 
@@ -221,7 +221,7 @@ private extension ExerciseModelDetailView {
                 }
             }
         } header: {
-            Text("Recent Records")
+            MethodInfoHeader(title: "Recent Records", info: .estimatedOneRepMax)
         }
     }
 
@@ -234,7 +234,7 @@ private extension ExerciseModelDetailView {
             }
             .padding(.vertical, Spacing.s)
         } header: {
-            Text("All-Time Stats")
+            MethodInfoHeader(title: "All-Time Stats", info: .tonnage)
         }
     }
 
@@ -346,14 +346,14 @@ private extension ExerciseModelDetailView {
                                 HStack {
                                     Text("Resistance:")
                                         .foregroundStyle(.secondary)
-                                    Text(equipment.equipmentId)
+                                    Text(presenter.equipmentName(for: equipment))
                                 }
                             }
                             ForEach(variation.supportEquipment, id: \.self) { equipment in
                                 HStack {
                                     Text("Support:")
                                         .foregroundStyle(.secondary)
-                                    Text(equipment.equipmentId)
+                                    Text(presenter.equipmentName(for: equipment))
                                 }
                             }
                         }
@@ -373,7 +373,9 @@ private extension ExerciseModelDetailView {
 
     var detailsSection: some View {
         Section {
-            ListRow(title: String(localized: "Body Weight Contribution"), accessory: .value(Format.percent(Double(delegate.exerciseModel.bodyWeightContribution) / 100)))
+            if delegate.exerciseModel.bodyWeightContribution > 0 {
+                ListRow(title: String(localized: "Body Weight Contribution"), accessory: .value(Format.percent(Double(delegate.exerciseModel.bodyWeightContribution) / 100)))
+            }
             ListRow(title: String(localized: "Alternative Names"), accessory: .value(alternateNamesConcatenated))
             ListRow(title: String(localized: "Description"), accessory: .value(delegate.exerciseModel.description ?? String(localized: "None")))
         } header: {

@@ -14,8 +14,11 @@ struct RestDurationRulesTests {
 
     private static let start = Date(timeIntervalSince1970: 1_772_000_000)
 
-    private func set(_ id: String, warmup: Bool = false, side: SetSide? = nil) -> WorkoutSetModel {
-        WorkoutSetModel(id: id, authorId: "author-1", index: 1, reps: 8, side: side, isWarmup: warmup, dateCreated: Self.start)
+    private func set(_ id: String, warmup: Bool = false, side: SetSide? = nil, kind: SetKind = .standard, parent: String? = nil) -> WorkoutSetModel {
+        WorkoutSetModel(
+            id: id, authorId: "author-1", index: 1, reps: 8, side: side, kind: kind, parentSetId: parent,
+            isWarmup: warmup, dateCreated: Self.start
+        )
     }
 
     private func exercise(_ sets: [WorkoutSetModel]) -> WorkoutExerciseModel {
@@ -138,5 +141,184 @@ struct RestDurationRulesTests {
         #expect(rest(after: first, in: exercise, settings: settings, context: zeroOverride) == 70)
         #expect(rest(after: first, in: exercise, settings: settings, context: typeOnly) == 70)
         #expect(rest(after: first, in: exercise, settings: settings, context: unknownType) == 100)
+    }
+
+    /// A rest the plan sets on the exercise in this workout beats the one set on the exercise
+    /// everywhere; a zero from the plan is none, like a zero override.
+    @Test("Test The Plan's Rest Wins Over The Exercise Override And Zero Is None")
+    func testThePlansRestWinsOverTheExerciseOverride() {
+        var settings = settings
+        settings.restDurationsByExerciseType["strength"] = 70
+        let first = set("x1")
+        let exercise = exercise([first, set("x2")])
+
+        let plan = RestDurationRules.ExerciseContext(restOverrideSeconds: 30, exerciseTypeRawValue: "strength", planRestSeconds: 150)
+        let zeroPlan = RestDurationRules.ExerciseContext(restOverrideSeconds: 30, exerciseTypeRawValue: "strength", planRestSeconds: 0)
+        let zeroPlanNoOverride = RestDurationRules.ExerciseContext(restOverrideSeconds: nil, exerciseTypeRawValue: "strength", planRestSeconds: 0)
+
+        #expect(rest(after: first, in: exercise, settings: settings, context: plan) == 150)
+        #expect(RestDurationRules.baseRestDuration(settings: settings, context: plan) == 150)
+        #expect(rest(after: first, in: exercise, settings: settings, context: zeroPlan) == 30)
+        #expect(rest(after: first, in: exercise, settings: settings, context: zeroPlanNoOverride) == 70)
+    }
+
+    // MARK: - Sub-sets
+
+    /// A drop follows its parent at once; the drop then rests as its parent would have.
+    @Test("Test There Is No Rest Before A Drop")
+    func testThereIsNoRestBeforeADrop() {
+        let parent = set("x1")
+        let drop = set("x1-d", kind: .drop, parent: "x1")
+        let exercise = exercise([parent, drop, set("x2")])
+
+        #expect(rest(after: parent, in: exercise) == nil)
+        #expect(rest(after: drop, in: exercise) == 100)
+    }
+
+    /// Mini-sets and clusters take their kind's intra-set rest (15, 20 and 15 seconds unless
+    /// chosen); a document with only the one older intra-set rest uses it for all three; none at zero.
+    @Test(
+        "Test Myo, Rest-Pause And Cluster Rows Rest Their Kind's Intra-Set Rest",
+        arguments: [(SetKind.myo, 15), (.restPause, 20), (.cluster, 15)]
+    )
+    func testIntraSetRest(kind: SetKind, seconds: Int) {
+        let parent = set("x1", kind: kind)
+        let first = set("x1-m1", kind: kind, parent: "x1")
+        let last = set("x1-m2", kind: kind, parent: "x1")
+        let exercise = exercise([parent, first, last, set("x2")])
+        var older = settings
+        older.intraSetRestSeconds = 25
+        var none = settings
+        none.intraSetRestSeconds = 0
+
+        #expect(rest(after: parent, in: exercise) == seconds)
+        #expect(rest(after: first, in: exercise) == seconds)
+        #expect(rest(after: last, in: exercise) == 100)
+        #expect(rest(after: parent, in: exercise, settings: older) == 25)
+        #expect(rest(after: parent, in: exercise, settings: none) == nil)
+    }
+
+    /// Each kind's own rest wins over the older one, and only for its own kind.
+    @Test("Test Each Kind's Intra-Set Rest Is Its Own")
+    func testEachKindsIntraSetRestIsItsOwn() {
+        var chosen = settings
+        chosen.intraSetRestSeconds = 25
+        chosen.intraSetRestMyoSeconds = 10
+        chosen.intraSetRestPauseSeconds = 30
+        chosen.intraSetRestClusterSeconds = 0
+        func restAfterParent(_ kind: SetKind) -> Int? {
+            let parent = set("x1", kind: kind)
+            return rest(after: parent, in: exercise([parent, set("x1-m", parent: "x1"), set("x2")]), settings: chosen)
+        }
+
+        #expect(restAfterParent(.myo) == 10)
+        #expect(restAfterParent(.restPause) == 30)
+        #expect(restAfterParent(.cluster) == nil)
+    }
+
+    /// A plain row under a myo parent is still a mini-set of it.
+    @Test("Test A Plain Sub-Set Takes Its Parent's Kind")
+    func testAPlainSubSetTakesItsParentsKind() {
+        let parent = set("x1", kind: .myo)
+        #expect(rest(after: parent, in: exercise([parent, set("x1-m", parent: "x1"), set("x2")])) == 15)
+    }
+
+    /// The parent of the last set is still the last set: its trailing drop walks to the next
+    /// exercise, rather than the parent being taken for a set in the middle.
+    @Test("Test A Sub-Set Does Not End Its Parent's Rest Rule")
+    func testASubSetDoesNotEndItsParentsRestRule() {
+        let last = set("x2")
+        let drop = set("x2-d", kind: .drop, parent: "x2")
+        let exercise = exercise([set("x1"), last, drop])
+
+        #expect(rest(after: last, in: exercise) == nil)
+        #expect(rest(after: drop, in: exercise) == 200)
+    }
+
+    /// In a superset, a drop still to come keeps the parent's rule: no walk to the partner first.
+    @Test("Test A Drop In A Superset Comes Before The Partner")
+    func testADropInASupersetComesBeforeThePartner() {
+        var first = member("a", sets: 2)
+        first.sets.insert(set("a1-d", kind: .drop, parent: "a1"), at: 1)
+        var transition = settings
+        transition.supersetTransitionRestSeconds = 30
+        let workout = [first, member("b", sets: 2)]
+
+        #expect(rest(after: "a1", in: workout, settings: transition) == nil)
+        #expect(rest(after: "a1-d", in: workout, settings: transition) == 30)
+    }
+
+    // MARK: - Across the workout
+
+    /// `count` open working sets of exercise `id`, in superset `group`; the first `done` logged.
+    private func member(_ id: String, sets count: Int, done: Int = 0, group: String? = "g") -> WorkoutExerciseModel {
+        let sets = (0..<count).map { index in
+            WorkoutSetModel(
+                id: "\(id)\(index + 1)", authorId: "author-1", index: index + 1, reps: 8,
+                isWarmup: false, completedAt: index < done ? Self.start : nil, dateCreated: Self.start
+            )
+        }
+        return WorkoutExerciseModel(
+            id: id, authorId: "author-1", templateId: "t-\(id)", name: id, trackingMode: .weightReps,
+            index: 1, sets: sets, supersetGroupId: group
+        )
+    }
+
+    private func rest(after setId: String, in workout: [WorkoutExerciseModel], settings: WorkoutSettings? = nil, custom: Int? = nil) -> Int? {
+        let exercise = workout.first { $0.sets.contains { $0.id == setId } }!
+        let set = exercise.sets.first { $0.id == setId }!
+        return RestDurationRules.restAfterCompleting(
+            set, in: exercise, workout: workout, settings: settings ?? self.settings, context: noOverride, customRestSeconds: custom
+        )
+    }
+
+    /// Finish comes next: no rest stands in front of it, not even one set by hand.
+    @Test("Test The Workout's Final Set Rests Not At All")
+    func testTheFinalSetRestsNotAtAll() {
+        let workout = [member("a", sets: 2, done: 1, group: nil), member("b", sets: 1, done: 1, group: nil)]
+
+        #expect(rest(after: "a2", in: workout) == nil)
+        #expect(rest(after: "a2", in: workout, custom: 60) == nil)
+        // Not final while another exercise has a set open.
+        #expect(rest(after: "a2", in: [workout[0], member("b", sets: 1, group: nil)]) == 200)
+    }
+
+    /// A1 to B1 is a walk to the partner: none by default, the transition when one is set.
+    @Test("Test A Superset Partner Set Gets The Transition Rest")
+    func testASupersetPartnerSetGetsTheTransitionRest() {
+        let workout = [member("a", sets: 2), member("b", sets: 2)]
+        var transition = settings
+        transition.supersetTransitionRestSeconds = 15
+
+        #expect(rest(after: "a1", in: workout) == nil)
+        #expect(rest(after: "a1", in: workout, settings: transition) == 15)
+    }
+
+    /// B1 closes the round: the base rest, not the between-exercises one.
+    @Test("Test The Round's Last Set Rests The Base")
+    func testTheRoundsLastSetRestsTheBase() {
+        let workout = [member("a", sets: 2, done: 1), member("b", sets: 2)]
+
+        #expect(rest(after: "b1", in: workout) == 100)
+    }
+
+    /// The last round's last set is the walk to the next exercise. A's last set before B's is
+    /// still mid-round, not between exercises.
+    @Test("Test The Last Round Rests Between Exercises")
+    func testTheLastRoundRestsBetweenExercises() {
+        let workout = [member("a", sets: 2, done: 1), member("b", sets: 2, done: 1), member("c", sets: 1, group: nil)]
+
+        #expect(rest(after: "a2", in: workout) == nil)
+        #expect(rest(after: "b2", in: [member("a", sets: 2, done: 2), workout[1], workout[2]]) == 200)
+    }
+
+    /// A circuit of three: two walks, then the round's rest.
+    @Test("Test A Circuit Of Three Rests After The Round")
+    func testACircuitOfThreeRestsAfterTheRound() {
+        let workout = [member("a", sets: 2), member("b", sets: 2), member("c", sets: 2)]
+
+        #expect(rest(after: "a1", in: workout) == nil)
+        #expect(rest(after: "b1", in: [member("a", sets: 2, done: 1), workout[1], workout[2]]) == nil)
+        #expect(rest(after: "c1", in: [member("a", sets: 2, done: 1), member("b", sets: 2, done: 1), workout[2]]) == 100)
     }
 }

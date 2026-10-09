@@ -87,31 +87,37 @@ struct WeightGoal: DataSyncModelProtocol, Equatable {
 
     // MARK: - Computed Properties
     
+    // On the enum, not its localized description, which reads "Perder peso" in Spanish.
     var isLosing: Bool {
-        objective.description.lowercased().contains("lose")
+        objective == .loseWeight
     }
     
     var isGaining: Bool {
-        objective.description.lowercased().contains("gain")
+        objective == .gainWeight
     }
     
     var isMaintaining: Bool {
-        objective.description.lowercased().contains("maintain")
+        objective == .maintain
     }
     
     var totalWeightChange: Double {
         abs(targetWeightKg - startingWeightKg)
     }
     
+    /// Distance ÷ rate, rounded up (`GoalTimeline.weeks`). The rate is held by re-targeting, so
+    /// the calorie target steps down along the way rather than staying fixed.
     var estimatedWeeks: Int {
         guard weeklyChangeKg > 0 else { return 0 }
-        return Int(ceil(totalWeightChange / weeklyChangeKg))
+        return GoalTimeline.weeks(distanceKg: totalWeightChange, weeklyRateKg: weeklyChangeKg)
     }
     
     var estimatedMonths: Int {
         Int(ceil(Double(estimatedWeeks) / 4.33))
     }
     
+    /// The share of the way from the starting weight to the target, 0...1. Pass the trend weight
+    /// (`GoalTimeline.latestTrendWeightKg`), not the last weigh-in, so a day of water or salt does
+    /// not move it.
     func calculateProgress(currentWeight: Double) -> Double {
         guard targetWeightKg != startingWeightKg else { return 0 }
         

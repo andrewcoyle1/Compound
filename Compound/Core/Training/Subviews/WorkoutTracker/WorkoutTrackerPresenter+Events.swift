@@ -15,10 +15,24 @@ extension WorkoutTrackerPresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
+        // The keyboard going away ends the edit being typed, which then carries to its siblings.
+        // Synchronous (`queue: nil`): the notification is posted on the main thread.
+        guard savePath.keyboardObserver == nil else { return }
+        savePath.keyboardObserver = NotificationCenter.default.addObserver(
+            forName: UIResponder.keyboardDidHideNotification,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.commitPendingEdit() }
+        }
     }
 
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
+        if let observer = savePath.keyboardObserver {
+            NotificationCenter.default.removeObserver(observer)
+            savePath.keyboardObserver = nil
+        }
     }
 
     /// Why a finish ended without the workout saved. The shared finish path reports only an
@@ -49,6 +63,10 @@ extension WorkoutTrackerPresenter {
         case restSkipped
         case workoutPaused
         case workoutResumed
+        case exerciseSelected
+        case exerciseMoved(later: Bool)
+        case exerciseReordered(fromBlock: Int, toBlock: Int)
+        case progressionNoteAcknowledged
 
         var eventName: String {
             switch self {
@@ -70,6 +88,10 @@ extension WorkoutTrackerPresenter {
             case .restSkipped:              return "WorkoutTracker_Rest_Skipped"
             case .workoutPaused:            return "WorkoutTracker_Workout_Paused"
             case .workoutResumed:           return "WorkoutTracker_Workout_Resumed"
+            case .exerciseSelected:         return "WorkoutTracker_Exercise_Selected"
+            case .exerciseMoved:            return "WorkoutTracker_Exercise_Moved"
+            case .exerciseReordered:        return "WorkoutTracker_Exercise_Reordered"
+            case .progressionNoteAcknowledged: return "WorkoutTracker_ProgressionNote_Acknowledged"
             }
         }
 
@@ -98,7 +120,11 @@ extension WorkoutTrackerPresenter {
                 ]
             case .restExtended(let seconds):
                 return ["seconds": seconds]
-            case .restSkipped, .workoutPaused, .workoutResumed:
+            case .exerciseMoved(let later):
+                return ["to": later ? "later" : "next"]
+            case .exerciseReordered(let fromBlock, let toBlock):
+                return ["from": fromBlock, "to": toBlock]
+            case .restSkipped, .workoutPaused, .workoutResumed, .exerciseSelected, .progressionNoteAcknowledged:
                 return nil
             }
         }

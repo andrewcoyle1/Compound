@@ -55,7 +55,7 @@ struct CheckInView: View {
             summaryRow(title: String(localized: "Weigh-ins"), value: "\(presenter.weighInCount)")
             summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
         } header: {
-            Text("The last seven days")
+            MethodInfoHeader(title: "The last seven days", info: .weightTrend)
         }
     }
 
@@ -68,9 +68,9 @@ struct CheckInView: View {
                 }
             }
         } header: {
-            Text("Any days you did not finish logging?")
+            MethodInfoHeader(title: "Any days you did not finish logging?", info: .checkInRules)
         } footer: {
-            Text("Days you mark as incomplete are left out of your expenditure estimate.")
+            Text("Days you mark as incomplete are left out of your expenditure estimate, as are days logged under half of it.")
         }
     }
 
@@ -99,7 +99,7 @@ struct CheckInView: View {
                 }
             }
         } header: {
-            Text("Did you fast on any of these days?")
+            MethodInfoHeader(title: "Did you fast on any of these days?", info: .checkInRules)
         } footer: {
             Text("A fasting day counts as 0 kcal rather than a day you forgot to log.")
         }
@@ -133,14 +133,22 @@ struct CheckInView: View {
                 Text(summary)
                     .font(.rowDetail)
             } header: {
-                Text("New targets suggested")
+                MethodInfoHeader(title: "New targets suggested", info: .targetProposal)
             }
         } else {
+            if let adherence = presenter.adherenceSummary {
+                Section {
+                    Text(adherence)
+                        .font(.rowDetail)
+                } header: {
+                    MethodInfoHeader(title: "About your intake", info: .targetProposal)
+                }
+            }
             Section {
                 summaryRow(title: String(localized: "Expenditure"), value: presenter.expenditureDescription)
                 summaryRow(title: String(localized: "Weight trend"), value: presenter.trendChangeDescription ?? "Not enough data yet")
             } header: {
-                Text("Your targets are unchanged this week")
+                MethodInfoHeader(title: "Your targets are unchanged this week", info: .adaptiveExpenditure)
             }
         }
     }

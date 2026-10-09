@@ -75,8 +75,7 @@ private func expenditureContext(
         height: delegate.heightInCentimetres,
         dateOfBirth: delegate.dateOfBirth,
         gender: delegate.gender,
-        activityLevel: delegate.activityLevel,
-        exerciseFrequency: delegate.exerciseFrequency
+        activityLevel: delegate.activityLevel
     )
 }
 
@@ -122,10 +121,9 @@ private func makeExpenditureScreen() -> ExpenditureScreen {
 
 // MARK: - The arithmetic
 
-/// TDEE = Mifflin-St Jeor BMR x (activity multiplier + exercise adjustment). The expected numbers
-/// below are worked by hand from that formula, because a multiplier applied twice, or an
-/// adjustment that multiplied rather than added, would still produce something that looks entirely
-/// reasonable on screen.
+/// TDEE = Mifflin-St Jeor BMR x the PAL for the activity answer, the same `FormulaExpenditure` the
+/// manager runs. The expected numbers below are worked by hand from that formula, because a
+/// multiplier applied twice would still produce something that looks entirely reasonable on screen.
 @MainActor
 struct ExpenditurePresenterArithmeticTests {
 
@@ -176,30 +174,19 @@ struct ExpenditurePresenterArithmeticTests {
         #expect(young - old == 150)
     }
 
-    @Test("The activity multipliers are the published ones")
+    @Test("The activity multipliers sit inside the FAO/WHO/UNU bands")
     func testTheActivityMultipliersAreThePublishedOnes() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
 
         // A single one mistyped moves one group of users' targets by hundreds of calories while
-        // everyone else's stay correct, which is why they are pinned one by one.
-        #expect(sut.baseActivityMultiplier(activityLevel: .sedentary) == 1.2)
-        #expect(sut.baseActivityMultiplier(activityLevel: .light) == 1.35)
-        #expect(sut.baseActivityMultiplier(activityLevel: .moderate) == 1.5)
-        #expect(sut.baseActivityMultiplier(activityLevel: .active) == 1.7)
-        #expect(sut.baseActivityMultiplier(activityLevel: .veryActive) == 1.9)
-    }
-
-    @Test("The exercise adjustments step up in twentieths")
-    func testTheExerciseAdjustmentsStepUpInTwentieths() {
-        let screen = makeExpenditureScreen()
-        let sut = screen.sut
-
-        #expect(sut.exerciseAdjustment(exerciseFrequency: .never) == 0.0)
-        #expect(sut.exerciseAdjustment(exerciseFrequency: .oneToTwo) == 0.05)
-        #expect(sut.exerciseAdjustment(exerciseFrequency: .threeToFour) == 0.10)
-        #expect(sut.exerciseAdjustment(exerciseFrequency: .fiveToSix) == 0.15)
-        #expect(sut.exerciseAdjustment(exerciseFrequency: .daily) == 0.20)
+        // everyone else's stay correct, which is why they are pinned one by one. Sedentary starts
+        // at 1.4, the bottom of "sedentary or light" (1.40–1.69), not the 1.2 of bed rest.
+        #expect(sut.baseActivityMultiplier(activityLevel: .sedentary) == 1.4)
+        #expect(sut.baseActivityMultiplier(activityLevel: .light) == 1.55)
+        #expect(sut.baseActivityMultiplier(activityLevel: .moderate) == 1.7)
+        #expect(sut.baseActivityMultiplier(activityLevel: .active) == 1.85)
+        #expect(sut.baseActivityMultiplier(activityLevel: .veryActive) == 2.0)
     }
 
     @Test("TDEE is BMR times the activity multiplier")
@@ -207,34 +194,54 @@ struct ExpenditurePresenterArithmeticTests {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
 
-        // 1780 x 1.2. An activity multiplier applied to an already-multiplied figure would show up
+        // 1780 x 1.4. An activity multiplier applied to an already-multiplied figure would show up
         // here as a number a thousand calories too high.
         let tdee = sut.tdeeInt(context: expenditureContext(from: expenditureDelegate()))
 
-        #expect(tdee == 2136)
+        #expect(tdee == 2492)
     }
 
-    @Test("Exercise is added to the activity multiplier, not multiplied by it")
-    func testExerciseIsAddedToTheActivityMultiplier() {
+    @Test("An active answer is its own PAL")
+    func testAnActiveAnswerIsItsOwnPAL() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
         let delegate = expenditureDelegate(exerciseFrequency: .daily, activityLevel: .active)
 
-        // 1780 x (1.7 + 0.20) = 3382. Multiplying the two instead would give 1780 x 1.7 x 1.2 = 3631.
-        #expect(sut.tdeeInt(context: expenditureContext(from: delegate)) == 3382)
+        // 1780 x 1.85 = 3293.
+        #expect(sut.tdeeInt(context: expenditureContext(from: delegate)) == 3293)
     }
 
-    @Test("Training daily is worth a fifth of BMR over never training")
-    func testTrainingDailyIsWorthAFifthOfBMR() {
+    /// Training frequency no longer adds to the PAL: the activity answers include exercise, and
+    /// an extra term on top counted it twice (Pontzer 2016).
+    @Test("How often someone trains does not change the estimate")
+    func testExerciseFrequencyDoesNotChangeTheEstimate() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
 
         let never = sut.tdeeInt(context: expenditureContext(from: expenditureDelegate(exerciseFrequency: .never)))
         let daily = sut.tdeeInt(context: expenditureContext(from: expenditureDelegate(exerciseFrequency: .daily)))
 
-        // 0.20 x 1780. If the adjustment were dropped, a six-day-a-week trainee would be given a
-        // desk worker's target.
-        #expect(daily - never == 356)
+        #expect(daily == never)
+    }
+
+    /// The onboarding figure is the manager's own formula, so the number shown here is the number
+    /// the plan is later built on.
+    @Test("The screen's estimate is the manager's estimate")
+    func testTheScreensEstimateIsTheManagersEstimate() {
+        let screen = makeExpenditureScreen()
+        let delegate = expenditureDelegate(activityLevel: .light)
+        let user = UserModel(
+            userId: "user-1",
+            submittedDateOfBirth: delegate.dateOfBirth,
+            submittedGender: delegate.gender,
+            submittedHeightCentimeters: delegate.heightInCentimetres,
+            submittedWeightKilograms: delegate.weightInKilograms,
+            submittedDailyActivityLevel: delegate.activityLevel
+        )
+
+        let managerFigure = Int(TestManagers.nutritionManager().estimateTDEE(user: user).rounded())
+
+        #expect(screen.sut.tdeeInt(context: expenditureContext(from: delegate)) == managerFigure)
     }
 }
 
@@ -370,8 +377,8 @@ struct ExpenditurePresenterDegenerateInputTests {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
         // 30 kg, 100 cm (the height wheel's own floor — finding 9), 100 years old, female,
-        // sedentary, no exercise: BMR is 300 + 625 - 500 - 161 = 264, and 264 x 1.2 is 317 — a
-        // figure that would read as a starvation target.
+        // sedentary: BMR is 300 + 625 - 500 - 161 = 264, and 264 x 1.4 is 370 — a figure that
+        // would read as a starvation target.
         let delegate = expenditureDelegate(
             gender: .female,
             dateOfBirth: expenditureBirthDate(yearsAgo: 100),
@@ -388,7 +395,7 @@ struct ExpenditurePresenterDegenerateInputTests {
 @MainActor
 struct ExpenditurePresenterBreakdownTests {
 
-    @Test("The four bars sum to the total shown above them")
+    @Test("The three bars sum to the total shown above them")
     func testTheBreakdownSumsToTheTotalShown() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
@@ -399,11 +406,12 @@ struct ExpenditurePresenterBreakdownTests {
 
         // The bars are the screen's explanation of the number. If they do not add up to it, the
         // screen contradicts itself in plain sight.
+        #expect(items.count == 3)
         #expect(items.map(\.calories).reduce(0, +) == sut.totalExpenditureKcal)
     }
 
-    @Test("The activity bar shows only the part above resting")
-    func testTheActivityBarShowsOnlyThePartAboveResting() {
+    @Test("Digestion is a tenth of the total and activity is the rest above resting")
+    func testDigestionIsATenthOfTheTotal() {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
         let delegate = expenditureDelegate(exerciseFrequency: .oneToTwo, activityLevel: .moderate)
@@ -411,23 +419,12 @@ struct ExpenditurePresenterBreakdownTests {
 
         let items = sut.breakdownItems(context: expenditureContext(from: delegate))
 
-        // BMR 1780; activity 1780 x 0.5; exercise 1780 x 0.05. Showing the whole scaled figure in
-        // the activity bar would double-count being alive.
+        // BMR 1780; total 1780 x 1.7 = 3026; digestion 10% of that, 303 (Westerterp 2004);
+        // activity the 943 left. It used to be a rounding remainder of about zero.
+        #expect(sut.totalExpenditureKcal == 3026)
         #expect(items[0].calories == 1780)
-        #expect(items[1].calories == 890)
-        #expect(items[2].calories == 89)
-    }
-
-    @Test("Someone who never trains sees no exercise calories")
-    func testNeverTrainingShowsNoExerciseCalories() {
-        let screen = makeExpenditureScreen()
-        let sut = screen.sut
-        let delegate = expenditureDelegate(exerciseFrequency: .never)
-        sut.estimateExpenditure(delegate: delegate)
-
-        let items = sut.breakdownItems(context: expenditureContext(from: delegate))
-
-        #expect(items[2].calories == 0)
+        #expect(items[1].calories == 943)
+        #expect(items[2].calories == 303)
     }
 
     @Test("Bar progress is zero before the estimate has run")
@@ -446,9 +443,9 @@ struct ExpenditurePresenterBreakdownTests {
         let screen = makeExpenditureScreen()
         let sut = screen.sut
         sut.estimateExpenditure(delegate: expenditureDelegate())
-        let item = ExpenditurePresenter.Breakdown(name: "Basal Metabolic Rate", calories: 1068, color: .blue)
+        let item = ExpenditurePresenter.Breakdown(name: "Basal Metabolic Rate", calories: 1246, color: .blue)
 
-        // 1068 of 2136.
+        // 1246 of 2492.
         #expect(sut.progress(for: item) == 0.5)
     }
 }
@@ -471,7 +468,7 @@ struct ExpenditurePresenterSaveTests {
         sut.estimateExpenditure(delegate: expenditureDelegate())
 
         #expect(sut.canContinue)
-        #expect(sut.totalExpenditureKcal == 2136)
+        #expect(sut.totalExpenditureKcal == 2492)
     }
 
     @Test("Pressing Continue before the estimate has run saves nothing and goes nowhere")
@@ -500,8 +497,8 @@ struct ExpenditurePresenterSaveTests {
 
         sut.estimateExpenditure(delegate: expenditureDelegate(activityLevel: .veryActive))
 
-        // 1780 x 1.9. A user who comes back to the screen must not be shown a stale figure.
-        #expect(sut.totalExpenditureKcal == 3382)
+        // 1780 x 2.0. A user who comes back to the screen must not be shown a stale figure.
+        #expect(sut.totalExpenditureKcal == 3560)
     }
 
     @Test("The whole profile is saved in one write")

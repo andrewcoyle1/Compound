@@ -14,10 +14,6 @@ extension PinLoadedMachine {
     }
 
     static var mock: PinLoadedMachine {
-        mocks[0]
-    }
-
-    static var mocks: [PinLoadedMachine] {
-        defaultPinLoadedMachinesMocksPart1 + defaultPinLoadedMachinesMocksPart2
+        defaultPinLoadedMachines[0]
     }
 }

@@ -78,8 +78,8 @@ struct OnboardingSelectionHapticsTests {
         #expect(diet.selectedDiet == .balanced)
 
         let floor = CalorieFloorPresenter(interactor: interactor, router: router)
-        floor.onFloorSelected(.low)
-        #expect(floor.selectedFloor == .low)
+        floor.onFloorSelected(.standard)
+        #expect(floor.selectedFloor == .standard)
 
         let distribution = CalorieDistributionPresenter(interactor: interactor, router: router)
         distribution.onDistributionSelected(.even)

@@ -16,6 +16,7 @@ func showDevSettingsView()
     func showCreateMesocycleView(delegate: CreateMesocycleDelegate)
     func showEditMesocycleView(delegate: EditMesocycleDelegate)
     func showPrebuiltMesocycleDetailView(mesocycle: Mesocycle)
+    func showImportProgramView()
 }
 
 extension CoreRouter: MesocycleLibraryRouter { }

@@ -9,15 +9,6 @@ class TimerDurationPresenter {
 
     private var settings: WorkoutSettings
 
-    // Sensible defaults per exercise type (seconds)
-    static let defaultDurations: [ExerciseType: Int] = [
-        .compoundUpper: 180,
-        .compoundLower: 180,
-        .isolationUpper: 90,
-        .isolationLower: 90,
-        .core: 60
-    ]
-
     // MARK: - Edit Sheet State
 
     var editingType: ExerciseType?
@@ -38,8 +29,10 @@ class TimerDurationPresenter {
 
     // MARK: - Duration Access
 
+    /// The user's time for the type, else the default the tracker uses (`RestDurationRules`):
+    /// shown for a moderate set, since heavy compound sets default longer (see the footer).
     func duration(for type: ExerciseType) -> Int {
-        settings.restDurationsByExerciseType[type.rawValue] ?? Self.defaultDurations[type] ?? 90
+        settings.restDurationsByExerciseType[type.rawValue] ?? RestDurationRules.defaultSeconds(for: type, reps: nil)
     }
 
     func formattedDuration(for type: ExerciseType) -> String {

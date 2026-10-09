@@ -44,6 +44,10 @@ struct ProteinIntakeView: View {
                         presenter.onProteinIntakeSelected(intake)
                     }
                 }
+            } header: {
+                MethodInfoHeader(title: "Protein", info: .proteinTarget)
+            } footer: {
+                Text("Worked out on your body weight, or on the weight at a BMI of 30 if you're above it. If you have kidney disease, ask your doctor before eating more protein.")
             }
         }
         .onAppear { presenter.onViewAppear(isFromSettings: delegate.isFromSettings) }

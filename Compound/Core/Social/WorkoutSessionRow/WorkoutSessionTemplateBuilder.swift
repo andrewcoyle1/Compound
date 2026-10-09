@@ -26,12 +26,24 @@ enum WorkoutSessionTemplateBuilder {
         existingNames: [String],
         authorId: String
     ) -> WorkoutTemplateModel? {
-        let exercises: [WorkoutTemplateExercise] = session.exercises
+        // A superset whose partner was skipped is no longer one.
+        let exercises: [WorkoutTemplateExercise] = DefineWorkoutRules.dissolvingLoneGroups(session.exercises
             .sorted { $0.index < $1.index }
             .compactMap { logged in
                 guard let exercise = resolve(logged, in: availableExercises) else { return nil }
-                return WorkoutTemplateExercise(exercise: exercise, setTargets: setTargets(for: logged), setRestTimers: false)
-            }
+                // The plan the session was run from goes back on the template: its notes, rest,
+                // link, alternatives and superset.
+                return WorkoutTemplateExercise(
+                    exercise: exercise,
+                    setTargets: setTargets(for: logged),
+                    setRestTimers: false,
+                    notes: logged.planNotes,
+                    restSeconds: logged.restSeconds,
+                    substituteExerciseIds: logged.substituteExerciseIds,
+                    supersetGroupId: logged.supersetGroupId,
+                    linkURL: logged.linkURL
+                )
+            })
         guard !exercises.isEmpty else { return nil }
 
         let clashes = existingNames.contains { $0.caseInsensitiveCompare(session.name) == .orderedSame }

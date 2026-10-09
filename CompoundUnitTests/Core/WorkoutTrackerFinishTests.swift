@@ -110,6 +110,8 @@ struct WorkoutTrackerFinishTests {
             Self.savedMessage
         ])
         #expect(screen.interactor.shownToasts.last?.style == .success)
+        // Once at the finish, and again when the retried save lands with its toast.
+        #expect(haptics(screen) == ["success", "success"])
     }
 
     /// A rejected document or a permission failure will be rejected identically every time, so
@@ -149,6 +151,7 @@ struct WorkoutTrackerFinishTests {
         #expect(screen.interactor.shownToasts.last?.message == Self.failedMessage)
         // Nothing claimed failure while a retry was still pending.
         #expect(screen.interactor.shownToasts.dropLast().allSatisfy { $0.style == .progress })
+        #expect(haptics(screen) == ["success", "error"])
     }
 
     /// A retry loop still running an hour later is a bug of its own, so it has to be stoppable. The
@@ -175,6 +178,7 @@ struct WorkoutTrackerFinishTests {
         #expect(screen.interactor.endWorkoutSessionAttempts == 1)
         // Cancelling is not a failure, so the user is not told that it failed.
         #expect(screen.interactor.shownToasts.allSatisfy { $0.style == .progress })
+        #expect(haptics(screen) == ["success"])
     }
 
     /// Retrying after sign-out would write this workout into whoever signed in next.
@@ -198,7 +202,8 @@ struct WorkoutTrackerFinishTests {
     // MARK: - Summary, haptic, and the empty workout
 
     /// The session detail is the summary, pushed as the tracker's last page rather than the
-    /// tracker closing first, and the save plays the success haptic when it lands.
+    /// tracker closing first. The success haptic plays with the push, which is what the person
+    /// sees, and a save that works first time adds nothing.
     @Test("Test Finishing Shows The Summary And Plays The Success Haptic")
     func testFinishingShowsTheSummaryAndPlaysTheSuccessHaptic() async throws {
         let screen = try makeScreen()
@@ -210,20 +215,28 @@ struct WorkoutTrackerFinishTests {
         #expect(finished.map(\.id) == ["session-1"])
         #expect(finished.first?.endedAt != nil)
         #expect(!screen.router.shown.contains("dismiss"))
-        #expect(screen.interactor.playedHaptics.map { "\($0)" }.last == "success")
+        #expect(haptics(screen) == ["success"])
         #expect(screen.router.confirmations.isEmpty)
     }
 
-    /// A failed save has nothing to celebrate.
-    @Test("Test A Failed Save Plays No Success Haptic")
-    func testAFailedSavePlaysNoSuccessHaptic() async throws {
+    /// The finish has already played `.success` by the time the save fails; the failure toast
+    /// comes with `.error`, and nothing after it claims success.
+    @Test("Test A Failed Save Plays The Error Haptic With Its Toast")
+    func testAFailedSavePlaysTheErrorHapticWithItsToast() async throws {
         let screen = try makeScreen()
         screen.interactor.endWorkoutSessionError = NSError(domain: "FIRFirestoreErrorDomain", code: 7)
 
         screen.presenter.finishWorkout()
+        // At the commit, before the save is even attempted.
+        #expect(haptics(screen) == ["success"])
         await screen.presenter.pendingFinishTask?.value
 
-        #expect(!screen.interactor.playedHaptics.map { "\($0)" }.contains("success"))
+        #expect(haptics(screen) == ["success", "error"])
+        #expect(screen.interactor.shownToasts.map(\.style) == [.failure])
+    }
+
+    private func haptics(_ screen: Screen) -> [String] {
+        screen.interactor.playedHaptics.map { "\($0)" }
     }
 
     /// With no set logged the save is replaced by a question: Discard Workout, Save Anyway, or

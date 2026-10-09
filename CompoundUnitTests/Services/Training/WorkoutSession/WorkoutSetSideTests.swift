@@ -139,8 +139,8 @@ struct WorkoutSetSideTests {
         #expect(sets.pairedSetCount == 3)
     }
 
-    /// The starting figures each tracking mode fills in are unchanged by the split — both limbs of
-    /// a timed hold still start at a minute.
+    /// The split changes no figures: both limbs of a timed hold start empty, as every new set does,
+    /// with last time's time shown only as a placeholder.
     @Test("Test Each Tracking Mode Keeps Its Starting Figures")
     func testEachTrackingModeKeepsItsStartingFigures() {
         let timed = WorkoutSessionModel.defaultSets(
@@ -149,9 +149,9 @@ struct WorkoutSetSideTests {
         let run = WorkoutSessionModel.defaultSets(trackingMode: .distanceTime, authorId: "author-1", targetCount: 1)
 
         #expect(timed.count == 2)
-        #expect(timed.allSatisfy { $0.durationSec == 60 && $0.distanceMeters == nil })
-        #expect(run.first?.durationSec == 120)
-        #expect(run.first?.distanceMeters == 400)
+        #expect(timed.allSatisfy { $0.durationSec == nil && $0.distanceMeters == nil && $0.side == .both })
+        #expect(run.first?.durationSec == nil)
+        #expect(run.first?.distanceMeters == nil)
     }
 
     // MARK: - Counting

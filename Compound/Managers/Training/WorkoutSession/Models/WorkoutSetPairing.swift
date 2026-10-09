@@ -24,10 +24,12 @@ extension Collection where Element == WorkoutSetModel {
     /// that precedes it and every other row counts for itself. Filtering first is safe: a right
     /// set whose left partner was filtered out — a pair half finished, say — still counts as one,
     /// which is what "sets done so far" should say after the first limb.
+    ///
+    /// A sub-set (a drop, mini-set or cluster, `isSubSet`) is part of its parent and adds nothing.
     var pairedSetCount: Int {
         var count = 0
         var previousSide: SetSide?
-        for set in self {
+        for set in self where !set.isSubSet {
             if !(set.side == .right && previousSide == .left) {
                 count += 1
             }
@@ -101,6 +103,9 @@ extension Array where Element == WorkoutSetModel {
                 distanceMeters: set.distanceMeters,
                 rpe: set.rpe,
                 side: .right,
+                kind: set.kind,
+                parentSetId: set.parentSetId,
+                bands: set.bands,
                 isWarmup: set.isWarmup,
                 completedAt: set.completedAt,
                 dateCreated: set.dateCreated

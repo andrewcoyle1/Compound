@@ -23,7 +23,9 @@ struct TimerDurationView: View {
                     }
                 }
             } header: {
-                Text("Default Timers")
+                MethodInfoHeader(title: "Default Timers", info: .restIntervals)
+            } footer: {
+                Text("Until you set a time for a type, compound sets of 6 reps or fewer rest 3:00.")
             }
 
             // Its own section, styled as an action, and it asks first: it sat among the rows it

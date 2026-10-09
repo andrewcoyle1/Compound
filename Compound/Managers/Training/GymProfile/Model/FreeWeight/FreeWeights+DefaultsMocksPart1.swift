@@ -16,6 +16,7 @@ extension FreeWeights {
             imageName: "bumper_plates_icon",
             description: nil,
             needsColour: true,
+            isPlates: true,
             range: [
                 FreeWeightsAvailable(
                     id: UUID().uuidString,

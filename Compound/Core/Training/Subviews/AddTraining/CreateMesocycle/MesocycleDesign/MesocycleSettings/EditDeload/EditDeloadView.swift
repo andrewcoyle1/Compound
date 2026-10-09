@@ -6,10 +6,16 @@ struct EditDeloadView: View {
 
     var body: some View {
         List {
-            ForEach(presenter.allCases, id: \.self) { type in
-                SelectableRow(title: type.title, subtitle: type.description, isSelected: type == presenter.selected) {
-                    presenter.onSelect(type)
+            Section {
+                ForEach(presenter.allCases, id: \.self) { type in
+                    SelectableRow(title: type.title, subtitle: type.description, isSelected: type == presenter.selected) {
+                        presenter.onSelect(type)
+                    }
                 }
+            } header: {
+                MethodInfoHeader(title: "Deload Week", info: .mesocycleDeload)
+            } footer: {
+                Text("A deload week keeps about half of each exercise's working sets, at 90% of the planned weight.")
             }
         }
         .onAppear { presenter.onViewAppear() }

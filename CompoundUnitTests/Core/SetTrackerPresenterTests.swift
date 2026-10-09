@@ -90,7 +90,7 @@ struct SetTrackerPresenterTests {
         }
 
         /// Hands back `swapSelection` when one is set, standing in for the user picking.
-        func showSwapExercisePickerView(onSelect: @escaping (ExerciseModel) -> Void) {
+        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) {
             shown.append("swapPicker")
             if let swapSelection {
                 onSelect(swapSelection)
@@ -190,17 +190,18 @@ struct SetTrackerPresenterTests {
         #expect(box.value.sets.map(\.index) == [1, 2, 3])
     }
 
-    /// A new set carries the last one's figures forward, since the next set of an exercise is
-    /// usually the same weight and reps as the one before it.
+    /// A new set carries the last one's figures and bands forward, since the next set of an
+    /// exercise is usually the same weight and reps as the one before it.
     @Test("Test A New Set Carries The Last Ones Figures Forward")
     func testANewSetCarriesTheLastOnesFiguresForward() {
         let screen = makeScreen()
-        let box = MutableExercise(exercise(sets: [set(id: "s1", index: 1, reps: 8, weightKg: 80)]))
-
+        var last = set(id: "s1", index: 1, reps: 8, weightKg: 80)
+        last.bands = ["Red"]
+        let box = MutableExercise(exercise(sets: [last]))
         screen.presenter.addSet(exercise: box.binding)
-
         #expect(box.value.sets.last?.reps == 8)
         #expect(box.value.sets.last?.weightKg == 80)
+        #expect(box.value.sets.last?.bands == ["Red"])
     }
 
     /// A new set is never already complete, whatever the set it copied from was.
@@ -674,5 +675,76 @@ struct SetTrackerPresenterTests {
         screen.presenter.onTargetsPressed(box.binding)
 
         #expect(screen.router.shown.isEmpty)
+    }
+}
+
+/// Kept apart from the struct, which is at the type-body limit; same file, so the doubles are shared.
+extension SetTrackerPresenterTests {
+
+    /// A logged set is history: 100 kg converted to 220 lb would record 99.79 kg. Only open sets change.
+    @Test("Test Converting Leaves Logged Sets Untouched")
+    func testConvertingLeavesLoggedSetsUntouched() {
+        let screen = makeScreen()
+        var logged = set(id: "s1", index: 1, weightKg: 100, distanceMeters: 5432)
+        logged.completedAt = Date()
+        let box = MutableExercise(exercise(sets: [logged, set(id: "s2", index: 2, weightKg: 100, distanceMeters: 5432)]))
+
+        screen.presenter.convertAndRoundWeights(to: .pounds, for: box.binding)
+        screen.presenter.convertAndRoundDistances(to: .miles, for: box.binding)
+
+        #expect(box.value.sets[0].weightKg == 100)
+        #expect(box.value.sets[0].distanceMeters == 5432)
+        #expect(box.value.sets[1].weightKg != 100)
+        #expect(box.value.sets[1].distanceMeters != 5432)
+    }
+
+    /// Rounded to what the equipment makes in the new unit: the grid from the bar up, or a rack.
+    @Test("Test Converted Weights Snap To The Gyms Increment")
+    func testConvertedWeightsSnapToTheGymsIncrement() {
+        let bar = WeightStep(kind: .increment(5, min: 45, max: nil), chip: nil, baseWeight: 45, plates: [Plate(weight: 2.5)])
+        let rack = WeightStep(kind: .list([10, 12.5, 15]), chip: nil, baseWeight: nil, plates: [])
+
+        #expect(bar.nearest(to: 220.46) == 220)
+        #expect(bar.nearest(to: 20) == 45)
+        #expect(rack.nearest(to: 13.4) == 12.5)
+    }
+
+    /// On the live tracker the swap is the tracker's: the pick is handed to it, and the exercise
+    /// is left alone here, logged sets and all (`WorkoutTrackerSwapTests`).
+    @Test("Test The Live Tracker Is Handed The Swap")
+    func testTheLiveTrackerIsHandedTheSwap() {
+        let screen = makeScreen()
+        let replacement = ExerciseModel.mock
+        screen.router.swapSelection = replacement
+        var logged = set(id: "s1", index: 1)
+        logged.completedAt = Date()
+        let box = MutableExercise(exercise(sets: [logged, set(id: "s2", index: 2)]))
+        var handed: [String] = []
+
+        screen.presenter.onSwapPressed(box.binding, onSwap: { handed.append($0.id) })
+
+        #expect(handed == [replacement.id])
+        #expect(screen.router.confirmations.isEmpty)
+        #expect(box.value.templateId == "template-1")
+        #expect(box.value.sets.map(\.id) == ["s1", "s2"])
+    }
+
+    /// An open warm-up is not a working set, so it does not come back as one after a swap.
+    @Test("Test Swapping In Place Does Not Count Open Warm-Ups")
+    func testSwappingInPlaceDoesNotCountOpenWarmUps() throws {
+        let screen = makeScreen()
+        let replacement = try #require(ExerciseModel.mocks.first { !WorkoutSessionModel.isPerSide($0) })
+        var logged = set(id: "s1", index: 2)
+        logged.completedAt = Date()
+        let box = MutableExercise(exercise(
+            mode: WorkoutSessionModel.trackingMode(for: replacement),
+            sets: [set(id: "w1", index: 1, isWarmup: true), logged, set(id: "s2", index: 3), set(id: "s3", index: 4)]
+        ))
+
+        screen.presenter.swap(box.binding, to: replacement, keepingLoggedSets: true)
+
+        #expect(box.value.sets.count == 3)
+        #expect(box.value.sets.filter { $0.completedAt == nil }.count == 2)
+        #expect(!box.value.sets.contains { $0.isWarmup })
     }
 }

@@ -198,12 +198,42 @@
         }
       }
     },
+    "AMRAP" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AMRAP"
+          }
+        }
+      }
+    },
+    "Breathe" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respira"
+          }
+        }
+      }
+    },
     "Check this week's sessions against your goal." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Compara las sesiones de esta semana con tu objetivo."
+          }
+        }
+      }
+    },
+    "Cluster" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cluster"
           }
         }
       }
@@ -258,6 +288,26 @@
         }
       }
     },
+    "Drop" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop"
+          }
+        }
+      }
+    },
+    "Drop %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descendente %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Duration" : {
       "localizations" : {
         "es" : {
@@ -288,6 +338,16 @@
         }
       }
     },
+    "Hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostén"
+          }
+        }
+      }
+    },
     "Logged %@" : {
       "localizations" : {
         "es" : {
@@ -304,6 +364,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marca la serie actual como completada e inicia el descanso"
+          }
+        }
+      }
+    },
+    "Mini-set %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miniserie %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Myo-reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Myo-reps"
           }
         }
       }
@@ -348,6 +428,16 @@
         }
       }
     },
+    "Partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parciales"
+          }
+        }
+      }
+    },
     "Paused" : {
       "localizations" : {
         "es" : {
@@ -388,6 +478,16 @@
         }
       }
     },
+    "Rest-pause" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso-pausa"
+          }
+        }
+      }
+    },
     "Resting" : {
       "localizations" : {
         "es" : {
@@ -418,12 +518,42 @@
         }
       }
     },
+    "Set %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld"
+          }
+        }
+      }
+    },
     "Set %lld of %lld" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Set %lld%@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$lld%2$@"
+          }
+        }
+      }
+    },
+    "Set %lld%@ of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %1$lld%2$@ de %3$lld"
           }
         }
       }
@@ -474,6 +604,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Racha"
+          }
+        }
+      }
+    },
+    "Stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estiramiento"
           }
         }
       }

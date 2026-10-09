@@ -30,6 +30,85 @@ enum BodyRatioKind: String, CaseIterable, Identifiable {
     }
 }
 
+/// Where a ratio falls on its screening bands. Screening, not diagnosis.
+///
+/// Waist to height uses NICE NG246 (2025): 0.40–0.49 healthy, 0.50–0.59 increased risk, 0.60 and
+/// over high risk, for every sex and ethnicity, muscular adults included. Whether NICE sets a band
+/// under 0.40 could not be confirmed, so everything under 0.50 reads as "under half your height".
+/// Waist to hip uses the WHO 2008 expert consultation (published 2011): 0.90 for men and 0.85 for
+/// women mark a substantially increased risk. Without a sex in the profile there is no cut-off to
+/// apply, so no band.
+enum BodyRatioBand: Equatable {
+    case underHalfHeight, increasedRisk, highRisk
+    case belowCutOff, substantiallyIncreasedRisk
+
+    static let increasedWaistToHeight = 0.50
+    static let highWaistToHeight = 0.60
+    static let maleWaistToHipCutOff = 0.90
+    static let femaleWaistToHipCutOff = 0.85
+
+    static func band(kind: BodyRatioKind, ratio: Double, sex: Gender?) -> BodyRatioBand? {
+        switch kind {
+        case .waistToHeight:
+            if ratio >= highWaistToHeight { return .highRisk }
+            if ratio >= increasedWaistToHeight { return .increasedRisk }
+            return .underHalfHeight
+        case .waistToHip:
+            guard let cutOff = waistToHipCutOff(sex: sex) else { return nil }
+            return ratio >= cutOff ? .substantiallyIncreasedRisk : .belowCutOff
+        }
+    }
+
+    static func waistToHipCutOff(sex: Gender?) -> Double? {
+        switch sex {
+        case .male: return maleWaistToHipCutOff
+        case .female: return femaleWaistToHipCutOff
+        case .preferNotToSay, nil: return nil
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .underHalfHeight: return String(localized: "Under half your height")
+        case .increasedRisk: return String(localized: "Increased risk")
+        case .highRisk: return String(localized: "High risk")
+        case .belowCutOff: return String(localized: "Below the WHO cut-off")
+        case .substantiallyIncreasedRisk: return String(localized: "Substantially increased risk")
+        }
+    }
+
+    var isConcern: Bool {
+        switch self {
+        case .underHalfHeight, .belowCutOff: return false
+        case .increasedRisk, .highRisk, .substantiallyIncreasedRisk: return true
+        }
+    }
+}
+
+extension BodyRatioKind {
+    /// The bands, for the screening section's footer.
+    func bandsText(sex: Gender?) -> String {
+        switch self {
+        case .waistToHeight:
+            return String(localized: "NICE bands: 0.40–0.49 healthy, 0.50–0.59 increased risk, 0.60 or more high risk. Keep your waist to less than half your height. Screening, not diagnosis.")
+        case .waistToHip:
+            switch sex {
+            case .male: return String(localized: "WHO cut-off for men: 0.90 or more is a substantially increased risk. Screening, not diagnosis.")
+            case .female: return String(localized: "WHO cut-off for women: 0.85 or more is a substantially increased risk. Screening, not diagnosis.")
+            case .preferNotToSay, nil:
+                return String(localized: "WHO cut-offs: 0.90 or more for men, 0.85 or more for women, is a substantially increased risk. Set your sex in your profile to see your band. Screening, not diagnosis.")
+            }
+        }
+    }
+
+    var methodInfo: MethodInfo {
+        switch self {
+        case .waistToHeight: return .waistToHeightRatio
+        case .waistToHip: return .waistToHipRatio
+        }
+    }
+}
+
 struct BodyRatioDelegate {
     let kind: BodyRatioKind
 }
@@ -106,6 +185,30 @@ final class BodyRatioPresenter: @MainActor MetricDetailPresenter {
     }
 
     func onAppear() async { }
+
+    var methodInfo: MethodInfo? { kind.methodInfo }
+
+    /// The latest ratio and its screening band.
+    var summarySection: AnyView? {
+        guard let latest = entries.last else { return nil }
+        let sex = interactor.currentUser?.submittedGender
+        let band = BodyRatioBand.band(kind: kind, ratio: latest.ratio, sex: sex)
+        return AnyView(
+            Section {
+                LabeledContent(String(localized: "Latest"), value: latest.displayValue)
+                if let band {
+                    LabeledContent(String(localized: "Screening Band")) {
+                        Label(band.label, systemImage: band.isConcern ? Symbol.warning : Symbol.success)
+                            .foregroundStyle(band.isConcern ? Color.warning : Color.success)
+                    }
+                }
+            } header: {
+                Text("Screening")
+            } footer: {
+                Text(kind.bandsText(sex: sex))
+            }
+        )
+    }
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear(kind: kind))

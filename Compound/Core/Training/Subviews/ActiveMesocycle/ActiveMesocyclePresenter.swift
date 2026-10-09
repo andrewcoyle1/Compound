@@ -57,6 +57,7 @@ class ActiveMesocyclePresenter {
 
     /// The microcycle being looked at, 0-based; nil follows the one the user is on.
     private(set) var viewedCycleIndex: Int?
+    /// The microcycle on screen, 0-based. A day opened from it starts on its week's targets.
     private(set) var displayedCycleIndex: Int = 0
     private(set) var cycleCount: Int = 1
     /// The microcycle the user is on, 0-based, marked in the menu.
@@ -180,6 +181,7 @@ class ActiveMesocyclePresenter {
                     mesocycleId: item.mesocycleId,
                     onStartWorkoutPressed: nil,
                     isDeloadCycle: isDeloadCycle,
+                    microcycleIndex: displayedCycleIndex + 1,
                     periodisationPhase: periodisationPhase,
                     allowsStart: false
                 )
@@ -289,6 +291,7 @@ class ActiveMesocyclePresenter {
                     }
                 },
                 isDeloadCycle: isDeloadCycle,
+                microcycleIndex: displayedCycleIndex + 1,
                 periodisationPhase: periodisationPhase
             )
         )

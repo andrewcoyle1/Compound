@@ -129,6 +129,17 @@ struct WeeklyReviewTests {
         ])
     }
 
+    /// Only hard sets count: a set logged below RPE 6 is left out, one without RPE is not.
+    @Test("Test Sets Per Muscle Count Only Hard Sets")
+    func testSetsPerMuscleCountOnlyHardSets() {
+        let templates = ["Bench": template("Bench", [.chest: .primary])]
+        let review = build(
+            sessions: [session("a", day: 10, exercise("Bench", [set(rpe: 8), set(rpe: 5), set()]))],
+            templates: templates
+        )
+        #expect(review.setsPerMuscle == [WeeklyReview.MuscleSets(muscle: .chest, sets: 2)])
+    }
+
     @Test("Test A Lift Beaten Twice In The Week Lists Its Latest Record Once")
     func testALiftBeatenTwiceListsItsLatestRecordOnce() {
         let review = build(sessions: [
@@ -151,24 +162,40 @@ struct WeeklyReviewTests {
 
     // MARK: - Weight
 
-    @Test("Test Weight Change Is From The Last Weigh-In Before The Week")
-    func testWeightChangeFromBeforeTheWeek() {
+    /// Trend weights, not raw readings: the change runs from the trend at the last weigh-in before
+    /// the week to the trend at the week's last. The expected figures are the filter's own (worked
+    /// in `functions/coach-maths.js`, its port).
+    @Test("Test Weight Change Is The Trend's From The Last Weigh-In Before The Week")
+    func testWeightChangeFromBeforeTheWeek() throws {
         let review = build(measurements: [
             weighIn(80, day: 5), weighIn(79.5, day: 7), weighIn(79.2, day: 10), weighIn(79, day: 14), weighIn(70, day: 13, deleted: true)
         ])
-        #expect(review.latestWeightKg == 79)
-        #expect(review.weightChangeKg.map { abs($0 - -0.5) < 0.0001 } == true)
-        #expect(review.weightText == "79 kg (−0.5 kg)")
+        let latest = try #require(review.latestWeightKg)
+        let change = try #require(review.weightChangeKg)
+        #expect(abs(latest - 79.07) < 0.05)
+        #expect(abs(change - -0.32) < 0.05)
+        // Smaller than the raw 0.5 kg between the two readings: part of that was noise.
+        #expect(abs(change) < 0.5)
     }
 
     @Test("Test Without Earlier Weigh-Ins The Change Is Within The Week")
-    func testWeightChangeWithinTheWeek() {
+    func testWeightChangeWithinTheWeek() throws {
         let one = build(measurements: [weighIn(80, day: 10)])
         #expect(one.weightChangeKg == nil)
         #expect(one.weightText == "80 kg")
 
         let two = build(measurements: [weighIn(80, day: 10), weighIn(81, day: 12)])
-        #expect(two.weightChangeKg == 1)
+        let change = try #require(two.weightChangeKg)
+        #expect(change > 0)
+    }
+
+    /// A later weigh-in does not rewrite a past week's review.
+    @Test("Test Later Weigh-Ins Do Not Change A Past Week")
+    func testLaterWeighInsDoNotChangeAPastWeek() {
+        let measured = [weighIn(80, day: 5), weighIn(79.5, day: 7), weighIn(79.2, day: 10), weighIn(79, day: 14)]
+        let later = measured + [weighIn(76, day: 20), weighIn(75.5, day: 21)]
+
+        #expect(build(measurements: measured).weightChangeKg == build(measurements: later).weightChangeKg)
     }
 
     @Test("Test No Weigh-In That Week Shows No Weight")

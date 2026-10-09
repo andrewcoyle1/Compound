@@ -16,6 +16,10 @@ struct RestTimerSettingsView: View {
             behaviourSection
             notificationsSection
             scalingSection
+            if presenter.plansSets {
+                withinASetSection
+                amrapSection
+            }
         }
         .navigationTitle("Rest Timer")
         .navigationBarTitleDisplayMode(.inline)
@@ -101,6 +105,81 @@ struct RestTimerSettingsView: View {
             }
         } header: {
             Text("Rest Scaling")
+        }
+    }
+
+    // MARK: - Set Plan
+
+    private var withinASetSection: some View {
+        Section {
+            ListRow(
+                title: String(localized: "Drop set"),
+                subtitle: String(localized: "Change the weight and go"),
+                accessory: .value(String(localized: "None"))
+            )
+            ForEach(RestTimerSettingsPresenter.IntraSetKind.allCases) { kind in
+                ListRow(
+                    title: kind.title,
+                    subtitle: kind.subtitle,
+                    accessory: .custom(AnyView(intraSetRestChips(for: kind)))
+                )
+            }
+        } header: {
+            Text("Within a Set")
+        } footer: {
+            Text("A set's normal rest follows its last piece. The Live Activity shows the short rest as a bar, not a countdown, and buzzes once.")
+        }
+    }
+
+    /// In a row while they fit unbroken, else one above the other.
+    private func intraSetRestChips(for kind: RestTimerSettingsPresenter.IntraSetKind) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: Spacing.xs) { intraSetRestOptions(for: kind) }
+            VStack(alignment: .leading, spacing: 0) { intraSetRestOptions(for: kind) }
+        }
+    }
+
+    private func intraSetRestOptions(for kind: RestTimerSettingsPresenter.IntraSetKind) -> some View {
+        ForEach(kind.options, id: \.self) { seconds in
+            Button {
+                presenter.onIntraSetRestSelected(seconds, for: kind)
+            } label: {
+                Chip(presenter.secondsTitle(seconds), isSelected: presenter.intraSetRest(for: kind) == seconds)
+                    .fixedSize()
+                    .chipTapTarget()
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(presenter.intraSetRestAccessibilityLabel(seconds, for: kind))
+        }
+    }
+
+    private var amrapSection: some View {
+        Section {
+            ListRowToggle(
+                title: String(localized: "Raise the Target"),
+                subtitle: String(localized: "After beating it twice in a row"),
+                systemImage: "arrow.up.right",
+                isOn: $presenter.amrapRaisesTarget
+            )
+            Group {
+                ListRowToggle(
+                    title: String(localized: "Add Weight Instead"),
+                    subtitle: presenter.amrapAddsWeightSubtitle,
+                    systemImage: Symbol.add,
+                    isOn: $presenter.amrapAddsWeight
+                )
+                if presenter.amrapAddsWeight {
+                    Stepper(value: $presenter.amrapWeightCeiling, in: presenter.amrapCeilingRange) {
+                        Text("Target \(presenter.amrapWeightCeiling)")
+                    }
+                    .accessibilityLabel("Target that adds weight")
+                    .accessibilityValue("\(presenter.amrapWeightCeiling)")
+                }
+            }
+            // Without raising the target there is no ceiling to reach.
+            .disabled(!presenter.amrapRaisesTarget)
+        } header: {
+            Text("AMRAP")
         }
     }
 }

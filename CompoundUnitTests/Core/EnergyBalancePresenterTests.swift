@@ -46,6 +46,8 @@ struct EnergyBalancePresenterTests {
         func estimateTDEE(user: UserModel?) -> Double {
             tdee
         }
+
+        var expenditureHistory: [ExpenditureEstimate] = []
     }
 
     private final class Router: EnergyBalanceRouter {
@@ -140,6 +142,32 @@ struct EnergyBalancePresenterTests {
         let expenditure = try #require(screen.presenter.timeSeries.first { $0.name == "Expenditure" })
 
         #expect(expenditure.data.allSatisfy { $0.value == 2750 })
+    }
+
+    /// The expenditure side is the adaptive estimate where the engine has one, the last estimate
+    /// after its history stops, and the formula before it starts.
+    @Test("Test Expenditure Follows The Adaptive History")
+    func testExpenditureFollowsTheAdaptiveHistory() throws {
+        let interactor = Interactor()
+        interactor.tdee = 3000
+        interactor.caloriesByDay = [dayKey(0): 2100, dayKey(5): 2200, dayKey(20): 2300]
+        let startOfToday = Calendar.current.startOfDay(for: .now)
+        // Oldest first, ten days ago to yesterday, as the engine returns it.
+        interactor.expenditureHistory = (1...10).reversed().map { daysAgo in
+            ExpenditureEstimate(
+                day: Calendar.current.date(byAdding: .day, value: -daysAgo, to: startOfToday) ?? startOfToday,
+                kcal: 2600 + Double(daysAgo), source: .adaptive, isProvisional: false, trendWeightKg: 80,
+                weeklyTrendChangeKg: 0, loggedDays: 28, weighInCount: 28, windowDays: 28, stepAdjustmentKcal: 0
+            )
+        }
+        let presenter = EnergyBalancePresenter(interactor: interactor, router: Router())
+
+        let byKey = Dictionary(uniqueKeysWithValues: presenter.entries.map { ($0.id, $0.expenditure) })
+        // Five days ago is in the history; today is after it, so it carries the latest (one day
+        // ago); twenty days ago is before it, so it is the formula.
+        #expect(byKey[dayKey(5)] == 2605)
+        #expect(byKey[dayKey(0)] == 2601)
+        #expect(byKey[dayKey(20)] == 3000)
     }
 
     @Test("Test The Chart Plots What Was Logged")

@@ -70,7 +70,7 @@ struct SetSideTrackingTests {
         func showWarmupSetsView(delegate: WarmupSetsDelegate) { }
         func showExerciseSettingsView(delegate: ExerciseSettingsDelegate) { }
         func showSetTargetView(delegate: SetTargetDelegate) { }
-        func showSwapExercisePickerView(onSelect: @escaping (ExerciseModel) -> Void) { }
+        func showSwapExercisePickerView(alternativeIds: [String], onSelect: @escaping (ExerciseModel) -> Void) { }
     }
 
     private final class RowRouter: SetTrackerRowRouter {

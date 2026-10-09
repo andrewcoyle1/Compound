@@ -25,6 +25,7 @@ struct MuscleGroupDetailPresenterTests {
         var auth: UserAuthInfo?
         var workoutSessions: [WorkoutSessionModel] = []
         var allExercises: [ExerciseModel] = []
+        var currentUser: UserModel?
     }
 
     private final class Router: MuscleGroupDetailRouter {

@@ -23,7 +23,7 @@ struct ExpenditureSettingsView: View {
                 }
                 optionPicker("BMR Equation", options: presenter.bmrEquations, selection: $presenter.bmrEquation)
             } header: {
-                Text("Initial Estimate")
+                MethodInfoHeader(title: "Initial Estimate", info: .restingMetabolicRate)
             }
 
             Section {
@@ -32,7 +32,7 @@ struct ExpenditureSettingsView: View {
             } header: {
                 Text("Expenditure Calculation")
             } footer: {
-                Text("Dynamic reads your logged intake against your weight trend over the last four weeks. Fixed holds the figure where it is.")
+                Text("Dynamic learns from your logged intake and your weight trend, day by day. Fixed holds the figure where it is.")
             }
 
             Section {
@@ -42,14 +42,6 @@ struct ExpenditureSettingsView: View {
                     isOn: Binding(
                         get: { presenter.stepInformedUpdates },
                         set: { presenter.stepInformedUpdates = $0 }
-                    )
-                )
-                ListRowToggle(
-                    title: String(localized: "Predictive Goal Adjustment"),
-                    subtitle: String(localized: "Adjust expenditure ahead of a change in goal"),
-                    isOn: Binding(
-                        get: { presenter.predictiveGoalAdjustments },
-                        set: { presenter.predictiveGoalAdjustments = $0 }
                     )
                 )
             } header: {
@@ -76,6 +68,11 @@ struct ExpenditureSettingsView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(presenter.expenditureValueText)
                     .font(.metricLarge)
+                if let rangeText = presenter.expenditureRangeText {
+                    Text(rangeText)
+                        .font(.rowDetail)
+                        .foregroundStyle(.secondary)
+                }
                 Text(presenter.expenditureStatusText)
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
@@ -87,7 +84,7 @@ struct ExpenditureSettingsView: View {
             }
             .padding(.vertical, Spacing.xs)
         } header: {
-            Text("Today's Expenditure")
+            MethodInfoHeader(title: "Today's Expenditure", info: .adaptiveExpenditure)
         }
     }
 

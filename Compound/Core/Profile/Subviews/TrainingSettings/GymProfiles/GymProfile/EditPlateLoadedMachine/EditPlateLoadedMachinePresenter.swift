@@ -8,13 +8,13 @@ class EditPlateLoadedMachinePresenter {
     private let router: EditPlateLoadedMachineRouter
     
     private let plateLoadedMachineBinding: Binding<PlateLoadedMachine>
-    var selectedUnit: ExerciseWeightUnit
+    private let originalName: String
     
     init(interactor: EditPlateLoadedMachineInteractor, router: EditPlateLoadedMachineRouter, plateLoadedMachineBinding: Binding<PlateLoadedMachine>) {
         self.interactor = interactor
         self.router = router
         self.plateLoadedMachineBinding = plateLoadedMachineBinding
-        self.selectedUnit = plateLoadedMachineBinding.wrappedValue.unit
+        self.originalName = plateLoadedMachineBinding.wrappedValue.name
     }
     
     func onViewAppear() {
@@ -23,12 +23,19 @@ class EditPlateLoadedMachinePresenter {
     
     func onViewDisappear() {
         interactor.trackEvent(event: Event.onDisappear)
+        // A machine left without a name keeps the one it had.
+        if plateLoadedMachine.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            plateLoadedMachine.name = originalName
+        }
     }
 
     var plateLoadedMachine: PlateLoadedMachine {
         get { plateLoadedMachineBinding.wrappedValue }
         set { plateLoadedMachineBinding.wrappedValue = newValue }
     }
+
+    /// Only a duplicate or the user's own machine can be renamed.
+    var isCustom: Bool { plateLoadedMachine.isCustom }
     
     func onDismissPressed() {
         router.dismissScreen()

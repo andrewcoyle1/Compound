@@ -779,7 +779,8 @@ Two file-wide suppressions exist, each documented at the site:
 `DesignSystem/Spacing.swift` disables `identifier_name` so `Spacing.s`, `Radius.m` and the
 rest can be one letter.
 
-`Components/Science/Citations.swift` and the five `MethodInfo+*.swift` files disable `line_length`:
+`Components/Science/Citations.swift`, `Citations+R56.swift` and the five `MethodInfo+*.swift` files
+disable `line_length`:
 they hold full references and user-facing prose, which read worse broken across lines.
 
 Ten single-line `swiftlint:disable:next` comments also exist:

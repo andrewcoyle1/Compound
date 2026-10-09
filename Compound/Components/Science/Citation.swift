@@ -10,7 +10,7 @@
 import Foundation
 
 struct Citation: Identifiable, Hashable, Sendable {
-    /// The R-number in reports/Defensible fitness app algorithms.md.
+    /// The R-number in docs/research/algorithms-evidence.md.
     let reportNumber: Int
     /// Authors (year). Title. Journal volume(issue):pages. Not localized.
     let reference: String

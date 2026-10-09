@@ -329,22 +329,6 @@ struct SetTrackerRowPresenterTests {
         #expect(started == [120, 240])
     }
 
-    /// With no type override, heavy compound work (six reps or fewer) rests three minutes and
-    /// isolation work ninety seconds.
-    @Test("Test The Type Default Follows The Work")
-    func testTheTypeDefaultFollowsTheWork() {
-        let screen = makeScreen()
-        screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
-        var started: [Int] = []
-        screen.presenter.onStartRest = { started.append($0) }
-
-        screen.presenter.onSetComplete(exercise(), Box(set(reps: 5)).binding)
-        screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .isolationLower)]
-        screen.presenter.onSetComplete(exercise(), Box(set(id: "set-2")).binding)
-
-        #expect(started == [180, 90])
-    }
-
     /// An override belongs to one exercise, not to whatever exercise is on screen.
     @Test("Test Another Exercises Override Does Not Apply")
     func testAnotherExercisesOverrideDoesNotApply() {
@@ -702,6 +686,24 @@ struct SetTrackerRowPresenterTests {
 }
 
 extension SetTrackerRowPresenterTests {
+
+    // MARK: - Rest by exercise type
+
+    /// With no type override, heavy compound work (six reps or fewer) rests three minutes and
+    /// isolation work ninety seconds.
+    @Test("Test The Type Default Follows The Work")
+    func testTheTypeDefaultFollowsTheWork() {
+        let screen = makeScreen()
+        screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .compoundLower)]
+        var started: [Int] = []
+        screen.presenter.onStartRest = { started.append($0) }
+
+        screen.presenter.onSetComplete(exercise(), Box(set(reps: 5)).binding)
+        screen.interactor.allExercises = [exerciseModel(id: "template-1", type: .isolationLower)]
+        screen.presenter.onSetComplete(exercise(), Box(set(id: "set-2")).binding)
+
+        #expect(started == [180, 90])
+    }
 
     // MARK: - Units
 

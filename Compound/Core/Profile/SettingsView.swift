@@ -120,6 +120,9 @@ struct SettingsView: View {
             ListRowButton(title: String(localized: "Legal"), systemImage: Symbol.legal) {
                 presenter.onLegalPressed()
             }
+            ListRowButton(title: String(localized: "Methods & Sources"), systemImage: Symbol.knowledgeBase) {
+                presenter.onMethodsAndSourcesPressed()
+            }
             
             // Pending: App Icon is hidden: the asset catalog has one icon. Add a row calling `presenter.onAppIconPressed()` here once alternate icons ship and `AppIconView` offers them.
             

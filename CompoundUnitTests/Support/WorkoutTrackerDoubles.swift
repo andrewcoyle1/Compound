@@ -61,6 +61,14 @@ final class WorkoutTrackerInteractorDouble: SpyGlobalInteractor, WorkoutTrackerI
     }
     func getWorkoutTemplate(id: String) -> WorkoutTemplateModel? { workoutTemplates[id] }
 
+    var mesocycles: [Mesocycle] = []
+    private(set) var savedMesocycles: [Mesocycle] = []
+    var saveMesocycleError: Error?
+    func saveMesocycle(mesocycle: Mesocycle) async throws {
+        if let saveMesocycleError { throw saveMesocycleError }
+        savedMesocycles.append(mesocycle)
+    }
+
     // MARK: - End WP-B
 
     func canRequestHealthDataAuthorisation() -> Bool { false }

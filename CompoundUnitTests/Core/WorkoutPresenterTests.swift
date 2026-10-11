@@ -42,6 +42,8 @@ struct WorkoutPresenterTests {
             reps: reps,
             weightKg: weightKg,
             isWarmup: isWarmup,
+            // A finished session holds the sets that were logged.
+            completedAt: start,
             dateCreated: start
         )
     }

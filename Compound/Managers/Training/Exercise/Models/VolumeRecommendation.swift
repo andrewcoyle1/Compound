@@ -192,8 +192,11 @@ enum VolumeRecommendation {
         var effort: [String: [EffortSample]] = [:]
         for session in recent {
             let date = session.endedAt ?? session.dateCreated
+            // A deload week asks for about half the sets its targets list; read against them it
+            // would look like half the plan was skipped.
+            let isDeload = session.isDeload == true
             for exercise in session.exercises where primaryIds.contains(exercise.templateId) {
-                if !exercise.setTargets.isEmpty {
+                if !exercise.setTargets.isEmpty, !isDeload {
                     planned += exercise.setTargets.count
                     done += min(MuscleVolume.completedWorkingSets(exercise), exercise.setTargets.count)
                 }

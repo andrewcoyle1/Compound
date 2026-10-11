@@ -285,16 +285,16 @@ struct LiveActivityIntentHandlerTests {
         rig.hkWorkoutManager.cancelRest()
     }
 
-    @Test("Test The Correction Is Clamped To Zero And Ninety Nine")
+    @Test("Test The Correction Is Clamped To One And Ninety Nine")
     func testTheCorrectionIsClampedToZeroAndNinetyNine() async throws {
-        // One rep, as a set with none is not logged at all.
-        let rig = try await makeRig(sets: [set("s1", index: 1, reps: 1), set("s2", index: 2)])
+        // A logged set keeps a rep, as the in-app correction does: none was not lifted.
+        let rig = try await makeRig(sets: [set("s1", index: 1, reps: 2), set("s2", index: 2)])
         await rig.handler.completeSet(id: "s1")
 
         await rig.handler.adjustLastSetReps(id: "s1", delta: -1)
         await rig.handler.adjustLastSetReps(id: "s1", delta: -1)
         let floored = try savedSets(rig)[0]
-        #expect(floored.reps == 0)
+        #expect(floored.reps == 1)
 
         for _ in 0..<100 {
             await rig.handler.adjustLastSetReps(id: "s1", delta: 1)

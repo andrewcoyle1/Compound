@@ -64,7 +64,11 @@ struct SetKeyboardView: View {
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
                 if let chip = presenter.context.step.chip {
-                    Chip(chip)
+                    if presenter.showsBarMenu {
+                        barMenu(chip)
+                    } else {
+                        Chip(chip)
+                    }
                 }
             }
             .frame(maxWidth: .infinity)
@@ -81,6 +85,31 @@ struct SetKeyboardView: View {
             @unknown default: break
             }
         }
+        // The row is one element, so the bar menu inside it is offered as actions.
+        .accessibilityActions {
+            if presenter.showsBarMenu {
+                ForEach(presenter.context.barChoices) { choice in
+                    Button("Use \(choice.title) bar") { presenter.chosenBarId = choice.id }
+                }
+            }
+        }
+    }
+
+    /// The base weight as a menu of the gym's bars for this exercise. A choice is saved to the
+    /// gym, as the plate calculator's is, and the loading follows it.
+    private func barMenu(_ chip: String) -> some View {
+        Menu {
+            Picker("Bar Weight", selection: $presenter.chosenBarId) {
+                ForEach(presenter.context.barChoices) { choice in
+                    Text(choice.title).tag(choice.id)
+                }
+            }
+        } label: {
+            Chip(chip, systemImage: Symbol.choose)
+                .chipTapTarget()
+        }
+        .menuStyle(.button)
+        .buttonStyle(.plain)
     }
 
     private var stepSummary: String {
@@ -141,13 +170,13 @@ struct SetKeyboardView: View {
                         .font(.rowDetail)
                         .foregroundStyle(.danger)
                     ForEach([below, above].compactMap { $0 }, id: \.self) { value in
-                        Button("\(WeightStepper.format(value)) \(unit)") {
+                        Button("\(presenter.shownLoad(value)) \(unit)") {
                             presenter.applyWeight(displayValue: value)
                             announceValue()
                         }
                         .buttonStyle(.bordered)
                         .font(.rowDetail.monospacedDigit())
-                        .accessibilityLabel("Use \(WeightStepper.format(value)) \(unit)")
+                        .accessibilityLabel("Use \(presenter.shownLoad(value)) \(unit)")
                     }
                 }
             }
@@ -181,24 +210,26 @@ struct SetKeyboardView: View {
     private var effortRow: some View {
         ScrollView(.horizontal) {
             HStack(spacing: Spacing.s) {
-                Text("RPE")
+                Text("RIR")
                     .font(.label)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
-                ForEach(EffortScale.rpeChoices, id: \.self) { rpe in
-                    let isSelected = presenter.selectedRPE == rpe
+                    .accessibilityLabel("Reps in reserve")
+                ForEach(EffortScale.rirChoices, id: \.self) { rir in
+                    let isSelected = presenter.selectedRIR == rir
+                    let text = EffortScale.rirText(rir)
                     Button {
-                        presenter.toggleRPE(rpe)
-                        if let rpe = presenter.selectedRPE {
-                            AccessibilityNotification.Announcement(String(localized: "RPE \(WeightStepper.format(rpe)), \(WeightStepper.format(EffortScale.rir(fromRPE: rpe))) reps in reserve")).post()
+                        presenter.toggleRIR(rir)
+                        if presenter.selectedRIR != nil {
+                            AccessibilityNotification.Announcement(String(localized: "\(text) reps in reserve")).post()
                         }
                     } label: {
-                        Chip(WeightStepper.format(rpe), isSelected: isSelected)
+                        Chip(text, isSelected: isSelected)
                             .monospacedDigit()
                             .chipTapTarget()
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("RPE \(WeightStepper.format(rpe)), \(WeightStepper.format(EffortScale.rir(fromRPE: rpe))) reps in reserve")
+                    .accessibilityLabel(String(localized: "\(text) reps in reserve"))
                     .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
             }

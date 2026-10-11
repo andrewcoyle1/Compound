@@ -51,13 +51,19 @@ struct ProgressionPlanner {
             self.occurrence = occurrence
         }
 
-        init(templateExercise: WorkoutTemplateExercise, preferredWeightUnit: ExerciseWeightUnit?, occurrence: Int = 0) {
+        init(
+            templateExercise: WorkoutTemplateExercise,
+            preferredWeightUnit: ExerciseWeightUnit?,
+            resistanceEquipment: [EquipmentRef]? = nil,
+            occurrence: Int = 0
+        ) {
             self.init(
                 templateId: templateExercise.exercise.id,
                 trackingMode: WorkoutSessionModel.trackingMode(for: templateExercise.exercise),
                 setTargets: templateExercise.setTargets,
                 exercise: templateExercise.exercise,
                 preferredWeightUnit: preferredWeightUnit,
+                resistanceEquipment: resistanceEquipment,
                 occurrence: occurrence
             )
         }
@@ -74,9 +80,7 @@ struct ProgressionPlanner {
                 setTargets: sessionExercise.setTargets,
                 exercise: exercise,
                 preferredWeightUnit: preferredWeightUnit,
-                resistanceEquipment: sessionExercise.chosenVariationId.flatMap { chosen in
-                    sessionExercise.equipmentVariations.first { $0.id == chosen }?.resistanceEquipment
-                },
+                resistanceEquipment: sessionExercise.activeVariation?.resistanceEquipment,
                 occurrence: occurrence
             )
         }
@@ -100,7 +104,12 @@ struct ProgressionPlanner {
             let input = ProgressionInput(
                 trackingMode: context.trackingMode,
                 setTargets: context.setTargets,
-                history: history(forTemplateId: context.templateId, occurrence: context.occurrence, in: sessions),
+                history: history(
+                    forTemplateId: context.templateId,
+                    occurrence: context.occurrence,
+                    in: sessions,
+                    loadedWith: context.resistanceEquipment ?? context.exercise?.equipmentVariations.first?.resistanceEquipment
+                ),
                 adjustmentMode: adjustmentMode,
                 roundWeight: rule.round,
                 minimumIncrementKg: rule.minimumIncrementKg,
@@ -119,7 +128,7 @@ struct ProgressionPlanner {
             gymProfile: gymProfile,
             preferredWeightUnit: context.preferredWeightUnit,
             resistanceEquipment: context.resistanceEquipment
-        ).forProgression
+        )
     }
 
     /// One exercise's history: its completed working sets out of each session that has any, most
@@ -128,16 +137,21 @@ struct ProgressionPlanner {
     /// `sessions` is expected most recent first. A session where the exercise was not reached is
     /// dropped rather than counted as a miss — it says nothing about how the exercise went. So is
     /// one without its `occurrence`th appearance: a back-off done once is no history for a second.
+    /// A deload week is passed over, so the week after it carries on from the week before, and so
+    /// is a session that lifted the exercise with a different kind of load (`LoadKind`) than
+    /// `loadedWith`: dumbbell sets say nothing about the barbell.
     static func history(
         forTemplateId templateId: String,
         occurrence: Int = 0,
         in sessions: [WorkoutSessionModel],
+        loadedWith refs: [EquipmentRef]? = nil,
         limit: Int = 3
     ) -> [ProgressionHistorySession] {
         var history: [ProgressionHistorySession] = []
 
-        for session in sessions {
-            guard let exercise = session.exercise(templateId: templateId, occurrence: occurrence) else { continue }
+        for session in sessions where session.isDeload != true {
+            guard let exercise = session.exercise(templateId: templateId, occurrence: occurrence),
+                  WorkoutSessionModel.isSameLoad(exercise.activeVariation?.resistanceEquipment, refs) else { continue }
             let workingSets = completedWorkingSets(of: exercise)
             guard !workingSets.isEmpty else { continue }
             history.append(ProgressionHistorySession(workingSets: workingSets))

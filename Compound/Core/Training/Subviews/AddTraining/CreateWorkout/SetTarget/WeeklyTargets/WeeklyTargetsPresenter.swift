@@ -5,7 +5,7 @@ import SwiftUI
 /// editor's working copy, so that editor's Save and Cancel still decide whether any of it is kept.
 @Observable
 @MainActor
-class MicrocycleVariationsPresenter {
+class WeeklyTargetsPresenter {
 
     /// An override with an id of its own, so its row keeps its identity while its week is stepped.
     struct Variation: Identifiable, Equatable {
@@ -17,8 +17,8 @@ class MicrocycleVariationsPresenter {
     /// Week 1 is the exercise's own targets, so a variation starts from week 2.
     static let weekRange = 2...52
 
-    private let interactor: MicrocycleVariationsInteractor
-    private let router: MicrocycleVariationsRouter
+    private let interactor: WeeklyTargetsInteractor
+    private let router: WeeklyTargetsRouter
     private let onChange: @MainActor ([MicrocycleSetTargets]) -> Void
     /// The exercise as the editor held it: its base targets and its name.
     private let exercise: WorkoutTemplateExercise
@@ -26,7 +26,7 @@ class MicrocycleVariationsPresenter {
     /// Sorted by week.
     private(set) var variations: [Variation]
 
-    init(interactor: MicrocycleVariationsInteractor, router: MicrocycleVariationsRouter, delegate: MicrocycleVariationsDelegate) {
+    init(interactor: WeeklyTargetsInteractor, router: WeeklyTargetsRouter, delegate: WeeklyTargetsDelegate) {
         self.interactor = interactor
         self.router = router
         self.onChange = delegate.onChange
@@ -142,15 +142,15 @@ class MicrocycleVariationsPresenter {
     }
 }
 
-extension MicrocycleVariationsPresenter {
+extension WeeklyTargetsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case addVariation(week: Int)
 
         var eventName: String {
             switch self {
-            case .onAppear: return "MicrocycleVariationsView_Appear"
-            case .addVariation: return "MicrocycleVariationsView_AddVariation"
+            case .onAppear: return "WeeklyTargetsView_Appear"
+            case .addVariation: return "WeeklyTargetsView_AddVariation"
             }
         }
 

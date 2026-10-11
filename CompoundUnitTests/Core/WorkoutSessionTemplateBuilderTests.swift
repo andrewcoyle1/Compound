@@ -140,7 +140,8 @@ struct WorkoutSessionTemplateBuilderTests {
         let targets = build(session, library: [bench])?.exercises.first?.setTargets ?? []
 
         #expect(targets.count == 1)
-        #expect(targets.first?.minReps == nil)
+        // A new exercise's default range (`SetTarget.defaultRepRange`).
+        #expect(targets.first?.minReps == 8)
     }
 
     @Test("Test The Name Gets Copy Only On A Clash")

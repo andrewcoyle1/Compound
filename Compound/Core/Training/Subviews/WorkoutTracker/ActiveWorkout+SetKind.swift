@@ -123,14 +123,17 @@ extension ActiveWorkout {
         return sets
     }
 
-    /// A drop's starting weight: 20 % off its parent, to the nearest weight the equipment makes.
+    /// A drop's starting weight: `percent` (20 %) off its parent, to the nearest weight the
+    /// equipment makes, and lighter than the parent even where the nearest is the parent itself.
     /// 20 % rather than one gym step, because a 2.5 kg step off a barbell is no drop at all.
     /// Assistance (a negative weight) and no weight are left as they are.
-    @MainActor
-    static func dropWeightKg(from parentKg: Double?, step: WeightStep, unit: ExerciseWeightUnit) -> Double? {
+    static func dropWeightKg(from parentKg: Double?, step: WeightStep, unit: ExerciseWeightUnit, percent: Int = 20) -> Double? {
         guard let parentKg, parentKg > 0 else { return parentKg }
-        let target = UnitConversion.convertWeight(parentKg, to: unit) * 0.8
-        let snapped = step.nearest(to: target)
+        let parent = UnitConversion.convertWeight(parentKg, to: unit)
+        var snapped = step.nearest(to: parent * (1 - Double(percent) / 100))
+        if snapped >= parent - WeightStep.epsilon, let lighter = step.previous(before: parent), lighter < parent - WeightStep.epsilon {
+            snapped = lighter
+        }
         return UnitConversion.convertWeightToKg(snapped, from: unit)
     }
 

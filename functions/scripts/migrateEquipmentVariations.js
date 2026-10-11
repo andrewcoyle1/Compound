@@ -47,7 +47,7 @@ console.log("─".repeat(50));
 const __dir = dirname(fileURLToPath(import.meta.url));
 const prebuiltPath = resolve(
   __dir,
-  "../../DialedIn/SupportingFiles/Resources/PrebuiltExercises.json"
+  "../data/PrebuiltExercises.json"
 );
 
 let variationsByExerciseId;

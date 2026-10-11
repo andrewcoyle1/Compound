@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 @testable import Compound
 
-/// The correction row under the set just logged, and the undo stack behind shake and ⌘Z.
+/// The correction bar for the set just logged, and the undo stack behind shake and ⌘Z.
 ///
 /// A set is logged first and corrected after (`docs/specs/workout-tracker/input.md` §2): a rep
 /// off re-suggests the sets still to come, reps in reserve are stored as RPE, and Undo un-logs
@@ -71,6 +71,21 @@ struct WorkoutTrackerCorrectionTests {
 
         presenter.logSet("set-2", in: "exercise-1")
         #expect(card(presenter)?.setId == "set-2")
+    }
+
+    /// The bar over the log button holds the set just logged while its rest runs, named for its
+    /// exercise, and goes with the rest.
+    @Test func theBarShowsTheSetJustLoggedDuringItsRest() throws {
+        let (presenter, interactor) = try makeScreen()
+        #expect(presenter.restCorrection == nil)
+
+        presenter.logSet("set-1", in: "exercise-1")
+        let rest = try #require(presenter.restCorrection)
+        #expect(rest.exerciseId == "exercise-1")
+        #expect(rest.correction.title == "Bench Press · Set 1 · 60 kg × 8")
+
+        interactor.cancelRest()
+        #expect(presenter.restCorrection == nil)
     }
 
     /// Two reps short of the range: the sets still to come are lightened, as they would have been

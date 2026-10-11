@@ -24,6 +24,8 @@ struct ExerciseTrackerDelegate {
     var onSetCompleted: @MainActor (WorkoutSetModel, WorkoutExerciseModel) -> Void = { _, _ in }
     /// Saves this session's note on the exercise; an empty string clears it.
     var onUpdateNote: @MainActor (String) -> Void = { _ in }
+    /// Saves the exercise's mesocycle note; `nil` when it has none to edit, outside a mesocycle.
+    var onUpdateMesocycleNote: (@MainActor (String) -> Void)?
     /// See `SetTrackerDelegate.onSwap`.
     var onSwap: (@MainActor (ExerciseModel) -> Void)?
     /// The live tracker draws the current exercise as an open card. `nil` is the collapsible row
@@ -40,9 +42,7 @@ struct ExerciseCard {
     var onDoLater: (@MainActor () -> Void)?
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
-    /// See `SetTrackerCard.correction`, `onCorrection` and `onUndoManager`.
-    var correction: SetCorrection?
-    var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
+    /// See `SetTrackerCard.onUndoManager`.
     var onUndoManager: (@MainActor (UndoManager?) -> Void)?
     /// See `SetTrackerCard.piece` and `showAutoRanges`.
     var piece: SetTrackerPiece?
@@ -69,14 +69,8 @@ struct ExerciseTrackerView<SetTracker: View>: View {
         if let card = delegate.card {
             setTracker(setDelegate(card: SetTrackerCard(
                 header: { menu in AnyView(cardHeader(delegate.exercise.wrappedValue, card: card, menu: menu)) },
-                hasNote: delegate.exercise.wrappedValue.notes != nil,
-                onNotePressed: {
-                    presenter.onNotePressed(
-                        for: delegate.exercise.wrappedValue,
-                        previousNote: delegate.previousNote,
-                        onSave: delegate.onUpdateNote
-                    )
-                },
+                notes: hasNotes(delegate.exercise.wrappedValue) ? AnyView(noteCards(delegate.exercise.wrappedValue)) : nil,
+                onNotePressed: { openNotes(on: .session) },
                 onDoLater: card.onDoLater,
                 onWatch: watchAction(for: delegate.exercise.wrappedValue),
                 progressionNote: card.progressionNote,
@@ -84,8 +78,6 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 restTimer: card.restTimer,
                 onLogSet: card.onLogSet,
                 onCustomRestChanged: card.onCustomRestChanged,
-                correction: card.correction,
-                onCorrection: card.onCorrection,
                 onUndoManager: card.onUndoManager,
                 piece: card.piece,
                 showAutoRanges: card.showAutoRanges
@@ -98,6 +90,16 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 exerciseHeader(delegate.exercise.wrappedValue)
             }
         }
+    }
+
+    private func openNotes(on tab: NoteTab.Kind) {
+        presenter.onNotePressed(
+            for: delegate.exercise.wrappedValue,
+            tab: tab,
+            previousNote: delegate.previousNote,
+            onSave: delegate.onUpdateNote,
+            onSaveMesocycleNote: delegate.onUpdateMesocycleNote
+        )
     }
 
     private func setDelegate(card: SetTrackerCard?) -> SetTrackerDelegate {
@@ -122,7 +124,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
         return { presenter.onWatchPressed(url, open: openURL) }
     }
 
-    /// The card's title row, then the user's own note. Kept short: the sets are the point.
+    /// The card's title row. Kept short: the sets are the point, and the notes follow them.
     private func cardHeader(_ exercise: WorkoutExerciseModel, card: ExerciseCard, menu: AnyView) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack(alignment: .top, spacing: Spacing.m) {
@@ -158,47 +160,93 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                             menu
                         }
                     }
-                    underTitle(exercise, card: card)
+                    underTitle(card: card)
                 }
 
             }
-
-            if let note = presenter.note(for: exercise) {
-                pinnedNote(note)
-            }
-
-            if let sessionNote = exercise.notes {
-                Label {
-                    ClampedNote(text: sessionNote)
-                } icon: {
-                    Image(systemName: Symbol.note)
-                }
-                .font(.rowDetail)
-            }
-
         }
         .padding(.vertical, Spacing.s)
     }
 
-    /// Under the name: the superset's label, unless the card is a member's, then the plan's cues
-    /// for the lift, held to two lines.
+    /// Under the name: the superset's label, unless the card is a member's.
     @ViewBuilder
-    private func underTitle(_ exercise: WorkoutExerciseModel, card: ExerciseCard) -> some View {
+    private func underTitle(card: ExerciseCard) -> some View {
         if card.memberLetter == nil, let label = delegate.supersetLabel {
             Chip(label, systemImage: Symbol.superset, tint: .superset)
         }
-        if let notes = presenter.planNotes(for: exercise) {
-            planNotesView(notes)
+    }
+
+    /// Whether any note is written, so an exercise without one gets no empty row under its sets.
+    private func hasNotes(_ exercise: WorkoutExerciseModel) -> Bool {
+        presenter.planNotes(for: exercise) != nil || presenter.note(for: exercise) != nil || exercise.notes != nil
+    }
+
+    /// Under the sets, one card per note written: the mesocycle note (the plan's notes, read-only
+    /// outside a mesocycle), the exercise note and this workout's. Each opens the sheet on its tab.
+    @ViewBuilder
+    private func noteCards(_ exercise: WorkoutExerciseModel) -> some View {
+        let canEditPlan = delegate.onUpdateMesocycleNote != nil
+        VStack(spacing: Spacing.s) {
+            if let plan = presenter.planNotes(for: exercise) {
+                noteCard(canEditPlan ? "Mesocycle Note" : "Plan Note", symbol: Symbol.pinnedNote, text: plan, tab: canEditPlan ? .mesocycle : nil)
+                    .accessibilityIdentifier("ExerciseTracker.planNotes")
+            }
+            if let note = presenter.note(for: exercise) {
+                noteCard("Exercise Note", symbol: Symbol.pinnedNote, text: note, tab: .exercise)
+            }
+            if let note = exercise.notes {
+                noteCard("Session Note", symbol: Symbol.note, text: note, tab: .session)
+            }
         }
     }
 
-    private func planNotesView(_ notes: String) -> some View {
-        ClampedNote(text: notes, lineLimit: 2)
+    /// A note set apart from anything the app says by its label, its symbol and a neutral fill
+    /// rather than a tint. `tab` nil is a note that cannot be edited here.
+    @ViewBuilder
+    private func noteCard(_ title: LocalizedStringKey, symbol: String, text: String, tab: NoteTab.Kind?) -> some View {
+        let content = VStack(alignment: .leading, spacing: Spacing.xxs) {
+            HStack {
+                Text(title)
+                    .font(.label)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Image(systemName: symbol)
+                    .font(.label)
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+            // Three lines either way: an editable note opens whole in its sheet, so More, a
+            // button inside the card's button, is only for one that cannot.
+            Group {
+                if tab == nil {
+                    ClampedNote(text: text)
+                } else {
+                    Text(text).lineLimit(3)
+                }
+            }
             .font(.rowDetail)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Plan notes")
-            .accessibilityValue(notes)
-            .accessibilityIdentifier("ExerciseTracker.planNotes")
+            .foregroundStyle(Color.primary)
+            .multilineTextAlignment(.leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.s)
+        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
+        if let tab {
+            Button {
+                openNotes(on: tab)
+            } label: {
+                content.contentShape(.rect)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(Text(title))
+            .accessibilityValue(text)
+            .accessibilityHint("Edits the note")
+        } else {
+            content
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(title))
+                .accessibilityValue(text)
+        }
     }
 
     /// The member header's letter, when the card is a superset member's, then the name.
@@ -211,22 +259,6 @@ struct ExerciseTrackerView<SetTracker: View>: View {
         Text(exercise.name)
             .font(.sectionTitle)
             .accessibilityAddTraits(.isHeader)
-    }
-
-    /// The note the user keeps on the exercise, set apart from anything the app says by its
-    /// label, its pin and a neutral fill rather than a tint.
-    private func pinnedNote(_ note: String) -> some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            Label("Your note", systemImage: Symbol.pinnedNote)
-                .font(.label)
-                .foregroundStyle(.secondary)
-            ClampedNote(text: note)
-                .font(.rowDetail)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(Spacing.s)
-        .background(Color.tintedSurface(.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
-        .accessibilityElement(children: .combine)
     }
 
     @ViewBuilder

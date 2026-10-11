@@ -223,6 +223,34 @@ struct GymProfilePresenterTests {
         #expect(screen.presenter.filteredFreeWeights.map(\.wrappedValue.name) == ["Dumbbells"])
     }
 
+    // MARK: - One variation's equipment
+
+    /// Opened from a workout's equipment sheet: only the variation's items, and each save handed
+    /// back so the exercise refits to it.
+    @Test("Test A Scoped Profile Lists Only The Variation's Equipment And Reports Saves")
+    func testAScopedProfileListsOnlyTheVariationsEquipmentAndReportsSaves() async {
+        let interactor = Interactor()
+        let profile = GymProfileModel(
+            id: "gym-1", authorId: "author-1", name: "Home Gym",
+            freeWeights: [freeWeight("Dumbbells", id: "dumbbells"), freeWeight("Kettlebells", id: "kettlebells")]
+        )
+        var saved: [GymProfileModel] = []
+        let presenter = GymProfilePresenter(
+            interactor: interactor, router: Router(), gymProfile: profile,
+            scope: [EquipmentRef(kind: .freeWeight, id: "dumbbells")],
+            onSaved: { saved.append($0) }
+        )
+
+        #expect(presenter.filteredFreeWeights.map(\.wrappedValue.id) == ["dumbbells"])
+        #expect(presenter.filteredLoadableBars.isEmpty)
+
+        presenter.filteredFreeWeights[0].wrappedValue.isActive = true
+        presenter.onViewDisappear()
+        await settle()
+
+        #expect(saved.first?.freeWeights.first { $0.id == "dumbbells" }?.isActive == true)
+    }
+
     // MARK: - Editing through a binding
 
     /// The rule the sorting makes easy to get wrong: a row's binding has to reach the item it

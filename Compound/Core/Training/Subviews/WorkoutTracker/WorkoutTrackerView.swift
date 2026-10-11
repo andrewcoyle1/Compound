@@ -97,6 +97,10 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         // Hard, so a scrolled set table never shows through the progress text at large sizes.
         // The strip's bar has no solid fill and takes the automatic effect instead.
         .scrollEdgeEffectStyle(presenter.showsExerciseStrip ? .automatic : .hard, for: .top)
+        // The set just logged, to correct while its rest runs; over the button, off the card.
+        .safeAreaBar(edge: .bottom) {
+            WorkoutCorrectionBar(presenter: presenter)
+        }
         // Always shown, above the keypad too: its animations are its own, so a log no longer
         // animates the whole list with it.
         .bottomCTA {

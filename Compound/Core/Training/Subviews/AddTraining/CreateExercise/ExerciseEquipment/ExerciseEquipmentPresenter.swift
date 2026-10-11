@@ -29,7 +29,8 @@ class ExerciseEquipmentPresenter {
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         equipmentIndex = Dictionary(
-            uniqueKeysWithValues: interactor.allEquipmentTypes.map { ($0.ref, $0) }
+            interactor.allEquipmentTypes.map { ($0.ref, $0) },
+            uniquingKeysWith: { first, _ in first }
         )
     }
 
@@ -103,9 +104,11 @@ class ExerciseEquipmentPresenter {
     }
 
     func onNextPressed(delegate: ExerciseEquipmentDelegate) {
-        let finalVariations = variations.map {
-            EquipmentVariation(id: $0.id, resistanceEquipment: $0.resistanceEquipment, supportEquipment: $0.supportEquipment)
-        }
+        // A variation with no equipment at all is not a way to do the exercise, and would count as
+        // possible in every gym; the drafts left empty are dropped.
+        let finalVariations = variations
+            .filter { !$0.resistanceEquipment.isEmpty || !$0.supportEquipment.isEmpty }
+            .map { EquipmentVariation(id: $0.id, resistanceEquipment: $0.resistanceEquipment, supportEquipment: $0.supportEquipment) }
         router.showFinalExerciseDetailsView(
             delegate: FinalExerciseDetailsDelegate(
                 name: delegate.name,
@@ -115,14 +118,14 @@ class ExerciseEquipmentPresenter {
                 laterality: delegate.laterality,
                 targetMuscles: delegate.muscleGroups,
                 isBodyweight: bodyweightExercise,
-                // The toggle only hid the variations; their drafts were still saved on the exercise.
-                equipmentVariations: bodyweightExercise ? [] : finalVariations
+                // Kept for body-weight work too: an assisted pull-up is loaded through its machine.
+                equipmentVariations: finalVariations
             )
         )
     }
 
     private func name(for ref: EquipmentRef) -> String {
-        equipmentIndex[ref]?.name ?? ref.equipmentId
+        equipmentIndex[ref]?.name ?? ref.fallbackName
     }
 }
 

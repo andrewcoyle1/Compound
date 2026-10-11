@@ -69,7 +69,7 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
             highlights
             // Four stats side by side stop fitting at the accessibility text sizes.
             AdaptiveStack(verticalAlignment: .top, spacing: dynamicTypeSize.isAccessibilitySize ? Spacing.s : Spacing.xl) {
-                Stat(value: presenter.session.exercises.count.formatted(), label: String(localized: "Exercises"), size: .small)
+                Stat(value: presenter.session.doneExercises.count.formatted(), label: String(localized: "Exercises"), size: .small)
                 Stat(value: presenter.workingSetCount.formatted(), label: String(localized: "Sets"), size: .small)
                 if let volume = presenter.volumeText {
                     Stat(value: volume, label: String(localized: "Volume"), size: .small)
@@ -129,7 +129,7 @@ struct WorkoutSessionRowView<AuthorHeader: View>: View {
 
     private var exerciseList: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            ForEach(presenter.session.exercises) { exercise in
+            ForEach(presenter.session.doneExercises) { exercise in
                 AdaptiveStack(spacing: 0) {
                     Text(exercise.name)
                         .font(.rowDetail)

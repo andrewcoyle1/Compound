@@ -33,6 +33,18 @@ enum MesocycleDeload {
         weightKg >= 0 ? weightKg * loadFraction : weightKg * (2 - loadFraction)
     }
 
+    /// `lighter`, rounded by `round` to something the equipment makes, and lighter than `weightKg`
+    /// even where the nearest weight is the one being lifted (15 kg on a 5 kg stack is 15, not
+    /// 13.5): one more step down is tried, and the weight is kept only where nothing is lighter.
+    static func lighterWeight(_ weightKg: Double, round: (Double) -> Double) -> Double {
+        let drop = weightKg - lighter(weightKg)
+        for steps in 1...4 {
+            let rounded = round(weightKg - drop * Double(steps))
+            if rounded < weightKg - 0.001 { return rounded }
+        }
+        return weightKg
+    }
+
     /// `sets` with only the first `setCount(from:)` working sets left, re-numbered from one. A set
     /// is counted as `pairedSetCount` counts it: its drops and mini-sets go with it, and the right
     /// half of a left/right pair goes with the left. Warm-ups are all kept.

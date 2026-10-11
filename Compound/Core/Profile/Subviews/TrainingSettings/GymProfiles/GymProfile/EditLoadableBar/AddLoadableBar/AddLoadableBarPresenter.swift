@@ -40,6 +40,9 @@ class AddLoadableBarPresenter {
     /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
     /// disabled until then, rather than reporting the problem in an alert after the tap.
     var validationMessage: String? {
+        guard loadableBarBaseWeight.baseWeight > 0 else {
+            return String(localized: "Enter a weight above zero.")
+        }
         guard loadableBar.wrappedValue.baseWeights.contains(where: {
             $0.baseWeight == loadableBarBaseWeight.baseWeight && $0.unit == loadableBarBaseWeight.unit
         }) == false else {

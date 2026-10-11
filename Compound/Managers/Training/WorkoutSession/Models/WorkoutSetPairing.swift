@@ -151,6 +151,13 @@ extension WorkoutExerciseModel {
         sets.filter { !$0.isWarmup }
     }
 
+    /// The working sets that were done: what every summary of a session counts. A finished
+    /// session keeps only these (`WorkoutSessionModel.dropUnloggedSets`), but one saved before
+    /// that still holds the plan's open sets.
+    var loggedWorkingSets: [WorkoutSetModel] {
+        sets.filter { !$0.isWarmup && $0.completedAt != nil }
+    }
+
     /// Whether this exercise is worked one limb at a time, read off the rows it already carries.
     ///
     /// `WorkoutSessionModel.isPerSide` answers the same question from the `ExerciseModel`, which a
@@ -207,8 +214,13 @@ extension WorkoutExerciseModel {
     /// then a row done for both sides (or before sides existed), never the other limb's. A row for
     /// both sides takes the left of a split pair, the side `ProgressionPlanner` reads too.
     func matchingSet(for set: WorkoutSetModel, in current: WorkoutExerciseModel) -> WorkoutSetModel? {
+        // A warm-up by its place among the warm-ups: two last time and three today puts today's
+        // third against nothing, not against last time's first working set.
         guard !set.isWarmup else {
-            return sets.first { $0.index == set.index && $0.side == set.side }
+            let today = current.sets.filter { $0.isWarmup && $0.side == set.side }
+            let last = sets.filter { $0.isWarmup && $0.side == set.side }
+            guard let ordinal = today.firstIndex(where: { $0.id == set.id }), ordinal < last.count else { return nil }
+            return last[ordinal]
         }
         let number = current.workingSetNumber(for: set)
         let candidates = workingSets.filter { workingSetNumber(for: $0) == number }
@@ -220,37 +232,5 @@ extension WorkoutExerciseModel {
             if let match = candidates.first(where: { $0.side == side }) { return match }
         }
         return nil
-    }
-}
-
-/// What last session's figures are matched on.
-///
-/// The index alone is not enough once sets have sides: a left set inheriting the right side's
-/// weight is showing the user the wrong arm's history, and they will chase it.
-struct PreviousSetKey: Hashable {
-    let index: Int
-    let side: SetSide?
-
-    init(index: Int, side: SetSide?) {
-        self.index = index
-        self.side = side
-    }
-
-    init(_ set: WorkoutSetModel) {
-        self.init(index: set.index, side: set.side)
-    }
-}
-
-extension Dictionary where Key == PreviousSetKey, Value == WorkoutSetModel {
-
-    /// Last session's matching set, if there is one.
-    ///
-    /// Falls back to the sideless entry for the same index, because everything logged before sides
-    /// existed has no side at all — that history belongs to both limbs rather than to neither, and
-    /// dropping it would blank the previous column for every set of every unilateral exercise.
-    func match(for set: WorkoutSetModel) -> WorkoutSetModel? {
-        if let exact = self[PreviousSetKey(set)] { return exact }
-        guard set.side != nil else { return nil }
-        return self[PreviousSetKey(index: set.index, side: nil)]
     }
 }

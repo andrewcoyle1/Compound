@@ -119,9 +119,9 @@ struct ExerciseFilters {
 
     /// Performable when the exercise needs no equipment, or when at least one of its variations can
     /// be assembled *entirely* from what the gym has. Per-variation and all-or-nothing: half a
-    /// variation is not a way to do the exercise.
+    /// variation is not a way to do the exercise. Body-weight work counts too: a pull-up needs
+    /// its bar.
     private static func isPerformable(_ exercise: ExerciseModel, with availableEquipment: Set<EquipmentRef>) -> Bool {
-        if exercise.isBodyweight { return true }
         if exercise.equipmentVariations.isEmpty { return true }
 
         return exercise.equipmentVariations.contains { variation in

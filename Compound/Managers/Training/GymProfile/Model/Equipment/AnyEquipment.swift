@@ -30,8 +30,16 @@ struct AnyEquipment: Identifiable, Hashable, Sendable {
 }
 
 extension Array where Element == AnyEquipment {
-    /// The name to show for `ref`: the first item of that type, else its id.
+    /// The name to show for `ref`: the first item of that type, else `EquipmentRef.fallbackName`.
     func name(for ref: EquipmentRef) -> String {
-        first { $0.ref == ref }?.name ?? ref.equipmentId
+        first { $0.ref == ref }?.name ?? ref.fallbackName
+    }
+}
+
+extension EquipmentRef {
+    /// The name of equipment no gym or catalogue lists any more. A machine the user made and then
+    /// deleted has a generated id, which reads as nothing, so it is named for what happened to it.
+    var fallbackName: String {
+        UUID(uuidString: equipmentId) != nil ? String(localized: "Removed equipment") : equipmentId
     }
 }

@@ -393,7 +393,19 @@ struct GymEditLoadableAccessoryPresenterTests {
     func testTheScreenOpensOnTheAccessorysUnit() {
         let (presenter, _) = makeScreen(unit: .pounds)
 
-        #expect(presenter.selectedUnit == .pounds)
+        #expect(presenter.loadableAccessory.unit == .pounds)
+    }
+
+    /// The unit picker edits the accessory itself; it used to set a copy that was never saved.
+    @Test("Test Changing The Unit Reaches The Gym Profile")
+    func testChangingTheUnitReachesTheGymProfile() {
+        let (presenter, box) = makeScreen(unit: .pounds)
+
+        presenter.loadableAccessory.unit = .kilograms
+        presenter.baseWeight = -3
+
+        #expect(box.value.unit == .kilograms)
+        #expect(box.value.baseWeight == 0)
     }
 
     /// The accessory's own weight is added to whatever is hung from it, so an edit that stopped at

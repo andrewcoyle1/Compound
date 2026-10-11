@@ -36,6 +36,23 @@ struct SetTarget: DataSyncModelProtocol, Equatable, Hashable {
     /// How long a stretch or hold after the set lasts, in seconds.
     var holdSeconds: Int?
 
+    /// The range a set whose template gives neither end is progressed through, and the range a
+    /// new template exercise starts with.
+    static let defaultRepRange = 8...12
+    /// How far a range with only one end set reaches to the other.
+    static let defaultRangeWidth = 4
+
+    /// A new exercise's first set: a standard set in `defaultRepRange`.
+    static func standard(setNumber: Int) -> SetTarget {
+        SetTarget(setNumber: setNumber, minReps: defaultRepRange.lowerBound, maxReps: defaultRepRange.upperBound)
+    }
+
+    /// The reps in reserve the set aims at: its own target, else none for an AMRAP or failure
+    /// set, which is meant to end there.
+    var effectiveRIRTarget: Int? {
+        rirTarget ?? (setType == .amrap || setType == .failure ? 0 : nil)
+    }
+
     init(
         id: String = UUID().uuidString,
         setNumber: Int,

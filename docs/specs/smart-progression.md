@@ -286,3 +286,35 @@ Each is shown to the user through a `MethodInfo` (`MethodInfo+Training.swift`) w
 - **Rest defaults** (`RestDurationRules.defaultSeconds`): with no plan, exercise or type time
   set, compound sets of ≤ 6 reps rest 180 s, other compound 120 s, isolation 90 s, core 60 s;
   an untyped exercise keeps `defaultRestDurationSeconds` (ACSM 2009; Singer 2024).
+
+## 10. Changes from the 10 Oct 2026 audit
+
+From `docs/reviews/2026-10-10-equipment-variation-progression-audit.md`, with the owner's
+decisions recorded there.
+
+- **One rounding rule.** `WeightRoundingRule.forProgression` is gone: progression rounds to what
+  the gym makes, exactly as prefill and the keyboard do. A gym whose smallest plate is 5 kg gets
+  loadable 10 kg jumps, bridged by a rep a session (`jumpIsAffordable`), not 62.5 kg it cannot load.
+- **Nothing heavier.** When `increasedWeight` cannot go up (top pin, gap in the rack), the set
+  does a rep more at the same weight rather than dropping to `range.min`. The same for a
+  weight/reps set logged with no weight. Body-weight work does `referenceReps + 1` (§3.3's
+  `range.max + 1` stalled at the same number).
+- **No rep range.** A target with neither end uses `SetTarget.defaultRepRange` (8–12) and cannot
+  be missed; one end alone is widened by four. New template exercises and swaps start at 8–12.
+  The derived `prev…prev+2` window moved with the reps, so weight never went on.
+- **Judged sets.** Drop, myo, rest-pause, cluster, partials, stretch and hold targets are left out
+  of the top, miss and RPE checks. `SetTarget.effectiveRIRTarget` makes an AMRAP or failure set
+  aim for 0 in reserve, and the target RIR is editable on the set target screen; it is the
+  logged set's starting effort, changed from the reps keypad's RIR chips (0–6+, stored as RPE).
+- **History.** `ProgressionPlanner.history` skips deload sessions (`WorkoutSessionModel.isDeload`)
+  and sessions on another `LoadKind` than the chosen variation's; it is fetched ten deep so three
+  remain. The Prev column reads history the same way.
+- **Live adjustment** (§4) ignores sub-sets, rewrites only later sets with the same target, counts
+  the target index by set number (a pair once) and makes a miss lighter with
+  `MesocycleDeload`-style sign handling, rounded down.
+- **Timed and distance.** Time grows `max(round5(s × 1.1), s + 5)`; distance
+  `max(round(m × 1.05, step), m + step)` with a 1, 10 or 50 m step. "Every set finished" is
+  "as many logged as planned", since a finished session keeps only logged sets.
+- **AMRAP** "beaten twice" needs both sessions at the same weight.
+- **Deload rounding** goes down (`MesocycleDeload.lighterWeight`), and during a deload week the
+  tracker's suggestions are deloaded too.

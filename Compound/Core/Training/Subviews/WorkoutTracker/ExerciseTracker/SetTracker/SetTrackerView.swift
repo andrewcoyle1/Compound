@@ -29,8 +29,8 @@ struct SetTrackerDelegate {
 struct SetTrackerCard {
     /// The card's title row, handed the actions menu to place in it.
     var header: (AnyView) -> AnyView
-    /// This session's note on the exercise, written from the actions menu.
-    var hasNote = false
+    /// The exercise's notes, under the sets; the actions menu opens their sheet.
+    var notes: AnyView?
     var onNotePressed: @MainActor () -> Void = { }
     /// Moves the exercise to the end of the workout; `nil` when there is nothing to put it behind.
     var onDoLater: (@MainActor () -> Void)?
@@ -43,9 +43,6 @@ struct SetTrackerCard {
     /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
-    /// The row under the set just logged, with the rest when one follows it there.
-    var correction: SetCorrection?
-    var onCorrection: (@MainActor (String, SetCorrectionAction) -> Void)?
     /// Handed the window's undo manager while the card is on screen, and `nil` once it has gone.
     var onUndoManager: (@MainActor (UndoManager?) -> Void)?
     /// One piece of the table rather than all of it, for a superset's card to place among its
@@ -63,9 +60,9 @@ enum SetTrackerPiece: Equatable {
     case columnHeadings
     /// The logged warm-ups, folded into one line.
     case loggedWarmups
-    /// A set's row with `badge` in its circle, and the correction row or rest under it when
-    /// they follow that set. Only the row the log button logs next (`isNext`) is current.
+    /// A set's row with `badge` in its circle, and the rest under it when it follows that set. Only the row the log button logs next (`isNext`) is current.
     case row(setId: String, badge: String, isNext: Bool)
+    /// The add-set button, then the exercise's notes.
     case addSet
 }
 
@@ -122,7 +119,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             loggedWarmupsGroup
             ForEach(delegate.exercise.wrappedValue.sets.filter { !$0.isWarmup || $0.completedAt == nil }) { set in
                 row(for: set)
-                correctionRow(below: set)
+                restRow(below: set)
             }
             addSetButton
         }
@@ -138,6 +135,16 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         .listRowInsets(.vertical, 0)
         .listRowInsets(.leading, 0)
         .listSectionMargins(.top, 0)
+        noteCards
+    }
+
+    /// The notes under the add-set button, with the list's own insets like the title row.
+    @ViewBuilder
+    private var noteCards: some View {
+        if let notes = delegate.card?.notes {
+            notes
+                .listRowSeparator(.hidden)
+        }
     }
 
     /// Done warm-ups fold into one line, so the table starts at the work, and open on a tap to be
@@ -203,17 +210,12 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         )
     }
 
-    /// Under the set just logged: what it was, to correct or undo, and the rest it started.
+    /// Under the set just logged: the rest it started. Correcting the set is the bar over the
+    /// log button (`WorkoutTrackerPresenter.restCorrection`).
     @ViewBuilder
-    private func correctionRow(below set: WorkoutSetModel) -> some View {
-        if let card = delegate.card {
-            let correction = card.correction?.setId == set.id ? card.correction : nil
-            let timer = card.restTimer?.anchor == .below(setId: set.id) ? card.restTimer : nil
-            if correction != nil || timer != nil {
-                InlineRestTimerRow(timer: timer, correction: correction) { action in
-                    card.onCorrection?(set.id, action)
-                }
-            }
+    private func restRow(below set: WorkoutSetModel) -> some View {
+        if let timer = delegate.card?.restTimer, timer.anchor == .below(setId: set.id) {
+            InlineRestTimerRow(timer: timer)
         }
     }
 
@@ -251,7 +253,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 Button {
                     card.onNotePressed()
                 } label: {
-                    Label(card.hasNote ? "Edit Note" : "Add Note", systemImage: Symbol.note)
+                    Label("Notes", systemImage: Symbol.note)
                 }
                 if let onDoLater = card.onDoLater {
                     Button {
@@ -491,8 +493,8 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 }
             }
         } label: {
-            Text(unitPreference.weightUnit.abbreviation.capitalized)
-                .accessibilityLabel("Weight unit, \(unitPreference.weightUnit.displayName)")
+            Text(presenter.weightColumnTitle(for: exercise.wrappedValue, unit: unitPreference.weightUnit))
+                .accessibilityLabel(presenter.weightColumnLabel(for: exercise.wrappedValue, unit: unitPreference.weightUnit))
                 .chipStyle(tint: .secondary, filled: false)
                 .frame(minHeight: ControlSize.row)
                 .contentShape(.rect)
@@ -558,11 +560,12 @@ extension SetTrackerView {
                     row(for: set, badge: badge, isNext: isNext)
                         .accessibilityElement(children: .contain)
                         .accessibilityLabel([name, delegate.exercise.wrappedValue.name].joined(separator: ", "))
-                    correctionRow(below: set)
+                    restRow(below: set)
                 }
             }
         case .addSet:
             tableRows { addSetButton }
+            noteCards
         }
     }
 

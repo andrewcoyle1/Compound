@@ -2,8 +2,9 @@
 //  WorkoutTrackerPresenter+Notes.swift
 //  Compound
 //
-//  The notes a workout carries: one per exercise, written from its header, and one for the
-//  session, written on the finish screen.
+//  The notes a workout carries: on each exercise, its session note (this workout only), its
+//  exercise note (every workout) and, in a mesocycle, its mesocycle note (that slot of that day);
+//  and one for the whole workout, written on the finish screen.
 //
 
 import SwiftUI
@@ -17,6 +18,45 @@ extension WorkoutTrackerPresenter {
         let trimmed = previousExercise(for: exercise)?.notes?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmed, !trimmed.isEmpty else { return nil }
         return trimmed
+    }
+
+    /// Whether the exercise came from a slot of the mesocycle day plan this workout is, so its
+    /// mesocycle note can be edited. Not for an exercise added mid-workout, a workout from a
+    /// template, or a slot the plan has since lost.
+    func canEditMesocycleNote(_ exercise: WorkoutExerciseModel) -> Bool {
+        mesocycle(settingNote: nil, on: exercise) != nil
+    }
+
+    /// The mesocycle note: this workout's copy at once, then the day plan's slot, so every later
+    /// week of that day shows it. Blank clears it.
+    func updateMesocycleNote(_ note: String, exerciseId: String) {
+        guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
+        let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value = trimmed.isEmpty ? nil : trimmed
+        var exercises = workoutSession.exercises
+        exercises[index].planNotes = value
+        workoutSession.updateExercises(exercises)
+        guard let mesocycle = mesocycle(settingNote: value, on: exercises[index]) else { return }
+        Task {
+            do {
+                try await interactor.saveMesocycle(mesocycle: mesocycle)
+            } catch {
+                router.showAlert(
+                    title: String(localized: "Unable to Save Note"),
+                    subtitle: String(localized: "The note is on this workout, but not yet on your mesocycle. Please try again."),
+                    buttons: nil
+                )
+            }
+        }
+    }
+
+    private func mesocycle(settingNote note: String?, on exercise: WorkoutExerciseModel) -> Mesocycle? {
+        guard let mesocycleId = workoutSession.mesocycleId,
+              let dayPlanId = workoutSession.workoutTemplateId,
+              let slotId = exercise.planSlotId,
+              let mesocycle = interactor.mesocycles.first(where: { $0.id == mesocycleId })
+        else { return nil }
+        return mesocycle.settingNote(note, dayPlanId: dayPlanId, slotId: slotId)
     }
 
     /// The finish screen: the session note, then Finish. Cancelling leaves the workout running.

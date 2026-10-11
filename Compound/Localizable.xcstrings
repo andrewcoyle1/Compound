@@ -580,16 +580,6 @@
         }
       }
     },
-    "%@ kg" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ kg"
-          }
-        }
-      }
-    },
     "%@ kg (%@%%)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -607,6 +597,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quedan %@"
+          }
+        }
+      }
+    },
+    "%@ lifted" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ levantados"
           }
         }
       }
@@ -774,6 +774,7 @@
       }
     },
     "%@ remaining" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -805,6 +806,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ reps"
+          }
+        }
+      }
+    },
+    "%@ reps in reserve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ repeticiones en reserva"
           }
         }
       }
@@ -947,12 +958,12 @@
         }
       }
     },
-    "%@ today. A lighter week to recover." : {
+    "%@ today. Two sessions short of the reps, so the weight resets." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ hoy. Una semana más ligera para recuperarte."
+            "value" : "%@ hoy. Dos sesiones sin llegar a las repeticiones, así que el peso se reajusta."
           }
         }
       }
@@ -1326,6 +1337,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@/día"
+          }
+        }
+      }
+    },
+    "%@/side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@/lado"
           }
         }
       }
@@ -1960,16 +1981,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld kg"
-          }
-        }
-      }
-    },
-    "%lld kg lifted" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld kg levantados"
           }
         }
       }
@@ -2898,6 +2909,7 @@
       }
     },
     "%lld-day streak" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "variations" : {
@@ -3066,6 +3078,7 @@
       }
     },
     "+ %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3320,6 +3333,7 @@
       }
     },
     "1–2 sessions per week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3420,6 +3434,7 @@
       }
     },
     "3–4 sessions per week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3460,6 +3475,7 @@
       }
     },
     "5–6 sessions per week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3479,9 +3495,6 @@
         }
       }
     },
-    "75" : {
-      "shouldTranslate" : false
-    },
     "8 reps" : {
       "shouldTranslate" : false
     },
@@ -3490,6 +3503,16 @@
     },
     "9+" : {
       "shouldTranslate" : false
+    },
+    "A bar takes plates in pairs, so a single plate only loads a one-sleeve machine." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una barra lleva los discos por parejas, así que un disco suelto solo sirve para una máquina de un solo manguito."
+          }
+        }
+      }
     },
     "A bodyweight exercise cannot track a load. Go back and turn off Bodyweight Exercise, or track without weight." : {
       "localizations" : {
@@ -3812,17 +3835,8 @@
         }
       }
     },
-    "A variation's targets apply from its week until the next variation." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los objetivos de una variación se aplican desde su semana hasta la siguiente variación."
-          }
-        }
-      }
-    },
     "A weigh-in a day keeps your trend and targets accurate." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3963,6 +3977,7 @@
       }
     },
     "About three in four people fall within 10% of a measured value." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4146,6 +4161,7 @@
       }
     },
     "Active lifestyle, frequent movement, manual work" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4197,6 +4213,7 @@
       }
     },
     "Activity Level Multiplier" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4397,16 +4414,6 @@
         }
       }
     },
-    "Add Note" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir nota"
-          }
-        }
-      }
-    },
     "Add Photo" : {
       "localizations" : {
         "es" : {
@@ -4483,6 +4490,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Añadir variación"
+          }
+        }
+      }
+    },
+    "Add Week" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir semana"
           }
         }
       }
@@ -4609,6 +4626,7 @@
       }
     },
     "Add cable machine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4819,6 +4837,7 @@
       }
     },
     "Add pin-loaded machine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -4980,16 +4999,6 @@
         }
       }
     },
-    "Add variation" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir variación"
-          }
-        }
-      }
-    },
     "Add warm-up sets based on the weight and how fresh you are" : {
       "localizations" : {
         "es" : {
@@ -5121,6 +5130,7 @@
       }
     },
     "Adjust expenditure ahead of a change in goal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -6507,6 +6517,7 @@
       }
     },
     "Based on lean mass, so it needs a body fat percentage to mean anything." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -6527,6 +6538,7 @@
       }
     },
     "Based on your selected rate of %@ per week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7001,6 +7013,7 @@
       }
     },
     "Breathe" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7459,6 +7472,7 @@
       }
     },
     "Carbs will be reduced to prioritize fat and protein intake." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7469,6 +7483,7 @@
       }
     },
     "Carbs will be very restricted to allow for higher fat intake." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -7630,16 +7645,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambia el peso y sigue"
-          }
-        }
-      }
-    },
-    "Changes the weight to one your plates can make" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cambia el peso por uno que tus discos pueden formar"
           }
         }
       }
@@ -9183,6 +9188,7 @@
       }
     },
     "Create mesocycle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9245,6 +9251,7 @@
       }
     },
     "Current" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -9810,6 +9817,7 @@
       }
     },
     "Days you mark as incomplete are left out of your expenditure estimate." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10268,6 +10276,7 @@
       }
     },
     "Desk job, minimal walking, mostly sitting" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -10864,6 +10873,7 @@
       }
     },
     "Distribute calories to increase energy on training days." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11117,6 +11127,7 @@
       }
     },
     "Dynamic reads your logged intake against your weight trend over the last four weeks. Fixed holds the figure where it is." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -11162,6 +11173,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cada uno se sube con sus series. Un historial largo puede tardar un rato."
+          }
+        }
+      }
+    },
+    "Each week's targets apply from that week until the next one listed." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los objetivos de cada semana se aplican desde esa semana hasta la siguiente de la lista."
           }
         }
       }
@@ -11239,6 +11260,16 @@
         }
       }
     },
+    "Edit %@ equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar el equipo de %@"
+          }
+        }
+      }
+    },
     "Edit Base Weight" : {
       "localizations" : {
         "es" : {
@@ -11295,16 +11326,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar mesociclo"
-          }
-        }
-      }
-    },
-    "Edit Note" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar nota"
           }
         }
       }
@@ -11401,6 +11422,16 @@
         }
       }
     },
+    "Edits the note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edita la nota"
+          }
+        }
+      }
+    },
     "Effective load = external load + %@ of your bodyweight" : {
       "localizations" : {
         "es" : {
@@ -11468,16 +11499,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vacío"
-          }
-        }
-      }
-    },
-    "Empty bar" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Barra vacía"
           }
         }
       }
@@ -11705,6 +11726,16 @@
         }
       }
     },
+    "Enter a weight above zero." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce un peso mayor que cero."
+          }
+        }
+      }
+    },
     "Enter a weight of zero or more." : {
       "localizations" : {
         "es" : {
@@ -11732,6 +11763,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Introduce al menos una repetición."
+          }
+        }
+      }
+    },
+    "Enter at least one, or leave it empty for no limit." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce al menos uno, o déjalo vacío para no poner límite."
           }
         }
       }
@@ -11783,6 +11824,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Introduce el nombre del mesociclo"
+          }
+        }
+      }
+    },
+    "Enter plates only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introducir solo los discos"
           }
         }
       }
@@ -12019,6 +12070,7 @@
       }
     },
     "Estimated from your profile until %lld days are logged" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "variations" : {
@@ -12041,6 +12093,7 @@
       }
     },
     "Estimated with the Mifflin-St Jeor equation." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12221,6 +12274,7 @@
       }
     },
     "Exercise Frequency Adjustment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12324,6 +12378,7 @@
       }
     },
     "Exercise most days" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12619,6 +12674,7 @@
       }
     },
     "Fat will be reduced to prioritize carb and protein intake." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12997,7 +13053,6 @@
       }
     },
     "Finish" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13505,6 +13560,7 @@
       }
     },
     "Gaining this fast means more of the weight you put on is likely to be fat rather than muscle." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -13821,6 +13877,7 @@
       }
     },
     "Goal reached!" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14133,6 +14190,7 @@
       }
     },
     "Highest recommended intake." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14153,6 +14211,7 @@
       }
     },
     "Highly active throughout the day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14173,6 +14232,7 @@
       }
     },
     "Highly active, constant movement, physically demanding" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14479,6 +14539,7 @@
       }
     },
     "How would you like to change the unit for '%@'?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -14634,12 +14695,12 @@
         }
       }
     },
-    "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded to your equipment. Reps stay as planned and warm-ups stay. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks." : {
+    "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded down to your equipment, and a step lighter where 90% would round back to the planned weight. Reps stay as planned and warm-ups stay. The week after a deload carries on from the week before it. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En la semana de descarga de un mesociclo, cada ejercicio mantiene aproximadamente la mitad de sus series de trabajo (la mitad, redondeando al alza, así que 4 pasan a 2 y 3 pasan a 2) al 90% del peso previsto, redondeado a tu equipo. Las repeticiones se mantienen según lo previsto y los calentamientos también. Sigues entrenando con la frecuencia habitual. Levantadores y entrenadores hacen la descarga sobre todo reduciendo el volumen y el esfuerzo sin cambiar la frecuencia. En una encuesta a atletas de fuerza y de físico, una descarga típica duraba aproximadamente una semana cada 5 o 6 semanas."
+            "value" : "En la semana de descarga de un mesociclo, cada ejercicio mantiene aproximadamente la mitad de sus series de trabajo (la mitad, redondeando al alza, así que 4 pasan a 2 y 3 pasan a 2) al 90% del peso previsto, redondeado a la baja a tu equipo, y un escalón más ligero cuando el 90% volvería a redondearse al peso previsto. Las repeticiones se mantienen según lo previsto y los calentamientos también. La semana siguiente a una descarga continúa desde la semana anterior a ella. Sigues entrenando con la frecuencia habitual. Levantadores y entrenadores hacen la descarga sobre todo reduciendo el volumen y el esfuerzo sin cambiar la frecuencia. En una encuesta a atletas de fuerza y de físico, una descarga típica duraba aproximadamente una semana cada 5 o 6 semanas."
           }
         }
       }
@@ -14666,6 +14727,7 @@
       }
     },
     "In the middle of the optimal range." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15039,6 +15101,7 @@
       }
     },
     "Katch-McArdle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15197,6 +15260,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kilocalorías"
+          }
+        }
+      }
+    },
+    "Kilogram stack" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pila en kilogramos"
           }
         }
       }
@@ -15428,6 +15501,7 @@
       }
     },
     "Last logged %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15825,6 +15899,7 @@
       }
     },
     "Light movement most of the day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -15855,6 +15930,7 @@
       }
     },
     "Light walking, some daily activities, occasional stairs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -16453,6 +16529,7 @@
       }
     },
     "Logged today" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -16554,6 +16631,7 @@
       }
     },
     "Losing this fast makes you more likely to lose muscle and to feel hungry and tired. A slower rate is easier to keep up." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -16594,6 +16672,7 @@
       }
     },
     "Low Floor" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -17101,6 +17180,16 @@
         }
       }
     },
+    "Mesocycle Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota del mesociclo"
+          }
+        }
+      }
+    },
     "Mesocycle Settings" : {
       "localizations" : {
         "es" : {
@@ -17537,6 +17626,7 @@
       }
     },
     "Mostly sitting; little movement" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18001,6 +18091,7 @@
       }
     },
     "Next to log" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18737,6 +18828,7 @@
       }
     },
     "No structured exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18827,6 +18919,7 @@
       }
     },
     "No weigh-ins yet." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -18990,6 +19083,16 @@
         }
       }
     },
+    "Not in this gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No está en este gimnasio"
+          }
+        }
+      }
+    },
     "Not loadable" : {
       "localizations" : {
         "es" : {
@@ -19006,16 +19109,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se puede cargar con estos discos"
-          }
-        }
-      }
-    },
-    "Not loadable. Use %@ %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se puede cargar. Usa %@ %@"
           }
         }
       }
@@ -19619,6 +19712,7 @@
       }
     },
     "On feet or moving regularly" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19629,6 +19723,7 @@
       }
     },
     "On target" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19650,6 +19745,7 @@
       }
     },
     "On the high end of the optimal range." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19660,6 +19756,7 @@
       }
     },
     "On the low side of the optimal range." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -19926,6 +20023,7 @@
       }
     },
     "Opens your weight history" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20069,6 +20167,7 @@
       }
     },
     "Over" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20338,22 +20437,22 @@
         }
       }
     },
-    "Per side: " : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Por lado: "
-          }
-        }
-      }
-    },
     "Performed %@ %@ · last %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Realizado %1$@ %2$@ · última vez %3$@"
+          }
+        }
+      }
+    },
+    "Performed with bodyweight. Add any equipment it needs, such as a pull-up bar." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se hace con el peso corporal. Añade el equipo que necesite, como una barra de dominadas."
           }
         }
       }
@@ -20480,6 +20579,7 @@
       }
     },
     "Physically active work or lifestyle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20609,6 +20709,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plan"
+          }
+        }
+      }
+    },
+    "Plan Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota del plan"
           }
         }
       }
@@ -20751,16 +20861,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los discos van en"
-          }
-        }
-      }
-    },
-    "Plates: " : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discos: "
           }
         }
       }
@@ -21010,6 +21110,7 @@
       }
     },
     "Predictive Goal Adjustment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21578,32 +21679,12 @@
         }
       }
     },
-    "RPE" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPE"
-          }
-        }
-      }
-    },
     "RPE %@" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "RPE %@"
-          }
-        }
-      }
-    },
-    "RPE %@, %@ reps in reserve" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RPE %1$@, %2$@ repeticiones en reserva"
           }
         }
       }
@@ -21619,6 +21700,7 @@
       }
     },
     "Range End" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21629,6 +21711,7 @@
       }
     },
     "Range Start" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21852,6 +21935,7 @@
       }
     },
     "Recommended %@ sets a week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -21942,6 +22026,7 @@
       }
     },
     "Regular walking, standing work, daily movement" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22098,6 +22183,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitar de la superserie"
+          }
+        }
+      }
+    },
+    "Removed equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipo eliminado"
           }
         }
       }
@@ -22779,6 +22874,7 @@
       }
     },
     "Resting calories are based on your age, height, weight and sex, then scaled by daily activity and how often you exercise. Minimum safeguards may apply elsewhere when setting calorie targets." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22799,6 +22895,7 @@
       }
     },
     "Resting calories × (activity + exercise)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -22819,6 +22916,7 @@
       }
     },
     "Resting energy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -23413,6 +23511,16 @@
         }
       }
     },
+    "Saved with this workout in your history." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se guarda con este entrenamiento en tu historial."
+          }
+        }
+      }
+    },
     "Scale Weight" : {
       "localizations" : {
         "es" : {
@@ -23937,12 +24045,32 @@
         }
       }
     },
+    "Session" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesión"
+          }
+        }
+      }
+    },
     "Session ID" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ID de sesión"
+          }
+        }
+      }
+    },
+    "Session Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota de la sesión"
           }
         }
       }
@@ -24103,6 +24231,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %lld, repeticiones mínimas"
+          }
+        }
+      }
+    },
+    "Set %lld, reps in reserve" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld, repeticiones en reserva"
           }
         }
       }
@@ -24277,6 +24415,16 @@
         }
       }
     },
+    "Sets are entered and shown as the plates loaded. The machine's weight is still added to what is recorded." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las series se introducen y se muestran como los discos cargados. El peso de la máquina se sigue sumando a lo que se registra."
+          }
+        }
+      }
+    },
     "Sets per Muscle" : {
       "localizations" : {
         "es" : {
@@ -24287,12 +24435,12 @@
         }
       }
     },
-    "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows." : {
+    "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one, worth the harder side. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las series por músculo cuentan solo las series efectivas: terminadas, que no sean de calentamiento y que no se hayan registrado por debajo de RPE 6. Una serie sin RPE cuenta igualmente, así que no registrar el esfuerzo no te penaliza. Los músculos principales de un ejercicio reciben la serie entera y los que solo asisten, media. Una serie izquierda y una derecha cuentan como una. Cada descenso terminado, o cada miniserie de una serie myo-rep o de descanso-pausa, suma media serie, hasta dos series en total. Las semanas son ventanas móviles de siete días."
+            "value" : "Las series por músculo cuentan solo las series efectivas: terminadas, que no sean de calentamiento y que no se hayan registrado por debajo de RPE 6. Una serie sin RPE cuenta igualmente, así que no registrar el esfuerzo no te penaliza. Los músculos principales de un ejercicio reciben la serie entera y los que solo asisten, media. Una serie izquierda y una derecha cuentan como una, con el valor del lado más duro. Cada descenso terminado, o cada miniserie de una serie myo-rep o de descanso-pausa, suma media serie, hasta dos series en total. Las semanas son ventanas móviles de siete días."
           }
         }
       }
@@ -24672,6 +24820,26 @@
         }
       }
     },
+    "Shown every time you do this exercise." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se muestra cada vez que haces este ejercicio."
+          }
+        }
+      }
+    },
+    "Shown every week on this day of your mesocycle." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se muestra cada semana en este día de tu mesociclo."
+          }
+        }
+      }
+    },
     "Shows the currently active workout session if one is in progress." : {
       "localizations" : {
         "es" : {
@@ -24964,12 +25132,12 @@
         }
       }
     },
-    "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its RPE target. Without a target, a compound set logged at RPE 10 doesn't earn weight. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell, you add a rep each session until your reps carry the heavier weight for the bottom of the range. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target." : {
+    "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its reps-in-reserve target. An AMRAP or failure set aims for none in reserve. Without a target, a compound set logged at RPE 10 doesn't earn weight. A set with no rep range is worked through 8–12, and reps under 8 there are not a miss; a range with only one end set reaches four reps to the other. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell or 10 kg on a bar with no plates under 5 kg, you add a rep each session until your reps carry the heavier weight for the bottom of the range. With nothing heavier at all, at the top of a stack or a gap in the rack, you add a rep; body-weight work, and a set logged with no weight, does a rep more than last time. History comes from sessions done with the same kind of load, so dumbbell sets never set a barbell weight, and passes over deload weeks. Timed sets grow 10% (at least 5 seconds) and distances 5%. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La progresión inteligente usa la doble progresión: añade repeticiones dentro de tu rango con el mismo peso, y después añade peso y vuelve a la parte baja del rango. El peso sube cuando la mayoría de las series (primero el peso) o todas las series (primero las repeticiones) llegan a la parte alta del rango y ninguna serie se registró más dura que su RPE objetivo. Sin objetivo, una serie de un ejercicio compuesto registrada con RPE 10 no da derecho a subir peso. Si no registras el RPE, hay que alcanzar la parte alta del rango en dos sesiones seguidas con ese peso. El incremento es una proporción del peso, redondeada a tu equipo: 5% en compuestos de tren inferior, 2,5% en compuestos de tren superior y 5% en aislamiento y core. Nunca es menor que tu disco o placa más pequeños. Cuando incluso ese incremento supera el 10% del peso, como 2 kg en una mancuerna ligera, añades una repetición cada sesión hasta que tus repeticiones permitan mover el peso mayor en la parte baja del rango. Una sesión por debajo del rango repite los pesos. Una segunda seguida, con el mismo peso y sin quedarte corto (RPE 9,5 o más, o sin RPE), reajusta el peso. El nuevo peso se calcula a partir de la repetición máxima estimada de esa serie para la parte baja del rango con 2 repeticiones en reserva, o con el objetivo de la plantilla."
+            "value" : "La progresión inteligente usa la doble progresión: añade repeticiones dentro de tu rango con el mismo peso, y después añade peso y vuelve a la parte baja del rango. El peso sube cuando la mayoría de las series (primero el peso) o todas las series (primero las repeticiones) llegan a la parte alta del rango y ninguna serie se registró más dura que su objetivo de repeticiones en reserva. Una serie AMRAP o al fallo busca no dejar ninguna en reserva. Sin objetivo, una serie de un ejercicio compuesto registrada con RPE 10 no da derecho a subir peso. Una serie sin rango de repeticiones se trabaja en 8–12, y por debajo de 8 no cuenta como fallo; un rango con un solo extremo fijado llega cuatro repeticiones hasta el otro. Si no registras el RPE, hay que alcanzar la parte alta del rango en dos sesiones seguidas con ese peso. El incremento es una proporción del peso, redondeada a tu equipo: 5% en compuestos de tren inferior, 2,5% en compuestos de tren superior y 5% en aislamiento y core. Nunca es menor que tu disco o placa más pequeños. Cuando incluso ese incremento supera el 10% del peso, como 2 kg en una mancuerna ligera o 10 kg en una barra sin discos de menos de 5 kg, añades una repetición cada sesión hasta que tus repeticiones permitan mover el peso mayor en la parte baja del rango. Si no hay nada más pesado, al final de una pila o en un hueco del estante, añades una repetición; el trabajo con peso corporal, y una serie registrada sin peso, hace una repetición más que la última vez. El historial sale de las sesiones hechas con el mismo tipo de carga, así que las series con mancuernas nunca fijan el peso de una barra, y se salta las semanas de descarga. Las series por tiempo crecen un 10% (al menos 5 segundos) y las distancias un 5%. Una sesión por debajo del rango repite los pesos. Una segunda seguida, con el mismo peso y sin quedarte corto (RPE 9,5 o más, o sin RPE), reajusta el peso. El nuevo peso se calcula a partir de la repetición máxima estimada de esa serie para la parte baja del rango con 2 repeticiones en reserva, o con el objetivo de la plantilla."
           }
         }
       }
@@ -24995,6 +25163,7 @@
       }
     },
     "Smart Progression: %@%@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25175,6 +25344,7 @@
       }
     },
     "Standard Floor (Recommended)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -25195,6 +25365,7 @@
       }
     },
     "Standard distribution of carbs and fat." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26027,6 +26198,7 @@
       "shouldTranslate" : false
     },
     "Swap" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26273,6 +26445,7 @@
       }
     },
     "Target %@ sets a week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -26955,6 +27128,16 @@
         }
       }
     },
+    "The note is on this workout, but not yet on your mesocycle. Please try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nota está en este entrenamiento, pero aún no en tu mesociclo. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "The only version so far." : {
       "localizations" : {
         "es" : {
@@ -26976,6 +27159,7 @@
       }
     },
     "The range start must be less than the range end." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -27025,12 +27209,12 @@
         }
       }
     },
-    "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, and the in-session 5% cut are Compound's own choices. The 10% fallback is the practitioner convention it replaces." : {
+    "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, the in-session 5% cut, the 8–12 default range, the time and distance steps and reading history by kind of load are Compound's own choices. The 10% fallback is the practitioner convention it replaces. The rep fallback uses Epley's equation past 10 reps, which the one-rep max does not: it compares two weights at the same reps rather than estimating a max, which is where the equation holds up best." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los porcentajes de incremento (elegidos dentro del rango del 2–10% que describe el ACSM), el límite del 10%, la repetición en reserva predeterminada para compuestos, la regla de dos sesiones sin RPE, el reajuste a partir de RPE 9,5, las 2 repeticiones en reserva y los límites del 5–15% de un reajuste, y el recorte del 5% durante la sesión son decisiones propias de Compound. La alternativa del 10% es la convención práctica a la que sustituye."
+            "value" : "Los porcentajes de incremento (elegidos dentro del rango del 2–10% que describe el ACSM), el límite del 10%, la repetición en reserva predeterminada para compuestos, la regla de dos sesiones sin RPE, el reajuste a partir de RPE 9,5, las 2 repeticiones en reserva y los límites del 5–15% de un reajuste, el recorte del 5% durante la sesión, el rango predeterminado de 8–12, los incrementos de tiempo y distancia y leer el historial por tipo de carga son decisiones propias de Compound. La alternativa del 10% es la convención práctica a la que sustituye. La alternativa de repeticiones usa la ecuación de Epley por encima de 10 repeticiones, cosa que la repetición máxima no hace: compara dos pesos con las mismas repeticiones en lugar de estimar un máximo, que es donde la ecuación mejor funciona."
           }
         }
       }
@@ -27047,6 +27231,7 @@
       }
     },
     "The streak reminder comes only on a day your streak would end. The weekly digest arrives on Sunday evening. Workout reminders come one, three and five days after you last open Compound. Meal reminders come at breakfast, lunch and dinner." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -27522,16 +27707,6 @@
         }
       }
     },
-    "This exercise is performed with bodyweight, without additional resistance." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Este ejercicio se hace con el peso corporal, sin resistencia adicional."
-          }
-        }
-      }
-    },
     "This file could not be read as a program." : {
       "localizations" : {
         "es" : {
@@ -27563,6 +27738,7 @@
       }
     },
     "This is your estimated total daily energy expenditure." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -27908,6 +28084,7 @@
       }
     },
     "Today's Nutrition" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -29231,6 +29408,16 @@
         }
       }
     },
+    "Unable to Save Note" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la nota"
+          }
+        }
+      }
+    },
     "Unable to Save Profile" : {
       "localizations" : {
         "es" : {
@@ -29808,6 +29995,7 @@
       }
     },
     "Under" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -30282,6 +30470,16 @@
         }
       }
     },
+    "Use %@ bar" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar la barra de %@"
+          }
+        }
+      }
+    },
     "Use Default" : {
       "localizations" : {
         "es" : {
@@ -30383,6 +30581,7 @@
       }
     },
     "Use your logged body fat percentage where one is available, which suits leaner or heavier builds better." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -30523,16 +30722,6 @@
         }
       }
     },
-    "Varies by week" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Varía por semana"
-          }
-        }
-      }
-    },
     "Vary By Day" : {
       "localizations" : {
         "es" : {
@@ -30584,6 +30773,7 @@
       }
     },
     "View" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -30774,12 +30964,12 @@
         }
       }
     },
-    "Volume is weight × reps summed over working sets, with a weight held in each hand counted twice. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like." : {
+    "Volume is weight × reps summed over the working sets you logged. A dumbbell set is logged as one dumbbell, as it reads on the rack, so an exercise that holds one in each hand counts it twice; so does a left-and-right set logged as one. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El volumen es peso × repeticiones sumado en las series de trabajo, y un peso en cada mano cuenta dos veces. Con Mostrar contribución del peso corporal activado, tus propios entrenamientos también cuentan la parte de tu peso corporal que levanta un movimiento, fijada en cada ejercicio. Los fondos cuentan el 100%, las dominadas el 95% y las sentadillas el 85%. Los estudios con plataformas de fuerza sitúan una flexión en torno al 64–75% de la masa corporal y una flexión de rodillas en torno al 49–62%. La asistencia se descuenta. Sin esa opción, o en los entrenamientos de otras personas, solo cuenta la carga externa, así que una dominada no suma nada. Los récords de la pestaña Progreso y las clasificaciones de los círculos siempre usan la carga externa, para comparar lo mismo con lo mismo."
+            "value" : "El volumen es peso × repeticiones sumado en las series de trabajo que registraste. Una serie con mancuernas se registra como una mancuerna, tal como se lee en el estante, así que un ejercicio con una en cada mano la cuenta dos veces; igual que una serie izquierda y derecha registrada como una. Con Mostrar contribución del peso corporal activado, tus propios entrenamientos también cuentan la parte de tu peso corporal que levanta un movimiento, fijada en cada ejercicio. Los fondos cuentan el 100%, las dominadas el 95% y las sentadillas el 85%. Los estudios con plataformas de fuerza sitúan una flexión en torno al 64–75% de la masa corporal y una flexión de rodillas en torno al 49–62%. La asistencia se descuenta. Sin esa opción, o en los entrenamientos de otras personas, solo cuenta la carga externa, así que una dominada no suma nada. Los récords de la pestaña Progreso y las clasificaciones de los círculos siempre usan la carga externa, para comparar lo mismo con lo mismo."
           }
         }
       }
@@ -30977,12 +31167,12 @@
         }
       }
     },
-    "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. A warm-up count set in the plan always wins." : {
+    "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. Work at bodyweight or with assistance gets none, as there is no lighter load to ramp through. A warm-up count set in the plan always wins, and its assisted warm-ups get more assistance than the work." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las series de calentamiento son series más ligeras antes de tus series de trabajo que preparan tus músculos y articulaciones. No cuentan para el volumen ni para los récords personales. Compound las sube progresivamente hasta el peso de trabajo con menos repeticiones a medida que aumenta la carga, de modo que el último calentamiento prepara el peso de trabajo sin convertirse en una serie de trabajo más: 8 repeticiones hasta la mitad del peso, 5 hasta el 70%, 3 hasta el 85% y 2 por encima. El trabajo pesado en compuestos de 6 repeticiones o menos lleva 3 calentamientos a aproximadamente el 45, el 65 y el 82%. El trabajo de 7–12 repeticiones lleva 2, al 50 y al 75%. El trabajo más ligero, el aislamiento y los ejercicios de core llevan 1 al 60%. Un número de calentamientos fijado en el plan siempre tiene prioridad."
+            "value" : "Las series de calentamiento son series más ligeras antes de tus series de trabajo que preparan tus músculos y articulaciones. No cuentan para el volumen ni para los récords personales. Compound las sube progresivamente hasta el peso de trabajo con menos repeticiones a medida que aumenta la carga, de modo que el último calentamiento prepara el peso de trabajo sin convertirse en una serie de trabajo más: 8 repeticiones hasta la mitad del peso, 5 hasta el 70%, 3 hasta el 85% y 2 por encima. El trabajo pesado en compuestos de 6 repeticiones o menos lleva 3 calentamientos a aproximadamente el 45, el 65 y el 82%. El trabajo de 7–12 repeticiones lleva 2, al 50 y al 75%. El trabajo más ligero, el aislamiento y los ejercicios de core llevan 1 al 60%. El trabajo con peso corporal o con asistencia no lleva ninguno, porque no hay una carga más ligera por la que subir. Un número de calentamientos fijado en el plan siempre tiene prioridad, y sus calentamientos asistidos llevan más asistencia que el trabajo."
           }
         }
       }
@@ -30998,6 +31188,7 @@
       }
     },
     "Warmup" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -31309,6 +31500,16 @@
         }
       }
     },
+    "Weekly Targets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetivos semanales"
+          }
+        }
+      }
+    },
     "Weekly Volume Tiers" : {
       "localizations" : {
         "es" : {
@@ -31598,6 +31799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unidad de peso, %@"
+          }
+        }
+      }
+    },
+    "Weight unit, %@ per side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unidad de peso, %@ por lado"
           }
         }
       }
@@ -32164,6 +32375,7 @@
       }
     },
     "Working sets in the last 7 days. A muscle an exercise only assists counts half a set. Tap a muscle for its 12-week trend." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32297,6 +32509,7 @@
       }
     },
     "Workout Streak" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32448,6 +32661,7 @@
       }
     },
     "Workouts will stop uploading to Strava." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32804,6 +33018,7 @@
       }
     },
     "You're on a %lld-day streak. Compound can remind you in the evening on a day your streak would end." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -32894,6 +33109,7 @@
       }
     },
     "Your %@-day streak ends at midnight." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -33144,16 +33360,6 @@
         }
       }
     },
-    "Your note" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tu nota"
-          }
-        }
-      }
-    },
     "Your one-rep max is estimated from each completed working set with Epley's equation, using the reps you could have done: the reps logged plus the reps you had left, read from the RPE you logged (RPE 8 means 2 left). With no RPE, only the reps you did count. A single taken to failure is its own max. Sets that come to more than 10 reps to failure give no estimate, because prediction equations agree closely at low reps and drift apart above about 10. Those sets still count for volume and rep records. Each session shows its best set's estimate." : {
       "localizations" : {
         "es" : {
@@ -33195,6 +33401,7 @@
       }
     },
     "Your recommendations will never go below 1200 calories per day, even if your TDEE is lower." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -33205,6 +33412,7 @@
       }
     },
     "Your recommendations will never go below 800 calories per day. Proceed with caution." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -33405,6 +33613,7 @@
       }
     },
     "^[%lld day](inflect: true)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -33526,6 +33735,7 @@
       }
     },
     "day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -33536,6 +33746,7 @@
       }
     },
     "days" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

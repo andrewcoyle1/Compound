@@ -27,10 +27,10 @@ struct EditLoadableAccessoryView: View {
                 Text("Weights")
                     .font(.sectionTitle)
                 HStack {
-                    TextField("", value: $presenter.loadableAccessory.baseWeight, format: .number)
+                    TextField("", value: $presenter.baseWeight, format: .number)
                         .textFieldStyle(.roundedBorder)
                     Spacer()
-                    Picker("Unit", selection: $presenter.selectedUnit) {
+                    Picker("Unit", selection: $presenter.loadableAccessory.unit) {
                         ForEach(ExerciseWeightUnit.allCases, id: \.self) { unit in
                             Text(unit.abbreviation)
                         }

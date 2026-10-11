@@ -37,6 +37,10 @@ protocol WorkoutTrackerInteractor: GlobalInteractor, PreviousWorkoutReferenceRes
     /// A workout template held on this device, for the gym it was written for.
     func getWorkoutTemplate(id: String) -> WorkoutTemplateModel?
 
+    /// The user's mesocycles, whose day plans hold each exercise's mesocycle note.
+    var mesocycles: [Mesocycle] { get }
+    func saveMesocycle(mesocycle: Mesocycle) async throws
+
     /// Where the tracker keeps `ActiveWorkoutScreenState`.
     var activeWorkoutScreenStateStore: UserDefaults { get }
     

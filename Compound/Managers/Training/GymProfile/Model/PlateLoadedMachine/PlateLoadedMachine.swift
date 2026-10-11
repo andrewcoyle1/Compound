@@ -21,6 +21,9 @@ struct PlateLoadedMachine: Identifiable, Codable {
     /// smallest change is one of the smallest plates on each, and the plate calculator shares the
     /// load between them.
     var sleeves: Int
+    /// The weight is entered and shown as the plates loaded, without `baseWeight`: 10 kg on a
+    /// 7 kg hack squat is logged as 17 kg and shown as 10 (`WorkoutSetModel.machineBaseKg`).
+    var excludesBaseFromLoad: Bool
 
     var isActive: Bool
     
@@ -33,6 +36,7 @@ struct PlateLoadedMachine: Identifiable, Codable {
         baseWeight: Double,
         unit: ExerciseWeightUnit,
         sleeves: Int = 2,
+        excludesBaseFromLoad: Bool = true,
         isActive: Bool
     ) {
         self.id = id
@@ -43,6 +47,7 @@ struct PlateLoadedMachine: Identifiable, Codable {
         self.baseWeight = baseWeight
         self.unit = unit
         self.sleeves = sleeves
+        self.excludesBaseFromLoad = excludesBaseFromLoad
         self.isActive = isActive
     }
 }
@@ -54,7 +59,7 @@ extension PlateLoadedMachine {
     /// The id and name are required; a missing `isActive` reads as off, so a damaged item never
     /// offers equipment the user did not confirm. See `GymEquipmentDecoding.swift`.
     enum CodingKeys: String, CodingKey {
-        case id, typeId, name, imageName, description, baseWeight, unit, sleeves, isActive
+        case id, typeId, name, imageName, description, baseWeight, unit, sleeves, excludesBaseFromLoad, isActive
     }
 
     init(from decoder: Decoder) throws {
@@ -75,6 +80,8 @@ extension PlateLoadedMachine {
             ?? Self.defaultPlateLoadedMachines.first { $0.id == typeId }?.sleeves
             ?? 2
         sleeves = min(max(stored, 1), 2)
+        // On for every machine, stored ones included.
+        excludesBaseFromLoad = try container.decodeIfPresent(Bool.self, forKey: .excludesBaseFromLoad) ?? true
         isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? false
     }
 }

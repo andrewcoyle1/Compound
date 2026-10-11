@@ -186,7 +186,9 @@ class TodaysWorkoutCardPresenter {
             )
             if isTodayDeload { session.applyDeload { interactor.deloadRounding(for: $0) } }
             targets = session.exercises.prefix(4).map { exercise in
-                let unit = interactor.getPreference(templateId: exercise.templateId)
+                var unit = interactor.getPreference(templateId: exercise.templateId)
+                // The unit the session will enter it in: the equipment's, unless the user chose.
+                unit.weightUnit = exercise.weightUnit ?? unit.weightUnit
                 guard let detail = Self.targetDetail(exercise.workingSets.first, mode: exercise.trackingMode, unit: unit) else {
                     return exercise.name
                 }
@@ -204,7 +206,7 @@ class TodaysWorkoutCardPresenter {
         guard let set else { return nil }
         switch mode {
         case .weightReps:
-            let weight = set.weightKg.flatMap { $0 > 0 ? Format.weight(kg: $0, unit: unit.weightUnit) : nil }
+            let weight = set.loadKg.flatMap { $0 > 0 ? Format.weight(kg: $0, unit: unit.weightUnit) : nil }
             switch (weight, set.reps) {
             case let (weight?, reps?): return "\(weight) × \(reps)"
             case let (nil, reps?): return Format.reps(reps)
@@ -279,8 +281,8 @@ class TodaysWorkoutCardPresenter {
     /// user's body-weight unit, as the session's own screen shows them.
     var completedSummary: SessionSummary? {
         guard let session = completedSession else { return nil }
-        let sets = session.exercises.reduce(0) { $0 + $1.loggedSetCount }
-        let volumeKg = session.exercises.flatMap(\.workingSets).compactMap(\.volumeKg).reduce(0, +)
+        let sets = session.loggedSetCount
+        let volumeKg = session.loggedVolumeKg
         let unit = interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
         let figures = [
             session.activeDuration.map { Format.duration($0) },

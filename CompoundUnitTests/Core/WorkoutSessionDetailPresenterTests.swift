@@ -124,6 +124,8 @@ struct WorkoutSessionDetailPresenterTests {
             weightKg: weightKg,
             side: side,
             isWarmup: isWarmup,
+            // A finished session holds the sets that were logged.
+            completedAt: start,
             dateCreated: start
         )
     }
@@ -263,99 +265,7 @@ struct WorkoutSessionDetailPresenterTests {
 
     // MARK: - Adding a set
 
-    /// A fourth set of the same thing should not have to be retyped.
-    @Test("Test A New Set Copies The One Before It")
-    func testANewSetCopiesTheOneBeforeIt() throws {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1, reps: 6, weightKg: 100)])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        let added = try #require(workout.value.exercises.first?.sets.last)
-        #expect(added.reps == 6)
-        #expect(added.weightKg == 100)
-        #expect(added.index == 2)
-    }
-
-    /// A set added to an exercise with none is a blank one, not a crash.
-    @Test("Test The First Set Of An Exercise Has Nothing To Copy")
-    func testTheFirstSetOfAnExerciseHasNothingToCopy() throws {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        let added = try #require(workout.value.exercises.first?.sets.first)
-        #expect(added.reps == nil)
-        #expect(added.index == 1)
-    }
-
-    /// A warm-up is something the user marks deliberately; copying its flag would make every set
-    /// after the ramp a warm-up too.
-    @Test("Test A New Set Is Never A Warm-Up")
-    func testANewSetIsNeverAWarmUp() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1, isWarmup: true)])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        #expect(workout.value.exercises.first?.sets.last?.isWarmup == false)
-    }
-
-    @Test("Test Adding To An Exercise That Is Not There Changes Nothing")
-    func testAddingToAnExerciseThatIsNotThereChangesNothing() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "missing")
-
-        #expect(workout.value.exercises.first?.sets.count == 1)
-    }
-
-    /// The new set is authored by whoever is signed in, so a signed-out reader adds nothing.
-    @Test("Test Adding A Set Needs A Signed-In User")
-    func testAddingASetNeedsASignedInUser() {
-        let screen = makeScreen(user: nil)
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        #expect(workout.value.exercises.first?.sets.count == 1)
-    }
-
     // MARK: - Removing a set
-
-    @Test("Test Deleting A Set Removes It")
-    func testDeletingASetRemovesIt() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2), set(3)])]))
-
-        screen.presenter.deleteSet(session: workout.binding, "set-2", from: "e1")
-
-        #expect(workout.value.exercises.first?.sets.map(\.id) == ["set-1", "set-3"])
-    }
-
-    /// The gap has to close, or the numbers on screen skip and the next set added collides with one
-    /// that is already there.
-    @Test("Test Deleting A Set Renumbers The Rest")
-    func testDeletingASetRenumbersTheRest() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1), set(2), set(3)])]))
-
-        screen.presenter.deleteSet(session: workout.binding, "set-1", from: "e1")
-
-        #expect(workout.value.exercises.first?.sets.map(\.index) == [1, 2])
-    }
-
-    @Test("Test Deleting A Set That Is Not There Changes Nothing")
-    func testDeletingASetThatIsNotThereChangesNothing() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])]))
-
-        screen.presenter.deleteSet(session: workout.binding, "missing", from: "e1")
-
-        #expect(workout.value.exercises.first?.sets.count == 1)
-    }
 
     // MARK: - Sets worked a side at a time
 
@@ -366,90 +276,6 @@ struct WorkoutSessionDetailPresenterTests {
             set(1, reps: 10, weightKg: 20, side: .left), set(2, reps: 9, weightKg: 22, side: .right),
             set(3, reps: 10, weightKg: 20, side: .left), set(4, reps: 8, weightKg: 22, side: .right)
         ]
-    }
-
-    /// A fourth set of a single-arm row is two efforts, so adding one has to hand the user both.
-    @Test("Test Adding A Set To A Per-Side Exercise Adds A Pair")
-    func testAddingASetToAPerSideExerciseAddsAPair() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        let sets = workout.value.exercises.first?.sets ?? []
-        #expect(sets.count == 6)
-        #expect(sets.suffix(2).map(\.side) == [.left, .right])
-    }
-
-    /// The arms lift different weights, so the new left copies the last left and the new right the
-    /// last right — copying whichever row happened to be last would show one arm the other's work.
-    @Test("Test Each Half Of A New Pair Copies Its Own Side")
-    func testEachHalfOfANewPairCopiesItsOwnSide() throws {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        let added = Array((workout.value.exercises.first?.sets ?? []).suffix(2))
-        let left = try #require(added.first)
-        let right = try #require(added.last)
-        #expect(left.weightKg == 20)
-        #expect(left.reps == 10)
-        #expect(right.weightKg == 22)
-        #expect(right.reps == 8)
-    }
-
-    /// Sides are told apart by `side`, never by sharing a number, so each new row takes the next
-    /// free index.
-    @Test("Test Both Halves Of A New Pair Get Their Own Index")
-    func testBothHalvesOfANewPairGetTheirOwnIndex() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        #expect(workout.value.exercises.first?.sets.map(\.index) == [1, 2, 3, 4, 5, 6])
-    }
-
-    /// A two-sided exercise gains one row with no side at all, as it always did.
-    @Test("Test Adding A Set To A Two-Sided Exercise Adds One Sideless Row")
-    func testAddingASetToATwoSidedExerciseAddsOneSidelessRow() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: [set(1)])]))
-
-        screen.presenter.addSet(session: workout.binding, to: "e1")
-
-        let sets = workout.value.exercises.first?.sets ?? []
-        #expect(sets.count == 2)
-        #expect(sets.last?.side == nil)
-    }
-
-    /// A stranded limb numbers, counts and rests as a set of its own, claiming work that was never
-    /// done — so removing either half removes the pair.
-    @Test("Test Deleting One Half Of A Pair Removes Both")
-    func testDeletingOneHalfOfAPairRemovesBoth() {
-        let screen = makeScreen()
-        let fromLeft = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-        let fromRight = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-
-        screen.presenter.deleteSet(session: fromLeft.binding, "set-1", from: "e1")
-        screen.presenter.deleteSet(session: fromRight.binding, "set-2", from: "e1")
-
-        #expect(fromLeft.value.exercises.first?.sets.map(\.id) == ["set-3", "set-4"])
-        #expect(fromRight.value.exercises.first?.sets.map(\.id) == ["set-3", "set-4"])
-    }
-
-    /// Renumbering after a pair goes still has to leave one index per row, or the next set added
-    /// lands on a number already taken.
-    @Test("Test Deleting A Pair Leaves The Rest Uniquely Numbered")
-    func testDeletingAPairLeavesTheRestUniquelyNumbered() {
-        let screen = makeScreen()
-        let workout = MutableSession(session(exercises: [exercise(id: "e1", index: 1, sets: threeSetsPerSide)]))
-
-        screen.presenter.deleteSet(session: workout.binding, "set-3", from: "e1")
-
-        #expect(workout.value.exercises.first?.sets.map(\.index) == [1, 2])
-        #expect(workout.value.exercises.first?.sets.map(\.side) == [.left, .right])
     }
 
     // MARK: - Removing an exercise

@@ -13,9 +13,11 @@ class ExerciseTrackerPresenter {
     private let interactor: ExerciseTrackerInteractor
     private let router: ExerciseTrackerRouter
 
-    /// What the note sheet is editing; committed only when the user saves.
+    /// What the note sheet's tabs are editing; committed only when the user saves.
     var draftNote = ""
-    
+    var draftExerciseNote = ""
+    var draftMesocycleNote = ""
+
     init(
         interactor: ExerciseTrackerInteractor,
         router: ExerciseTrackerRouter
@@ -24,20 +26,14 @@ class ExerciseTrackerPresenter {
         self.router = router
     }
 
-    /// The note the user keeps on this exercise, ready to draw — or `nil` when there is nothing
-    /// to say.
-    ///
-    /// Written on the exercise's settings screen and, until now, read only back there. It is a
-    /// cue for doing the lift ("bench at 30°", "left knee: go slow"), so the place it is worth
-    /// having is the tracker, while the lift is being done.
-    ///
-    /// Whitespace only counts as nothing: a note saved as a stray newline should leave the header
-    /// exactly as it was.
     /// The stored image, else the library's: a finished workout being corrected may predate it.
     func imageName(for exercise: WorkoutExerciseModel) -> String? {
         exercise.imageName(in: interactor.allExercises)
     }
 
+    /// The exercise note: kept on the exercise and shown every time it is done, a cue for doing
+    /// the lift ("bench at 30°", "left knee: go slow"). `nil` when there is nothing to say;
+    /// whitespace only counts as nothing.
     func note(for exercise: WorkoutExerciseModel) -> String? {
         let trimmed = interactor.exerciseNote(for: exercise.templateId)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -45,7 +41,8 @@ class ExerciseTrackerPresenter {
         return trimmed
     }
 
-    /// The plan's notes for the exercise (the coach's cues), or `nil` when there are none.
+    /// The plan's notes for the exercise (the coach's cues), or `nil` when there are none. In a
+    /// mesocycle workout they are the exercise's mesocycle note.
     func planNotes(for exercise: WorkoutExerciseModel) -> String? {
         let trimmed = exercise.planNotes?.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let trimmed, !trimmed.isEmpty else { return nil }
@@ -82,25 +79,62 @@ class ExerciseTrackerPresenter {
         var type: LogType { .analytic }
     }
 
-    /// Opens the note sheet for this session's note on the exercise, with last session's as a
-    /// hint. The draft starts from the note already written, so reopening edits rather than
-    /// replaces it.
+    /// Opens the note sheet on `tab`: this workout's note on the exercise (with last session's as
+    /// a hint), the exercise note, and the mesocycle note when `onSaveMesocycleNote` is given.
+    /// Each draft starts from the note already written, so reopening edits rather than replaces
+    /// it, and Save writes only the notes that changed.
     func onNotePressed(
         for exercise: WorkoutExerciseModel,
+        tab: NoteTab.Kind = .session,
         previousNote: String?,
-        onSave: @escaping @MainActor (String) -> Void
+        onSave: @escaping @MainActor (String) -> Void,
+        onSaveMesocycleNote: (@MainActor (String) -> Void)? = nil
     ) {
-        draftNote = exercise.notes ?? ""
+        let session = exercise.notes ?? ""
+        let pinned = note(for: exercise) ?? ""
+        let mesocycle = exercise.planNotes ?? ""
+        (draftNote, draftExerciseNote, draftMesocycleNote) = (session, pinned, mesocycle)
+        var tabs = [
+            NoteTab(
+                kind: .session, title: String(localized: "Session"),
+                text: Binding(get: { self.draftNote }, set: { self.draftNote = $0 }),
+                hint: previousNote, footer: String(localized: "Saved with this workout in your history.")
+            ),
+            NoteTab(
+                kind: .exercise, title: String(localized: "Exercise"),
+                text: Binding(get: { self.draftExerciseNote }, set: { self.draftExerciseNote = $0 }),
+                footer: String(localized: "Shown every time you do this exercise.")
+            )
+        ]
+        if onSaveMesocycleNote != nil {
+            tabs.append(NoteTab(
+                kind: .mesocycle, title: String(localized: "Mesocycle"),
+                text: Binding(get: { self.draftMesocycleNote }, set: { self.draftMesocycleNote = $0 }),
+                footer: String(localized: "Shown every week on this day of your mesocycle.")
+            ))
+        }
         router.showWorkoutNotesView(
             delegate: WorkoutNotesDelegate(
-                notes: Binding(
-                    get: { self.draftNote },
-                    set: { self.draftNote = $0 }
-                ),
-                onSave: { onSave(self.draftNote) },
-                title: exercise.name,
-                hint: previousNote
+                tabs: tabs,
+                selectedTab: tabs.contains { $0.kind == tab } ? tab : .session,
+                onSave: {
+                    if self.draftNote != session { onSave(self.draftNote) }
+                    if self.draftMesocycleNote != mesocycle { onSaveMesocycleNote?(self.draftMesocycleNote) }
+                    if self.draftExerciseNote != pinned { self.saveExerciseNote(self.draftExerciseNote, for: exercise) }
+                },
+                title: exercise.name
             )
         )
+    }
+
+    private func saveExerciseNote(_ note: String, for exercise: WorkoutExerciseModel) {
+        let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        Task {
+            do {
+                try await interactor.setExerciseNote(trimmed.isEmpty ? nil : trimmed, for: exercise.templateId)
+            } catch {
+                router.showSimpleAlert(title: String(localized: "Unable to Save Note"), subtitle: error.localizedDescription)
+            }
+        }
     }
 }

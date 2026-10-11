@@ -15,6 +15,9 @@ extension WorkoutSessionModel {
     /// an extra working set. With no `count` from the plan, how many depends on how heavy the
     /// work is relative to the lifter, read from the working reps; with one, the ramp for that
     /// many (see `warmupPercentages`). Sources and Compound's own choices: `MethodInfo.warmupSets`.
+    ///
+    /// Work at body weight or with assistance gets none unless the plan asks for them: there is
+    /// no lighter load to ramp through. A plan's assisted warm-ups get more help, not less.
     @MainActor
     static func generateWarmupSets(
         trackingMode: TrackingMode,
@@ -24,7 +27,8 @@ extension WorkoutSessionModel {
         setTargets: [SetTarget],
         exercise: ExerciseModel? = nil,
         gymProfile: GymProfileModel? = nil,
-        unitPreferences: [String: ExerciseUnitPreference]? = nil,
+        weightUnit: ExerciseWeightUnit? = nil,
+        resistanceEquipment: [EquipmentRef]? = nil,
         count: Int? = nil
     ) -> [WorkoutSetModel] {
         
@@ -32,6 +36,8 @@ extension WorkoutSessionModel {
         guard trackingMode == .weightReps || trackingMode == .repsOnly else {
             return []
         }
+        let isUnloaded = trackingMode == .repsOnly || (workingWeightKg.map { $0 <= 0 } ?? false)
+        guard count != nil || !isUnloaded else { return [] }
         
         let targetReps = workingReps ?? setTargets.first?.minReps ?? setTargets.first?.maxReps
         let percentages = warmupPercentages(
@@ -49,7 +55,8 @@ extension WorkoutSessionModel {
                 // Bodyweight work has no load to taper against, so it warms up at the working reps.
                 targetReps: trackingMode == .weightReps ? warmupReps(percentage: percentages[index]) : targetReps,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences
+                weightUnit: weightUnit,
+                resistanceEquipment: resistanceEquipment
             )
             return createWarmupSet(delegate: delegate)
         }
@@ -116,19 +123,22 @@ extension WorkoutSessionModel {
         var workingWeightKg: Double?
         var targetReps: Int?
         let gymProfile: GymProfileModel?
-        let unitPreferences: [String: ExerciseUnitPreference]?
+        let weightUnit: ExerciseWeightUnit?
+        let resistanceEquipment: [EquipmentRef]?
     }
     
     @MainActor
     private static func createWarmupSet(delegate: WarmupSetDelegate) -> WorkoutSetModel {
-        var warmupWeight = delegate.workingWeightKg.map { $0 * delegate.percentage }
+        // Assistance (stored negative) warms up with more of it.
+        var warmupWeight = delegate.workingWeightKg.map { $0 >= 0 ? $0 * delegate.percentage : $0 * (2 - delegate.percentage) }
         
         // Rounded to a weight the gym can make, by the same rule the keyboard steps by.
         if let exercise = delegate.exercise {
             let rule = WeightRoundingRule(
                 exercise: exercise,
                 gymProfile: delegate.gymProfile,
-                preferredWeightUnit: delegate.unitPreferences?[exercise.id]?.weightUnit
+                preferredWeightUnit: delegate.weightUnit,
+                resistanceEquipment: delegate.resistanceEquipment
             )
             warmupWeight = warmupWeight.map(rule.round)
         }

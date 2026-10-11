@@ -11,8 +11,19 @@ import Foundation
 
 enum EffortScale {
 
-    /// The RPE chips the reps keyboard offers.
-    static let rpeChoices: [Double] = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
+    /// The reps in reserve a target or a logged set can name: none to six or more. Six or more is
+    /// stored as six, an RPE of 4.
+    static let rirChoices = Array(0...6)
+
+    /// "2", or "6+" for the last choice.
+    static func rirText(_ rir: Int) -> String {
+        rir >= rirChoices.last ?? 6 ? "\(rirChoices.last ?? 6)+" : "\(rir)"
+    }
+
+    /// The reps in reserve a logged RPE reads as, to the nearest whole rep, at most six.
+    static func rirChoice(fromRPE rpe: Double) -> Int {
+        min(max(Int(rir(fromRPE: rpe).rounded()), 0), rirChoices.last ?? 6)
+    }
 
     static func rir(fromRPE rpe: Double) -> Double { 10 - rpe }
 

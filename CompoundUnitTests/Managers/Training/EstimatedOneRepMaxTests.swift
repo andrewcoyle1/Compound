@@ -29,8 +29,8 @@ struct EstimatedOneRepMaxTests {
     func testASingleIsItsOwnMax() {
         #expect(ExerciseOneRMAggregator.estimated1RM(weightKg: 100, reps: 1) == 100)
         #expect(ExerciseOneRMAggregator.estimated1RM(weightKg: 100, reps: 1, rpe: 10) == 100)
-        // A weight logged with no reps reads as a single.
-        #expect(ExerciseOneRMAggregator.estimated1RM(of: set(100, nil)) == 100)
+        // A weight logged with no reps has no estimate: it is not a single.
+        #expect(ExerciseOneRMAggregator.estimated1RM(of: set(100, nil)) == nil)
     }
 
     @Test("Test Epley Below The Cap")

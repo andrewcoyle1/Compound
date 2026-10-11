@@ -40,6 +40,9 @@ class AddFixedWeightBarPresenter {
     /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
     /// disabled until then, rather than reporting the problem in an alert after the tap.
     var validationMessage: String? {
+        guard fixedWeightBarBaseWeight.baseWeight > 0 else {
+            return String(localized: "Enter a weight above zero.")
+        }
         guard fixedWeightBar.wrappedValue.baseWeights.contains(where: {
             $0.baseWeight == fixedWeightBarBaseWeight.baseWeight && $0.unit == fixedWeightBarBaseWeight.unit
         }) == false else {

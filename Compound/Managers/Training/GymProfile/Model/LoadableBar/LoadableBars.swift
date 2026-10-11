@@ -114,6 +114,15 @@ struct LoadableBars: Identifiable, Codable {
                     baseWeight: 20,
                     unit: .kilograms,
                     isActive: true
+                ),
+                // Switched on and chosen for a user who weighs in pounds
+                // (`GymProfileModel.adaptingDefaults`); off otherwise, as the heaviest bar on is
+                // the one loaded.
+                LoadableBarsBaseWeight(
+                    id: UUID().uuidString,
+                    baseWeight: 45,
+                    unit: .pounds,
+                    isActive: false
                 )
             ],
             isActive: true

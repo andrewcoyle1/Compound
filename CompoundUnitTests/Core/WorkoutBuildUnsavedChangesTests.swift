@@ -67,7 +67,7 @@ private final class DialogRouter: SetTargetRouter, ExercisesPickerRouter {
 
     func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
     func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
-    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
+    func showWeeklyTargetsView(delegate: WeeklyTargetsDelegate) { }
 }
 
 private final class SetTargetSpyInteractor: SpyGlobalInteractor, SetTargetInteractor {

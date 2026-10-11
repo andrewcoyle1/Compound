@@ -10,6 +10,8 @@ import SwiftUI
 struct WorkoutExerciseEquipmentSheetDelegate {
     let exercise: Binding<WorkoutExerciseModel>
     let onSelect: (String?) -> Void
+    /// The gym was edited from a variation's equipment, and saved as this.
+    var onGymEdited: @MainActor (GymProfileModel) -> Void = { _ in }
 }
 
 struct WorkoutExerciseEquipmentSheetView: View {
@@ -62,12 +64,25 @@ struct WorkoutExerciseEquipmentSheetView: View {
     }
 
     private func variationRow(item: VariationDisplayItem) -> some View {
-        SelectableRow(
-            title: item.name,
-            subtitle: presenter.detail(for: item),
-            isSelected: presenter.chosenVariationId == item.id
-        ) {
-            presenter.onSelectVariation(id: item.id, onSelect: delegate.onSelect)
+        HStack(spacing: Spacing.s) {
+            SelectableRow(
+                title: item.name,
+                subtitle: presenter.detail(for: item),
+                isSelected: presenter.chosenVariationId == item.id
+            ) {
+                presenter.onSelectVariation(id: item.id, onSelect: delegate.onSelect)
+            }
+            if presenter.canEditEquipment {
+                // Borderless, so the List keeps the row's tap for choosing the variation.
+                Button {
+                    presenter.onEditVariationPressed(item, onGymEdited: delegate.onGymEdited)
+                } label: {
+                    Image(systemName: Symbol.more)
+                        .tapTarget()
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Edit \(item.name) equipment")
+            }
         }
     }
 }

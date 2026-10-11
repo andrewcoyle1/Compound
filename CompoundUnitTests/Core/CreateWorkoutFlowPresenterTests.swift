@@ -669,7 +669,7 @@ struct WorkoutBuildSetTargetPresenterTests {
         let router: AnyRouter = TestRouting.anyRouter
         func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
         func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
-        func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
+        func showWeeklyTargetsView(delegate: WeeklyTargetsDelegate) { }
     }
 
     private func makeScreen() -> (SetTargetPresenter, Interactor) {

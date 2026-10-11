@@ -70,12 +70,13 @@ enum MuscleVolume {
 
     /// The hard sets in one logged exercise: finished, not warm-ups, not logged below
     /// `minimumHardSetRPE`, each with its drops and mini-sets (`credit`). A left/right pair is one
-    /// set, as `pairedSetCount` counts it, worth its better half.
+    /// set, as `pairedSetCount` counts it, worth its better half. The pair is the row before,
+    /// hard or not: a right side after an easy left is worth its own credit, not nothing.
     static func hardSets(_ exercise: WorkoutExerciseModel) -> Double {
         var total = 0.0
         var previous: (side: SetSide?, credit: Double)?
-        for set in exercise.sets where isHardSet(set) && !set.isSubSet {
-            let value = credit(set, in: exercise.sets)
+        for set in exercise.sets where !set.isWarmup && set.completedAt != nil && !set.isSubSet {
+            let value = isHardSet(set) ? credit(set, in: exercise.sets) : 0
             if set.side == .right, let previous, previous.side == .left {
                 total += max(0, value - previous.credit)
             } else {

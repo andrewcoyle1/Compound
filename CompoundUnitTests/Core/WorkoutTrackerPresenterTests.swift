@@ -419,26 +419,6 @@ struct WorkoutTrackerPresenterTests {
 
     // MARK: - Progress figures
 
-    @Test("Test Volume Is Weight Times Reps Across Every Set")
-    func testVolumeIsWeightTimesRepsAcrossEverySet() throws {
-        let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [
-            set(1, reps: 8, weightKg: 80),
-            set(2, reps: 6, weightKg: 90)
-        ])])
-
-        #expect(screen.presenter.computeTotalVolumeKg() == 1180)
-    }
-
-    @Test("Test Sets Without Weight Or Reps Add No Volume")
-    func testSetsWithoutWeightOrRepsAddNoVolume() throws {
-        let screen = try makeScreen(exercises: [exercise(id: "e1", index: 1, sets: [
-            set(1, reps: 12, weightKg: nil),
-            set(2, reps: nil, weightKg: 80)
-        ])])
-
-        #expect(screen.presenter.computeTotalVolumeKg() == 0)
-    }
-
     // MARK: - Notes
 
     @Test("Test Notes Are Kept On The Exercise That Was Written On")

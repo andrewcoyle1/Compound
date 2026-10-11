@@ -115,6 +115,7 @@ struct GymAddFreeWeightPresenterTests {
     func testAChosenPlateColourTravelsWithTheWeight() {
         let box = GymEquipmentBox(GymEquipmentFixtures.freeWeights())
         let presenter = makePresenter(box)
+        presenter.freeWeightAvailable.availableWeights = 7.5
 
         presenter.onColourPressed(colour: .blue)
         presenter.onSavePressed()
@@ -284,11 +285,24 @@ struct GymAddFixedWeightBarPresenterTests {
     func testTheFirstFixedBarWeightCanAlwaysBeAdded() {
         let box = GymEquipmentBox(GymEquipmentFixtures.fixedWeightBars())
         let presenter = makePresenter(box)
-        presenter.fixedWeightBarBaseWeight.baseWeight = 0
+        presenter.fixedWeightBarBaseWeight.baseWeight = 10
 
         presenter.onSavePressed()
 
         #expect(box.value.baseWeights.count == 1)
+    }
+
+    /// A bar of nothing is not a bar: Save waits for a weight.
+    @Test("Test A Zero Weight Cannot Be Added")
+    func testAZeroWeightCannotBeAdded() {
+        let box = GymEquipmentBox(GymEquipmentFixtures.fixedWeightBars())
+        let presenter = makePresenter(box)
+        presenter.fixedWeightBarBaseWeight.baseWeight = 0
+
+        presenter.onSavePressed()
+
+        #expect(box.value.baseWeights.isEmpty)
+        #expect(presenter.validationMessage != nil)
     }
 }
 

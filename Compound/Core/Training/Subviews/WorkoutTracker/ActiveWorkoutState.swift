@@ -105,7 +105,7 @@ enum ActiveWorkout {
             guard let now = today.weightKg, let was = lastFirst.weightKg, abs(now - was) > 0.001 else { return nil }
             let change = signedWeight(now - was, unit: unit)
             if suggestion.rationale == .deload {
-                return String(localized: "\(change) today. A lighter week to recover.")
+                return String(localized: "\(change) today. Two sessions short of the reps, so the weight resets.")
             }
             guard let reps = lastWorking.compactMap(\.reps).min() else {
                 return String(localized: "\(change) today.")
@@ -214,7 +214,7 @@ enum ActiveWorkout {
     /// An AMRAP set's weight alone, while its reps are still open: "100 kg".
     private static func openRepsWeight(of set: WorkoutSetModel, trackingMode: TrackingMode, unit: ExerciseWeightUnit) -> String? {
         guard set.kind == .amrap, !set.isSubSet, trackingMode == .weightReps, set.reps == nil,
-              let weightKg = set.weightKg, weightKg != 0 else { return nil }
+              let weightKg = set.loadKg, weightKg != 0 else { return nil }
         return Format.weight(kg: weightKg, unit: unit)
     }
 
@@ -229,15 +229,16 @@ enum ActiveWorkout {
         showsBodyweight: Bool = false
     ) -> String? {
         if showsBodyweight, trackingMode == .weightReps || trackingMode == .repsOnly, let reps = set.reps,
-           let load = BodyweightLoad.label(weightKg: set.weightKg, unit: unit, showsBodyweight: true) {
-            return "\(load) × \(reps)"
+           let bodyweight = BodyweightLoad.label(weightKg: set.weightKg, unit: unit, showsBodyweight: true) {
+            // "BW + Red × 8" on a band-assisted pull-up: the bands are part of the load.
+            return "\(Format.load(bodyweight, bands: set.bands) ?? bodyweight) × \(reps)"
         }
         switch trackingMode {
         case .weightReps:
             guard let reps = set.reps else { return nil }
             // A negative weight is assistance: "−30 kg × 8" on an assisted pull-up. Bands read
             // "Red + Blue × 8", or "60 kg + Red × 8" on a bar.
-            let weight = set.weightKg.flatMap { $0 != 0 ? Format.weight(kg: $0, unit: unit) : nil }
+            let weight = set.loadKg.flatMap { $0 != 0 ? Format.weight(kg: $0, unit: unit) : nil }
             guard let load = Format.load(weight, bands: set.bands) else { return Format.reps(reps) }
             return "\(load) × \(reps)"
         case .repsOnly:

@@ -73,6 +73,9 @@ struct AddFreeWeightView: View {
             TextField("How many", value: $presenter.freeWeightAvailable.count, format: .number, prompt: Text("No limit"))
                 .textFieldStyle(.roundedBorder)
                 .keyboardType(.numberPad)
+            Text("A bar takes plates in pairs, so a single plate only loads a one-sleeve machine.")
+                .font(.rowDetail)
+                .foregroundStyle(.secondary)
         }
     }
 

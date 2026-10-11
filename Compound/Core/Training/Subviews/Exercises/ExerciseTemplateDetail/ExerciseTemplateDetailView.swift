@@ -95,7 +95,7 @@ struct ExerciseModelDetailView: View {
     private func historyDetail(_ performance: ExerciseModelDetailStats.Performance) -> String {
         let sets = String(localized: "\(performance.workingSets) sets")
         let reps = Format.reps(performance.totalReps)
-        let top = presenter.formattedWeight(performance.heaviestWeightKg)
+        let top = presenter.formattedWeight(performance.heaviestLoadKg)
         return String(localized: "\(String(describing: sets)) · \(String(describing: reps)) · top \(String(describing: top))")
     }
     
@@ -179,7 +179,7 @@ private extension ExerciseModelDetailView {
             if let achieved = presenter.stats.heaviestSetDate, presenter.stats.heaviestSetKg > 0 {
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("\(presenter.formattedWeight(presenter.stats.heaviestSetKg)) × \(Format.reps(presenter.stats.repsAtHeaviestSet))")
+                        Text("\(presenter.formattedWeight(presenter.stats.heaviestSetLoadKg)) × \(Format.reps(presenter.stats.repsAtHeaviestSet))")
                             .font(.metric)
                         Label {
                             Text("Achieved on \(achieved.formatted(date: .abbreviated, time: .omitted))")

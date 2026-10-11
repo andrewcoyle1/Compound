@@ -46,7 +46,8 @@ class GymProfilesPresenter {
     
     func onAddGymProfilePressed() {
         guard let userId = interactor.userId else { return }
-        let delegate = GymProfileDelegate(gymProfile: GymProfileModel(authorId: userId))
+        let unit: ExerciseWeightUnit = interactor.currentUser?.submittedWeightUnitPreference == .pounds ? .pounds : .kilograms
+        let delegate = GymProfileDelegate(gymProfile: GymProfileModel(authorId: userId).adaptingDefaults(to: unit))
         router.showGymProfileView(delegate: delegate)
     }
 

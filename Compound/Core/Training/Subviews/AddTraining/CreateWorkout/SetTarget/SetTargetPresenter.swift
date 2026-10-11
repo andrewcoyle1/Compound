@@ -102,7 +102,14 @@ class SetTargetPresenter {
     }
 
     func onAddSetPressed() {
-        workingExercise.setTargets.append(SetTarget(setNumber: workingExercise.setTargets.count + 1))
+        // A new set asks for what the last one did: the same range and reps in reserve.
+        let last = workingExercise.setTargets.last
+        workingExercise.setTargets.append(SetTarget(
+            setNumber: workingExercise.setTargets.count + 1,
+            minReps: last?.minReps ?? SetTarget.defaultRepRange.lowerBound,
+            maxReps: last?.maxReps ?? SetTarget.defaultRepRange.upperBound,
+            rirTarget: last?.rirTarget
+        ))
     }
 
     func onDeleteSetPressed(_ setTarget: SetTarget) {

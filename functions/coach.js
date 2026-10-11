@@ -288,6 +288,8 @@ export function shapeSession(doc, env) {
                 distanceMeters: set.distance_meters ?? null,
                 rpe: set.rpe ?? null,
                 side: set.side ?? null,
+                // How many of the weight one set lifted: 2 for a dumbbell in each hand.
+                loadCount: set.load_count ?? null,
                 id: set.id ?? null,
                 kind: set.kind ?? null,
                 parentSetId: set.parent_set_id ?? null,
@@ -478,7 +480,10 @@ export const COACH_TOOLS = {
                     workingSets: completedWorkingSets(e),
                     bestSet: scored ? describeSet(scored.set, env) : null,
                     estimated1RM: scored ? weight(scored.e1rm, env) : null,
-                    volume: weight(working.reduce((sum, set) => sum + (set.weightKg ?? 0) * (set.reps ?? 0) * (set.side === "both" ? 2 : 1), 0), env),
+                    // As WorkoutSetModel.volumeKg: a `both` row and a dumbbell in each hand count twice,
+                    // assistance (a negative weight) not at all.
+                    volume: weight(working.reduce((sum, set) => sum + Math.max(set.weightKg ?? 0, 0) * (set.reps ?? 0)
+                        * (set.side === "both" ? 2 : 1) * Math.max(set.loadCount ?? 1, 1), 0), env),
                     newBestInRange: isRecord,
                 });
             }

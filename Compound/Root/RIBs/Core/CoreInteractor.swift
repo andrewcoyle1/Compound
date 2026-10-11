@@ -289,6 +289,16 @@ struct CoreInteractor: GlobalInteractor {
     /// starting anything. Today's card reads its targets from this, so they are the tracker's own.
     func plannedSession(for template: WorkoutTemplateModel, in mesocycleId: String?, microcycleIndex: Int?) async throws -> WorkoutSessionModel {
         guard let userId = self.userId else { throw CoreError.noCurrentUser }
+        // Each exercise as the library has it now: a template keeps the copy taken when it was
+        // built, so equipment corrected since would never reach it.
+        var template = template
+        template.exercises = template.exercises.map { templateExercise in
+            var templateExercise = templateExercise
+            if let current = allExercises.first(where: { $0.id == templateExercise.exercise.id }) {
+                templateExercise.exercise = current
+            }
+            return templateExercise
+        }
         // The planner reads each exercise's base targets, so it is handed the week's: a set the
         // plan adds in week 2 gets a suggestion like the others.
         var week = template
@@ -303,11 +313,13 @@ struct CoreInteractor: GlobalInteractor {
             unitPreferences[exerciseModel.exercise.id] = preference
         }
         let previousSession = try await self.workoutSessionManager.getLastWorkoutSessionForTemplate(templateId: template.id)
+        // The gym the template was written for, else the favourite (`workoutGymProfile`).
+        let gym = template.gymProfileId.flatMap { id in gymProfiles.first { $0.id == id } } ?? workoutGymProfile
         let prefill = await sessionPrefill(
             for: week,
             authorId: userId,
             mesocycleId: mesocycleId,
-            unitPreferences: unitPreferences
+            loads: Self.sessionLoads(of: template, previous: previousSession, gym: gym, unitPreferences: unitPreferences)
         )
 
         return WorkoutSessionModel(
@@ -317,12 +329,38 @@ struct CoreInteractor: GlobalInteractor {
             mesocycleId: mesocycleId,
             microcycleIndex: microcycleIndex,
             previousWorkoutSession: previousSession,
+            gymProfile: gym,
             unitPreferences: unitPreferences,
             prefill: prefill,
             plansSets: workoutSettings.plansSets
         )
     }
     
+    /// The equipment each exercise starts on, and its unit, as the session will choose them
+    /// (`SessionLoadChoice`), so the suggestions are worked out on the same equipment.
+    private static func sessionLoads(
+        of template: WorkoutTemplateModel,
+        previous: WorkoutSessionModel?,
+        gym: GymProfileModel?,
+        unitPreferences: [String: ExerciseUnitPreference]
+    ) -> [SessionLoad] {
+        template.exercises.enumerated().map { index, templateExercise in
+            let exercise = templateExercise.exercise
+            let occurrence = template.exercises[..<index].filter { $0.exercise.id == exercise.id }.count
+            let chosen = SessionLoadChoice.variationId(
+                among: exercise.equipmentVariations,
+                previous: previous?.exercise(templateId: exercise.id, occurrence: occurrence),
+                previousGymId: previous?.gymProfileId,
+                gym: gym
+            )
+            let refs = exercise.equipmentVariations.first { $0.id == chosen }?.resistanceEquipment
+            return SessionLoad(
+                resistanceEquipment: refs,
+                weightUnit: SessionLoadChoice.weightUnit(preference: unitPreferences[exercise.id], refs: refs, gym: gym)
+            )
+        }
+    }
+
     /// A session with no template and no exercises; the tracker adds exercises as it goes.
     /// "Start Empty Workout" used to run the template wizard and save a template first.
     func startBlankWorkout() async throws {

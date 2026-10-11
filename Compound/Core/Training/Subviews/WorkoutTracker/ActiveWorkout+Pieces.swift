@@ -116,7 +116,7 @@ extension ActiveWorkout {
 
     /// A row's weight in kilograms, when it has one worth showing.
     private static func weightOnly(_ set: WorkoutSetModel, trackingMode: TrackingMode) -> Double? {
-        guard trackingMode == .weightReps, let weightKg = set.weightKg, weightKg != 0 else { return nil }
+        guard trackingMode == .weightReps, let weightKg = set.loadKg, weightKg != 0 else { return nil }
         return weightKg
     }
 

@@ -148,8 +148,11 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - Exercise card
 
+    /// The exercise's units, its weight unit as this session enters it (`WorkoutExerciseModel.weightUnit`).
     func units(for exercise: WorkoutExerciseModel) -> ExerciseUnitPreference {
-        interactor.getPreference(templateId: exercise.templateId)
+        var preference = interactor.getPreference(templateId: exercise.templateId)
+        preference.weightUnit = exercise.weightUnit ?? preference.weightUnit
+        return preference
     }
 
     /// The bodyweight `exercise` lifts, for its badge and "BW" labels: `nil` with the setting off or

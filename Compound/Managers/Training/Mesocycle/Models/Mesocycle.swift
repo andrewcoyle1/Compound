@@ -178,3 +178,20 @@ enum DeloadType: String, Hashable, Codable, CaseIterable {
         }
     }
 }
+
+extension Mesocycle {
+
+    /// This mesocycle with `note` on one exercise of one day plan: its mesocycle note, which every
+    /// week of that day shows. `nil` when it has no such slot, as after the plan was edited.
+    func settingNote(_ note: String?, dayPlanId: String, slotId: String) -> Mesocycle? {
+        var copy = self
+        var found = false
+        for day in copy.workoutTemplates.indices where copy.workoutTemplates[day].id == dayPlanId {
+            for slot in copy.workoutTemplates[day].exercises.indices where copy.workoutTemplates[day].exercises[slot].id == slotId {
+                copy.workoutTemplates[day].exercises[slot].notes = note
+                found = true
+            }
+        }
+        return found ? copy : nil
+    }
+}

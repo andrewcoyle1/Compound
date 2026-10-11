@@ -109,7 +109,6 @@ struct WeightRoundingRuleTests {
 
         #expect(rule.round(20.6) == 20.5)
         #expect(rule.minimumIncrementKg == 1.25)
-        #expect(rule.forProgression.minimumIncrementKg == 1.25)
     }
 
     @Test func anInactiveRangeIsIgnored() {
@@ -194,7 +193,7 @@ struct WeightRoundingRuleTests {
         var sets = [WorkoutSetModel(id: "s", authorId: "u", index: 1, reps: nil, weightKg: nil, isWarmup: false, completedAt: nil, dateCreated: start)]
         WorkingSetPrefill(
             prefill: .previousValues, previousSets: [previous], authorId: "u",
-            exercise: exercise([EquipmentRef(kind: .freeWeight, id: "dumbbells")]), gymProfile: gym, unitPreferences: nil
+            exercise: exercise([EquipmentRef(kind: .freeWeight, id: "dumbbells")]), gymProfile: gym, weightUnit: nil
         ).apply(to: &sets)
 
         #expect(sets[0].weightKg == 22.5)

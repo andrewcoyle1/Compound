@@ -8,6 +8,12 @@
 
 import Foundation
 
+/// One bar the gym could load, for the bar pickers.
+struct BarChoice: Identifiable, Equatable {
+    let id: String
+    let title: String
+}
+
 /// One plate weight the calculator offers, in the unit it is shown in.
 struct PlateChoice: Equatable, Identifiable {
     let weight: Double
@@ -21,6 +27,16 @@ extension GymProfileModel {
     /// keyboard takes it (`WeightStepper`).
     func loadedBar(typeId: String) -> LoadableBars? {
         loadableBars.first { $0.typeId == typeId && $0.isActive }
+    }
+
+    /// The bars switched on for exercises naming `typeId`, lightest first: what the plate
+    /// calculator and the weight keyboard offer to choose between.
+    func barChoices(typeId: String) -> [BarChoice] {
+        guard let bar = loadedBar(typeId: typeId) else { return [] }
+        return bar.baseWeights
+            .filter(\.isActive)
+            .sorted { $0.kilograms < $1.kilograms }
+            .map { BarChoice(id: $0.id, title: "\(WeightStepper.format($0.baseWeight)) \($0.unit.abbreviation)") }
     }
 
     /// Makes `baseWeightId` the bar this gym loads under exercises naming `typeId`.
@@ -51,6 +67,23 @@ extension GymProfileModel {
                 freeWeights[item].range[entry].isActive = isOn
             }
         }
+    }
+
+    /// This gym with `edited`'s bar choices and plates, and nothing else of it: what the plate
+    /// calculator changes, laid onto the gym as it is now.
+    func takingLoading(from edited: GymProfileModel) -> GymProfileModel {
+        var gym = self
+        for index in gym.loadableBars.indices {
+            if let bar = edited.loadableBars.first(where: { $0.id == gym.loadableBars[index].id }) {
+                gym.loadableBars[index].chosenBaseWeightId = bar.chosenBaseWeightId
+            }
+        }
+        for index in gym.freeWeights.indices where gym.freeWeights[index].isPlates {
+            if let plates = edited.freeWeights.first(where: { $0.id == gym.freeWeights[index].id }) {
+                gym.freeWeights[index].range = plates.range
+            }
+        }
+        return gym
     }
 
     private func plateEntries(unit: ExerciseWeightUnit) -> [FreeWeightsAvailable] {

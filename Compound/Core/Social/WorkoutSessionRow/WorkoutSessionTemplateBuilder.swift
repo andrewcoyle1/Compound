@@ -73,6 +73,6 @@ enum WorkoutSessionTemplateBuilder {
             targets.append(SetTarget(setNumber: targets.count + 1, minReps: set.reps, maxReps: set.reps))
         }
         // An exercise with nothing logged still gets the one set a new template exercise starts with.
-        return targets.isEmpty ? [SetTarget(setNumber: 1)] : targets
+        return targets.isEmpty ? [SetTarget.standard(setNumber: 1)] : targets
     }
 }

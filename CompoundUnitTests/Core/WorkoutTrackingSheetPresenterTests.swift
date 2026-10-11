@@ -26,23 +26,27 @@ struct WorkoutEquipmentSheetPresenterTests {
         var allEquipmentTypes: [AnyEquipment] = GymProfileModel.allEquipmentCatalog
     }
 
-    /// `WorkoutExerciseEquipmentSheetRouter` adds nothing to `GlobalRouter`, so the dismissals both
-    /// buttons perform are extension methods that never reach here. The tests assert what the
-    /// buttons hand back instead.
+    /// The dismissals both buttons perform are `GlobalRouter` extension methods that never reach
+    /// here. The tests assert what the buttons hand back instead.
     private final class Router: WorkoutExerciseEquipmentSheetRouter {
         let router: AnyRouter = TestRouting.anyRouter
+        private(set) var gymProfiles: [GymProfileDelegate] = []
+        func showGymProfileView(delegate: GymProfileDelegate) { gymProfiles.append(delegate) }
     }
 
     private struct Screen {
         let presenter: WorkoutExerciseEquipmentSheetPresenter
         let interactor: Interactor
+        let router: Router
     }
 
     private func makeScreen() -> Screen {
         let interactor = Interactor()
+        let router = Router()
         return Screen(
-            presenter: WorkoutExerciseEquipmentSheetPresenter(interactor: interactor, router: Router()),
-            interactor: interactor
+            presenter: WorkoutExerciseEquipmentSheetPresenter(interactor: interactor, router: router),
+            interactor: interactor,
+            router: router
         )
     }
 
@@ -118,14 +122,15 @@ struct WorkoutEquipmentSheetPresenterTests {
     }
 
     @Test("Test A Set Up With No Equipment Reads As None")
-    func testASetUpWithNoEquipmentReadsAsNone() async {
+    func testASetUpWithNoEquipmentReadsAsNone() async throws {
         let screen = makeScreen()
         let bare = EquipmentVariation(id: "v1", resistanceEquipment: [], supportEquipment: [])
 
         await screen.presenter.loadVariations(exercise: exercise(variations: [bare]))
 
-        #expect(screen.presenter.variationItems.first?.resistanceSummary == "None")
-        #expect(screen.presenter.variationItems.first?.supportSummary == "None")
+        #expect(screen.presenter.variationItems.first?.resistanceSummary == nil)
+        #expect(screen.presenter.variationItems.first?.supportSummary == nil)
+        #expect(screen.presenter.detail(for: try #require(screen.presenter.variationItems.first)) == nil)
     }
 
     /// Opening the sheet on an exercise that has never had a set-up chosen lands on the first one,
@@ -212,6 +217,25 @@ struct WorkoutEquipmentSheetPresenterTests {
 
         #expect(selected == ["v2"])
         #expect(screen.presenter.chosenVariationId == "v2")
+    }
+
+    /// The three dots open the workout's gym on just the variation's equipment, and a save there
+    /// is handed back for the exercise to refit to.
+    @Test("Test Editing A Set Up Opens Its Equipment In The Workout's Gym")
+    func testEditingASetUpOpensItsEquipmentInTheWorkoutsGym() async throws {
+        let screen = makeScreen()
+        await screen.presenter.loadVariations(exercise: exercise(variations: [variation(id: "v1")]))
+        #expect(!screen.presenter.canEditEquipment)
+
+        screen.interactor.workoutGymProfile = GymProfileModel(id: "gym-1", authorId: "user-1")
+        var edited: [String] = []
+        screen.presenter.onEditVariationPressed(try #require(screen.presenter.variationItems.first)) { edited.append($0.id) }
+
+        let delegate = try #require(screen.router.gymProfiles.first)
+        #expect(delegate.gymProfile.id == "gym-1")
+        #expect(delegate.equipment == [EquipmentRef(kind: .freeWeight, id: "dumbbells"), EquipmentRef(kind: .supportEquipment, id: "flat_bench")])
+        delegate.onSaved?(delegate.gymProfile)
+        #expect(edited == ["gym-1"])
     }
 
     /// Tapping the set-up already in use closes the sheet without handing anything back.
@@ -451,6 +475,8 @@ struct ExerciseTrackerPresenterTests {
         func exerciseNote(for exerciseId: String) -> String? {
             notes[exerciseId]
         }
+
+        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
     }
 
     private final class Router: ExerciseTrackerRouter {

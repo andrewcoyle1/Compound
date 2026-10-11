@@ -116,10 +116,10 @@ class LiveActivityManager: LiveActivityUpdating {
         if isCompleted {
             // Active time, as the saved session will show it; the clock's own reckoning if unstamped.
             let elapsedTime = session.activeDuration ?? Date().timeIntervalSince(session.dateCreated)
-            let allSets = session.exercises.flatMap { $0.sets }
-            // Sets pair; volume does not — both sides of a set are real work lifted.
+            // Sets pair; volume does not — both sides of a set are real work lifted. Warm-ups are
+            // not work, and a set never logged was not lifted.
             let completedSetsCount = session.exercises.reduce(0) { $0 + $1.sets.fullyCompletedPairedSetCount }
-            let totalVolume = allSets.compactMap(\.volumeKg).reduce(0.0, +)
+            let totalVolume = session.loggedVolumeKg
             
             finalState.finalDurationSeconds = elapsedTime
             finalState.finalVolumeKg = totalVolume > 0 ? totalVolume : nil
@@ -319,11 +319,11 @@ class LiveActivityManager: LiveActivityUpdating {
             currentExerciseTotalSetsCount: current.position.total,
             targetIsWarmup: current.position.isWarmup,
             targetSetId: current.targetSet?.id,
-            targetWeightKg: current.targetSet?.weightKg,
+            targetWeightKg: current.targetSet?.loadKg,
             targetReps: current.targetSet?.reps,
             targetDistanceMeters: current.targetSet?.distanceMeters,
             targetDurationSec: current.targetSet?.durationSec,
-            weightUnit: current.templateId.map(weightUnit) ?? .kilograms,
+            weightUnit: current.weightUnit?.liveActivityUnit ?? current.templateId.map(weightUnit) ?? .kilograms,
             restEndsAt: restEndsAt,
             progress: piece?.progress(completedSets: totals.completedSetsCount, totalSets: totals.totalSetsCount)
                 ?? totals.progress,
@@ -335,7 +335,7 @@ class LiveActivityManager: LiveActivityUpdating {
             isAllSetsComplete: totals.isAllSetsComplete,
             lastLoggedSetId: lastLogged?.set.id,
             lastLoggedReps: lastLogged?.set.reps,
-            lastLoggedWeightKg: lastLogged?.set.weightKg,
+            lastLoggedWeightKg: lastLogged?.set.loadKg,
             restLeadsToNewExercise: lastLogged.map { $0.exerciseId != current.id } ?? false,
             distanceUnit: current.templateId.map(distanceUnit),
             targetSide: current.targetSet.flatMap(Self.sideMarker),
@@ -432,6 +432,8 @@ class LiveActivityManager: LiveActivityUpdating {
     private struct CurrentExerciseData {
         let id: String?
         let templateId: String?
+        /// The unit the session enters this exercise's weights in, when it was stored.
+        var weightUnit: ExerciseWeightUnit?
         let trackingMode: TrackingMode
         let name: String?
         let imageName: String?
@@ -508,6 +510,7 @@ class LiveActivityManager: LiveActivityUpdating {
         return CurrentExerciseData(
             id: currentExercise?.id,
             templateId: currentExercise?.templateId,
+            weightUnit: currentExercise?.weightUnit,
             trackingMode: currentExercise?.trackingMode ?? .weightReps,
             name: currentExerciseName,
             imageName: currentExerciseImageName,

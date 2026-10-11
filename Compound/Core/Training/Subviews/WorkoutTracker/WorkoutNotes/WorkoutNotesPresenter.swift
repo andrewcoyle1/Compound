@@ -12,13 +12,16 @@ import Foundation
 class WorkoutNotesPresenter {
     let interactor: WorkoutNotesInteractor
     let router: WorkoutNotesRouter
+    var selectedTab: NoteTab.Kind
 
     init(
         interactor: WorkoutNotesInteractor,
-        router: WorkoutNotesRouter
+        router: WorkoutNotesRouter,
+        selectedTab: NoteTab.Kind = .single
     ) {
         self.interactor = interactor
         self.router = router
+        self.selectedTab = selectedTab
     }
 
     func onDismissPressed() {

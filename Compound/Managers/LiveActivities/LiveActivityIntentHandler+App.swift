@@ -123,7 +123,8 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
 
         var exercises = session.exercises
         let base = exercises[location.exerciseIndex].sets[location.setIndex].reps ?? 0
-        exercises[location.exerciseIndex].sets[location.setIndex].reps = min(max(base + delta, 0), 99)
+        // At least one, as the in-app correction keeps it: a logged set of no reps was not lifted.
+        exercises[location.exerciseIndex].sets[location.setIndex].reps = min(max(base + delta, 1), 99)
 
         var updated = session
         updated.updateExercises(exercises)
@@ -166,6 +167,7 @@ final class AppLiveActivityIntentHandler: LiveActivityIntentHandling {
         guard var session = workoutSessionManager.activeSession else { return }
         let now = Date()
         session.endSession(at: now, pausedSeconds: hkWorkoutManager.totalPausedDuration(at: now))
+        session.dropUnloggedSets()
 
         _ = await finishWorkout(session, using: WorkoutFinishManagers(
             sessions: workoutSessionManager,

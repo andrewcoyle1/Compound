@@ -307,7 +307,6 @@ struct WeightStepperTests {
         #expect(step.next(after: 18) == 19.25)
         #expect(step.nearest(to: 20.5) == 20.5)
         #expect(PlateCalculator.load(total: 20.5, bar: 18, plates: step.plates, sleeves: 1) == .loadable(perSide: [2.5]))
-        #expect(step.plateText([2.5], unit: .kilograms) == "Plates: 2.5 kg")
     }
 
     @Test func aTwoSleeveMachineStillStepsAPair() {
@@ -315,7 +314,6 @@ struct WeightStepperTests {
 
         #expect(step.sleeves == 2)
         #expect(step.smallestStep == 2.5)
-        #expect(step.plateText([2.5], unit: .kilograms) == "Per side: 2.5 kg")
     }
 
     /// Two 20s are one a side, so 100 kg on a 20 kg bar takes 20 + 15 + 5 a side.
@@ -399,10 +397,10 @@ struct PlateCalculatorTests {
         #expect(PlateCalculator.load(total: 10, bar: 20, plates: plates) == .notLoadable(below: nil, above: 20))
     }
 
-    @Test func greedyMissIsNotLoadable() {
-        // 15 + 15 would do it, but greedy takes a 20 first and cannot finish.
+    /// Greedy takes a 20 first and cannot finish; the search finds 15 + 15.
+    @Test func greedyMissIsStillLoadable() {
         let result = PlateCalculator.load(total: 80, bar: 20, plates: [Plate(weight: 15), Plate(weight: 20)])
-        #expect(result == .notLoadable(below: 60, above: 90))
+        #expect(result == .loadable(perSide: [15, 15]))
     }
 
     @Test func noPlatesAtAll() {

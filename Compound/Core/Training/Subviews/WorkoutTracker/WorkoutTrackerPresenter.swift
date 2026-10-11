@@ -329,15 +329,6 @@ class WorkoutTrackerPresenter {
         #endif
     }
     
-    /// At effective load: a movement that lifts bodyweight adds it to every rep while the setting is on.
-    func computeTotalVolumeKg() -> Double {
-        workoutSession.exercises.flatMap { exercise in
-            let contributionKg = bodyweightContribution(for: exercise)?.contributionKg
-            return exercise.sets.compactMap { BodyweightLoad.volumeKg(of: $0, contributionKg: contributionKg) }
-        }
-        .reduce(0.0, +)
-    }
-    
     private func firstIncompleteExerciseIndex(in exercises: [WorkoutExerciseModel]) -> Int? {
         exercises.firstIndex(where: { !$0.sets.isEmpty && !$0.sets.allSatisfy { $0.completedAt != nil } })
     }

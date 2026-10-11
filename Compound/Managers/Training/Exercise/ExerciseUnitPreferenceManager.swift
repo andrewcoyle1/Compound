@@ -15,9 +15,11 @@ class ExerciseUnitPreferenceManager {
     private let userDefaults: UserDefaults
     private let userManager: UserManager
     
-    /// Avoids repeated UserDefaults reads. Not observed: `getPreference` fills it on a miss, and
-    /// screens call that while drawing, where a change to observed state would draw them again.
-    /// `revision` is what tells them a preference changed.
+    /// Avoids repeated UserDefaults reads of stored preferences, keyed by user and exercise so a
+    /// second account on the device never reads the first one's. Not observed: `getPreference`
+    /// fills it on a miss, and screens call that while drawing, where a change to observed state
+    /// would draw them again. `revision` is what tells them a preference changed. A default is
+    /// never cached: it follows the user's app-wide units, which can change at any time.
     @ObservationIgnored private var preferencesCache: [String: ExerciseUnitPreference] = [:]
     private var revision = 0
     
@@ -31,30 +33,26 @@ class ExerciseUnitPreferenceManager {
     /// Get the unit preference for a specific exercise template
     func getPreference(for templateId: String) -> ExerciseUnitPreference {
         _ = revision
-        // Check cache first
-        if let cached = preferencesCache[templateId] {
+        guard let userId = userManager.currentUser?.userId,
+              let key = preferenceKey(userId: userId, templateId: templateId) else {
+            return createDefaultPreference(for: templateId)
+        }
+        if let cached = preferencesCache[key] {
             return cached
         }
-        
-        // Try to load from UserDefaults
-        if let userId = userManager.currentUser?.userId,
-           let key = preferenceKey(userId: userId, templateId: templateId),
-           let data = userDefaults.data(forKey: key),
+        if let data = userDefaults.data(forKey: key),
            let preference = try? JSONDecoder().decode(ExerciseUnitPreference.self, from: data) {
-            preferencesCache[templateId] = preference
+            preferencesCache[key] = preference
             return preference
         }
-        
-        // Return default based on user's global preferences
-        let defaultPreference = createDefaultPreference(for: templateId)
-        preferencesCache[templateId] = defaultPreference
-        return defaultPreference
+        return createDefaultPreference(for: templateId)
     }
     
     /// Set the weight unit preference for a specific exercise template
     func setWeightUnit(_ unit: ExerciseWeightUnit, for templateId: String) {
         var preference = getPreference(for: templateId)
         preference.weightUnit = unit
+        preference.weightUnitIsChosen = true
         savePreference(preference)
     }
     
@@ -70,6 +68,7 @@ class ExerciseUnitPreferenceManager {
         var preference = getPreference(for: templateId)
         if let weightUnit = weightUnit {
             preference.weightUnit = weightUnit
+            preference.weightUnitIsChosen = true
         }
         if let distanceUnit = distanceUnit {
             preference.distanceUnit = distanceUnit
@@ -93,7 +92,7 @@ class ExerciseUnitPreferenceManager {
         }
         
         userDefaults.set(data, forKey: key)
-        preferencesCache[preference.exerciseModelId] = preference
+        preferencesCache[key] = preference
         revision += 1
     }
     

@@ -89,7 +89,10 @@ struct WeightStep: Equatable {
         }
         switch kind {
         case let .increment(step, min, max):
-            return clamp(min + ((value - min) / step).rounded() * step, min: min, max: max)
+            // The lighter on a tie, as plates and lists do: 21.25 on a 2.5 grid is 20.
+            let steps = (value - min) / step
+            let lower = steps.rounded(.down)
+            return clamp(min + (steps - lower > 0.5 + Self.epsilon ? lower + 1 : lower) * step, min: min, max: max)
         case .list(let weights):
             return weights.min { abs($0 - value) < abs($1 - value) } ?? value
         case .bands:
@@ -112,12 +115,14 @@ struct WeightStep: Equatable {
 
     /// The same equipment giving assistance: mirrored below zero, down to the most it gives (or
     /// 200 steps where it has no top), and never above zero for an exercise that cannot be loaded
-    /// (`isBodyweight`). −30 kg up one 2.5 kg step is −27.5 kg: less help, a harder set.
+    /// (`isBodyweight`). −30 kg up one 2.5 kg step is −27.5 kg: less help, a harder set. The grid
+    /// keeps the stack's own pins: a 5 kg first pin in tens gives −5, −15, −25.
     func assisted(bodyweightOnly: Bool) -> WeightStep {
         let mirrored: Kind
         switch kind {
-        case let .increment(step, _, max):
-            let deepest = ((max ?? step * 200) / step).rounded(.up) * step
+        case let .increment(step, min, max):
+            let positions = max.map { (($0 - min) / step + Self.epsilon).rounded(.down) } ?? 200
+            let deepest = min + positions * step
             mirrored = .increment(step, min: -deepest, max: bodyweightOnly ? 0 : max)
         case .list(let weights):
             let below = weights.map { -$0 } + [0] + (bodyweightOnly ? [] : weights)
@@ -126,14 +131,6 @@ struct WeightStep: Equatable {
             return self
         }
         return WeightStep(kind: mirrored, chip: chip, baseWeight: nil, plates: [], isAssisted: true, constrainsWeight: constrainsWeight, bands: bands)
-    }
-
-    /// "Per side: 20 + 10 + 2.5 kg" for a breakdown from `PlateCalculator`; "Plates: …" when
-    /// there is one sleeve, so there is no other side.
-    func plateText(_ perSide: [Double], unit: ExerciseWeightUnit) -> String {
-        guard !perSide.isEmpty else { return String(localized: "Empty bar") }
-        let label = sleeves == 1 ? String(localized: "Plates: ") : String(localized: "Per side: ")
-        return label + perSide.map { WeightStepper.format($0) }.joined(separator: " + ") + " \(unit.abbreviation)"
     }
 
     /// "Pin 14 + 2 kg" for `total` on a stack with add-ons (`PinStack`); nil for anything else,
@@ -170,13 +167,19 @@ enum WeightStepper {
     /// The step for one equipment variation's resistance equipment: the load from the first
     /// non-band item `profile` has, with the bands of every band item beside it. A variation's
     /// items are used together (`ExerciseFilters.isPerformable`), so a bar with bands offers both.
+    /// Plates are the load only when the variation has nothing to put them on (a plate held in the
+    /// hands); beside a bar or plate-loaded machine they are what loads it (`availablePlates`),
+    /// even when that bar or machine is switched off.
     static func steps(for refs: [EquipmentRef]?, profile: GymProfileModel?, unit: ExerciseWeightUnit) -> WeightStep {
         guard let profile, let refs else { return fallback(unit) }
 
+        let carriesPlates = refs.contains { [.loadableBar, .plateLoadedMachine, .loadableAccessoryEquipment].contains($0.kind) }
         var load: WeightStep?
         var bands: [String] = []
-        for ref in refs {
-            guard let step = step(for: ref, profile: profile, unit: unit) else { continue }
+        // A bar in a landmine is loaded on its free end only: one plate a step, not a pair.
+        let barSleeves = refs.contains { $0.equipmentId.contains("landmine") } ? 1 : 2
+        for ref in refs where !(carriesPlates && isPlates(ref, in: profile)) {
+            guard let step = step(for: ref, profile: profile, unit: unit, barSleeves: barSleeves) else { continue }
             if step.kind == .bands {
                 // A name listed in both kg and lb is one band.
                 for name in step.bands where !bands.contains(name) { bands.append(name) }
@@ -192,13 +195,59 @@ enum WeightStepper {
         return WeightStep(kind: .bands, chip: nil, baseWeight: nil, plates: [], constrainsWeight: false, bands: bands)
     }
 
+    /// The unit the load of `refs` is labelled in, in `profile`: the plates on a bar or machine,
+    /// a stack's switched-on stacks, a rack's weights. `nil` when they come in both units, or the
+    /// load has no unit (body weight, bands) or is missing from the gym.
+    static func equipmentUnit(for refs: [EquipmentRef]?, profile: GymProfileModel?) -> ExerciseWeightUnit? {
+        guard let profile, let refs else { return nil }
+        let carriesPlates = refs.contains { [.loadableBar, .plateLoadedMachine, .loadableAccessoryEquipment].contains($0.kind) }
+        for ref in refs where !(carriesPlates && isPlates(ref, in: profile)) {
+            if ref.kind == .bodyWeight { return nil }
+            guard let units = labelUnits(of: ref, in: profile) else { continue }
+            let distinct = Set(units)
+            return distinct.count == 1 ? distinct.first : nil
+        }
+        return nil
+    }
+
+    /// The units the switched-on load of `ref` is labelled in; `nil` when the gym has none of it,
+    /// or it is not a load.
+    private static func labelUnits(of ref: EquipmentRef, in profile: GymProfileModel) -> [ExerciseWeightUnit]? {
+        let id = ref.equipmentId
+        switch ref.kind {
+        case .loadableBar:
+            return profile.loadableBars.contains { $0.typeId == id && $0.isActive } ? plateUnits(profile) : nil
+        case .plateLoadedMachine:
+            return profile.plateLoadedMachines.contains { $0.typeId == id && $0.isActive } ? plateUnits(profile) : nil
+        case .cableMachine:
+            return profile.cableMachines.first { $0.typeId == id && $0.isActive }?.ranges.filter(\.isActive).map(\.unit)
+        case .pinLoadedMachine:
+            return profile.pinLoadedMachines.first { $0.typeId == id && $0.isActive }?.ranges.filter(\.isActive).map(\.unit)
+        case .freeWeight:
+            return profile.freeWeights.first { $0.typeId == id && $0.isActive }?.range.filter(\.isActive).map(\.unit)
+        case .fixedWeightBar:
+            return profile.fixedWeightBars.first { $0.typeId == id && $0.isActive }?.baseWeights.filter(\.isActive).map(\.unit)
+        case .bodyWeight, .bands, .supportEquipment, .accessoryEquipment, .loadableAccessoryEquipment:
+            return nil
+        }
+    }
+
+    private static func plateUnits(_ profile: GymProfileModel) -> [ExerciseWeightUnit] {
+        profile.freeWeights.filter { $0.isActive && $0.isPlates }.flatMap(\.range).filter(\.isActive).map(\.unit)
+    }
+
+    private static func isPlates(_ ref: EquipmentRef, in profile: GymProfileModel) -> Bool {
+        guard ref.kind == .freeWeight else { return false }
+        return profile.freeWeights.first { $0.typeId == ref.equipmentId }?.isPlates ?? ref.equipmentId.hasSuffix("plates")
+    }
+
     /// No gym or no equipment: the smallest pair of plates a user would actually add.
     static func fallback(_ unit: ExerciseWeightUnit) -> WeightStep {
         WeightStep(kind: .increment(unit == .pounds ? 5 : 2.5, min: 0, max: nil), chip: nil, baseWeight: nil, plates: [], constrainsWeight: false)
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    private static func step(for ref: EquipmentRef, profile: GymProfileModel, unit: ExerciseWeightUnit) -> WeightStep? {
+    private static func step(for ref: EquipmentRef, profile: GymProfileModel, unit: ExerciseWeightUnit, barSleeves: Int = 2) -> WeightStep? {
         // Exercises name a type, and a gym can hold several of one (two lat pulldowns), so this
         // takes the first switched-on item of the type in stored order. Choosing a particular
         // one in a session belongs to the exercise-variation work.
@@ -212,7 +261,7 @@ enum WeightStepper {
             let chip = collars > 0
                 ? String(localized: "Bar \(format(barWeight)) \(unit.abbreviation) + collars")
                 : String(localized: "Bar \(format(barWeight)) \(unit.abbreviation)")
-            return plateLoaded(base: ((barWeight + collars) * 1000).rounded() / 1000, chip: chip, sleeves: 2, profile: profile, unit: unit)
+            return plateLoaded(base: ((barWeight + collars) * 1000).rounded() / 1000, chip: chip, sleeves: barSleeves, profile: profile, unit: unit)
 
         case .plateLoadedMachine:
             guard let machine = profile.plateLoadedMachines.first(where: { $0.typeId == id && $0.isActive }) else { return nil }
@@ -268,17 +317,19 @@ enum WeightStepper {
         )
     }
 
-    /// Every active plate in the gym, in the unit it is labelled in when any are, ascending, with
-    /// how many of each fit on one of `sleeves`. A weight that both iron and bumper plates come in
-    /// adds their counts, and is unlimited if either is; one too few to put on every sleeve is left
-    /// out.
+    /// Every active plate in the gym, in the unit it is labelled in when any are listed in it,
+    /// ascending, with how many of each fit on one of `sleeves`. Listed, switched on or not, as the
+    /// plate calculator offers them (`GymProfileModel.plateChoices`): switching off a lb gym's last
+    /// pound plate leaves it without plates, not loading converted kilogram ones. A weight that
+    /// both iron and bumper plates come in adds their counts, and is unlimited if either is; one
+    /// too few to put on every sleeve is left out.
     static func availablePlates(profile: GymProfileModel, unit: ExerciseWeightUnit, sleeves: Int = 2) -> [Plate] {
-        let entries = profile.freeWeights
+        let listed = profile.freeWeights
             .filter { $0.isActive && $0.isPlates }
             .flatMap(\.range)
-            .filter(\.isActive)
-        let matching = entries.filter { $0.unit == unit }
-        let byWeight = Dictionary(grouping: matching.isEmpty ? entries : matching) {
+        let labelled = listed.contains { $0.unit == unit }
+        let entries = listed.filter(\.isActive)
+        let byWeight = Dictionary(grouping: labelled ? entries.filter { $0.unit == unit } : entries) {
             convert($0.availableWeights, from: $0.unit, to: unit)
         }
         return byWeight.compactMap { weight, entries -> Plate? in
@@ -312,8 +363,10 @@ enum WeightStepper {
 
         guard !stack.addOns.isEmpty || stack.weights != nil else {
             guard stack.increment > 0 else { return nil }
+            // The top pin, not the stored maximum: 5 to 100 in sevens ends at 96. Worked out in the
+            // stack's own unit, where its grid is exact, then converted.
             return WeightStep(
-                kind: .increment(stack.increment, min: stack.lightestPin, max: stack.maxWeight),
+                kind: .increment(stack.increment, min: stack.lightestPin, max: chosen.pinPositions.last.map(inUnit) ?? stack.maxWeight),
                 chip: nil,
                 baseWeight: nil,
                 plates: []

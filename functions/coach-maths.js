@@ -70,10 +70,10 @@ export function estimated1RM(weightKg, reps, rpe = null) {
     return weightKg * (1 + toFailure / 30);
 }
 
-// One logged set's estimate; a weight with no reps reads as a single.
+// One logged set's estimate; a set with no reps, or none done, has none.
 export function setEstimated1RM(set) {
-    if (!(set.weightKg > 0)) return null;
-    return estimated1RM(set.weightKg, Math.max(1, set.reps ?? 1), set.rpe ?? null);
+    if (!(set.weightKg > 0) || !(set.reps >= 1)) return null;
+    return estimated1RM(set.weightKg, set.reps, set.rpe ?? null);
 }
 
 // The best estimated 1RM per session for each exercise, newest first, the seven most recent.
@@ -125,9 +125,11 @@ export function hardSets(exercise) {
     const sets = exercise.sets ?? [];
     let total = 0;
     let previous = null;
+    // The pair is the row before, hard or not: a right side after an easy left is worth its own
+    // credit, not nothing.
     for (const set of sets) {
-        if (!isHardSet(set) || set.parentSetId != null) continue;
-        const value = setCredit(set, sets);
+        if (set.isWarmup || !set.completed || set.parentSetId != null) continue;
+        const value = isHardSet(set) ? setCredit(set, sets) : 0;
         if (set.side === "right" && previous?.side === "left") {
             total += Math.max(0, value - previous.credit);
         } else {

@@ -25,7 +25,6 @@ class SetTrackerPresenter {
     
     /// What the user last did for each exercise, keyed by the exercise's `templateId`.
     var previousExercises: [String: WorkoutExerciseModel] = [:]
-    var previousLookup: [PreviousSetKey: WorkoutSetModel] = [:]
 
     var userId: String? {
         interactor.userId
@@ -39,9 +38,25 @@ class SetTrackerPresenter {
     }
 
     func onExerciseEquipmentPressed(_ exercise: Binding<WorkoutExerciseModel>) {
-        let delegate = WorkoutExerciseEquipmentSheetDelegate(exercise: exercise) { variationId in
-            exercise.wrappedValue.chosenVariationId = variationId
+        // The new equipment's unit, and the sets still to do on weights it makes. The tracker
+        // reloads its suggestions for it (`handleWorkoutSessionChange`).
+        let refit = { [weak self] (variationId: String?, gym: GymProfileModel?) in
+            guard let self else { return }
+            var updated = exercise.wrappedValue
+            updated.chosenVariationId = variationId
+            updated.refitLoad(
+                library: self.interactor.allExercises.first { $0.id == updated.templateId },
+                gym: gym,
+                preference: self.interactor.getPreference(templateId: updated.templateId)
+            )
+            exercise.wrappedValue = updated
         }
+        var delegate = WorkoutExerciseEquipmentSheetDelegate(exercise: exercise) { [weak self] variationId in
+            guard let self, exercise.wrappedValue.chosenVariationId != variationId else { return }
+            refit(variationId, self.interactor.workoutGymProfile)
+        }
+        // The equipment itself edited: the same refit, on the gym as saved.
+        delegate.onGymEdited = { gym in refit(exercise.wrappedValue.chosenVariationId, gym) }
         router.showWorkoutExerciseEquipmentSheetView(delegate: delegate)
     }
     
@@ -126,14 +141,15 @@ class SetTrackerPresenter {
         // Kept split if it was, so the fresh rows match the logged pairs above them.
         if exercise.wrappedValue.isSplit && !logged.isEmpty { sets = sets.splittingSides() }
 
-        exercise.wrappedValue.templateId = newExercise.id
-        exercise.wrappedValue.name = newExercise.name
-        exercise.wrappedValue.trackingMode = newMode
-        exercise.wrappedValue.equipmentVariations = newExercise.equipmentVariations
-        exercise.wrappedValue.imageName = Constants.exerciseImageName(for: newExercise)
-        exercise.wrappedValue.sets = sets
-        exercise.wrappedValue.setTargets = [SetTarget(setNumber: 1, setType: .standard)]
-        exercise.wrappedValue.chosenVariationId = nil
+        var updated = exercise.wrappedValue
+        updated.templateId = newExercise.id
+        updated.name = newExercise.name
+        updated.trackingMode = newMode
+        updated.imageName = Constants.exerciseImageName(for: newExercise)
+        updated.sets = sets
+        updated.setTargets = [SetTarget.standard(setNumber: 1)]
+        updated.takeLoad(from: newExercise, gym: interactor.workoutGymProfile, preference: interactor.getPreference(templateId: newExercise.id))
+        exercise.wrappedValue = updated
     }
 
     func onSupersetPressed(
@@ -185,7 +201,27 @@ class SetTrackerPresenter {
     /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
         let preference = interactor.getPreference(templateId: exercise.templateId)
-        return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
+        return (weightUnit: exercise.weightUnit ?? preference.weightUnit, distanceUnit: preference.distanceUnit)
+    }
+
+    /// Whether the exercise logs the weight of each side, as a dumbbell in each hand is
+    /// (`TrackableExerciseMetric.weightPerSide` and its variants): its weight column reads "Kg/side".
+    func tracksWeightPerSide(_ exercise: WorkoutExerciseModel) -> Bool {
+        let perSide: [TrackableExerciseMetric] = [.weightPerSide, .weightPerSidePersistent, .weightPerSideAssistance]
+        let metrics = interactor.allExercises.first { $0.id == exercise.templateId }?.trackableMetrics ?? []
+        return exercise.loadsPerSet == 2 || perSide.contains(where: metrics.contains)
+    }
+
+    /// "Kg", or "Kg/side" on an exercise that tracks the weight per side.
+    func weightColumnTitle(for exercise: WorkoutExerciseModel, unit: ExerciseWeightUnit) -> String {
+        let title = unit.abbreviation.capitalized
+        return tracksWeightPerSide(exercise) ? String(localized: "\(title)/side") : title
+    }
+
+    func weightColumnLabel(for exercise: WorkoutExerciseModel, unit: ExerciseWeightUnit) -> String {
+        tracksWeightPerSide(exercise)
+            ? String(localized: "Weight unit, \(unit.displayName) per side")
+            : String(localized: "Weight unit, \(unit.displayName)")
     }
 
     /// Deleting half of a left/right pair would leave the other half standing alone, numbering and
@@ -248,20 +284,28 @@ class SetTrackerPresenter {
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
         interactor.setWeightUnit(unit, for: templateId)
+        exercise.wrappedValue.weightUnit = unit
     }
 
     /// Converts the sets not yet logged into `newUnit`, each to the nearest weight the gym's
     /// equipment can make in it, and makes `newUnit` this exercise's unit. Logged sets are history
     /// and keep what was lifted: 100 kg converted and rounded to 220 lb would be 99.79 kg.
     func convertAndRoundWeights(to newUnit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
-        let step = WeightStepper.steps(for: exercise.wrappedValue, profile: interactor.workoutGymProfile, unit: newUnit)
-        for index in exercise.wrappedValue.sets.indices {
-            let set = exercise.wrappedValue.sets[index]
-            guard set.completedAt == nil, let weightKg = set.weightKg else { continue }
-            let rounded = step.nearest(to: UnitConversion.convertWeight(weightKg, to: newUnit))
-            exercise.wrappedValue.sets[index].weightKg = UnitConversion.convertWeightToKg(rounded, from: newUnit)
+        // The same rule prefill rounds by: the chosen equipment, mirrored below zero for an
+        // assisted exercise, so −30 kg of help stays help rather than snapping to a pin.
+        var updated = exercise.wrappedValue
+        let rule = WeightRoundingRule(
+            exercise: interactor.allExercises.first { $0.id == updated.templateId },
+            gymProfile: interactor.workoutGymProfile,
+            preferredWeightUnit: newUnit,
+            resistanceEquipment: updated.activeVariation?.resistanceEquipment
+        )
+        for index in updated.sets.indices where updated.sets[index].completedAt == nil {
+            updated.sets[index].weightKg = updated.sets[index].weightKg.map(rule.round)
         }
-        interactor.setWeightUnit(newUnit, for: exercise.wrappedValue.templateId)
+        updated.weightUnit = newUnit
+        exercise.wrappedValue = updated
+        interactor.setWeightUnit(newUnit, for: updated.templateId)
     }
 
     /// The unit is a preference on the exercise, not on this workout, so the dialog says so.
@@ -337,22 +381,4 @@ class SetTrackerPresenter {
         let templateId: String = exercise.wrappedValue.templateId
         interactor.setDistanceUnit(unit, for: templateId)
     }
-
-    func buildPreviousLookup(for exercise: WorkoutExerciseModel) -> [PreviousSetKey: WorkoutSetModel] {
-        guard let prevExercise = previousExercises[exercise.templateId] else { return [:] }
-        
-        // Map sets by index and side, keeping the last of any duplicates rather than trapping on
-        // them. `Dictionary(uniqueKeysWithValues:)` crashes on a repeated key, and sessions saved
-        // before `addSet` stopped reusing indices are still out there holding two sets numbered the
-        // same — this is read when the exercise is next tracked, so such a session would take the
-        // screen down every time it was opened.
-        //
-        // The side is part of the key because a left set showing the right arm's last weight is
-        // worse than showing nothing: the user chases a number the other arm set.
-        return Dictionary(
-            prevExercise.sets.map { (PreviousSetKey($0), $0) },
-            uniquingKeysWith: { _, latest in latest }
-        )
-    }
-
 }

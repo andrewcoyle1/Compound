@@ -117,11 +117,7 @@ class SocialProfilePresenter {
 
     /// Working sets' weight × reps, in the reader's own unit like the session detail screen.
     var thisWeekVolumeText: String {
-        let kilograms = thisWeekSessions
-            .flatMap { $0.exercises.flatMap(\.sets) }
-            .filter { !$0.isWarmup }
-            .compactMap(\.volumeKg)
-            .reduce(0, +)
+        let kilograms = thisWeekSessions.reduce(0) { $0 + $1.loggedVolumeKg }
         let unit = interactor.currentUser?.submittedWeightUnitPreference ?? .kilograms
         return Format.weight(kg: kilograms, unit: unit)
     }

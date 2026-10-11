@@ -44,19 +44,23 @@ extension WorkoutTrackerPresenter {
         loadPrevious(for: workoutSession.exercises)
     }
 
-    /// The same, for some exercises only: those added part-way through. What is already loaded
-    /// for the others is kept. The nth appearance of an exercise is matched to the nth appearance
-    /// of it in the session found.
+    /// The same, for some exercises only: those added part-way through, or moved onto other
+    /// equipment. What is already loaded for the others is kept. The nth appearance of an exercise
+    /// is matched to the nth appearance of it in the session found, on the same kind of load
+    /// (`LoadKind`) and outside a deload week, as smart progression reads history: last time's
+    /// dumbbell press is no guide to today's barbell.
     func loadPrevious(for exercises: [WorkoutExerciseModel]) {
         guard let authorId = interactor.currentUser?.userId else { return }
 
         let workoutTemplateId = workoutSession.workoutTemplateId
         let mesocycleId = workoutSession.mesocycleId
         let session = workoutSession
-        let wanted = exercises.map { (templateId: $0.templateId, occurrence: session.occurrence(of: $0)) }
+        let wanted = exercises.map {
+            (templateId: $0.templateId, occurrence: session.occurrence(of: $0), refs: $0.activeVariation?.resistanceEquipment)
+        }
 
         Task {
-            var resolved: [String: WorkoutExerciseModel] = [:]
+            var resolved: [String: WorkoutExerciseModel?] = [:]
 
             for exerciseTemplateId in Set(wanted.map(\.templateId)) {
                 let sessions = await interactor.previousSessions(
@@ -64,20 +68,20 @@ extension WorkoutTrackerPresenter {
                     workoutTemplateId: workoutTemplateId,
                     authorId: authorId,
                     mesocycleId: mesocycleId,
-                    limit: 1
+                    limit: 5
                 )
-                for occurrence in Set(wanted.filter { $0.templateId == exerciseTemplateId }.map(\.occurrence)) {
-                    let match = sessions
-                        .lazy
-                        .compactMap { $0.exercise(templateId: exerciseTemplateId, occurrence: occurrence) }
-                        .first
-                    if let match {
-                        resolved[ActiveWorkout.historyKey(templateId: exerciseTemplateId, occurrence: occurrence)] = match
-                    }
+                for entry in wanted where entry.templateId == exerciseTemplateId {
+                    // The last time it was done, else the last time it was on the plan (for its note).
+                    let candidates = sessions
+                        .filter { $0.isDeload != true }
+                        .compactMap { $0.exercise(templateId: exerciseTemplateId, occurrence: entry.occurrence) }
+                        .filter { WorkoutSessionModel.isSameLoad($0.activeVariation?.resistanceEquipment, entry.refs) }
+                    let match = candidates.first { !$0.loggedWorkingSets.isEmpty } ?? candidates.first
+                    resolved[ActiveWorkout.historyKey(templateId: exerciseTemplateId, occurrence: entry.occurrence)] = .some(match)
                 }
             }
 
-            previousExercises.merge(resolved) { $1 }
+            for (key, match) in resolved { previousExercises[key] = match }
         }
     }
 

@@ -28,7 +28,9 @@ struct AMRAPProgression: Equatable {
         heavier: (Double) -> Double
     ) -> SuggestedSet {
         let target = last.targetReps ?? templateTarget
-        let beatenTwice = [last, previous].allSatisfy { set in (set?.reps).map { $0 > target } ?? false }
+        // Twice at this weight: a session at the old, lighter weight says nothing about this one.
+        let beatenTwice = previous?.weightKg == last.weightKg
+            && [last, previous].allSatisfy { set in (set?.reps).map { $0 > target } ?? false }
 
         guard beatenTwice else {
             return SuggestedSet(weightKg: last.weightKg, reps: target, targetReps: target)

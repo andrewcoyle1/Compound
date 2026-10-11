@@ -21,8 +21,8 @@ extension WorkoutSessionDetailPresenterTests {
             index: 1,
             sets: [
                 WorkoutSetModel(id: "w", authorId: authorId, index: 1, reps: 8, weightKg: nil, isWarmup: true, dateCreated: start),
-                WorkoutSetModel(id: "a", authorId: authorId, index: 2, reps: 8, weightKg: 20, isWarmup: false, dateCreated: start),
-                WorkoutSetModel(id: "b", authorId: authorId, index: 3, reps: 10, weightKg: nil, isWarmup: false, dateCreated: start)
+                WorkoutSetModel(id: "a", authorId: authorId, index: 2, reps: 8, weightKg: 20, isWarmup: false, completedAt: start, dateCreated: start),
+                WorkoutSetModel(id: "b", authorId: authorId, index: 3, reps: 10, weightKg: nil, isWarmup: false, completedAt: start, dateCreated: start)
             ]
         )
     }

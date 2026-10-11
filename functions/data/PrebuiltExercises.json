@@ -381,6 +381,24 @@
           "support_equipment": [
             { "kind": "supportEquipment", "id": "parallel_bars" }
           ]
+        },
+        {
+          "id": "system-chest-dip-v2",
+          "resistance_equipment": [
+            { "kind": "loadableAccessoryEquipment", "id": "loadable_dip_pull-up_belt" }
+          ],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "parallel_bars" }
+          ]
+        },
+        {
+          "id": "system-chest-dip-v3",
+          "resistance_equipment": [
+            { "kind": "bodyWeight", "id": "weighted_vest" }
+          ],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "parallel_bars" }
+          ]
         }
       ],
       "range_of_motion": 4,
@@ -405,7 +423,7 @@
       "image_url": "Dumbbell_InclineFlyChest",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "isolationUpper",
       "laterality": "bilateral",
@@ -447,7 +465,7 @@
       "image_url": "DumbbellBenchPress",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "compoundUpper",
       "laterality": "bilateral",
@@ -489,7 +507,7 @@
       "image_url": "DumbbellSeatedShoulderPress",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "compoundUpper",
       "laterality": "bilateral",
@@ -910,7 +928,7 @@
             { "kind": "loadableBar", "id": "barbell" }
           ],
           "support_equipment": [
-            { "kind": "supportEquipment", "id": "squat_rack" }
+            { "kind": "supportEquipment", "id": "squat_stand" }
           ]
         }
       ],
@@ -1153,7 +1171,8 @@
         {
           "id": "system-t-bar-row-v1",
           "resistance_equipment": [
-            { "kind": "loadableBar", "id": "barbell" }
+            { "kind": "loadableBar", "id": "barbell" },
+            { "kind": "accessoryEquipment", "id": "landmine_attachment_wall_corner" }
           ],
           "support_equipment": []
         },
@@ -1420,7 +1439,7 @@
         {
           "id": "system-lever-incline-hammer-chest-press-v1",
           "resistance_equipment": [
-            { "kind": "plateLoadedMachine", "id": "incline_chest_press_machine" }
+            { "kind": "plateLoadedMachine", "id": "seated_plate-loaded_incline_press_machine" }
           ],
           "support_equipment": []
         }
@@ -1460,7 +1479,7 @@
         {
           "id": "system-lever-pec-deck-fly-chest-v1",
           "resistance_equipment": [
-            { "kind": "plateLoadedMachine", "id": "pec_deck_machine" }
+            { "kind": "pinLoadedMachine", "id": "pec_deck" }
           ],
           "support_equipment": []
         }
@@ -1642,7 +1661,22 @@
         "biceps": "primary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-wide-grip-pull-up-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "accessoryEquipment", "id": "pull_up_bar" }
+          ]
+        },
+        {
+          "id": "system-wide-grip-pull-up-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "multi-grip_pull-up_bar" }
+          ]
+        }
+      ],
       "range_of_motion": 3,
       "stability": 4,
       "body_weight_contribution": 95,
@@ -2000,7 +2034,7 @@
       "description": "A chest-supported row on a plate-loaded machine with an overhand grip for the upper back.",
       "image_url": "OverhandGripPlateLoadedRow",
       "trackable_metrics": [
-        "weightPerSide",
+        "weight",
         "reps"
       ],
       "type": "compoundUpper",
@@ -2376,7 +2410,15 @@
         "obliques": "secondary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-captains-chair-knee-raise-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "captains_chair" }
+          ]
+        }
+      ],
       "range_of_motion": 3,
       "stability": 4,
       "body_weight_contribution": 40,
@@ -3542,7 +3584,15 @@
         "obliques": "secondary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-ab-wheel-rollout-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "accessoryEquipment", "id": "ab_wheel" }
+          ]
+        }
+      ],
       "range_of_motion": 4,
       "stability": 3,
       "body_weight_contribution": 75,

@@ -274,6 +274,7 @@ struct GymCreateProfilePresenterTests {
 
     private final class Interactor: SpyGlobalInteractor, CreateGymProfileInteractor {
         var userId: String? = "user-1"
+        var currentUser: UserModel?
     }
 
     private final class Router: CreateGymProfileRouter {

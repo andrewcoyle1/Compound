@@ -46,12 +46,18 @@ struct SetKeyboardContext {
     var fields: [SetKeyboardField] = [.weight, .reps]
     /// `WorkoutSettings.rirTracking`, shown to the user as "Effort (RPE)".
     var showsEffort: Bool = false
+    /// The reps in reserve the set's target aims for (`SetTarget.rirTarget`), which the set
+    /// starts with; with one, the reps keypad always offers reps in reserve.
+    var targetRIR: Int?
     var lastSetWeightKg: Double?
     var lastSetReps: Int?
     var previousSessionWeightKg: Double?
     var targetWeightKg: Double?
     var targetMinReps: Int?
     var targetMaxReps: Int?
+    /// The gym's bars for this exercise when it is on a loadable bar, and the one loaded.
+    var barChoices: [BarChoice] = []
+    var chosenBarId: String?
 }
 
 struct SetKeyboardChip: Identifiable, Equatable {
@@ -75,6 +81,19 @@ final class SetKeyboardPresenter {
     /// Opens the plate calculator for the set being edited. The row sets it, as the keyboard has
     /// no router.
     var openPlateCalculator: (@MainActor () -> Void)?
+    /// Loads another of the gym's bars (`SetKeyboardContext.barChoices`). The row sets it.
+    var onBarChosen: (@MainActor (String) -> Void)?
+
+    /// The bar menu between − and +, offered when the gym has more than one bar for it.
+    var showsBarMenu: Bool { context.barChoices.count > 1 }
+
+    var chosenBarId: String {
+        get { context.chosenBarId ?? "" }
+        set {
+            guard newValue != context.chosenBarId else { return }
+            onBarChosen?(newValue)
+        }
+    }
 
     private var editingSet: Binding<WorkoutSetModel>?
 
@@ -195,9 +214,14 @@ final class SetKeyboardPresenter {
         guard let set = editingSet, let field = activeField else { return }
         switch field {
         case .weight:
-            set.wrappedValue.weightKg = Double.typed(text, locale: locale).map { UnitConversion.convertWeightToKg($0, from: context.unit) }
+            // Typed as the load: a machine base kept out of it goes back on (`machineBaseKg`).
+            let base = set.wrappedValue.machineBaseKg ?? 0
+            set.wrappedValue.weightKg = Double.typed(text, locale: locale).map { UnitConversion.convertWeightToKg($0, from: context.unit) + base }
         case .reps:
-            set.wrappedValue.reps = Int(text)
+            // A logged set keeps at least one rep: cleared, it would read as a single everywhere.
+            let typed = Int(text)
+            guard set.wrappedValue.completedAt == nil || (typed ?? 0) >= 1 else { return }
+            set.wrappedValue.reps = typed
         case .distance:
             set.wrappedValue.distanceMeters = Double.typed(text, locale: locale).map { UnitConversion.convertDistanceToMeters($0, from: context.distanceUnit) }
         case .duration:
@@ -283,26 +307,28 @@ final class SetKeyboardPresenter {
         }
     }
 
-    /// Picks an RPE, or clears it when the same chip is tapped again.
-    func toggleRPE(_ rpe: Double) {
+    /// Picks the reps left in reserve, or clears them when the same chip is tapped again. Stored
+    /// as the RPE it is (`EffortScale`): 2 in reserve is RPE 8, 6+ is RPE 4.
+    func toggleRIR(_ rir: Int) {
         guard let set = editingSet else { return }
-        set.wrappedValue.rpe = set.wrappedValue.rpe == rpe ? nil : rpe
+        set.wrappedValue.rpe = selectedRIR == rir ? nil : EffortScale.rpe(fromRIR: rir)
     }
 
-    var selectedRPE: Double? { editingSet?.wrappedValue.rpe }
+    var selectedRIR: Int? { editingSet?.wrappedValue.rpe.map(EffortScale.rirChoice(fromRPE:)) }
 
-    /// The RPE chips, on a set already logged: effort is an outcome, recorded after the set in the
-    /// correction row, so the keypad offers them only to correct a logged one.
+    /// The reps-in-reserve chips over the reps keypad, with effort tracking on or a target RIR
+    /// on the set: the set starts at its target, and the chips record what was actually left.
     var showsEffortChips: Bool {
-        context.showsEffort && editingSet?.wrappedValue.completedAt != nil
+        context.showsEffort || context.targetRIR != nil
     }
 
+    /// Each chip applies a total and reads as the load, like the field.
     var weightChips: [SetKeyboardChip] {
         chips([
             (String(localized: "Last set"), context.lastSetWeightKg),
             (String(localized: "Last time"), context.previousSessionWeightKg),
             (String(localized: "Target"), context.targetWeightKg)
-        ]) { UnitConversion.convertWeight($0, to: context.unit) }
+        ], shownLess: baseInUnit) { UnitConversion.convertWeight($0, to: context.unit) }
     }
 
     var repsChips: [SetKeyboardChip] {
@@ -313,12 +339,23 @@ final class SetKeyboardPresenter {
         ]) { $0 }
     }
 
-    private func chips(_ values: [(String, Double?)], convert: (Double) -> Double) -> [SetKeyboardChip] {
+    private func chips(_ values: [(String, Double?)], shownLess offset: Double = 0, convert: (Double) -> Double) -> [SetKeyboardChip] {
         values.compactMap { title, value in
             guard let value else { return nil }
             let display = (convert(value) * 100).rounded() / 100
-            return SetKeyboardChip(title: "\(title) \(WeightStepper.format(display))", value: display)
+            let shown = ((display - offset) * 100).rounded() / 100
+            return SetKeyboardChip(title: "\(title) \(WeightStepper.format(shown))", value: display)
         }
+    }
+
+    /// The machine base the set's weight is entered without, in the display unit; 0 for most.
+    private var baseInUnit: Double {
+        (editingSet?.wrappedValue.machineBaseKg).map { UnitConversion.convertWeight($0, to: context.unit) } ?? 0
+    }
+
+    /// A total in the display unit as the field would show it: without any machine base.
+    func shownLoad(_ total: Double) -> String {
+        WeightStepper.format(((total - baseInUnit) * 1000).rounded() / 1000, locale: locale)
     }
 
     // MARK: - Bands
@@ -344,14 +381,16 @@ final class SetKeyboardPresenter {
 
     /// The loading bar over the weight keypad: on a bar or plate-loaded machine, whatever the
     /// weight, so the bar and plates being loaded are always in view.
+    /// Whatever the plates: with every plate switched off it still opens the plate calculator,
+    /// the one place to switch them back on.
     var showsLoadingBar: Bool {
-        activeField == .weight && context.step.isPlateLoaded
+        activeField == .weight && context.step.baseWeight != nil
     }
 
     /// The plates on one sleeve and the sum they make, for a weight the bar can carry; the bare
     /// bar before a weight is entered. `nil` when the weight cannot be loaded (see `plateLoad`).
     var plateLoading: PlateLoading? {
-        guard context.step.isPlateLoaded, let base = context.step.baseWeight else { return nil }
+        guard let base = context.step.baseWeight else { return nil }
         switch plateLoad {
         case .loadable(let perSide)?:
             return PlateLoading(perSide: perSide, base: base, sleeves: context.step.sleeves, unit: context.unit)
@@ -364,7 +403,7 @@ final class SetKeyboardPresenter {
 
     /// The per-sleeve breakdown of the weight in the field, for plate-loaded equipment.
     var plateLoad: PlateCalculator.Result? {
-        guard context.step.isPlateLoaded, let bar = context.step.baseWeight, let total = shownWeight else { return nil }
+        guard let bar = context.step.baseWeight, let total = shownWeight else { return nil }
         return PlateCalculator.load(total: total, bar: bar, plates: context.step.plates, sleeves: context.step.sleeves)
     }
 
@@ -378,11 +417,15 @@ final class SetKeyboardPresenter {
     /// is open. Every key, step and chip rewrites `text`, which this presenter observes; a weight
     /// read through the set's binding is not observed, so the loading bar stayed on the weight the
     /// keyboard opened with while + stepped the field.
+    ///
+    /// The field shows two decimals, so where it shows the stored weight the stored weight is read:
+    /// + on a 44.092 lb bar makes 224.092 lb, which the field shows as "224.09", and the bar must
+    /// not call that weight unloadable.
     private var shownWeight: Double? {
-        if activeField == .weight {
-            return Double.typed(text, locale: locale)
-        }
-        return editingSet?.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: context.unit) * 1000).rounded() / 1000 }
+        let stored = editingSet?.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: context.unit) * 1000).rounded() / 1000 }
+        guard activeField == .weight else { return stored }
+        if let stored, shownLoad(stored) == text { return stored }
+        return Double.typed(text, locale: locale).map { $0 + baseInUnit }
     }
 
     // MARK: - VoiceOver
@@ -409,7 +452,7 @@ final class SetKeyboardPresenter {
     /// The weight and bands as the stepper row's VoiceOver value: "60 kilograms + Red", "Red + Blue".
     var spokenWeight: String? {
         guard let set = editingSet?.wrappedValue else { return nil }
-        return Format.load(set.weightKg.map { ActiveWorkout.spokenWeight(kg: $0, unit: context.unit, locale: locale) }, bands: set.bands)
+        return Format.load(set.loadKg.map { ActiveWorkout.spokenWeight(kg: $0, unit: context.unit, locale: locale) }, bands: set.bands)
     }
 
     // MARK: - Display
@@ -467,7 +510,7 @@ final class SetKeyboardPresenter {
     ) -> String {
         switch field {
         case .weight:
-            return set.weightKg.map { WeightStepper.format(UnitConversion.convertWeight($0, to: unit), locale: locale) } ?? ""
+            return set.loadKg.map { WeightStepper.format(UnitConversion.convertWeight($0, to: unit), locale: locale) } ?? ""
         case .reps:
             return set.reps.map(String.init) ?? ""
         case .distance:

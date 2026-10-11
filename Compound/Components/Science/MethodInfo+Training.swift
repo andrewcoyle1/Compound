@@ -34,7 +34,7 @@ extension MethodInfo {
     static let smartProgression = MethodInfo(
         id: "training.smartProgression",
         title: "Smart Progression",
-        summary: "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its RPE target. Without a target, a compound set logged at RPE 10 doesn't earn weight. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell, you add a rep each session until your reps carry the heavier weight for the bottom of the range. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target.",
+        summary: "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its reps-in-reserve target. An AMRAP or failure set aims for none in reserve. Without a target, a compound set logged at RPE 10 doesn't earn weight. A set with no rep range is worked through 8–12, and reps under 8 there are not a miss; a range with only one end set reaches four reps to the other. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell or 10 kg on a bar with no plates under 5 kg, you add a rep each session until your reps carry the heavier weight for the bottom of the range. With nothing heavier at all, at the top of a stack or a gap in the rack, you add a rep; body-weight work, and a set logged with no weight, does a rep more than last time. History comes from sessions done with the same kind of load, so dumbbell sets never set a barbell weight, and passes over deload weeks. Timed sets grow 10% (at least 5 seconds) and distances 5%. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target.",
         formula: """
         step = max(weight × p, smallest increment), rounded to equipment
           p = 5% lower compound, 2.5% upper compound or untyped, 5% isolation/core
@@ -42,21 +42,27 @@ extension MethodInfo {
           reps + 1 instead
         reset weight = e1RM ÷ (1 + (min reps + RIR target)/30)
           clamped to 85–95% of the weight missed; 90% when there is no estimate
-        live: missed by 2+ → weight × 0.95; beat max by 2 at RPE ≤ 8 → + step
+        nothing heavier, no weight, or body weight → reps + 1
+        no range → 8–12, and reps under 8 are not a miss
+        time → max(round5(s × 1.1), s + 5); distance → max(round(m × 1.05), m + step)
+          step = 1 m under 200 m, 10 m under 2 km, else 50 m
+        live: missed by 2+ → 5% lighter, rounded down; beat max by 2 at RPE ≤ 8 → + step
+          only sets asked for the same as the one logged; drops and pieces are left alone
         """,
         limitations: "No trial has compared percentage steps with fixed ones. The rep fallback rests on a trial in which adding reps and adding load built muscle equally. RPE-based loading did at least as well as percentage-based loading, and hypertrophy improves closer to failure while strength responds more to load. RPE is self-reported and tends to underestimate the reps left.",
-        ownChoices: "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, and the in-session 5% cut are Compound's own choices. The 10% fallback is the practitioner convention it replaces.",
+        ownChoices: "The step percentages (chosen within the 2–10% range ACSM describes), the 10% limit, the 1-rep-in-reserve default for compounds, the two-session rule without RPE, the RPE 9.5 reset trigger, the 2 reps in reserve and 5–15% limits of a reset, the in-session 5% cut, the 8–12 default range, the time and distance steps and reading history by kind of load are Compound's own choices. The 10% fallback is the practitioner convention it replaces. The rep fallback uses Epley's equation past 10 reps, which the one-rep max does not: it compares two weights at the same reps rather than estimating a max, which is where the equation holds up best.",
         citations: [.acsm2009, .plotkin2022, .helms2018, .robinson2024, .epley1985, .zourdos2016, .halperin2022, .rippetoe2011, .wendler2009]
     )
 
     static let mesocycleDeload = MethodInfo(
         id: "training.deload",
         title: "Deload Week",
-        summary: "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded to your equipment. Reps stay as planned and warm-ups stay. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks.",
+        summary: "In a mesocycle's deload week, each exercise keeps about half its working sets (half, rounded up, so 4 becomes 2 and 3 becomes 2) at 90% of the planned weight, rounded down to your equipment, and a step lighter where 90% would round back to the planned weight. Reps stay as planned and warm-ups stay. The week after a deload carries on from the week before it. You keep training as often as usual. Lifters and coaches deload mostly by cutting volume and effort while keeping frequency. In a survey of strength and physique athletes, a typical deload lasted about a week every 5 to 6 weeks.",
         formula: """
         sets kept = max(1, ⌈planned working sets × 0.5⌉)
-        weight = planned weight × 0.90, rounded to equipment
+        weight = planned weight × 0.90, rounded down to equipment
         assistance = planned assistance × 1.10
+        progression afterwards reads past the deload week
         """,
         limitations: "Deloading is widely practised but little studied. The one trial found that a full week off mid-programme did not change muscle growth and slightly reduced strength gains, so the benefit is mainly recovery and practicality.",
         ownChoices: "Half the sets, 90% of the weight (the middle of 85–95%), and keeping warm-ups are Compound's own choices. When the deload falls is set by the mesocycle.",
@@ -66,12 +72,14 @@ extension MethodInfo {
     static let warmupSets = MethodInfo(
         id: "training.warmups",
         title: "Warm-Up Sets",
-        summary: "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. A warm-up count set in the plan always wins.",
+        summary: "Warm-up sets are lighter sets before your working sets that prepare your muscles and joints. They don't count toward volume or personal records. Compound ramps them up to the working weight with fewer reps as the load rises, so the last warm-up primes the working weight without becoming an extra working set: 8 reps up to half the weight, 5 up to 70%, 3 up to 85% and 2 above. Heavy compound work of 6 reps or fewer gets 3 warm-ups at about 45, 65 and 82%. Work of 7–12 reps gets 2 at 50 and 75%. Lighter work, isolation and core exercises get 1 at 60%. Work at bodyweight or with assistance gets none, as there is no lighter load to ramp through. A warm-up count set in the plan always wins, and its assisted warm-ups get more assistance than the work.",
         formula: """
         count: isolation/core 1; compound reps ≤ 6 → 3, 7–12 → 2, > 12 → 1, unknown → 2
         loads: 1 → 60%; 2 → 50, 75%; 3 → 45, 65, 82%; 4+ → 45, 60, 75, 85, 90…%
         reps: ≤ 50% → 8, ≤ 70% → 5, ≤ 85% → 3, above → 2
         no plan count: a warm-up rounded up to the working weight is dropped
+        no plan count and no load (bodyweight, assistance): no warm-ups
+        assisted, planned: assistance × (2 − share)
         """,
         limitations: "Studies found that a warm-up at higher loads with few reps, such as 6 reps at 40% then 80% of the training load, made the first working sets faster than lighter or no warm-ups. They tested squat and bench press in trained people, not every exercise.",
         ownChoices: "The exact percentages, reps and counts, and using working reps as a stand-in for how heavy the work is, are Compound's own choices around the 40% and 80% anchors of the studies.",
@@ -94,9 +102,9 @@ extension MethodInfo {
     static let tonnage = MethodInfo(
         id: "training.tonnage",
         title: "Volume (Tonnage)",
-        summary: "Volume is weight × reps summed over working sets, with a weight held in each hand counted twice. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like.",
+        summary: "Volume is weight × reps summed over the working sets you logged. A dumbbell set is logged as one dumbbell, as it reads on the rack, so an exercise that holds one in each hand counts it twice; so does a left-and-right set logged as one. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like.",
         formula: """
-        volume = Σ (external load × sides + bodyweight × share − assistance) × reps
+        volume = Σ (external load × weights held + bodyweight × share − assistance) × reps × sides
         bodyweight share = exercise's bodyweight contribution (setting on, your own workouts)
         """,
         limitations: "Tonnage is a rough measure of work: it treats a heavy triple and a light set of fifteen alike, and it uses today's bodyweight, so older workouts change with the scale.",

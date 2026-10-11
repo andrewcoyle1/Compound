@@ -45,10 +45,9 @@ struct ShareCardContent: Equatable {
         weeklyWorkoutNumber: Int,
         locale: Locale = .current
     ) -> ShareCardContent {
-        let workingSets = session.exercises.flatMap(\.workingSets)
-        let volume = workingSets.reduce(0.0) { $0 + ($1.volumeKg ?? 0) }
+        let volume = session.loggedVolumeKg
         // A left and a right are one set, as on the feed card.
-        let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
+        let setCount = session.loggedSetCount
 
         return ShareCardContent(
             firstName: author?.firstNameCalculated,
@@ -56,7 +55,7 @@ struct ShareCardContent: Equatable {
             sessionName: session.name,
             dateText: session.dateCreated.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(locale)),
             durationText: durationText(from: session.dateCreated, to: session.activeDuration.map(session.dateCreated.addingTimeInterval)),
-            volumeText: volumeText(volume, locale: locale),
+            volumeText: volumeText(volume, unit: session.authorWeightUnit, locale: locale),
             setCount: setCount,
             personalRecordLines: personalRecords.map { "\($0.exerciseName) \($0.detail)" },
             weeklyText: WorkoutSessionHighlights.weeklyWorkoutText(weeklyWorkoutNumber),
@@ -73,10 +72,11 @@ struct ShareCardContent: Equatable {
         return hours > 0 ? String(localized: "\(String(describing: hours))h \(String(describing: minutes))m") : String(localized: "\(String(describing: minutes))m")
     }
 
-    /// "12,340 kg" with the reader's grouping; nil when nothing was lifted, so a run or a
-    /// bodyweight session does not boast "0 kg".
-    static func volumeText(_ kilograms: Double, locale: Locale = .current) -> String? {
+    /// "12,340 kg" with the reader's grouping, in the unit the author lifted in; nil when
+    /// nothing was lifted, so a run or a bodyweight session does not boast "0 kg".
+    static func volumeText(_ kilograms: Double, unit: ExerciseWeightUnit = .kilograms, locale: Locale = .current) -> String? {
         guard kilograms > 0 else { return nil }
-        return String(localized: "\(Int(kilograms.rounded()).formatted(.number.locale(locale))) kg")
+        let value = Int(UnitConversion.convertWeight(kilograms, to: unit).rounded()).formatted(.number.locale(locale))
+        return "\(value) \(unit.abbreviation)"
     }
 }

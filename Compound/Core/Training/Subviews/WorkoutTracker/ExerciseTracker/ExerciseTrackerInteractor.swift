@@ -10,6 +10,7 @@ protocol ExerciseTrackerInteractor: GlobalInteractor {
     var allExercises: [ExerciseModel] { get }
     /// The note kept on this exercise's own settings screen, if any.
     func exerciseNote(for exerciseId: String) -> String?
+    func setExerciseNote(_ note: String?, for exerciseId: String) async throws
 }
 
 extension CoreInteractor: ExerciseTrackerInteractor { }

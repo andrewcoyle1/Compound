@@ -60,7 +60,7 @@ struct AnalyticsPresenterTests {
     private func session(id: String, daysAgo: Int, sets: Int = 1, warmups: Int = 0, ended: Bool = true) -> WorkoutSessionModel {
         let day = date(daysAgo)
         let working = (0..<sets).map { index in
-            WorkoutSetModel(id: "\(id)-s\(index)", authorId: "author-1", index: index + 1, reps: 8, weightKg: 80, isWarmup: false, dateCreated: day)
+            WorkoutSetModel(id: "\(id)-s\(index)", authorId: "author-1", index: index + 1, reps: 8, weightKg: 80, isWarmup: false, completedAt: day, dateCreated: day)
         }
         let warm = (0..<warmups).map { index in
             WorkoutSetModel(

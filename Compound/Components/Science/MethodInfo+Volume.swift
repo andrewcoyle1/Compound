@@ -18,7 +18,7 @@ extension MethodInfo {
     static let weeklyHardSets = MethodInfo(
         id: "volume.hardSets",
         title: "Weekly Hard Sets",
-        summary: "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows.",
+        summary: "Sets per muscle count only hard sets: finished, not warm-ups, and not logged below RPE 6. A set with no RPE still counts, so not logging effort costs you nothing. An exercise's main muscles get the whole set and the muscles it only assists get half. A left and right set count as one, worth the harder side. Each finished drop, or mini-set of a myo-rep or rest-pause set, adds half a set, up to two sets in all. Weeks are rolling seven-day windows.",
         formula: """
         hard set = completed AND not warm-up AND (RPE missing OR RPE ≥ 6)
         set credit = min(2, 1 + 0.5 × finished drops or myo/rest-pause mini-sets)

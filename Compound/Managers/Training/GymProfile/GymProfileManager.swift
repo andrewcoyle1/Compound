@@ -104,16 +104,31 @@ extension CoreInteractor {
     /// The workout's gym, changed from inside the workout. It becomes the workout's gym before the
     /// save returns, because the synced copy only updates when the listener next emits and the
     /// keyboard reads the gym straight away.
+    /// A failed save puts the workout back on the gym it had, so the keyboard does not step on
+    /// equipment the gym was never saved with.
     func saveWorkoutGymProfile(_ profile: GymProfileModel) async throws {
+        let previous = gymProfileManager.activeWorkoutGymProfile
         gymProfileManager.activeWorkoutGymProfile = profile
-        try await gymProfileManager.saveGymProfile(profile: profile, image: nil)
+        do {
+            try await gymProfileManager.saveGymProfile(profile: profile, image: nil)
+        } catch {
+            if gymProfileManager.activeWorkoutGymProfile?.id == profile.id {
+                gymProfileManager.activeWorkoutGymProfile = previous
+            }
+            throw error
+        }
     }
 
     func getGymProfile(gymProfileId: String) async throws -> GymProfileModel {
         try await gymProfileManager.getGymProfile(gymProfileId: gymProfileId)
     }
 
+    /// An edit to the workout's own gym, made from Gym Settings inside the workout, reaches the
+    /// keyboard straight away, as `saveWorkoutGymProfile` does.
     func saveGymProfile(profile: GymProfileModel, image: PlatformImage?) async throws {
+        if gymProfileManager.activeWorkoutGymProfile?.id == profile.id {
+            gymProfileManager.activeWorkoutGymProfile = profile
+        }
         try await gymProfileManager.saveGymProfile(profile: profile, image: image)
     }
 

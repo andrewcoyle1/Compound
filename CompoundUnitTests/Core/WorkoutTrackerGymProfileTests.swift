@@ -81,7 +81,7 @@ struct WorkoutTrackerGymProfileTests {
         #expect(router.shown == ["gymProfile"])
     }
 
-    /// The row's plates and steps come from the workout's gym, so a user with no favourite still
+    /// The keyboard's plates and steps come from the workout's gym, so a user with no favourite still
     /// gets them at the workout's gym.
     @Test("Test The Row Reads The Plates Of The Workout's Gym")
     func testRowReadsWorkoutGym() {
@@ -93,10 +93,12 @@ struct WorkoutTrackerGymProfileTests {
             equipmentVariations: [EquipmentVariation(id: "v", resistanceEquipment: [EquipmentRef(kind: .loadableBar, id: "barbell")])]
         )
 
-        #expect(presenter.plateSummary(exercise: exercise, set: exercise.sets[0]) == nil)
+        let delegate = SetTrackerRowDelegate(exercise: .constant(exercise), set: .constant(exercise.sets[0]), lastSet: nil)
+
+        #expect(!presenter.keyboardContext(delegate: delegate).step.isPlateLoaded)
 
         interactor.workoutGymProfile = GymProfileModel(authorId: "u")
-        #expect(presenter.plateSummary(exercise: exercise, set: exercise.sets[0]) != nil)
+        #expect(presenter.keyboardContext(delegate: delegate).step.isPlateLoaded)
     }
 
     private final class RowInteractor: SpyGlobalInteractor, SetTrackerRowInteractor {

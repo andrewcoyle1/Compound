@@ -19,11 +19,11 @@ private final class PlanRouter: SetTargetRouter, ExercisesPickerRouter {
     let router: AnyRouter = TestRouting.anyRouter
     private(set) var details: [SetPlanDetailDelegate] = []
     private(set) var pickers: [ExercisesPickerDelegate] = []
-    private(set) var variations: [MicrocycleVariationsDelegate] = []
+    private(set) var variations: [WeeklyTargetsDelegate] = []
 
     func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { details.append(delegate) }
     func showExercisesPickerView(delegate: ExercisesPickerDelegate) { pickers.append(delegate) }
-    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { variations.append(delegate) }
+    func showWeeklyTargetsView(delegate: WeeklyTargetsDelegate) { variations.append(delegate) }
     func showConfirmationDialog(title: String, subtitle: String?, buttons: (@Sendable () -> AnyView)?) { }
 }
 

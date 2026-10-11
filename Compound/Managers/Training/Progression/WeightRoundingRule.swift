@@ -49,21 +49,6 @@ struct WeightRoundingRule: Equatable {
         self.init(step: step, unit: unit, preferredUnit: preferredWeightUnit)
     }
 
-    /// Progression rounds to plates only when the gym has small ones. A profile whose lightest
-    /// plate is 5 kg is far more likely to be missing its small plates than to have none, and
-    /// rounding to it would make every step 10 kg.
-    static let smallestPlateForProgressionKg = 2.5 + 0.001
-
-    /// The rule progression uses: this one, except that a bar in a gym without small plates is
-    /// rounded as though nothing constrained it (`smallestPlateForProgressionKg`).
-    var forProgression: WeightRoundingRule {
-        guard step.isPlateLoaded, let smallest = step.plates.map(\.weight).min(),
-              UnitConversion.convertWeightToKg(smallest, from: unit) > Self.smallestPlateForProgressionKg else { return self }
-        var unconstrained = step
-        unconstrained.constrainsWeight = false
-        return WeightRoundingRule(step: unconstrained, unit: unit, preferredUnit: preferredUnit)
-    }
-
     /// The rule as the engine takes it.
     var progressionRounding: ProgressionRounding {
         ProgressionRounding(round: round, minimumIncrementKg: minimumIncrementKg)

@@ -69,8 +69,9 @@ struct BodyweightLoadTests {
         #expect(BodyweightLoad.volumeKg(of: set(reps: 8, weightKg: 20), contributionKg: 80) == 800)
         #expect(BodyweightLoad.volumeKg(of: set(reps: 8, weightKg: nil), contributionKg: 80) == 640)
         #expect(BodyweightLoad.volumeKg(of: set(reps: 8, weightKg: -30), contributionKg: 80) == 400)
-        // A weight per side counts twice, as `volumeKg` has it; the bodyweight once.
-        #expect(BodyweightLoad.volumeKg(of: set(reps: 10, weightKg: 10, side: .both), contributionKg: 50) == 700)
+        // A `both` row is a left and a right set, each lifting the weight and the bodyweight: as
+        // the two rows it stands for, (10 + 50) × 10 × 2.
+        #expect(BodyweightLoad.volumeKg(of: set(reps: 10, weightKg: 10, side: .both), contributionKg: 50) == 1200)
         #expect(BodyweightLoad.volumeKg(of: set(reps: nil, weightKg: 20), contributionKg: 80) == nil)
     }
 

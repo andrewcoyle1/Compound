@@ -41,7 +41,8 @@ struct StravaStrengthFile: Encodable, Equatable {
                 StravaStrengthSet(
                     exerciseType: type,
                     repetitions: row.reps,
-                    weight: row.weightKg.flatMap { $0 > 0 ? $0 : nil },
+                    // As the set reads in Compound: a machine base kept out of the load stays out.
+                    weight: row.loadKg.flatMap { $0 > 0 ? $0 : nil },
                     duration: row.durationSec
                 )
             }
@@ -58,9 +59,10 @@ struct StravaStrengthFile: Encodable, Equatable {
 
     /// Completed working sets, a left/right pair sent once — the rule `pairedSetCount` counts by.
     /// Strava has no sides, and six rows for three sets of a single-arm row would double them on
-    /// the map. Warm-ups are left out for the same reason.
+    /// the map. Warm-ups are left out for the same reason, and so are drops, mini-sets and pieces:
+    /// they are part of their set, and as sets of their own a myo set read as four.
     static func uploadedRows(_ rows: [WorkoutSetModel]) -> [WorkoutSetModel] {
-        let done = rows.filter { !$0.isWarmup && $0.completedAt != nil }
+        let done = rows.filter { !$0.isWarmup && $0.completedAt != nil && !$0.isSubSet }
         return done.enumerated().compactMap { index, row in
             let foldsIntoPrevious = row.side == .right && index > 0 && done[index - 1].side == .left
             return foldsIntoPrevious ? nil : row
@@ -91,10 +93,15 @@ extension StravaUpload {
     }
 
     private static func summary(of set: WorkoutSetModel, weightUnit: WeightUnitPreference, distanceUnit: DistanceUnitPreference) -> String? {
-        let weight = set.weightKg.flatMap { $0 > 0 ? Format.weight(kg: $0, unit: weightUnit) : nil }
+        // In the unit the set was lifted in, where it says.
+        let weight = set.loadKg.flatMap { kilograms -> String? in
+            guard kilograms > 0 else { return nil }
+            return set.weightUnit.map { Format.weight(kg: kilograms, unit: $0) } ?? Format.weight(kg: kilograms, unit: weightUnit)
+        }
         switch (weight, set.reps, set.durationSec, set.distanceMeters) {
         case let (weight?, reps?, _, _): return "\(weight) × \(reps)"
         case let (nil, reps?, _, _): return Format.reps(reps)
+        case let (weight?, nil, seconds?, _): return "\(weight) × \(Format.duration(TimeInterval(seconds)))"
         case let (_, nil, _, meters?) where meters > 0: return Format.distance(meters: meters, unit: distanceUnit)
         case let (_, nil, seconds?, _): return Format.duration(TimeInterval(seconds))
         default: return weight

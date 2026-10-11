@@ -277,25 +277,6 @@ struct SetSideTrackingTests {
 
     // MARK: - Last session's figures
 
-    /// A left set must not inherit the right arm's history: the user would chase a number the
-    /// other arm set and wonder why it felt heavy.
-    @Test("Test The Previous Lookup Keeps The Sides Apart")
-    func testThePreviousLookupKeepsTheSidesApart() {
-        let (presenter, _) = makeListPresenter()
-        let previous = exercise(sets: [
-            set(id: "p1", index: 1, side: .left, weightKg: 20),
-            set(id: "p2", index: 2, side: .right, weightKg: 22.5)
-        ])
-        presenter.previousExercises = [previous.templateId: previous]
-
-        let lookup = presenter.buildPreviousLookup(for: exercise(sets: onePair))
-
-        #expect(lookup.match(for: set(id: "s1", index: 1, side: .left))?.weightKg == 20)
-        #expect(lookup.match(for: set(id: "s2", index: 2, side: .right))?.weightKg == 22.5)
-        // The left side of set two has no history yet, and the right arm's is not its to borrow.
-        #expect(lookup.match(for: set(id: "s3", index: 2, side: .left)) == nil)
-    }
-
     // MARK: - The rest between limbs
 
     /// The point of the whole feature. Swapping hands is not a rest between sets, so by default the

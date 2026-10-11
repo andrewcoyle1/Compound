@@ -54,20 +54,30 @@ struct ProgressionEngine {
         let range = repRange(target: target, referenceReps: reps)
         let adjusted: SuggestedSet
 
-        if reps < range.min - 1 {
-            adjusted = SuggestedSet(weightKg: rounding.round(weight * 0.95), reps: range.min)
-        } else if reps == range.min - 1 {
+        if reps < range.min - 1, range.isPrescribed {
+            adjusted = SuggestedSet(weightKg: lighterWeight(weight, rounding: rounding), reps: range.min)
+        } else if reps == range.min - 1, range.isPrescribed {
             adjusted = SuggestedSet(weightKg: weight, reps: range.min)
         } else if reps >= range.max + 2, (completed.rpe ?? 0) <= 8 {
             let heavier = increasedWeight(weight, fraction: LoadIncrement.targetFraction(for: exerciseType), rounding: rounding)
-            // A step too big for the weight waits for next session's suggestion.
-            guard jumpIsAffordable(from: weight, reps: reps, to: heavier, minReps: range.min) else { return unchanged }
+            // Nothing heavier on this equipment, or a step too big for the weight: next session's
+            // suggestion deals with it.
+            guard heavier > weight, jumpIsAffordable(from: weight, reps: reps, to: heavier, minReps: range.min) else { return unchanged }
             adjusted = SuggestedSet(weightKg: heavier, reps: range.min)
         } else {
             return unchanged
         }
 
         return remaining.map { _ in adjusted }
+    }
+
+    /// Five per cent off, rounded down so it is lighter, and more help for assistance (stored
+    /// negative), which `weight * 0.95` would have reduced.
+    private func lighterWeight(_ weight: Double, rounding: ProgressionRounding) -> Double {
+        let intended = weight >= 0 ? weight * 0.95 : weight * 1.05
+        let rounded = rounding.round(intended)
+        if rounded < weight - 0.001 { return rounded }
+        return rounding.round(weight - rounding.minimumIncrementKg)
     }
 
     // MARK: - Weight/reps and reps-only
@@ -104,11 +114,12 @@ struct ProgressionEngine {
 
             switch classified {
             case .progressWeight where !tracksWeight:
-                // Bodyweight work cannot add weight, so it raises the range instead.
-                return SuggestedSet(reps: range.max + 1)
+                // Bodyweight work cannot add weight, so it does a rep more than last time, past
+                // the top of the range.
+                return SuggestedSet(reps: (referenceReps ?? range.max) + 1)
             case .progressWeight:
                 let progressed = progressedSet(weight: referenceWeight, reps: referenceReps, range: range, fraction: fraction, rounding: input.rounding)
-                if referenceWeight != nil, progressed.weightKg == referenceWeight { repsInsteadSets += 1 } else { heavierSets += 1 }
+                if progressed.weightKg == referenceWeight { repsInsteadSets += 1 } else { heavierSets += 1 }
                 return progressed
             case .addReps:
                 let reps = referenceReps.map { min($0 + 1, range.max) } ?? range.min
@@ -160,10 +171,17 @@ struct ProgressionEngine {
     /// weight that is not ready. Reps-first wants every set there.
     private func reachedTop(_ input: ProgressionInput, session: ProgressionHistorySession) -> Bool {
         let top = tally(input, session: session).top
+        let count = judged(input, session: session).count
         switch input.adjustmentMode {
-        case .weightFirst: return top * 2 > session.workingSets.count
-        case .repsFirst:   return top == session.workingSets.count
+        case .weightFirst: return top * 2 > count
+        case .repsFirst:   return top == count
         }
+    }
+
+    /// The sets progression is judged on: those whose target progresses. A drop or myo set is
+    /// prefilled but neither reaches a top nor misses one.
+    private func judged(_ input: ProgressionInput, session: ProgressionHistorySession) -> [(offset: Int, element: WorkoutSetModel)] {
+        session.workingSets.enumerated().filter { isProgressable(target(input, at: $0.offset)) }
     }
 
     private func hasLoggedEffort(_ session: ProgressionHistorySession) -> Bool {
@@ -173,10 +191,10 @@ struct ProgressionEngine {
     /// Sets below the bottom of their range that were not stopped short on purpose: an RPE logged
     /// under `LoadIncrement.resetMinimumRPE` left reps in reserve. With no RPE the miss counts.
     private func failedMisses(_ input: ProgressionInput, session: ProgressionHistorySession) -> Int {
-        session.workingSets.enumerated().filter { index, set in
+        judged(input, session: session).filter { index, set in
             guard let reps = set.reps else { return false }
             let range = repRange(target: target(input, at: index), referenceReps: reps)
-            return reps < range.min && (set.rpe.map { $0 >= LoadIncrement.resetMinimumRPE } ?? true)
+            return range.isPrescribed && reps < range.min && (set.rpe.map { $0 >= LoadIncrement.resetMinimumRPE } ?? true)
         }.count
     }
 
@@ -185,22 +203,24 @@ struct ProgressionEngine {
     private func tally(_ input: ProgressionInput, session: ProgressionHistorySession) -> (top: Int, missed: Int) {
         var top = 0
         var missed = 0
-        for (index, set) in session.workingSets.enumerated() {
+        for (index, set) in judged(input, session: session) {
             guard let reps = set.reps else { continue }
             let range = repRange(target: target(input, at: index), referenceReps: reps)
             if reps >= range.max { top += 1 }
-            if reps < range.min { missed += 1 }
+            // Below the default range is not a miss: nobody prescribed it.
+            if reps < range.min, range.isPrescribed { missed += 1 }
         }
         return (top, missed)
     }
 
     /// False when any set was logged harder than it was prescribed. The RPE/RIR mapping is
-    /// `EffortScale`'s, so a target of 2 reps in reserve is an RPE of 8. A compound lift whose
+    /// `EffortScale`'s, so a target of 2 reps in reserve is an RPE of 8. A set's own target wins;
+    /// an AMRAP or failure set is meant to end at none in reserve; a compound lift whose
     /// template sets no target is held to `LoadIncrement.defaultReserve`.
     private func rpeWithinTarget(_ input: ProgressionInput, session: ProgressionHistorySession) -> Bool {
-        for (index, set) in session.workingSets.enumerated() {
-            guard let rpe = set.rpe,
-                  let rir = target(input, at: index)?.rirTarget ?? LoadIncrement.defaultReserve(for: input.exerciseType) else { continue }
+        for (index, set) in judged(input, session: session) {
+            guard let rpe = set.rpe, let rir = target(input, at: index)?.effectiveRIRTarget
+                    ?? LoadIncrement.defaultReserve(for: input.exerciseType) else { continue }
             if rpe > EffortScale.rpe(fromRIR: rir) + 0.5 { return false }
         }
         return true
@@ -212,9 +232,11 @@ struct ProgressionEngine {
 
     // MARK: - Timed and distance work
 
-    /// No rep range to work up, so the only question is whether every set was finished.
+    /// No rep range to work up, so the only question is whether every set was finished: history
+    /// holds logged sets only, so that is whether as many were logged as are planned.
     private func suggestMeasured(_ input: ProgressionInput, reference: ProgressionHistorySession) -> ProgressionSuggestion {
         let allCompleted = reference.workingSets.allSatisfy { $0.completedAt != nil }
+            && reference.workingSets.count >= input.setTargets.count
         let rationale: ProgressionSuggestion.Rationale = allCompleted ? .progressWeight : .hold
 
         let sets = (0..<setCount(input, reference: reference)).map { index -> SuggestedSet in
@@ -228,11 +250,16 @@ struct ProgressionEngine {
 
             switch input.trackingMode {
             case .timeOnly:
-                let longer = duration.map { Int(round(Double($0) * 1.10, toNearest: 5)) }
+                // Ten per cent on the nearest 5 s, and never less than 5 s more: a 10 s hold grows.
+                let longer = duration.map { max(Int(round(Double($0) * 1.10, toNearest: 5)), $0 + 5) }
                 return SuggestedSet(durationSec: longer, distanceMeters: distance)
             default:
-                // Distance grows; however long it took is carried over untouched.
-                let further = distance.map { round($0 * 1.05, toNearest: 50) }
+                // Distance grows by five per cent on a step that suits it, and by at least that
+                // step; however long it took is carried over untouched.
+                let further = distance.map { meters in
+                    let step: Double = meters < 200 ? 1 : meters < 2000 ? 10 : 50
+                    return max(round(meters * 1.05, toNearest: step), meters + step)
+                }
                 return SuggestedSet(durationSec: duration, distanceMeters: further)
             }
         }
@@ -259,12 +286,28 @@ struct ProgressionEngine {
         index < reference.workingSets.count ? reference.workingSets[index] : reference.workingSets.last
     }
 
-    /// The template's range, or one derived from what was done last time when it is silent.
-    private func repRange(target: SetTarget?, referenceReps: Int?) -> (min: Int, max: Int) {
-        let previous = referenceReps ?? 0
-        let minReps = target?.minReps ?? previous
-        let maxReps = target?.maxReps ?? (previous + 2)
-        return (min: minReps, max: max(maxReps, minReps))
+    /// The template's range; one end alone is widened by `SetTarget.defaultRangeWidth`, and a
+    /// set with neither uses `SetTarget.defaultRepRange`. A range derived from last time's reps
+    /// moved with them, so its top was never reached and the weight never went up. Only a range
+    /// the template set (`isPrescribed`) can be missed.
+    private func repRange(target: SetTarget?, referenceReps: Int?) -> RepRange {
+        let width = SetTarget.defaultRangeWidth
+        switch (target?.minReps, target?.maxReps) {
+        case let (low?, high?):
+            return RepRange(min: low, max: max(low, high), isPrescribed: true)
+        case let (low?, nil):
+            return RepRange(min: low, max: low + width, isPrescribed: true)
+        case let (nil, high?):
+            return RepRange(min: max(1, high - width), max: high, isPrescribed: true)
+        case (nil, nil):
+            return RepRange(min: SetTarget.defaultRepRange.lowerBound, max: SetTarget.defaultRepRange.upperBound, isPrescribed: false)
+        }
+    }
+
+    private struct RepRange {
+        let min: Int
+        let max: Int
+        let isPrescribed: Bool
     }
 
     private func isProgressable(_ target: SetTarget?) -> Bool {
@@ -278,6 +321,7 @@ struct ProgressionEngine {
     /// swallows the step whole — 2.5 kg on a machine that only moves in fives — it adds twice the
     /// step rather than suggesting the weight that was just lifted. Assistance (a negative weight)
     /// has no share to take, so it steps by the increment alone.
+    /// It can come back no heavier: a weight at the top of a stack or rack has nowhere to go.
     private func increasedWeight(_ weight: Double, fraction: Double, rounding: ProgressionRounding) -> Double {
         let step = max(weight > 0 ? weight * fraction : 0, rounding.minimumIncrementKg)
         let once = rounding.round(weight + step)
@@ -289,15 +333,19 @@ struct ProgressionEngine {
     /// smallest step the equipment allows is too big a jump for this weight, a rep more at the
     /// same weight instead, until the reps carry the heavier weight (load and rep progression
     /// grow muscle alike, Plotkin 2022).
+    /// With no weight logged (dips at body weight) or nothing heavier to go to, a rep more at
+    /// the same weight: dropping to the bottom of the range at the same weight is going backwards.
     private func progressedSet(
         weight: Double?,
         reps: Int?,
-        range: (min: Int, max: Int),
+        range: RepRange,
         fraction: Double,
         rounding: ProgressionRounding
     ) -> SuggestedSet {
-        guard let weight else { return SuggestedSet(weightKg: nil, reps: range.min) }
+        let oneMore = (reps ?? range.max) + 1
+        guard let weight else { return SuggestedSet(weightKg: nil, reps: oneMore) }
         let heavier = increasedWeight(weight, fraction: fraction, rounding: rounding)
+        guard heavier > weight + 0.001 else { return SuggestedSet(weightKg: weight, reps: oneMore) }
         if let reps, !jumpIsAffordable(from: weight, reps: reps, to: heavier, minReps: range.min) {
             return SuggestedSet(weightKg: weight, reps: reps + 1)
         }

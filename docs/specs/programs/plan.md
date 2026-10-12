@@ -337,6 +337,10 @@ P2 ─┘
   Unmatched names on the two sheets fell from 89 to 51 and 62 to 43, every remaining one absent
   from the 64-exercise prebuilt library (a plain dumbbell curl, goblet squat, Nordic curl,
   standing calf raise…). Growing the prebuilt library is the next lever.
+- 12 Oct 2026: the prebuilt library grew from 64 to 131 exercises (one per movement and grip or
+  implement, no artwork yet) and ten sheet spellings became alternate names of existing ones, so
+  every exercise name on both programs now matches. `ProgramExerciseCoverageTests` holds the 79
+  names that used to fall through.
 - Follow-ups: The two P2 Live Activity labels above.
   The in-session set-target editor on the tracker does not show the Plan section (edits there
   would be dropped), by design for now.

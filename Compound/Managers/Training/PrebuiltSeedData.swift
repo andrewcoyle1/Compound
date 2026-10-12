@@ -15,7 +15,7 @@ import Foundation
 /// artwork the seeded app actually shows — and their ids matched nothing in the seeded library.
 enum PrebuiltSeedData {
 
-    /// The 32 system exercises from `PrebuiltExercises.json`, with their stable `system-*` ids
+    /// The 131 system exercises from `PrebuiltExercises.json`, with their stable `system-*` ids
     /// and asset-catalogue image names.
     static let exercises: [ExerciseModel] = {
         decode("PrebuiltExercises", as: PrebuiltExercisesContainer.self)?.exercises ?? []

@@ -25,11 +25,10 @@ final class WorkoutTrackerUITests: XCTestCase {
         acknowledgeNoteIfShown(app)
         app.waitFor(app.buttons["Add Set"].firstMatch).tap()
 
-        // The warm-up, then the first working set.
-        tapSlot(logButton)
-        // Smart warm-ups rest after the last one; skip it to reach the first working set.
+        // The warm-ups (two for heavy pressing, resting only after the last), then the first
+        // working set.
         let skipRest = app.button("WorkoutTracker.skipRestButton")
-        if skipRest.waitForExistence(timeout: 2) { tapSlot(skipRest) }
+        reachFirstWorkingSet(app)
         tapSlot(logButton)
         app.waitFor(skipRest)
         attach(app, "1-resting")
@@ -99,12 +98,12 @@ final class WorkoutTrackerUITests: XCTestCase {
     func testTheTrackerPassesTheAccessibilityAudit() throws {
         XCUIDevice.shared.appearance = .light
         let app = UITestApp.launch(startScreen: "STARTSCREEN_WORKOUT_TRACKER")
-        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        _ = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         XCTAssertTrue(app.buttons["Warmup set"].firstMatch.exists, "No warm-up row to audit")
         try audit(app, "opening, warm-up row")
 
-        tapSlot(logButton)
+        logUntilResting(app)
         // Audit a settled screen: logging swaps the bottom button for Skip Rest with a transition,
         // and mid-transition the outgoing label is text no element owns.
         app.waitFor(app.button("WorkoutTracker.skipRestButton"))
@@ -155,15 +154,15 @@ final class WorkoutTrackerUITests: XCTestCase {
             "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"
         ]
         app.launch()
-        let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
+        _ = app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         Thread.sleep(forTimeInterval: 1)
         attach(app, "14-light-ax5")
         try audit(app, "AX5")
 
         // Resting, scrolled a third of the screen at a time through the rest line, the folded
-        // warm-up, the current row and its plates line, Add Set and Up Next.
-        tapSlot(logButton)
+        // warm-up, the current row, Add Set and Up Next.
+        logUntilResting(app)
         app.waitFor(app.button("WorkoutTracker.skipRestButton"))
         // The log scrolls the next set into view; first back up to the rest line above it.
         for (step, drag) in [0.15, -0.25, -0.25].enumerated() {
@@ -232,7 +231,7 @@ final class WorkoutTrackerUITests: XCTestCase {
             // window, measured against those rather than their own background.
             return "text on or under glass, or under the keypad"
         case .dynamicType where ["Add Set", "Up Next", "Add Exercise"].contains(label),
-             .textClipped where ["Add Set", "1 warm-up", "Add 15 seconds", "Add Exercise"].contains(label):
+             .textClipped where ["Add Set", "Add 15 seconds", "Add Exercise"].contains(label) || label.hasSuffix(" warm-up") || label.hasSuffix(" warm-ups"):
             // Reported at the default size as "may be clipped" or "partially unsupported", and
             // drawn in full, unclipped, by the AX5 passes ("15-light-ax5-resting").
             return "drawn in full at AX5"
@@ -446,6 +445,15 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertTrue(button.waitForExistence(timeout: UITestApp.timeout), "\(button) did not appear")
         Thread.sleep(forTimeInterval: 0.6)
         button.tap()
+    }
+
+    /// Logs sets until a rest starts: the warm-ups rest only after the last of them.
+    private func logUntilResting(_ app: XCUIApplication) {
+        let logButton = app.button("WorkoutTracker.logButton")
+        let skipRest = app.button("WorkoutTracker.skipRestButton")
+        for _ in 0..<4 where !skipRest.waitForExistence(timeout: 2) {
+            tapSlot(logButton)
+        }
     }
 
     /// Logs warm-ups, and skips the rests after them, until the button offers a working set.

@@ -152,7 +152,7 @@ enum LiveActivitySetKind: String, Codable, Hashable, CaseIterable, Sendable {
     var label: String {
         switch self {
         case .drop: String(localized: "Drop")
-        case .amrap: String(localized: "AMRAP")
+        case .amrap: String(localized: "Failure")
         case .myo: String(localized: "Myo-reps")
         case .restPause: String(localized: "Rest-pause")
         case .cluster: String(localized: "Cluster")
@@ -173,16 +173,21 @@ struct SetPiece: Codable, Equatable, Hashable, Sendable {
     var count: Int
     /// The pieces after the first are drops rather than mini-sets.
     var isDrop: Bool
+    /// The partials, stretch or hold this piece is, named as itself rather than as a mini-set.
+    /// Nil for a drop or mini-set, and on states encoded before it.
+    var technique: LiveActivitySetKind?
 
-    init(index: Int, count: Int, isDrop: Bool) {
+    init(index: Int, count: Int, isDrop: Bool, technique: LiveActivitySetKind? = nil) {
         self.index = index
         self.count = count
         self.isDrop = isDrop
+        self.technique = technique
     }
 
-    /// "Drop 1 of 2", "Mini-set 3 of 4"; nil on the set itself, which its number names.
+    /// "Drop 1 of 2", "Mini-set 3 of 4", "Partials"; nil on the set itself, which its number names.
     var label: String? {
         guard index > 1 else { return nil }
+        if let technique { return technique.label }
         return isDrop
             ? String(localized: "Drop \(index - 1) of \(count - 1)")
             : String(localized: "Mini-set \(index - 1) of \(count - 1)")

@@ -171,7 +171,13 @@ struct SetTrackerRowView: View {
         } label: {
             switch delegate.set.wrappedValue.subSetKind {
             case .drop: Label("Delete Drop Set", systemImage: Symbol.delete)
-            case .mini: Label("Delete Mini-Set", systemImage: Symbol.delete)
+            case .mini:
+                switch delegate.set.wrappedValue.kind {
+                case .partials: Label("Delete Partials", systemImage: Symbol.delete)
+                case .stretch: Label("Delete Stretch", systemImage: Symbol.delete)
+                case .hold: Label("Delete Hold", systemImage: Symbol.delete)
+                default: Label("Delete Mini-Set", systemImage: Symbol.delete)
+                }
             case nil: Label("Delete Set", systemImage: Symbol.delete)
             }
         }
@@ -548,7 +554,7 @@ struct SetTrackerRowView: View {
 
 extension SetTrackerRowView {
 
-    /// The set's circle, with its kind's chip under it: "AMRAP", or "Drop", "Mini", "Partials",
+    /// The set's circle, with its kind's chip under it: "Failure", or "Drop", "Mini", "Partials",
     /// "Stretch" or "Hold" on a sub-row.
     /// Under rather than beside, so the columns keep the headers' widths.
     func setBadge(set: Binding<WorkoutSetModel>) -> some View {
@@ -577,7 +583,7 @@ extension SetTrackerRowView {
         switch (set.subSetKind, set.kind) {
         case (.drop, _): (String(localized: "Drop"), .warmup)
         case let (.mini, kind): (kind.pieceName ?? String(localized: "Mini"), .warmup)
-        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "AMRAP \($0)+") } ?? String(localized: "AMRAP"), .secondary)
+        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "Failure \($0)+") } ?? String(localized: "Failure"), .secondary)
         default: nil
         }
     }
@@ -585,7 +591,7 @@ extension SetTrackerRowView {
     /// "AMRAP 8+" for an AMRAP set the plan gave a target, else the kind's name.
     static func kindName(of set: WorkoutSetModel) -> String {
         guard set.kind == .amrap, let target = set.targetReps else { return set.kind.displayName }
-        return String(localized: "AMRAP \(target)+")
+        return String(localized: "Failure \(target)+")
     }
 
     /// An AMRAP set's reps, while they are open, hint at the plan's target, greyed as any

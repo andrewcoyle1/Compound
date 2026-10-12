@@ -33,7 +33,7 @@ extension SetKind {
         switch self {
         case .standard: String(localized: "Standard")
         case .drop: String(localized: "Drop Set")
-        case .amrap: String(localized: "AMRAP")
+        case .amrap: String(localized: "Failure")
         case .myo: String(localized: "Myo-reps")
         case .restPause: String(localized: "Rest-pause")
         case .cluster: String(localized: "Cluster")

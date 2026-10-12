@@ -3886,26 +3886,6 @@
         }
       }
     },
-    "AMRAP" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AMRAP"
-          }
-        }
-      }
-    },
-    "AMRAP %lld+" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AMRAP %lld+"
-          }
-        }
-      }
-    },
     "Abandoned" : {
       "localizations" : {
         "es" : {
@@ -5910,16 +5890,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tantas como sea posible, objetivo %lld"
-          }
-        }
-      }
-    },
-    "As many reps as possible at a fixed weight, aiming to beat a target." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tantas repeticiones como sea posible con un peso fijo, intentando superar un objetivo."
           }
         }
       }
@@ -10052,6 +10022,16 @@
         }
       }
     },
+    "Delete Hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar sostén"
+          }
+        }
+      }
+    },
     "Delete Machine?" : {
       "localizations" : {
         "es" : {
@@ -10102,6 +10082,16 @@
         }
       }
     },
+    "Delete Partials" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar parciales"
+          }
+        }
+      }
+    },
     "Delete Recipe" : {
       "localizations" : {
         "es" : {
@@ -10118,6 +10108,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar serie"
+          }
+        }
+      }
+    },
+    "Delete Stretch" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar estiramiento"
           }
         }
       }
@@ -12593,12 +12593,42 @@
         }
       }
     },
+    "Failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al fallo"
+          }
+        }
+      }
+    },
+    "Failure %lld+" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al fallo %lld+"
+          }
+        }
+      }
+    },
     "Failure Set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie al fallo"
+          }
+        }
+      }
+    },
+    "Failure Sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series al fallo"
           }
         }
       }
@@ -16161,16 +16191,6 @@
         }
       }
     },
-    "Log AMRAP set" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registrar serie AMRAP"
-          }
-        }
-      }
-    },
     "Log Again" : {
       "localizations" : {
         "es" : {
@@ -16330,6 +16350,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrar serie descendente"
+          }
+        }
+      }
+    },
+    "Log failure set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie al fallo"
           }
         }
       }
@@ -20744,12 +20774,12 @@
         }
       }
     },
-    "Plan drops, mini-sets and AMRAP targets in your workouts" : {
+    "Plan drops, mini-sets and failure targets in your workouts" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Planifica descensos, miniseries y objetivos AMRAP en tus entrenamientos"
+            "value" : "Planifica descensos, miniseries y objetivos al fallo en tus entrenamientos"
           }
         }
       }
@@ -22436,6 +22466,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reps en cada descenso"
+          }
+        }
+      }
+    },
+    "Reps to failure at a fixed weight, aiming to beat a target." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones al fallo con un peso fijo, intentando superar un objetivo."
           }
         }
       }
@@ -24145,16 +24185,6 @@
         }
       }
     },
-    "Set %lld is AMRAP, target %lld+." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La serie %1$lld es AMRAP, objetivo %2$lld+."
-          }
-        }
-      }
-    },
     "Set %lld is a drop set from your plan: %@, then %@ to failure, no rest between." : {
       "localizations" : {
         "es" : {
@@ -24171,6 +24201,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La serie %1$lld es descendente según tu plan: %2$@, luego %3$@ × %4$lld, sin descanso entre medias."
+          }
+        }
+      }
+    },
+    "Set %lld is to failure, target %lld+." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La serie %1$lld es al fallo, objetivo %2$lld+."
           }
         }
       }
@@ -25132,12 +25172,12 @@
         }
       }
     },
-    "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its reps-in-reserve target. An AMRAP or failure set aims for none in reserve. Without a target, a compound set logged at RPE 10 doesn't earn weight. A set with no rep range is worked through 8–12, and reps under 8 there are not a miss; a range with only one end set reaches four reps to the other. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell or 10 kg on a bar with no plates under 5 kg, you add a rep each session until your reps carry the heavier weight for the bottom of the range. With nothing heavier at all, at the top of a stack or a gap in the rack, you add a rep; body-weight work, and a set logged with no weight, does a rep more than last time. History comes from sessions done with the same kind of load, so dumbbell sets never set a barbell weight, and passes over deload weeks. Timed sets grow 10% (at least 5 seconds) and distances 5%. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target." : {
+    "Smart Progression uses double progression: it adds reps across your rep range at the same weight, then adds weight and returns to the bottom of the range. Weight goes on when most sets (weight-first) or every set (reps-first) reach the top of the range and no set was logged harder than its reps-in-reserve target. A failure set aims for none in reserve. Without a target, a compound set logged at RPE 10 doesn't earn weight. A set with no rep range is worked through 8–12, and reps under 8 there are not a miss; a range with only one end set reaches four reps to the other. If you don't log RPE, the top of the range has to be reached on two sessions in a row at that weight. The step is a share of the weight, rounded to your equipment: 5% for lower-body compounds, 2.5% for upper-body compounds and 5% for isolation and core work. It is never less than your smallest plate or pin. When even that step is more than 10% of the weight, as with 2 kg on a light dumbbell or 10 kg on a bar with no plates under 5 kg, you add a rep each session until your reps carry the heavier weight for the bottom of the range. With nothing heavier at all, at the top of a stack or a gap in the rack, you add a rep; body-weight work, and a set logged with no weight, does a rep more than last time. History comes from sessions done with the same kind of load, so dumbbell sets never set a barbell weight, and passes over deload weeks. Timed sets grow 10% (at least 5 seconds) and distances 5%. One session below the range repeats the weights. A second in a row, at the same weight and not stopped short (RPE 9.5 or above, or no RPE), resets the weight. The new weight is worked back from that set's estimated one-rep max to the bottom of the range with 2 reps in reserve, or with the template's target." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La progresión inteligente usa la doble progresión: añade repeticiones dentro de tu rango con el mismo peso, y después añade peso y vuelve a la parte baja del rango. El peso sube cuando la mayoría de las series (primero el peso) o todas las series (primero las repeticiones) llegan a la parte alta del rango y ninguna serie se registró más dura que su objetivo de repeticiones en reserva. Una serie AMRAP o al fallo busca no dejar ninguna en reserva. Sin objetivo, una serie de un ejercicio compuesto registrada con RPE 10 no da derecho a subir peso. Una serie sin rango de repeticiones se trabaja en 8–12, y por debajo de 8 no cuenta como fallo; un rango con un solo extremo fijado llega cuatro repeticiones hasta el otro. Si no registras el RPE, hay que alcanzar la parte alta del rango en dos sesiones seguidas con ese peso. El incremento es una proporción del peso, redondeada a tu equipo: 5% en compuestos de tren inferior, 2,5% en compuestos de tren superior y 5% en aislamiento y core. Nunca es menor que tu disco o placa más pequeños. Cuando incluso ese incremento supera el 10% del peso, como 2 kg en una mancuerna ligera o 10 kg en una barra sin discos de menos de 5 kg, añades una repetición cada sesión hasta que tus repeticiones permitan mover el peso mayor en la parte baja del rango. Si no hay nada más pesado, al final de una pila o en un hueco del estante, añades una repetición; el trabajo con peso corporal, y una serie registrada sin peso, hace una repetición más que la última vez. El historial sale de las sesiones hechas con el mismo tipo de carga, así que las series con mancuernas nunca fijan el peso de una barra, y se salta las semanas de descarga. Las series por tiempo crecen un 10% (al menos 5 segundos) y las distancias un 5%. Una sesión por debajo del rango repite los pesos. Una segunda seguida, con el mismo peso y sin quedarte corto (RPE 9,5 o más, o sin RPE), reajusta el peso. El nuevo peso se calcula a partir de la repetición máxima estimada de esa serie para la parte baja del rango con 2 repeticiones en reserva, o con el objetivo de la plantilla."
+            "value" : "La progresión inteligente usa la doble progresión: añade repeticiones dentro de tu rango con el mismo peso, y después añade peso y vuelve a la parte baja del rango. El peso sube cuando la mayoría de las series (primero el peso) o todas las series (primero las repeticiones) llegan a la parte alta del rango y ninguna serie se registró más dura que su objetivo de repeticiones en reserva. Una serie al fallo busca no dejar ninguna en reserva. Sin objetivo, una serie de un ejercicio compuesto registrada con RPE 10 no da derecho a subir peso. Una serie sin rango de repeticiones se trabaja en 8–12, y por debajo de 8 no cuenta como fallo; un rango con un solo extremo fijado llega cuatro repeticiones hasta el otro. Si no registras el RPE, hay que alcanzar la parte alta del rango en dos sesiones seguidas con ese peso. El incremento es una proporción del peso, redondeada a tu equipo: 5% en compuestos de tren inferior, 2,5% en compuestos de tren superior y 5% en aislamiento y core. Nunca es menor que tu disco o placa más pequeños. Cuando incluso ese incremento supera el 10% del peso, como 2 kg en una mancuerna ligera o 10 kg en una barra sin discos de menos de 5 kg, añades una repetición cada sesión hasta que tus repeticiones permitan mover el peso mayor en la parte baja del rango. Si no hay nada más pesado, al final de una pila o en un hueco del estante, añades una repetición; el trabajo con peso corporal, y una serie registrada sin peso, hace una repetición más que la última vez. El historial sale de las sesiones hechas con el mismo tipo de carga, así que las series con mancuernas nunca fijan el peso de una barra, y se salta las semanas de descarga. Las series por tiempo crecen un 10% (al menos 5 segundos) y las distancias un 5%. Una sesión por debajo del rango repite los pesos. Una segunda seguida, con el mismo peso y sin quedarte corto (RPE 9,5 o más, o sin RPE), reajusta el peso. El nuevo peso se calcula a partir de la repetición máxima estimada de esa serie para la parte baja del rango con 2 repeticiones en reserva, o con el objetivo de la plantilla."
           }
         }
       }

@@ -138,7 +138,7 @@ struct WorkoutSettingsView: View {
             )
             ListRowToggle(
                 title: String(localized: "Set Plan"),
-                subtitle: String(localized: "Plan drops, mini-sets and AMRAP targets in your workouts"),
+                subtitle: String(localized: "Plan drops, mini-sets and failure targets in your workouts"),
                 systemImage: "list.number",
                 isOn: $presenter.setPlanning
             )

@@ -164,4 +164,15 @@ struct WorkoutSettingsDecodingTests {
         #expect(!decoded.raisesAMRAPTarget)
         #expect(decoded.amrapWeightCeiling == 15)
     }
+
+    /// Builds before the switch saved "never add weight" as an unreachable target.
+    @Test func anUnreachableTargetFromAnOlderBuildReadsAsTheSwitchOff() throws {
+        var settings = WorkoutSettings(authorId: "user-1")
+        settings.setPlanning = true
+        settings.amrapAddsWeightAtTarget = Int.max
+        let decoded = try JSONDecoder().decode(WorkoutSettings.self, from: JSONEncoder().encode(settings))
+        #expect(!decoded.addsWeightAtAMRAPTarget)
+        #expect(decoded.amrapWeightCeiling == 12)
+        #expect(decoded.amrapProgression == AMRAPProgression(ceiling: nil))
+    }
 }

@@ -20,7 +20,8 @@ extension LiveActivityManager {
         let pieces = [parent] + subSets
         guard let first = subSets.first, let position = pieces.firstIndex(where: { $0.id == target.id }) else { return nil }
         let word = target.isSubSet ? target : first
-        return SetPiece(index: position + 1, count: pieces.count, isDrop: word.subSetKind == .drop)
+        let technique = [.partials, .stretch, .hold].contains(word.kind) ? LiveActivitySetKind(rawValue: word.kind.rawValue) : nil
+        return SetPiece(index: position + 1, count: pieces.count, isDrop: word.subSetKind == .drop, technique: technique)
     }
 
     /// The kind of the set `target` is, or of the set it is a piece of; nil for a plain set.

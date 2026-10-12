@@ -216,7 +216,7 @@ struct WorkoutTrackerPresenterProgressionTests {
         #expect(screen.presenter.progressionNote == nil)
 
         screen.interactor.workoutSettings.setPlanning = true
-        #expect(screen.presenter.progressionNote == "Set 3 is AMRAP, target 8+.")
+        #expect(screen.presenter.progressionNote == "Set 3 is to failure, target 8+.")
 
         screen.presenter.onProgressionNoteAcknowledged()
         #expect(screen.presenter.progressionNote == nil)

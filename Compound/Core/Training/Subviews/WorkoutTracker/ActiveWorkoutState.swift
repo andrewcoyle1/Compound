@@ -200,7 +200,7 @@ enum ActiveWorkout {
         case (_, .mini, .stretch): set.durationSec.map { String(localized: "Log \($0) s stretch") } ?? String(localized: "Log stretch")
         case (_, .mini, .hold): set.durationSec.map { String(localized: "Log \($0) s hold") } ?? String(localized: "Log hold")
         case (_, .mini, _): String(localized: "Log mini-set \(subSetOrdinal(of: set, in: exercise.sets))")
-        case (_, nil, .amrap): String(localized: "Log AMRAP set")
+        case (_, nil, .amrap): String(localized: "Log failure set")
         default: String(localized: "Log set \("\(exercise.workingSetNumber(for: set))\(set.side?.initial ?? "")")")
         }
         let figures = figures(of: set, trackingMode: exercise.trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight)

@@ -11,8 +11,8 @@
 import Foundation
 
 struct AMRAPProgression: Equatable {
-    /// The target at which beating it adds weight rather than a rep.
-    let ceiling: Int
+    /// The target at which beating it adds weight rather than a rep; nil never adds weight.
+    let ceiling: Int?
 
     /// The next session's AMRAP set.
     ///
@@ -36,7 +36,7 @@ struct AMRAPProgression: Equatable {
             return SuggestedSet(weightKg: last.weightKg, reps: target, targetReps: target)
         }
         // Bodyweight work has no weight to add, so its target keeps climbing.
-        if target >= ceiling, let weight = last.weightKg {
+        if let ceiling, target >= ceiling, let weight = last.weightKg {
             return SuggestedSet(weightKg: heavier(weight), reps: templateTarget, targetReps: templateTarget)
         }
         return SuggestedSet(weightKg: last.weightKg, reps: target + 1, targetReps: target + 1)

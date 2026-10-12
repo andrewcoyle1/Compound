@@ -415,8 +415,9 @@ struct RestTimerSettingsPresenterTests {
         await settleSettings()
 
         #expect(!screen.presenter.amrapAddsWeight)
-        let ceiling = try #require(screen.interactor.savedSettings.last?.amrapProgression?.ceiling)
-        #expect(ceiling > 1_000)
+        let rule = try #require(screen.interactor.savedSettings.last?.amrapProgression)
+        #expect(rule.ceiling == nil)
+        #expect(screen.interactor.savedSettings.last?.amrapAddsWeight == false)
 
         screen.presenter.amrapAddsWeight = true
         await settleSettings()

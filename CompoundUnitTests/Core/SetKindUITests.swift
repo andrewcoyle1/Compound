@@ -182,7 +182,7 @@ struct SetKindUITests {
         }
 
         #expect(title(1) == "Log drop set · 80 kg × 8")
-        #expect(title(2) == "Log AMRAP set · 100 kg")
+        #expect(title(2) == "Log failure set · 100 kg")
         #expect(title(5) == "Log mini-set 2 · 100 kg × 4")
         // A myo set is still numbered.
         #expect(title(3) == "Log set 3 · 100 kg × 8")

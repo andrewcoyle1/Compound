@@ -240,11 +240,11 @@ struct ActiveWorkoutStateTests {
             ActiveWorkout.logTitle(for: set, in: exercise("e1", sets: [set]), unit: .kilograms, distanceUnit: .meters)
         }
 
-        #expect(title(amrap) == "Log AMRAP set · 100 kg")
+        #expect(title(amrap) == "Log failure set · 100 kg")
         amrap.targetReps = 8
-        #expect(title(amrap) == "Log AMRAP set · 100 kg · target 8+")
+        #expect(title(amrap) == "Log failure set · 100 kg · target 8+")
         amrap.reps = 10
-        #expect(title(amrap) == "Log AMRAP set · 100 kg × 10 · target 8+")
+        #expect(title(amrap) == "Log failure set · 100 kg × 10 · target 8+")
 
         // A target left on a set that is no longer AMRAP says nothing.
         amrap.kind = .standard

@@ -185,14 +185,10 @@ class RestTimerSettingsPresenter {
     /// The target the Stepper can set as the point where weight goes on instead.
     let amrapCeilingRange = 8...20
 
-    /// The model has no switch for adding weight, only the ceiling at which it happens, so off is a
-    /// ceiling no target reaches: the target keeps climbing, as it already does for bodyweight work.
-    /// On again, it starts from the default 12.
-    static let neverAddsWeight = Int.max
-
+    /// Off, the target keeps climbing, as it already does for bodyweight work.
     var amrapAddsWeight: Bool {
-        get { settings.amrapWeightCeiling != Self.neverAddsWeight }
-        set { settings.amrapAddsWeightAtTarget = newValue ? nil : Self.neverAddsWeight; save() }
+        get { settings.addsWeightAtAMRAPTarget }
+        set { settings.amrapAddsWeight = newValue; save() }
     }
 
     var amrapWeightCeiling: Int {

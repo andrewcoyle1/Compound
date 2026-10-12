@@ -369,7 +369,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         let logButton = app.waitFor(app.button("WorkoutTracker.logButton"))
         // The switch reaches the screen when the settings engine next emits, so wait for the plan.
         let note = app.buttons.matching(NSPredicate(
-            format: "identifier == 'WorkoutTracker.progressionNote.acknowledge' AND label CONTAINS 'Set 2 is AMRAP, target 8+.'"
+            format: "identifier == 'WorkoutTracker.progressionNote.acknowledge' AND label CONTAINS 'Set 2 is to failure, target 8+.'"
         )).firstMatch
         XCTAssertTrue(note.waitForExistence(timeout: UITestApp.timeout))
         XCTAssertTrue(note.label.contains("Set 1 is a drop set from your plan"), note.label)
@@ -380,7 +380,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         XCTAssertTrue(app.waitFor(logButton).label.hasPrefix("Log set 1"), logButton.label)
         // The second line is spoken after the title: "Log set 1 · … . Then: drop 1, …, no rest".
         XCTAssertTrue(logButton.label.contains(". Then: drop 1") && logButton.label.hasSuffix("no rest"), logButton.debugDescription)
-        let amrapRow = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Set 2, AMRAP 8+'")).firstMatch
+        let amrapRow = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH 'Set 2, Failure 8+'")).firstMatch
         XCTAssertTrue(amrapRow.waitForExistence(timeout: UITestApp.timeout), app.debugDescription)
         attach(app, "16-set-plan-log-button")
     }

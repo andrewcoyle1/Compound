@@ -179,7 +179,7 @@ struct RestTimerSettingsView: View {
             // Without raising the target there is no ceiling to reach.
             .disabled(!presenter.amrapRaisesTarget)
         } header: {
-            Text("AMRAP")
+            Text("Failure Sets")
         }
     }
 }

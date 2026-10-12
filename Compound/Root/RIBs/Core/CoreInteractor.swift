@@ -194,6 +194,7 @@ struct CoreInteractor: GlobalInteractor {
         try? workoutTemplateManager.seedWorkoutTemplatesIfNeeded(exercises: exerciseModelManager.allExercises)
         try? mesocycleManager.seedMesocyclesIfNeeded(workouts: workoutTemplateManager.systemWorkoutTemplates)
         await migrateActiveMesocycleToMacrocycleIfNeeded()
+        Task { await stampMachineBaseOnPastSessions() }
         // After the sessions and exercises: the upload queue is sent from them. Not awaited, so a
         // backlog going to Strava never holds up sign-in.
         Task { await stravaManager.signIn(userId: user.uid) }

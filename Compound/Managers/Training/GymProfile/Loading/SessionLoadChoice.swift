@@ -105,6 +105,43 @@ enum SessionLoadChoice {
         }
         return nil
     }
+
+    /// `session` with the machine base on every set logged before it was kept out of the load:
+    /// such a set was entered as the total, so on a machine now set to enter plates only it reads
+    /// as its plates, like every set since. Nil when nothing changes. Only a base is added, never
+    /// a weight changed, and a set already carrying one (or lighter than the base) is left alone.
+    static func stampingMachineBase(on session: WorkoutSessionModel, gym: GymProfileModel?) -> WorkoutSessionModel? {
+        var stamped = session
+        var changed = false
+        for index in stamped.exercises.indices {
+            let exercise = stamped.exercises[index]
+            guard exercise.machineBaseKg == nil,
+                  let base = machineBaseKg(refs: exercise.activeVariation?.resistanceEquipment, gym: gym),
+                  exercise.sets.contains(where: { $0.machineBaseKg == nil && ($0.weightKg ?? 0) >= base })
+            else { continue }
+            stamped.exercises[index].machineBaseKg = base
+            for set in exercise.sets.indices where exercise.sets[set].machineBaseKg == nil && (exercise.sets[set].weightKg ?? 0) >= base {
+                stamped.exercises[index].sets[set].machineBaseKg = base
+            }
+            changed = true
+        }
+        return changed ? stamped : nil
+    }
+}
+
+extension CoreInteractor {
+
+    /// Every finished session's sets on a plate-loaded machine set to enter plates only, read as
+    /// their plates (`SessionLoadChoice.stampingMachineBase`). Run at each sign-in: switching a
+    /// machine to plates only later converts what was logged on it before. A session takes the
+    /// gym it was done in, else the favourite.
+    func stampMachineBaseOnPastSessions() async {
+        for session in workoutSessions where session.endedAt != nil && session.deletedAt == nil {
+            let gym = session.gymProfileId.flatMap { id in gymProfiles.first { $0.id == id } } ?? favouriteGymProfile
+            guard let stamped = SessionLoadChoice.stampingMachineBase(on: session, gym: gym) else { continue }
+            try? await saveWorkoutSession(stamped)
+        }
+    }
 }
 
 extension WorkoutExerciseModel {

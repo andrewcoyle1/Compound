@@ -3,7 +3,8 @@
 //  CompoundUnitTests
 //
 //  A plate-loaded machine set to enter plates only (`PlateLoadedMachine.excludesBaseFromLoad`):
-//  10 kg typed on a 7 kg hack squat is recorded as 17 kg and shown as 10 everywhere.
+//  10 kg typed on a 7 kg hack squat is recorded as 17 kg and shown, charted, totalled and
+//  estimated as 10 everywhere, sets logged before the setting included.
 //
 
 import Testing
@@ -94,5 +95,33 @@ struct MachineBaseLoadTests {
             priorSessions: [session("before", kilograms: 17, at: start.addingTimeInterval(-86_400))]
         )
         #expect(records.first?.detail.hasPrefix(Format.weight(kg: 20, unit: ExerciseWeightUnit.kilograms)) == true)
+    }
+
+    /// Volume and the estimated 1RM count the load, as the set reads.
+    @Test func volumeAndOneRepMaxCountTheLoad() {
+        var logged = set("s", weightKg: 17, logged: true)
+        logged.machineBaseKg = 7
+        #expect(logged.volumeKg == 80)
+        #expect(ExerciseOneRMAggregator.estimated1RM(of: logged) == ExerciseOneRMAggregator.estimated1RM(weightKg: 10, reps: 8))
+    }
+
+    private func pastSession(weights: [Double]) -> WorkoutSessionModel {
+        WorkoutSessionModel(
+            id: "past", authorId: "a", name: "Legs", dateCreated: start, endedAt: start,
+            exercises: [WorkoutExerciseModel(
+                id: "e", authorId: "a", templateId: "hack", name: "Hack Squat", trackingMode: .weightReps, index: 1,
+                sets: weights.enumerated().map { set("s\($0.offset)", weightKg: $0.element, logged: true) },
+                equipmentVariations: [EquipmentVariation(id: "v", resistanceEquipment: hackSquat)]
+            )]
+        )
+    }
+
+    /// Sets logged as totals before the machine entered plates only read as their plates, once.
+    @Test func pastSetsReadAsTheirPlates() throws {
+        let stamped = try #require(SessionLoadChoice.stampingMachineBase(on: pastSession(weights: [17, 27, 5]), gym: gym()))
+        #expect(stamped.exercises[0].sets.map(\.loadKg) == [10, 20, 5])
+        #expect(stamped.exercises[0].sets.map(\.weightKg) == [17, 27, 5])
+        #expect(SessionLoadChoice.stampingMachineBase(on: stamped, gym: gym()) == nil)
+        #expect(SessionLoadChoice.stampingMachineBase(on: pastSession(weights: [17]), gym: gym(excludesBase: false)) == nil)
     }
 }

@@ -74,8 +74,8 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
     /// `nil` for a negative weight too: that is assistance (`ExerciseModel.isAssisted`), and
     /// without the lifter's bodyweight there is no load to multiply.
     var volumeKg: Double? {
-        guard let weightKg, weightKg >= 0, let reps else { return nil }
-        return weightKg * Double(reps) * (side == .both ? 2 : 1) * Double(max(loadCount ?? 1, 1))
+        guard let loadKg, loadKg >= 0, let reps else { return nil }
+        return loadKg * Double(reps) * (side == .both ? 2 : 1) * Double(max(loadCount ?? 1, 1))
     }
 
     init(

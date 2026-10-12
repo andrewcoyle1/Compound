@@ -283,7 +283,9 @@ export function shapeSession(doc, env) {
             notes: exercise.notes ?? null,
             sets: (exercise.sets ?? []).map((set) => ({
                 reps: set.reps ?? null,
-                weightKg: set.weight_kg ?? null,
+                // The load as the app shows it: a plate-loaded machine's base, kept out of what
+                // was entered (`machine_base_kg`), is left out here too.
+                weightKg: set.weight_kg == null ? null : set.weight_kg - (set.machine_base_kg ?? 0),
                 durationSec: set.duration_sec ?? null,
                 distanceMeters: set.distance_meters ?? null,
                 rpe: set.rpe ?? null,

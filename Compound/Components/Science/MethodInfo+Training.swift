@@ -18,7 +18,7 @@ extension MethodInfo {
     static let estimatedOneRepMax = MethodInfo(
         id: "training.e1rm",
         title: "Estimated One-Rep Max",
-        summary: "Your one-rep max is estimated from each completed working set with Epley's equation, using the reps you could have done: the reps logged plus the reps you had left, read from the RPE you logged (RPE 8 means 2 left). With no RPE, only the reps you did count. A single taken to failure is its own max. Sets that come to more than 10 reps to failure give no estimate, because prediction equations agree closely at low reps and drift apart above about 10. Those sets still count for volume and rep records. Each session shows its best set's estimate.",
+        summary: "Your one-rep max is estimated from each completed working set with Epley's equation, using the reps you could have done: the reps logged plus the reps you had left, read from the RPE you logged (RPE 8 means 2 left). With no RPE, only the reps you did count. A single taken to failure is its own max. Sets that come to more than 10 reps to failure give no estimate, because prediction equations agree closely at low reps and drift apart above about 10. Those sets still count for volume and rep records. Each session shows its best set's estimate. On a plate-loaded machine set to enter plates only, the weight is the plates you loaded, not the machine's own weight.",
         formula: """
         n = reps + (10 − RPE)   (RPE logged)
         n = reps                (no RPE)
@@ -102,7 +102,7 @@ extension MethodInfo {
     static let tonnage = MethodInfo(
         id: "training.tonnage",
         title: "Volume (Tonnage)",
-        summary: "Volume is weight × reps summed over the working sets you logged. A dumbbell set is logged as one dumbbell, as it reads on the rack, so an exercise that holds one in each hand counts it twice; so does a left-and-right set logged as one. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like.",
+        summary: "Volume is weight × reps summed over the working sets you logged. A dumbbell set is logged as one dumbbell, as it reads on the rack, so an exercise that holds one in each hand counts it twice; so does a left-and-right set logged as one. With Show Bodyweight Contribution on, your own workouts also count the share of your bodyweight a movement lifts, set on each exercise. Dips count 100%, pull-ups 95% and squats 85%. Force-plate studies put a push-up at about 64–75% of body mass and a knee push-up at about 49–62%. Assistance is taken off. Without it, or for other people's workouts, only the external load counts, so a pull-up adds nothing. The Progress tab's records and circle leaderboards always use external load, so they compare like with like. On a plate-loaded machine set to enter plates only, the weight is the plates you loaded, not the machine's own weight.",
         formula: """
         volume = Σ (external load × weights held + bodyweight × share − assistance) × reps × sides
         bodyweight share = exercise's bodyweight contribution (setting on, your own workouts)

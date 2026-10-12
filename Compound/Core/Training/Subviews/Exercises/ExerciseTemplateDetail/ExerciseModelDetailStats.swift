@@ -22,10 +22,8 @@ struct ExerciseModelDetailStats {
         let totalReps: Int
         let volumeKg: Double
         let bestOneRMKg: Double
-        /// The heaviest working set, as weight and the reps achieved at it.
+        /// The heaviest working set, as its load (`WorkoutSetModel.loadKg`) and the reps achieved at it.
         let heaviestWeightKg: Double
-        /// The heaviest set as it is shown: without a machine base kept out of its load.
-        let heaviestLoadKg: Double
         let repsAtHeaviest: Int
     }
 
@@ -35,10 +33,8 @@ struct ExerciseModelDetailStats {
     var totalReps: Int = 0
     var totalVolumeKg: Double = 0
 
-    /// The heaviest single working set ever logged, and the session it happened in.
+    /// The heaviest single working set ever logged, as its load, and the session it happened in.
     var heaviestSetKg: Double = 0
-    /// `heaviestSetKg` as the set is shown (`WorkoutSetModel.loadKg`).
-    var heaviestSetLoadKg: Double = 0
     var repsAtHeaviestSet: Int = 0
     var heaviestSetDate: Date?
 
@@ -84,7 +80,6 @@ struct ExerciseModelDetailStats {
         var volume: Double = 0
         var bestOneRM: Double = 0
         var heaviest: Double = 0
-        var heaviestLoad: Double = 0
         var repsAtHeaviest = 0
 
         for set in sets {
@@ -96,12 +91,11 @@ struct ExerciseModelDetailStats {
             // A record is a set of its own done for at least one rep: a drop is lighter by design,
             // and a set saved with no reps was not lifted.
             guard !set.isSubSet, let setReps = set.reps, setReps >= 1,
-                  let weight = set.weightKg, weight > 0 else { continue }
+                  let weight = set.loadKg, weight > 0 else { continue }
             bestOneRM = max(bestOneRM, ExerciseOneRMAggregator.estimated1RM(of: set) ?? 0)
             // At equal weight the set with more reps is the better one.
             if weight > heaviest || (weight == heaviest && setReps > repsAtHeaviest) {
                 heaviest = weight
-                heaviestLoad = set.loadKg ?? weight
                 repsAtHeaviest = setReps
             }
         }
@@ -116,7 +110,6 @@ struct ExerciseModelDetailStats {
             volumeKg: volume,
             bestOneRMKg: bestOneRM,
             heaviestWeightKg: heaviest,
-            heaviestLoadKg: heaviestLoad,
             repsAtHeaviest: repsAtHeaviest
         )
     }
@@ -131,7 +124,6 @@ struct ExerciseModelDetailStats {
         if performance.heaviestWeightKg > heaviestSetKg
             || (performance.heaviestWeightKg == heaviestSetKg && performance.repsAtHeaviest > repsAtHeaviestSet) {
             heaviestSetKg = performance.heaviestWeightKg
-            heaviestSetLoadKg = performance.heaviestLoadKg
             repsAtHeaviestSet = performance.repsAtHeaviest
             heaviestSetDate = performance.date
         }

@@ -190,6 +190,19 @@ struct PlateCalculatorPresenterTests {
         #expect(presenter.loading == PlateLoading(perSide: [25], base: 20, sleeves: 2, unit: .kilograms))
     }
 
+    /// A machine's base kept out of the set's load is kept out of the title too.
+    @Test func theTitleIsTheLoad() {
+        let presenter = PlateCalculatorPresenter(
+            interactor: Interactor(),
+            router: Router(),
+            delegate: PlateCalculatorDelegate(
+                gym: Self.gym(), equipment: EquipmentRef(kind: .loadableBar, id: "barbell"), unit: .kilograms,
+                total: 17, machineBase: 7, onSave: { _ in }
+            )
+        )
+        #expect(presenter.subtitle == "10 kg")
+    }
+
     @Test func choosingABarReloadsTheWeight() {
         let (presenter, interactor) = presenter(total: 57)
         presenter.onBarChosen("b7")

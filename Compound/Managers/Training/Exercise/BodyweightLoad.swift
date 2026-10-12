@@ -42,7 +42,7 @@ enum BodyweightLoad {
     static func volumeKg(of set: WorkoutSetModel, contributionKg: Double?) -> Double? {
         guard let contributionKg, contributionKg > 0 else { return set.volumeKg }
         guard let reps = set.reps else { return nil }
-        let external = (set.weightKg ?? 0) * Double(max(set.loadCount ?? 1, 1))
+        let external = (set.loadKg ?? 0) * Double(max(set.loadCount ?? 1, 1))
         return effectiveKg(external: external, contribution: contributionKg) * Double(reps) * (set.side == .both ? 2 : 1)
     }
 }

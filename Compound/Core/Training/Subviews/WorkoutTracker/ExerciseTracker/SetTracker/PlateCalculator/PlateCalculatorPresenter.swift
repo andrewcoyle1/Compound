@@ -16,6 +16,8 @@ struct PlateCalculatorDelegate {
     let unit: ExerciseWeightUnit
     /// The set's weight in `unit`, or nil when none is entered yet.
     let total: Double?
+    /// A plate-loaded machine's base kept out of the set's load, in `unit` (`WorkoutSetModel.machineBaseKg`).
+    var machineBase: Double = 0
     let onSave: @MainActor (GymProfileModel) -> Void
 }
 
@@ -40,7 +42,8 @@ final class PlateCalculatorPresenter {
 
     /// "70 kg", the set's weight, under the title.
     var subtitle: String? {
-        delegate.total.map { "\(WeightStepper.format($0)) \(unit.abbreviation)" }
+        // The load, as the set shows it; the loading below works from the total.
+        delegate.total.map { "\(WeightStepper.format(((($0 - delegate.machineBase) * 1000).rounded()) / 1000)) \(unit.abbreviation)" }
     }
 
     /// What the keyboard steps on with the gym as edited so far.

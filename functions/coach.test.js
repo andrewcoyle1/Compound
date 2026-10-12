@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
     validateCoachRequest, hasCoachConsent, planCoachQuota, isCoachPremium, chatTitle, appendChatMessages, historyForModel,
-    fixtureSource, firestoreSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, mesocycleProgress,
+    fixtureSource, firestoreSource, coachEnvironment, COACH_TOOLS, coachSystemPrompt, mesocycleProgress, shapeSession,
     COACH_DAILY_LIMIT, COACH_BURST_LIMIT, COACH_MAX_STORED_MESSAGES, MUSCLES,
 } from "./coach.js";
 import { FIXTURE_ACCOUNTS, FIXTURE_NOW } from "./coach-fixtures.js";
@@ -14,6 +14,16 @@ const envFor = async (name) => {
     const source = fixtureSource(FIXTURE_ACCOUNTS[name]);
     return { source, env: await coachEnvironment(source, FIXTURE_NOW) };
 };
+
+// MARK: - Sessions
+
+test("a machine's base kept out of the load is kept out of what the coach reads", () => {
+    const doc = { ended_at: "2026-10-11T18:00:00Z", exercises: [{ template_id: "hack", name: "Hack Squat", sets: [
+        { weight_kg: 17, machine_base_kg: 7, reps: 8 }, { weight_kg: 60, reps: 5 }, { reps: 10 },
+    ] }] };
+    const sets = shapeSession(doc, { timeZone: "UTC", now: new Date("2026-10-12T12:00:00Z") }).exercises[0].sets;
+    assert.deepEqual(sets.map((set) => set.weightKg), [10, 60, null]);
+});
 
 // MARK: - Request
 

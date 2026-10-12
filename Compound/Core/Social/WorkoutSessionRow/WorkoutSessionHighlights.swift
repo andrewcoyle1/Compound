@@ -42,7 +42,7 @@ enum WorkoutSessionHighlights {
             else { continue }
             let unit = exercise.loggedWorkingSets.lazy.compactMap(\.weightUnit).first ?? exercise.weightUnit ?? session.authorWeightUnit
             // Beaten on the total; described as the set reads, without a machine base kept out of it.
-            records.append(PersonalRecord(exerciseName: exercise.name, detail: describe((now.shown, now.reps), mode: exercise.trackingMode, unit: unit)))
+            records.append(PersonalRecord(exerciseName: exercise.name, detail: describe((now.value, now.reps), mode: exercise.trackingMode, unit: unit)))
         }
         return records
     }
@@ -99,18 +99,16 @@ enum WorkoutSessionHighlights {
     /// The best completed working set of one exercise across `sessions`, as a pair compared
     /// value first, then reps. Weighted lifts reuse the exercise detail screen's heaviest-set rule
     /// (weight, then reps at that weight); every other mode takes the largest reps, time or distance.
-    /// A best set: compared on `value` then `reps`, described as `shown` (the load, for a machine
-    /// whose base is kept out of it).
+    /// A best set, compared on `value` then `reps`.
     private struct Mark {
         let value: Double
         let reps: Int
-        let shown: Double
     }
 
     private static func best(_ templateId: String, mode: TrackingMode, in sessions: [WorkoutSessionModel]) -> Mark? {
         if mode == .weightReps {
             let stats = ExerciseModelDetailStats.make(from: sessions, templateId: templateId)
-            return stats.heaviestSetKg > 0 ? Mark(value: stats.heaviestSetKg, reps: stats.repsAtHeaviestSet, shown: stats.heaviestSetLoadKg) : nil
+            return stats.heaviestSetKg > 0 ? Mark(value: stats.heaviestSetKg, reps: stats.repsAtHeaviestSet) : nil
         }
         let values = sessions
             .filter { $0.endedAt != nil }
@@ -127,7 +125,7 @@ enum WorkoutSessionHighlights {
                 }
             }
         guard let top = values.max(), top > 0 else { return nil }
-        return Mark(value: top, reps: 0, shown: top)
+        return Mark(value: top, reps: 0)
     }
 
     /// A weighted record in the unit the author lifted it in (`WorkoutSetModel.weightUnit`).

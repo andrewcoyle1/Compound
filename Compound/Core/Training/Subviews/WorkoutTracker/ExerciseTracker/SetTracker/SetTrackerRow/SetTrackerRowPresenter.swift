@@ -286,7 +286,8 @@ extension SetTrackerRowPresenter {
             gym: gym,
             equipment: equipment,
             unit: unit,
-            total: total
+            total: total,
+            machineBase: delegate.set.wrappedValue.machineBaseKg.map { UnitConversion.convertWeight($0, to: unit) } ?? 0
         ) { [weak self] updated in
             self?.onGymLoadingChanged(updated)
         })

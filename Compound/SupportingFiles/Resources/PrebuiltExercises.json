@@ -783,7 +783,8 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Reverse Pec Deck Fly",
-        "Rear Delt Fly"
+        "Rear Delt Fly",
+        "Reverse Pec Deck"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -1251,7 +1252,8 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Neutral Grip Pulldown",
-        "Close Grip Lat Pulldown"
+        "Close Grip Lat Pulldown",
+        "Dual-Handle Lat Pulldown"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -1825,7 +1827,9 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Unilateral Cable Biceps Curl (Facing Away From Machine)",
-        "Single Arm Biceps Curl (Facing Away From Machine)"
+        "Single Arm Biceps Curl (Facing Away From Machine)",
+        "Bayesian Cable Curl",
+        "Bayesian Curl"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -2873,7 +2877,9 @@
       "stability": 5,
       "body_weight_contribution": 0,
       "alternate_names": [
-        "Overhand Wide Grip Cable Lat Pulldown"
+        "Overhand Wide Grip Cable Lat Pulldown",
+        "Lat Pulldown (Wide Grip)",
+        "Wide-Grip Lat Pulldown"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -3193,7 +3199,10 @@
       "range_of_motion": 4,
       "stability": 5,
       "body_weight_contribution": 0,
-      "alternate_names": [],
+      "alternate_names": [
+        "Lat Pulldown",
+        "Lean-Back Lat Pulldown"
+      ],
       "is_system_exercise": true,
       "click_count": 0,
       "bookmark_count": 0,
@@ -7294,7 +7303,9 @@
       "range_of_motion": 4,
       "stability": 4,
       "body_weight_contribution": 85,
-      "alternate_names": [],
+      "alternate_names": [
+        "Smith Machine Split Squat"
+      ],
       "is_system_exercise": true,
       "click_count": 0,
       "bookmark_count": 0,
@@ -7535,6 +7546,282 @@
         "Triceps Pressdown (Rope)",
         "Rope Pushdown",
         "Rope Triceps Pushdown"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-wrist-curl",
+      "author_id": "official",
+      "name": "Cable Wrist Curl",
+      "description": "A palms-up wrist curl against a low cable that trains the forearm flexors.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-wrist-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-curl-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-curl-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-curl-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-concentration-curl",
+      "author_id": "official",
+      "name": "Cable Concentration Curl",
+      "description": "A single-arm curl from a low cable, the elbow braced against the thigh, that isolates the biceps.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-concentration-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-concentration-curl-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-concentration-curl-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-concentration-curl-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Concentration Cable Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-seated-high-cable-curl",
+      "author_id": "official",
+      "name": "Seated High Cable Curl",
+      "description": "A seated curl facing away from two high cables, arms behind the body, that loads the biceps in a long stretch.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-seated-high-cable-curl-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-seated-high-cable-curl-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Seated Super-Bayesian High Cable Curl",
+        "Super-Bayesian Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-single-arm-reverse-pec-deck",
+      "author_id": "official",
+      "name": "Single Arm Reverse Pec Deck",
+      "description": "A one-arm reverse fly on the pec deck that trains each rear deltoid on its own.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "rearDelts": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-single-arm-reverse-pec-deck-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "pec_deck"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "1-Arm Reverse Pec Deck",
+        "Single Arm Reverse Fly"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-romanian-deadlift",
+      "author_id": "official",
+      "name": "Dumbbell Romanian Deadlift",
+      "description": "A hip hinge with a dumbbell in each hand that targets the hamstrings and glutes.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary",
+        "glutes": "primary",
+        "lowerBack": "secondary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-romanian-deadlift-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB RDL",
+        "Dumbbell RDL",
+        "DB Romanian Deadlift"
       ],
       "is_system_exercise": true,
       "click_count": 0,

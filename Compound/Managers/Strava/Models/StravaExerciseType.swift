@@ -156,7 +156,12 @@ enum StravaExerciseType {
         "system-standing-calf-raise": "STANDING_CALF_RAISE",
         "system-stiff-leg-deadlift": "STRAIGHT_LEG_DEADLIFT",
         "system-swiss-ball-rollout": "AB_WHEEL_ROLLOUT",
-        "system-cable-rope-pushdown": "TRICEPS_PRESSDOWN"
+        "system-cable-rope-pushdown": "TRICEPS_PRESSDOWN",
+        "system-cable-wrist-curl": "BARBELL_WRIST_CURL",
+        "system-cable-concentration-curl": "CONCENTRATION_CURL",
+        "system-seated-high-cable-curl": "BAYESIAN_CURL",
+        "system-single-arm-reverse-pec-deck": "MACHINE_REAR_DELT_REVERSE_FLY",
+        "system-dumbbell-romanian-deadlift": "DUMBBELL_ROMANIAN_DEADLIFTS"
     ]
 
     /// A type that works each muscle, for exercises people create themselves. A test checks every

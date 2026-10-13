@@ -36,12 +36,12 @@ final class WorkoutTrackerUITests: XCTestCase {
         // The second working set's weight, open in the set keyboard.
         let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         weights.element(boundBy: 1).tap()
-        let done = app.waitFor(app.buttons["Done"].firstMatch)
+        let hide = app.waitFor(app.buttons["Hide Keyboard"].firstMatch)
         attach(app, "2-editing")
 
-        // Done only closes the keypad; the log button logs the set, which finishes the exercise
-        // and moves on.
-        done.tap()
+        // Hiding the keypad logs nothing; the log button logs the set, which finishes the
+        // exercise and moves on.
+        hide.tap()
         XCTAssertTrue(skipRest.waitForExistence(timeout: UITestApp.timeout))
         skipRest.tap()
         app.waitFor(logButton).tap()
@@ -117,7 +117,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         app.waitFor(app.button("WorkoutTracker.logButton"))
         acknowledgeNoteIfShown(app)
         app.waitFor(app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'")).firstMatch).tap()
-        app.waitFor(app.buttons["Done"].firstMatch)
+        app.waitFor(app.buttons["Hide Keyboard"].firstMatch)
         Thread.sleep(forTimeInterval: 1)
         try audit(app, "keypad open")
     }
@@ -268,7 +268,7 @@ final class WorkoutTrackerUITests: XCTestCase {
         acknowledgeNoteIfShown(app)
         let weights = app.textFields.matching(NSPredicate(format: "label CONTAINS ', Weight'"))
         app.waitFor(weights.firstMatch).tap()
-        app.waitFor(app.buttons["Done"].firstMatch)
+        app.waitFor(app.buttons["Hide Keyboard"].firstMatch)
         let firstKey = app.waitFor(app.buttons["1"].firstMatch)
         attach(app, "10-keypad-open")
 
@@ -351,7 +351,7 @@ final class WorkoutTrackerUITests: XCTestCase {
 
         dropReps.tap()
         app.waitFor(app.buttons["8"].firstMatch).tap()
-        app.waitFor(app.buttons["Done"].firstMatch).tap()
+        app.waitFor(app.buttons["Hide Keyboard"].firstMatch).tap()
 
         tapSlot(logButton)
         XCTAssertFalse(app.button("WorkoutTracker.skipRestButton").exists, "A rest ran before the drop")

@@ -646,10 +646,10 @@ actually checked.
 ## Backend (Cloud Functions)
 
 `functions/` holds Firebase Cloud Functions v2 (Node, ES modules) using Genkit with Vertex AI.
-Thirteen `onCall` callables, all in `us-central1` except `coachChat` (`europe-west4`): `foodAnalyze`,
+Twelve `onCall` callables, all in `us-central1` except `coachChat` (`europe-west4`): `foodAnalyze`,
 `mealDescribe`, `nutritionLabelAnalyze`, `imageGenerate`, `foodSearch`, `removeFollower`,
-`acceptInvite`, `coachChat`, and five for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection`,
-`stravaDisconnect` and `stravaToken`. Strava's client secret lives only in the
+`acceptInvite`, `coachChat`, and four for Strava: `stravaConnect`, `stravaAccessToken`, `stravaConnection` and
+`stravaDisconnect`. Strava's client secret lives only in the
 `STRAVA_CLIENT_SECRET` Functions secret (`firebase functions:secrets:set` per project).
 
 **Strava.** The tokens live server-side in `strava_connections/{uid}`, which no client can read,
@@ -671,8 +671,10 @@ so a connection belongs to the Compound account, not the device: signing out kee
   unsigned.
 - Disconnecting, a refused refresh, deauthorization and account deletion all remove the
   connection and every imported activity.
-- `stravaToken` remains only for builds older than the server-held tokens; remove it once none
-  are in use.
+- `stravaToken`, which older builds used to keep the tokens themselves, was removed on 13 Oct 2026
+  and deleted from both projects. Removing a function from the source does not delete it: delete
+  it by hand first (`firebase functions:delete <name> --project <id> --force`), or the release's
+  `--non-interactive` deploy aborts.
 - One-time setup per project: set `STRAVA_WEBHOOK_VERIFY_TOKEN`, deploy, then create Strava's
   push subscription (`POST https://www.strava.com/api/v3/push_subscriptions` with `client_id`,
   `client_secret`, `callback_url` = the deployed `stravaWebhook` URL, `verify_token`). Strava

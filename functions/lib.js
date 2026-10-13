@@ -893,7 +893,7 @@ export function mergeSearchHits(local, global, limit = 20) {
 
 export const STRAVA_TOKEN_URL = "https://www.strava.com/api/v3/oauth/token";
 
-// The form `stravaToken` posts to Strava, or null when the request names neither a code to
+// The token form posted to Strava, or null when the request names neither a code to
 // exchange nor a refresh token. The secret is added here, server side, so it never reaches the app.
 export function stravaTokenForm(data, clientSecret) {
     const clientId = typeof data?.clientId === "string" ? data.clientId.trim() : "";

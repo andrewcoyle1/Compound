@@ -282,8 +282,10 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
     (`GymProfileModel.barChoices(typeId:)`).
   - **Machine base.** `PlateLoadedMachine.excludesBaseFromLoad` ("Enter plates only", on by
     default, decodes as on): the set stores the total, `WorkoutSetModel.machineBaseKg` the base, and
-    every display reads `loadKg`. Records compare totals and describe loads. Not changed: sets from
-    before it, the coach and charts (totals), the plate calculator's subtitle (total).
+    every display reads `loadKg`. Since 12 Oct, volume, the 1RM estimate and its records, the
+    heaviest set, bodyweight load, the plate calculator's subtitle and the coach use the load too;
+    only progression and equipment rounding use the total. Sets from before it are stamped with
+    the base at sign-in (`stampMachineBaseOnPastSessions`), so they read as their plates.
   - **Per side.** A weight-per-side exercise's column reads "kg/side".
   - **Correction bar.** The set correction left the set table for a bottom `safeAreaBar`
     (`WorkoutCorrectionBar`) shown only while a rest runs; the rest line stays in the table.

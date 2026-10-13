@@ -18,7 +18,7 @@ enum SetKeyboardField: Equatable {
 
     var takesDecimals: Bool { self == .weight || self == .distance }
 
-    /// The fields a row of this tracking mode shows, in the order Next and Prev walk them.
+    /// The fields a row of this tracking mode shows, in the order Next walks them.
     static func fields(for trackingMode: TrackingMode) -> [SetKeyboardField] {
         switch trackingMode {
         case .weightReps: return [.weight, .reps]
@@ -42,7 +42,7 @@ struct SetKeyboardContext {
     var unit: ExerciseWeightUnit = .kilograms
     var step: WeightStep = WeightStepper.fallback(.kilograms)
     var distanceUnit: ExerciseDistanceUnit = .meters
-    /// The row's fields, in order. Next and Prev walk them.
+    /// The row's fields, in order. Next walks them.
     var fields: [SetKeyboardField] = [.weight, .reps]
     /// `WorkoutSettings.rirTracking`, shown to the user as "Effort (RPE)".
     var showsEffort: Bool = false
@@ -55,9 +55,6 @@ struct SetKeyboardContext {
     var targetWeightKg: Double?
     var targetMinReps: Int?
     var targetMaxReps: Int?
-    /// The gym's bars for this exercise when it is on a loadable bar, and the one loaded.
-    var barChoices: [BarChoice] = []
-    var chosenBarId: String?
 }
 
 struct SetKeyboardChip: Identifiable, Equatable {
@@ -81,19 +78,11 @@ final class SetKeyboardPresenter {
     /// Opens the plate calculator for the set being edited. The row sets it, as the keyboard has
     /// no router.
     var openPlateCalculator: (@MainActor () -> Void)?
-    /// Loads another of the gym's bars (`SetKeyboardContext.barChoices`). The row sets it.
-    var onBarChosen: (@MainActor (String) -> Void)?
-
-    /// The bar menu between − and +, offered when the gym has more than one bar for it.
-    var showsBarMenu: Bool { context.barChoices.count > 1 }
-
-    var chosenBarId: String {
-        get { context.chosenBarId ?? "" }
-        set {
-            guard newValue != context.chosenBarId else { return }
-            onBarChosen?(newValue)
-        }
-    }
+    /// Logs the set being edited, as its Done column does. The row sets it; `false` keeps the
+    /// keypad open because the set cannot be logged yet.
+    var onComplete: (@MainActor () -> Bool)?
+    /// The set being edited is already logged, so the last field's ✓ only closes.
+    var isEditingLoggedSet: Bool { editingSet?.wrappedValue.completedAt != nil }
 
     private var editingSet: Binding<WorkoutSetModel>?
 
@@ -118,29 +107,21 @@ final class SetKeyboardPresenter {
         return context.fields.indices.contains(index + 1) ? context.fields[index + 1] : nil
     }
 
-    /// The field before the active one, if any.
-    var previousField: SetKeyboardField? {
-        guard let field = activeField, let index = context.fields.firstIndex(of: field) else { return nil }
-        return index > 0 ? context.fields[index - 1] : nil
-    }
-
     func next() {
         guard let field = nextField else { return }
         activate(field)
     }
 
-    func previous() {
-        guard let field = previousField else { return }
-        activate(field)
-    }
-
-    /// Done only closes. The log button, always above the keypad, is the one way to log, so Done
-    /// never logs a set that was only being prepared (decision T1, `docs/reviews/hig-decisions.md`).
+    /// The ✓ on the row's last field: logs the set, as its Done column does, and closes. A logged
+    /// set only closes; one that cannot be logged yet stays open (decision T1, amended 13 Oct
+    /// 2026, `docs/reviews/hig-decisions.md`). The keypad only moves forward; an earlier field is
+    /// a tap away.
     func done() {
+        guard onComplete?() ?? true else { return }
         close()
     }
 
-    /// Closes the keypad: Done, or the field lost focus to something else.
+    /// Closes the keypad: the hide key, Done, or the field lost focus to something else.
     ///
     /// Lets go of the set too. The binding reads its set by index, so one kept after an earlier set
     /// is deleted would read past the end of the array.

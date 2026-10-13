@@ -54,6 +54,8 @@ struct PlateLoadingView: View {
     let loading: PlateLoading
     /// The gym's plates, for their colours.
     let plates: [Plate]
+    /// Off where the sum is shown on a line of its own, as over the weight keypad.
+    var showsEquation = true
 
     @ScaledMetric(relativeTo: .subheadline) private var diagramWidth: CGFloat = 88
     @ScaledMetric(relativeTo: .subheadline) private var diagramHeight: CGFloat = 40
@@ -68,9 +70,11 @@ struct PlateLoadingView: View {
                     Text(loading.counts)
                         .font(.rowTitle.monospacedDigit())
                 }
-                Text(loading.equation)
-                    .font(.rowDetail.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                if showsEquation {
+                    Text(loading.equation)
+                        .font(.rowDetail.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

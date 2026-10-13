@@ -92,9 +92,10 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.weightKg == nil)
     }
 
-    // MARK: - Next, Prev, Done
+    // MARK: - Next and Done
 
-    @Test func nextAndPrevMoveBetweenTheFields() {
+    /// The keypad only moves forward; an earlier field is a tap away.
+    @Test func nextMovesToTheNextField() {
         let box = set(weightKg: 60, reps: 5)
         let keyboard = SetKeyboardPresenter()
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
@@ -104,17 +105,15 @@ struct SetKeyboardPresenterTests {
         #expect(keyboard.text == "5")
         keyboard.type("8")
         #expect(box.value.reps == 8)
-
-        keyboard.previous()
-        #expect(keyboard.activeField == .weight)
-        #expect(keyboard.text == "60")
+        #expect(keyboard.nextField == nil)
     }
 
-    @Test func repsOnlyHasNoWeightToGoBackTo() {
+    @Test func repsOnlyHasNoNextField() {
         let box = set(weightKg: nil)
         let keyboard = SetKeyboardPresenter()
         keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(fields: [.reps]))
-        keyboard.previous()
+        #expect(keyboard.nextField == nil)
+        keyboard.next()
         #expect(keyboard.activeField == .reps)
     }
 
@@ -128,7 +127,7 @@ struct SetKeyboardPresenterTests {
         #expect(box.value.weightKg == 70)
     }
 
-    /// Done only closes, even on a set that is ready: the log button is the one way to log.
+    /// With no row to log it, Done closes and lets go of the set.
     @Test func doneClosesAndLetsGoOfTheSet() {
         let box = set(weightKg: 60, reps: 8)
         let keyboard = SetKeyboardPresenter()
@@ -178,12 +177,9 @@ struct SetKeyboardPresenterTests {
         let box = set(weightKg: nil)
         let keyboard = SetKeyboardPresenter()
         keyboard.open(.distance, set: box.binding, context: SetKeyboardContext(fields: [.distance, .duration]))
-        #expect(keyboard.previousField == nil)
         keyboard.next()
         #expect(keyboard.activeField == .duration)
         #expect(keyboard.nextField == nil)
-        keyboard.previous()
-        #expect(keyboard.activeField == .distance)
     }
 
     // MARK: - VoiceOver
@@ -242,19 +238,6 @@ struct SetKeyboardPresenterTests {
         keyboard.stepDown()
         keyboard.stepDown()
         #expect(box.value.weightKg == 57.5)
-    }
-
-    @Test func theBarMenuHandsBackANewBarOnly() {
-        let keyboard = SetKeyboardPresenter()
-        var chosen: [String] = []
-        keyboard.onBarChosen = { chosen.append($0) }
-        let bars = [BarChoice(id: "a", title: "20 kg"), BarChoice(id: "b", title: "15 kg")]
-        keyboard.open(.weight, set: set().binding, context: SetKeyboardContext(barChoices: [bars[0]], chosenBarId: "a"))
-        #expect(!keyboard.showsBarMenu)
-        keyboard.refresh(context: SetKeyboardContext(barChoices: bars, chosenBarId: "a"))
-        keyboard.chosenBarId = "a"
-        keyboard.chosenBarId = "b"
-        #expect(keyboard.showsBarMenu && chosen == ["b"])
     }
 
     @Test func bandsCycleNamesAndLeaveTheWeightEmpty() {
@@ -631,9 +614,9 @@ struct SetTrackerRowKeyboardTests {
         #expect(presenter.keyboardContext(delegate: delegate).step == WeightStepper.fallback(.kilograms))
     }
 
-    /// Done never logs, however ready the set: decision T1 reverses 5d, which logged it here and
-    /// turned weight changes made before a set into logged sets.
-    @Test func doneNeverLogsAReadySet() {
+    /// Done on the last field logs a ready set, as its Done column does (decision T1, amended
+    /// 13 Oct 2026), and closes.
+    @Test func doneLogsAReadySet() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         var logged: [String] = []
@@ -647,13 +630,14 @@ struct SetTrackerRowKeyboardTests {
 
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
-        #expect(logged.isEmpty)
-        #expect(exercise.value.sets[1].completedAt == nil)
+        #expect(logged == [exercise.value.sets[1].id])
         #expect(presenter.keyboard.activeField == nil)
     }
 
+    /// A logged set stays logged and the keypad closes; a set missing its reps is not logged and
+    /// the keypad stays open.
     @Test(arguments: [(nil as Int?, false), (0, false), (8, true)])
-    func doneLeavesALoggedSetLogged(reps: Int?, completed: Bool) {
+    func doneLogsNothingThatIsNotReady(reps: Int?, completed: Bool) {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.sets[1].reps = reps
@@ -662,9 +646,10 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
         #expect(exercise.value.sets[1].completedAt == (completed ? start : nil))
+        #expect(presenter.keyboard.activeField == (completed ? nil : .weight))
     }
 
-    @Test func aTimedSetIsNotLoggedByDone() {
+    @Test func aTimedSetIsLoggedByDone() {
         let row = makeRow()
         let (presenter, router, delegate, exercise) = (row.presenter, row.router, row.delegate, row.exercise)
         exercise.value.trackingMode = .timeOnly
@@ -674,15 +659,7 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(exercise.value.sets[1].durationSec == 45)
         #expect(router.alerts.isEmpty)
-        #expect(exercise.value.sets[1].completedAt == nil)
-    }
-
-    @Test func doneOnAnUnfinishedSetJustCloses() {
-        let row = makeRow()
-        let (presenter, router, delegate) = (row.presenter, row.router, row.delegate)
-        presenter.onKeyboardFieldBegan(.weight, delegate: delegate)
-        presenter.keyboard.done()
-        #expect(router.alerts.isEmpty)
+        #expect(exercise.value.sets[1].completedAt != nil)
         #expect(presenter.keyboard.activeField == nil)
     }
 

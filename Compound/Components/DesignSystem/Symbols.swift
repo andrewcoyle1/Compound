@@ -127,6 +127,11 @@ enum Symbol {
     static let choose = "chevron.up.chevron.down"
     static let repeatMacrocycle = "arrow.counterclockwise"
     static let logAgain = "arrow.counterclockwise"
+    /// The set keypad's key to the row's next field.
+    static let nextField = "arrow.right"
+    /// Puts the set keypad away without logging.
+    static let hideKeyboard = "keyboard.chevron.compact.down"
+    static let decrease = "minus"
 
     // Status
     static let info = "info.circle"

@@ -12,11 +12,14 @@ struct SetKeyboardView: View {
 
     @Bindable var presenter: SetKeyboardPresenter
     /// Keys grow with Dynamic Type up to the keyboard's cap, so a larger label never clips.
-    @ScaledMetric(relativeTo: .title3) private var keyHeight: CGFloat = 46
+    @ScaledMetric(relativeTo: .title2) private var keyHeight: CGFloat = SystemKeypad.keyHeight
     @ScaledMetric(relativeTo: .subheadline) private var plateStripHeight: CGFloat = 36
+    /// The plates strip over the weight keypad, switched by the keypad's plates key and kept
+    /// between workouts.
+    @AppStorage("setKeyboard.showsPlates") private var showsPlates = true
 
     var body: some View {
-        VStack(spacing: Spacing.s) {
+        VStack(spacing: SystemKeypad.rowSpacing) {
             switch presenter.activeField {
             case .reps:
                 repsAccessories
@@ -28,9 +31,9 @@ struct SetKeyboardView: View {
             }
             keypad
         }
-        .padding(.horizontal, Spacing.m)
-        .padding(.vertical, Spacing.m)
-        .background(.regularMaterial, ignoresSafeAreaEdges: .bottom)
+        .padding(.horizontal, SystemKeypad.edgeInset)
+        .padding(.top)
+        .padding(.bottom, Spacing.xl + Spacing.l)
         .reducedMotionAnimation(.quick, value: presenter.activeField)
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
@@ -39,11 +42,29 @@ struct SetKeyboardView: View {
 
     @ViewBuilder
     private var weightAccessories: some View {
-        if presenter.showsLoadingBar {
-            loadingBar
+        // A weight the bar cannot carry keeps the strip up, as it holds the nearest that can.
+        // The value chips ride at the end of the plates band, so a plate-loaded weight takes one
+        // row over the keypad. The step is not shown: − and + say it by what they do.
+        if presenter.showsLoadingBar, showsPlates || presenter.plateLoading == nil {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                HStack(spacing: SystemKeypad.keySpacing) {
+                    loadingBar
+                    valueChips(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
+                        .fixedSize()
+                }
+                // The sum under both, across the whole row.
+                if let loading = presenter.plateLoading {
+                    Text(loading.equation)
+                        .font(.rowDetail.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .padding(.horizontal, Spacing.s)
+                }
+            }
+        } else {
+            chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
         }
-        chipRow(presenter.weightChips) { presenter.applyWeight(displayValue: $0) }
-        stepperRow
         if !presenter.context.step.bands.isEmpty {
             bandRow
         }
@@ -55,79 +76,11 @@ struct SetKeyboardView: View {
         }
     }
 
-    private var stepperRow: some View {
-        let unit = presenter.context.unit.abbreviation
-        return HStack(spacing: Spacing.s) {
-            keyButton(systemImage: "minus", label: String(localized: "Decrease weight")) { presenter.stepDown() }
-            HStack(spacing: Spacing.s) {
-                Text(stepSummary)
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                if let chip = presenter.context.step.chip {
-                    if presenter.showsBarMenu {
-                        barMenu(chip)
-                    } else {
-                        Chip(chip)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity)
-            keyButton(systemImage: Symbol.add, label: "Increase weight") { presenter.stepUp() }
-        }
-        // One element, as a system stepper is: swipe up or down to step, the new weight read back.
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Weight in \(unit). \(stepSummary). \(presenter.context.step.chip ?? "")")
-        .accessibilityValue(presenter.spokenWeight ?? "")
-        .accessibilityAdjustableAction { direction in
-            switch direction {
-            case .increment: presenter.stepUp()
-            case .decrement: presenter.stepDown()
-            @unknown default: break
-            }
-        }
-        // The row is one element, so the bar menu inside it is offered as actions.
-        .accessibilityActions {
-            if presenter.showsBarMenu {
-                ForEach(presenter.context.barChoices) { choice in
-                    Button("Use \(choice.title) bar") { presenter.chosenBarId = choice.id }
-                }
-            }
-        }
-    }
-
-    /// The base weight as a menu of the gym's bars for this exercise. A choice is saved to the
-    /// gym, as the plate calculator's is, and the loading follows it.
-    private func barMenu(_ chip: String) -> some View {
-        Menu {
-            Picker("Bar Weight", selection: $presenter.chosenBarId) {
-                ForEach(presenter.context.barChoices) { choice in
-                    Text(choice.title).tag(choice.id)
-                }
-            }
-        } label: {
-            Chip(chip, systemImage: Symbol.choose)
-                .chipTapTarget()
-        }
-        .menuStyle(.button)
-        .buttonStyle(.plain)
-    }
-
-    private var stepSummary: String {
-        switch presenter.context.step.kind {
-        case .increment(let step, _, _):
-            return "± \(WeightStepper.format(step)) \(presenter.context.unit.abbreviation)"
-        case .list:
-            return String(localized: "Next available")
-        case .bands:
-            return String(localized: "Cycle bands")
-        }
-    }
-
     /// The gym's bands for this exercise, any number on at once, light to heavy. Beside the
     /// stepper, so a bar with bands takes both.
     private var bandRow: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: Spacing.s) {
+            HStack(spacing: SystemKeypad.keySpacing) {
                 Text("Bands")
                     .font(.label)
                     .fontWeight(.bold)
@@ -138,8 +91,7 @@ struct SetKeyboardView: View {
                         presenter.toggleBand(band)
                         announceValue()
                     } label: {
-                        Chip(band, isSelected: isSelected)
-                            .chipTapTarget()
+                        keyChip(band, isSelected: isSelected)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(band)
@@ -151,7 +103,8 @@ struct SetKeyboardView: View {
     }
 
     /// The bar and plates for the weight being typed, over the keypad on any plate-loaded
-    /// exercise. Tapping it opens the plate calculator, where the bar and the plates are chosen.
+    /// exercise, unless the keypad's plates key has put it away. Tapping it opens the plate
+    /// calculator, where the bar and the plates are chosen.
     private var loadingBar: some View {
         let unit = presenter.context.unit.abbreviation
         return HStack(spacing: Spacing.s) {
@@ -160,7 +113,7 @@ struct SetKeyboardView: View {
                     Button {
                         presenter.openPlateCalculator?()
                     } label: {
-                        PlateLoadingView(loading: loading, plates: presenter.context.step.plates)
+                        PlateLoadingView(loading: loading, plates: presenter.context.step.plates, showsEquation: false)
                             .contentShape(.rect)
                     }
                     .buttonStyle(.plain)
@@ -181,20 +134,13 @@ struct SetKeyboardView: View {
                 }
             }
             Spacer(minLength: 0)
-            Button {
-                presenter.openPlateCalculator?()
-            } label: {
-                Image(systemName: Symbol.plateCalculator)
-                    .font(.title3)
-                    .tapTarget()
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.tint)
-            .accessibilityLabel("Plate Calculator")
         }
-        .padding(.horizontal, Spacing.m)
-        .padding(.vertical, Spacing.s)
-        .background(.fill.tertiary, in: .rect(cornerRadius: Radius.m, style: .continuous))
+        // A band on the keyboard itself, one line each for the plates and their sum, so it costs
+        // a key's height and no more.
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+        .padding(.horizontal, Spacing.s)
+        .frame(minHeight: keyHeight)
     }
 
     // MARK: - Reps
@@ -209,7 +155,7 @@ struct SetKeyboardView: View {
 
     private var effortRow: some View {
         ScrollView(.horizontal) {
-            HStack(spacing: Spacing.s) {
+            HStack(spacing: SystemKeypad.keySpacing) {
                 Text("RIR")
                     .font(.label)
                     .fontWeight(.bold)
@@ -224,9 +170,7 @@ struct SetKeyboardView: View {
                             AccessibilityNotification.Announcement(String(localized: "\(text) reps in reserve")).post()
                         }
                     } label: {
-                        Chip(text, isSelected: isSelected)
-                            .monospacedDigit()
-                            .chipTapTarget()
+                        keyChip(text, isSelected: isSelected)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(String(localized: "\(text) reps in reserve"))
@@ -243,63 +187,128 @@ struct SetKeyboardView: View {
     private func chipRow(_ chips: [SetKeyboardChip], apply: @escaping (Double) -> Void) -> some View {
         if !chips.isEmpty {
             ScrollView(.horizontal) {
-                HStack(spacing: Spacing.s) {
-                    ForEach(chips) { chip in
-                        Button {
-                            apply(chip.value)
-                            announceValue()
-                        } label: {
-                            Chip(chip.title)
-                                .chipTapTarget()
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+                valueChips(chips, apply: apply)
             }
             .scrollIndicators(.hidden)
         }
     }
 
+    private func valueChips(_ chips: [SetKeyboardChip], apply: @escaping (Double) -> Void) -> some View {
+        HStack(spacing: SystemKeypad.keySpacing) {
+            ForEach(chips) { chip in
+                Button {
+                    apply(chip.value)
+                    announceValue()
+                } label: {
+                    keyChip(chip.title)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    /// Digits on the left, sized and spaced as the system number pad. The right-hand column, top
+    /// to bottom: hide the keypad; show or hide the plates strip on a bar or plate-loaded machine
+    /// (or ± on an assisted exercise); − and + on a weight; and Next → to the row's next field, or
+    /// ✓ on its last, which logs the set. There is no Prev: an earlier field is a tap away.
     private var keypad: some View {
-        Grid(horizontalSpacing: Spacing.s, verticalSpacing: Spacing.s) {
+        Grid(horizontalSpacing: SystemKeypad.keySpacing, verticalSpacing: SystemKeypad.rowSpacing) {
             GridRow {
                 digit("1"); digit("2"); digit("3")
-                if let next = presenter.nextField {
-                    keyButton(title: String(localized: "Next"), label: String(localized: "Next, \(Self.name(of: next))")) { presenter.next() }
-                } else {
-                    let previous = presenter.previousField
-                    keyButton(
-                        title: String(localized: "Prev"),
-                        label: previous.map { String(localized: "Previous, \(Self.name(of: $0))") } ?? String(localized: "Previous")
-                    ) { presenter.previous() }
-                    .disabled(previous == nil)
-                }
+                keyButton(systemImage: Symbol.hideKeyboard, label: String(localized: "Hide Keyboard")) { presenter.close() }
+                    .frame(width: Self.sideColumnWidth)
             }
             GridRow {
                 digit("4"); digit("5"); digit("6")
-                Color.clear.frame(height: 1).accessibilityHidden(true)
+                Group {
+                    if presenter.showsLoadingBar {
+                        keyButton(systemImage: Symbol.plateCalculator, label: String(localized: "Show Plates")) {
+                            withReducedMotionAnimation(.quick) { showsPlates.toggle() }
+                        }
+                        .accessibilityAddTraits(showsPlates ? .isSelected : [])
+                    } else if presenter.showsSignKey {
+                        keyButton(title: "±", label: String(localized: "Change sign"), isKey: true) { presenter.toggleSign() }
+                            .accessibilityHint("A negative weight is assistance")
+                    } else {
+                        blankKey
+                    }
+                }
+                .frame(width: Self.sideColumnWidth)
             }
             GridRow {
                 digit("7"); digit("8"); digit("9")
-                keyButton(title: String(localized: "Done"), label: String(localized: "Done"), prominent: true) { presenter.done() }
-                    .accessibilityHint("Closes the keypad")
+                Group {
+                    if presenter.activeField == .weight {
+                        HStack(spacing: SystemKeypad.keySpacing) {
+                            keyButton(systemImage: Symbol.decrease, label: String(localized: "Decrease weight")) { presenter.stepDown() }
+                            keyButton(systemImage: Symbol.add, label: String(localized: "Increase weight")) { presenter.stepUp() }
+                        }
+                    } else {
+                        blankKey
+                    }
+                }
+                .frame(width: Self.sideColumnWidth)
             }
             GridRow {
                 if presenter.activeField?.takesDecimals == true {
-                    keyButton(title: presenter.decimalSeparator, label: String(localized: "Decimal point"), isKey: true) { presenter.type(".") }
+                    keyButton(title: presenter.decimalSeparator, label: String(localized: "Decimal point"), isKey: true, isPlain: true) { presenter.type(".") }
                 } else {
-                    Color.clear.frame(height: 1).accessibilityHidden(true)
+                    blankKey
                 }
                 digit("0")
-                keyButton(systemImage: "delete.left", label: String(localized: "Delete"), isKey: true) { presenter.backspace() }
-                if presenter.showsSignKey {
-                    keyButton(title: "±", label: String(localized: "Change sign"), isKey: true) { presenter.toggleSign() }
-                        .accessibilityHint("A negative weight is assistance")
-                } else {
-                    Color.clear.frame(height: 1).accessibilityHidden(true)
+                keyButton(systemImage: "delete.left", label: String(localized: "Delete"), isKey: true, isPlain: true) { presenter.backspace() }
+                Group {
+                    if let next = presenter.nextField {
+                        keyButton(systemImage: Symbol.nextField, label: String(localized: "Next, \(Self.name(of: next))"), prominent: true) { presenter.next() }
+                    } else if presenter.isEditingLoggedSet {
+                        keyButton(systemImage: Symbol.selected, label: String(localized: "Done"), prominent: true) { presenter.done() }
+                            .accessibilityHint("Closes the keypad")
+                    } else {
+                        keyButton(systemImage: Symbol.selected, label: String(localized: "Log Set"), prominent: true) { presenter.done() }
+                    }
                 }
+                .frame(width: Self.sideColumnWidth)
             }
         }
+    }
+
+    /// A chip over the keypad, drawn as a key: white like a digit, the accent when chosen, and a
+    /// full 44 pt tall so it needs no padded hit area.
+    private func keyChip(_ title: String, systemImage: String? = nil, isSelected: Bool = false) -> some View {
+        HStack(spacing: Spacing.xs) {
+            if let systemImage {
+                Image(systemName: systemImage)
+            }
+            Text(title)
+        }
+        .font(.subheadline.weight(isSelected ? .semibold : .regular).monospacedDigit())
+        .lineLimit(1)
+        .padding(.horizontal, Spacing.m)
+        .frame(minHeight: ControlSize.row)
+        .foregroundStyle(isSelected ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+        .background(
+            isSelected ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.surface),
+            in: .rect(cornerRadius: SystemKeypad.keyRadius, style: .continuous)
+        )
+        .contentShape(.rect)
+    }
+
+    /// Wide enough for − and + side by side, each a 44 pt target.
+    private static let sideColumnWidth = ControlSize.row * 2 + SystemKeypad.keySpacing
+
+    /// The system number pad's metrics on iPhone (iOS 26), measured side by side with the phone
+    /// pad on 13 Oct 2026 so the keypad feels like the keyboard it replaces. Measured rather than
+    /// chosen, hence not design-system tokens.
+    private enum SystemKeypad {
+        static let keyHeight: CGFloat = 48
+        static let keyRadius: CGFloat = Radius.m
+        static let keySpacing: CGFloat = 6
+        static let rowSpacing: CGFloat = 7
+        static let edgeInset: CGFloat = Spacing.xs
+    }
+
+    private var blankKey: some View {
+        Color.clear.frame(height: 1).accessibilityHidden(true)
     }
 
     private static func name(of field: SetKeyboardField) -> String {
@@ -326,17 +335,28 @@ struct SetKeyboardView: View {
     /// setting. The input view adopts `UIInputViewAudioFeedback`, which is what lets it sound.
     /// `isKey` marks a typing key: VoiceOver's touch typing then types it on lift, and the new
     /// value is read back.
-    private func keyButton(title: String, label: String, prominent: Bool = false, isKey: Bool = false, action: @escaping () -> Void) -> some View {
+    /// `isPlain` draws no key behind the label, as the system pad's decimal point and delete.
+    private func keyButton(
+        title: String,
+        label: String,
+        prominent: Bool = false,
+        isKey: Bool = false,
+        isPlain: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
         Button {
             UIDevice.current.playInputClick()
             action()
             if isKey { announceValue() }
         } label: {
             Text(title)
-                .font(.title3.weight(prominent ? .semibold : .regular))
+                .font(.title2.weight(prominent ? .semibold : .regular))
                 .frame(maxWidth: .infinity, minHeight: keyHeight)
                 .foregroundStyle(prominent ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
-                .background(prominent ? AnyShapeStyle(.tint) : AnyShapeStyle(.fill.secondary), in: .rect(cornerRadius: Radius.s, style: .continuous))
+                .background(
+                    prominent ? AnyShapeStyle(.tint) : isPlain ? AnyShapeStyle(.clear) : AnyShapeStyle(Color.surface),
+                    in: .rect(cornerRadius: SystemKeypad.keyRadius, style: .continuous)
+                )
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
@@ -344,32 +364,46 @@ struct SetKeyboardView: View {
         .accessibilityAddTraits(isKey ? .isKeyboardKey : [])
     }
 
-    private func keyButton(systemImage: String, label: String, isKey: Bool = false, action: @escaping () -> Void) -> some View {
+    private func keyButton(
+        systemImage: String,
+        label: String,
+        prominent: Bool = false,
+        isKey: Bool = false,
+        isPlain: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
         Button {
             UIDevice.current.playInputClick()
             action()
             announceValue()
         } label: {
             Image(systemName: systemImage)
-                .font(.title3)
+                .font(.title2.weight(prominent ? .semibold : .regular))
                 .frame(maxWidth: .infinity, minHeight: keyHeight)
-                .foregroundStyle(Color.primary)
-                .background(.fill.secondary, in: .rect(cornerRadius: Radius.s, style: .continuous))
+                .foregroundStyle(prominent ? AnyShapeStyle(.onAccent) : AnyShapeStyle(.primary))
+                .background(
+                    prominent ? AnyShapeStyle(.tint) : isPlain ? AnyShapeStyle(.clear) : AnyShapeStyle(Color.surface),
+                    in: .rect(cornerRadius: SystemKeypad.keyRadius, style: .continuous)
+                )
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: systemImage == "delete.left" ? .infinity : 64)
         .accessibilityLabel(label)
         .accessibilityAddTraits(isKey ? .isKeyboardKey : [])
     }
 }
 
 #Preview {
-    @Previewable @State var set: WorkoutSetModel = .mock
     let presenter = SetKeyboardPresenter()
-    presenter.open(.weight, set: $set, context: SetKeyboardContext(lastSetWeightKg: 60, previousSessionWeightKg: 57.5))
-    return VStack {
-        Spacer()
+    presenter.open(.weight, set: .constant(.mock), context: SetKeyboardContext(lastSetWeightKg: 60, previousSessionWeightKg: 57.5))
+    // The canvas never shows an input view, so this stands in for the system keyboard's glass
+    // panel that `SetKeyboardInputHost` sits on in the app.
+    return List {
+        ForEach(1...12, id: \.self) { Text("Set \($0)") }
+    }
+    .overlay(alignment: .bottom) {
         SetKeyboardView(presenter: presenter)
+            .glassEffect(.regular, in: .rect(cornerRadius: Radius.xl, style: .continuous))
+            .ignoresSafeArea(edges: .bottom)
     }
 }

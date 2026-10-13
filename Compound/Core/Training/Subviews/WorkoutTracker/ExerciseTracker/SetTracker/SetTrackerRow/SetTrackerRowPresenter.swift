@@ -33,7 +33,7 @@ class SetTrackerRowPresenter {
         self.router = router
         keyboard.playSelectionHaptic = { [interactor] in interactor.playHaptic(option: .selection) }
         keyboard.openPlateCalculator = { [weak self] in self?.onPlateCalculatorPressed() }
-        keyboard.onBarChosen = { [weak self] id in self?.onBarChosen(id) }
+        keyboard.onComplete = { [weak self] in self?.onKeyboardDone() ?? true }
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a
@@ -270,6 +270,23 @@ extension SetTrackerRowPresenter {
         keyboard.open(field, set: delegate.set, context: keyboardContext(delegate: delegate))
     }
 
+    /// The keypad's ✓ on the row's last field logs the set as its Done column does. A logged set
+    /// only closes; one missing what its tracking mode needs stays open, with an error haptic.
+    func onKeyboardDone() -> Bool {
+        guard let delegate = keyboardDelegate else { return true }
+        let exercise = delegate.exercise.wrappedValue
+        switch completionState(trackingMode: exercise.trackingMode, set: delegate.set.wrappedValue, isAssisted: isAssisted(exercise)) {
+        case .completed:
+            return true
+        case .notReady:
+            interactor.playHaptic(option: .error)
+            return false
+        case .ready:
+            onSetComplete(exercise, delegate.set)
+            return true
+        }
+    }
+
     /// The loading bar was tapped: the plate calculator for this exercise's bar or plate-loaded
     /// machine in the workout's gym. Done saves the bar and plates chosen to the gym, and the
     /// keyboard steps on them from then on.
@@ -291,19 +308,6 @@ extension SetTrackerRowPresenter {
         ) { [weak self] updated in
             self?.onGymLoadingChanged(updated)
         })
-    }
-
-    /// Another bar from the keyboard's bar menu, saved to the gym as the plate calculator does.
-    func onBarChosen(_ baseWeightId: String) {
-        guard let delegate = keyboardDelegate, var gym = interactor.workoutGymProfile,
-              let bar = Self.loadableBar(of: delegate.exercise.wrappedValue) else { return }
-        gym.chooseBarWeight(baseWeightId, typeId: bar.equipmentId)
-        interactor.playHaptic(option: .selection)
-        onGymLoadingChanged(gym)
-    }
-
-    private static func loadableBar(of exercise: WorkoutExerciseModel) -> EquipmentRef? {
-        exercise.activeVariation?.resistanceEquipment.first { $0.kind == .loadableBar }
     }
 
     /// Only what the sheet changes, the bar chosen and the plates on, goes onto the gym as it is
@@ -335,7 +339,6 @@ extension SetTrackerRowPresenter {
         let library = interactor.allExercises.first { $0.id == exercise.templateId }
         let gym = gym ?? interactor.workoutGymProfile
         let step = WeightStepper.steps(for: exercise, profile: gym, unit: unit)
-        let bar = Self.loadableBar(of: exercise)
         return SetKeyboardContext(
             unit: unit,
             step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,
@@ -348,9 +351,7 @@ extension SetTrackerRowPresenter {
             previousSessionWeightKg: delegate.lastSet?.weightKg,
             targetWeightKg: delegate.progressionSuggestion?.weightKg,
             targetMinReps: target?.minReps,
-            targetMaxReps: target?.maxReps,
-            barChoices: bar.flatMap { gym?.barChoices(typeId: $0.equipmentId) } ?? [],
-            chosenBarId: bar.flatMap { gym?.loadedBar(typeId: $0.equipmentId)?.loadedBaseWeight?.id }
+            targetMaxReps: target?.maxReps
         )
     }
 }

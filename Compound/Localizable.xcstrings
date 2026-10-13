@@ -9469,16 +9469,6 @@
         }
       }
     },
-    "Cycle bands" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alternar bandas"
-          }
-        }
-      }
-    },
     "Cysteine" : {
       "localizations" : {
         "es" : {
@@ -14189,6 +14179,16 @@
         }
       }
     },
+    "Hide Keyboard" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar teclado"
+          }
+        }
+      }
+    },
     "High" : {
       "localizations" : {
         "es" : {
@@ -14813,6 +14813,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Incluye %1$@%2$@ kcal de tu recuento de pasos reciente"
+          }
+        }
+      }
+    },
+    "Increase weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aumentar peso"
           }
         }
       }
@@ -16260,6 +16270,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerrar sesión"
+          }
+        }
+      }
+    },
+    "Log Set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrar serie"
           }
         }
       }
@@ -18106,16 +18126,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siguiente"
-          }
-        }
-      }
-    },
-    "Next available" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiente disponible"
           }
         }
       }
@@ -21232,26 +21242,6 @@
         }
       }
     },
-    "Prev" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ant."
-          }
-        }
-      }
-    },
-    "Previous" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anterior"
-          }
-        }
-      }
-    },
     "Previous Reference" : {
       "localizations" : {
         "es" : {
@@ -21308,16 +21298,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Valores del entrenamiento anterior"
-          }
-        }
-      }
-    },
-    "Previous, %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anterior, %@"
           }
         }
       }
@@ -24735,6 +24715,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar excesos"
+          }
+        }
+      }
+    },
+    "Show Plates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar discos"
           }
         }
       }
@@ -30510,16 +30500,6 @@
         }
       }
     },
-    "Use %@ bar" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usar la barra de %@"
-          }
-        }
-      }
-    },
     "Use Default" : {
       "localizations" : {
         "es" : {
@@ -31777,16 +31757,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los cambios de peso y repeticiones se aplicarán a todas las series con el mismo peso y repeticiones"
-          }
-        }
-      }
-    },
-    "Weight in %@. %@. %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peso en %1$@. %2$@. %3$@"
           }
         }
       }

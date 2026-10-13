@@ -137,7 +137,7 @@ struct SetKeyboardTextField: UIViewRepresentable {
 
         func textFieldShouldReturn(_ textField: UITextField) -> Bool {
             guard let parent else { return false }
-            if parent.field == .weight { parent.presenter.next() } else { parent.presenter.done() }
+            if parent.presenter.nextField != nil { parent.presenter.next() } else { parent.presenter.done() }
             return false
         }
     }

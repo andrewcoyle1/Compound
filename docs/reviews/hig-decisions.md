@@ -90,7 +90,7 @@ which work package builds each one.
 
 | # | Decision | Outcome | Build now? |
 |---|---|---|---|
-| T1 | Done on the set keyboard | **Reverses 5d: Done only closes the keypad.** The bottom Log button is always visible above the keypad and is the one way to log. The keypad never logs an upcoming row. | WP-F |
+| T1 | Done on the set keyboard | **Reverses 5d: Done only closes the keypad.** The bottom Log button is always visible above the keypad and is the one way to log. The keypad never logs an upcoming row. *Amended 13 Oct 2026 by the owner:* the keypad only moves forward (no Prev; an earlier field is a tap away). Its last key is Next → until the row's last field, where it is ✓, which logs that set as its Done column does; a set that cannot be logged keeps the keypad open. A hide key on the 1 2 3 row closes without logging. | WP-F |
 | T2 | Pause, Finish and Notes | **5b and README 3 amended:** visible toolbar items at regular width (iPad); the menu stays on compact width. The bottom Finish button goes through the "Finish Workout" notes sheet, so finishing is always confirmed. | WP-E |
 | T3 | Exercise Auto-Next | **Stay on a finished exercise during its rest**; advance on Next or when the rest ends; auto-advance skips exercises already complete, as the log button's Next does. | WP-G |
 | T4 | The bottom button during a rest | **Skip Rest stays primary** (rejected: "Log stays primary during rest"). Its hazards are fixed instead: taps ignored for 0.4 s after the slot's action changes, a 1 s grace when a rest expires, no rest after the workout's final set, Undo after every log. | WP-E, WP-F, WP-G |

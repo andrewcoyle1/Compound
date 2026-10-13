@@ -102,4 +102,23 @@ struct ProgramExerciseCoverageTests {
     func previousMatches(sheet: String, id: String) {
         #expect(matchedId(sheet) == id)
     }
+
+    /// Names that used to fall on the wrong lift: a curl, pec deck, pulldown, squat or RDL that
+    /// only shared words with it.
+    @Test("Names that used to match the wrong lift match the right one", arguments: [
+        ("Bayesian Cable Curl", "system-single-arm-bayesian-curl"),
+        ("Seated Super-Bayesian High Cable Curl", "system-seated-high-cable-curl"),
+        ("Cable Wrist Curl", "system-cable-wrist-curl"),
+        ("Concentration Cable Curl", "system-cable-concentration-curl"),
+        ("Reverse Pec Deck", "system-reverse-fly"),
+        ("1-Arm Reverse Pec Deck", "system-single-arm-reverse-pec-deck"),
+        ("Lat Pulldown (Wide Grip)", "system-wide-grip-cable-lat-pulldown"),
+        ("Lean-Back Lat Pulldown", "system-overhand-grip-cable-lat-pulldown"),
+        ("Dual-Handle Lat Pulldown", "system-cable-neutral-grip-lat-pulldown"),
+        ("Smith Machine Split Squat", "system-smith-machine-static-lunge"),
+        ("DB RDL", "system-dumbbell-romanian-deadlift")
+    ])
+    func formerlyWrong(sheet: String, id: String) {
+        #expect(matchedId(sheet) == id)
+    }
 }

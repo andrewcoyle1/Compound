@@ -78,11 +78,14 @@ struct ExerciseNameMatcher {
     }
 
     /// The library name the sheet's name only adds words to, the longest such name when it is the
-    /// only one of its length. A one-word library name is never taken: "Row" would fit every row.
+    /// only one of its length. A one-word library name is never taken: "Row" would fit every row,
+    /// and neither is one the added words make a different lift ("Cable Wrist Curl" is not
+    /// "Cable Curl").
     private func longestContained(in words: Set<String>) -> ExerciseModel? {
         var best: [(count: Int, exercise: ExerciseModel)] = []
         for entry in entries {
-            for form in entry.forms where form.count >= 2 && form.isSubset(of: words) {
+            for form in entry.forms where form.count >= 2 && form.isSubset(of: words)
+                && !Self.changesTheLift(words.subtracting(form), of: entry.exercise) {
                 best.append((form.count, entry.exercise))
             }
         }
@@ -127,6 +130,25 @@ struct ExerciseNameMatcher {
     private static let qualifiers: Set<String> = [
         "seated", "standing", "kneeling", "lying", "cable", "machine", "lever", "pin", "loaded",
         "plate", "smith", "degree", "45"
+    ]
+
+    /// Whether words a sheet adds to a library name make it a different lift: a word in `defining`,
+    /// or an implement the exercise's own name contradicts ("DB RDL" is not the barbell one).
+    private static func changesTheLift(_ added: Set<String>, of exercise: ExerciseModel) -> Bool {
+        guard added.isDisjoint(with: defining) else { return true }
+        let named = words(exercise.name).intersection(implements)
+        let addedImplements = added.intersection(implements)
+        return !named.isEmpty && !addedImplements.isEmpty && named.isDisjoint(with: addedImplements)
+    }
+
+    /// Grips, attachments and variants that name their own lift.
+    private static let defining: Set<String> = [
+        "bayesian", "concentration", "wrist", "reverse", "split", "wide", "close", "neutral", "dual",
+        "single", "preacher", "spider"
+    ]
+
+    private static let implements: Set<String> = [
+        "dumbbell", "barbell", "kettlebell", "cable", "machine", "smith", "ez", "band", "lever", "trap"
     ]
 
     private static let expansions: [(String, String)] = [

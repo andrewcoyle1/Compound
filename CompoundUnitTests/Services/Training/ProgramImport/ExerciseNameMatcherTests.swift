@@ -107,6 +107,23 @@ struct ExerciseNameMatcherTests {
         #expect(matched("Seated Leg Curl") == "Leg Curl")
     }
 
+    /// Added words that name a variant, or an implement the library name contradicts, are a
+    /// different lift.
+    @Test("Test Added Words That Change The Lift Match Nothing")
+    func testContainedRefusesADifferentLift() {
+        let matcher = ExerciseNameMatcher(library: [
+            ProgramFixtures.exercise("Cable Curl"),
+            ProgramFixtures.exercise("Pec Deck"),
+            ProgramFixtures.exercise("Barbell Romanian Deadlift", alternateNames: ["Romanian Deadlift"]),
+            ProgramFixtures.exercise("Bulgarian Split Squat")
+        ])
+        for name in ["Cable Wrist Curl", "Concentration Cable Curl", "Bayesian Cable Curl", "Reverse Pec Deck", "DB RDL"] {
+            #expect(matcher.match(name) == nil, "\(name)")
+        }
+        #expect(matcher.match("Snatch-Grip RDL")?.name == "Barbell Romanian Deadlift")
+        #expect(matcher.match("DB Bulgarian Split Squat")?.name == "Bulgarian Split Squat")
+    }
+
     @Test("Test Parentheticals Are Optional Qualifiers On Either Side")
     func testParentheticals() {
         let matcher = ExerciseNameMatcher(library: [

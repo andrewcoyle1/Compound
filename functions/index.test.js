@@ -47,7 +47,7 @@ test("every callable enforces App Check and requires auth", () => {
     assert.match(src, /const STRAVA_CALLABLE_OPTIONS = \{ \.\.\.CALLABLE_OPTIONS,/);
     assert.match(src, /const COACH_CALLABLE_OPTIONS = \{\s*\.\.\.CALLABLE_OPTIONS,/);
     assert.equal((src.match(/= onCall\(/g) ?? []).length, callables.length, "every onCall is in the shape this test reads");
-    assert.equal(callables.length, 13, "expected thirteen callables");
+    assert.equal(callables.length, 12, "expected twelve callables");
     for (const [, name, options, firstLine] of callables) {
         assert.match(options.trim(), /^(STRAVA_|COACH_)?CALLABLE_OPTIONS$/, `${name} must use CALLABLE_OPTIONS`);
         assert.match(firstLine, /requireAuth\(request\)/, `${name} must call requireAuth first`);
@@ -56,7 +56,7 @@ test("every callable enforces App Check and requires auth", () => {
 
 test("each deployed callable rejects an unauthenticated request before doing any work", async () => {
     const fns = await import("./index.js");
-    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "imageGenerate", "foodSearch", "removeFollower", "stravaToken",
+    for (const name of ["foodAnalyze", "mealDescribe", "nutritionLabelAnalyze", "imageGenerate", "foodSearch", "removeFollower",
         "stravaConnect", "stravaAccessToken", "stravaConnection", "stravaDisconnect", "coachChat"]) {
         await assert.rejects(fns[name].run({ data: {}, auth: null }), { code: "unauthenticated" }, name);
     }

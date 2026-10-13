@@ -917,27 +917,6 @@ export const sessionPage = onRequest({ region: REGION }, async (req, res) => {
 // short-lived access token when it uploads; the refresh token and the client secret never leave
 // the server. A webhook keeps imported activities current and drops a revoked connection.
 
-// Older builds exchange and refresh here and keep the tokens themselves. Unchanged for them;
-// remove once no build older than the server-held tokens is in use.
-export const stravaToken = onCall(STRAVA_CALLABLE_OPTIONS, async (request) => {
-    requireAuth(request);
-    const form = stravaTokenForm(request.data, STRAVA_CLIENT_SECRET.value());
-    if (!form) {
-        throw new HttpsError("invalid-argument", "clientId and either code or refreshToken are required");
-    }
-    const response = await fetch(STRAVA_TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(form),
-    });
-    if (!response.ok) {
-        console.warn(`Strava token ${form.grant_type} failed: ${response.status}`);
-        throw new HttpsError(stravaTokenErrorCode(response.status), `Strava returned ${response.status}`);
-    }
-    const body = await response.json();
-    return { access_token: body.access_token, refresh_token: body.refresh_token, expires_at: body.expires_at };
-});
-
 const stravaConnections = () => getFirestore().collection("strava_connections");
 const stravaActivities = (uid) => getFirestore().collection("users").doc(uid).collection("strava_activities");
 

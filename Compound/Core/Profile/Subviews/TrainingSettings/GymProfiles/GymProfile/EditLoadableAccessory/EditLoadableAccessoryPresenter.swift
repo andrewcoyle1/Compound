@@ -8,18 +8,23 @@ class EditLoadableAccessoryPresenter {
     private let router: EditLoadableAccessoryRouter
     
     private let loadableAccessoryBinding: Binding<LoadableAccessoryEquipment>
-    var selectedUnit: ExerciseWeightUnit
-    
+
+    /// Edited in place: the unit picker used to set a copy that was never written back.
     var loadableAccessory: LoadableAccessoryEquipment {
         get { loadableAccessoryBinding.wrappedValue }
         set { loadableAccessoryBinding.wrappedValue = newValue }
+    }
+
+    /// What the accessory weighs empty; never below nothing.
+    var baseWeight: Double {
+        get { loadableAccessory.baseWeight }
+        set { loadableAccessory.baseWeight = max(newValue, 0) }
     }
     
     init(interactor: EditLoadableAccessoryInteractor, router: EditLoadableAccessoryRouter, loadableAccessoryBinding: Binding<LoadableAccessoryEquipment>) {
         self.interactor = interactor
         self.router = router
         self.loadableAccessoryBinding = loadableAccessoryBinding
-        self.selectedUnit = loadableAccessoryBinding.wrappedValue.unit
     }
     
     func onViewAppear() {

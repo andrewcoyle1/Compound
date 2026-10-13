@@ -6,6 +6,8 @@
 //
 
 @MainActor
-protocol WorkoutExerciseEquipmentSheetRouter: GlobalRouter { }
+protocol WorkoutExerciseEquipmentSheetRouter: GlobalRouter {
+    func showGymProfileView(delegate: GymProfileDelegate)
+}
 
 extension CoreRouter: WorkoutExerciseEquipmentSheetRouter { }

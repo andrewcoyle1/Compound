@@ -38,9 +38,11 @@ enum WorkoutSessionHighlights {
             guard records.count < limit,
                   let now = best(exercise.templateId, mode: exercise.trackingMode, in: [session]),
                   let before = best(exercise.templateId, mode: exercise.trackingMode, in: earlier),
-                  now > before
+                  (now.value, now.reps) > (before.value, before.reps)
             else { continue }
-            records.append(PersonalRecord(exerciseName: exercise.name, detail: describe(now, mode: exercise.trackingMode)))
+            let unit = exercise.loggedWorkingSets.lazy.compactMap(\.weightUnit).first ?? exercise.weightUnit ?? session.authorWeightUnit
+            // Beaten on the total; described as the set reads, without a machine base kept out of it.
+            records.append(PersonalRecord(exerciseName: exercise.name, detail: describe((now.value, now.reps), mode: exercise.trackingMode, unit: unit)))
         }
         return records
     }
@@ -97,10 +99,16 @@ enum WorkoutSessionHighlights {
     /// The best completed working set of one exercise across `sessions`, as a pair compared
     /// value first, then reps. Weighted lifts reuse the exercise detail screen's heaviest-set rule
     /// (weight, then reps at that weight); every other mode takes the largest reps, time or distance.
-    private static func best(_ templateId: String, mode: TrackingMode, in sessions: [WorkoutSessionModel]) -> (value: Double, reps: Int)? {
+    /// A best set, compared on `value` then `reps`.
+    private struct Mark {
+        let value: Double
+        let reps: Int
+    }
+
+    private static func best(_ templateId: String, mode: TrackingMode, in sessions: [WorkoutSessionModel]) -> Mark? {
         if mode == .weightReps {
             let stats = ExerciseModelDetailStats.make(from: sessions, templateId: templateId)
-            return stats.heaviestSetKg > 0 ? (stats.heaviestSetKg, stats.repsAtHeaviestSet) : nil
+            return stats.heaviestSetKg > 0 ? Mark(value: stats.heaviestSetKg, reps: stats.repsAtHeaviestSet) : nil
         }
         let values = sessions
             .filter { $0.endedAt != nil }
@@ -117,13 +125,14 @@ enum WorkoutSessionHighlights {
                 }
             }
         guard let top = values.max(), top > 0 else { return nil }
-        return (top, 0)
+        return Mark(value: top, reps: 0)
     }
 
-    private static func describe(_ mark: (value: Double, reps: Int), mode: TrackingMode) -> String {
+    /// A weighted record in the unit the author lifted it in (`WorkoutSetModel.weightUnit`).
+    private static func describe(_ mark: (value: Double, reps: Int), mode: TrackingMode, unit: ExerciseWeightUnit) -> String {
         switch mode {
         case .weightReps:
-            return "\(mark.value.formatted(.number.precision(.fractionLength(0...1)))) kg × \(mark.reps)"
+            return "\(Format.weight(kg: mark.value, unit: unit)) × \(mark.reps)"
         case .repsOnly:
             return Format.reps(Int(mark.value))
         case .timeOnly:

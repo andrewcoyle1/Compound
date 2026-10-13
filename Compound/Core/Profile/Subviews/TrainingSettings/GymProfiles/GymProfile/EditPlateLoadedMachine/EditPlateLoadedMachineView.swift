@@ -13,6 +13,11 @@ struct EditPlateLoadedMachineView: View {
                 }
             }
             pickerSection
+            Section {
+                Toggle("Enter plates only", isOn: $presenter.plateLoadedMachine.excludesBaseFromLoad)
+            } footer: {
+                Text("Sets are entered and shown as the plates loaded. The machine's weight is still added to what is recorded.")
+            }
         }
         .navigationTitle(presenter.plateLoadedMachine.name)
         .navigationBarTitleDisplayMode(.inline)

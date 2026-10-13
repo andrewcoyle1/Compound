@@ -252,3 +252,44 @@ plan). Firestore rules and Cloud Functions unaffected (nothing server-side reads
   equipment sheet, exercise save and exercise detail (which printed ids) name refs through
   `CoreInteractor.allEquipmentTypes` and `[AnyEquipment].name(for:)`. New `GymCustomMachinesTests`
   and `AddGymMachinePresenterTests`.
+- 10 Oct 2026: **Audit fixes** (`fix/audit-oct10`, from
+  `docs/reviews/2026-10-10-equipment-variation-progression-audit.md`).
+  - **Resolver.** Plates beside a bar or plate-loaded machine are never the load. `PlateCalculator`
+    is greedy first, then a bounded subset sum in thousandths, so plates in the other unit and
+    non-canonical sets (lb bumpers) load and round, and a total beyond the plates' counts clamps.
+    A stack's top is its top pin. Ties round down everywhere. Assisted grids mirror the real pins.
+    A landmine bar loads one sleeve. `availablePlates` uses the unit the plates are listed in, as
+    the plate calculator shows them.
+  - **Session start.** The planned session takes the template's gym (else the workout's) and
+    stamps `gymProfileId`. Each exercise starts on `SessionLoadChoice.variationId` (last time's
+    variation in this gym, else the first the gym can do, else the first), and its weights are
+    entered in `SessionLoadChoice.weightUnit`: the user's chosen unit for the exercise, else the
+    unit the equipment is labelled in (`WeightStepper.equipmentUnit`), else the app-wide one.
+    That is stored on the session exercise (`weightUnit`) and stamped on each set as it is logged
+    (`WorkoutSetModel.weightUnit`), with `loadCount` 2 for a dumbbell in each hand. Templates use
+    the library's current exercise. Prefill, warm-ups and planned drops round through the chosen
+    variation. Changing variation mid-session re-rounds the open sets and reloads suggestions and
+    the Prev column.
+  - **New gyms** for a pound user switch on and choose a 45 lb barbell; for a kilogram user, every
+    stack machine gets a kilogram stack switched on in place of its pound one.
+  - **Plate Calculator.** Done lays only the bar choice and plates onto the gym as it is now; a
+    failed save puts the workout back on its old gym. With every plate off, the loading bar and
+    sheet still open.
+- 10–11 Oct 2026: **Tracker follow-ups** (`fix/audit-oct10`), each on TestFlight from a local archive.
+  - **Equipment from the workout.** The card's Equipment sheet has ⋯ on each variation, opening
+    the gym profile scoped to that variation's equipment (`GymProfileDelegate.equipment`); a save
+    re-fits the exercise. The keyboard's bar weight is a menu of the gym's bars
+    (`GymProfileModel.barChoices(typeId:)`).
+  - **Machine base.** `PlateLoadedMachine.excludesBaseFromLoad` ("Enter plates only", on by
+    default, decodes as on): the set stores the total, `WorkoutSetModel.machineBaseKg` the base, and
+    every display reads `loadKg`. Records compare totals and describe loads. Not changed: sets from
+    before it, the coach and charts (totals), the plate calculator's subtitle (total).
+  - **Per side.** A weight-per-side exercise's column reads "kg/side".
+  - **Correction bar.** The set correction left the set table for a bottom `safeAreaBar`
+    (`WorkoutCorrectionBar`) shown only while a rest runs; the rest line stays in the table.
+  - **Plates.** The "Plates: …" line under the current row is gone; the keyboard's loading bar
+    shows the breakdown live.
+  - **Notes.** One sheet with Session (this exercise, this workout), Exercise (pinned) and
+    Mesocycle tabs; the notes are cards under the sets. The mesocycle note is the plan's notes on
+    that slot of that day, written back through `Mesocycle.settingNote` using the new
+    `WorkoutExerciseModel.planSlotId`; outside a mesocycle the plan's notes show read-only.

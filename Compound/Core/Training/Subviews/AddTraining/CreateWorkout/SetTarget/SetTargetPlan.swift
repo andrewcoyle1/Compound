@@ -12,7 +12,7 @@ import Foundation
 enum SetTargetPlan {
 
     /// The kinds the editor offers, in its picker's order. `failure` is not among them: a template
-    /// saved before AMRAP existed shows its failure sets as AMRAP and writes `amrap` once edited.
+    /// saved before `amrap` existed shows its failure sets as one and writes `amrap` once edited.
     static let kinds: [SetTargetSetType] = [.standard, .amrap, .myo, .restPause, .cluster, .drop, .partials, .stretch, .hold]
 
     /// How much lighter each drop can be than the piece before it, in per cent.
@@ -28,7 +28,7 @@ enum SetTargetPlan {
     static func title(for type: SetTargetSetType) -> String {
         switch type {
         case .standard: return String(localized: "Standard")
-        case .failure, .amrap: return String(localized: "AMRAP")
+        case .failure, .amrap: return String(localized: "Failure")
         case .myo: return String(localized: "Myo-reps")
         case .restPause: return String(localized: "Rest-pause")
         case .cluster: return String(localized: "Cluster")
@@ -39,13 +39,13 @@ enum SetTargetPlan {
         }
     }
 
-    /// The chip after the set number: the kind, and an AMRAP's target as "AMRAP 8+". A standard set
+    /// The chip after the set number: the kind, and a failure set's target as "Failure 8+". A standard set
     /// has none.
     static func chip(for target: SetTarget) -> String? {
         switch target.setType {
         case .standard: return nil
         case .failure, .amrap:
-            return target.amrapTargetReps.map { String(localized: "AMRAP \($0)+") } ?? title(for: target.setType)
+            return target.amrapTargetReps.map { String(localized: "Failure \($0)+") } ?? title(for: target.setType)
         case .myo, .restPause, .cluster, .drop, .partials, .stretch, .hold: return title(for: target.setType)
         }
     }

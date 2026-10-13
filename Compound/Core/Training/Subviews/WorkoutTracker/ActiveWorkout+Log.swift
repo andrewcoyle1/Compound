@@ -52,6 +52,7 @@ extension ActiveWorkout {
         }
 
         exercises[exerciseIndex].sets[setIndex].completedAt = now
+        exercises[exerciseIndex].sets[setIndex] = exercises[exerciseIndex].stamping(exercises[exerciseIndex].sets[setIndex])
         var logged = session
         logged.updateExercises(exercises)
 

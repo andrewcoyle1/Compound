@@ -2,10 +2,10 @@
 //  InlineRestTimerRow.swift
 //  Compound
 //
-//  The line of the set table under the set just logged: the correction row. It says what was
-//  logged, takes a rep off or puts one on, records reps in reserve and undoes the log; under that,
-//  the rest the set earns fills a bar beside its time, then reads Ready. A rest that followed
-//  another exercise's set draws the rest line alone, at the top of the table.
+//  The rest line under the set just logged: the rest the set earns fills a bar beside its time,
+//  then reads Ready. A rest that followed another exercise's set draws it at the top of the table.
+//  With a correction, the same view is the bar over the log button while the rest runs: what was
+//  logged, a rep off or on, reps in reserve and Undo (`WorkoutCorrectionBar`).
 //
 
 import SwiftUI

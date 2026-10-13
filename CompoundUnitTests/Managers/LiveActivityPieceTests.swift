@@ -126,7 +126,10 @@ struct LiveActivityPieceTests {
         #expect(LiveActivityManager.kind(of: sets[1], in: sets) == expected)
         #expect(LiveActivityManager.kind(of: sets[0], in: sets) == expected)
         #expect(expected.label == label)
-        #expect(LiveActivityManager.piece(of: sets[1], in: sets) == SetPiece(index: 2, count: 2, isDrop: false))
+        let piece = LiveActivityManager.piece(of: sets[1], in: sets)
+        #expect(piece == SetPiece(index: 2, count: 2, isDrop: false, technique: expected))
+        // Named as itself, not "Mini-set 1 of 1".
+        #expect(piece?.label == label)
         // The set is done once its piece is.
         #expect(LiveActivityManager.countingPieces([row("s1", index: 1, kind: kind, done: true), sets[1]])[0].completedAt == nil)
     }

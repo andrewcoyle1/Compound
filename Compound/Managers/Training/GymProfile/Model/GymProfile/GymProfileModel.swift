@@ -35,7 +35,7 @@ struct GymProfileModel: DataSyncModelProtocol {
         authorId: String,
         name: String = "",
         imageUrl: String? = nil,
-        icon: String = "dumbell",
+        icon: String = "dumbbell",
         dateCreated: Date = Date.now,
         dateModified: Date = Date.now,
         deletedAt: Date? = nil,

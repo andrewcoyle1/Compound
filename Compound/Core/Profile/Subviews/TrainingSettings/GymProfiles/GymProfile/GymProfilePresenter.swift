@@ -22,6 +22,9 @@ class GymProfilePresenter {
     /// the editor, so edits made there save as they happen.
     private(set) var isEditorPushed = false
     private var coveredSave: Task<Void, Never>?
+    /// Only these items are listed: one variation's equipment (`GymProfileDelegate.equipment`).
+    private let scope: Set<EquipmentRef>?
+    private let onSaved: (@MainActor (GymProfileModel) -> Void)?
     var searchQuery: String = ""
 
     var selectedPhotoItem: PhotosPickerItem?
@@ -36,10 +39,18 @@ class GymProfilePresenter {
         searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
-    init(interactor: GymProfileInteractor, router: GymProfileRouter, gymProfile: GymProfileModel) {
+    init(
+        interactor: GymProfileInteractor,
+        router: GymProfileRouter,
+        gymProfile: GymProfileModel,
+        scope: Set<EquipmentRef>? = nil,
+        onSaved: (@MainActor (GymProfileModel) -> Void)? = nil
+    ) {
         self.interactor = interactor
         self.router = router
         self.gymProfile = gymProfile
+        self.scope = scope
+        self.onSaved = onSaved
     }
     
     func onViewAppear() {
@@ -144,6 +155,7 @@ class GymProfilePresenter {
                 interactor.trackEvent(event: Event.saveGymProfileStart)
                 try await interactor.saveGymProfile(profile: profile, image: nil)
                 interactor.trackEvent(event: Event.saveGymProfileSuccess)
+                onSaved?(profile)
                 if confirms { interactor.playHaptic(option: .success) }
                 onComplete()
             } catch {
@@ -188,7 +200,8 @@ class GymProfilePresenter {
             let item = items[$0]
             let matchesQuery = query.isEmpty || item.name.localizedCaseInsensitiveContains(query)
             let matchesFilter = filter == .all || item.isActive
-            return matchesQuery && matchesFilter
+            let inScope = scope?.contains(item.equipmentRef) ?? true
+            return matchesQuery && matchesFilter && inScope
         }
         let sortedIndices = sortedIndicesByName(items: items, indices: indices)
         return sortedIndices.map { binding(for: keyPath, id: items[$0].id, fallback: items[$0]) }

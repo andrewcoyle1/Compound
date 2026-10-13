@@ -63,7 +63,7 @@ extension ActiveWorkout {
             let pieces = subSets(of: set.id, in: exercise.sets).filter { $0.side == set.side }
             let first = planFigures(set, unit: unit, trackingMode: exercise.trackingMode)
             if set.kind == .amrap, let target = set.targetReps {
-                return String(localized: "Set \(number) is AMRAP, target \(target)+.")
+                return String(localized: "Set \(number) is to failure, target \(target)+.")
             }
             let drops = pieces.filter { $0.subSetKind == .drop }
             if !drops.isEmpty {
@@ -116,7 +116,7 @@ extension ActiveWorkout {
 
     /// A row's weight in kilograms, when it has one worth showing.
     private static func weightOnly(_ set: WorkoutSetModel, trackingMode: TrackingMode) -> Double? {
-        guard trackingMode == .weightReps, let weightKg = set.weightKg, weightKg != 0 else { return nil }
+        guard trackingMode == .weightReps, let weightKg = set.loadKg, weightKg != 0 else { return nil }
         return weightKg
     }
 

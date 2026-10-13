@@ -145,15 +145,16 @@ struct ExerciseModelCodableAndProtocolTests {
 
     /// A case renamed without a migration would land here: the raw value no longer matches, and the
     /// whole exercise fails to decode rather than losing one field.
-    @Test("Test Decoding Fails On An Unknown Enum Value")
+    /// A metric a later build added is skipped, not the whole exercise: an exercise is stored
+    /// inside every template that uses it.
+    @Test("Test Decoding Skips An Unknown Enum Value")
     func testDecodingFailsOnAnUnknownEnumValue() throws {
         var json = minimalJSON
         json["trackable_metrics"] = ["weight", "notAMetric"]
         let data = try JSONSerialization.data(withJSONObject: json)
 
-        #expect(throws: DecodingError.self) {
-            try decoder().decode(ExerciseModel.self, from: data)
-        }
+        let model = try decoder().decode(ExerciseModel.self, from: data)
+        #expect(model.trackableMetrics == [.weight])
     }
 
     // MARK: - Image URL

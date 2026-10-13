@@ -84,10 +84,12 @@ enum ExerciseOneRMAggregator {
         return weightKg * (1 + toFailure / 30)
     }
 
-    /// One logged set's estimate. A weight with no reps typed reads as a single, as it always has.
+    /// One logged set's estimate. A set with no reps, or none done, has none: read as a single,
+    /// a failed attempt corrected to 0 reps became a one-rep max and a record.
     static func estimated1RM(of set: WorkoutSetModel) -> Double? {
-        guard let weight = set.weightKg, weight > 0 else { return nil }
-        return estimated1RM(weightKg: weight, reps: max(1, set.reps ?? 1), rpe: set.rpe)
+        // The load, as the set is shown: a machine's base kept out of it stays out of its 1RM.
+        guard let weight = set.loadKg, weight > 0, let reps = set.reps, reps >= 1 else { return nil }
+        return estimated1RM(weightKg: weight, reps: reps, rpe: set.rpe)
     }
 
     /// The load to put on the bar for `reps` with `reserve` reps left, from a one-rep max: Epley

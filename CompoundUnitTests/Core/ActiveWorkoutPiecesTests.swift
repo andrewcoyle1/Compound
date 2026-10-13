@@ -114,7 +114,7 @@ struct ActiveWorkoutPiecesTests {
         sets[1].completedAt = nil
 
         #expect(ActiveWorkout.planSummary(for: exercise(sets), unit: .kilograms)
-            == "Set 3 is a drop set from your plan: 100 × 8, then 80 and 64 to failure, no rest between. Set 4 is AMRAP, target 8+.")
+            == "Set 3 is a drop set from your plan: 100 × 8, then 80 and 64 to failure, no rest between. Set 4 is to failure, target 8+.")
     }
 
     @Test("Test Drops With Reps And Mini-Sets")
@@ -135,7 +135,7 @@ struct ActiveWorkoutPiecesTests {
             set("l2", kind: .amrap, side: .left, target: 10), set("r2", kind: .amrap, side: .right, target: 10)
         ]
 
-        #expect(ActiveWorkout.planSummary(for: exercise(sets), unit: .kilograms) == "Set 2 is AMRAP, target 10+.")
+        #expect(ActiveWorkout.planSummary(for: exercise(sets), unit: .kilograms) == "Set 2 is to failure, target 10+.")
     }
 
     @Test("Test No Plan, Or One Already Begun, Says Nothing")
@@ -147,7 +147,7 @@ struct ActiveWorkoutPiecesTests {
         #expect(ActiveWorkout.planSummary(for: exercise(dropSet), unit: .kilograms) == nil)
         // A warm-up logged is not.
         let warmedUp = [set("w1", warmup: true, logged: true), set("s1", kind: .amrap, target: 8)]
-        #expect(ActiveWorkout.planSummary(for: exercise(warmedUp), unit: .kilograms) == "Set 1 is AMRAP, target 8+.")
+        #expect(ActiveWorkout.planSummary(for: exercise(warmedUp), unit: .kilograms) == "Set 1 is to failure, target 8+.")
     }
 
     // MARK: - WP-P2 partials, stretch, hold

@@ -16,13 +16,9 @@ struct PlateCalculatorDelegate {
     let unit: ExerciseWeightUnit
     /// The set's weight in `unit`, or nil when none is entered yet.
     let total: Double?
+    /// A plate-loaded machine's base kept out of the set's load, in `unit` (`WorkoutSetModel.machineBaseKg`).
+    var machineBase: Double = 0
     let onSave: @MainActor (GymProfileModel) -> Void
-}
-
-/// One bar the gym could load, for the bar picker.
-struct BarChoice: Identifiable, Equatable {
-    let id: String
-    let title: String
 }
 
 @Observable
@@ -46,7 +42,8 @@ final class PlateCalculatorPresenter {
 
     /// "70 kg", the set's weight, under the title.
     var subtitle: String? {
-        delegate.total.map { "\(WeightStepper.format($0)) \(unit.abbreviation)" }
+        // The load, as the set shows it; the loading below works from the total.
+        delegate.total.map { "\(WeightStepper.format(((($0 - delegate.machineBase) * 1000).rounded()) / 1000)) \(unit.abbreviation)" }
     }
 
     /// What the keyboard steps on with the gym as edited so far.
@@ -54,9 +51,10 @@ final class PlateCalculatorPresenter {
         WeightStepper.steps(for: [delegate.equipment], profile: gym, unit: unit)
     }
 
+    /// With every plate switched off there is still a bar, and anything over it is not loadable.
     var result: PlateCalculator.Result? {
         let step = step
-        guard step.isPlateLoaded, let base = step.baseWeight, let total = delegate.total else { return nil }
+        guard let base = step.baseWeight, let total = delegate.total else { return nil }
         return PlateCalculator.load(total: total, bar: base, plates: step.plates, sleeves: step.sleeves)
     }
 
@@ -79,11 +77,7 @@ final class PlateCalculatorPresenter {
     /// The bars the gym has switched on for this exercise, lightest first. Empty on a
     /// plate-loaded machine, whose base is fixed.
     var barChoices: [BarChoice] {
-        guard delegate.equipment.kind == .loadableBar, let bar = gym.loadedBar(typeId: delegate.equipment.equipmentId) else { return [] }
-        return bar.baseWeights
-            .filter(\.isActive)
-            .sorted { $0.kilograms < $1.kilograms }
-            .map { BarChoice(id: $0.id, title: "\(WeightStepper.format($0.baseWeight)) \($0.unit.abbreviation)") }
+        delegate.equipment.kind == .loadableBar ? gym.barChoices(typeId: delegate.equipment.equipmentId) : []
     }
 
     var chosenBarId: String? {

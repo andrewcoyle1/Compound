@@ -1,5 +1,5 @@
 //
-//  MicrocycleVariationsPresenterTests.swift
+//  WeeklyTargetsPresenterTests.swift
 //  CompoundUnitTests
 //
 //  How a template exercise's targets vary by week: the summary line, and the screen that adds,
@@ -75,31 +75,31 @@ struct MicrocycleVariationSummaryTests {
 }
 
 @MainActor
-private final class VariationsInteractor: SpyGlobalInteractor, MicrocycleVariationsInteractor, SetTargetInteractor {
+private final class VariationsInteractor: SpyGlobalInteractor, WeeklyTargetsInteractor, SetTargetInteractor {
     var workoutSettings = WorkoutSettings(authorId: "user-1")
     var allExercises: [ExerciseModel] = []
 }
 
 @MainActor
-private final class VariationsRouter: MicrocycleVariationsRouter, SetTargetRouter {
+private final class VariationsRouter: WeeklyTargetsRouter, SetTargetRouter {
     let router: AnyRouter = TestRouting.anyRouter
     private(set) var editors: [SetTargetDelegate] = []
 
     func showSetTargetView(delegate: SetTargetDelegate) { editors.append(delegate) }
     func showSetPlanDetailView(delegate: SetPlanDetailDelegate) { }
     func showExercisesPickerView(delegate: ExercisesPickerDelegate) { }
-    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) { }
+    func showWeeklyTargetsView(delegate: WeeklyTargetsDelegate) { }
 }
 
 @MainActor
-struct MicrocycleVariationsPresenterTests {
+struct WeeklyTargetsPresenterTests {
 
     private final class Changes {
         var last: [MicrocycleSetTargets]?
     }
 
     private struct Screen {
-        let presenter: MicrocycleVariationsPresenter
+        let presenter: WeeklyTargetsPresenter
         let interactor: VariationsInteractor
         let router: VariationsRouter
         let changes: Changes
@@ -116,10 +116,10 @@ struct MicrocycleVariationsPresenterTests {
         let changes = Changes()
         let interactor = VariationsInteractor()
         let router = VariationsRouter()
-        let presenter = MicrocycleVariationsPresenter(
+        let presenter = WeeklyTargetsPresenter(
             interactor: interactor,
             router: router,
-            delegate: MicrocycleVariationsDelegate(exercise: exercise) { changes.last = $0 }
+            delegate: WeeklyTargetsDelegate(exercise: exercise) { changes.last = $0 }
         )
         return Screen(presenter: presenter, interactor: interactor, router: router, changes: changes)
     }
@@ -137,7 +137,7 @@ struct MicrocycleVariationsPresenterTests {
         #expect(added.setTargets.map(\.minReps) == [8, 8])
         #expect(Set(added.setTargets.map(\.id)).isDisjoint(with: baseIds))
         #expect(screen.changes.last?.map(\.fromMicrocycle) == [2])
-        #expect(screen.interactor.trackedEventNames == ["MicrocycleVariationsView_AddVariation"])
+        #expect(screen.interactor.trackedEventNames == ["WeeklyTargetsView_AddVariation"])
     }
 
     @Test("Test The Next Variation Copies The Week Before It")
@@ -247,6 +247,6 @@ struct MicrocycleVariationsPresenterTests {
 
         screen.presenter.onViewAppear()
 
-        #expect(screen.interactor.trackedScreenEventNames == ["MicrocycleVariationsView_Appear"])
+        #expect(screen.interactor.trackedScreenEventNames == ["WeeklyTargetsView_Appear"])
     }
 }

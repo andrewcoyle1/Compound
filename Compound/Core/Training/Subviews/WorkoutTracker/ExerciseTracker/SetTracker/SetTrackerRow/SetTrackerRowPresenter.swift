@@ -20,8 +20,6 @@ class SetTrackerRowPresenter {
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
 
-    var previousLookup: [PreviousSetKey: WorkoutSetModel] = [:]
-
     /// The weight and reps keyboards for this row.
     let keyboard = SetKeyboardPresenter()
     /// The set the keyboard was last opened on, so the plate calculator knows what it is for.
@@ -35,6 +33,7 @@ class SetTrackerRowPresenter {
         self.router = router
         keyboard.playSelectionHaptic = { [interactor] in interactor.playHaptic(option: .selection) }
         keyboard.openPlateCalculator = { [weak self] in self?.onPlateCalculatorPressed() }
+        keyboard.onBarChosen = { [weak self] id in self?.onBarChosen(id) }
     }
     
     /// A left set and its right partner are one set, so swiping either away removes both — a
@@ -93,6 +92,7 @@ class SetTrackerRowPresenter {
                 interactor.playHaptic(option: .error)
                 return
             }
+            set.wrappedValue = exercise.stamping(set.wrappedValue)
             set.wrappedValue.completedAt = Date()
             interactor.playHaptic(option: .success)
             let useRestTimers = interactor.workoutSettings.useRestTimers
@@ -193,7 +193,7 @@ class SetTrackerRowPresenter {
     /// still converted from kg, so a typed 50 lb was stored as 50 kg.
     func getUnitPreference(for exercise: WorkoutExerciseModel) -> (weightUnit: ExerciseWeightUnit, distanceUnit: ExerciseDistanceUnit) {
         let preference = interactor.getPreference(templateId: exercise.templateId)
-        return (weightUnit: preference.weightUnit, distanceUnit: preference.distanceUnit)
+        return (weightUnit: exercise.weightUnit ?? preference.weightUnit, distanceUnit: preference.distanceUnit)
     }
 
     func validateSetData(trackingMode: TrackingMode, set: WorkoutSetModel, isAssisted: Bool = false) -> Bool {
@@ -222,13 +222,6 @@ class SetTrackerRowPresenter {
         if set.completedAt != nil { return .completed }
         return canComplete(trackingMode: trackingMode, set: set, isAssisted: isAssisted) ? .ready : .notReady
     }
-}
-
-/// The line under the set being logged on a bar. `nearestKg` is set when the weight cannot be
-/// loaded, and a tap uses it.
-struct PlateSummary: Equatable {
-    let text: String
-    let nearestKg: Double?
 }
 
 enum SetCompletionState: Equatable {
@@ -284,23 +277,39 @@ extension SetTrackerRowPresenter {
         guard let delegate = keyboardDelegate, let gym = interactor.workoutGymProfile else { return }
         let exercise = delegate.exercise.wrappedValue
         let unit = getUnitPreference(for: exercise).weightUnit
-        let variation = exercise.equipmentVariations.first { $0.id == exercise.chosenVariationId }
-            ?? exercise.equipmentVariations.first
-        guard let equipment = variation?.resistanceEquipment.first(where: {
-            WeightStepper.steps(for: [$0], profile: gym, unit: unit).isPlateLoaded
+        // The bar or machine, plates on or not: with none on, this is where they go back on.
+        guard let equipment = exercise.activeVariation?.resistanceEquipment.first(where: {
+            WeightStepper.steps(for: [$0], profile: gym, unit: unit).baseWeight != nil
         }) else { return }
         let total = delegate.set.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: unit) * 1000).rounded() / 1000 }
         router.showPlateCalculatorView(delegate: PlateCalculatorDelegate(
             gym: gym,
             equipment: equipment,
             unit: unit,
-            total: total
+            total: total,
+            machineBase: delegate.set.wrappedValue.machineBaseKg.map { UnitConversion.convertWeight($0, to: unit) } ?? 0
         ) { [weak self] updated in
             self?.onGymLoadingChanged(updated)
         })
     }
 
-    private func onGymLoadingChanged(_ gym: GymProfileModel) {
+    /// Another bar from the keyboard's bar menu, saved to the gym as the plate calculator does.
+    func onBarChosen(_ baseWeightId: String) {
+        guard let delegate = keyboardDelegate, var gym = interactor.workoutGymProfile,
+              let bar = Self.loadableBar(of: delegate.exercise.wrappedValue) else { return }
+        gym.chooseBarWeight(baseWeightId, typeId: bar.equipmentId)
+        interactor.playHaptic(option: .selection)
+        onGymLoadingChanged(gym)
+    }
+
+    private static func loadableBar(of exercise: WorkoutExerciseModel) -> EquipmentRef? {
+        exercise.activeVariation?.resistanceEquipment.first { $0.kind == .loadableBar }
+    }
+
+    /// Only what the sheet changes, the bar chosen and the plates on, goes onto the gym as it is
+    /// now: the sheet's copy was taken when it opened.
+    private func onGymLoadingChanged(_ edited: GymProfileModel) {
+        let gym = interactor.workoutGymProfile.map { $0.id == edited.id ? $0.takingLoading(from: edited) : edited } ?? edited
         Task {
             do {
                 try await interactor.saveWorkoutGymProfile(gym)
@@ -324,44 +333,25 @@ extension SetTrackerRowPresenter {
         let target = set.isWarmup ? nil : exercise.setTargets.first { $0.setNumber == exercise.workingSetNumber(for: set) }
         // An assisted machine steps below zero, and never above it when the exercise cannot be loaded.
         let library = interactor.allExercises.first { $0.id == exercise.templateId }
-        let step = WeightStepper.steps(for: exercise, profile: gym ?? interactor.workoutGymProfile, unit: unit)
+        let gym = gym ?? interactor.workoutGymProfile
+        let step = WeightStepper.steps(for: exercise, profile: gym, unit: unit)
+        let bar = Self.loadableBar(of: exercise)
         return SetKeyboardContext(
             unit: unit,
             step: library?.isAssisted == true ? step.assisted(bodyweightOnly: library?.isBodyweight == true) : step,
             distanceUnit: units.distanceUnit,
             fields: SetKeyboardField.fields(for: set, trackingMode: exercise.trackingMode),
             showsEffort: interactor.workoutSettings.rirTracking,
+            targetRIR: target?.effectiveRIRTarget,
             lastSetWeightKg: lastSet?.weightKg,
             lastSetReps: lastSet?.reps,
             previousSessionWeightKg: delegate.lastSet?.weightKg,
             targetWeightKg: delegate.progressionSuggestion?.weightKg,
             targetMinReps: target?.minReps,
-            targetMaxReps: target?.maxReps
+            targetMaxReps: target?.maxReps,
+            barChoices: bar.flatMap { gym?.barChoices(typeId: $0.equipmentId) } ?? [],
+            chosenBarId: bar.flatMap { gym?.loadedBar(typeId: $0.equipmentId)?.loadedBaseWeight?.id }
         )
-    }
-
-    /// "Per side: 20 + 10 + 2.5 kg" under the set being logged on a bar ("Plates: …" on a
-    /// single-sleeve machine), from the gym's bar and plates, or "Pin 14 + 2 kg" on a stack with
-    /// add-ons. `nil` for anything else or a set with no weight yet.
-    func plateSummary(exercise: WorkoutExerciseModel, set: WorkoutSetModel) -> PlateSummary? {
-        guard exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 else { return nil }
-        let unit = getUnitPreference(for: exercise).weightUnit
-        let step = WeightStepper.steps(for: exercise, profile: interactor.workoutGymProfile, unit: unit)
-        let total = (UnitConversion.convertWeight(weightKg, to: unit) * 1000).rounded() / 1000
-        if step.stack != nil {
-            return step.stackText(total: total, unit: unit).map { PlateSummary(text: $0, nearestKg: nil) }
-        }
-        guard step.isPlateLoaded, let bar = step.baseWeight else { return nil }
-        switch PlateCalculator.load(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves) {
-        case .loadable(let perSide):
-            return PlateSummary(text: step.plateText(perSide, unit: unit), nearestKg: nil)
-        case .notLoadable:
-            let nearest = PlateCalculator.nearestLoadable(total: total, bar: bar, plates: step.plates, sleeves: step.sleeves)
-            return PlateSummary(
-                text: String(localized: "Not loadable. Use \(WeightStepper.format(nearest)) \(unit.abbreviation)"),
-                nearestKg: UnitConversion.convertWeightToKg(nearest, from: unit)
-            )
-        }
     }
 }
 

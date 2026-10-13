@@ -22,7 +22,12 @@ extension WorkoutTrackerPresenter {
         guard let authorId = interactor.currentUser?.userId,
               let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
 
-        let swap = Self.swapping(workoutSession.exercises[index], to: replacement, authorId: authorId)
+        var swap = Self.swapping(workoutSession.exercises[index], to: replacement, authorId: authorId)
+        swap.replacement.takeLoad(
+            from: replacement,
+            gym: interactor.workoutGymProfile,
+            preference: interactor.getPreference(templateId: replacement.id)
+        )
         var exercises = workoutSession.exercises
         if let kept = swap.kept {
             exercises[index] = kept
@@ -74,7 +79,7 @@ extension WorkoutTrackerPresenter {
                 target.setNumber -= loggedCount
                 return target
             }
-        if targets.isEmpty { targets = [SetTarget(setNumber: 1, setType: .standard)] }
+        if targets.isEmpty { targets = [SetTarget.standard(setNumber: 1)] }
 
         let new = WorkoutExerciseModel(
             id: logged.isEmpty ? old.id : UUID().uuidString,
@@ -89,6 +94,7 @@ extension WorkoutTrackerPresenter {
             equipmentVariations: replacement.equipmentVariations,
             supersetGroupId: old.supersetGroupId,
             planNotes: old.planNotes,
+            planSlotId: old.planSlotId,
             restSeconds: old.restSeconds,
             linkURL: old.linkURL,
             substituteExerciseIds: old.substituteExerciseIds

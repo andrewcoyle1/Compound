@@ -43,12 +43,20 @@ struct WorkoutSettings: DataSyncModelProtocol {
     var amrapRaisesTarget: Bool?
     var raisesAMRAPTarget: Bool { amrapRaisesTarget ?? true }
     /// The AMRAP target at which beating it adds weight instead (and the target goes back to the
-    /// template's). Optional for the same reason; nil reads as 12.
+    /// template's). Optional for the same reason; nil reads as 12. Builds before `amrapAddsWeight`
+    /// stored `Int.max` here to mean never; that reads as 12 too, and as the switch off.
     var amrapAddsWeightAtTarget: Int?
-    var amrapWeightCeiling: Int { amrapAddsWeightAtTarget ?? 12 }
+    var amrapWeightCeiling: Int {
+        amrapAddsWeightAtTarget.flatMap { $0 == Self.legacyNeverAddsWeight ? nil : $0 } ?? 12
+    }
+    /// Whether reaching that target adds weight; off, the target keeps rising. Nil reads as on,
+    /// unless an older build saved off as the unreachable target.
+    var amrapAddsWeight: Bool?
+    var addsWeightAtAMRAPTarget: Bool { amrapAddsWeight ?? (amrapAddsWeightAtTarget != Self.legacyNeverAddsWeight) }
+    private static let legacyNeverAddsWeight = Int.max
     /// The AMRAP rule progression runs, or nil when the set plan or the rule is off.
     var amrapProgression: AMRAPProgression? {
-        plansSets && raisesAMRAPTarget ? AMRAPProgression(ceiling: amrapWeightCeiling) : nil
+        plansSets && raisesAMRAPTarget ? AMRAPProgression(ceiling: addsWeightAtAMRAPTarget ? amrapWeightCeiling : nil) : nil
     }
 
     // MARK: - Rest Timer: Behaviour
@@ -136,6 +144,7 @@ struct WorkoutSettings: DataSyncModelProtocol {
         case smartProgressionAdjustmentMode = "smart_progression_adjustment_mode"
         case amrapRaisesTarget = "amrap_raises_target"
         case amrapAddsWeightAtTarget = "amrap_adds_weight_at_target"
+        case amrapAddsWeight = "amrap_adds_weight"
     }
     
     var eventParameters: [String: Any] {

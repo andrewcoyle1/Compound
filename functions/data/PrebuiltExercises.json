@@ -96,7 +96,8 @@
       "stability": 5,
       "body_weight_contribution": 0,
       "alternate_names": [
-        "Incline Barbell Bench Press"
+        "Incline Barbell Bench Press",
+        "45° Incline Barbell Press"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -241,7 +242,8 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Cable Curl (Straight Bar)",
-        "Straight Bar Cable Curl"
+        "Straight Bar Cable Curl",
+        "EZ-Bar Cable Curl"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -301,7 +303,9 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Straight Bar Pushdown",
-        "Cable Tricep Pushdown (Straight Bar)"
+        "Cable Tricep Pushdown (Straight Bar)",
+        "Triceps Pressdown",
+        "Triceps Pressdown (Bar)"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -381,6 +385,24 @@
           "support_equipment": [
             { "kind": "supportEquipment", "id": "parallel_bars" }
           ]
+        },
+        {
+          "id": "system-chest-dip-v2",
+          "resistance_equipment": [
+            { "kind": "loadableAccessoryEquipment", "id": "loadable_dip_pull-up_belt" }
+          ],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "parallel_bars" }
+          ]
+        },
+        {
+          "id": "system-chest-dip-v3",
+          "resistance_equipment": [
+            { "kind": "bodyWeight", "id": "weighted_vest" }
+          ],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "parallel_bars" }
+          ]
         }
       ],
       "range_of_motion": 4,
@@ -405,7 +427,7 @@
       "image_url": "Dumbbell_InclineFlyChest",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "isolationUpper",
       "laterality": "bilateral",
@@ -447,7 +469,7 @@
       "image_url": "DumbbellBenchPress",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "compoundUpper",
       "laterality": "bilateral",
@@ -489,7 +511,7 @@
       "image_url": "DumbbellSeatedShoulderPress",
       "trackable_metrics": [
         "reps",
-        "weight"
+        "weightPerSide"
       ],
       "type": "compoundUpper",
       "laterality": "bilateral",
@@ -910,7 +932,7 @@
             { "kind": "loadableBar", "id": "barbell" }
           ],
           "support_equipment": [
-            { "kind": "supportEquipment", "id": "squat_rack" }
+            { "kind": "supportEquipment", "id": "squat_stand" }
           ]
         }
       ],
@@ -1121,7 +1143,9 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "One Arm Dumbbell Row",
-        "Single-Arm Dumbbell Row"
+        "Single-Arm Dumbbell Row",
+        "DB Row",
+        "Dumbbell Row"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -1153,7 +1177,8 @@
         {
           "id": "system-t-bar-row-v1",
           "resistance_equipment": [
-            { "kind": "loadableBar", "id": "barbell" }
+            { "kind": "loadableBar", "id": "barbell" },
+            { "kind": "accessoryEquipment", "id": "landmine_attachment_wall_corner" }
           ],
           "support_equipment": []
         },
@@ -1420,7 +1445,7 @@
         {
           "id": "system-lever-incline-hammer-chest-press-v1",
           "resistance_equipment": [
-            { "kind": "plateLoadedMachine", "id": "incline_chest_press_machine" }
+            { "kind": "plateLoadedMachine", "id": "seated_plate-loaded_incline_press_machine" }
           ],
           "support_equipment": []
         }
@@ -1430,7 +1455,8 @@
       "body_weight_contribution": 0,
       "alternate_names": [
         "Incline Hammer Press",
-        "Machine Incline Chest Press"
+        "Machine Incline Chest Press",
+        "45° Incline Machine Press"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -1460,7 +1486,7 @@
         {
           "id": "system-lever-pec-deck-fly-chest-v1",
           "resistance_equipment": [
-            { "kind": "plateLoadedMachine", "id": "pec_deck_machine" }
+            { "kind": "pinLoadedMachine", "id": "pec_deck" }
           ],
           "support_equipment": []
         }
@@ -1642,13 +1668,29 @@
         "biceps": "primary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-wide-grip-pull-up-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "accessoryEquipment", "id": "pull_up_bar" }
+          ]
+        },
+        {
+          "id": "system-wide-grip-pull-up-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "multi-grip_pull-up_bar" }
+          ]
+        }
+      ],
       "range_of_motion": 3,
       "stability": 4,
       "body_weight_contribution": 95,
       "alternate_names": [
         "Overhand Wide Grip Pull-Up",
-        "Overhand Wide Grip Bodyweight Pull-Up"
+        "Overhand Wide Grip Bodyweight Pull-Up",
+        "Pull-Up (Wide Grip)"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -2000,7 +2042,7 @@
       "description": "A chest-supported row on a plate-loaded machine with an overhand grip for the upper back.",
       "image_url": "OverhandGripPlateLoadedRow",
       "trackable_metrics": [
-        "weightPerSide",
+        "weight",
         "reps"
       ],
       "type": "compoundUpper",
@@ -2233,7 +2275,8 @@
       "stability": 5,
       "body_weight_contribution": 0,
       "alternate_names": [
-        "Overhand Grip Pin-Loaded Machine Shoulder Press"
+        "Overhand Grip Pin-Loaded Machine Shoulder Press",
+        "Machine Shoulder Press"
       ],
       "is_system_exercise": true,
       "click_count": 0,
@@ -2352,7 +2395,9 @@
       "range_of_motion": 3,
       "stability": 4,
       "body_weight_contribution": 0,
-      "alternate_names": [],
+      "alternate_names": [
+        "Cable Triceps Kickback"
+      ],
       "is_system_exercise": true,
       "click_count": 0,
       "bookmark_count": 0,
@@ -2376,7 +2421,15 @@
         "obliques": "secondary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-captains-chair-knee-raise-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "supportEquipment", "id": "captains_chair" }
+          ]
+        }
+      ],
       "range_of_motion": 3,
       "stability": 4,
       "body_weight_contribution": 40,
@@ -3542,7 +3595,15 @@
         "obliques": "secondary"
       },
       "is_bodyweight": true,
-      "equipment_variations": [],
+      "equipment_variations": [
+        {
+          "id": "system-ab-wheel-rollout-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            { "kind": "accessoryEquipment", "id": "ab_wheel" }
+          ]
+        }
+      ],
       "range_of_motion": 4,
       "stability": 3,
       "body_weight_contribution": 75,
@@ -3599,6 +3660,3888 @@
       "favourite_count": 0,
       "date_created": 812478674.3576281,
       "date_modified": 812478674.3576281
+    },
+    {
+      "id": "system-single-arm-cable-lat-pulldown",
+      "author_id": "official",
+      "name": "Single Arm Cable Lat Pulldown",
+      "description": "A one-arm pulldown on a cable that stretches and loads each lat on its own.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "compoundUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "upperBack": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-single-arm-cable-lat-pulldown-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-cable-lat-pulldown-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-cable-lat-pulldown-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-cable-lat-pulldown-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "1-Arm Cable Pulldown",
+        "Single-Arm Cable Pulldown"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-45-degree-back-extension",
+      "author_id": "official",
+      "name": "45° Back Extension",
+      "description": "A back extension on a 45° Roman chair that trains the lower back, glutes and hamstrings.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lowerBack": "primary",
+        "glutes": "primary",
+        "hamstrings": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-45-degree-back-extension-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "roman_chair"
+            }
+          ]
+        },
+        {
+          "id": "system-45-degree-back-extension-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "roman_chair"
+            }
+          ]
+        },
+        {
+          "id": "system-45-degree-back-extension-v3",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "roman_chair"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 60,
+      "alternate_names": [
+        "45° Hyperextension"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-bench-dip",
+      "author_id": "official",
+      "name": "Bench Dip",
+      "description": "A dip with the hands on a bench behind you that trains the triceps.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "primary",
+        "frontDelts": "secondary",
+        "chest": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-bench-dip-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 70,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-fly",
+      "author_id": "official",
+      "name": "Cable Fly",
+      "description": "A fly between two cable stacks that keeps tension on the chest through the whole range.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "chest": "primary",
+        "frontDelts": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-fly-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-fly-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Cable Flye",
+        "Cable Crossover",
+        "Standing Cable Fly",
+        "Seated Cable Fly"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-hip-abduction",
+      "author_id": "official",
+      "name": "Cable Hip Abduction",
+      "description": "A standing cable movement sweeping the leg out to the side that targets the outer glutes.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationLower",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "abductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-hip-abduction-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-abduction-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-abduction-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-abduction-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Standing Cable Hip Abduction"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-hip-adduction",
+      "author_id": "official",
+      "name": "Cable Hip Adduction",
+      "description": "A standing cable movement sweeping the leg in across the body that targets the adductors.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationLower",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "adductors": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-hip-adduction-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-adduction-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-adduction-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-cable-hip-adduction-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Standing Cable Hip Adduction"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-lat-pullover",
+      "author_id": "official",
+      "name": "Cable Lat Pullover",
+      "description": "A straight-arm pullover on a high cable that stretches and loads the lats.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-lat-pullover-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-lat-pullover-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-lat-pullover-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-lat-pullover-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Cable Pullover"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-pull-through",
+      "author_id": "official",
+      "name": "Cable Pull-Through",
+      "description": "A hip hinge pulling a low cable through the legs that trains the glutes and hamstrings.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "glutes": "primary",
+        "hamstrings": "secondary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-pull-through-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-pull-through-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-pull-through-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-pull-through-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 60,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-shoulder-press",
+      "author_id": "official",
+      "name": "Cable Shoulder Press",
+      "description": "An overhead press between two low cables that targets the front delts and triceps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "frontDelts": "primary",
+        "sideDelts": "secondary",
+        "triceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-shoulder-press-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-shoulder-press-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-wrist-extension",
+      "author_id": "official",
+      "name": "Cable Wrist Extension",
+      "description": "A palms-down wrist extension against a low cable that trains the forearm extensors.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-wrist-extension-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-extension-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-extension-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-wrist-extension-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-y-raise",
+      "author_id": "official",
+      "name": "Cable Y-Raise",
+      "description": "A raise up and out in a Y shape from low cables that trains the side delts and lower traps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "sideDelts": "primary",
+        "upperBack": "secondary",
+        "rearDelts": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-y-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-y-raise-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-chest-supported-dumbbell-row",
+      "author_id": "official",
+      "name": "Chest-Supported Dumbbell Row",
+      "description": "A row lying face down on an incline bench that trains the upper back and lats without lower-back strain.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperBack": "primary",
+        "lats": "primary",
+        "rearDelts": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-chest-supported-dumbbell-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-chest-supported-dumbbell-row-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "seal_row_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Chest-Supported DB Row",
+        "Incline Chest-Supported DB Row",
+        "Incline Chest-Supported Dumbbell Row"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-chest-supported-machine-row",
+      "author_id": "official",
+      "name": "Chest-Supported Machine Row",
+      "description": "A row on a chest-supported machine that trains the upper back and lats with the torso held still.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperBack": "primary",
+        "lats": "primary",
+        "rearDelts": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-chest-supported-machine-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "chest-supported_pin-loaded_row_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-chest-supported-machine-row-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "chest-supported_plate-loaded_row_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-chest-supported-machine-row-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "chest-supported_plate-loaded_row_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-close-grip-pull-up",
+      "author_id": "official",
+      "name": "Close-Grip Pull-Up",
+      "description": "A bodyweight vertical pull with a narrow overhand grip that trains the lats and mid-back.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "biceps": "primary",
+        "upperBack": "secondary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-close-grip-pull-up-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "pull_up_bar"
+            }
+          ]
+        },
+        {
+          "id": "system-close-grip-pull-up-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "multi-grip_pull-up_bar"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 95,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-copenhagen-hip-adduction",
+      "author_id": "official",
+      "name": "Copenhagen Hip Adduction",
+      "description": "A side plank with the top leg on a bench that trains the adductors as they lift the body.",
+      "trackable_metrics": [
+        "repsPerSide"
+      ],
+      "type": "isolationLower",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "adductors": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-copenhagen-hip-adduction-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 2,
+      "body_weight_contribution": 50,
+      "alternate_names": [
+        "Copenhagen Plank",
+        "Copenhagen Adduction"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-curl",
+      "author_id": "official",
+      "name": "Dumbbell Curl",
+      "description": "A standing curl with a dumbbell in each hand that trains the biceps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Curl",
+        "Dumbbell Biceps Curl",
+        "Standing Dumbbell Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-preacher-curl",
+      "author_id": "official",
+      "name": "Dumbbell Preacher Curl",
+      "description": "A curl with the upper arm braced on a preacher bench that isolates the biceps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-preacher-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "preacher_curl_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Preacher Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-hammer-curl",
+      "author_id": "official",
+      "name": "Dumbbell Hammer Curl",
+      "description": "A neutral-grip curl with dumbbells that trains the brachialis, brachioradialis and biceps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-hammer-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Hammer Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-pullover",
+      "author_id": "official",
+      "name": "Dumbbell Pullover",
+      "description": "A lying pullover with one dumbbell taken back overhead that stretches the lats and chest.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "chest": "secondary",
+        "triceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-pullover-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Lat Pullover",
+        "Dumbbell Lat Pullover"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-lateral-raise",
+      "author_id": "official",
+      "name": "Dumbbell Lateral Raise",
+      "description": "A standing raise out to the sides with a dumbbell in each hand that targets the side delts.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "sideDelts": "primary",
+        "upperTraps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-lateral-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Lateral Raise",
+        "Standing Dumbbell Lateral Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-shrug",
+      "author_id": "official",
+      "name": "Dumbbell Shrug",
+      "description": "A standing shoulder elevation with a dumbbell in each hand that targets the upper traps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperTraps": "primary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-shrug-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Shrug"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-skull-crusher",
+      "author_id": "official",
+      "name": "Dumbbell Skull Crusher",
+      "description": "A lying elbow extension with a dumbbell in each hand that isolates the triceps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-skull-crusher-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Skull Crusher"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-static-lunge",
+      "author_id": "official",
+      "name": "Dumbbell Static Lunge",
+      "description": "A lunge lowered straight down from a fixed split stance holding dumbbells that trains the quads and glutes.",
+      "trackable_metrics": [
+        "weightPerSidePersistent",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "assymetrical",
+      "muscle_groups": {
+        "quads": "primary",
+        "glutes": "primary",
+        "adductors": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-static-lunge-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 85,
+      "alternate_names": [
+        "DB Static Lunge"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-step-up",
+      "author_id": "official",
+      "name": "Dumbbell Step-Up",
+      "description": "A step up onto a box or bench holding dumbbells that trains the quads and glutes one leg at a time.",
+      "trackable_metrics": [
+        "weightPerSidePersistent",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "quads": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-step-up-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "plyometric_boxes"
+            }
+          ]
+        },
+        {
+          "id": "system-dumbbell-step-up-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 2,
+      "body_weight_contribution": 85,
+      "alternate_names": [
+        "DB Step-Up"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-triceps-kickback",
+      "author_id": "official",
+      "name": "Dumbbell Triceps Kickback",
+      "description": "A hinged single-arm dumbbell kickback that isolates the triceps in the shortened position.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-triceps-kickback-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Triceps Kickback"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-walking-lunge",
+      "author_id": "official",
+      "name": "Dumbbell Walking Lunge",
+      "description": "A forward lunge stepping through each rep holding dumbbells that trains the quads and glutes.",
+      "trackable_metrics": [
+        "weightPerSidePersistent",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "assymetrical",
+      "muscle_groups": {
+        "quads": "primary",
+        "glutes": "primary",
+        "adductors": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-walking-lunge-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 2,
+      "body_weight_contribution": 85,
+      "alternate_names": [
+        "DB Walking Lunge",
+        "Walking Lunge"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-wrist-curl",
+      "author_id": "official",
+      "name": "Dumbbell Wrist Curl",
+      "description": "A palms-up wrist curl with dumbbells that trains the forearm flexors.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-wrist-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Wrist Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dumbbell-wrist-extension",
+      "author_id": "official",
+      "name": "Dumbbell Wrist Extension",
+      "description": "A palms-down wrist extension with dumbbells that trains the forearm extensors.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "forearms": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dumbbell-wrist-extension-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "DB Wrist Extension"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-weighted-decline-crunch",
+      "author_id": "official",
+      "name": "Weighted Decline Crunch",
+      "description": "A crunch on a decline bench holding a weight that loads the abs through a long range.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-weighted-decline-crunch-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "decline_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-weighted-decline-crunch-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "decline_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 30,
+      "alternate_names": [
+        "Decline Weighted Crunch"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-weighted-crunch",
+      "author_id": "official",
+      "name": "Weighted Crunch",
+      "description": "A crunch on the floor holding a weight to the chest that loads the abs.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-weighted-crunch-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-weighted-crunch-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 4,
+      "body_weight_contribution": 30,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-donkey-calf-raise",
+      "author_id": "official",
+      "name": "Donkey Calf Raise",
+      "description": "A calf raise bent over at the hips that loads the calves in a deep stretch.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "calves": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-donkey-calf-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_donkey_calf_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-donkey-calf-raise-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_donkey_calf_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-dual-handle-elbows-out-cable-row",
+      "author_id": "official",
+      "name": "Dual-Handle Elbows-Out Cable Row",
+      "description": "A seated cable row with two handles and the elbows flared out that targets the upper back and rear delts.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperBack": "primary",
+        "rearDelts": "secondary",
+        "lats": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-dual-handle-elbows-out-cable-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "seated_cable_row_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Elbows-Out Cable Row"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-ez-bar-curl",
+      "author_id": "official",
+      "name": "EZ-Bar Curl",
+      "description": "A standing curl with an EZ bar whose angled grip eases the wrists while training the biceps.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-ez-bar-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "ez_bar"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-ez-bar-curl-v2",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "ez_bar"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-ez-bar-curl-v3",
+          "resistance_equipment": [
+            {
+              "kind": "fixedWeightBar",
+              "id": "fixed_weight_ez_bar"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Standing EZ-Bar Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-glute-kickback",
+      "author_id": "official",
+      "name": "Glute Kickback",
+      "description": "A one-leg kickback on a machine or ankle-cuffed cable that isolates the glutes.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationLower",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "glutes": "primary",
+        "hamstrings": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-glute-kickback-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "standing_pin-loaded_glute_kickback_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v2",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "kneeling_pin-loaded_glute_kickback_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_glute_kickback_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_glute_kickback_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v5",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "kneeling_plate-loaded_glute_kickback_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v6",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "kneeling_plate-loaded_glute_kickback_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-glute-kickback-v7",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-glute-kickback-v8",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-glute-kickback-v9",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        },
+        {
+          "id": "system-glute-kickback-v10",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "cuff_cable_attachment"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Machine Glute Kickback",
+        "Cable Glute Kickback"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-glute-ham-raise",
+      "author_id": "official",
+      "name": "Glute-Ham Raise",
+      "description": "A knee flexion on a glute-ham developer that trains the hamstrings with the hips extended.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary",
+        "glutes": "secondary",
+        "calves": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-glute-ham-raise-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "glute_ham_developer"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 70,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-goblet-squat",
+      "author_id": "official",
+      "name": "Goblet Squat",
+      "description": "A squat holding a dumbbell or kettlebell at the chest that trains the quads and glutes.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "quads": "primary",
+        "glutes": "primary",
+        "adductors": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-goblet-squat-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-goblet-squat-v2",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "kettlebells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 85,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-hanging-leg-raise",
+      "author_id": "official",
+      "name": "Hanging Leg Raise",
+      "description": "A leg raise hanging from a bar that trains the abs and hip flexors.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-hanging-leg-raise-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "pull_up_bar"
+            }
+          ]
+        },
+        {
+          "id": "system-hanging-leg-raise-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "multi-grip_pull-up_bar"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 2,
+      "body_weight_contribution": 40,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-helms-row",
+      "author_id": "official",
+      "name": "Helms Row",
+      "description": "A standing dumbbell row with the chest braced on an incline bench that trains the upper back and lats.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperBack": "primary",
+        "lats": "primary",
+        "rearDelts": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-helms-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-incline-dumbbell-curl",
+      "author_id": "official",
+      "name": "Incline Dumbbell Curl",
+      "description": "A curl lying back on an incline bench that loads the biceps in a deep stretch.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "biceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-incline-dumbbell-curl-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Incline DB Stretch Curl",
+        "Incline Dumbbell Stretch Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-incline-dumbbell-y-raise",
+      "author_id": "official",
+      "name": "Incline Dumbbell Y-Raise",
+      "description": "A raise up and out in a Y shape lying back on an incline bench that trains the side delts and lower traps.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "sideDelts": "primary",
+        "upperBack": "secondary",
+        "rearDelts": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-incline-dumbbell-y-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Incline DB Y-Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-katana-triceps-extension",
+      "author_id": "official",
+      "name": "Katana Triceps Extension",
+      "description": "A single-arm cable extension drawn up and across the body that loads the triceps long head in a stretch.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-katana-triceps-extension-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-katana-triceps-extension-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-katana-triceps-extension-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-katana-triceps-extension-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-lateral-band-walk",
+      "author_id": "official",
+      "name": "Lateral Band Walk",
+      "description": "A side-stepping walk against a band around the legs that trains the outer glutes.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abductors": "primary",
+        "glutes": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-lateral-band-walk-v1",
+          "resistance_equipment": [
+            {
+              "kind": "bands",
+              "id": "short_elastic_bands"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Banded Lateral Walk"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-machine-pulldown",
+      "author_id": "official",
+      "name": "Machine Pulldown",
+      "description": "A vertical pull on a pulldown machine that builds the lats with the body held in place.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "upperBack": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-machine-pulldown-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "pin-loaded_pulldown_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-pulldown-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_pulldown_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-pulldown-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_pulldown_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Machine Lat Pulldown",
+        "Lean-Back Machine Pulldown"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-lean-in-dumbbell-lateral-raise",
+      "author_id": "official",
+      "name": "Lean-In Dumbbell Lateral Raise",
+      "description": "A single-arm lateral raise with the torso leaning to keep tension on the side delt at the bottom.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "sideDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-lean-in-dumbbell-lateral-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Lean-In DB Lateral Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-long-lever-plank",
+      "author_id": "official",
+      "name": "Long-Lever Plank",
+      "description": "A plank with the elbows set out past the head that lengthens the lever on the abs.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 2,
+      "stability": 3,
+      "body_weight_contribution": 65,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-lying-reverse-dumbbell-fly",
+      "author_id": "official",
+      "name": "Lying Reverse Dumbbell Fly",
+      "description": "A reverse fly lying face down on an incline bench that isolates the rear delts.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "rearDelts": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-lying-reverse-dumbbell-fly-v1",
+          "resistance_equipment": [
+            {
+              "kind": "freeWeight",
+              "id": "dumbbells"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Lying Reverse DB Flye"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-machine-chest-press",
+      "author_id": "official",
+      "name": "Machine Chest Press",
+      "description": "A seated press on a chest press machine that targets the chest, front delts and triceps.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "chest": "primary",
+        "frontDelts": "secondary",
+        "triceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-machine-chest-press-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "seated_pin-loaded_chest_press_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-chest-press-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_chest_press_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-chest-press-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_chest_press_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-machine-lat-pullover",
+      "author_id": "official",
+      "name": "Machine Lat Pullover",
+      "description": "A pullover on a machine that loads the lats from a deep overhead stretch.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-machine-lat-pullover-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "pin-loaded_pullover_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lat-pullover-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_pullover_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lat-pullover-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_pullover_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 5,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Machine Pullover"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-machine-lateral-raise",
+      "author_id": "official",
+      "name": "Machine Lateral Raise",
+      "description": "A lateral raise on a machine that isolates the side delts.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "sideDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-machine-lateral-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "seated_pin-loaded_lateral_raise_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lateral-raise-v2",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "standing_pin-loaded_lateral_raise_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lateral-raise-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lateral-raise-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lateral-raise-v5",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-lateral-raise-v6",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-single-arm-machine-lateral-raise",
+      "author_id": "official",
+      "name": "Single-Arm Machine Lateral Raise",
+      "description": "A one-arm lateral raise on a machine that isolates each side delt in turn.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "sideDelts": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-single-arm-machine-lateral-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "seated_pin-loaded_lateral_raise_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-machine-lateral-raise-v2",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "standing_pin-loaded_lateral_raise_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-machine-lateral-raise-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-machine-lateral-raise-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-machine-lateral-raise-v5",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-single-arm-machine-lateral-raise-v6",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_lateral_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-machine-shrug",
+      "author_id": "official",
+      "name": "Machine Shrug",
+      "description": "A shoulder elevation on a shrug machine that targets the upper traps.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperTraps": "primary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-machine-shrug-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "seated_pin-loaded_shrug_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-shrug-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_shrug_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-shrug-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "seated_plate-loaded_shrug_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-shrug-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_shrug_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-machine-shrug-v5",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_shrug_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 2,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-meadows-row",
+      "author_id": "official",
+      "name": "Meadows Row",
+      "description": "A one-arm row from the end of a landmine bar that trains the lats and upper back.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "compoundUpper",
+      "laterality": "unilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "upperBack": "primary",
+        "rearDelts": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-meadows-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "barbell"
+            },
+            {
+              "kind": "accessoryEquipment",
+              "id": "landmine_attachment_wall_corner"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-meadows-row-v2",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "barbell"
+            },
+            {
+              "kind": "accessoryEquipment",
+              "id": "landmine_attachment_wall_corner"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-modified-candlestick",
+      "author_id": "official",
+      "name": "Modified Candlestick",
+      "description": "A lying leg raise that rolls the hips up toward the ceiling to train the lower abs.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-modified-candlestick-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 30,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-nordic-hamstring-curl",
+      "author_id": "official",
+      "name": "Nordic Hamstring Curl",
+      "description": "A kneeling lower toward the floor with the ankles anchored that loads the hamstrings eccentrically.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-nordic-hamstring-curl-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "nordic_hamstring_curl_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-nordic-hamstring-curl-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "nordic_hamstring_curl_strap"
+            }
+          ]
+        },
+        {
+          "id": "system-nordic-hamstring-curl-v3",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "glute_ham_developer"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 3,
+      "body_weight_contribution": 70,
+      "alternate_names": [
+        "Nordic Ham Curl",
+        "Nordic Curl"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-pull-up",
+      "author_id": "official",
+      "name": "Pull-Up",
+      "description": "A bodyweight vertical pull with a shoulder-width overhand grip that builds the lats.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "lats": "primary",
+        "biceps": "primary",
+        "upperBack": "secondary",
+        "forearms": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-pull-up-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "pull_up_bar"
+            }
+          ]
+        },
+        {
+          "id": "system-pull-up-v2",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "multi-grip_pull-up_bar"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 95,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-reverse-cable-crossover",
+      "author_id": "official",
+      "name": "Reverse Cable Crossover",
+      "description": "A reverse fly pulling crossed cables out to the sides that isolates the rear delts.",
+      "trackable_metrics": [
+        "reps",
+        "weightPerSide"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "rearDelts": "primary",
+        "upperBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-reverse-cable-crossover-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-reverse-cable-crossover-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-reverse-nordic",
+      "author_id": "official",
+      "name": "Reverse Nordic",
+      "description": "A kneeling lean back with the hips kept straight that loads the quads in a stretch.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "quads": "primary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 3,
+      "stability": 3,
+      "body_weight_contribution": 70,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-roman-chair-leg-raise",
+      "author_id": "official",
+      "name": "Roman Chair Leg Raise",
+      "description": "A straight-leg raise supported on a Roman chair that trains the abs and hip flexors.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-roman-chair-leg-raise-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "captains_chair"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 40,
+      "alternate_names": [
+        "Captain’s Chair Leg Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-seated-smith-machine-shoulder-press",
+      "author_id": "official",
+      "name": "Seated Smith Machine Shoulder Press",
+      "description": "A seated overhead press on a Smith machine that targets the front delts and triceps.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "frontDelts": "primary",
+        "sideDelts": "secondary",
+        "triceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-seated-smith-machine-shoulder-press-v1",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-seated-smith-machine-shoulder-press-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "adjustable_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-seated-smith-machine-shoulder-press-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "seated_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-seated-smith-machine-shoulder-press-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "seated_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Smith Machine Shoulder Press"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-sissy-squat",
+      "author_id": "official",
+      "name": "Sissy Squat",
+      "description": "A squat leaning back onto the toes with the hips kept straight that isolates the quads.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "quads": "primary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [],
+      "range_of_motion": 5,
+      "stability": 2,
+      "body_weight_contribution": 85,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-smith-machine-bench-press",
+      "author_id": "official",
+      "name": "Smith Machine Bench Press",
+      "description": "A flat bench press on a Smith machine that targets the chest with a fixed bar path.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "chest": "primary",
+        "frontDelts": "secondary",
+        "triceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-smith-machine-bench-press-v1",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        },
+        {
+          "id": "system-smith-machine-bench-press-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": [
+            {
+              "kind": "supportEquipment",
+              "id": "flat_bench"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-smith-machine-row",
+      "author_id": "official",
+      "name": "Smith Machine Row",
+      "description": "A bent-over row on a Smith machine that trains the upper back and lats with a fixed bar path.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "upperBack": "primary",
+        "lats": "primary",
+        "rearDelts": "secondary",
+        "biceps": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-smith-machine-row-v1",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-smith-machine-row-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-smith-machine-static-lunge",
+      "author_id": "official",
+      "name": "Smith Machine Static Lunge",
+      "description": "A lunge lowered straight down from a fixed split stance under a Smith machine bar that trains the quads and glutes.",
+      "trackable_metrics": [
+        "weight",
+        "repsPerSide"
+      ],
+      "type": "compoundLower",
+      "laterality": "assymetrical",
+      "muscle_groups": {
+        "quads": "primary",
+        "glutes": "primary",
+        "adductors": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-smith-machine-static-lunge-v1",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-smith-machine-static-lunge-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "smith_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 85,
+      "alternate_names": [],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-standing-calf-raise",
+      "author_id": "official",
+      "name": "Standing Calf Raise",
+      "description": "A standing calf raise on a machine that targets the calves with straight knees.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "calves": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-standing-calf-raise-v1",
+          "resistance_equipment": [
+            {
+              "kind": "pinLoadedMachine",
+              "id": "standing_pin-loaded_calf_raise_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-standing-calf-raise-v2",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_calf_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-standing-calf-raise-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "standing_plate-loaded_calf_raise_machine"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 5,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Standing Machine Calf Raise"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-stiff-leg-deadlift",
+      "author_id": "official",
+      "name": "Stiff-Leg Deadlift",
+      "description": "A barbell hip hinge with the knees kept nearly straight that targets the hamstrings and glutes.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "compoundLower",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "hamstrings": "primary",
+        "glutes": "primary",
+        "lowerBack": "secondary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-stiff-leg-deadlift-v1",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "barbell"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "weight_plates"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-stiff-leg-deadlift-v2",
+          "resistance_equipment": [
+            {
+              "kind": "loadableBar",
+              "id": "barbell"
+            },
+            {
+              "kind": "freeWeight",
+              "id": "bumper_plates"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 4,
+      "stability": 4,
+      "body_weight_contribution": 60,
+      "alternate_names": [
+        "Stiff-Legged Deadlift"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-swiss-ball-rollout",
+      "author_id": "official",
+      "name": "Swiss Ball Rollout",
+      "description": "A kneeling anti-extension rollout on a Swiss ball that challenges the abs and core.",
+      "trackable_metrics": [
+        "reps"
+      ],
+      "type": "core",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "abs": "primary",
+        "lats": "secondary",
+        "obliques": "secondary"
+      },
+      "is_bodyweight": true,
+      "equipment_variations": [
+        {
+          "id": "system-swiss-ball-rollout-v1",
+          "resistance_equipment": [],
+          "support_equipment": [
+            {
+              "kind": "accessoryEquipment",
+              "id": "stability_ball"
+            }
+          ]
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 2,
+      "body_weight_contribution": 65,
+      "alternate_names": [
+        "Stability Ball Rollout"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
+    },
+    {
+      "id": "system-cable-rope-pushdown",
+      "author_id": "official",
+      "name": "Cable Rope Pushdown",
+      "description": "A triceps pushdown on a cable rope that lets the hands split apart at the bottom.",
+      "trackable_metrics": [
+        "weight",
+        "reps"
+      ],
+      "type": "isolationUpper",
+      "laterality": "bilateral",
+      "muscle_groups": {
+        "triceps": "primary"
+      },
+      "is_bodyweight": false,
+      "equipment_variations": [
+        {
+          "id": "system-cable-rope-pushdown-v1",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-rope-pushdown-v2",
+          "resistance_equipment": [
+            {
+              "kind": "cableMachine",
+              "id": "pin-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-rope-pushdown-v3",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_single_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        },
+        {
+          "id": "system-cable-rope-pushdown-v4",
+          "resistance_equipment": [
+            {
+              "kind": "plateLoadedMachine",
+              "id": "plate-loaded_dual_cable_machine"
+            }
+          ],
+          "support_equipment": []
+        }
+      ],
+      "range_of_motion": 3,
+      "stability": 4,
+      "body_weight_contribution": 0,
+      "alternate_names": [
+        "Triceps Pressdown (Rope)",
+        "Rope Pushdown",
+        "Rope Triceps Pushdown"
+      ],
+      "is_system_exercise": true,
+      "click_count": 0,
+      "bookmark_count": 0,
+      "favourite_count": 0,
+      "date_created": 757382400.0,
+      "date_modified": 757382400.0
     }
   ]
 }

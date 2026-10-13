@@ -8,7 +8,7 @@
 //  sets left and only the highlighted row moves.
 //
 //  Each piece is one member's own set table drawing just that piece (`SetTrackerPiece`), so a
-//  row keeps its exercise's binding, menus, last-time figures and correction row.
+//  row keeps its exercise's binding, menus, last-time figures and rest line.
 //
 
 import SwiftUI

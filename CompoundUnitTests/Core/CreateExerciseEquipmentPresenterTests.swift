@@ -241,14 +241,25 @@ struct ExerciseEquipmentPresenterTests {
 
     /// The toggle hid the variation rows but their drafts still travelled, so a bodyweight
     /// exercise could be saved with whatever equipment had been picked before the toggle.
-    @Test("Test The Bodyweight Flag Reaches The Final Step Without The Hidden Variations")
+    /// Body-weight work keeps its equipment: an assisted pull-up is loaded through its machine.
+    @Test("Test The Bodyweight Flag Reaches The Final Step With Its Variations")
     func testTheBodyweightFlagReachesTheFinalStep() {
         let screen = makeScreen()
         screen.presenter.variations[0].resistanceEquipment = [barbell.ref]
         screen.presenter.bodyweightExercise = true
         screen.presenter.onNextPressed(delegate: delegate())
         #expect(screen.router.finalDelegates.first?.isBodyweight == true)
-        #expect(screen.router.finalDelegates.first?.equipmentVariations.isEmpty == true)
+        #expect(screen.router.finalDelegates.first?.equipmentVariations.map(\.resistanceEquipment) == [[barbell.ref]])
+    }
+
+    /// A variation left with no equipment at all is dropped: it would count as possible anywhere.
+    @Test("Test An Empty Variation Is Dropped")
+    func testAnEmptyVariationIsDropped() {
+        let screen = makeScreen()
+        screen.presenter.variations[0].resistanceEquipment = [barbell.ref]
+        screen.presenter.onAddVariationPressed()
+        screen.presenter.onNextPressed(delegate: delegate())
+        #expect(screen.router.finalDelegates.first?.equipmentVariations.count == 1)
     }
 
     @Test("Test Appearing Is Tracked As A Screen View")

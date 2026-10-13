@@ -225,9 +225,10 @@ struct WarmupSetGenerationTests {
         #expect(warmups(weight: 100, mode: .distanceTime).isEmpty)
     }
 
-    /// Bodyweight work still ramps: the reps matter even when the load does not change.
-    @Test("Test Bodyweight Work Still Gets Warm-Ups")
+    /// Bodyweight work has no lighter load to ramp through, so it gets none unless the plan asks.
+    @Test("Test Bodyweight Work Gets No Warm-Ups")
     func testBodyweightWorkStillGetsWarmUps() {
-        #expect(!warmups(weight: nil, mode: .repsOnly).isEmpty)
+        #expect(warmups(weight: nil, mode: .repsOnly).isEmpty)
+        #expect(warmups(weight: 0, mode: .weightReps).isEmpty)
     }
 }

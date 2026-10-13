@@ -43,11 +43,8 @@ class WorkoutConsistencyPresenter {
         
         cachedEntries = completed.map { session in
             let date = session.endedAt ?? session.dateCreated
-            let sets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }.count
-            let volume = session.exercises.flatMap { $0.sets }
-                .filter { !$0.isWarmup }
-                .compactMap(\.volumeKg)
-                .reduce(0, +)
+            let sets = session.loggedSetCount
+            let volume = session.loggedVolumeKg
             return WorkoutEntry(
                 id: session.id,
                 date: date,

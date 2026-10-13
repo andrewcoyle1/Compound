@@ -71,7 +71,7 @@ extension ActiveWorkout {
         locale: Locale = .autoupdatingCurrent
     ) -> String {
         var parts: [String] = []
-        if exercise.trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 {
+        if exercise.trackingMode == .weightReps, let weightKg = set.loadKg, weightKg > 0 {
             parts.append(spokenWeight(kg: weightKg, unit: unit, locale: locale))
         }
         switch exercise.trackingMode {

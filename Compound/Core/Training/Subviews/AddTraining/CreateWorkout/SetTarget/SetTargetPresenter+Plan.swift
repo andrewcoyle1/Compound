@@ -113,7 +113,7 @@ extension SetTargetPresenter {
     }
 
     func onVariesByWeekPressed() {
-        router.showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate(exercise: workingExercise) { [weak self] overrides in
+        router.showWeeklyTargetsView(delegate: WeeklyTargetsDelegate(exercise: workingExercise) { [weak self] overrides in
             self?.workingExercise.setTargetsByMicrocycle = overrides
         })
     }

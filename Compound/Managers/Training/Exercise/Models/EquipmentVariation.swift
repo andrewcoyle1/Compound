@@ -27,4 +27,13 @@ struct EquipmentVariation: Identifiable, Codable, Hashable {
         case resistanceEquipment = "resistance_equipment"
         case supportEquipment = "support_equipment"
     }
+
+    /// Ref by ref: one naming a kind of equipment a later build added is skipped rather than
+    /// failing the exercise, the template or the session it is stored in.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        resistanceEquipment = container.decodeLossyArray(EquipmentRef.self, forKey: .resistanceEquipment) ?? []
+        supportEquipment = container.decodeLossyArray(EquipmentRef.self, forKey: .supportEquipment) ?? []
+    }
 }

@@ -19,56 +19,58 @@ struct ExerciseEquipmentView: View {
             Section {
                 ListRowToggle(
                     title: String(localized: "Bodyweight Exercise"),
-                    subtitle: String(localized: "This exercise is performed with bodyweight, without additional resistance."),
+                    subtitle: String(localized: "Performed with bodyweight. Add any equipment it needs, such as a pull-up bar."),
                     isOn: $presenter.bodyweightExercise
                 )
                 .accessibilityIdentifier("ExerciseEquipment.bodyweight")
             }
             .listSectionMargins(.top, 0)
 
-            if !presenter.bodyweightExercise {
-                ForEach(Array(presenter.variations.enumerated()), id: \.element.id) { index, variation in
-                    Section {
-                        addRow(
-                            title: String(localized: "Resistance"),
-                            subtitle: presenter.resistanceSubtitle(for: variation),
-                            note: variation.resistanceEquipment.isEmpty ? String(localized: "Required") : nil
-                        ) {
-                            presenter.onAddResistancePressed(variationId: variation.id)
-                        }
+            // Body-weight work keeps its equipment too: the bar a pull-up hangs from, the machine
+            // that assists it, the belt that loads it.
+            ForEach(Array(presenter.variations.enumerated()), id: \.element.id) { index, variation in
+                Section {
+                    addRow(
+                        title: String(localized: "Resistance"),
+                        subtitle: presenter.resistanceSubtitle(for: variation),
+                        note: variation.resistanceEquipment.isEmpty
+                            ? (presenter.bodyweightExercise ? String(localized: "Optional") : String(localized: "Required"))
+                            : nil
+                    ) {
+                        presenter.onAddResistancePressed(variationId: variation.id)
+                    }
 
-                        addRow(
-                            title: String(localized: "Support"),
-                            subtitle: presenter.supportSubtitle(for: variation),
-                            note: variation.supportEquipment.isEmpty ? String(localized: "Optional") : nil
-                        ) {
-                            presenter.onAddSupportPressed(variationId: variation.id)
-                        }
-                    } header: {
-                        HStack {
-                            Text(presenter.variationName(for: index))
-                            Spacer()
-                            if presenter.variations.count > 1 {
-                                Button(role: .destructive) {
-                                    presenter.onDeleteVariationPressed(id: variation.id)
-                                } label: {
-                                    Image(systemName: Symbol.delete)
-                                        .tapTarget()
-                                }
-                                .accessibilityLabel("Delete variation")
-                                .buttonStyle(.plain)
-                                .foregroundStyle(.danger)
+                    addRow(
+                        title: String(localized: "Support"),
+                        subtitle: presenter.supportSubtitle(for: variation),
+                        note: variation.supportEquipment.isEmpty ? String(localized: "Optional") : nil
+                    ) {
+                        presenter.onAddSupportPressed(variationId: variation.id)
+                    }
+                } header: {
+                    HStack {
+                        Text(presenter.variationName(for: index))
+                        Spacer()
+                        if presenter.variations.count > 1 {
+                            Button(role: .destructive) {
+                                presenter.onDeleteVariationPressed(id: variation.id)
+                            } label: {
+                                Image(systemName: Symbol.delete)
+                                    .tapTarget()
                             }
+                            .accessibilityLabel("Delete variation")
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.danger)
                         }
                     }
                 }
+            }
 
-                Section {
-                    Button {
-                        presenter.onAddVariationPressed()
-                    } label: {
-                        Label("Add Variation", systemImage: Symbol.add)
-                    }
+            Section {
+                Button {
+                    presenter.onAddVariationPressed()
+                } label: {
+                    Label("Add Variation", systemImage: Symbol.add)
                 }
             }
         }

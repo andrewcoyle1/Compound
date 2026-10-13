@@ -40,19 +40,42 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
     /// the set still reads right after the gym's bands are renamed or removed. Bands carry no kg,
     /// so they add nothing to `volumeKg`.
     var bands: [String]?
+    /// The unit the weight was entered in, stamped when the set is logged, so the set reads back
+    /// as it was lifted: "50 lb", not 22.68 kg. `nil` on sets logged before it was recorded. Read it
+    /// through `weightUnit`; stored raw so an unknown value cannot fail the session.
+    private var weightUnitRawValue: String?
+    /// How many of the weight were lifted at once: 2 for a dumbbell in each hand, stamped when the
+    /// set is logged. `weightKg` is one of them, as it is read off the rack. `nil` is one.
+    var loadCount: Int?
+    /// A plate-loaded machine's base weight, in kg, when the machine is set to enter the plates
+    /// only (`PlateLoadedMachine.excludesBaseFromLoad`). `weightKg` is always the total, base
+    /// included; the set is entered and shown as `loadKg`. Kept in step with the exercise until
+    /// the set is logged (`WorkoutExerciseModel.machineBaseKg`).
+    var machineBaseKg: Double?
 
     var isWarmup: Bool
     var completedAt: Date?
     var dateCreated: Date
 
+    var weightUnit: ExerciseWeightUnit? {
+        get { weightUnitRawValue.flatMap(ExerciseWeightUnit.init(rawValue:)) }
+        set { weightUnitRawValue = newValue?.rawValue }
+    }
+
+    /// The weight as it is entered and shown: the total less a machine base kept out of it.
+    var loadKg: Double? {
+        weightKg.map { $0 - (machineBaseKg ?? 0) }
+    }
+
     /// Weight × reps, `nil` without both. A `both` row is two limbs' work logged once, so it
-    /// counts twice — the same as the left and right rows it stands for.
+    /// counts twice — the same as the left and right rows it stands for — and a dumbbell in each
+    /// hand counts twice (`loadCount`).
     ///
     /// `nil` for a negative weight too: that is assistance (`ExerciseModel.isAssisted`), and
     /// without the lifter's bodyweight there is no load to multiply.
     var volumeKg: Double? {
-        guard let weightKg, weightKg >= 0, let reps else { return nil }
-        return weightKg * Double(reps) * (side == .both ? 2 : 1)
+        guard let loadKg, loadKg >= 0, let reps else { return nil }
+        return loadKg * Double(reps) * (side == .both ? 2 : 1) * Double(max(loadCount ?? 1, 1))
     }
 
     init(
@@ -105,6 +128,9 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         case parentSetId = "parent_set_id"
         case targetReps = "target_reps"
         case bands
+        case weightUnitRawValue = "weight_unit"
+        case loadCount = "load_count"
+        case machineBaseKg = "machine_base_kg"
         case isWarmup
         case completedAt = "completed_at"
         case dateCreated = "date_created"
@@ -128,6 +154,9 @@ struct WorkoutSetModel: Identifiable, Codable, Hashable {
         parentSetId = try container.decodeIfPresent(String.self, forKey: .parentSetId)
         targetReps = try container.decodeIfPresent(Int.self, forKey: .targetReps)
         bands = (try? container.decodeIfPresent([String].self, forKey: .bands)) ?? nil
+        weightUnitRawValue = (try? container.decodeIfPresent(String.self, forKey: .weightUnitRawValue)) ?? nil
+        loadCount = (try? container.decodeIfPresent(Int.self, forKey: .loadCount)) ?? nil
+        machineBaseKg = (try? container.decodeIfPresent(Double.self, forKey: .machineBaseKg)) ?? nil
         isWarmup = try container.decode(Bool.self, forKey: .isWarmup)
         completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
         dateCreated = try container.decode(Date.self, forKey: .dateCreated)

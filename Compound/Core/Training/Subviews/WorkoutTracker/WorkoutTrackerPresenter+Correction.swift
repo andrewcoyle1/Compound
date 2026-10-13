@@ -2,8 +2,8 @@
 //  WorkoutTrackerPresenter+Correction.swift
 //  Compound
 //
-//  Correcting a set after it is logged, and undoing it. The correction row under the set just
-//  logged takes reps off or on, records reps in reserve and un-logs it; the window's
+//  Correcting a set after it is logged, and undoing it. The correction bar over the log button,
+//  while the set's rest runs, takes reps off or on, records reps in reserve and un-logs it; the window's
 //  `UndoManager` carries log, un-log, delete and those reps taps, so shake and ⌘Z undo them too.
 //  The rules are in `ActiveWorkout+Correction`.
 //
@@ -12,9 +12,28 @@ import SwiftUI
 
 extension WorkoutTrackerPresenter {
 
-    // MARK: - Correction row
+    // MARK: - Correction bar
 
-    /// The correction row for `exercise`'s card, or `nil` when there is nothing to correct on it.
+    /// The set just logged, while the rest it started runs: the bar over the log button, named
+    /// for its exercise as it sits apart from the card. `nil` outside a rest.
+    var restCorrection: (exerciseId: String, correction: SetCorrection)? {
+        guard primarySlotRestEnd != nil,
+              let latest = ActiveWorkout.latestCompletedSet(in: workoutSession.exercises),
+              let exercise = workoutSession.exercises.first(where: { $0.sets.contains { $0.id == latest.id } }),
+              let correction = correction(for: exercise) else { return nil }
+        return (exercise.id, SetCorrection(
+            setId: correction.setId,
+            title: "\(exercise.name) · \(correction.title)",
+            spokenLabel: "\(exercise.name), \(correction.spokenLabel)",
+            correctsReps: correction.correctsReps,
+            canRemoveRep: correction.canRemoveRep,
+            showsRIR: correction.showsRIR,
+            selectedRIR: correction.selectedRIR
+        ))
+    }
+
+    /// What the correction bar offers for the latest set logged on `exercise`, or `nil` when there
+    /// is nothing to correct on it.
     func correction(for exercise: WorkoutExerciseModel) -> SetCorrection? {
         let latest = ActiveWorkout.latestCompletedSet(in: workoutSession.exercises)
         guard let setId = ActiveWorkout.correctionTarget(in: exercise, latestLogged: latest),

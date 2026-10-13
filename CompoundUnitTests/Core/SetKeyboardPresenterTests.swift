@@ -219,13 +219,13 @@ struct SetKeyboardPresenterTests {
         box.value.rpe = 8
         let keyboard = SetKeyboardPresenter()
         keyboard.open(.weight, set: box.binding, context: SetKeyboardContext())
-        #expect(keyboard.selectedRPE == 8)
+        #expect(keyboard.selectedRIR == 2)
 
         keyboard.close()
         keyboard.stepUp()
-        keyboard.toggleRPE(9)
+        keyboard.toggleRIR(1)
 
-        #expect(keyboard.selectedRPE == nil)
+        #expect(keyboard.selectedRIR == nil)
         #expect(box.value.weightKg == 60)
         #expect(box.value.rpe == 8)
     }
@@ -242,6 +242,19 @@ struct SetKeyboardPresenterTests {
         keyboard.stepDown()
         keyboard.stepDown()
         #expect(box.value.weightKg == 57.5)
+    }
+
+    @Test func theBarMenuHandsBackANewBarOnly() {
+        let keyboard = SetKeyboardPresenter()
+        var chosen: [String] = []
+        keyboard.onBarChosen = { chosen.append($0) }
+        let bars = [BarChoice(id: "a", title: "20 kg"), BarChoice(id: "b", title: "15 kg")]
+        keyboard.open(.weight, set: set().binding, context: SetKeyboardContext(barChoices: [bars[0]], chosenBarId: "a"))
+        #expect(!keyboard.showsBarMenu)
+        keyboard.refresh(context: SetKeyboardContext(barChoices: bars, chosenBarId: "a"))
+        keyboard.chosenBarId = "a"
+        keyboard.chosenBarId = "b"
+        #expect(keyboard.showsBarMenu && chosen == ["b"])
     }
 
     @Test func bandsCycleNamesAndLeaveTheWeightEmpty() {
@@ -409,29 +422,44 @@ struct SetKeyboardPresenterTests {
 
     // MARK: - Effort
 
-    @Test func rpeChipWritesTheSetAndTogglesOff() {
+    /// The chips record reps in reserve, stored as the RPE it is: 2 left is RPE 8.
+    @Test func rirChipWritesTheSetAndTogglesOff() {
         let box = set()
         let keyboard = SetKeyboardPresenter()
         keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(showsEffort: true))
-        keyboard.toggleRPE(8.5)
-        #expect(box.value.rpe == 8.5)
-        #expect(keyboard.selectedRPE == 8.5)
-        keyboard.toggleRPE(8.5)
+        keyboard.toggleRIR(2)
+        #expect(box.value.rpe == 8)
+        #expect(keyboard.selectedRIR == 2)
+        keyboard.toggleRIR(2)
         #expect(box.value.rpe == nil)
+        keyboard.toggleRIR(6)
+        #expect(box.value.rpe == 4)
+        #expect(keyboard.selectedRIR == 6)
     }
 
-    /// Effort is recorded after the set, in the correction row; the keypad offers its RPE chips
-    /// only to correct a set already logged.
-    @Test(arguments: [(false, false, false), (true, false, false), (true, true, true)])
-    func rpeChipsOnlyOnALoggedSet(showsEffort: Bool, logged: Bool, shown: Bool) {
-        let box = set(reps: 8, done: logged)
+    /// The keypad offers reps in reserve with effort tracking on, or when the set's target names
+    /// some, logged or not: the set starts at its target and the chips record what was left.
+    @Test(arguments: [(false, nil), (true, nil), (false, 2)] as [(Bool, Int?)])
+    func rirChipsWithTrackingOrATarget(showsEffort: Bool, targetRIR: Int?) {
+        let box = set(reps: 8)
         let keyboard = SetKeyboardPresenter()
-        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(showsEffort: showsEffort))
-        #expect(keyboard.showsEffortChips == shown)
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext(showsEffort: showsEffort, targetRIR: targetRIR))
+        #expect(keyboard.showsEffortChips == (showsEffort || targetRIR != nil))
+    }
+
+    /// A logged set keeps at least one rep: clearing the field leaves what was logged.
+    @Test func aLoggedSetKeepsItsReps() {
+        let box = set(reps: 8, done: true)
+        let keyboard = SetKeyboardPresenter()
+        keyboard.open(.reps, set: box.binding, context: SetKeyboardContext())
+        keyboard.backspace()
+        #expect(box.value.reps == 8)
     }
 
     @Test func rpeAndRirAreOneScale() {
-        #expect(EffortScale.rpeChoices == [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10])
+        #expect(EffortScale.rirChoices == [0, 1, 2, 3, 4, 5, 6])
+        #expect(EffortScale.rirText(6) == "6+")
+        #expect(EffortScale.rirChoice(fromRPE: 9.5) == 1)
         #expect(EffortScale.rir(fromRPE: 8) == 2)
         #expect(EffortScale.rir(fromRPE: 10) == 0)
         #expect(EffortScale.rpe(fromRIR: 3) == 7)
@@ -656,52 +684,6 @@ struct SetTrackerRowKeyboardTests {
         presenter.keyboard.done()
         #expect(router.alerts.isEmpty)
         #expect(presenter.keyboard.activeField == nil)
-    }
-
-    /// The line under the set being logged: what goes on each side of the bar, or the nearest
-    /// total the plates make when the weight cannot be loaded.
-    @Test func plateSummaryReadsTheGymsPlates() throws {
-        let row = makeRow()
-        row.interactor.favouriteGymProfile = GymProfileModel(authorId: "u")
-        var set = row.exercise.value.sets[0]
-        // Read the gym's own bar and heaviest plate, so the figures hold whatever its defaults are.
-        let step = WeightStepper.steps(for: row.exercise.value, profile: row.interactor.favouriteGymProfile, unit: .kilograms)
-        let bar = try #require(step.baseWeight)
-        let plate = try #require(step.plates.map(\.weight).max())
-        let loadableKg = bar + 2 * plate
-
-        set.weightKg = loadableKg
-        let loadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
-        #expect(loadable?.nearestKg == nil)
-        #expect(loadable?.text.hasPrefix("Per side:") == true)
-
-        // A hair over: nothing in the rack makes it, and the nearest total is the one below.
-        set.weightKg = loadableKg + 0.1
-        let unloadable = row.presenter.plateSummary(exercise: row.exercise.value, set: set)
-        #expect(unloadable?.nearestKg == loadableKg)
-
-        set.weightKg = nil
-        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
-    }
-
-    /// The set row says which pin and toggles make the set on a stack with add-ons.
-    @Test func plateSummaryReadsTheStacksPinAndAddOns() {
-        let row = makeRow()
-        row.exercise.value.equipmentVariations = [EquipmentVariation(id: "v", resistanceEquipment: [EquipmentRef(kind: .pinLoadedMachine, id: "pin")])]
-        let stack = WeightStack(
-            id: "s", name: "Stack", minWeight: 7, maxWeight: 98, increment: 7, unit: .kilograms, isActive: true, addOns: [2, 2]
-        )
-        row.interactor.favouriteGymProfile = GymProfileModel(
-            authorId: "u", pinLoadedMachines: [PinLoadedMachine(id: "pin", name: "Pin", ranges: [stack], isActive: true)]
-        )
-        var set = row.exercise.value.sets[0]
-
-        set.weightKg = 16
-        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == PlateSummary(text: "Pin 14 + 2 kg", nearestKg: nil))
-
-        // A weight the stack cannot make has no breakdown.
-        set.weightKg = 15
-        #expect(row.presenter.plateSummary(exercise: row.exercise.value, set: set) == nil)
     }
 
     // MARK: - WP-N: assistance

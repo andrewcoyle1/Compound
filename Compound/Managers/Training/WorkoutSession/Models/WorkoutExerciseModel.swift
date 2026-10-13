@@ -16,19 +16,39 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
     var index: Int
     var notes: String?
     var imageName: String?
-    var sets: [WorkoutSetModel]
+    var sets: [WorkoutSetModel] {
+        didSet { stampMachineBase() }
+    }
     var setTargets: [SetTarget]
     var chosenVariationId: String?
     var equipmentVariations: [EquipmentVariation]
     var supersetGroupId: String?
     /// The plan's notes for this exercise, copied from the template. The user's own are `notes`.
     var planNotes: String?
+    /// The plan's exercise this one was started from (`WorkoutTemplateExercise.id`), so its
+    /// mesocycle note can be written back to that slot of that day. Absent on exercises added
+    /// mid-workout and on sessions from before it was stored.
+    var planSlotId: String?
     /// The plan's rest for this exercise, ahead of the exercise and global rest settings.
     var restSeconds: Int?
     /// The plan's video or reference link.
     var linkURL: String?
     /// Exercise ids the plan offers in this one's place.
     var substituteExerciseIds: [String]
+    /// The unit this exercise's weights are entered in for the session: the user's own choice for
+    /// the exercise, else the unit the equipment is labelled in, else the app-wide unit
+    /// (`SessionWeightUnit`). `nil` on sessions from before it was stored, which read the
+    /// exercise's preference as they always did.
+    var weightUnit: ExerciseWeightUnit?
+    /// How many of the weight one set lifts: 2 for a dumbbell in each hand, from the exercise's
+    /// `weightPerSide` metric. Stamped on each set as it is logged (`WorkoutSetModel.loadCount`).
+    var loadsPerSet: Int?
+    /// The machine base its weights are entered without, in kg: the active variation's
+    /// plate-loaded machine, when it is set to enter plates only (`SessionLoadChoice.machineBaseKg`).
+    /// Every set not yet logged carries it; a logged set keeps the one it was logged with.
+    var machineBaseKg: Double? {
+        didSet { stampMachineBase() }
+    }
 
     init(
         id: String,
@@ -45,9 +65,13 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         equipmentVariations: [EquipmentVariation] = [],
         supersetGroupId: String? = nil,
         planNotes: String? = nil,
+        planSlotId: String? = nil,
         restSeconds: Int? = nil,
         linkURL: String? = nil,
-        substituteExerciseIds: [String] = []
+        substituteExerciseIds: [String] = [],
+        weightUnit: ExerciseWeightUnit? = nil,
+        loadsPerSet: Int? = nil,
+        machineBaseKg: Double? = nil
     ) {
         self.id = id
         self.authorId = authorId
@@ -63,9 +87,14 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         self.equipmentVariations = equipmentVariations
         self.supersetGroupId = supersetGroupId
         self.planNotes = planNotes
+        self.planSlotId = planSlotId
         self.restSeconds = restSeconds
         self.linkURL = linkURL
         self.substituteExerciseIds = substituteExerciseIds
+        self.weightUnit = weightUnit
+        self.loadsPerSet = loadsPerSet
+        self.machineBaseKg = machineBaseKg
+        stampMachineBase()
     }
 
     enum CodingKeys: String, CodingKey {
@@ -83,9 +112,13 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         case equipmentVariations = "equipment_variations"
         case supersetGroupId = "superset_group_id"
         case planNotes = "plan_notes"
+        case planSlotId = "plan_slot_id"
         case restSeconds = "rest_seconds"
         case linkURL = "link_url"
         case substituteExerciseIds = "substitute_exercise_ids"
+        case weightUnit = "weight_unit"
+        case loadsPerSet = "loads_per_set"
+        case machineBaseKg = "machine_base_kg"
     }
 
     init(from decoder: Decoder) throws {
@@ -101,12 +134,18 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         sets = try container.decode([WorkoutSetModel].self, forKey: .sets)
         setTargets = try container.decodeIfPresent([SetTarget].self, forKey: .setTargets) ?? []
         chosenVariationId = try container.decodeIfPresent(String.self, forKey: .chosenVariationId)
-        equipmentVariations = try container.decodeIfPresent([EquipmentVariation].self, forKey: .equipmentVariations) ?? []
+        // Element by element: a variation naming equipment a later build added must not cost the
+        // whole logged session.
+        equipmentVariations = container.decodeLossyArray(EquipmentVariation.self, forKey: .equipmentVariations) ?? []
         supersetGroupId = try container.decodeIfPresent(String.self, forKey: .supersetGroupId)
         planNotes = try container.decodeIfPresent(String.self, forKey: .planNotes)
+        planSlotId = try container.decodeIfPresent(String.self, forKey: .planSlotId)
         restSeconds = try container.decodeIfPresent(Int.self, forKey: .restSeconds)
         linkURL = try container.decodeIfPresent(String.self, forKey: .linkURL)
         substituteExerciseIds = try container.decodeIfPresent([String].self, forKey: .substituteExerciseIds) ?? []
+        weightUnit = (try? container.decodeIfPresent(ExerciseWeightUnit.self, forKey: .weightUnit)) ?? nil
+        loadsPerSet = (try? container.decodeIfPresent(Int.self, forKey: .loadsPerSet)) ?? nil
+        machineBaseKg = (try? container.decodeIfPresent(Double.self, forKey: .machineBaseKg)) ?? nil
     }
 
     func encode(to encoder: Encoder) throws {
@@ -125,11 +164,37 @@ struct WorkoutExerciseModel: Identifiable, DataSyncModelProtocol, Equatable {
         try container.encode(equipmentVariations, forKey: .equipmentVariations)
         try container.encodeIfPresent(supersetGroupId, forKey: .supersetGroupId)
         try container.encodeIfPresent(planNotes, forKey: .planNotes)
+        try container.encodeIfPresent(planSlotId, forKey: .planSlotId)
         try container.encodeIfPresent(restSeconds, forKey: .restSeconds)
         try container.encodeIfPresent(linkURL, forKey: .linkURL)
         if !substituteExerciseIds.isEmpty {
             try container.encode(substituteExerciseIds, forKey: .substituteExerciseIds)
         }
+        try container.encodeIfPresent(weightUnit, forKey: .weightUnit)
+        try container.encodeIfPresent(loadsPerSet, forKey: .loadsPerSet)
+        try container.encodeIfPresent(machineBaseKg, forKey: .machineBaseKg)
+    }
+
+    /// Sets still to do take the exercise's machine base, so a weight entered or shown on them
+    /// leaves it out; logged sets keep theirs.
+    private mutating func stampMachineBase() {
+        for index in sets.indices where sets[index].completedAt == nil && sets[index].machineBaseKg != machineBaseKg {
+            sets[index].machineBaseKg = machineBaseKg
+        }
+    }
+
+    /// The variation the session is on: the chosen one, else the first.
+    var activeVariation: EquipmentVariation? {
+        equipmentVariations.first { $0.id == chosenVariationId } ?? equipmentVariations.first
+    }
+
+    /// Stamps a set as it is logged with what it cannot know itself: the unit it was entered in
+    /// and how many of the weight it lifted.
+    func stamping(_ set: WorkoutSetModel) -> WorkoutSetModel {
+        var set = set
+        set.weightUnit = set.weightUnit ?? weightUnit
+        set.loadCount = set.loadCount ?? loadsPerSet
+        return set
     }
 
     /// How many working sets are logged, with a left/right pair counted as the one set it is.

@@ -32,6 +32,12 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// The Strava activity this session was uploaded as, stamped once Strava has made it. Absent
     /// on sessions never uploaded.
     var stravaActivityId: Int?
+    /// The gym the session was done in, so the next one there can start on the equipment used
+    /// last time (`SessionLoadChoice`). Absent on older sessions and ones done with no gym.
+    var gymProfileId: String?
+    /// A mesocycle's deload week (`MesocycleDeload`). Progression reads past it, so the week after
+    /// a deload carries on from the week before it.
+    var isDeload: Bool?
 
     init(
         id: String = UUID().uuidString,
@@ -82,6 +88,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         case weekStreakCount = "week_streak_count"
         case pausedSeconds = "paused_seconds"
         case stravaActivityId = "strava_activity_id"
+        case gymProfileId = "gym_profile_id"
+        case isDeload = "is_deload"
         case hidden
     }
 
@@ -113,6 +121,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
         self.deletedAt = nil
         self.isRestDay = false
         self.likedByUserIds = []
+        self.gymProfileId = gymProfile?.id
         self.exercises = template.exercises.enumerated().map { (idx, exerciseModel) in
             let mode = WorkoutSessionModel.trackingMode(for: exerciseModel.exercise)
             // The week's targets: the template's override for this microcycle, else its base.
@@ -122,7 +131,27 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             // The matching exercise last time, by occurrence: an exercise the template lists twice
             // (a heavy set, then a back-off) matches each entry to its own previous exercise.
             let occurrence = template.exercises[..<idx].filter { $0.exercise.id == exerciseModel.exercise.id }.count
-            let previousExercise = previousWorkoutSession?.exercise(templateId: exerciseModel.exercise.id, occurrence: occurrence)
+            let lastExercise = previousWorkoutSession?.exercise(templateId: exerciseModel.exercise.id, occurrence: occurrence)
+
+            // The equipment it starts on, and what that makes its unit (`SessionLoadChoice`).
+            let variations = exerciseModel.exercise.equipmentVariations
+            let chosenVariationId = SessionLoadChoice.variationId(
+                among: variations,
+                previous: lastExercise,
+                previousGymId: previousWorkoutSession?.gymProfileId,
+                gym: gymProfile
+            )
+            let refs = variations.first { $0.id == chosenVariationId }?.resistanceEquipment
+            let weightUnit = SessionLoadChoice.weightUnit(
+                preference: unitPreferences?[exerciseModel.exercise.id],
+                refs: refs,
+                gym: gymProfile
+            )
+            // Last time speaks for this time only on the same kind of load: a dumbbell press is
+            // no guide to the barbell.
+            let previousExercise = lastExercise.flatMap { last in
+                Self.isSameLoad(last.activeVariation?.resistanceEquipment, refs) ? last : nil
+            }
             let previousSets = previousExercise?.sets
                         
             // Estimate working weight and reps from previous workout
@@ -146,17 +175,28 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 authorId: authorId,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences,
+                weightUnit: weightUnit,
+                resistanceEquipment: refs,
+                setTargets: setTargets,
                 occurrence: occurrence
             ).apply(to: &workingSets)
 
             // With Workout Settings › Set Plan on, the template's drops, mini-sets and AMRAP
-            // targets, laid onto the prefilled sets so each drop steps down from its set's weight.
+            // targets, laid onto the prefilled sets so each drop steps down from its set's weight
+            // to one the equipment makes.
             if plansSets {
+                // In some unit, so a drop off an unconstrained weight still lands on a half kilo.
+                let rule = WeightRoundingRule(
+                    exercise: exerciseModel.exercise,
+                    gymProfile: gymProfile,
+                    preferredWeightUnit: weightUnit ?? .kilograms,
+                    resistanceEquipment: refs
+                )
                 workingSets = WorkoutSessionModel.applyingSetPlan(
                     to: workingSets,
                     setTargets: setTargets,
-                    authorId: authorId
+                    authorId: authorId,
+                    rounding: rule
                 )
             }
             
@@ -174,7 +214,8 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 setTargets: setTargets,
                 exercise: exerciseModel.exercise,
                 gymProfile: gymProfile,
-                unitPreferences: unitPreferences,
+                weightUnit: weightUnit,
+                resistanceEquipment: refs,
                 count: exerciseModel.warmupSetCount
             )
             
@@ -200,15 +241,26 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 imageName: imageName,
                 sets: reindexedSets,
                 setTargets: setTargets,
-                chosenVariationId: nil,
-                equipmentVariations: exerciseModel.exercise.equipmentVariations,
+                chosenVariationId: chosenVariationId,
+                equipmentVariations: variations,
                 supersetGroupId: exerciseModel.supersetGroupId,
                 planNotes: exerciseModel.notes,
+                planSlotId: exerciseModel.id,
                 restSeconds: exerciseModel.restSeconds,
                 linkURL: exerciseModel.linkURL,
-                substituteExerciseIds: exerciseModel.substituteExerciseIds
+                substituteExerciseIds: exerciseModel.substituteExerciseIds,
+                weightUnit: weightUnit,
+                loadsPerSet: SessionLoadChoice.loadsPerSet(exerciseModel.exercise),
+                machineBaseKg: SessionLoadChoice.machineBaseKg(refs: refs, gym: gymProfile)
             )
         }
+    }
+
+    /// Whether two variations are lifted with the same kind of load (`LoadKind`). Either side
+    /// without a known load matches: there is nothing to say they differ.
+    static func isSameLoad(_ lhs: [EquipmentRef]?, _ rhs: [EquipmentRef]?) -> Bool {
+        guard let lhs = lhs.flatMap(LoadKind.init(refs:)), let rhs = rhs.flatMap(LoadKind.init(refs:)) else { return true }
+        return lhs == rhs
     }
 
     /// Which appearance of its exercise `exercise` is in this workout, from 0, in `index` order:
@@ -280,15 +332,67 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// every weight at 90 % rounded by `rounding` (the exercise's equipment), reps as planned.
     /// Warm-ups stay, at 90 % of theirs.
     mutating func applyDeload(rounding: (WorkoutExerciseModel) -> (Double) -> Double) {
+        isDeload = true
         for index in exercises.indices {
             let roundWeight = rounding(exercises[index])
             var sets = MesocycleDeload.keptSets(exercises[index].sets)
             for setIndex in sets.indices {
                 guard let weight = sets[setIndex].weightKg, weight != 0 else { continue }
-                sets[setIndex].weightKg = roundWeight(MesocycleDeload.lighter(weight))
+                sets[setIndex].weightKg = MesocycleDeload.lighterWeight(weight, round: roundWeight)
             }
             exercises[index].sets = sets
         }
+    }
+
+    /// A planned drop: `percent` off the piece before, on a weight `rounding` allows (the unit's
+    /// half kilogram or pound where nothing constrains it), and lighter than that piece even where
+    /// the nearest weight is the piece's own. Assistance and no weight are left as they are.
+    static func dropWeightKg(from parentKg: Double?, percent: Int, rounding: WeightRoundingRule?) -> Double? {
+        guard let parentKg, parentKg > 0 else { return parentKg }
+        let target = parentKg * (1 - Double(percent) / 100)
+        guard let rounding else { return (target * 2).rounded() / 2 }
+        let rounded = rounding.round(target)
+        if rounded < parentKg - 0.001 { return rounded }
+        return rounding.round(parentKg - rounding.minimumIncrementKg)
+    }
+
+    /// The logged working sets' weight × reps (`WorkoutSetModel.volumeKg`).
+    var loggedVolumeKg: Double {
+        exercises.flatMap(\.loggedWorkingSets).compactMap(\.volumeKg).reduce(0, +)
+    }
+
+    /// The logged working sets, a left/right pair counted once.
+    var loggedSetCount: Int {
+        exercises.reduce(0) { $0 + $1.loggedSetCount }
+    }
+
+    /// The unit the author lifted in, for what followers read of the session: the unit most of
+    /// its logged sets were entered in (`WorkoutSetModel.weightUnit`), else kilograms.
+    var authorWeightUnit: ExerciseWeightUnit {
+        Self.authorWeightUnit(of: [self])
+    }
+
+    /// The unit most of `sessions`' logged sets were entered in, else kilograms.
+    static func authorWeightUnit(of sessions: [WorkoutSessionModel]) -> ExerciseWeightUnit {
+        let units = sessions.flatMap(\.exercises).flatMap(\.loggedWorkingSets).compactMap(\.weightUnit)
+        let pounds = units.filter { $0 == .pounds }.count
+        return pounds * 2 > units.count ? .pounds : .kilograms
+    }
+
+    /// What a finished session keeps: the sets that were logged, each stamped with its unit and
+    /// load count. A set never logged was the plan; kept, it counted as done in every summary and
+    /// came back as "last time" in the next session. An exercise none of whose sets were logged
+    /// stays, empty, with its targets: it was planned and skipped, which adherence counts
+    /// (`VolumeRecommendation`), and summaries leave it out (`doneExercises`).
+    mutating func dropUnloggedSets() {
+        for index in exercises.indices {
+            exercises[index].sets = exercises[index].sets.filter { $0.completedAt != nil }.map(exercises[index].stamping)
+        }
+    }
+
+    /// The exercises with a logged set, for what a session shows it did.
+    var doneExercises: [WorkoutExerciseModel] {
+        exercises.filter { $0.sets.contains { $0.completedAt != nil } }
     }
 
     /// `pausedSeconds` is everything spent paused up to `date`, a pause still running included, so
@@ -357,8 +461,9 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
     /// and a right row when the sides differ.
     ///
     /// Each set takes the kind its set target asks for, so a template's drop set is logged as a
-    /// drop set wherever the exercise is added, at the start or part-way through. A set beyond the
-    /// targets stays standard.
+    /// drop set wherever the exercise is added, at the start or part-way through, and the reps in
+    /// reserve it aims for as its starting effort, which the reps keyboard changes to what was
+    /// left. A set beyond the targets stays standard.
     static func defaultSets(
         trackingMode: TrackingMode,
         authorId: String,
@@ -376,7 +481,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
                 weightKg: nil,
                 durationSec: nil,
                 distanceMeters: nil,
-                rpe: nil,
+                rpe: (index <= setTargets.count ? setTargets[index - 1].effectiveRIRTarget : nil).map(EffortScale.rpe(fromRIR:)),
                 side: perSide ? .both : nil,
                 kind: index <= setTargets.count ? SetKind(setTargets[index - 1].setType) : .standard,
                 isWarmup: false,
@@ -388,12 +493,17 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
 
     /// The template's set plan laid onto working sets already built and prefilled, one row per
     /// target in order: a drop target is followed by its drops, each `dropStep` per cent lighter
-    /// than the piece before (to the nearest 0.5 kg; the tracker snaps to the equipment later), a
+    /// than the piece before and on a weight the equipment makes (`dropWeightKg`), a
     /// myo-rep, rest-pause or cluster target by its mini-sets at the set's weight, and an AMRAP set
     /// carries the reps it sets out to beat unless the prefill already raised them. Partials, a
     /// stretch or a hold is one piece after the set: partials and a hold at its weight, a stretch
     /// with none, and the stretch and hold timed.
-    static func applyingSetPlan(to workingSets: [WorkoutSetModel], setTargets: [SetTarget], authorId: String) -> [WorkoutSetModel] {
+    static func applyingSetPlan(
+        to workingSets: [WorkoutSetModel],
+        setTargets: [SetTarget],
+        authorId: String,
+        rounding: WeightRoundingRule? = nil
+    ) -> [WorkoutSetModel] {
         workingSets.enumerated().flatMap { position, set -> [WorkoutSetModel] in
             guard position < setTargets.count, !set.isSubSet else { return [set] }
             let target = setTargets[position]
@@ -413,7 +523,7 @@ struct WorkoutSessionModel: DataSyncModelProtocol, Equatable {
             case .drop:
                 var weight = set.weightKg
                 return [set] + (0..<max(target.dropCount ?? 0, 0)).map { _ in
-                    weight = weight.map { ($0 * (1 - Double(target.dropStep) / 100) * 2).rounded() / 2 }
+                    weight = Self.dropWeightKg(from: weight, percent: target.dropStep, rounding: rounding)
                     return piece(kind: .drop, weightKg: weight, reps: target.dropReps)
                 }
             case .myo, .restPause, .cluster:

@@ -30,6 +30,8 @@ struct WeeklyReview: Equatable {
     let goal: Int
     let volumeKg: Double
     let previousVolumeKg: Double
+    /// The unit the week's sets were lifted in, for its volume (`WorkoutSessionModel.authorWeightUnit`).
+    var volumeUnit: ExerciseWeightUnit = .kilograms
     let setsPerMuscle: [MuscleSets]
     let personalRecords: [WorkoutSessionHighlights.PersonalRecord]
     let averageRPE: Double?
@@ -72,6 +74,7 @@ struct WeeklyReview: Equatable {
             goal: goal,
             volumeKg: CircleWeek.volumeKg(of: userId, inWeekOf: week, sessions: sessions, calendar: calendar),
             previousVolumeKg: CircleWeek.volumeKg(of: userId, inWeekOf: lastWeek, sessions: sessions, calendar: calendar),
+            volumeUnit: WorkoutSessionModel.authorWeightUnit(of: weekSessions),
             setsPerMuscle: setsPerMuscle(weekSessions, templates: templates, calendar: calendar),
             personalRecords: personalRecords(weekSessions, history: sessions),
             averageRPE: averageRPE(weekSessions),
@@ -192,7 +195,7 @@ struct WeeklyReview: Equatable {
     var sessionsText: String { String(localized: "\(sessionCount) of \(goal)") }
 
     var volumeText: String {
-        ShareCardContent.volumeText(volumeKg) ?? Format.weight(kg: 0, unit: WeightUnitPreference.kilograms)
+        ShareCardContent.volumeText(volumeKg, unit: volumeUnit) ?? Format.weight(kg: 0, unit: volumeUnit)
     }
 
     /// "+12% vs last week"; nil when there is nothing to compare with.

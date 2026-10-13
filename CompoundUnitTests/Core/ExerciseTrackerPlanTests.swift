@@ -17,6 +17,7 @@ struct ExerciseTrackerPlanTests {
     private final class Interactor: SpyGlobalInteractor, ExerciseTrackerInteractor {
         var allExercises: [ExerciseModel] = []
         func exerciseNote(for exerciseId: String) -> String? { nil }
+        func setExerciseNote(_ note: String?, for exerciseId: String) async throws { }
     }
 
     private final class Router: ExerciseTrackerRouter {

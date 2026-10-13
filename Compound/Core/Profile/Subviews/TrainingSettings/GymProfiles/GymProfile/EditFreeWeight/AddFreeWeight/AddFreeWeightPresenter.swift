@@ -64,6 +64,12 @@ class AddFreeWeightPresenter {
     /// Why the form cannot be saved yet, shown under the fields; nil when it can. Confirm stays
     /// disabled until then, rather than reporting the problem in an alert after the tap.
     var validationMessage: String? {
+        guard freeWeightAvailable.availableWeights > 0 else {
+            return String(localized: "Enter a weight above zero.")
+        }
+        if let count = freeWeightAvailable.count, count < 1 {
+            return String(localized: "Enter at least one, or leave it empty for no limit.")
+        }
         guard freeWeight.wrappedValue.range.contains(where: {
             $0.availableWeights == freeWeightAvailable.availableWeights && $0.unit == freeWeightAvailable.unit
         }) == false else {

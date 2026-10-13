@@ -32,11 +32,28 @@ private enum ActiveSortedWeightSubtitle {
 struct GymProfileDelegate {
     let onCompleted: (() -> Void)?
     let gymProfile: GymProfileModel
-    
-    init(onCompleted: (() -> Void)? = nil, gymProfile: GymProfileModel) {
+    /// Only these items, under `title`: one exercise variation's equipment, edited from inside a
+    /// workout. `nil` is the whole gym.
+    var equipment: Set<EquipmentRef>?
+    var title: String?
+    /// After each save, with the gym as saved.
+    var onSaved: (@MainActor (GymProfileModel) -> Void)?
+
+    init(
+        onCompleted: (() -> Void)? = nil,
+        gymProfile: GymProfileModel,
+        equipment: Set<EquipmentRef>? = nil,
+        title: String? = nil,
+        onSaved: (@MainActor (GymProfileModel) -> Void)? = nil
+    ) {
         self.onCompleted = onCompleted
         self.gymProfile = gymProfile
+        self.equipment = equipment
+        self.title = title
+        self.onSaved = onSaved
     }
+
+    var isScoped: Bool { equipment != nil }
 }
 
 struct GymProfileView: View {
@@ -46,7 +63,9 @@ struct GymProfileView: View {
     
     var body: some View {
         List {
-            imageHeader
+            if !delegate.isScoped {
+                imageHeader
+            }
 
             equipmentHeader
             if !presenter.filteredFreeWeights.isEmpty {
@@ -89,7 +108,7 @@ struct GymProfileView: View {
             }
         }
         .scrollIndicators(.hidden)
-        .ignoresSafeArea(edges: .top)
+        .ignoresSafeArea(edges: delegate.isScoped ? [] : .top)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             presenter.onViewAppear()
@@ -317,13 +336,29 @@ struct GymProfileView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .title) {
-            TextField(text: $presenter.gymProfile.name) {
-                Text("Untitled Gym Profile")
+        if let title = delegate.title {
+            ToolbarItem(placement: .title) {
+                Text(title)
+                    .font(.headline)
+            }
+        } else {
+            ToolbarItem(placement: .title) {
+                TextField(text: $presenter.gymProfile.name) {
+                    Text("Untitled Gym Profile")
+                }
             }
         }
-        
-        ToolbarItem(placement: .topBarTrailing) {
+
+        if !delegate.isScoped {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                gymToolbarButtons
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var gymToolbarButtons: some View {
+        Group {
             Menu {
                 Button("Add Machine…", systemImage: Symbol.add) {
                     presenter.onAddMachinePressed()
@@ -332,9 +367,7 @@ struct GymProfileView: View {
                 Image(systemName: Symbol.add)
             }
             .accessibilityLabel("Add")
-        }
 
-        ToolbarItem(placement: .topBarTrailing) {
             Button {
                 presenter.onAddImagePressed()
             } label: {
@@ -534,7 +567,9 @@ extension CoreBuilder {
             presenter: GymProfilePresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
-                gymProfile: delegate.gymProfile
+                gymProfile: delegate.gymProfile,
+                scope: delegate.equipment,
+                onSaved: delegate.onSaved
             ),
             delegate: delegate
         )

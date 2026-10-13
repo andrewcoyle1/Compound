@@ -43,7 +43,7 @@ extension ActiveWorkout {
         var parts: [String] = []
         switch trackingMode {
         case .weightReps, .repsOnly:
-            if trackingMode == .weightReps, let weightKg = set.weightKg, weightKg > 0 {
+            if trackingMode == .weightReps, let weightKg = set.loadKg, weightKg > 0 {
                 parts.append(spokenWeight(kg: weightKg, unit: unit, locale: locale))
             }
             if let reps = set.reps { parts.append(Format.reps(reps, locale: locale)) }

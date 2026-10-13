@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MicrocycleVariationsDelegate {
+struct WeeklyTargetsDelegate {
     /// The exercise as the editor holds it when the screen opens. The screen is the only editor of
     /// its variations while it is open, so it keeps its own copy and hands each change back rather
     /// than reading a binding.
@@ -8,9 +8,9 @@ struct MicrocycleVariationsDelegate {
     let onChange: @MainActor ([MicrocycleSetTargets]) -> Void
 }
 
-struct MicrocycleVariationsView: View {
+struct WeeklyTargetsView: View {
 
-    @State var presenter: MicrocycleVariationsPresenter
+    @State var presenter: WeeklyTargetsPresenter
 
     var body: some View {
         List {
@@ -19,7 +19,7 @@ struct MicrocycleVariationsView: View {
                     .font(.rowDetail)
                     .foregroundStyle(.secondary)
             } footer: {
-                Text("A variation's targets apply from its week until the next variation.")
+                Text("Each week's targets apply from that week until the next one listed.")
             }
 
             ForEach(presenter.variations) { variation in
@@ -37,13 +37,13 @@ struct MicrocycleVariationsView: View {
                 Button {
                     presenter.onAddVariationPressed()
                 } label: {
-                    Label("Add variation", systemImage: Symbol.add)
+                    Label("Add Week", systemImage: Symbol.add)
                 }
                 .disabled(!presenter.canAddVariation)
-                .accessibilityIdentifier("MicrocycleVariations.add")
+                .accessibilityIdentifier("WeeklyTargets.add")
             }
         }
-        .navigationTitle("Varies by week")
+        .navigationTitle("Weekly Targets")
         .navigationSubtitle(presenter.exerciseName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
@@ -53,7 +53,7 @@ struct MicrocycleVariationsView: View {
 
     /// A step onto a week another variation starts on is disabled rather than refused with an alert:
     /// a nil action greys out that half of the stepper.
-    private func weekStepper(_ variation: MicrocycleVariationsPresenter.Variation) -> some View {
+    private func weekStepper(_ variation: WeeklyTargetsPresenter.Variation) -> some View {
         Stepper(
             label: { Text(presenter.weekTitle(variation)) },
             onIncrement: stepAction(variation, by: 1),
@@ -61,12 +61,12 @@ struct MicrocycleVariationsView: View {
         )
     }
 
-    private func stepAction(_ variation: MicrocycleVariationsPresenter.Variation, by delta: Int) -> (() -> Void)? {
+    private func stepAction(_ variation: WeeklyTargetsPresenter.Variation, by delta: Int) -> (() -> Void)? {
         guard presenter.canStep(variation, by: delta) else { return nil }
         return { presenter.onStep(variation, by: delta) }
     }
 
-    private func deleteButton(_ variation: MicrocycleVariationsPresenter.Variation) -> some View {
+    private func deleteButton(_ variation: WeeklyTargetsPresenter.Variation) -> some View {
         Button(role: .destructive) {
             presenter.onDeletePressed(variation)
         } label: {
@@ -77,9 +77,9 @@ struct MicrocycleVariationsView: View {
 
 extension CoreBuilder {
 
-    func microcycleVariationsView(router: AnyRouter, delegate: MicrocycleVariationsDelegate) -> some View {
-        MicrocycleVariationsView(
-            presenter: MicrocycleVariationsPresenter(
+    func weeklyTargetsView(router: AnyRouter, delegate: WeeklyTargetsDelegate) -> some View {
+        WeeklyTargetsView(
+            presenter: WeeklyTargetsPresenter(
                 interactor: interactor,
                 router: CoreRouter(router: router, builder: self),
                 delegate: delegate
@@ -91,9 +91,9 @@ extension CoreBuilder {
 
 extension CoreRouter {
 
-    func showMicrocycleVariationsView(delegate: MicrocycleVariationsDelegate) {
+    func showWeeklyTargetsView(delegate: WeeklyTargetsDelegate) {
         router.showScreen(.push) { router in
-            builder.microcycleVariationsView(router: router, delegate: delegate)
+            builder.weeklyTargetsView(router: router, delegate: delegate)
         }
     }
 
@@ -107,9 +107,9 @@ extension CoreRouter {
         MicrocycleSetTargets(fromMicrocycle: 2, setTargets: [SetTarget(setNumber: 1), SetTarget(setNumber: 2)]),
         MicrocycleSetTargets(fromMicrocycle: 9, setTargets: [SetTarget(setNumber: 1), SetTarget(setNumber: 2), SetTarget(setNumber: 3)])
     ]
-    let delegate = MicrocycleVariationsDelegate(exercise: exercise, onChange: { _ in })
+    let delegate = WeeklyTargetsDelegate(exercise: exercise, onChange: { _ in })
 
     return RouterView { router in
-        builder.microcycleVariationsView(router: router, delegate: delegate)
+        builder.weeklyTargetsView(router: router, delegate: delegate)
     }
 }

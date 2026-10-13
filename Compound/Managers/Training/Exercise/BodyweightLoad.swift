@@ -35,14 +35,15 @@ enum BodyweightLoad {
         return "\(bodyweight) \(weight < 0 ? "−" : "+") \(Format.weight(kg: abs(weight), unit: unit))"
     }
 
-    /// A set's volume at its effective load: the external load as `WorkoutSetModel.volumeKg` counts
-    /// it (a weight per side twice), plus the bodyweight once, per rep. With no contribution it is
-    /// the set's own volume.
+    /// A set's volume at its effective load: the external load (a dumbbell in each hand twice,
+    /// `loadCount`) plus the bodyweight, per rep. A `both` row is a left and a right set logged
+    /// once, so it counts as both, bodyweight included: splitting the row in two changes nothing.
+    /// With no contribution it is the set's own volume.
     static func volumeKg(of set: WorkoutSetModel, contributionKg: Double?) -> Double? {
         guard let contributionKg, contributionKg > 0 else { return set.volumeKg }
         guard let reps = set.reps else { return nil }
-        let external = (set.weightKg ?? 0) * (set.side == .both ? 2 : 1)
-        return effectiveKg(external: external, contribution: contributionKg) * Double(reps)
+        let external = (set.loadKg ?? 0) * Double(max(set.loadCount ?? 1, 1))
+        return effectiveKg(external: external, contribution: contributionKg) * Double(reps) * (set.side == .both ? 2 : 1)
     }
 }
 

@@ -81,6 +81,7 @@ extension WorkoutTrackerPresenter {
         #if !targetEnvironment(macCatalyst)
         workoutSession.endSession(at: now, pausedSeconds: interactor.totalPausedDuration(at: now))
         #endif
+        workoutSession.dropUnloggedSets()
         // Written before `isDone` stops further writes, so a save that fails below leaves the
         // finished session, with its last edit, for Training to resume.
         flushSave()

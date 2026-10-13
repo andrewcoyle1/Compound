@@ -48,19 +48,17 @@ struct SetTargetView: View {
                             numberBadge("\(setTarget.setNumber)")
                                 .accessibilityLabel("Set \(setTarget.setNumber)")
 
-                            TextField("Optional", text: intTextBinding($setTarget.minReps))
+                            TextField("Optional", text: repsTextBinding($setTarget.minReps))
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.roundedBorder)
                                 .accessibilityLabel("Set \(setTarget.setNumber), minimum reps")
 
-                            TextField("Optional", text: intTextBinding($setTarget.maxReps))
+                            TextField("Optional", text: repsTextBinding($setTarget.maxReps))
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.roundedBorder)
                                 .accessibilityLabel("Set \(setTarget.setNumber), maximum reps")
 
-                            numberBadge(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
-                                .accessibilityLabel("Reps in reserve")
-                                .accessibilityValue(setTarget.rirTarget.map { "\($0)" } ?? Format.placeholder)
+                            rirPicker($setTarget)
                         }
                         if presenter.plansSets {
                             planButton(setTarget)
@@ -182,19 +180,30 @@ struct SetTargetView: View {
             .frame(width: numberColumnWidth)
     }
 
-    private func intTextBinding(_ value: Binding<Int?>) -> Binding<String> {
+    /// The reps in reserve the set aims for, 0 to 6+, or none. It is the RIR a logged set starts
+    /// with in the tracker, and an AMRAP or failure set without one aims for none in reserve.
+    private func rirPicker(_ setTarget: Binding<SetTarget>) -> some View {
+        Menu {
+            Picker("Reps in reserve", selection: setTarget.rirTarget) {
+                Text("None").tag(Int?.none)
+                ForEach(EffortScale.rirChoices, id: \.self) { rir in
+                    Text(verbatim: EffortScale.rirText(rir)).tag(Int?.some(rir))
+                }
+            }
+        } label: {
+            numberBadge(setTarget.wrappedValue.rirTarget.map(EffortScale.rirText) ?? Format.placeholder)
+        }
+        .accessibilityLabel("Set \(setTarget.wrappedValue.setNumber), reps in reserve")
+        .accessibilityValue(setTarget.wrappedValue.rirTarget.map(EffortScale.rirText) ?? String(localized: "None"))
+    }
+
+    /// A rep count is at least one: a target of 0 reps would be prescribed and then progressed.
+    private func repsTextBinding(_ value: Binding<Int?>) -> Binding<String> {
         Binding(
-            get: {
-                guard let currentValue = value.wrappedValue else { return "" }
-                return String(currentValue)
-            },
+            get: { value.wrappedValue.map(String.init) ?? "" },
             set: { newValue in
                 let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else {
-                    value.wrappedValue = nil
-                    return
-                }
-                value.wrappedValue = Int(trimmed)
+                value.wrappedValue = Int(trimmed).map { max($0, 1) }
             }
         )
     }

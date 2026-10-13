@@ -246,7 +246,7 @@ struct WorkoutSessionPrefillTests {
 
         WorkingSetPrefill(
             prefill: .previousValues, previousSets: previous, authorId: "author-1",
-            exercise: exerciseModel(), gymProfile: nil, unitPreferences: nil
+            exercise: exerciseModel(), gymProfile: nil, weightUnit: nil
         ).apply(to: &sets)
 
         #expect(sets.map(\.weightKg) == [60, nil, 62.5])

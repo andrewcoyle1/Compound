@@ -55,19 +55,18 @@ class WorkoutSessionRowPresenter {
 
     // MARK: - Stats
 
-    private var workingSets: [WorkoutSetModel] {
-        session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
-    }
+    /// The logged working sets, a left and a right counted once, as the share card counts them.
+    var workingSetCount: Int { session.loggedSetCount }
 
-    var workingSetCount: Int { workingSets.count }
-
-    /// Working sets' weight × reps, `nil` when nothing was lifted. Tonnes from 1,000 kg up.
+    /// Logged working sets' weight × reps, in the unit the author lifted in, `nil` when nothing
+    /// was lifted. Tonnes from 1,000 kg up; a pound total stays in pounds.
     var volumeText: String? {
-        let kilograms = workingSets.reduce(0) { $0 + ($1.volumeKg ?? 0) }
+        let kilograms = session.loggedVolumeKg
         guard kilograms > 0 else { return nil }
+        let unit = session.authorWeightUnit
         // ponytail: tonnes have no `Format` function; add `Format.volume` if a second screen needs it.
-        guard kilograms < 1000 else { return "\((kilograms / 1000).formatted(.number.precision(.fractionLength(1)))) t" }
-        return Format.weight(kg: kilograms, unit: WeightUnitPreference.kilograms)
+        guard kilograms < 1000 || unit == .pounds else { return "\((kilograms / 1000).formatted(.number.precision(.fractionLength(1)))) t" }
+        return Format.weight(kg: kilograms, unit: unit)
     }
 
     var durationText: String? {
@@ -76,17 +75,18 @@ class WorkoutSessionRowPresenter {
 
     /// "3 × 10 @ 80 kg" for three working sets of ten: sets a side count once.
     func setsDescription(for exercise: WorkoutExerciseModel) -> String {
-        guard let first = exercise.workingSets.first else { return String(localized: "\(exercise.setTargets.count) sets") }
-        let count = exercise.workingSetCount
-        guard let detail = Self.setDetail(first, mode: exercise.trackingMode) else { return String(localized: "\(count) sets") }
+        guard let first = exercise.loggedWorkingSets.first else { return String(localized: "\(exercise.setTargets.count) sets") }
+        let count = exercise.loggedSetCount
+        let unit = first.weightUnit ?? exercise.weightUnit ?? session.authorWeightUnit
+        guard let detail = Self.setDetail(first, mode: exercise.trackingMode, unit: unit) else { return String(localized: "\(count) sets") }
         return "\(count) × \(detail)"
     }
 
-    private static func setDetail(_ set: WorkoutSetModel, mode: TrackingMode) -> String? {
+    private static func setDetail(_ set: WorkoutSetModel, mode: TrackingMode, unit: ExerciseWeightUnit) -> String? {
         switch mode {
         case .weightReps:
             guard let reps = set.reps else { return nil }
-            return set.weightKg.map { "\(reps) @ \(Format.weight(kg: $0, unit: WeightUnitPreference.kilograms))" } ?? "\(reps)"
+            return set.loadKg.map { "\(reps) @ \(Format.weight(kg: $0, unit: unit))" } ?? "\(reps)"
         case .repsOnly:
             return set.reps.map { "\($0)" }
         case .timeOnly:
@@ -130,18 +130,17 @@ class WorkoutSessionRowPresenter {
 
     /// The Share button's message beside `webLink`, or all it sends where there is no link.
     var shareSummary: String {
-        let workingSets = session.exercises.flatMap { $0.sets }.filter { !$0.isWarmup }
         // Every row counts towards the volume — both sides were lifted — but a left and a right
         // are one set, so the set count pairs them.
-        let volume = workingSets.reduce(0.0) { $0 + ($1.volumeKg ?? 0) }
-        let setCount = session.exercises.reduce(0) { $0 + $1.workingSetCount }
+        let volume = session.loggedVolumeKg
+        let setCount = session.loggedSetCount
         var parts = [
             session.name,
-            String(localized: "\(session.exercises.count) exercises"),
+            String(localized: "\(session.doneExercises.count) exercises"),
             String(localized: "\(setCount) sets")
         ]
         if volume > 0 {
-            parts.append(String(localized: "\(Int(volume)) kg lifted"))
+            parts.append(String(localized: "\(Format.weight(kg: volume, unit: session.authorWeightUnit)) lifted"))
         }
         return parts.joined(separator: " · ")
     }

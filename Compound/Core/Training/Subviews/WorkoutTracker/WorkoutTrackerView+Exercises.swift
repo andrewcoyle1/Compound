@@ -42,8 +42,8 @@ extension WorkoutTrackerView {
         )
     }
 
-    /// One card for a superset, built from each member's own card in pieces. The correction row
-    /// and a rest after a member's set sit under that set, as `delegate(for:)` places them; a
+    /// One card for a superset, built from each member's own card in pieces. A rest after a
+    /// member's set sits under that set, as `delegate(for:)` places it; a
     /// rest after a set outside the superset is drawn once, above the rows.
     private func supersetCard(_ members: [WorkoutExerciseModel], current: WorkoutExerciseModel) -> some View {
         let timers = members.compactMap { presenter.restTimer(for: $0) }
@@ -205,6 +205,10 @@ extension WorkoutTrackerView {
         if presenter.canDoLater(current) {
             onDoLater = { presenter.onDoLaterPressed(exerciseId) }
         }
+        var onUpdateMesocycleNote: (@MainActor (String) -> Void)?
+        if presenter.canEditMesocycleNote(current) {
+            onUpdateMesocycleNote = { presenter.updateMesocycleNote($0, exerciseId: exerciseId) }
+        }
         return ExerciseTrackerDelegate(
             exercise: exercise,
             lastExercise: presenter.previousExercise(for: current),
@@ -225,6 +229,7 @@ extension WorkoutTrackerView {
             onUpdateNote: { note in
                 presenter.updateExerciseNotes(note, exerciseId: exerciseId)
             },
+            onUpdateMesocycleNote: onUpdateMesocycleNote,
             onSwap: { replacement in
                 presenter.insertSwappedExercise(after: exerciseId, new: replacement)
             },
@@ -238,10 +243,6 @@ extension WorkoutTrackerView {
                 },
                 onCustomRestChanged: { setId, seconds in
                     presenter.customRestSeconds[setId] = seconds
-                },
-                correction: presenter.correction(for: current),
-                onCorrection: { setId, action in
-                    presenter.onCorrection(action, setId: setId, in: exerciseId)
                 },
                 onUndoManager: { presenter.onUndoManagerChanged($0) },
                 bodyweight: presenter.bodyweightContribution(for: current)

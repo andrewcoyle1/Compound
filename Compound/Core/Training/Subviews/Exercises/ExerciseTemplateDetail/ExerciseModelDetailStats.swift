@@ -22,7 +22,7 @@ struct ExerciseModelDetailStats {
         let totalReps: Int
         let volumeKg: Double
         let bestOneRMKg: Double
-        /// The heaviest working set, as weight and the reps achieved at it.
+        /// The heaviest working set, as its load (`WorkoutSetModel.loadKg`) and the reps achieved at it.
         let heaviestWeightKg: Double
         let repsAtHeaviest: Int
     }
@@ -33,7 +33,7 @@ struct ExerciseModelDetailStats {
     var totalReps: Int = 0
     var totalVolumeKg: Double = 0
 
-    /// The heaviest single working set ever logged, and the session it happened in.
+    /// The heaviest single working set ever logged, as its load, and the session it happened in.
     var heaviestSetKg: Double = 0
     var repsAtHeaviestSet: Int = 0
     var heaviestSetDate: Date?
@@ -54,7 +54,7 @@ struct ExerciseModelDetailStats {
             let date = session.endedAt ?? session.dateCreated
 
             for exercise in session.exercises where exercise.templateId == templateId {
-                let workingSets = exercise.sets.filter { !$0.isWarmup && $0.completedAt != nil }
+                let workingSets = exercise.loggedWorkingSets
                 guard !workingSets.isEmpty else { continue }
 
                 let performance = performance(
@@ -83,11 +83,15 @@ struct ExerciseModelDetailStats {
         var repsAtHeaviest = 0
 
         for set in sets {
-            let setReps = max(1, set.reps ?? 1)
             reps += set.reps ?? 0
+            // Volume as everywhere else (`WorkoutSetModel.volumeKg`): a `both` row and a dumbbell
+            // in each hand count twice, drops and mini-sets count, assistance does not.
+            volume += set.volumeKg ?? 0
 
-            guard let weight = set.weightKg, weight > 0 else { continue }
-            volume += weight * Double(setReps)
+            // A record is a set of its own done for at least one rep: a drop is lighter by design,
+            // and a set saved with no reps was not lifted.
+            guard !set.isSubSet, let setReps = set.reps, setReps >= 1,
+                  let weight = set.loadKg, weight > 0 else { continue }
             bestOneRM = max(bestOneRM, ExerciseOneRMAggregator.estimated1RM(of: set) ?? 0)
             // At equal weight the set with more reps is the better one.
             if weight > heaviest || (weight == heaviest && setReps > repsAtHeaviest) {
@@ -100,7 +104,8 @@ struct ExerciseModelDetailStats {
             sessionId: sessionId,
             date: date,
             workoutName: workoutName,
-            workingSets: sets.count,
+            // A left and a right are one set; a drop or mini-set is part of its set.
+            workingSets: sets.filter { !$0.isSubSet }.pairedSetCount,
             totalReps: reps,
             volumeKg: volume,
             bestOneRMKg: bestOneRM,

@@ -45,7 +45,11 @@ struct WorkingSetPrefill {
     let authorId: String
     let exercise: ExerciseModel
     let gymProfile: GymProfileModel?
-    let unitPreferences: [String: ExerciseUnitPreference]?
+    /// The unit the session enters this exercise's weights in (`SessionLoadChoice.weightUnit`).
+    let weightUnit: ExerciseWeightUnit?
+    /// The chosen variation's equipment; `nil` is the exercise's first.
+    var resistanceEquipment: [EquipmentRef]?
+    var setTargets: [SetTarget] = []
     /// Which appearance of `exercise` in the workout this is, from 0 (`ActiveWorkout.historyKey`).
     var occurrence = 0
 
@@ -63,8 +67,14 @@ struct WorkingSetPrefill {
         // A drop or mini-set is part of the set before it, and filled by hand when it is added:
         // matched by position, last time's drop would hand its lighter weight to the next set.
         let previousWorkingSets = (previousSets ?? []).filter { !$0.isWarmup && $0.side != .right && !$0.isSubSet }
-        // The same rule the keyboard steps by, so a prefilled weight is one the gym can make.
-        let rule = WeightRoundingRule(exercise: exercise, gymProfile: gymProfile, preferredWeightUnit: unitPreferences?[exercise.id]?.weightUnit)
+        // The same rule the keyboard steps by, so a prefilled weight is one the gym can make. A
+        // suggestion was rounded by the same rule already, so this leaves it as it is.
+        let rule = WeightRoundingRule(
+            exercise: exercise,
+            gymProfile: gymProfile,
+            preferredWeightUnit: weightUnit,
+            resistanceEquipment: resistanceEquipment
+        )
 
         for (position, index) in workingSets.indices.filter({ !workingSets[$0].isSubSet }).enumerated() {
             let suggested = suggestion?.set(at: position)

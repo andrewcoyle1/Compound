@@ -32,7 +32,7 @@ extension WorkoutTrackerPresenter {
                 setTargets: template.setTargets
             )
             let imageName = Constants.exerciseImageName(for: exercise)
-            let newExercise = WorkoutExerciseModel(
+            var newExercise = WorkoutExerciseModel(
                 id: UUID().uuidString,
                 authorId: userId,
                 templateId: exercise.id,
@@ -42,9 +42,12 @@ extension WorkoutTrackerPresenter {
                 notes: nil,
                 imageName: imageName,
                 sets: defaultSets,
-                setTargets: template.setTargets,
-                chosenVariationId: nil,
-                equipmentVariations: exercise.equipmentVariations
+                setTargets: template.setTargets
+            )
+            newExercise.takeLoad(
+                from: exercise,
+                gym: interactor.workoutGymProfile,
+                preference: interactor.getPreference(templateId: exercise.id)
             )
             updated.append(newExercise)
             added.append(newExercise)

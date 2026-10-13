@@ -93,12 +93,16 @@ struct WorkoutTrackerSaveCoalescingTests {
     @Test("Test Finishing Writes At Once")
     func testFinishingWritesAtOnce() async throws {
         let screen = try WorkoutTrackerTypingScreen(weights: [100, 100])
+        let before = screen.writes
 
         screen.type(1, 10, 105, into: 1)
         screen.presenter.finishWorkout()
 
-        #expect(screen.savedWeights == [105, 105])
+        // Written at once, not after the debounce.
+        #expect(screen.writes > before)
         #expect(screen.interactor.activeSession?.endedAt != nil)
+        // Nothing was logged, so nothing is kept: a finished session holds what was lifted.
+        #expect(screen.savedWeights == [])
         await screen.presenter.pendingFinishTask?.value
     }
 

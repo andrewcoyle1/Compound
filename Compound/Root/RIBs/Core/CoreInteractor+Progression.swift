@@ -8,6 +8,13 @@
 
 import Foundation
 
+/// The equipment and unit one template exercise will start a session on, worked out once so the
+/// prefill's suggestions and the session itself agree (`SessionLoadChoice`).
+struct SessionLoad {
+    let resistanceEquipment: [EquipmentRef]?
+    let weightUnit: ExerciseWeightUnit?
+}
+
 extension CoreInteractor {
 
     /// How the working sets of a session started from `template` should be filled in.
@@ -19,7 +26,7 @@ extension CoreInteractor {
         for template: WorkoutTemplateModel,
         authorId: String,
         mesocycleId: String?,
-        unitPreferences: [String: ExerciseUnitPreference]
+        loads: [SessionLoad]
     ) async -> SessionPrefill {
         switch workoutSettings.smartProgressionInitialLogFill {
         case .previousValues:
@@ -30,7 +37,8 @@ extension CoreInteractor {
             let contexts = template.exercises.enumerated().map { index, templateExercise in
                 ProgressionPlanner.ExerciseContext(
                     templateExercise: templateExercise,
-                    preferredWeightUnit: unitPreferences[templateExercise.exercise.id]?.weightUnit,
+                    preferredWeightUnit: index < loads.count ? loads[index].weightUnit : nil,
+                    resistanceEquipment: index < loads.count ? loads[index].resistanceEquipment : nil,
                     occurrence: template.exercises[..<index].filter { $0.exercise.id == templateExercise.exercise.id }.count
                 )
             }
@@ -58,7 +66,7 @@ extension CoreInteractor {
             ProgressionPlanner.ExerciseContext(
                 sessionExercise: exercise,
                 exercise: allExercises.first(where: { $0.id == exercise.templateId }),
-                preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit,
+                preferredWeightUnit: exercise.weightUnit ?? getPreference(templateId: exercise.templateId).weightUnit,
                 occurrence: session.occurrence(of: exercise)
             )
         }
@@ -78,7 +86,7 @@ extension CoreInteractor {
         let context = ProgressionPlanner.ExerciseContext(
             sessionExercise: exercise,
             exercise: allExercises.first(where: { $0.id == exercise.templateId }),
-            preferredWeightUnit: getPreference(templateId: exercise.templateId).weightUnit
+            preferredWeightUnit: exercise.weightUnit ?? getPreference(templateId: exercise.templateId).weightUnit
         )
         let rule = WeightRoundingRule(
             exercise: context.exercise,
@@ -108,7 +116,9 @@ extension CoreInteractor {
                 workoutTemplateId: workoutTemplateId,
                 authorId: authorId,
                 mesocycleId: mesocycleId,
-                limit: 3
+                // Deeper than the three the engine reads: deload weeks and sessions on another
+                // kind of load are passed over (`ProgressionPlanner.history`).
+                limit: 10
             )
             let suggestion = ProgressionPlanner.suggestions(
                 for: [context],

@@ -240,11 +240,11 @@ struct ActiveWorkoutStateTests {
             ActiveWorkout.logTitle(for: set, in: exercise("e1", sets: [set]), unit: .kilograms, distanceUnit: .meters)
         }
 
-        #expect(title(amrap) == "Log AMRAP set · 100 kg")
+        #expect(title(amrap) == "Log failure set · 100 kg")
         amrap.targetReps = 8
-        #expect(title(amrap) == "Log AMRAP set · 100 kg · target 8+")
+        #expect(title(amrap) == "Log failure set · 100 kg · target 8+")
         amrap.reps = 10
-        #expect(title(amrap) == "Log AMRAP set · 100 kg × 10 · target 8+")
+        #expect(title(amrap) == "Log failure set · 100 kg × 10 · target 8+")
 
         // A target left on a set that is no longer AMRAP says nothing.
         amrap.kind = .standard
@@ -372,20 +372,18 @@ struct ActiveWorkoutStateTests {
         )
     }
 
-    /// A gym whose lightest plate is 5 kg is probably missing its small plates; rounding to it would
-    /// make every progression step 10 kg, so progression keeps its half-kilogram rounding there.
-    /// Prefill still rounds to the plates: a prescribed weight has to go on the bar.
-    @Test("Test Progression Only Rounds To Plates With Small Plates In The Gym")
+    /// A gym whose lightest plate is 5 kg moves a bar in tens, and progression rounds to that like
+    /// everything else: a suggestion has to go on the bar. The engine bridges a jump too big for
+    /// the weight with reps (`ProgressionEngine.jumpIsAffordable`).
+    @Test("Test Progression Rounds To The Plates The Gym Has")
     func testRoundingRuleNeedsSmallPlates() {
         let bar = [EquipmentRef(kind: .loadableBar, id: "barbell")]
         let small = WeightRoundingRule(exercise: nil, gymProfile: gym(plates: [1.25, 2.5, 5, 10, 20]), preferredWeightUnit: .kilograms, resistanceEquipment: bar)
         let coarse = WeightRoundingRule(exercise: nil, gymProfile: gym(plates: [5, 10, 20]), preferredWeightUnit: .kilograms, resistanceEquipment: bar)
 
-        #expect(small.forProgression == small)
-        #expect(small.forProgression.step.constrainsWeight)
-        #expect(!coarse.forProgression.step.constrainsWeight)
-        #expect(coarse.forProgression.minimumIncrementKg == 2.5)
-        #expect(coarse.forProgression.round(62.5) == 62.5)
+        #expect(small.minimumIncrementKg == 2.5)
+        #expect(coarse.step.constrainsWeight)
+        #expect(coarse.minimumIncrementKg == 10)
         #expect(coarse.round(62.5) == 60)
     }
 }
@@ -713,34 +711,4 @@ extension ActiveWorkoutPresenterTests {
         )
     }
 
-    @Test("Test The Tracker Reads BW And Counts Bodyweight In Volume With The Setting On")
-    func testBodyweightOnTracker() throws {
-        let (presenter, interactor) = try makePresenter(sets: [openSet("s1"), openSet("s2")])
-        interactor.allExercises = [libraryExercise("t1", percent: 50)]
-        interactor.currentWeightKilograms = 80
-        let off = presenter.computeTotalVolumeKg()
-        #expect(presenter.primaryActionTitle == "Log set 1 · 100 kg × 5")
-        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[0]) == nil)
-
-        interactor.workoutSettings.showBodyweightContribution = true
-
-        let squat = presenter.workoutSession.exercises[0]
-        #expect(presenter.bodyweightContribution(for: squat) == BodyweightContribution(percent: 50, bodyweightKg: 80, unit: .kilograms))
-        #expect(presenter.primaryActionTitle == "Log set 1 · BW + \(Format.weight(kg: 100, unit: .kilograms)) × 5")
-        // Two sets of 5 gain 40 kg of bodyweight a rep; the lunge lifts none.
-        #expect(presenter.computeTotalVolumeKg() == off + 2 * 5 * 40)
-        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[1]) == nil)
-    }
-
-    @Test("Test With No Bodyweight Known The Labels Stay And Volume Does Not Grow")
-    func testBodyweightUnknown() throws {
-        let (presenter, interactor) = try makePresenter(sets: [openSet("s1")])
-        interactor.allExercises = [libraryExercise("t1", percent: 100)]
-        let off = presenter.computeTotalVolumeKg()
-        interactor.workoutSettings.showBodyweightContribution = true
-
-        #expect(presenter.bodyweightContribution(for: presenter.workoutSession.exercises[0])?.contributionKg == nil)
-        #expect(presenter.primaryActionTitle.contains("BW + "))
-        #expect(presenter.computeTotalVolumeKg() == off)
-    }
 }

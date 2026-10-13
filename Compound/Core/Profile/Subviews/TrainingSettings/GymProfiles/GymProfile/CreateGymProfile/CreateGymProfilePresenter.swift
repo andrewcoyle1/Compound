@@ -34,6 +34,7 @@ class CreateGymProfilePresenter {
         else { return }
         
         let gymProfile = GymProfileModel(authorId: userId, name: gymProfileName)
+            .adaptingDefaults(to: interactor.currentUser?.submittedWeightUnitPreference == .pounds ? .pounds : .kilograms)
         let delegate = GymProfileDelegate(onCompleted: {
             oldDelegate.onComplete?()
         }, gymProfile: gymProfile)

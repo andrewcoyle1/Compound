@@ -25,9 +25,31 @@ extension WorkoutTrackerPresenter {
             session.updateExercises(workoutSession.exercises.filter { templateIds.contains($0.templateId) })
         }
         Task {
-            let suggestions = await interactor.progressionSuggestions(for: session, gymProfile: interactor.workoutGymProfile)
+            var suggestions = await interactor.progressionSuggestions(for: session, gymProfile: interactor.workoutGymProfile)
+            if workoutSession.isDeload == true { suggestions = deloaded(suggestions, in: session) }
             progressionSuggestions.merge(suggestions) { $1 }
         }
+    }
+
+    /// A deload week's suggestions at the deload's weight, so tapping one does not undo the
+    /// deload the sets were built with (`WorkoutSessionModel.applyDeload`).
+    private func deloaded(_ suggestions: [String: ProgressionSuggestion], in session: WorkoutSessionModel) -> [String: ProgressionSuggestion] {
+        var result = suggestions
+        for exercise in session.exercises {
+            let key = ActiveWorkout.historyKey(templateId: exercise.templateId, occurrence: session.occurrence(of: exercise))
+            guard let suggestion = result[key] else { continue }
+            let rule = ProgressionPlanner.roundingRule(for: progressionContext(for: exercise), gymProfile: interactor.workoutGymProfile)
+            result[key] = ProgressionSuggestion(rationale: suggestion.rationale, sets: suggestion.sets.map { set in
+                SuggestedSet(
+                    weightKg: set.weightKg.map { MesocycleDeload.lighterWeight($0, round: rule.round) },
+                    reps: set.reps,
+                    durationSec: set.durationSec,
+                    distanceMeters: set.distanceMeters,
+                    targetReps: set.targetReps
+                )
+            })
+        }
+        return result
     }
 
     /// What was filled in for the user, before they touched anything: in every exercise, or in
@@ -59,18 +81,27 @@ extension WorkoutTrackerPresenter {
         let exercise = workoutSession.exercises[exerciseIndex]
         guard exercise.trackingMode == .weightReps else { return }
 
-        let workingSets = exercise.sets.filter { !$0.isWarmup }
+        // Sets of their own only: a drop, mini-set or piece is part of its set, planned lighter or
+        // shorter on purpose, and a logged one says nothing about the next set.
+        guard !completed.isSubSet else { return }
+        let workingSets = exercise.sets.filter { !$0.isWarmup && !$0.isSubSet }
         guard let position = workingSets.firstIndex(where: { $0.id == completed.id }) else { return }
 
-        let perSide = exercise.isSplit
-        let remaining = workingSets[(position + 1)...].filter { $0.completedAt == nil }
+        // The set's number counts a left/right pair once, as targets do.
+        let setNumber = { (index: Int) in max(workingSets[...index].filter { $0.side != .right }.count - 1, 0) }
+        let target = setTarget(of: exercise, forWorkingSetAt: setNumber(position))
+        // Only sets asked for the same as this one: a back-off after a top set has its own target.
+        let remaining = workingSets.indices
+            .filter { $0 > position && workingSets[$0].completedAt == nil }
+            .filter { Self.sameAsk(setTarget(of: exercise, forWorkingSetAt: setNumber($0)), target) }
+            .map { workingSets[$0] }
         guard !remaining.isEmpty else { return }
 
         let context = progressionContext(for: exercise)
         let rule = ProgressionPlanner.roundingRule(for: context, gymProfile: interactor.workoutGymProfile)
         let adjusted = ProgressionEngine().adjustRemaining(
             completed: completed,
-            target: setTarget(of: exercise, forWorkingSetAt: perSide ? position / 2 : position),
+            target: target,
             remaining: Array(remaining),
             mode: exercise.trackingMode,
             rounding: rule.progressionRounding,
@@ -112,11 +143,17 @@ extension WorkoutTrackerPresenter {
         workoutSession.updateExercises(exercises)
     }
 
+    /// Two targets asking for the same set: the same kind, range and reps in reserve.
+    private static func sameAsk(_ lhs: SetTarget?, _ rhs: SetTarget?) -> Bool {
+        lhs?.setType == rhs?.setType && lhs?.minReps == rhs?.minReps
+            && lhs?.maxReps == rhs?.maxReps && lhs?.rirTarget == rhs?.rirTarget
+    }
+
     private func progressionContext(for exercise: WorkoutExerciseModel) -> ProgressionPlanner.ExerciseContext {
         ProgressionPlanner.ExerciseContext(
             sessionExercise: exercise,
             exercise: interactor.allExercises.first(where: { $0.id == exercise.templateId }),
-            preferredWeightUnit: interactor.getPreference(templateId: exercise.templateId).weightUnit
+            preferredWeightUnit: exercise.weightUnit ?? interactor.getPreference(templateId: exercise.templateId).weightUnit
         )
     }
 

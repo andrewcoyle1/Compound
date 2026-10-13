@@ -54,7 +54,7 @@ struct SetTrackerRowView: View {
     private var isCurrent: Bool { delegate.rowState == .current }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
+        VStack(alignment: .leading) {
             if isStacked {
                 stackedRow
             } else {
@@ -68,26 +68,6 @@ struct SetTrackerRowView: View {
                     completeButton(exercise: delegate.exercise.wrappedValue, set: delegate.set)
                 }
             }
-            if isCurrent, let plates = presenter.plateSummary(exercise: delegate.exercise.wrappedValue, set: delegate.set.wrappedValue) {
-                Group {
-                    if let nearestKg = plates.nearestKg {
-                        Button {
-                            delegate.set.wrappedValue.weightKg = nearestKg
-                        } label: {
-                            // The warning colour on the icon only: orange text on the current row's
-                            // highlight is under 4.5:1.
-                            plateLine(plates.text, symbol: Symbol.warning, tint: .warning)
-                                .frame(minHeight: ControlSize.row)
-                                .contentShape(.rect)
-                        }
-                        .buttonStyle(.borderless)
-                        .accessibilityHint("Changes the weight to one your plates can make")
-                    } else {
-                        plateLine(plates.text, symbol: Symbol.equipment, tint: .secondary)
-                    }
-                }
-                .padding(.leading, isStacked ? 0 : SetTrackerRowView.setColumnWidth + Spacing.s)
-            }
         }
         // A drop or mini-set sits under its set, one step in.
         .padding(.leading, delegate.set.wrappedValue.isSubSet ? Spacing.l : 0)
@@ -96,7 +76,7 @@ struct SetTrackerRowView: View {
         // 8 reps", so the Containers rotor moves set by set (a11y.md M4).
         .accessibilityElement(children: .contain)
         .accessibilityLabel(rowAccessibilityLabel)
-        // The outlines, muted text and plates line follow the highlight in step with it.
+        // The outlines and muted text follow the highlight in step with it.
         .reducedMotionAnimation(.standard, value: isCurrent)
         // Always the same view with the tint faded in or out, so the highlight moves between sets
         // rather than jumping: a nil background cannot be animated to.
@@ -136,22 +116,6 @@ struct SetTrackerRowView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-    }
-    
-    /// The plates line under the current row: the colour on the icon only, since coloured or
-    /// secondary text on the row's tint is under 4.5:1 (S4). The text wraps within the row's width
-    /// by itself: wrapped as a whole `Label`, it clipped mid-word at AX5 ("Not loadabl").
-    private func plateLine(_ text: String, symbol: String, tint: Color) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
-            Image(systemName: symbol)
-                .foregroundStyle(tint)
-                .accessibilityHidden(true)
-            Text(text)
-                .foregroundStyle(Color.primary)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .font(.label)
     }
 
     /// "Set 2", "Set A1", "Warmup set": what VoiceOver calls this row, and the start of each of
@@ -207,7 +171,13 @@ struct SetTrackerRowView: View {
         } label: {
             switch delegate.set.wrappedValue.subSetKind {
             case .drop: Label("Delete Drop Set", systemImage: Symbol.delete)
-            case .mini: Label("Delete Mini-Set", systemImage: Symbol.delete)
+            case .mini:
+                switch delegate.set.wrappedValue.kind {
+                case .partials: Label("Delete Partials", systemImage: Symbol.delete)
+                case .stretch: Label("Delete Stretch", systemImage: Symbol.delete)
+                case .hold: Label("Delete Hold", systemImage: Symbol.delete)
+                default: Label("Delete Mini-Set", systemImage: Symbol.delete)
+                }
             case nil: Label("Delete Set", systemImage: Symbol.delete)
             }
         }
@@ -584,7 +554,7 @@ struct SetTrackerRowView: View {
 
 extension SetTrackerRowView {
 
-    /// The set's circle, with its kind's chip under it: "AMRAP", or "Drop", "Mini", "Partials",
+    /// The set's circle, with its kind's chip under it: "Failure", or "Drop", "Mini", "Partials",
     /// "Stretch" or "Hold" on a sub-row.
     /// Under rather than beside, so the columns keep the headers' widths.
     func setBadge(set: Binding<WorkoutSetModel>) -> some View {
@@ -613,7 +583,7 @@ extension SetTrackerRowView {
         switch (set.subSetKind, set.kind) {
         case (.drop, _): (String(localized: "Drop"), .warmup)
         case let (.mini, kind): (kind.pieceName ?? String(localized: "Mini"), .warmup)
-        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "AMRAP \($0)+") } ?? String(localized: "AMRAP"), .secondary)
+        case (nil, .amrap) where !set.isWarmup: (set.targetReps.map { String(localized: "Failure \($0)+") } ?? String(localized: "Failure"), .secondary)
         default: nil
         }
     }
@@ -621,7 +591,7 @@ extension SetTrackerRowView {
     /// "AMRAP 8+" for an AMRAP set the plan gave a target, else the kind's name.
     static func kindName(of set: WorkoutSetModel) -> String {
         guard set.kind == .amrap, let target = set.targetReps else { return set.kind.displayName }
-        return String(localized: "AMRAP \(target)+")
+        return String(localized: "Failure \(target)+")
     }
 
     /// An AMRAP set's reps, while they are open, hint at the plan's target, greyed as any

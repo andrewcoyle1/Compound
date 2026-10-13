@@ -308,57 +308,6 @@ struct SetTrackerPresenterTests {
         ]
     }
 
-    @Test("Test Last Sessions Sets Are Matched By Index And Side")
-    func testLastSessionsSetsAreMatchedByIndexAndSide() {
-        let screen = makeScreen()
-        screen.presenter.previousExercises = previousExercises(sets: [
-            set(id: "p1", index: 1, reps: 8, weightKg: 80),
-            set(id: "p2", index: 2, reps: 6, weightKg: 90)
-        ])
-
-        let lookup = screen.presenter.buildPreviousLookup(for: exercise(sets: []))
-
-        #expect(lookup[PreviousSetKey(index: 1, side: nil)]?.weightKg == 80)
-        #expect(lookup[PreviousSetKey(index: 2, side: nil)]?.weightKg == 90)
-    }
-
-    /// Sessions saved before the index reuse was fixed are still in people's histories, holding
-    /// two sets numbered the same. Building this lookup used to trap on that, taking the screen
-    /// down every time the exercise was opened.
-    @Test("Test Duplicate Indices From Old Sessions Do Not Crash")
-    func testDuplicateIndicesFromOldSessionsDoNotCrash() {
-        let screen = makeScreen()
-        screen.presenter.previousExercises = previousExercises(sets: [
-            set(id: "p1", index: 1, reps: 8, weightKg: 80),
-            set(id: "p2", index: 3, reps: 6, weightKg: 90),
-            set(id: "p3", index: 3, reps: 5, weightKg: 95)
-        ])
-
-        let lookup = screen.presenter.buildPreviousLookup(for: exercise(sets: []))
-
-        #expect(lookup.count == 2)
-        #expect(lookup[PreviousSetKey(index: 1, side: nil)]?.weightKg == 80)
-        // The later set wins, which is the one further down the screen last time.
-        #expect(lookup[PreviousSetKey(index: 3, side: nil)]?.weightKg == 95)
-    }
-
-    @Test("Test A Different Exercise Has No Previous Sets")
-    func testADifferentExerciseHasNoPreviousSets() {
-        let screen = makeScreen()
-        screen.presenter.previousExercises = previousExercises(sets: [set(id: "p1", index: 1)])
-
-        let lookup = screen.presenter.buildPreviousLookup(for: exercise(templateId: "other", sets: []))
-
-        #expect(lookup.isEmpty)
-    }
-
-    @Test("Test No Previous Exercise Means No Previous Sets")
-    func testNoPreviousSessionMeansNoPreviousSets() {
-        let screen = makeScreen()
-
-        #expect(screen.presenter.buildPreviousLookup(for: exercise(sets: [])).isEmpty)
-    }
-
     // MARK: - Units
 
     /// The presenter reads the preference manager rather than a copy of its own. A copy went stale
@@ -482,7 +431,7 @@ struct SetTrackerPresenterTests {
         #expect(box.value.templateId == replacement.id)
         #expect(box.value.name == replacement.name)
         #expect(box.value.sets.allSatisfy { $0.weightKg == nil })
-        #expect(box.value.chosenVariationId == nil)
+        #expect(box.value.chosenVariationId == replacement.equipmentVariations.first?.id)
     }
 
     /// A swap mid-exercise keeps what was done: the logged sets move to the replacement, which is
@@ -537,8 +486,9 @@ struct SetTrackerPresenterTests {
         #expect(box.value.sets.allSatisfy { $0.completedAt == nil })
     }
 
-    /// The equipment choice belonged to the old exercise, so it goes with it.
-    @Test("Test Swapping Clears The Old Equipment Choice")
+    /// The equipment choice belonged to the old exercise; the replacement starts on its own
+    /// (`SessionLoadChoice`), here its first, as the screen's gym is unknown.
+    @Test("Test Swapping Replaces The Old Equipment Choice")
     func testSwappingClearsTheOldEquipmentChoice() {
         let screen = makeScreen()
         screen.router.swapSelection = ExerciseModel.mock
@@ -548,7 +498,7 @@ struct SetTrackerPresenterTests {
 
         screen.presenter.onSwapPressed(box.binding)
 
-        #expect(box.value.chosenVariationId == nil)
+        #expect(box.value.chosenVariationId == ExerciseModel.mock.equipmentVariations.first?.id)
     }
 
     // MARK: - Supersets
@@ -746,5 +696,15 @@ extension SetTrackerPresenterTests {
         #expect(box.value.sets.count == 3)
         #expect(box.value.sets.filter { $0.completedAt == nil }.count == 2)
         #expect(!box.value.sets.contains { $0.isWarmup })
+    }
+
+    /// A dumbbell in each hand is logged as one of them, so the column says so.
+    @Test("Test A Weight Per Side Exercise Reads Per Side")
+    func testAWeightPerSideExerciseReadsPerSide() {
+        let screen = makeScreen()
+        var dumbbells = exercise(sets: [])
+        dumbbells.loadsPerSet = 2
+        #expect(screen.presenter.weightColumnTitle(for: dumbbells, unit: .kilograms) == "Kg/side")
+        #expect(screen.presenter.weightColumnTitle(for: exercise(sets: []), unit: .pounds) == "Lb")
     }
 }

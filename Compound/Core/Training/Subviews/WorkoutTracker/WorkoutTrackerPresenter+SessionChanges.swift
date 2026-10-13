@@ -54,6 +54,7 @@ extension WorkoutTrackerPresenter {
         recordUndo(from: oldSession)
         notePendingEdit(comparedTo: oldSession)
         cancelRestIfUndone(comparedTo: oldSession)
+        reloadSuggestionsForChangedEquipment(comparedTo: oldSession)
         guard let setId = firstNewlyCompletedSetId(comparedTo: oldSession) else { return }
 
         // A set logged from the Live Activity or a widget intent lands here rather than in
@@ -70,6 +71,17 @@ extension WorkoutTrackerPresenter {
         }
 
         refreshLiveActivity()
+    }
+
+    /// An exercise moved onto other equipment is suggested for afresh: its history is read on the
+    /// new kind of load and rounded to what the new equipment makes.
+    private func reloadSuggestionsForChangedEquipment(comparedTo oldSession: WorkoutSessionModel) {
+        let changed = workoutSession.exercises.filter { exercise in
+            oldSession.exercises.first { $0.id == exercise.id }.map { $0.chosenVariationId != exercise.chosenVariationId } ?? false
+        }
+        guard !changed.isEmpty else { return }
+        loadPrevious(for: changed)
+        loadProgressionSuggestions(for: changed)
     }
 
     /// The set rows write straight into `workoutSession` through their bindings, a keystroke at a

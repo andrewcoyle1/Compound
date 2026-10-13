@@ -47,7 +47,7 @@ struct SetTargetPlanSummaryTests {
         let target = SetTarget(setNumber: 4, setType: .amrap, amrapTargetReps: 8)
 
         #expect(SetTargetPlan.summary(for: target, settings: settings) == "As many as possible, target 8")
-        #expect(SetTargetPlan.chip(for: target) == "AMRAP 8+")
+        #expect(SetTargetPlan.chip(for: target) == "Failure 8+")
         #expect(SetTargetPlan.summary(for: SetTarget(setNumber: 4, setType: .amrap), settings: settings) == "As many as possible")
     }
 
@@ -56,8 +56,8 @@ struct SetTargetPlanSummaryTests {
     func testFailureReadsAsAMRAP() {
         let target = SetTarget(setNumber: 1, setType: .failure, amrapTargetReps: 10)
 
-        #expect(SetTargetPlan.title(for: .failure) == "AMRAP")
-        #expect(SetTargetPlan.chip(for: target) == "AMRAP 10+")
+        #expect(SetTargetPlan.title(for: .failure) == "Failure")
+        #expect(SetTargetPlan.chip(for: target) == "Failure 10+")
         #expect(SetTargetPlan.summary(for: target, settings: settings) == "As many as possible, target 10")
     }
 
@@ -85,7 +85,7 @@ struct SetTargetPlanSummaryTests {
     @Test("Test The Picker Offers Every Kind But The Legacy One")
     func testKinds() {
         #expect(SetTargetPlan.kinds.map(SetTargetPlan.title(for:)) == [
-            "Standard", "AMRAP", "Myo-reps", "Rest-pause", "Cluster", "Drop set",
+            "Standard", "Failure", "Myo-reps", "Rest-pause", "Cluster", "Drop set",
             "Lengthened partials", "Loaded stretch", "Static hold"
         ])
     }

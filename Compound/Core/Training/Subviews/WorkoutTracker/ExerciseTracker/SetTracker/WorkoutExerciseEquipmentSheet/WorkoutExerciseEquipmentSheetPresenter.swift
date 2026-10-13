@@ -10,8 +10,11 @@ import Foundation
 struct VariationDisplayItem: Identifiable {
     let id: String
     let name: String
-    let resistanceSummary: String
-    let supportSummary: String
+    /// `nil` when the variation lists none.
+    let resistanceSummary: String?
+    let supportSummary: String?
+    /// Whether the workout's gym has every item it needs switched on.
+    var isAvailable = true
 }
 
 @Observable
@@ -27,6 +30,8 @@ class WorkoutExerciseEquipmentSheetPresenter {
     private(set) var loadError: String?
 
     private var equipmentNameIndex: [EquipmentRef: String] = [:]
+    private var variations: [EquipmentVariation] = []
+    private var exercise: WorkoutExerciseModel?
 
     init(
         interactor: WorkoutExerciseEquipmentSheetInteractor,
@@ -46,6 +51,7 @@ class WorkoutExerciseEquipmentSheetPresenter {
 
     func loadVariations(exercise: WorkoutExerciseModel) async {
         interactor.trackEvent(event: Event.loadVariationsStart)
+        self.exercise = exercise
         chosenVariationId = exercise.chosenVariationId
         isLoading = true
         loadError = nil
@@ -83,6 +89,7 @@ class WorkoutExerciseEquipmentSheetPresenter {
         guard !variations.isEmpty else {
             throw LoadError.noVariations
         }
+        self.variations = variations
 
         // Build name index from the catalogue and the user's own machines
         equipmentNameIndex = Dictionary(
@@ -90,19 +97,18 @@ class WorkoutExerciseEquipmentSheetPresenter {
             uniquingKeysWith: { first, _ in first }
         )
 
-        // Build display items
+        // Build display items, each marked when the workout's gym cannot make it up.
+        let available = interactor.workoutGymProfile.map { Set($0.allEquipment.filter(\.isActive).map(\.ref)) }
+        let summary = { (refs: [EquipmentRef]) -> String? in
+            refs.isEmpty ? nil : refs.map { self.equipmentNameIndex[$0] ?? $0.fallbackName }.joined(separator: ", ")
+        }
         variationItems = variations.enumerated().map { index, variation in
-            let resistanceSummary = variation.resistanceEquipment.isEmpty
-                ? "None"
-                : variation.resistanceEquipment.map { equipmentNameIndex[$0] ?? $0.equipmentId }.joined(separator: ", ")
-            let supportSummary = variation.supportEquipment.isEmpty
-                ? "None"
-                : variation.supportEquipment.map { equipmentNameIndex[$0] ?? $0.equipmentId }.joined(separator: ", ")
-            return VariationDisplayItem(
+            VariationDisplayItem(
                 id: variation.id,
-                name: "Variation \(index + 1)",
-                resistanceSummary: resistanceSummary,
-                supportSummary: supportSummary
+                name: String(localized: "Variation \(String(describing: index + 1))"),
+                resistanceSummary: summary(variation.resistanceEquipment),
+                supportSummary: summary(variation.supportEquipment),
+                isAvailable: available.map { Set(variation.resistanceEquipment + variation.supportEquipment).isSubset(of: $0) } ?? true
             )
         }
 
@@ -126,10 +132,32 @@ class WorkoutExerciseEquipmentSheetPresenter {
     /// either that is "None".
     func detail(for item: VariationDisplayItem) -> String? {
         let parts = [
-            item.resistanceSummary == "None" ? nil : String(localized: "Resistance: \(item.resistanceSummary)"),
-            item.supportSummary == "None" ? nil : String(localized: "Support: \(item.supportSummary)")
+            item.resistanceSummary.map { String(localized: "Resistance: \($0)") },
+            item.supportSummary.map { String(localized: "Support: \($0)") },
+            item.isAvailable ? nil : String(localized: "Not in this gym")
         ].compactMap { $0 }
         return parts.isEmpty ? nil : parts.joined(separator: "\n")
+    }
+
+    /// Equipment can be edited only in the gym the workout loads from.
+    var canEditEquipment: Bool { interactor.workoutGymProfile != nil }
+
+    /// The variation's equipment in the workout's gym, on the gym profile screen: switched on or
+    /// off, and its weights, bars and stacks edited. Each save reaches the exercise through
+    /// `onGymEdited`, and this list's "Not in this gym" follows.
+    func onEditVariationPressed(_ item: VariationDisplayItem, onGymEdited: @escaping @MainActor (GymProfileModel) -> Void) {
+        guard let gym = interactor.workoutGymProfile, let variation = variations.first(where: { $0.id == item.id }) else { return }
+        interactor.trackEvent(event: Event.editVariationPressed)
+        router.showGymProfileView(delegate: GymProfileDelegate(
+            gymProfile: gym,
+            equipment: Set(variation.resistanceEquipment + variation.supportEquipment),
+            title: item.name
+        ) { [weak self] saved in
+            onGymEdited(saved)
+            if let self, let exercise = self.exercise {
+                try? self.performLoadVariations(exercise: exercise)
+            }
+        })
     }
 
     func onCancelPressed() {
@@ -159,6 +187,7 @@ extension WorkoutExerciseEquipmentSheetPresenter {
         case loadVariationsStart
         case loadVariationsSuccess
         case loadVariationsFail(error: Error)
+        case editVariationPressed
         
         var eventName: String {
             switch self {
@@ -167,6 +196,7 @@ extension WorkoutExerciseEquipmentSheetPresenter {
             case .loadVariationsStart: return "WorkoutExerciseEquipmentSheetView_LoadVariations_Start"
             case .loadVariationsSuccess: return "WorkoutExerciseEquipmentSheetView_LoadVariations_Success"
             case .loadVariationsFail: return "WorkoutExerciseEquipmentSheetView_LoadVariations_Fail"
+            case .editVariationPressed: return "WorkoutExerciseEquipmentSheetView_EditVariation_Pressed"
             }
         }
         

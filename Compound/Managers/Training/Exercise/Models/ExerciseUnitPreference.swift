@@ -54,10 +54,33 @@ struct ExerciseUnitPreference: Codable {
     let exerciseModelId: String
     var weightUnit: ExerciseWeightUnit
     var distanceUnit: ExerciseDistanceUnit
-    
-    init(exerciseModelId: String, weightUnit: ExerciseWeightUnit = .kilograms, distanceUnit: ExerciseDistanceUnit = .meters) {
+    /// Whether the user chose `weightUnit` for this exercise. When they have not, a session enters
+    /// its weights in the unit the equipment is labelled in (`SessionLoadChoice.weightUnit`), and
+    /// `weightUnit` is only the app-wide unit. A preference stored before this existed was stored
+    /// because the user changed something, so it reads as chosen.
+    var weightUnitIsChosen: Bool
+
+    init(
+        exerciseModelId: String,
+        weightUnit: ExerciseWeightUnit = .kilograms,
+        distanceUnit: ExerciseDistanceUnit = .meters,
+        weightUnitIsChosen: Bool = false
+    ) {
         self.exerciseModelId = exerciseModelId
         self.weightUnit = weightUnit
         self.distanceUnit = distanceUnit
+        self.weightUnitIsChosen = weightUnitIsChosen
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case exerciseModelId, weightUnit, distanceUnit, weightUnitIsChosen
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        exerciseModelId = try container.decode(String.self, forKey: .exerciseModelId)
+        weightUnit = try container.decode(ExerciseWeightUnit.self, forKey: .weightUnit)
+        distanceUnit = try container.decode(ExerciseDistanceUnit.self, forKey: .distanceUnit)
+        weightUnitIsChosen = try container.decodeIfPresent(Bool.self, forKey: .weightUnitIsChosen) ?? true
     }
 }

@@ -36,7 +36,7 @@ struct ExercisePlanSection: View {
 
             linkRow
 
-            ListRowButton(title: String(localized: "Varies by week"), subtitle: presenter.variationSummary) {
+            ListRowButton(title: String(localized: "Weekly Targets"), subtitle: presenter.variationSummary) {
                 presenter.onVariesByWeekPressed()
             }
             .accessibilityIdentifier("SetTarget.variesByWeek")

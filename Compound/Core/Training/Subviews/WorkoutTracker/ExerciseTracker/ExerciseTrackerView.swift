@@ -32,18 +32,18 @@ struct ExerciseTrackerDelegate {
 
 /// What the live tracker's exercise card shows beyond the sets.
 struct ExerciseCard {
-    /// See `SetTrackerCard.progressionNote`.
+    /// Why smart progression changed today's numbers, as a row above the sets until it is tapped.
     var progressionNote: String?
     var onProgressionNoteAcknowledged: @MainActor () -> Void = { }
     var restTimer: InlineRestTimer?
+    /// Moves the exercise to the end of the workout; `nil` when there is nothing to put it behind.
     var onDoLater: (@MainActor () -> Void)?
+    /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
     var onLogSet: (@MainActor (String, Int?) -> Void)?
     var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
-    /// See `SetTrackerCard.onUndoManager`.
-    var onUndoManager: (@MainActor (UndoManager?) -> Void)?
-    /// See `SetTrackerCard.piece` and `showAutoRanges`.
+    /// One piece of the table rather than all of it, for a superset's card to place among its
+    /// partners' rows. `nil` draws the whole table.
     var piece: SetTrackerPiece?
-    var showAutoRanges: Bool?
     /// The member's letter on a superset's card ("A", "B"), which its header shows in place of the
     /// superset's own label: the member header.
     var memberLetter: String?
@@ -70,16 +70,8 @@ struct ExerciseTrackerView<SetTracker: View>: View {
                 header: { menu in AnyView(cardHeader(delegate.exercise.wrappedValue, card: card, menu: menu)) },
                 notes: hasNotes(delegate.exercise.wrappedValue) ? AnyView(noteCards(delegate.exercise.wrappedValue)) : nil,
                 onNotePressed: { openNotes(on: .session) },
-                onDoLater: card.onDoLater,
                 onWatch: watchAction(for: delegate.exercise.wrappedValue),
-                progressionNote: card.progressionNote,
-                onProgressionNoteAcknowledged: card.onProgressionNoteAcknowledged,
-                restTimer: card.restTimer,
-                onLogSet: card.onLogSet,
-                onCustomRestChanged: card.onCustomRestChanged,
-                onUndoManager: card.onUndoManager,
-                piece: card.piece,
-                showAutoRanges: card.showAutoRanges
+                exerciseCard: card
             )))
             .environment(\.showsBodyweightLoad, card.bodyweight != nil)
         } else {

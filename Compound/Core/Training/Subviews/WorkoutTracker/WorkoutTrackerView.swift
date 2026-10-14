@@ -11,6 +11,7 @@ import HealthKit
 struct WorkoutTrackerView<ExerciseTracker: View>: View {
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.undoManager) private var undoManager
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
     /// At regular width Pause, Finish and Notes come out of the menu onto the bar.
@@ -63,6 +64,10 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
             // The list's own colour behind the swap: while one list slides out and the next in,
             // the gap between them showed the window's white.
             .background(Color.canvas.ignoresSafeArea())
+            // Shake to undo corrects the card's sets while the tracker is up. On the container,
+            // not the list, which is replaced each time the card moves to another block.
+            .onAppear { presenter.onUndoManagerChanged(undoManager) }
+            .onDisappear { presenter.onUndoManagerChanged(nil) }
             .reducedMotionAnimation(.standard, value: presenter.currentBlockId)
             // Keeps the swap's edge in step with the block and the order shown; it reads them
             // first itself when a swap runs, so these only catch up afterwards.

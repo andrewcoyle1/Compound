@@ -25,25 +25,16 @@ struct SupersetBlockView<Piece: View>: View {
     /// A rest that followed a set outside the superset, drawn once above its rows. One that
     /// followed a member's set is drawn under that set by the member's piece.
     let restBefore: InlineRestTimer?
-    let onUndoManager: @MainActor (UndoManager?) -> Void
-    /// One member's piece of the table, with Last or Auto as the card holds it.
-    @ViewBuilder let piece: (_ exerciseId: String, _ piece: SetTrackerPiece, _ showAutoRanges: Bool) -> Piece
-
-    /// The same stored choice each member's presenter reads and writes, watched here so a switch
-    /// in the headings reaches every member's rows.
-    @AppStorage(SetTrackerPresenter.showAutoRangesKey) private var showAutoRanges = false
-    @Environment(\.undoManager) private var undoManager
-
-    /// The card's rows on screen. The undo manager is let go only when none is.
-    @State private var visibleRows = 0
+    /// One member's piece of the table.
+    @ViewBuilder let piece: (_ exerciseId: String, _ piece: SetTrackerPiece) -> Piece
 
     var body: some View {
         Section {
             ForEach(members) { member in
-                piece(member.id, .progressionNote, showAutoRanges)
+                piece(member.id, .progressionNote)
             }
             if showsColumnHeadings, let first = members.first {
-                piece(first.id, .columnHeadings, showAutoRanges)
+                piece(first.id, .columnHeadings)
             }
             if let restBefore {
                 InlineRestTimerRow(timer: restBefore)
@@ -54,30 +45,22 @@ struct SupersetBlockView<Piece: View>: View {
             ForEach(rows) { row in
                 switch row.kind {
                 case .loggedWarmups:
-                    piece(row.exerciseId, .loggedWarmups, showAutoRanges)
+                    piece(row.exerciseId, .loggedWarmups)
                 case let .set(id, badge):
-                    piece(row.exerciseId, .row(setId: id, badge: badge, isNext: id == nextSetId), showAutoRanges)
+                    piece(row.exerciseId, .row(setId: id, badge: badge, isNext: id == nextSetId))
                 }
             }
             ForEach(members) { member in
-                piece(member.id, .addSet, showAutoRanges)
+                piece(member.id, .addSet)
             }
         } header: {
             // A title line per member, each with its own actions menu.
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 ForEach(members) { member in
-                    piece(member.id, .header, showAutoRanges)
+                    piece(member.id, .header)
                 }
             }
         }
         .listSectionMargins(.top, Spacing.s)
-        .onAppear {
-            visibleRows += 1
-            onUndoManager(undoManager)
-        }
-        .onDisappear {
-            visibleRows -= 1
-            if visibleRows == 0 { onUndoManager(nil) }
-        }
     }
 }

@@ -13,19 +13,14 @@ class SetTrackerPresenter {
     private let interactor: SetTrackerInteractor
     private let router: SetTrackerRouter
 
-    /// Last session by default; Auto shows smart progression's suggestion for each set instead.
-    /// Kept on the device, so the column a user switched to is the one they get next time.
-    var showAutoRanges: Bool {
-        didSet { defaults.set(showAutoRanges, forKey: Self.showAutoRangesKey) }
-    }
-    private let defaults: UserDefaults
+    /// The Last/Auto column's choice in `UserDefaults`: Last session by default; Auto shows smart
+    /// progression's suggestion for each set instead. Kept on the device, so the column a user
+    /// switched to is the one they get next time.
     static let showAutoRangesKey = "SetTracker.showsSuggestions"
     
-    init(interactor: SetTrackerInteractor, router: SetTrackerRouter, defaults: UserDefaults = .standard) {
+    init(interactor: SetTrackerInteractor, router: SetTrackerRouter) {
         self.interactor = interactor
         self.router = router
-        self.defaults = defaults
-        self.showAutoRanges = defaults.object(forKey: Self.showAutoRangesKey) as? Bool ?? false
     }
 
     func onExerciseEquipmentPressed(_ exercise: Binding<WorkoutExerciseModel>) {

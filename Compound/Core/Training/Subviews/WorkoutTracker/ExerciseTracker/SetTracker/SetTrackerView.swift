@@ -23,32 +23,17 @@ struct SetTrackerDelegate {
     var card: SetTrackerCard?
 }
 
-/// What the live tracker adds to the set table.
+/// What the live tracker adds to the set table: the tracker's `ExerciseCard`, and what the
+/// exercise card builds around it.
 struct SetTrackerCard {
     /// The card's title row, handed the actions menu to place in it.
     var header: (AnyView) -> AnyView
     /// The exercise's notes, under the sets; the actions menu opens their sheet.
     var notes: AnyView?
     var onNotePressed: @MainActor () -> Void = { }
-    /// Moves the exercise to the end of the workout; `nil` when there is nothing to put it behind.
-    var onDoLater: (@MainActor () -> Void)?
     /// Opens the plan's video link; `nil` when there is none to open.
     var onWatch: (@MainActor () -> Void)?
-    /// Why smart progression changed today's numbers, as a row above the sets until it is tapped.
-    var progressionNote: String?
-    var onProgressionNoteAcknowledged: @MainActor () -> Void = { }
-    var restTimer: InlineRestTimer?
-    /// See `SetTrackerRowDelegate.onLogSet` and `onCustomRestChanged`.
-    var onLogSet: (@MainActor (String, Int?) -> Void)?
-    var onCustomRestChanged: (@MainActor (String, Int?) -> Void)?
-    /// Handed the window's undo manager while the card is on screen, and `nil` once it has gone.
-    var onUndoManager: (@MainActor (UndoManager?) -> Void)?
-    /// One piece of the table rather than all of it, for a superset's card to place among its
-    /// partners' rows. `nil` draws the whole table.
-    var piece: SetTrackerPiece?
-    /// Last or Auto, when a superset's card holds the choice for every member's rows: each piece
-    /// has its own presenter, so one piece's switch would not reach the others' rows.
-    var showAutoRanges: Bool?
+    var exerciseCard: ExerciseCard
 }
 
 /// A piece of one exercise's set table. See `SupersetBlockView`.
@@ -74,14 +59,13 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     @ViewBuilder var setTrackerRow: (SetTrackerRowDelegate) -> SetTrackerRow
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Environment(\.undoManager) private var undoManager
     @Environment(\.colorSchemeContrast) private var colorSchemeContrast
     /// The sets' circle (`SetTrackerRowView.setCircleSide`).
     @ScaledMetric(relativeTo: .caption) private var addSetCircleSide: CGFloat = ControlSize.thumbnail - Spacing.xs
 
-    /// The card's rows on screen. The undo manager is let go only when none is: a single row
-    /// scrolling away is not the card going.
-    @State private var visibleRows = 0
+    /// Last or Auto, kept on the device. Read here rather than once per presenter, so a switch in
+    /// one superset member's headings reaches every member's rows.
+    @AppStorage(SetTrackerPresenter.showAutoRangesKey) private var showAutoRanges = false
 
     /// Whether the logged warm-ups are shown row by row rather than as one line.
     @State private var showsLoggedWarmups = false
@@ -90,7 +74,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     private var isStacked: Bool { dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
-        if let piece = delegate.card?.piece {
+        if let piece = delegate.card?.exerciseCard.piece {
             pieceView(piece)
         } else {
             table
@@ -122,10 +106,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     @ViewBuilder
     private var tableBody: some View {
         // The table runs to the card's edge.
-        if let card = delegate.card, let note = card.progressionNote {
-            ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
-                .listRowSeparator(.hidden)
-        }
+        progressionNoteRow
         Group {
             VStack {
                 if delegate.card == nil {
@@ -133,7 +114,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 }
                 columnHeaders
             }
-            if let timer = delegate.card?.restTimer, timer.anchor == .top {
+            if let timer = delegate.card?.exerciseCard.restTimer, timer.anchor == .top {
                 InlineRestTimerRow(timer: timer)
             }
             loggedWarmupsGroup
@@ -143,19 +124,20 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             }
             addSetButton
         }
-        .onAppear {
-            visibleRows += 1
-            delegate.card?.onUndoManager?(undoManager)
-        }
-        .onDisappear {
-            visibleRows -= 1
-            if visibleRows == 0 { delegate.card?.onUndoManager?(nil) }
-        }
         .listRowSeparator(.hidden)
         .listRowInsets(.vertical, 0)
         .listRowInsets(.leading, 0)
         .listSectionMargins(.top, 0)
         noteCards
+    }
+
+    /// Why smart progression changed today's numbers, above the sets until it is tapped.
+    @ViewBuilder
+    private var progressionNoteRow: some View {
+        if let card = delegate.card, let note = card.exerciseCard.progressionNote {
+            ProgressionNote(text: note, onAcknowledge: card.exerciseCard.onProgressionNoteAcknowledged)
+                .listRowSeparator(.hidden)
+        }
     }
 
     /// The notes under the add-set button, with the list's own insets like the title row.
@@ -202,11 +184,11 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 set: setBinding(for: set),
                 lastSet: ActiveWorkout.lastSet(for: set, in: exercise, last: delegate.lastExercise),
                 progressionSuggestion: set.isSubSet ? nil : delegate.progressionSuggestion?.suggestedSet(for: set, in: exercise),
-                showAutoRanges: delegate.card?.showAutoRanges ?? presenter.showAutoRanges,
+                showAutoRanges: showAutoRanges,
                 rowState: delegate.card == nil ? nil : isNext.map { ActiveWorkout.blockRowState(of: set, in: exercise, isNext: $0) }
                     ?? ActiveWorkout.rowState(of: set, in: exercise),
-                onLogSet: delegate.card?.onLogSet,
-                onCustomRestChanged: delegate.card?.onCustomRestChanged,
+                onLogSet: delegate.card?.exerciseCard.onLogSet,
+                onCustomRestChanged: delegate.card?.exerciseCard.onCustomRestChanged,
                 badgeLabel: badge
             )
         )
@@ -233,7 +215,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     /// log button (`WorkoutTrackerPresenter.restCorrection`).
     @ViewBuilder
     private func restRow(below set: WorkoutSetModel) -> some View {
-        if let timer = delegate.card?.restTimer, timer.anchor == .below(setId: set.id) {
+        if let timer = delegate.card?.exerciseCard.restTimer, timer.anchor == .below(setId: set.id) {
             InlineRestTimerRow(timer: timer)
         }
     }
@@ -274,7 +256,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
                 } label: {
                     Label("Notes", systemImage: Symbol.note)
                 }
-                if let onDoLater = card.onDoLater {
+                if let onDoLater = card.exerciseCard.onDoLater {
                     Button {
                         onDoLater()
                     } label: {
@@ -423,27 +405,27 @@ struct SetTrackerView<SetTrackerRow: View>: View {
             switch delegate.exercise.wrappedValue.trackingMode {
             case .weightReps:
                 unitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
-                    .setColumn(width: 70, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.fieldColumnWidth, stretches: isStacked)
                 Text("Reps")
-                    .setColumn(width: 50, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.repsColumnWidth, stretches: isStacked)
             case .repsOnly:
                 Text("Reps")
-                    .setColumn(width: 50, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.repsColumnWidth, stretches: isStacked)
             case .timeOnly:
                 Text("Time")
-                    .setColumn(width: 90, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.timeColumnWidth, stretches: isStacked)
             case .distanceTime:
                 distanceUnitMenu(exercise: delegate.exercise, unitPreference: unitPreference)
-                    .setColumn(width: 70, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.fieldColumnWidth, stretches: isStacked)
                 Text("Time")
-                    .setColumn(width: 70, stretches: isStacked)
+                    .setColumn(width: SetTrackerRowView.fieldColumnWidth, stretches: isStacked)
             }
         }
     }
     
     private func prevAutoHeader(exercise: Binding<WorkoutExerciseModel>) -> some View {
         Button {
-            presenter.showAutoRanges.toggle()
+            showAutoRanges.toggle()
         } label: {
             // A chip inside a real 44 pt frame, so the column stays narrow and the tap target full.
             // A one-word heading cannot wrap and must not shrink below 11 pt, so where the column
@@ -465,10 +447,10 @@ struct SetTrackerView<SetTrackerRow: View>: View {
     private func prevAutoChip(showsSymbol: Bool) -> some View {
         HStack(spacing: Spacing.xxs) {
             if showsSymbol {
-                Image(systemName: presenter.showAutoRanges ? Symbol.smartProgression : Symbol.history)
+                Image(systemName: showAutoRanges ? Symbol.smartProgression : Symbol.history)
                     .accessibilityHidden(true)
             }
-            if presenter.showAutoRanges {
+            if showAutoRanges {
                 Text("Auto")
             } else {
                 Text("Last")
@@ -498,7 +480,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
         }
         .buttonStyle(.plain)
         // On a superset's card each member has its own, so each says whose it is.
-        .accessibilityLabel(delegate.card?.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"))
+        .accessibilityLabel(delegate.card?.exerciseCard.piece == nil ? String(localized: "Add Set") : String(localized: "Add Set to \(delegate.exercise.wrappedValue.name)"))
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, Spacing.xs)
         .listRowInsets(.bottom, Spacing.s)
@@ -557,8 +539,7 @@ struct SetTrackerView<SetTrackerRow: View>: View {
 
 extension SetTrackerView {
 
-    /// One piece of the table, laid out as the whole table lays it out. The superset card keeps
-    /// the window's undo manager itself, since it knows when the last of its rows has gone.
+    /// One piece of the table, laid out as the whole table lays it out.
     @ViewBuilder
     func pieceView(_ piece: SetTrackerPiece) -> some View {
         switch piece {
@@ -567,10 +548,7 @@ extension SetTrackerView {
                 sectionHeader(card)
             }
         case .progressionNote:
-            if let card = delegate.card, let note = card.progressionNote {
-                ProgressionNote(text: note, onAcknowledge: card.onProgressionNoteAcknowledged)
-                    .listRowSeparator(.hidden)
-            }
+            progressionNoteRow
         case .columnHeadings:
             tableRows { columnHeaders }
         case .loggedWarmups:

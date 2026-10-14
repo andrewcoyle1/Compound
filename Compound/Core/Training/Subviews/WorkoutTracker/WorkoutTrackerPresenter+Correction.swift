@@ -104,7 +104,7 @@ extension WorkoutTrackerPresenter {
 
     // MARK: - UndoManager
 
-    /// The window's undo manager, from the card while it is on screen; `nil` once it has gone,
+    /// The window's undo manager while the tracker is on screen; `nil` once it has gone,
     /// which takes this screen's actions off the stack, so a shake elsewhere offers none of them.
     func onUndoManagerChanged(_ manager: UndoManager?) {
         guard manager !== undoManager else { return }

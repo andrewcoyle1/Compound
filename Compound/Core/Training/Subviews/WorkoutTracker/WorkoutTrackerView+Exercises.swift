@@ -50,15 +50,12 @@ extension WorkoutTrackerView {
             nextSetId: ActiveWorkout.nextSetId(inBlock: members, current: current.id),
             showsColumnHeadings: ActiveWorkout.blockSharesColumns(members, units: presenter.units(for:)),
             restBefore: restBefore,
-            onUndoManager: { presenter.onUndoManagerChanged($0) },
-            piece: { exerciseId, piece, showAutoRanges in
+            piece: { exerciseId, piece in
                 let index = members.firstIndex { $0.id == exerciseId } ?? 0
                 let member = members[index]
                 var delegate = delegate(for: binding(for: member))
                 delegate.card?.piece = piece
-                delegate.card?.showAutoRanges = showAutoRanges
                 delegate.card?.memberLetter = ActiveWorkout.letter(index)
-                delegate.card?.onUndoManager = nil
                 // Smart progression's note speaks for the exercise the log button is on.
                 if member.id != current.id { delegate.card?.progressionNote = nil }
                 return exerciseTrackerView(delegate)
@@ -120,7 +117,6 @@ extension WorkoutTrackerView {
                 onCustomRestChanged: { setId, seconds in
                     presenter.customRestSeconds[setId] = seconds
                 },
-                onUndoManager: { presenter.onUndoManagerChanged($0) },
                 bodyweight: presenter.bodyweightContribution(for: current),
                 showsImage: dynamicTypeSize.isAccessibilitySize
             )

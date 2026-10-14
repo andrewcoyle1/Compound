@@ -146,6 +146,11 @@ struct SetTrackerRowView: View {
     static let setColumnWidth = ControlSize.row
     static let previousColumnWidth: CGFloat = 78
     static let doneColumnWidth = ControlSize.row
+    /// A weight or distance, and the time beside a distance.
+    static let fieldColumnWidth: CGFloat = 70
+    static let repsColumnWidth: CGFloat = 50
+    /// A timed set's own time, with room for its stopwatch.
+    static let timeColumnWidth: CGFloat = 90
 
     private var deleteSetButton: some View {
         Button(role: .destructive) {
@@ -262,7 +267,7 @@ struct SetTrackerRowView: View {
                 // exercise tracks; a hold keeps the set's weight.
                 if SetKeyboardField.fields(for: set.wrappedValue, trackingMode: exercise.trackingMode).contains(.weight) {
                     keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
-                        .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+                        .setColumn(width: Self.fieldColumnWidth, height: cellHeight, stretches: isStacked)
                 }
                 timeField(set: set, targetSeconds: set.wrappedValue.durationSec)
             } else {
@@ -280,19 +285,19 @@ struct SetTrackerRowView: View {
         switch exercise.trackingMode {
         case .weightReps:
             keyboardField(.weight, set: set, label: String(localized: "Weight, \(units.weightUnit.displayName)"))
-                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.fieldColumnWidth, height: cellHeight, stretches: isStacked)
             keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                .setColumn(width: 50, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.repsColumnWidth, height: cellHeight, stretches: isStacked)
         case .repsOnly:
             keyboardField(.reps, set: set, label: String(localized: "Reps"))
-                .setColumn(width: 50, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.repsColumnWidth, height: cellHeight, stretches: isStacked)
         case .timeOnly:
             timeField(set: set, targetSeconds: delegate.lastSet?.durationSec)
         case .distanceTime:
             keyboardField(.distance, set: set, label: String(localized: "Distance, \(units.distanceUnit.displayName)"))
-                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.fieldColumnWidth, height: cellHeight, stretches: isStacked)
             keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                .setColumn(width: 70, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.fieldColumnWidth, height: cellHeight, stretches: isStacked)
         }
     }
 
@@ -304,10 +309,10 @@ struct SetTrackerRowView: View {
             SetStopwatch(set: set, targetSeconds: targetSeconds) {
                 keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
             }
-            .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+            .setColumn(width: Self.timeColumnWidth, height: cellHeight, stretches: isStacked)
         } else {
             keyboardField(.duration, set: set, label: String(localized: "Time, minutes and seconds"))
-                .setColumn(width: 90, height: cellHeight, stretches: isStacked)
+                .setColumn(width: Self.timeColumnWidth, height: cellHeight, stretches: isStacked)
         }
     }
 

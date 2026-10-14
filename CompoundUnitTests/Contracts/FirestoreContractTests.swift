@@ -61,7 +61,7 @@ struct FirestoreContractTests {
     }
 
     private static func contracts() throws -> [Contract] {
-        try userAndTrainingContracts() + nutritionContracts()
+        try userAndTrainingContracts() + nutritionContracts() + bodyAndGoalContracts()
     }
 
     private static func userAndTrainingContracts() throws -> [Contract] {
@@ -145,6 +145,37 @@ struct FirestoreContractTests {
                 full: Samples.fullFoodLogSettings, minimal: FoodLogSettings(authorId: "user_contract_minimal"),
                 // Written whole through `saveDocument` (a merge), never field by field.
                 namedFields: []
+            )
+        ]
+    }
+
+    /// Fields named in the `author_id` listener (`BodyMeasurementsManager`), the goal `status`
+    /// update (`GoalManager`), the goal rule's frozen fields (`firestore.rules`), and the reads in
+    /// `functions/coach.js` (`date` range queries, `deleted_at`, `number`, `daily_step_goal`, …).
+    private static func bodyAndGoalContracts() throws -> [Contract] {
+        [
+            try contract(
+                BodyMeasurementEntry.self, directory: "body_measurement",
+                full: Samples.fullBodyMeasurement, minimal: Samples.minimalBodyMeasurement,
+                namedFields: ([.authorId, .date, .deletedAt, .weightKg, .bodyFatPercentage] as [BodyMeasurementEntry.CodingKeys])
+                    .map(\.rawValue)
+            ),
+            try contract(
+                StepsModel.self, directory: "steps",
+                full: Samples.fullSteps, minimal: Samples.minimalSteps,
+                namedFields: ([.authorId, .date, .deletedAt, .number] as [StepsModel.CodingKeys]).map(\.rawValue)
+            ),
+            try contract(
+                AnalyticsSettings.self, directory: "analytics_settings",
+                full: Samples.fullAnalyticsSettings, minimal: AnalyticsSettings(authorId: "user_contract_minimal"),
+                namedFields: [AnalyticsSettings.CodingKeys.dailyStepGoal.rawValue]
+            ),
+            try contract(
+                WeightGoal.self, directory: "weight_goal",
+                full: Samples.fullWeightGoal, minimal: Samples.minimalWeightGoal,
+                namedFields: ([
+                    .id, .userId, .startingWeightKg, .createdAt, .status, .objective, .targetWeightKg, .weeklyChangeKg
+                ] as [WeightGoal.CodingKeys]).map(\.rawValue)
             )
         ]
     }
@@ -297,11 +328,44 @@ struct FirestoreContractTests {
             "MealItemSourceType": MealItemSourceType.allCases.map(\.rawValue),
             "NutrientKey": NutrientKey.allCases.map(\.rawValue),
             "TimestampSide": timestampSides.map(\.rawValue)
-        ]
+        ].merging(try Self.bodyAndGoalEnums()) { $1 }
         let url = Self.root.appendingPathComponent("enums.json")
         if ProcessInfo.processInfo.environment["RECORD_CONTRACTS"] == "1" { try Self.write(enums, to: url) }
         let fixture = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: [String]])
         #expect(fixture == enums)
+    }
+
+    /// The body and goal models' enums, exhaustive as above.
+    private static func bodyAndGoalEnums() throws -> [String: [String]] {
+        // None of these three is CaseIterable.
+        let weightSources: [WeightSource] = [.manual, .healthkit, .imported]
+        for source in weightSources {
+            switch source {
+            case .manual, .healthkit, .imported: break
+            }
+        }
+        let stepsSources: [StepsSource] = [.manual, .healthkit, .imported]
+        for source in stepsSources {
+            switch source {
+            case .manual, .healthkit, .imported: break
+            }
+        }
+        let goalStatuses: [WeightGoal.GoalStatus] = [.active, .completed, .abandoned, .paused]
+        for status in goalStatuses {
+            switch status {
+            case .active, .completed, .abandoned, .paused: break
+            }
+        }
+        // No raw type: stored as a keyed map, `{"loseWeight": {}}`, so its keys are listed.
+        let objectiveKeys = try OverarchingObjective.allCases.map { objective in
+            try #require(try Firestore.Encoder().encode(objective).keys.first)
+        }
+        return [
+            "WeightSource": weightSources.map(\.rawValue),
+            "StepsSource": stepsSources.map(\.rawValue),
+            "GoalStatus": goalStatuses.map(\.rawValue),
+            "OverarchingObjective": objectiveKeys
+        ]
     }
 
     // MARK: - Fixture files
@@ -342,7 +406,7 @@ struct FirestoreContractTests {
 
 // MARK: - Fixed samples
 
-/// What `RECORD_CONTRACTS=1` writes (the nutrition samples are in `Samples+Nutrition.swift`). Fixed values, never `Date()`, so a re-record changes only
+/// What `RECORD_CONTRACTS=1` writes (the nutrition and body samples are in `Samples+Nutrition.swift` and `Samples+Body.swift`). Fixed values, never `Date()`, so a re-record changes only
 /// what the model changed. Doubles are deliberately not whole numbers (JSON would write 172.0 as
 /// 172, which reads back as an integer) and are exact in binary, so the JSON stays short.
 enum Samples {

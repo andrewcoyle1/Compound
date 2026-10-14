@@ -100,6 +100,22 @@ t("contract: the owner creates the full meal, diet plan and food log settings at
     ));
 });
 
+t("contract: the owner creates the full body measurement, steps, analytics settings and goal at their paths", async () => {
+    const entry = contractFixture("body_measurement");
+    const uid = entry.author_id;
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/body_measurements/${entry.id}`), entry));
+    const steps = contractFixture("steps");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/steps/${steps.id}`), steps));
+    const settings = contractFixture("analytics_settings");
+    await assertSucceeds(setDoc(doc(db(uid), `users/${uid}/analytics_settings/${settings.id}`), settings));
+    const goal = contractFixture("weight_goal");
+    const goalRef = doc(db(uid), `users/${uid}/goals/${goal.goal_id}`);
+    await assertSucceeds(setDoc(goalRef, goal));
+    // GoalManager's status update is allowed; a write that moves where the goal started is not.
+    await assertSucceeds(updateDoc(goalRef, { status: "abandoned" }));
+    await assertFails(setDoc(goalRef, { ...goal, starting_weight_kg: goal.starting_weight_kg + 1 }, { merge: true }));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

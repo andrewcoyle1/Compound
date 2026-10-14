@@ -1,0 +1,14 @@
+{
+  "user_id": "user_legacy",
+  "goal_id": "goal_legacy",
+  "objective": {
+    "gainWeight": {}
+  },
+  "created_at": {
+    "$timestamp": "2025-03-01T09:00:00.000Z"
+  },
+  "status": "paused",
+  "starting_weight_kg": 65,
+  "target_weight_kg": 70,
+  "weekly_change_kg": 0
+}

@@ -91,6 +91,16 @@ jobs:
       min_coverage: 100
       # No blocs in a repository.
       run_bloc_lint: false
+  body_repository:
+    name: body_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/body_repository
+      flutter_version: "3.47.7"
+      # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
+      min_coverage: 100
+      # No blocs in a repository.
+      run_bloc_lint: false
   strings:
     name: Spanish strings
     runs-on: ubuntu-latest

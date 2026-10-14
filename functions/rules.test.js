@@ -146,6 +146,89 @@ t("contract: the owner creates the full gym profile and exercise and workout set
     await assertFails(setDoc(doc(db(BOB), `users/${uid}/workout_settings/workout_settings`), workoutSettings));
 });
 
+// ---------------- FLUTTER WRITES (M3) ----------------
+// Each write the Flutter repositories make, in the shape they make it: whole documents merged
+// (`set` with `merge: true`) and partial updates with `update`. The owner may make each one;
+// another signed-in user may not.
+const merge = (ref, data) => setDoc(ref, data, { merge: true });
+
+t("flutter: createUser and updateUserFields on users/{uid}", async () => {
+    const user = contractFixture("user_model");
+    const uid = user.user_id;
+    await seed(`usernames/${user.username}`, { user_id: uid });
+    await seed(`usernames/grace`, { user_id: uid });
+    await assertFails(merge(doc(db(BOB), `users/${uid}`), user));
+    await assertSucceeds(merge(doc(db(uid), `users/${uid}`), user));
+    // Every field `UserField` allows, as `everyFieldUpdate` in user_repository's tests sets them.
+    const update = {
+        submitted_first_name: "Grace", submitted_last_name: "Hopper", submitted_email: "grace@example.com",
+        submitted_profile_image: "https://example.com/grace.jpg", submitted_gender: "female",
+        submitted_date_of_birth: Timestamp.fromDate(new Date("1985-06-07T00:00:00Z")),
+        submitted_height_centimeters: 180.5, submitted_weight_kilograms: 70.75,
+        submitted_length_unit_preference: "centimeters", submitted_weight_unit_preference: "kilograms",
+        submitted_distance_unit_preference: "kilometers", submitted_exercise_frequency: "5-6",
+        submitted_daily_activity_level: "moderate", submitted_cardio_fitness_level: "advanced",
+        submitted_active_mesocycle_id: "mesocycle_2", submitted_favourite_gym_profile_id: "gym_2",
+        submitted_current_goal_id: "goal_2", did_complete_onboarding: false,
+        accepted_health_disclaimer_version: "2026.10.01", accepted_health_disclaimer_date: now(),
+        accepted_health_privacy_policy_version: "2026.10.02", accepted_health_privacy_policy_date: now(),
+        is_private: false, blocked_user_ids: ["user_x"], following_ids: [], username: "grace",
+        weekly_session_goal: 5,
+    };
+    await assertFails(updateDoc(doc(db(BOB), `users/${uid}`), update));
+    await assertSucceeds(updateDoc(doc(db(uid), `users/${uid}`), update));
+});
+
+t("flutter: mergePrivateSettings, coach consent withdrawn by writing false", async () => {
+    const uid = contractFixture("user_model").user_id;
+    const ref = (as) => doc(db(as), `users/${uid}/private/settings`);
+    await assertSucceeds(merge(ref(uid), contractFixture("private_user_settings")));
+    await assertSucceeds(merge(ref(uid), { coach_consent: false }));
+    await assertFails(merge(ref(BOB), { coach_consent: false }));
+});
+
+t("flutter: saveMeasurement merges a body measurement", async () => {
+    const entry = contractFixture("body_measurement");
+    const uid = entry.author_id;
+    const ref = (as) => doc(db(as), `users/${uid}/body_measurements/${entry.id}`);
+    await assertFails(merge(ref(BOB), entry));
+    await assertSucceeds(merge(ref(uid), entry));
+    await assertSucceeds(merge(ref(uid), { ...entry, weight_kg: 70.5 }));
+    await assertFails(merge(ref(BOB), { ...entry, weight_kg: 70.5 }));
+});
+
+t("flutter: saveGoal, abandonGoal, and the frozen start", async () => {
+    const goal = contractFixture("weight_goal");
+    const uid = goal.user_id;
+    const ref = (as) => doc(db(as), `users/${uid}/goals/${goal.goal_id}`);
+    await assertFails(merge(ref(BOB), goal));
+    await assertSucceeds(merge(ref(uid), goal));
+    // Saving the same goal again changes nothing frozen, so the rules allow it.
+    await assertSucceeds(merge(ref(uid), goal));
+    await assertFails(updateDoc(ref(BOB), { status: "abandoned" }));
+    await assertSucceeds(updateDoc(ref(uid), { status: "abandoned" }));
+    for (const frozen of [
+        { starting_weight_kg: goal.starting_weight_kg + 1 }, { created_at: now() },
+        { goal_id: "other" }, { user_id: BOB },
+    ]) {
+        await assertFails(merge(ref(uid), { ...goal, ...frozen }));
+    }
+});
+
+t("flutter: saveMeal and saveDietPlan merge", async () => {
+    const meal = contractFixture("meal_log");
+    const uid = meal.author_id;
+    const mealRef = (as) => doc(db(as), `users/${uid}/meal_logs/${meal.meal_id}`);
+    await assertFails(merge(mealRef(BOB), meal));
+    await assertSucceeds(merge(mealRef(uid), meal));
+    await assertSucceeds(merge(mealRef(uid), { ...meal, items: [] }));
+    const plan = contractFixture("diet_plan");
+    const planRef = (as) => doc(db(as), `diet_plans/${plan.planId}`);
+    await assertFails(merge(planRef(BOB), plan));
+    await assertSucceeds(merge(planRef(plan.userId), plan));
+    await assertSucceeds(merge(planRef(plan.userId), { ...plan, tdeeEstimate: 2400.5 }));
+});
+
 // Owner-only subcollections whose documents carry the owner as author_id / user_id.
 for (const [sub, key] of [
     ["body_measurements", "author_id"], ["steps", "author_id"], ["goals", "user_id"],

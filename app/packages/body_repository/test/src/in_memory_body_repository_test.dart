@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:body_repository/body_repository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -123,5 +126,123 @@ void main() {
         expect(InMemoryBodyRepository().watchCurrentGoal('me'), emits(isNull));
       });
     });
+
+    group('saveMeasurement', () {
+      test('adds an entry, and watchers see it', () async {
+        final expectation = expectLater(
+          subject.watchMeasurements('me').map((l) => [for (final e in l) e.id]),
+          emitsInOrder([
+            ['a', 'b'],
+            ['a', 'c', 'b'],
+          ]),
+        );
+
+        await subject.saveMeasurement(entry('c', 'me', 11));
+
+        await expectation;
+      });
+
+      test('merges over the stored entry, as Firestore', () async {
+        await subject.saveMeasurement(
+          BodyMeasurementEntry(
+            id: 'a',
+            authorId: 'me',
+            date: DateTime.utc(2026, 10, 10),
+            source: WeightSource.manual,
+            dateCreated: DateTime.utc(2026, 10, 10),
+            bodyFatPercentage: 18.5,
+          ),
+        );
+
+        final a = (await subject.watchMeasurements('me').first).first;
+        expect((a.id, a.weightKg, a.bodyFatPercentage), ('a', 80, 18.5));
+      });
+
+      test("leaves another user's entry with the same id alone", () async {
+        await subject.saveMeasurement(entry('theirs', 'me', 9));
+
+        final mine = await subject.watchMeasurements('me').first;
+        expect([for (final e in mine) e.id], ['theirs', 'a', 'b']);
+      });
+    });
+
+    group('goals', () {
+      test('saveGoal adds a goal, and watchers see it', () async {
+        final expectation = expectLater(
+          subject
+              .watchCurrentGoal('me', currentGoalId: 'g3')
+              .map((g) => g?.goalId),
+          emitsInOrder([null, 'g3']),
+        );
+
+        await subject.saveGoal(goal('g3', 'me'));
+
+        await expectation;
+      });
+
+      test('saveGoal merges over a goal with the same id', () async {
+        await subject.saveGoal(
+          WeightGoal(
+            goalId: 'g2',
+            userId: 'me',
+            objective: OverarchingObjective.loseWeight,
+            startingWeightKg: 80,
+            targetWeightKg: 72.5,
+            weeklyChangeKg: 0.5,
+            createdAt: DateTime.utc(2026, 9),
+            status: GoalStatus.active,
+          ),
+        );
+
+        final g2 = await subject
+            .watchCurrentGoal('me', currentGoalId: 'g2')
+            .first;
+        expect(g2!.targetWeightKg, 72.5);
+      });
+
+      test(
+        'abandonGoal changes only the status, and watchers see it',
+        () async {
+          final expectation = expectLater(
+            subject.watchCurrentGoal('me').map((g) => g?.status),
+            emitsInOrder([GoalStatus.active, GoalStatus.abandoned]),
+          );
+
+          await subject.abandonGoal('me', 'me');
+
+          await expectation;
+          final abandoned = await subject.watchCurrentGoal('me').first;
+          expect(abandoned!.toFirestore(), {
+            ...goal('me', 'me').toFirestore(),
+            'status': 'abandoned',
+          });
+        },
+      );
+
+      test('abandonGoal fails with not-found for a missing goal', () {
+        expect(
+          subject.abandonGoal('me', 'you'),
+          throwsA(
+            isA<FirebaseException>().having((e) => e.code, 'code', 'not-found'),
+          ),
+        );
+      });
+    });
+  });
+
+  testWidgets("a watcher's first value arrives under a fake clock", (
+    tester,
+  ) async {
+    // A bloc awaits `.first`; it must not wait on anything outside the
+    // widget test's zone.
+    var arrived = false;
+    unawaited(
+      InMemoryBodyRepository()
+          .watchMeasurements('x')
+          .first
+          .then((_) => arrived = true),
+    );
+    await tester.pump();
+    expect(arrived, isTrue);
   });
 }

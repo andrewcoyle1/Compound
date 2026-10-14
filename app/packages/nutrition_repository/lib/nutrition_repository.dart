@@ -1,7 +1,6 @@
 /// Reads the signed-in user's meal logs, diet plan and food log settings
-/// from Firestore, or from memory in the staging flavor. Read-only until
-/// these contracts have been exercised by writes
-/// (docs/specs/flutter/firestore-contract.md).
+/// from Firestore, or from memory in the staging flavor, and saves meals and
+/// the diet plan.
 library;
 
 export 'package:compound_models/compound_models.dart'

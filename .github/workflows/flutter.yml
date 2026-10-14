@@ -25,6 +25,9 @@ jobs:
       # Packages under app/packages are held at 100%; the app itself is reported, not gated
       # (docs/specs/flutter/plan.md, Coverage).
       min_coverage: 0
+      # Firebase config is gitignored (public repo); the example has placeholder values, which is
+      # all analysis and tests need. Runs after pub get, before format/analyze/test.
+      setup: cp lib/firebase_options_development.dart.example lib/firebase_options_development.dart
 
   compound_models:
     name: compound_models

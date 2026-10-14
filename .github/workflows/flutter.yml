@@ -79,6 +79,12 @@ jobs:
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
     with:
       working_directory: app/packages/user_repository
+
+  nutrition_repository:
+    name: nutrition_repository
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app/packages/nutrition_repository
       flutter_version: "3.47.7"
       # Its Firestore test reads ../../../contracts/firestore. Packages are held at 100%.
       min_coverage: 100

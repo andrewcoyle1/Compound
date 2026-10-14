@@ -24,6 +24,19 @@ void main() {
         },
       );
     });
+
+    test('turns tagged doubles into NaN and the infinities', () {
+      final firestore = taggedJsonToFirestore({
+        'nan': {doubleTag: 'NaN'},
+        'inf': {doubleTag: 'Infinity'},
+        'negative': {doubleTag: '-Infinity'},
+        'other': {doubleTag: '1.5'},
+      });
+      expect((firestore['nan']! as double).isNaN, isTrue);
+      expect(firestore['inf'], double.infinity);
+      expect(firestore['negative'], double.negativeInfinity);
+      expect(firestore['other'], {doubleTag: '1.5'});
+    });
   });
 
   group('firestoreToTaggedJson', () {

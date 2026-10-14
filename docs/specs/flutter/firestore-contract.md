@@ -11,6 +11,8 @@ data disappear from the iOS app without an error. The contract makes that a fail
    - Numbers keep their type: `172.5` is a double and `4` an int, and the tests on both sides
      compare types, so a Dart write cannot turn an Int field into a double. Samples use doubles
      that aren't whole numbers, because JSON writes `172.0` as `172`.
+   - A NaN or infinity, which JSON cannot hold, is tagged `{"$double": "NaN"}` (or `"Infinity"`,
+     `"-Infinity"`). Only legacy inputs use it: `NutrientMap` drops such values on read.
    - `contracts/firestore/enums.json` lists every raw value of the enums the models store.
    - Each model has a `full` case (every optional present) and a `minimal` case (required fields
      only).

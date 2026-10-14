@@ -14,6 +14,10 @@ int readInt(Object? value) => switch (value) {
 /// [readInt] reads it.
 int? readOptionalInt(Object? value) => value == null ? null : readInt(value);
 
+/// A `Double` field: any number, as Swift widens an integer. Anything else,
+/// null included, throws.
+double readDouble(Object? value) => (value! as num).toDouble();
+
 /// An optional `Double` field: any number, as Swift widens an integer.
 double? readOptionalDouble(Object? value) => (value as num?)?.toDouble();
 

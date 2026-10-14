@@ -2,8 +2,13 @@
 /// `{r'$timestamp': '2026-01-02T03:04:05.123Z'}`.
 const timestampTag = r'$timestamp';
 
+/// The key that tags a double JSON cannot hold, as in
+/// `{r'$double': 'NaN'}`, `'Infinity'` or `'-Infinity'`. Only legacy inputs
+/// use it.
+const doubleTag = r'$double';
+
 /// Contract fixture JSON to a Firestore-shaped map: each tagged timestamp
-/// becomes a UTC [DateTime].
+/// becomes a UTC [DateTime], and each tagged double a NaN or infinity.
 Map<String, Object?> taggedJsonToFirestore(Map<String, Object?> json) =>
     json.map((key, value) => MapEntry(key, _fromTagged(value)));
 
@@ -11,6 +16,8 @@ Object? _fromTagged(Object? value) => switch (value) {
   {timestampTag: final String iso} when value.length == 1 => DateTime.parse(
     iso,
   ).toUtc(),
+  {doubleTag: 'NaN' || 'Infinity' || '-Infinity'} when value.length == 1 =>
+    double.parse(value[doubleTag]! as String),
   final Map<String, Object?> map => taggedJsonToFirestore(map),
   final List<Object?> list => list.map(_fromTagged).toList(),
   _ => value,

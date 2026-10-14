@@ -51,6 +51,30 @@ final _models =
             EquipmentVariation.fromFirestore(data).toFirestore(),
         keys: EquipmentVariationKeys.all,
       ),
+      'meal_log': (
+        roundTrip: (data) => MealLogModel.fromFirestore(data).toFirestore(),
+        keys: MealLogModelKeys.all,
+      ),
+      'meal_item': (
+        roundTrip: (data) => MealItemModel.fromFirestore(data).toFirestore(),
+        keys: MealItemModelKeys.all,
+      ),
+      'nutrient_map': (
+        roundTrip: (data) => NutrientMap.fromFirestore(data).toFirestore(),
+        keys: NutrientMapKeys.all,
+      ),
+      'diet_plan': (
+        roundTrip: (data) => DietPlan.fromFirestore(data).toFirestore(),
+        keys: DietPlanKeys.all,
+      ),
+      'daily_macro_target': (
+        roundTrip: (data) => DailyMacroTarget.fromFirestore(data).toFirestore(),
+        keys: DailyMacroTargetKeys.all,
+      ),
+      'food_log_settings': (
+        roundTrip: (data) => FoodLogSettings.fromFirestore(data).toFirestore(),
+        keys: FoodLogSettingsKeys.all,
+      ),
     };
 
 final _root = Directory('../../../contracts/firestore');
@@ -155,6 +179,9 @@ void main() {
         'Gender': raw(Gender.values),
         'LengthUnitPreference': raw(LengthUnitPreference.values),
         'WeightUnitPreference': raw(WeightUnitPreference.values),
+        'MealItemSourceType': raw(MealItemSourceType.values),
+        'NutrientKey': raw(NutrientKey.values),
+        'TimestampSide': raw(TimestampSide.values),
       }),
     );
   });

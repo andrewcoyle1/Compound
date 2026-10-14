@@ -10,7 +10,8 @@
 //
 //  Fixtures are JSON with each Timestamp tagged `{"$timestamp": "2026-01-02T03:04:05.123Z"}`
 //  (UTC, exactly three fractional digits: Date holds a Double, so the contract is to the
-//  millisecond). Per model:
+//  millisecond), and a NaN or infinity, which JSON cannot hold, tagged `{"$double": "NaN"}`.
+//  Per model:
 //  - `full` and `minimal` are canonical: written from the fixed samples below, and each must
 //    re-encode to exactly itself, number types included.
 //  - `legacy-<name>` is an older shape Swift still reads; it must decode and re-encode to
@@ -60,6 +61,10 @@ struct FirestoreContractTests {
     }
 
     private static func contracts() throws -> [Contract] {
+        try userAndTrainingContracts() + nutritionContracts()
+    }
+
+    private static func userAndTrainingContracts() throws -> [Contract] {
         [
             try contract(
                 UserModel.self, directory: "user_model",
@@ -98,6 +103,52 @@ struct FirestoreContractTests {
         ]
     }
 
+    /// `MealItemModel`, `DailyMacroTarget` and `DietPlan` have no CodingKeys, so
+    /// their keys are the camelCase property names, spelled out here.
+    private static func nutritionContracts() throws -> [Contract] {
+        [
+            try contract(
+                MealLogModel.self, directory: "meal_log",
+                full: Samples.fullMealLog, minimal: Samples.minimalMealLog,
+                namedFields: Self.mealLogNamedFields
+            ),
+            try contract(
+                MealItemModel.self, directory: "meal_item",
+                full: Samples.fullMealItem, minimal: Samples.minimalMealItem,
+                // Read by name in `functions/coach.js`.
+                namedFields: ["displayName", "nutrients"]
+            ),
+            try contract(
+                NutrientMap.self, directory: "nutrient_map",
+                full: Samples.fullNutrients, minimal: NutrientMap(),
+                // `mealTotals` in `functions/coach.js` sums these four by name.
+                namedFields: ([.calories, .protein, .carbs, .fatTotal] as [NutrientKey]).map(\.rawValue)
+            ),
+            try contract(
+                DietPlan.self, directory: "diet_plan",
+                full: Samples.fullDietPlan, minimal: Samples.minimalDietPlan,
+                // `userId` is checked by the `diet_plans` rule; the rest are read by name in
+                // `functions/coach.js`.
+                namedFields: [
+                    "userId", "days", "tdeeEstimate", "preferredDiet", "calorieFloor", "proteinIntake",
+                    "calorieDistribution"
+                ]
+            ),
+            try contract(
+                DailyMacroTarget.self, directory: "daily_macro_target",
+                full: Samples.fullDailyMacroTarget, minimal: Samples.minimalDailyMacroTarget,
+                // Read by name in `functions/coach.js`.
+                namedFields: ["calories", "proteinGrams", "carbGrams", "fatGrams"]
+            ),
+            try contract(
+                FoodLogSettings.self, directory: "food_log_settings",
+                full: Samples.fullFoodLogSettings, minimal: FoodLogSettings(authorId: "user_contract_minimal"),
+                // Written whole through `saveDocument` (a merge), never field by field.
+                namedFields: []
+            )
+        ]
+    }
+
     /// Every session field the app updates or queries by name: `WorkoutSessionManager` (the
     /// `author_id` listener, the template, collection-group and notification queries, and the
     /// Strava and streak field writes), `FollowingQueries`, `FirebaseWorkoutSessionLikeService`
@@ -106,6 +157,12 @@ struct FirestoreContractTests {
         .id, .authorId, .dateCreated, .workoutTemplateId, .stravaActivityId, .weekStreakCount,
         .likedByUserIds, .hidden
     ] as [WorkoutSessionModel.CodingKeys]).map(\.rawValue) + ["liked_by_user_ids"]
+
+    /// Every meal field the app or the coach queries or reads by name: the `author_id` listener in
+    /// `MealLogManager`, and `functions/coach.js` (a `date` range query, `day_key` and `items`).
+    private static let mealLogNamedFields: [String] = ([
+        .authorId, .date, .dayKey, .items
+    ] as [MealLogModel.CodingKeys]).map(\.rawValue)
 
     /// Every user-document field the app updates or queries by name: `UserManager`,
     /// `EditProfilePresenter`, `ExpenditurePresenter`, `UserManager+Username`,
@@ -216,6 +273,13 @@ struct FirestoreContractTests {
             case .standard, .drop, .myo, .failure, .amrap, .restPause, .cluster, .partials, .stretch, .hold: break
             }
         }
+        // Not CaseIterable either.
+        let timestampSides: [TimestampSide] = [.left, .right]
+        for side in timestampSides {
+            switch side {
+            case .left, .right: break
+            }
+        }
         let enums: [String: [String]] = [
             "ActivityLevel": ActivityLevel.allCases.map(\.rawValue),
             "EquipmentKind": EquipmentKind.allCases.map(\.rawValue),
@@ -229,7 +293,10 @@ struct FirestoreContractTests {
             "ExerciseFrequency": ExerciseFrequency.allCases.map(\.rawValue),
             "Gender": Gender.allCases.map(\.rawValue),
             "LengthUnitPreference": LengthUnitPreference.allCases.map(\.rawValue),
-            "WeightUnitPreference": weightUnits.map(\.rawValue)
+            "WeightUnitPreference": weightUnits.map(\.rawValue),
+            "MealItemSourceType": MealItemSourceType.allCases.map(\.rawValue),
+            "NutrientKey": NutrientKey.allCases.map(\.rawValue),
+            "TimestampSide": timestampSides.map(\.rawValue)
         ]
         let url = Self.root.appendingPathComponent("enums.json")
         if ProcessInfo.processInfo.environment["RECORD_CONTRACTS"] == "1" { try Self.write(enums, to: url) }
@@ -275,10 +342,10 @@ struct FirestoreContractTests {
 
 // MARK: - Fixed samples
 
-/// What `RECORD_CONTRACTS=1` writes. Fixed values, never `Date()`, so a re-record changes only
+/// What `RECORD_CONTRACTS=1` writes (the nutrition samples are in `Samples+Nutrition.swift`). Fixed values, never `Date()`, so a re-record changes only
 /// what the model changed. Doubles are deliberately not whole numbers (JSON would write 172.0 as
 /// 172, which reads back as an integer) and are exact in binary, so the JSON stays short.
-private enum Samples {
+enum Samples {
     static func date(_ iso: String) -> Date {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -499,6 +566,9 @@ private extension UserModel {
 /// compares the results strictly: a Bool is not an Int, and an Int is not a Double.
 enum ContractJSON {
     static let timestampTag = "$timestamp"
+    /// Tags a Double JSON cannot hold: `{"$double": "NaN"}`, `"Infinity"` or `"-Infinity"`. Only
+    /// legacy inputs use it, for the values `NutrientMap` drops.
+    static let doubleTag = "$double"
 
     enum ContractError: Error { case badTimestamp(String), unsupported(String) }
 
@@ -512,6 +582,12 @@ enum ContractJSON {
             if map.count == 1, let iso = map[timestampTag] as? String {
                 let (seconds, nanos) = try timestampParts(iso)
                 return Timestamp(seconds: seconds, nanoseconds: nanos)
+            }
+            if map.count == 1, let raw = map[doubleTag] as? String {
+                guard ["NaN", "Infinity", "-Infinity"].contains(raw), let value = Double(raw) else {
+                    throw ContractError.unsupported(raw)
+                }
+                return value
             }
             return try map.mapValues(firestoreValue)
         }

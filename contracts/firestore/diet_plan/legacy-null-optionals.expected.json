@@ -1,0 +1,13 @@
+{
+  "calorieDistribution": "even",
+  "calorieFloor": "standard",
+  "createdAt": {
+    "$timestamp": "2026-09-28T09:15:00.500Z"
+  },
+  "days": [],
+  "planId": "diet_plan_contract_minimal",
+  "preferredDiet": "keto",
+  "proteinIntake": "moderate",
+  "tdeeEstimate": 2200.5,
+  "trainingType": "none"
+}

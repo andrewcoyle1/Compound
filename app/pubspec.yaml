@@ -8,6 +8,8 @@ environment:
   flutter: ^3.47.0
 
 dependencies:
+  analytics_repository:
+    path: packages/analytics_repository
   app_ui:
     path: packages/app_ui
   auth_repository:
@@ -19,9 +21,11 @@ dependencies:
   compound_models:
     path: packages/compound_models
   equatable: ^3.0.0
+  firebase_analytics: ^12.6.0
   firebase_app_check: ^0.4.8
   firebase_auth: ^6.7.0
   firebase_core: ^4.15.0
+  firebase_crashlytics: ^5.4.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1

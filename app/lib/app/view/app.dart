@@ -1,3 +1,4 @@
+import 'package:analytics_repository/analytics_repository.dart';
 import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
@@ -20,6 +21,7 @@ class const App({
   required final UserRepository userRepository,
   required final WorkoutSessionRepository workoutSessionRepository,
   required final NutritionRepository nutritionRepository,
+  final AnalyticsRepository analyticsRepository = const AnalyticsRepository(),
   super.key,
 }) extends StatelessWidget {
   @override
@@ -30,11 +32,13 @@ class const App({
         RepositoryProvider.value(value: userRepository),
         RepositoryProvider.value(value: workoutSessionRepository),
         RepositoryProvider.value(value: nutritionRepository),
+        RepositoryProvider.value(value: analyticsRepository),
       ],
       child: BlocProvider(
-        create: (_) =>
-            AppBloc(authRepository: authRepository)
-              ..add(const AppUserSubscriptionRequested()),
+        create: (_) => AppBloc(
+          authRepository: authRepository,
+          analyticsRepository: analyticsRepository,
+        )..add(const AppUserSubscriptionRequested()),
         child: const AppView(),
       ),
     );

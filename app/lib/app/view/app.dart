@@ -6,7 +6,6 @@ import 'package:compound/l10n/l10n.dart';
 import 'package:compound/sign_in/sign_in.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_ui/material_ui.dart';
 
 class const App({required final AuthRepository authRepository, super.key})
     extends StatelessWidget {

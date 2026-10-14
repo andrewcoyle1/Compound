@@ -2,6 +2,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/bloc/app_bloc.dart';
 import 'package:compound/l10n/l10n.dart';
+import 'package:compound/nutrition/nutrition.dart';
 import 'package:compound/profile/profile.dart';
 import 'package:compound/shell/shell.dart';
 import 'package:compound/sign_in/sign_in.dart';
@@ -10,6 +11,7 @@ import 'package:compound/workout_history/workout_history.dart';
 import 'package:compound/workout_session_detail/workout_session_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -17,6 +19,7 @@ class const App({
   required final AuthRepository authRepository,
   required final UserRepository userRepository,
   required final WorkoutSessionRepository workoutSessionRepository,
+  required final NutritionRepository nutritionRepository,
   super.key,
 }) extends StatelessWidget {
   @override
@@ -26,6 +29,7 @@ class const App({
         RepositoryProvider.value(value: authRepository),
         RepositoryProvider.value(value: userRepository),
         RepositoryProvider.value(value: workoutSessionRepository),
+        RepositoryProvider.value(value: nutritionRepository),
       ],
       child: BlocProvider(
         create: (_) =>
@@ -83,6 +87,11 @@ class _AppViewState extends State<AppView> {
                         ],
                       ),
                     ],
+                  ),
+                  AppTab.nutrition => GoRoute(
+                    path: tab.path,
+                    name: tab.name,
+                    builder: (_, _) => const NutritionPage(),
                   ),
                   _ => GoRoute(
                     path: tab.path,

@@ -1,6 +1,7 @@
 import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -21,6 +22,10 @@ Future<void> main() async {
       ),
       workoutSessionRepository: InMemoryWorkoutSessionRepository(
         sessions: sampleWorkoutSessions(uid: sampleUserId, now: now),
+      ),
+      nutritionRepository: InMemoryNutritionRepository(
+        meals: sampleMealLogs(uid: sampleUserId, now: now),
+        dietPlan: sampleDietPlan(uid: sampleUserId, now: now),
       ),
     ),
   );

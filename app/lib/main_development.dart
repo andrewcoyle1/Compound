@@ -7,6 +7,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:nutrition_repository/nutrition_repository.dart';
 import 'package:user_repository/user_repository.dart';
 import 'package:workout_session_repository/workout_session_repository.dart';
 
@@ -32,6 +33,9 @@ Future<void> main() async {
         firestore: FirebaseFirestore.instance,
       ),
       workoutSessionRepository: FirestoreWorkoutSessionRepository(
+        firestore: FirebaseFirestore.instance,
+      ),
+      nutritionRepository: FirestoreNutritionRepository(
         firestore: FirebaseFirestore.instance,
       ),
     );

@@ -349,5 +349,122 @@
     "setKindHold": "Hold",
     "@setKindHold": {
         "description": "How a set was performed: Hold"
+    },
+    "nutritionDayLoadFailed": "Your meals couldn't be loaded.",
+    "@nutritionDayLoadFailed": {
+        "description": "Nutrition tab: shown when the meal log cannot be read"
+    },
+    "nutritionNothingLoggedTitle": "Nothing Logged",
+    "@nutritionNothingLoggedTitle": {
+        "description": "Nutrition tab: empty state title for a day with no meals and no timeline"
+    },
+    "nutritionNothingLoggedMessage": "Meals you log for this day appear here.",
+    "@nutritionNothingLoggedMessage": {
+        "description": "Nutrition tab: empty state message"
+    },
+    "nutritionMacroCalories": "Cals",
+    "@nutritionMacroCalories": {
+        "description": "Short label for calories in the macro header and hour totals"
+    },
+    "nutritionMacroFat": "Fat",
+    "@nutritionMacroFat": {
+        "description": "Label for fat in the macro header and hour totals"
+    },
+    "nutritionMacroProtein": "Protein",
+    "@nutritionMacroProtein": {
+        "description": "Label for protein in the macro header and hour totals"
+    },
+    "nutritionMacroCarbs": "Carbs",
+    "@nutritionMacroCarbs": {
+        "description": "Label for carbohydrate in the macro header and hour totals"
+    },
+    "nutritionMacroConsumed": "{total} / {target}",
+    "@nutritionMacroConsumed": {
+        "description": "Macro header: eaten so far against the day's target, e.g. 1,200 / 2,500",
+        "placeholders": {
+            "total": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionMacroLeft": "{amount} left",
+    "@nutritionMacroLeft": {
+        "description": "Macro header: how much of the day's target is left",
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionMacroHeaderShowRemaining": "Show what's left",
+    "@nutritionMacroHeaderShowRemaining": {
+        "description": "Macro header: accessibility hint for switching to the remaining figures"
+    },
+    "nutritionMacroHeaderShowConsumed": "Show what's eaten",
+    "@nutritionMacroHeaderShowConsumed": {
+        "description": "Macro header: accessibility hint for switching back to the eaten figures"
+    },
+    "nutritionItemProtein": "{grams} P",
+    "@nutritionItemProtein": {
+        "description": "A logged food's protein, e.g. 31 g P",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionItemFat": "{grams} F",
+    "@nutritionItemFat": {
+        "description": "A logged food's fat, e.g. 4 g F",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionItemCarbs": "{grams} C",
+    "@nutritionItemCarbs": {
+        "description": "A logged food's carbohydrate, e.g. 25 g C",
+        "placeholders": {
+            "grams": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionToday": "Today",
+    "@nutritionToday": {
+        "description": "Nutrition tab: button that returns the day shown to today; also read out on today's calendar cell"
+    },
+    "nutritionCalendarLogged": "Logged",
+    "@nutritionCalendarLogged": {
+        "description": "Calendar strip: accessibility value for a day with food logged"
+    },
+    "nutritionCalendarProgress": "{percent} of goal",
+    "@nutritionCalendarProgress": {
+        "description": "Calendar strip: accessibility value, the day's calories as a share of the goal",
+        "placeholders": {
+            "percent": {
+                "type": "String"
+            }
+        }
+    },
+    "nutritionCalendarGoalMet": "Goal met",
+    "@nutritionCalendarGoalMet": {
+        "description": "Calendar strip: accessibility value once the day's calorie goal is reached"
+    },
+    "nutritionCalendarOverGoal": "Over goal",
+    "@nutritionCalendarOverGoal": {
+        "description": "Calendar strip: accessibility value once the day is over its calorie goal"
+    },
+    "nutritionCalendarPreviousWeek": "Previous week",
+    "@nutritionCalendarPreviousWeek": {
+        "description": "Calendar strip: accessibility action showing the week before"
+    },
+    "nutritionCalendarNextWeek": "Next week",
+    "@nutritionCalendarNextWeek": {
+        "description": "Calendar strip: accessibility action showing the week after"
     }
 }

@@ -2,7 +2,7 @@
 //  SupersetBlockView.swift
 //  Compound
 //
-//  A superset as one card (T6): a header line per member, then one table holding every member's
+//  A superset as one card: a header line per member, then one table holding every member's
 //  sets in the order they are done (A1, B1, A2, B2…, `ActiveWorkout.blockRows`), and an Add Set
 //  per member. The log button walks the same rounds, so the card stays put while the block has
 //  sets left and only the next row to log changes.
@@ -18,7 +18,7 @@ struct SupersetBlockView<Piece: View>: View {
     /// In workout order; the first is A.
     let members: [WorkoutExerciseModel]
     let rows: [SupersetBlockRow]
-    /// The set the log button logs next, the one row drawn as current.
+    /// The set the log button logs next, which VoiceOver names "next to log".
     let nextSetId: String?
     /// One row of headings over every member's fields, when they share their columns.
     let showsColumnHeadings: Bool

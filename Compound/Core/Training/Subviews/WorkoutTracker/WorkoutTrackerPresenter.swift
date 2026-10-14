@@ -51,7 +51,8 @@ class WorkoutTrackerPresenter {
         #endif
     }
     
-    var expandedExerciseId: String?
+    /// The exercise opened on the card, when it is not the one the workout is up to.
+    var cardExerciseId: String?
     /// Up to when the screen has seen the session's logged sets: moved on by everything the screen
     /// does, not by saves made elsewhere, so a set logged after it came from the Live Activity.
     /// See `+Persistence` and `ActiveWorkout.receipt`.
@@ -70,11 +71,11 @@ class WorkoutTrackerPresenter {
     /// Each exercise's bodyweight contribution by template id, read from the library on first use.
     @ObservationIgnored var bodyweightPercents: [String: Int] = [:]
 
-    /// The exercise index to use for Live Activity updates — prefers the expanded exercise
+    /// The exercise index to use for Live Activity updates — prefers the card's exercise
     /// over `currentExerciseIndex` so the widget reflects what the user is actually working on,
     /// even when `exerciseAutoNext` is off and `currentExerciseIndex` hasn't advanced.
     private var liveActivityExerciseIndex: Int {
-        if let id = expandedExerciseId,
+        if let id = cardExerciseId,
            let idx = workoutSession.exercises.firstIndex(where: { $0.id == id }) {
             return idx
         }
@@ -161,9 +162,9 @@ class WorkoutTrackerPresenter {
 
         // Expand first incomplete exercise by default (fallback to first if all complete)
         if let idx = firstIncompleteExerciseIndex(in: workoutSession.exercises) {
-            expandedExerciseId = workoutSession.exercises[idx].id
+            cardExerciseId = workoutSession.exercises[idx].id
         } else {
-            expandedExerciseId = workoutSession.exercises.first?.id
+            cardExerciseId = workoutSession.exercises.first?.id
         }
         restoreFocus(from: screenState)
 

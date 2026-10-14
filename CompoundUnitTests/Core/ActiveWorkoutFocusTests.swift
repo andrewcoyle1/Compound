@@ -149,7 +149,7 @@ struct ActiveWorkoutFocusTests {
         #expect(ActiveWorkout.focus(afterLogging: "a-1", in: exercises, settings: settings, restFollows: false) == nil)
     }
 
-    /// T3: the card stays on a finished exercise while its rest runs.
+    /// The card stays on a finished exercise while its rest runs.
     @Test("Test A Finished Exercise Stays During Its Rest")
     func testFocusStaysDuringRest() {
         let exercises = [exercise("a", done: 1, open: 0), exercise("b")]

@@ -114,9 +114,10 @@ struct SupersetBlockLayoutTests {
         #expect(Set(rows.map(\.id)).count == rows.count)
     }
 
-    // MARK: - The current row
+    // MARK: - The next row to log
 
-    /// One row is current on the card: the set the log button logs next. B1 waits as upcoming
+    /// One row is current on the card, which VoiceOver names "next to log": the set the log
+    /// button logs next. B1 waits as upcoming
     /// until A1 is logged, though it is B's own next set.
     @Test("Test Only The Set The Log Button Logs Next Is Current")
     func testOnlyTheSetTheLogButtonLogsNextIsCurrent() throws {

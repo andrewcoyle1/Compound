@@ -9,7 +9,7 @@
 
 import Foundation
 
-/// How a set row is drawn.
+/// Where a set stands: logged, next to log, or still to come. Logged rows are greyed.
 enum SetRowState: Equatable {
     case done
     /// The next set to log in its exercise, which VoiceOver names "next to log".

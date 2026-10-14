@@ -104,7 +104,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
         #expect(screen.presenter.currentExerciseIndex == 1)
     }
 
@@ -124,7 +124,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
         #expect(screen.presenter.currentExerciseIndex == 0)
     }
 
@@ -141,7 +141,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A member of a different group is a different superset, and is not where this round goes.
@@ -156,7 +156,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A partner with every set logged has nothing left to do, so the round skips past it to the
@@ -173,7 +173,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e3")
+        #expect(screen.presenter.cardExerciseId == "e3")
     }
 
     /// The search wraps, so the last member of a group hands back to the first rather than
@@ -189,7 +189,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e2")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     /// A member finished while its partner still has this round's set is not the superset
@@ -209,12 +209,12 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e2")
+        #expect(screen.presenter.cardExerciseId == "e2")
     }
 
     // MARK: - The log button through a superset
 
-    /// T6: the log button alternates A, B, A, B; nothing rests between partners, and the round's
+    /// The log button alternates A, B, A, B; nothing rests between partners, and the round's
     /// rest comes after B. The last round ends the workout, so it rests not at all.
     @Test("Test The Log Button Alternates And Rests After The Round")
     func testTheLogButtonAlternatesAndRestsAfterTheRound() throws {
@@ -268,7 +268,7 @@ struct WorkoutTrackerSupersetTests {
 
         screen.presenter.updateSet(logged, in: "e1")
 
-        #expect(screen.presenter.expandedExerciseId == "e1")
+        #expect(screen.presenter.cardExerciseId == "e1")
     }
 
     // MARK: - The block card

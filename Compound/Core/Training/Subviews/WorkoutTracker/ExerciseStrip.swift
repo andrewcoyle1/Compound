@@ -271,7 +271,7 @@ private extension UTType {
 /// Which side the card list comes in from when its block changes, worked out once per move
 /// against the order the old block was shown in (so Do Later still reads as forward).
 ///
-/// Held by the view rather than set by the presenter: Next, Up Next, Do Later, swap and delete
+/// Held by the view rather than set by the presenter: Next, Do Later, swap and delete
 /// all move the card without going through `setFocus`, and the list going out keeps the
 /// transition it was last drawn with, so an edge stored with the move reached only the incoming
 /// list. `CardPush` asks here when it runs, and both lists agree.

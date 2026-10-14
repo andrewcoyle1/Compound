@@ -12,7 +12,6 @@ struct ExerciseTrackerDelegate {
     let lastExercise: WorkoutExerciseModel?
     var isExpanded: Binding<Bool> = .constant(false)
     var allWorkoutExercises: [WorkoutExerciseModel] = []
-    /// The one line smart progression has to say about this exercise, if anything.
     /// What the engine suggests for this exercise's working sets, shown by the Auto column.
     var progressionSuggestion: ProgressionSuggestion?
     /// The note this exercise was left with last session, shown as a hint when writing this one.
@@ -318,7 +317,7 @@ struct ExerciseTrackerView<SetTracker: View>: View {
     }
 }
 
-/// A note held to three lines above the sets, so a long one does not push the table off screen,
+/// A note held to three lines under the sets, so a long one does not push the card off screen,
 /// with More to read the rest in place. More shows only when the note is actually cut short.
 private struct ClampedNote: View {
     let text: String

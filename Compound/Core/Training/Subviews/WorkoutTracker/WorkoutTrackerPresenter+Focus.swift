@@ -25,8 +25,8 @@ extension WorkoutTrackerPresenter {
     /// is already there.
     func setFocus(_ exerciseId: String, reason: FocusReason) {
         guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }),
-              expandedExerciseId != exerciseId || currentExerciseIndex != index else { return }
-        expandedExerciseId = exerciseId
+              cardExerciseId != exerciseId || currentExerciseIndex != index else { return }
+        cardExerciseId = exerciseId
         currentExerciseIndex = index
         persistFocus(exerciseId)
         interactor.trackEvent(event: FocusEvent.focusMoved(reason: reason))
@@ -49,7 +49,7 @@ extension WorkoutTrackerPresenter {
         guard let id = state.focusExerciseId,
               let index = workoutSession.exercises.firstIndex(where: { $0.id == id }),
               ActiveWorkout.currentSet(in: workoutSession.exercises[index]) != nil else { return }
-        expandedExerciseId = id
+        cardExerciseId = id
         currentExerciseIndex = index
     }
 

@@ -38,7 +38,7 @@ extension WorkoutTrackerPresenter {
         for position in exercises.indices { exercises[position].index = position + 1 }
 
         workoutSession.updateExercises(exercises)
-        expandedExerciseId = swap.replacement.id
+        cardExerciseId = swap.replacement.id
         currentExerciseIndex = exercises.firstIndex { $0.id == swap.replacement.id } ?? currentExerciseIndex
         loadPreviousWorkoutSession()
         loadProgressionSuggestions()

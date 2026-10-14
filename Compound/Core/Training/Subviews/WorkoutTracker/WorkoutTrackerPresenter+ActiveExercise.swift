@@ -16,13 +16,13 @@ extension WorkoutTrackerPresenter {
     /// The exercise on the card: the one opened, else the one the workout is up to.
     var currentExercise: WorkoutExerciseModel? {
         let exercises = workoutSession.exercises
-        if let id = expandedExerciseId, let open = exercises.first(where: { $0.id == id }) { return open }
+        if let id = cardExerciseId, let open = exercises.first(where: { $0.id == id }) { return open }
         return exercises.indices.contains(currentExerciseIndex) ? exercises[currentExerciseIndex] : exercises.last
     }
 
     func onExerciseSelected(_ exerciseId: String) {
         guard let index = workoutSession.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
-        expandedExerciseId = exerciseId
+        cardExerciseId = exerciseId
         currentExerciseIndex = index
         interactor.playHaptic(option: .selection)
         interactor.trackEvent(event: Event.exerciseSelected)
@@ -45,7 +45,7 @@ extension WorkoutTrackerPresenter {
         let wasOnCard = ids.contains(currentExercise?.id ?? "")
         move(group, toIndex: workoutSession.exercises.filter { !ids.contains($0.id) }.count)
         if wasOnCard, let next = workoutSession.exercises.first(where: { !ids.contains($0.id) && !isComplete($0) }) {
-            expandedExerciseId = next.id
+            cardExerciseId = next.id
             currentExerciseIndex = workoutSession.exercises.firstIndex { $0.id == next.id } ?? currentExerciseIndex
         }
         interactor.playHaptic(option: .selection)
@@ -102,7 +102,7 @@ extension WorkoutTrackerPresenter {
         let card = currentExercise?.id
         applyReorderedExercises(updated, movedFrom: nil, movedTo: 0)
         if let card, let cardIndex = updated.firstIndex(where: { $0.id == card }) {
-            expandedExerciseId = card
+            cardExerciseId = card
             currentExerciseIndex = cardIndex
         }
     }

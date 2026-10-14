@@ -7,8 +7,8 @@ struct SetTrackerRowDelegate {
     /// What smart progression suggests for this row, if anything. Shown by the Auto column.
     var progressionSuggestion: SuggestedSet?
     var showAutoRanges: Bool = false
-    /// Done, current or upcoming, on the live tracker. `nil` draws every row alike, as the
-    /// warm-up sheet does.
+    /// Done, current or upcoming, on the live tracker: a done row is greyed, and the current one is
+    /// "next to log" to VoiceOver. `nil` treats every row alike, as the warm-up sheet does.
     var rowState: SetRowState?
     /// The live tracker logs the set itself, with any rest set by hand on this row, so its log
     /// button and this row's Done are one path. `nil` where there is no tracker: the warm-up sheet

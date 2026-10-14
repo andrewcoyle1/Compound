@@ -1,8 +1,9 @@
 //
-//  WorkoutTrackerView+SetUI.swift
+//  SetTrackerView.swift
 //  Compound
 //
-//  Extracted for function_body_length.
+//  One exercise's set table: column headings, the rows, Add Set and the notes. On the live
+//  tracker it is the card's section, or one piece of a superset's card (`SetTrackerPiece`).
 //
 
 import SwiftUI
@@ -18,8 +19,8 @@ struct SetTrackerDelegate {
     /// The live tracker makes a swap itself, keeping the logged sets on the old exercise. `nil`
     /// swaps in place, as a finished workout's editor does. See `SetTrackerPresenter.onSwapPressed`.
     var onSwap: (@MainActor (ExerciseModel) -> Void)?
-    /// The live tracker's card: rows drawn done, current or upcoming, the exercise's actions in an
-    /// overflow menu that `header` places, and the rest timer among the rows.
+    /// The live tracker's card: the exercise's actions in an overflow menu that `header` places,
+    /// the rest timer among the rows, and logging through the tracker.
     var card: SetTrackerCard?
 }
 

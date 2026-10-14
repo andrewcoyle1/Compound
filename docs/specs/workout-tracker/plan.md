@@ -193,6 +193,10 @@ Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` 
 
 ## Status (7 Oct 2026)
 
+**14 Oct 2026:** the exercise strip is permanent. The Workout Settings switch is gone, and with it
+the Up Next and Completed sections that showed with the strip off; at accessibility sizes the
+header's block menu and the Add Exercise row stand in for the thumbnails, as before.
+
 Waves 0–4 and WP-Q are merged (PRs #49–#61); The three B5 decision tests are
 parked until there are users to run them on; the owner decided from use instead (7 Oct 2026):
 the **exercise strip is the default** (with it on, only the selected block is on the card, and a

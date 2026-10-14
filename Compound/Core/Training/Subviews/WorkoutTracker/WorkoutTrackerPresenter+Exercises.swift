@@ -93,10 +93,10 @@ extension WorkoutTrackerPresenter {
     private func focusCard(on exerciseId: String?) {
         let exercises = workoutSession.exercises
         if let exerciseId, let index = exercises.firstIndex(where: { $0.id == exerciseId }) {
-            expandedExerciseId = exerciseId
+            cardExerciseId = exerciseId
             currentExerciseIndex = index
         } else {
-            expandedExerciseId = nil
+            cardExerciseId = nil
             syncCurrentExerciseIndexToFirstIncomplete(in: exercises)
         }
     }

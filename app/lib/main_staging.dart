@@ -1,6 +1,17 @@
+import 'package:auth_repository/auth_repository.dart';
 import 'package:compound/app/app.dart';
 import 'package:compound/bootstrap.dart';
 
+/// The staging flavor, which is the Swift app's old Mock configuration:
+/// in-memory repositories and no Firebase, for previews and demos. Starts
+/// signed in as the seeded sample user; signing out and back in stays in
+/// memory.
 Future<void> main() async {
-  await bootstrap(() => const App());
+  await bootstrap(
+    () => App(
+      authRepository: InMemoryAuthRepository(
+        user: InMemoryAuthRepository.sampleUser,
+      ),
+    ),
+  );
 }

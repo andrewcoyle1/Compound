@@ -1,6 +1,9 @@
-import 'package:compound/app/app.dart';
-import 'package:compound/bootstrap.dart';
-
-Future<void> main() async {
-  await bootstrap(() => const App());
+/// The production flavor is not wired up yet: the production Firebase
+/// project (`dialed-c3cb5`) is out of bounds until the iOS switch-over
+/// (docs/specs/flutter/plan.md, M6). Use the development or staging flavor.
+void main() {
+  throw UnsupportedError(
+    'The production flavor has no Firebase configuration yet. '
+    'Run the development or staging flavor instead.',
+  );
 }

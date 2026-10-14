@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -113,3 +115,9 @@ app.*.map.json
 
 # Generated l10n files
 lib/l10n/gen/
+# Firebase config (the repo is public; same rule as the Swift app's GoogleService plists).
+# Recreate with flutterfire configure (see README), or copy the .example for CI.
+lib/firebase_options_*.dart
+android/app/src/*/google-services.json
+ios/flavors/*/GoogleService-Info.plist
+firebase.json

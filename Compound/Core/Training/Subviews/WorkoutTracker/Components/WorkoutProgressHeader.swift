@@ -12,7 +12,17 @@ import SwiftUI
 /// text, the bar stays and "Exercise 3 of 8" becomes a menu of the blocks.
 struct WorkoutProgressHeader: View {
 
-    let presenter: WorkoutTrackerPresenter
+    let progress: ActiveWorkout.Progress
+    /// False while paused, which greys the bar.
+    let isActive: Bool
+    let stripItems: [ActiveWorkout.StripItem]
+    /// The card's block, ticked in the accessibility-size menu.
+    let currentBlockId: String?
+    let onSelect: (String) -> Void
+    let onDoNext: (String) -> Void
+    let onDoLater: (String) -> Void
+    let onMove: (String, Int) -> Void
+    let onAddExercise: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -20,12 +30,12 @@ struct WorkoutProgressHeader: View {
         VStack(spacing: Spacing.xs) {
             if !dynamicTypeSize.isAccessibilitySize {
                 ExerciseStrip(
-                    items: presenter.stripItems,
-                    onSelect: presenter.onStripItemSelected,
-                    onDoNext: presenter.onDoNextPressed,
-                    onDoLater: presenter.onDoLaterPressed,
-                    onMove: presenter.onStripItemMoved,
-                    onAddExercise: presenter.presentAddExercise
+                    items: stripItems,
+                    onSelect: onSelect,
+                    onDoNext: onDoNext,
+                    onDoLater: onDoLater,
+                    onMove: onMove,
+                    onAddExercise: onAddExercise
                 )
             }
             summary
@@ -35,13 +45,12 @@ struct WorkoutProgressHeader: View {
 
     /// The counts; at accessibility sizes, over the bar, with the block count as a menu.
     private var summary: some View {
-        let progress = presenter.progress
         let isCompact = dynamicTypeSize.isAccessibilitySize
         return VStack(spacing: Spacing.xs) {
             if isCompact {
                 ProgressView(value: progress.fraction)
                     // Greyed while paused, with Paused in the title: the workout is not moving on.
-                    .tint(presenter.isActive ? nil : Color.secondary)
+                    .tint(isActive ? nil : Color.secondary)
             }
             // Fonts on each text, not the stack: the accessibility audit only credits a text with
             // Dynamic Type when its own font is a text style.
@@ -95,10 +104,10 @@ struct WorkoutProgressHeader: View {
     /// The strip's items as a menu, for accessibility sizes, the current block checked.
     private var blockMenuItems: some View {
         Picker("Exercise", selection: Binding(
-            get: { presenter.currentBlockId ?? "" },
-            set: { presenter.onStripItemSelected($0) }
+            get: { currentBlockId ?? "" },
+            set: { onSelect($0) }
         )) {
-            ForEach(presenter.stripItems) { item in
+            ForEach(stripItems) { item in
                 Text(item.names.formatted(.list(type: .and)))
                     .tag(item.id)
             }

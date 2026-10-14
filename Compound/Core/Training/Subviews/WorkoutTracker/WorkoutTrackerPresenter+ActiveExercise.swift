@@ -172,6 +172,24 @@ extension WorkoutTrackerPresenter {
         return note.isEmpty ? nil : note.joined(separator: " ")
     }
 
+    /// The note on `exercise`'s card: smart progression's note speaks for the exercise the log
+    /// button is on, so a superset's other members show none.
+    func progressionNote(for exercise: WorkoutExerciseModel) -> String? {
+        exercise.id == currentExercise?.id ? progressionNote : nil
+    }
+
+    /// A superset's card for `members`, with `current` the member the log button is on.
+    func supersetCard(_ members: [WorkoutExerciseModel], current: String) -> SupersetCard {
+        let timers = members.compactMap { restTimer(for: $0) }
+        return SupersetCard(
+            members: members,
+            rows: ActiveWorkout.blockRows(members),
+            nextSetId: ActiveWorkout.nextSetId(inBlock: members, current: current),
+            showsColumnHeadings: ActiveWorkout.blockSharesColumns(members, units: units(for:)),
+            restBefore: timers.contains { $0.anchor != .top } ? nil : timers.first
+        )
+    }
+
     func onProgressionNoteAcknowledged() {
         // The receipt sits in the same slot; dismissing it leaves the progression note to show.
         if logReceipt != nil { return markSetsSeen() }

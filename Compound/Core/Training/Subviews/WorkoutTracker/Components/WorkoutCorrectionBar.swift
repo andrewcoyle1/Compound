@@ -11,20 +11,20 @@ import SwiftUI
 
 struct WorkoutCorrectionBar: View {
 
-    let presenter: WorkoutTrackerPresenter
+    /// The set just logged, while its rest runs; `nil` hides the bar.
+    let correction: SetCorrection?
+    let onAction: @MainActor (SetCorrectionAction) -> Void
 
     var body: some View {
         Group {
-            if let rest = presenter.restCorrection {
-                InlineRestTimerRow(timer: nil, correction: rest.correction) { action in
-                    presenter.onCorrection(action, setId: rest.correction.setId, in: rest.exerciseId)
-                }
-                .padding(.vertical, Spacing.xs)
-                .cardSurface()
-                .padding(.horizontal, Spacing.m)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+            if let correction {
+                InlineRestTimerRow(timer: nil, correction: correction, onCorrection: onAction)
+                    .padding(.vertical, Spacing.xs)
+                    .cardSurface()
+                    .padding(.horizontal, Spacing.m)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .reducedMotionAnimation(.standard, value: presenter.restCorrection?.correction)
+        .reducedMotionAnimation(.standard, value: correction)
     }
 }

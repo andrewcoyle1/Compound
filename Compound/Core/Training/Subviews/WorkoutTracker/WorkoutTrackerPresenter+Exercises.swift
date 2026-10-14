@@ -133,7 +133,10 @@ extension WorkoutTrackerPresenter {
             delegate: ExercisesPickerDelegate(
                 addedExercises: Binding(
                     get: { self.pendingSelectedTemplates },
-                    set: { self.pendingSelectedTemplates = $0 }
+                    set: {
+                        self.pendingSelectedTemplates = $0
+                        self.addSelectedExercises()
+                    }
                 )
             )
         )

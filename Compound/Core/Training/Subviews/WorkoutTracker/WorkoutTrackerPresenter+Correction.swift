@@ -32,6 +32,12 @@ extension WorkoutTrackerPresenter {
         ))
     }
 
+    /// A tap on the correction bar, for the set it shows.
+    func onRestCorrection(_ action: SetCorrectionAction) {
+        guard let rest = restCorrection else { return }
+        onCorrection(action, setId: rest.correction.setId, in: rest.exerciseId)
+    }
+
     /// What the correction bar offers for the latest set logged on `exercise`, or `nil` when there
     /// is nothing to correct on it.
     func correction(for exercise: WorkoutExerciseModel) -> SetCorrection? {

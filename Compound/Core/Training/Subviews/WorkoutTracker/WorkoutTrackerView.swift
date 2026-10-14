@@ -84,19 +84,25 @@ struct WorkoutTrackerView<ExerciseTracker: View>: View {
         // The rest timer and the column headings are a line of text each, not a 44 pt row. Every
         // control in the table carries its own 44 pt hit area.
         .environment(\.defaultMinListRowHeight, Spacing.xl)
-        .onChange(of: presenter.pendingSelectedTemplates) { _, newValue in
-            guard !newValue.isEmpty else { return }
-            presenter.addSelectedExercises()
-        }
         .toolbar {
             toolbarContent
         }
         .safeAreaBar(edge: .top) {
-            WorkoutProgressHeader(presenter: presenter)
+            WorkoutProgressHeader(
+                progress: presenter.progress,
+                isActive: presenter.isActive,
+                stripItems: presenter.stripItems,
+                currentBlockId: presenter.currentBlockId,
+                onSelect: presenter.onStripItemSelected,
+                onDoNext: presenter.onDoNextPressed,
+                onDoLater: presenter.onDoLaterPressed,
+                onMove: presenter.onStripItemMoved,
+                onAddExercise: presenter.presentAddExercise
+            )
         }
         // The set just logged, to correct while its rest runs; over the button, off the card.
         .safeAreaBar(edge: .bottom) {
-            WorkoutCorrectionBar(presenter: presenter)
+            WorkoutCorrectionBar(correction: presenter.restCorrection?.correction, onAction: presenter.onRestCorrection)
         }
         // Always shown, above the keypad too: its animations are its own, so a log no longer
         // animates the whole list with it.

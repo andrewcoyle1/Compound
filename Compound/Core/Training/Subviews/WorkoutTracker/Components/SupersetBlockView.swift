@@ -13,8 +13,8 @@
 
 import SwiftUI
 
-struct SupersetBlockView<Piece: View>: View {
-
+/// What a superset's card draws, worked out by the presenter (`supersetCard(_:current:)`).
+struct SupersetCard {
     /// In workout order; the first is A.
     let members: [WorkoutExerciseModel]
     let rows: [SupersetBlockRow]
@@ -25,38 +25,43 @@ struct SupersetBlockView<Piece: View>: View {
     /// A rest that followed a set outside the superset, drawn once above its rows. One that
     /// followed a member's set is drawn under that set by the member's piece.
     let restBefore: InlineRestTimer?
+}
+
+struct SupersetBlockView<Piece: View>: View {
+
+    let card: SupersetCard
     /// One member's piece of the table.
     @ViewBuilder let piece: (_ exerciseId: String, _ piece: SetTrackerPiece) -> Piece
 
     var body: some View {
         Section {
-            ForEach(members) { member in
+            ForEach(card.members) { member in
                 piece(member.id, .progressionNote)
             }
-            if showsColumnHeadings, let first = members.first {
+            if card.showsColumnHeadings, let first = card.members.first {
                 piece(first.id, .columnHeadings)
             }
-            if let restBefore {
+            if let restBefore = card.restBefore {
                 InlineRestTimerRow(timer: restBefore)
                     .listRowSeparator(.hidden)
                     .listRowInsets(.vertical, 0)
                     .listRowInsets(.leading, 0)
             }
-            ForEach(rows) { row in
+            ForEach(card.rows) { row in
                 switch row.kind {
                 case .loggedWarmups:
                     piece(row.exerciseId, .loggedWarmups)
                 case let .set(id, badge):
-                    piece(row.exerciseId, .row(setId: id, badge: badge, isNext: id == nextSetId))
+                    piece(row.exerciseId, .row(setId: id, badge: badge, isNext: id == card.nextSetId))
                 }
             }
-            ForEach(members) { member in
+            ForEach(card.members) { member in
                 piece(member.id, .addSet)
             }
         } header: {
             // A title line per member, each with its own actions menu.
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                ForEach(members) { member in
+                ForEach(card.members) { member in
                     piece(member.id, .header)
                 }
             }

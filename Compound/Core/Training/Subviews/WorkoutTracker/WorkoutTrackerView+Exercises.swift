@@ -33,29 +33,16 @@ extension WorkoutTrackerView {
         )
     }
 
-    /// One card for a superset, built from each member's own card in pieces. A rest after a
-    /// member's set sits under that set, as `delegate(for:)` places it; a
-    /// rest after a set outside the superset is drawn once, above the rows.
+    /// One card for a superset, built from each member's own card in pieces
+    /// (`WorkoutTrackerPresenter.supersetCard`).
     private func supersetCard(_ members: [WorkoutExerciseModel], current: WorkoutExerciseModel) -> some View {
-        let timers = members.compactMap { presenter.restTimer(for: $0) }
-        let restBefore = timers.contains { $0.anchor != .top } ? nil : timers.first
-        return SupersetBlockView(
-            members: members,
-            rows: ActiveWorkout.blockRows(members),
-            nextSetId: ActiveWorkout.nextSetId(inBlock: members, current: current.id),
-            showsColumnHeadings: ActiveWorkout.blockSharesColumns(members, units: presenter.units(for:)),
-            restBefore: restBefore,
-            piece: { exerciseId, piece in
-                let index = members.firstIndex { $0.id == exerciseId } ?? 0
-                let member = members[index]
-                var delegate = delegate(for: binding(for: member))
-                delegate.card?.piece = piece
-                delegate.card?.memberLetter = ActiveWorkout.letter(index)
-                // Smart progression's note speaks for the exercise the log button is on.
-                if member.id != current.id { delegate.card?.progressionNote = nil }
-                return exerciseTrackerView(delegate)
-            }
-        )
+        SupersetBlockView(card: presenter.supersetCard(members, current: current.id)) { exerciseId, piece in
+            let index = members.firstIndex { $0.id == exerciseId } ?? 0
+            var delegate = delegate(for: binding(for: members[index]))
+            delegate.card?.piece = piece
+            delegate.card?.memberLetter = ActiveWorkout.letter(index)
+            return exerciseTrackerView(delegate)
+        }
     }
 
     var addExerciseSection: some View {
@@ -102,7 +89,7 @@ extension WorkoutTrackerView {
                 presenter.insertSwappedExercise(after: exerciseId, new: replacement)
             },
             card: ExerciseCard(
-                progressionNote: presenter.progressionNote,
+                progressionNote: presenter.progressionNote(for: current),
                 onProgressionNoteAcknowledged: { presenter.onProgressionNoteAcknowledged() },
                 restTimer: presenter.restTimer(for: current),
                 onDoLater: onDoLater,

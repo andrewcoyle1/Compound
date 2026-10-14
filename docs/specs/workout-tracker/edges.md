@@ -3,7 +3,7 @@
 Branch `feature/workout-tracker-redesign`, working tree as of 6 Oct 2026. Everything here was read from
 the code. Nothing was run in a simulator. Paths are relative to `Compound/` unless stated.
 
-Abbreviations: **AWS** = `Core/Training/Subviews/WorkoutTracker/ActiveWorkoutState.swift`,
+Abbreviations: **AWS** = `Core/Training/Session/WorkoutTracker/ActiveWorkoutState.swift`,
 **WTV** = `…/WorkoutTracker/WorkoutTrackerView.swift`, **WTP** = `…/WorkoutTracker/WorkoutTrackerPresenter.swift`
 (`+AE` = `+ActiveExercise`, `+Rest`, `+Ex` = `+Exercises`, `+SS` = `+Superset`, `+Prog` = `+Progression`),
 **STV/STP** = `…/ExerciseTracker/SetTracker/SetTrackerView|Presenter.swift`,

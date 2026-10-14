@@ -22,7 +22,7 @@ and dot count still stands.
 `ExerciseTracker/SetTracker/SetTrackerView.swift`, `SetTrackerRow/SetTrackerRowView.swift`,
 `InlineRestTimerRow.swift`, `ProgressionNote.swift`, plus `SetKeyboardTextField.swift`,
 `Components/DesignSystem/BottomCTA.swift` and `CallToActionButton.swift` where a finding depended
-on them. Paths below are relative to `Compound/Core/Training/Subviews/WorkoutTracker/` unless
+on them. Paths below are relative to `Compound/Core/Training/Session/WorkoutTracker/` unless
 given in full.
 
 **Reference screenshots:** two MacroFactor screens, which page horizontally between exercises.

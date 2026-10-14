@@ -218,4 +218,25 @@ enum ActiveWorkout {
             return "\(Format.distance(meters: meters, exerciseUnit: distanceUnit)) · \(Format.duration(TimeInterval(seconds)))"
         }
     }
+
+    /// Last session's set in the row's Last column: its `figures`, but a reps-only set reads "8"
+    /// in the narrow column, and a distance and its time "400 m 1:30", to wrap onto two lines.
+    static func lastColumnText(
+        of set: WorkoutSetModel,
+        trackingMode: TrackingMode,
+        unit: ExerciseWeightUnit,
+        distanceUnit: ExerciseDistanceUnit,
+        showsBodyweight: Bool
+    ) -> String? {
+        switch trackingMode {
+        case .weightReps, .timeOnly:
+            figures(of: set, trackingMode: trackingMode, unit: unit, distanceUnit: distanceUnit, showsBodyweight: showsBodyweight)
+        case .repsOnly:
+            set.reps.map(String.init)
+        case .distanceTime:
+            set.distanceMeters.flatMap { meters in
+                set.durationSec.map { "\(Format.distance(meters: meters, exerciseUnit: distanceUnit)) \(Format.duration(TimeInterval($0)))" }
+            }
+        }
+    }
 }

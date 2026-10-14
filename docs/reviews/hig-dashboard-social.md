@@ -143,7 +143,7 @@ Severity: hurts usability (at large text sizes)
 Where: `Components/Views/DashboardCard.swift:22`, `:39`; `Core/Dashboard/DashboardView.swift:25`,
 `:88-90`, `:121`; `Core/Dashboard/Components/NutritionCard.swift:22-64`;
 `Components/Views/ActivityRingView.swift:59-71`;
-`Core/Training/Components/WorkoutStreakCard/WorkoutStreakCard.swift:21-26`
+`Core/Training/Session/WorkoutStreakCard/WorkoutStreakCard.swift:21-26`
 Guideline: "Be prepared for text-size changes… Apps that don't respond to this setting can be
 difficult or impossible to use for people who rely on this feature." —
 https://developer.apple.com/design/human-interface-guidelines/layout
@@ -248,7 +248,7 @@ Decision needed: no
 Severity: hurts usability
 Where: `Core/Notifications/NotificationsView.swift:239-243` (Notifications is a sheet);
 `Core/Notifications/NotificationsPresenter.swift:224-236`;
-`Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailView.swift:240-258`;
+`Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailView.swift:240-258`;
 `Core/Sharing/SharedItem/SharedItemView.swift:90-94`;
 `Core/Dashboard/DashboardPresenter.swift:135-141`
 Guideline: "Display only one sheet at a time from the main interface… If closing a sheet takes

@@ -6,9 +6,9 @@ Reviewed against the live HIG with the `apple-hig` skill, `--platform ios`. Page
 `buttons`, `feedback`, `undo-and-redo`, `always-on`, `accessibility`, plus `alerts`,
 `action-sheets`, `modality`, `writing` and `materials`, which the code turned out to need.
 
-**Scope.** Code read: `Core/Training/Subviews/WorkoutTracker/**` (tracker, exercise and set
+**Scope.** Code read: `Core/Training/Session/WorkoutTracker/**` (tracker, exercise and set
 trackers, set row, set keyboard, warm-up sets, notes, swap picker, equipment sheet),
-`Core/Training/Components/TrainingAccessory/`, `WorkoutSessionActivity/**`, `Shared/**`,
+`Core/Training/Session/TrainingAccessory/`, `WorkoutSessionActivity/**`, `Shared/**`,
 `Managers/LiveActivities/**`, `Managers/Training/WorkoutRestTimerIntents.swift`,
 `Managers/Training/WorkoutFinishing.swift`, the rest timer in `Managers/HKWorkout/`,
 `Managers/Push/PushManager.swift`, the notification delegate in `Root/AppDelegate.swift`, and the
@@ -84,7 +84,7 @@ while this was written, so their numbers may have moved by a few lines.
 
 ### 1. Swapping an exercise throws away the sets already logged for it, without asking
 Severity: hurts usability (data loss)
-Where: `Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerPresenter.swift:67-85`
+Where: `Core/Training/Session/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerPresenter.swift:67-85`
 (the write is `:76`), reached from `SetTrackerView.swift:87-91`
 Guideline: "Warn people when they initiate a task that can cause data loss that's unexpected and
 irreversible." — https://developer.apple.com/design/human-interface-guidelines/feedback
@@ -100,7 +100,7 @@ Decision needed: yes — keep the logged sets under the new exercise, or confirm
 
 ### 2. The rest-over notification is scheduled once and never moved or removed
 Severity: hurts usability
-Where: `Core/Training/Subviews/WorkoutTracker/WorkoutTrackerPresenter+Rest.swift:110-131`
+Where: `Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter+Rest.swift:110-131`
 (schedule); `Managers/LiveActivities/LiveActivityIntentHandler+App.swift:121-140` (+15s and Skip
 leave it alone) and `:190-217` (a rest started from the Live Activity schedules none);
 `Managers/HKWorkout/HKWorkoutManager.swift:137-143`, `:180-193` (finish and discard leave it
@@ -185,7 +185,7 @@ Decision needed: no
 
 ### 5. The rest timer in the app can only be watched
 Severity: hurts usability
-Where: `Core/Training/Subviews/WorkoutTracker/WorkoutTrackerView.swift:37-41`, `:170-194`;
+Where: `Core/Training/Session/WorkoutTracker/WorkoutTrackerView.swift:37-41`, `:170-194`;
 `WorkoutTrackerPresenter+Rest.swift:70-76` (`cancelRestTimer()`, which no view calls)
 Guideline: "Provide workout controls that are easy to find and tap." —
 https://developer.apple.com/design/human-interface-guidelines/workouts

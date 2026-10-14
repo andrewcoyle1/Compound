@@ -8,7 +8,7 @@ imported from the Macrocycles screen it opens straight away so it can be started
 
 Code: `Compound/Managers/Training/ProgramImport/` (pure, tested in
 `CompoundUnitTests/Services/Training/ProgramImport/`) and the screen in
-`Compound/Core/Training/Subviews/ImportProgram/`. Fixtures, all made up:
+`Compound/Core/Training/Programs/ImportProgram/`. Fixtures, all made up:
 `CompoundUnitTests/Fixtures/programs/` (`make-fixture.py` writes the `.xlsx` and `.csv`).
 
 ## Spreadsheet (`.xlsx`) and CSV (`.csv`)

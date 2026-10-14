@@ -8,7 +8,7 @@ Reviewed against the live HIG with the `apple-hig` skill, `--platform ios`. Page
 `toolbars`, `layout`, `materials`, `voiceover` and `activity-views` where the code needed them.
 
 **Scope.** Code read: `Core/Training/TrainingView.swift` with its presenter and router, all of
-`Core/Training/Components/`, and `Core/Training/Subviews/` folders `ActiveTrainingProgram`,
+`Core/Training/Session/`, and `Core/Training/Session/` folders `ActiveTrainingProgram`,
 `AddTraining` (Create Exercise, Create Program, Create Workout), `ExerciseSettings`,
 `TrainingProgramLibrary`, `WorkoutHistory`, `Workouts`, `WorkoutSessionDetailView` and
 `WorkoutTemplateDetail`. About 11,800 lines. Also read, because the code above calls them:
@@ -25,7 +25,7 @@ code, not measured. Other people were editing this tree while it was read, so li
 of 2026-09-28 and may have moved.
 
 Paths are relative to `DialedIn/`. `T/` stands for `Core/Training/`, `S/` for
-`Core/Training/Subviews/`, `CP/` for `Core/Training/Subviews/AddTraining/CreateProgram/`,
+`Core/Training/Session/`, `CP/` for `Core/Training/Workouts/CreateProgram/`,
 `CW/` for `…/AddTraining/CreateWorkout/` and `CE/` for `…/AddTraining/CreateExercise/`.
 Findings are most serious first.
 

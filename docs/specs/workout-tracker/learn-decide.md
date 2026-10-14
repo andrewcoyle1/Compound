@@ -22,7 +22,7 @@ confirm from the code I read.
 
 ### A1. What the new tracker exposes, and how
 
-Paths below are relative to `Core/Training/Subviews/WorkoutTracker/`.
+Paths below are relative to `Core/Training/Session/WorkoutTracker/`.
 
 **Visible with no interaction**
 - **Toolbar**

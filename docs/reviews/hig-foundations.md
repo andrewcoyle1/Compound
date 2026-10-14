@@ -75,7 +75,7 @@ Scope was `Components/` (except `Modals/`, `Presentation.swift`, `BottomCTA.swif
 Severity: blocks people (in regions that write 1,5), not run
 Where: `Components/Views/TextFields/AutoSelectNumberField.swift:43`, `:65`;
 `Extensions/Double+EXT.swift:51`; `Core/Profile/Subviews/Account/AccountPresenter.swift:29` against
-`:96`; `Core/Training/Subviews/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard/SetKeyboardPresenter.swift:174`, `:178`
+`:96`; `Core/Training/Session/WorkoutTracker/ExerciseTracker/SetTracker/SetTrackerRow/SetKeyboard/SetKeyboardPresenter.swift:174`, `:178`
 Guideline: "People expect to customize their device by choosing a language for text and a region
 for formatting values like date, time, and money." —
 https://developer.apple.com/design/human-interface-guidelines/inclusion
@@ -139,9 +139,9 @@ Shrink instead of wrap — `Components/Views/DashboardCard.swift:35-36` (to 50%)
 `Components/Views/TextFields/AutoSelectNumberField.swift:60` (to 50%),
 `Core/Challenges/ChallengeRing.swift:33`. Fixed columns — `Components/Views/AnalyticsSection.swift:35`
 with `Components/Views/AnalyticsCard.swift:70`, `:94`, `:100` (two columns, one-line title, value
-and unit), `Core/Training/Subviews/WorkoutTracker/WorkoutTrackerView.swift:73` (three),
+and unit), `Core/Training/Session/WorkoutTracker/WorkoutTrackerView.swift:73` (three),
 `…/CreateExercise/MuscleGroupPicker/MuscleGroupPickerView.swift:52`, `:66` (three),
-`Core/Training/Components/ProgramColourIconGrid.swift:39` (six)
+`Core/Training/Session/ProgramColourIconGrid.swift:39` (six)
 Guideline: "give people the option to enlarge text by at least 200 percent" —
 https://developer.apple.com/design/human-interface-guidelines/accessibility
 "Keep text truncation to a minimum as font size increases" and "Reduce the number of columns when
@@ -174,11 +174,11 @@ Where, by cause:
 - `.frame(maxWidth: .infinity)` written outside the `Button`, so the row looks wide but only the
   glyph is hit: `Core/Dashboard/WorkoutSessionRow/WorkoutSessionRowView.swift:160-219` (like,
   comment, share, more)
-- a `Chip` in a button without `.chipTapTarget()`: `Core/Training/Components/RowChipButton.swift:24-27`
+- a `Chip` in a button without `.chipTapTarget()`: `Core/Training/Session/RowChipButton.swift:24-27`
 - `.controlSize(.small)` or `.mini` on a glass button: `Components/Views/User/UserRowView.swift:104`
   (Follow), `Core/Dashboard/CircleActivityStripView.swift:154-160` (Nudge, Set goal),
   `Core/Notifications/NotificationsView.swift:122`
-- a 40 pt swatch: `Core/Training/Components/ProgramColourIconGrid.swift:53-63`
+- a 40 pt swatch: `Core/Training/Session/ProgramColourIconGrid.swift:53-63`
 Guideline: "As a general rule, a button needs a hit region of at least 44x44 pt" —
 https://developer.apple.com/design/human-interface-guidelines/buttons
 What happens: the most repeated taps in the app (complete a set, like, follow) are the smallest.
@@ -207,7 +207,7 @@ no other route: `…/SetTrackerRow/SetTrackerRowView.swift:43-59` (delete set, r
 `Core/Notifications/NotificationsView.swift:281`,
 `Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfilesView.swift:43`, `:59`, `:66`,
 `…/RestTimerSettings/TimerDuration/TimerDurationView.swift:44`,
-`Core/Training/Subviews/ActiveTrainingProgram/ActiveTrainingProgramView.swift:33`,
+`Core/Training/Session/ActiveTrainingProgram/ActiveTrainingProgramView.swift:33`,
 `…/CreateWorkout/DefineWorkout/DefineWorkoutView.swift:83`,
 `…/CreateWorkout/SetTarget/SetTargetView.swift:57`. Also one long-press:
 `Core/Nutrition/Components/MealHourHeader/MealHourHeaderView.swift:25`
@@ -249,9 +249,9 @@ does no lookup. Sites with a bare literal:
   by hand instead of `Format.grams`)
 - `Components/Views/SectionHeaderView.swift:20` — the default "See All"
 - 23 of 206 alert calls, in 17 files, for example
-  `Core/Training/Subviews/WorkoutTracker/WorkoutTrackerPresenter.swift:277`,
+  `Core/Training/Session/WorkoutTracker/WorkoutTrackerPresenter.swift:277`,
   `Core/Profile/ProfilePresenter.swift:99`, `:113`, `:121`,
-  `Core/Training/Subviews/WorkoutSessionDetailView/WorkoutSessionDetailPresenter.swift:202`, `:236`
+  `Core/Training/Session/WorkoutSessionDetail/WorkoutSessionDetailPresenter.swift:202`, `:236`
 - English fallbacks inside an interpolation: `Core/Challenges/ChallengesDashboardSection.swift:78`
   ("You"), `Core/Challenges/ChallengeDetail/ChallengeDetailView.swift:78`, `:96`,
   `Core/Dashboard/CircleGoals/CircleLeaderboardView.swift:46`, `:66`,
@@ -279,7 +279,7 @@ Decision needed: no
 Severity: hurts usability (VoiceOver), not run
 Where: `Components/Images/ImageLoaderView.swift:28`, `:47`; `Components/Views/User/UserRowView.swift:20`.
 20 of 37 call sites add no label and do not hide the image, for example
-`Core/Training/Subviews/AddTraining/CreateWorkout/CreateWorkoutView.swift:24`,
+`Core/Training/Workouts/CreateWorkout/CreateWorkoutView.swift:24`,
 `…/CreateProgram/CreateProgram/CreateProgramView.swift:20`, `Core/Onboarding/2 - AuthView/AuthView.swift:16`,
 `Core/Profile/Subviews/Account/AccountView.swift:75-77`,
 `Core/Profile/Subviews/TrainingSettings/GymProfiles/GymProfile/GymProfileView.swift:126`,
@@ -326,7 +326,7 @@ Decision needed: no
 
 ### 9. Clear glass over a plain list, and bar material behind pinned headers
 Severity: polish
-Where: `Core/Training/Components/ExerciseListBuilder/ExerciseListBuilderView.swift:131`, `:259`
+Where: `Core/Training/Exercises/ExerciseListBuilder/ExerciseListBuilderView.swift:131`, `:259`
 (`.glassEffect(.clear.interactive())`); `Core/Training/TrainingView.swift:61`,
 `Components/Views/CalendarHeader/Calendar/CalendarView.swift:57`, `:97` (`.background(.bar)`)
 Guideline: "Only use clear Liquid Glass for components that appear over visually rich
@@ -357,7 +357,7 @@ Where: `Components/Views/AnalyticsCard.swift:104`,
 `Core/Challenges/ChallengesDashboardSection.swift:60`,
 `Core/Dashboard/WeeklyReview/WeeklyReviewCard.swift:25`,
 `Core/Dashboard/WeeklyReview/WeeklyReviewView.swift:94`, `:103`,
-`Core/Training/Subviews/AddTraining/CreateProgram/ProgramDesign/ProgramDesignView.swift:207`
+`Core/Training/Workouts/CreateProgram/ProgramDesign/ProgramDesignView.swift:207`
 Guideline: "Flip controls that help people navigate or access items in a fixed order. For example,
 in the RTL context, a back button must point to the right" —
 https://developer.apple.com/design/human-interface-guidelines/right-to-left
@@ -409,7 +409,7 @@ Decision needed: yes — needs the source artwork
 
 ## Smaller items
 
-- **Labels that are developer strings.** `Core/Training/Components/ProgramColourIconGrid.swift:31`
+- **Labels that are developer strings.** `Core/Training/Session/ProgramColourIconGrid.swift:31`
   reads `colour.description.capitalized` and `:45` reads the raw symbol name
   ("gauge.with.dots.needle.bottom.100percent"). Give each colour and icon a localised name.
   `hig-training-library.md` finding 8.
@@ -418,7 +418,7 @@ Decision needed: yes — needs the source artwork
   has five `.isHeader` sites. "Use titles and headings to help people navigate your information
   hierarchy" — voiceover page.
 - **The week starts on Sunday for everyone.**
-  `Core/Training/Components/WorkoutStreakCard/WorkoutStreakCard.swift:71-72` subtracts
+  `Core/Training/Session/WorkoutStreakCard/WorkoutStreakCard.swift:71-72` subtracts
   `weekday - 1`. Use `calendar.dateInterval(of: .weekOfYear, for: today)`, which honours
   `firstWeekday`.
 - **The custom modal is not marked modal.** `Components/Modals/CustomModalView.swift` sets no
@@ -457,8 +457,8 @@ Calculated for a chip on a white surface, 12 pt semibold:
 
 System colour values are the documented light-mode ones and may differ on iOS 26. Sites:
 `Core/Nutrition/Components/Shared/MacroChips.swift:31`,
-`Core/Training/Components/WorkoutStreakCard/WorkoutStreakCard.swift:53-55`,
-`Core/Training/Components/SetDetailRow.swift:73`,
+`Core/Training/Session/WorkoutStreakCard/WorkoutStreakCard.swift:53-55`,
+`Core/Training/Session/WorkoutSessionDetail/SetDetailRow.swift:73`,
 `…/ExerciseTracker/ExerciseTrackerView.swift:72`. The same colours are used as plain text by
 `InlineMessage` (`Components/DesignSystem/InlineMessage.swift:64`, warning at about 2.2:1 on white)
 and `Core/Dashboard/CircleActivityStripView.swift:72-75`.

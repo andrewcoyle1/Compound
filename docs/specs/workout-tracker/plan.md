@@ -50,7 +50,7 @@ a property of the movement and applies to weighted pull-ups, dips, Smith good mo
 11. Live Activity intents (`LiveActivityIntentHandler+App.swift`) call managers directly, never the presenter. `onTask`/`workoutTemplate` in the presenter are dead. TipKit unused. `ActiveWorkoutState.swift` + `ActiveWorkoutStateTests` is the home for pure rules.
 12. The local simulator wedged mid-session ("Launchd job spawn failed" for every app launch after `simctl shutdown all`). Before Wave 0 verification: `killall -9 com.apple.CoreSimulator.CoreSimulatorService`, or run from Xcode; `scripts/clean-simulators.sh` after.
 
-Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` = `WT/ExerciseTracker/SetTracker/`, `ROW/` = `ST/SetTrackerRow/`, `KB/` = `ROW/SetKeyboard/`, `UT/` = `CompoundUnitTests/Core/`.
+Path prefixes: `WT/` = `Compound/Core/Training/Session/WorkoutTracker/`, `ST/` = `WT/ExerciseTracker/SetTracker/`, `ROW/` = `ST/SetTrackerRow/`, `KB/` = `ROW/SetKeyboard/`, `UT/` = `CompoundUnitTests/Core/`.
 
 ## Working rules for every package (agents read these first)
 
@@ -132,7 +132,7 @@ Path prefixes: `WT/` = `Compound/Core/Training/Subviews/WorkoutTracker/`, `ST/` 
 **Accept:** suites above + `WorkoutTrackerSupersetTests` (A1 rest 0; CTA alternates) + `WorkoutTrackerPresenterTests` (stay during rest, advance on rest end). Manual: superset round = 2 taps. **Depends:** B.
 
 ### WP-H · Exercise definition: contribution decoupled from `isBodyweight`, prebuilt data pass · S/M
-**Owns:** `Core/Training/Subviews/AddTraining/CreateExercise/FinalExerciseDetails/FinalExerciseDetailsView.swift` + `Presenter.swift`; `ExerciseEquipment/ExerciseEquipmentPresenter.swift` (75 % preset); `Exercises/ExerciseTemplateDetail/ExerciseTemplateDetailView.swift`; `Compound/SupportingFiles/Resources/PrebuiltExercises.json` + `functions/data/PrebuiltExercises.json` (byte-identical); `Managers/Training/Exercise/ExerciseModelManager.swift` (seeding 15 → 16).
+**Owns:** `Core/Training/Exercises/CreateExercise/FinalExerciseDetails/FinalExerciseDetailsView.swift` + `Presenter.swift`; `ExerciseEquipment/ExerciseEquipmentPresenter.swift` (75 % preset); `Exercises/ExerciseTemplateDetail/ExerciseTemplateDetailView.swift`; `Compound/SupportingFiles/Resources/PrebuiltExercises.json` + `functions/data/PrebuiltExercises.json` (byte-identical); `Managers/Training/Exercise/ExerciseModelManager.swift` (seeding 15 → 16).
 **Pure rule:** `ExerciseDefinitionRules` — `isValid(contribution:)` 0…100; `bodyweightConflict(isBodyweight:metrics:)` true when `isBodyweight` with `.weight`/`.weightPerSide`/`.weightPerSidePersistent` (assistance allowed); `ExerciseDefinitionRulesTests`.
 **Changes:** always show the contribution control (default 0; keep the 75 % preset when Bodyweight toggles on); remove the `isBodyweight ? … : 0` gate (`Presenter:68`) and the `canContinue` gate (`:36`); inline conflict message blocks Next; detail screen shows contribution when > 0; data pass — Chest Dip and "Weighted Hammer Grip Pull-Up on Dip" `is_bodyweight` → false keep 100; new values (**owner to confirm**): squat/lunge patterns ≈ 85, hinges ≈ 60, machines/isolation 0; user exercises untouched; keys unchanged.
 **Accept:** `ExerciseDefinitionRulesTests`; `CreateExerciseEquipmentPresenterTests` (loaded exercise *keeps* its value); new `FinalExerciseDetailsPresenterTests`; `ExerciseTemplateModel*Tests`; `npm test` in `functions/`. **Depends:** WP-0 only.

@@ -1,0 +1,26 @@
+name: Flutter
+
+# The Flutter app in app/ (see docs/specs/flutter/plan.md). Runs only when the app, the shared
+# Firestore contract fixtures or this file change; the Swift CI in ci.yml is unaffected.
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "contracts/**"
+      - ".github/workflows/flutter.yml"
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Flutter app
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@61d25935870f12a1f2c23f2a04d5f193c83f4e5d # v1
+    with:
+      working_directory: app
+      flutter_version: "3.47.7"
+      # Packages under app/packages are held at 100%; the app itself is reported, not gated
+      # (docs/specs/flutter/plan.md, Coverage).
+      min_coverage: 0
+      timeout_minutes: 30

@@ -5,6 +5,10 @@ name: CI
 # Release starts from the push without running this again.
 on:
   pull_request:
+    # Slice PRs into the Flutter integration branch touch only app/ and docs; flutter.yml checks
+    # them. The feature/flutter → development PR still runs everything here.
+    branches-ignore:
+      - feature/flutter
 
 # One run per ref: a new push supersedes whatever is still in flight.
 concurrency:

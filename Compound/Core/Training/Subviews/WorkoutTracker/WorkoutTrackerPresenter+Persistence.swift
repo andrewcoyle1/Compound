@@ -47,6 +47,7 @@ extension WorkoutTrackerPresenter {
     }
 
     func minimizeSession() {
+        interactor.trackEvent(event: Event.minimized)
         flushSave()
         // Kept on only while the tracker is up: minimised, the phone may sleep (system.md §5).
         UIApplication.shared.isIdleTimerDisabled = false

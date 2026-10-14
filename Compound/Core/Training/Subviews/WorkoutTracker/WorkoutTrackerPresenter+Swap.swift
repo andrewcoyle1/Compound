@@ -42,6 +42,8 @@ extension WorkoutTrackerPresenter {
         currentExerciseIndex = exercises.firstIndex { $0.id == swap.replacement.id } ?? currentExerciseIndex
         loadPreviousWorkoutSession()
         loadProgressionSuggestions()
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.exerciseSwapped(keptLoggedSets: swap.kept != nil))
         refreshLiveActivity()
     }
 

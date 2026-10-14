@@ -110,15 +110,7 @@ extension WorkoutTrackerPresenter {
     }
 
     private func completeFinish(_ session: WorkoutSessionModel) async {
-        interactor.trackEvent(
-            eventName: "finish_workout_debug",
-            parameters: [
-                "session_id": session.id,
-                "template_id": session.workoutTemplateId ?? "nil",
-                "plan_id": session.mesocycleId ?? "nil"
-            ],
-            type: .info
-        )
+        interactor.trackEvent(event: Event.finishWorkoutDebug(session: session))
         // The finish itself is shared with the Live Activity's Finish button; only the retry and
         // what the user is told about it are this screen's. The shared path logs each attempt's
         // own result; these three follow the finish as the user sees it, retries included.
@@ -142,14 +134,7 @@ extension WorkoutTrackerPresenter {
             interactor.trackEvent(eventName: WorkoutSessionModel.finishedEventName, parameters: session.finishedEventParameters, type: .analytic)
             return .saved
         } catch {
-            interactor.trackEvent(
-                eventName: "finish_workout_save_error",
-                parameters: [
-                    "error": error.localizedDescription,
-                    "is_transient": error.isTransientWriteFailure
-                ],
-                type: .severe
-            )
+            interactor.trackEvent(event: Event.finishWorkoutSaveError(error: error))
             return error.isTransientWriteFailure ? .failedTransiently : .failedPermanently
         }
     }

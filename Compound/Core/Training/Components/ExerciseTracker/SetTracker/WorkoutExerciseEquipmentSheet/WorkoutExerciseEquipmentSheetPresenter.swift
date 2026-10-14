@@ -42,7 +42,7 @@ class WorkoutExerciseEquipmentSheetPresenter {
     }
     
     func onViewAppear() {
-        interactor.trackEvent(event: Event.onAppear)
+        interactor.trackScreenEvent(event: Event.onAppear)
     }
 
     func onViewDisappear() {

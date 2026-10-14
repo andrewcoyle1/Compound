@@ -288,6 +288,7 @@ class WorkoutTrackerPresenter {
     }
 
     func onDiscardWorkoutPressed() {
+        interactor.trackEvent(event: Event.discardPressed)
         router.showAlert(
             title: String(localized: "Discard Workout?"),
             subtitle: String(localized: "The sets you logged will not be saved.")
@@ -376,6 +377,8 @@ class WorkoutTrackerPresenter {
     func updateWorkoutNotes() {
         let trimmed = workoutNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         workoutSession.notes = trimmed.isEmpty ? nil : trimmed
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.workoutNotesSaved)
     }
     
     func updateExerciseNotes(_ notes: String, exerciseId: String) {
@@ -387,6 +390,8 @@ class WorkoutTrackerPresenter {
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         updatedExercises[exerciseIndex].notes = trimmed.isEmpty ? nil : trimmed
         workoutSession.updateExercises(updatedExercises)
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.exerciseNotesSaved)
     }
 
     /// Images the session is missing, taken from the library (see `imageName(in:)`), so the card
@@ -410,6 +415,7 @@ class WorkoutTrackerPresenter {
 
     func onGymProfilePressed() {
         guard let gymProfile = interactor.workoutGymProfile else { return }
+        interactor.trackEvent(event: Event.gymSettingsOpened)
         let delegate = GymProfileDelegate(gymProfile: gymProfile)
         router.showGymProfileView(delegate: delegate)
     }

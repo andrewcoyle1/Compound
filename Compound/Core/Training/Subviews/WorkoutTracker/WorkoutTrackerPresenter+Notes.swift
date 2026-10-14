@@ -36,11 +36,15 @@ extension WorkoutTrackerPresenter {
         var exercises = workoutSession.exercises
         exercises[index].planNotes = value
         workoutSession.updateExercises(exercises)
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.mesocycleNoteSaved)
         guard let mesocycle = mesocycle(settingNote: value, on: exercises[index]) else { return }
         Task {
             do {
                 try await interactor.saveMesocycle(mesocycle: mesocycle)
             } catch {
+                interactor.playHaptic(option: .error)
+                interactor.trackEvent(event: Event.mesocycleNoteSaveFail(error: error))
                 router.showAlert(
                     title: String(localized: "Unable to Save Note"),
                     subtitle: String(localized: "The note is on this workout, but not yet on your mesocycle. Please try again."),
@@ -64,6 +68,7 @@ extension WorkoutTrackerPresenter {
     /// The workout ends only once the sheet is fully dismissed, because finishing dismisses the
     /// tracker itself and that must not race the sheet on top of it.
     func onFinishPressed() {
+        interactor.trackEvent(event: Event.finishPressed)
         workoutNotes = workoutSession.notes ?? ""
         var didConfirm = false
         router.showWorkoutNotesView(

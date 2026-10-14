@@ -67,16 +67,33 @@ class ExerciseTrackerPresenter {
 
     enum Event: LoggableEvent {
         case watchPressed
+        case notesOpened(tab: String)
+        case exerciseNoteSaved
+        case exerciseNoteSaveFail(error: Error)
 
         var eventName: String {
             switch self {
             case .watchPressed: return "ExerciseTracker_Watch_Pressed"
+            case .notesOpened: return "ExerciseTracker_Notes_Opened"
+            case .exerciseNoteSaved: return "ExerciseTracker_ExerciseNote_Saved"
+            case .exerciseNoteSaveFail: return "ExerciseTracker_ExerciseNote_Fail"
             }
         }
 
-        var parameters: [String: Any]? { nil }
+        var parameters: [String: Any]? {
+            switch self {
+            case .notesOpened(let tab): ["tab": tab]
+            case .exerciseNoteSaveFail(let error): error.eventParameters
+            case .watchPressed, .exerciseNoteSaved: nil
+            }
+        }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .exerciseNoteSaveFail: .warning
+            default: .analytic
+            }
+        }
     }
 
     /// Opens the note sheet on `tab`: this workout's note on the exercise (with last session's as
@@ -90,6 +107,7 @@ class ExerciseTrackerPresenter {
         onSave: @escaping @MainActor (String) -> Void,
         onSaveMesocycleNote: (@MainActor (String) -> Void)? = nil
     ) {
+        interactor.trackEvent(event: Event.notesOpened(tab: "\(tab)"))
         let session = exercise.notes ?? ""
         let pinned = note(for: exercise) ?? ""
         let mesocycle = exercise.planNotes ?? ""
@@ -132,7 +150,11 @@ class ExerciseTrackerPresenter {
         Task {
             do {
                 try await interactor.setExerciseNote(trimmed.isEmpty ? nil : trimmed, for: exercise.templateId)
+                interactor.playHaptic(option: .success)
+                interactor.trackEvent(event: Event.exerciseNoteSaved)
             } catch {
+                interactor.playHaptic(option: .error)
+                interactor.trackEvent(event: Event.exerciseNoteSaveFail(error: error))
                 router.showSimpleAlert(title: String(localized: "Unable to Save Note"), subtitle: error.localizedDescription)
             }
         }

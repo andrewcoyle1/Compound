@@ -24,6 +24,7 @@ class SetTrackerPresenter {
     }
 
     func onExerciseEquipmentPressed(_ exercise: Binding<WorkoutExerciseModel>) {
+        interactor.trackEvent(event: Event.equipmentOpened)
         // The new equipment's unit, and the sets still to do on weights it makes. The tracker
         // reloads its suggestions for it (`handleWorkoutSessionChange`).
         let refit = { [weak self] (variationId: String?, gym: GymProfileModel?) in
@@ -48,6 +49,7 @@ class SetTrackerPresenter {
     
     func onExerciseSettingsPressed(exercise: WorkoutExerciseModel) {
         guard let exerciseModel = interactor.allExercises.first(where: { $0.id == exercise.templateId }) else { return }
+        interactor.trackEvent(event: Event.exerciseSettingsOpened)
         router.showExerciseSettingsView(delegate: ExerciseSettingsDelegate(exercise: exerciseModel))
     }
 
@@ -63,6 +65,7 @@ class SetTrackerPresenter {
 
     func onTargetsPressed(_ exercise: Binding<WorkoutExerciseModel>) {
         guard let model = interactor.allExercises.first(where: { $0.id == exercise.wrappedValue.templateId }) else { return }
+        interactor.trackEvent(event: Event.targetsOpened)
         let adapted = Binding<WorkoutTemplateExercise>(
             get: { WorkoutTemplateExercise(exercise: model, setTargets: exercise.wrappedValue.setTargets, setRestTimers: false) },
             set: { exercise.wrappedValue.setTargets = $0.setTargets }
@@ -77,6 +80,7 @@ class SetTrackerPresenter {
     /// sets move to the replacement when it is measured the same way, so a swap keeps what was done.
     /// When it is not, they cannot, and the person is asked before they go.
     func onSwapPressed(_ exercise: Binding<WorkoutExerciseModel>, onSwap: (@MainActor (ExerciseModel) -> Void)? = nil) {
+        interactor.trackEvent(event: Event.swapOpened)
         router.showSwapExercisePickerView(alternativeIds: exercise.wrappedValue.substituteExerciseIds) { [weak self] newExercise in
             guard let self else { return }
             if let onSwap { return onSwap(newExercise) }
@@ -210,8 +214,10 @@ class SetTrackerPresenter {
     /// figures; the chip that calls this only shows for an exercise worked a side at a time.
     func onSplitSidesPressed(_ exercise: Binding<WorkoutExerciseModel>) {
         let sets = exercise.wrappedValue.sets
-        exercise.wrappedValue.sets = exercise.wrappedValue.isSplit ? sets.joiningSides() : sets.splittingSides()
+        let splitting = !exercise.wrappedValue.isSplit
+        exercise.wrappedValue.sets = splitting ? sets.splittingSides() : sets.joiningSides()
         interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.sidesSplit(splitting))
     }
 
     /// Adds one more set — which is two rows for an exercise whose sides are split, so the user
@@ -248,12 +254,16 @@ class SetTrackerPresenter {
             )
             nextIndex += 1
         }
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.setAdded)
     }
 
     func updateWeightUnit(_ unit: ExerciseWeightUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
         interactor.setWeightUnit(unit, for: templateId)
         exercise.wrappedValue.weightUnit = unit
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.unitChanged(unit: unit.rawValue))
     }
 
     /// Converts the sets not yet logged into `newUnit`, each to the nearest weight the gym's
@@ -349,5 +359,43 @@ class SetTrackerPresenter {
     func updateDistanceUnit(_ unit: ExerciseDistanceUnit, for exercise: Binding<WorkoutExerciseModel>) {
         let templateId: String = exercise.wrappedValue.templateId
         interactor.setDistanceUnit(unit, for: templateId)
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.unitChanged(unit: unit.rawValue))
+    }
+}
+
+extension SetTrackerPresenter {
+
+    enum Event: LoggableEvent {
+        case equipmentOpened
+        case exerciseSettingsOpened
+        case targetsOpened
+        case swapOpened
+        case setAdded
+        /// True when the sides were split, false when joined again.
+        case sidesSplit(Bool)
+        case unitChanged(unit: String)
+
+        var eventName: String {
+            switch self {
+            case .equipmentOpened:          return "SetTracker_Equipment_Opened"
+            case .exerciseSettingsOpened:   return "SetTracker_ExerciseSettings_Opened"
+            case .targetsOpened:            return "SetTracker_Targets_Opened"
+            case .swapOpened:               return "SetTracker_Swap_Opened"
+            case .setAdded:                 return "SetTracker_Set_Added"
+            case .sidesSplit:               return "SetTracker_Sides_Split"
+            case .unitChanged:              return "SetTracker_Unit_Changed"
+            }
+        }
+
+        var parameters: [String: Any]? {
+            switch self {
+            case .sidesSplit(let split): ["split": split]
+            case .unitChanged(let unit): ["unit": unit]
+            default: nil
+            }
+        }
+
+        var type: LogType { .analytic }
     }
 }

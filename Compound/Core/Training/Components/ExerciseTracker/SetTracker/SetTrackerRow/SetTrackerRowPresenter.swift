@@ -33,6 +33,8 @@ class SetTrackerRowPresenter {
         let removing = Set(ActiveWorkout.idsRemovedByDeleting(setId, in: exercise.wrappedValue.sets))
         guard !removing.isEmpty else { return }
         exercise.wrappedValue.sets.removeAll(where: { removing.contains($0.id) })
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.setDeleted)
     }
 
     /// Deletes the set, asking first when its drops or mini-sets would go with it: "Delete Set 2?
@@ -65,6 +67,7 @@ class SetTrackerRowPresenter {
             exercise.wrappedValue.sets = sets
         }
         interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.subSetAdded(drop: subKind == .drop))
     }
 
     /// A tap on last time's figures or on smart progression's suggestion copies them into the set.
@@ -216,6 +219,7 @@ class SetTrackerRowPresenter {
             restBeforeSetIdToSec.removeValue(forKey: setId)
         }
         onCustomRestChanged?(setId, seconds)
+        interactor.trackEvent(event: Event.restChanged(seconds: seconds))
     }
 
     /// Read from `ExerciseUnitPreferenceManager` every time. Each presenter used to keep its own
@@ -319,6 +323,7 @@ extension SetTrackerRowPresenter {
         guard let equipment = exercise.activeVariation?.resistanceEquipment.first(where: {
             WeightStepper.steps(for: [$0], profile: gym, unit: unit).baseWeight != nil
         }) else { return }
+        interactor.trackEvent(event: Event.plateCalculatorOpened)
         let total = delegate.set.wrappedValue.weightKg.map { (UnitConversion.convertWeight($0, to: unit) * 1000).rounded() / 1000 }
         router.showPlateCalculatorView(delegate: PlateCalculatorDelegate(
             gym: gym,
@@ -383,12 +388,21 @@ extension SetTrackerRowPresenter {
         case setTypeChanged(type: String)
         /// A row filled from "last" time's figures or the "auto" suggestion.
         case setFilled(source: String)
+        case setDeleted
+        case subSetAdded(drop: Bool)
+        /// A rest set by hand on the row; `nil` when cleared.
+        case restChanged(seconds: Int?)
+        case plateCalculatorOpened
 
         var eventName: String {
             switch self {
             case .setCompleted:             return "SetTrackerRow_SetCompleted"
             case .setTypeChanged:           return "SetTrackerRow_SetTypeChanged"
             case .setFilled:                return "SetTrackerRow_SetFilled"
+            case .setDeleted:               return "SetTrackerRow_SetDeleted"
+            case .subSetAdded:              return "SetTrackerRow_SubSetAdded"
+            case .restChanged:              return "SetTrackerRow_RestChanged"
+            case .plateCalculatorOpened:    return "SetTrackerRow_PlateCalculator_Opened"
             }
         }
 
@@ -406,6 +420,12 @@ extension SetTrackerRowPresenter {
                 return ["set_type": type]
             case .setFilled(let source):
                 return ["source": source]
+            case .subSetAdded(let drop):
+                return ["kind": drop ? "drop" : "mini"]
+            case .restChanged(let seconds):
+                return ["seconds": seconds ?? 0, "cleared": seconds == nil]
+            case .setDeleted, .plateCalculatorOpened:
+                return nil
             }
         }
 

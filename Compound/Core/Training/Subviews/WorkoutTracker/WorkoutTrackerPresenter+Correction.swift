@@ -58,7 +58,7 @@ extension WorkoutTrackerPresenter {
         case .rir(let chip):
             setRIR(chip, setId: setId, in: exerciseId)
         case .undo:
-            interactor.trackEvent(event: CorrectionEvent.undo)
+            interactor.trackEvent(event: Event.correctionUndo)
             unlog(setId, in: exerciseId)
         }
     }
@@ -71,7 +71,7 @@ extension WorkoutTrackerPresenter {
         registerRepsUndo(restoring: set, in: exerciseId)
         set.reps = corrected
         interactor.playHaptic(option: .selection)
-        interactor.trackEvent(event: CorrectionEvent.reps(delta: delta))
+        interactor.trackEvent(event: Event.correctionReps(delta: delta))
         updateSet(set, in: exerciseId)
         applyLiveProgression(after: set, in: exerciseId)
     }
@@ -82,7 +82,7 @@ extension WorkoutTrackerPresenter {
         let rpe = ActiveWorkout.rirChip(chip)
         set.rpe = set.rpe == rpe ? nil : rpe
         interactor.playHaptic(option: .selection)
-        interactor.trackEvent(event: CorrectionEvent.rir(chip))
+        interactor.trackEvent(event: Event.correctionRIR(chip))
         updateSet(set, in: exerciseId)
     }
 
@@ -208,29 +208,5 @@ extension WorkoutTrackerPresenter {
         }
         if !undoManager.isUndoing { undoManager.setActionName(name) }
         undoManager.endUndoGrouping()
-    }
-
-    enum CorrectionEvent: LoggableEvent {
-        case reps(delta: Int)
-        case rir(Int)
-        case undo
-
-        var eventName: String {
-            switch self {
-            case .reps: return "WorkoutTracker_Correction_Reps"
-            case .rir: return "WorkoutTracker_Correction_RIR"
-            case .undo: return "WorkoutTracker_Correction_Undo"
-            }
-        }
-
-        var parameters: [String: Any]? {
-            switch self {
-            case .reps(let delta): return ["delta": delta]
-            case .rir(let rir): return ["rir": rir]
-            case .undo: return nil
-            }
-        }
-
-        var type: LogType { .analytic }
     }
 }

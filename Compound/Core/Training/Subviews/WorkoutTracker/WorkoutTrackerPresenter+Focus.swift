@@ -29,7 +29,7 @@ extension WorkoutTrackerPresenter {
         cardExerciseId = exerciseId
         currentExerciseIndex = index
         persistFocus(exerciseId)
-        interactor.trackEvent(event: FocusEvent.focusMoved(reason: reason))
+        interactor.trackEvent(event: Event.focusMoved(reason: reason))
         refreshLiveActivity()
     }
 
@@ -88,20 +88,5 @@ extension WorkoutTrackerPresenter {
             settings: interactor.workoutSettings
         ) else { return }
         setFocus(target, reason: .restEnded)
-    }
-
-    /// Kept beside the rule it reports on rather than in `Event`, which another package owns.
-    enum FocusEvent: LoggableEvent {
-        case focusMoved(reason: FocusReason)
-
-        var eventName: String { "WorkoutTracker_Focus_Moved" }
-
-        var parameters: [String: Any]? {
-            switch self {
-            case .focusMoved(let reason): ["reason": reason.rawValue]
-            }
-        }
-
-        var type: LogType { .analytic }
     }
 }

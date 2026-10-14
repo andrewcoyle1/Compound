@@ -285,7 +285,7 @@ extension WorkoutTrackerPresenter {
         persistFocus(currentExercise?.id)
 
         let rest = outcome.restSeconds
-        interactor.trackEvent(event: SetTrackerRowPresenter.Event.setCompleted(
+        interactor.trackEvent(event: Event.setLogged(
             setId: setId,
             exerciseId: exerciseId,
             useRestTimers: settings.useRestTimers,

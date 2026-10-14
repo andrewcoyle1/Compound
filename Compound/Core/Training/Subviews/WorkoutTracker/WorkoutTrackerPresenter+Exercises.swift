@@ -58,6 +58,8 @@ extension WorkoutTrackerPresenter {
         captureProgressionBaseline(of: added)
         loadPrevious(for: added)
         loadProgressionSuggestions(for: added)
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.exercisesAdded(count: added.count))
 
         refreshLiveActivity()
 
@@ -85,6 +87,8 @@ extension WorkoutTrackerPresenter {
         }
         workoutSession.updateExercises(updated)
         focusCard(on: card)
+        interactor.playHaptic(option: .success)
+        interactor.trackEvent(event: Event.exerciseDeleted)
 
         refreshLiveActivity()
     }
@@ -102,6 +106,7 @@ extension WorkoutTrackerPresenter {
     }
 
     func onWorkoutSettingsPressed() {
+        interactor.trackEvent(event: Event.workoutSettingsOpened)
         router.showWorkoutSettingsView(delegate: WorkoutSettingsDelegate())
     }
 
@@ -109,6 +114,8 @@ extension WorkoutTrackerPresenter {
         guard var exercise = workoutSession.exercises.first(where: { $0.id == exerciseId }) else { return }
         exercise.supersetGroupId = groupId
         replaceExercise(exercise)
+        interactor.playHaptic(option: .selection)
+        interactor.trackEvent(event: Event.supersetChanged(joined: groupId != nil))
     }
 
     /// Writes back an edited exercise, by id: the card's binding, a superset change, an undo. By

@@ -2,9 +2,7 @@
 //  WorkoutTrackerPresenter+Events.swift
 //  Compound
 //
-//  The analytics events and error type were declared inside the class body, counting against
-//  its 500-line type-body limit. Every other presenter declares its `Event` enum in an
-//  extension, so these now follow suit.
+//  The screen's lifecycle, its analytics events and its error type.
 //
 
 import SwiftUI
@@ -67,6 +65,28 @@ extension WorkoutTrackerPresenter {
         case exerciseMoved(later: Bool)
         case exerciseReordered(fromBlock: Int, toBlock: Int)
         case progressionNoteAcknowledged
+        /// Every set logged here, from a row or the log button, which `source` tells apart. Named
+        /// as the row's event it replaced, so the series reads on.
+        case setLogged(setId: String, exerciseId: String, useRestTimers: Bool, restDurationSeconds: Int, source: String)
+        case correctionReps(delta: Int)
+        case correctionRIR(Int)
+        case correctionUndo
+        case focusMoved(reason: FocusReason)
+        case finishWorkoutDebug(session: WorkoutSessionModel)
+        case finishWorkoutSaveError(error: Error)
+        case minimized
+        case finishPressed
+        case discardPressed
+        case workoutNotesSaved
+        case exerciseNotesSaved
+        case mesocycleNoteSaved
+        case mesocycleNoteSaveFail(error: Error)
+        case exercisesAdded(count: Int)
+        case exerciseDeleted
+        case exerciseSwapped(keptLoggedSets: Bool)
+        case supersetChanged(joined: Bool)
+        case workoutSettingsOpened
+        case gymSettingsOpened
 
         var eventName: String {
             switch self {
@@ -92,12 +112,33 @@ extension WorkoutTrackerPresenter {
             case .exerciseMoved:            return "WorkoutTracker_Exercise_Moved"
             case .exerciseReordered:        return "WorkoutTracker_Exercise_Reordered"
             case .progressionNoteAcknowledged: return "WorkoutTracker_ProgressionNote_Acknowledged"
+            case .setLogged:                return "SetTrackerRow_SetCompleted"
+            case .correctionReps:           return "WorkoutTracker_Correction_Reps"
+            case .correctionRIR:            return "WorkoutTracker_Correction_RIR"
+            case .correctionUndo:           return "WorkoutTracker_Correction_Undo"
+            case .focusMoved:               return "WorkoutTracker_Focus_Moved"
+            case .finishWorkoutDebug:       return "finish_workout_debug"
+            case .finishWorkoutSaveError:   return "finish_workout_save_error"
+            case .minimized:                return "WorkoutTracker_Minimized"
+            case .finishPressed:            return "WorkoutTracker_Finish_Pressed"
+            case .discardPressed:           return "WorkoutTracker_Discard_Pressed"
+            case .workoutNotesSaved:        return "WorkoutTracker_WorkoutNotes_Saved"
+            case .exerciseNotesSaved:       return "WorkoutTracker_ExerciseNotes_Saved"
+            case .mesocycleNoteSaved:       return "WorkoutTracker_MesocycleNote_Saved"
+            case .mesocycleNoteSaveFail:    return "WorkoutTracker_MesocycleNote_Fail"
+            case .exercisesAdded:           return "WorkoutTracker_Exercises_Added"
+            case .exerciseDeleted:          return "WorkoutTracker_Exercise_Deleted"
+            case .exerciseSwapped:          return "WorkoutTracker_Exercise_Swapped"
+            case .supersetChanged:          return "WorkoutTracker_Superset_Changed"
+            case .workoutSettingsOpened:    return "WorkoutTracker_WorkoutSettings_Opened"
+            case .gymSettingsOpened:        return "WorkoutTracker_GymSettings_Opened"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .loadGymProfileFail(let error), .healthKitAuthorisationFail(let error), .discardWorkoutFail(let error), .saveProgressFail(let error):
+            case .loadGymProfileFail(let error), .healthKitAuthorisationFail(let error), .discardWorkoutFail(let error),
+                 .saveProgressFail(let error), .mesocycleNoteSaveFail(let error):
                 return error.eventParameters
             case .finishWorkoutFail(let reason):
                 return ["reason": reason.rawValue]
@@ -124,17 +165,49 @@ extension WorkoutTrackerPresenter {
                 return ["to": later ? "later" : "next"]
             case .exerciseReordered(let fromBlock, let toBlock):
                 return ["from": fromBlock, "to": toBlock]
-            case .restSkipped, .workoutPaused, .workoutResumed, .exerciseSelected, .progressionNoteAcknowledged:
+            case let .setLogged(setId, exerciseId, useRestTimers, restDurationSeconds, source):
+                return [
+                    "source": source,
+                    "set_id": setId,
+                    "exercise_id": exerciseId,
+                    "use_rest_timers": useRestTimers,
+                    "rest_duration_seconds": restDurationSeconds
+                ]
+            case .correctionReps(let delta):
+                return ["delta": delta]
+            case .correctionRIR(let rir):
+                return ["rir": rir]
+            case .focusMoved(let reason):
+                return ["reason": reason.rawValue]
+            case .finishWorkoutDebug(let session):
+                return [
+                    "session_id": session.id,
+                    "template_id": session.workoutTemplateId ?? "nil",
+                    "plan_id": session.mesocycleId ?? "nil"
+                ]
+            case .finishWorkoutSaveError(let error):
+                return ["error": error.localizedDescription, "is_transient": error.isTransientWriteFailure]
+            case .exercisesAdded(let count):
+                return ["count": count]
+            case .exerciseSwapped(let keptLoggedSets):
+                return ["kept_logged_sets": keptLoggedSets]
+            case .supersetChanged(let joined):
+                return ["joined": joined]
+            case .restSkipped, .workoutPaused, .workoutResumed, .exerciseSelected, .progressionNoteAcknowledged,
+                 .correctionUndo, .minimized, .finishPressed, .discardPressed, .workoutNotesSaved, .exerciseNotesSaved,
+                 .mesocycleNoteSaved, .exerciseDeleted, .workoutSettingsOpened, .gymSettingsOpened:
                 return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .saveProgressFail, .finishWorkoutFail:
+            case .saveProgressFail, .finishWorkoutFail, .finishWorkoutSaveError:
                 return .severe
-            case .loadGymProfileFail, .healthKitAuthorisationFail, .discardWorkoutFail:
+            case .loadGymProfileFail, .healthKitAuthorisationFail, .discardWorkoutFail, .mesocycleNoteSaveFail:
                 return .warning
+            case .finishWorkoutDebug:
+                return .info
             case .startRestTimerAfterCall(let restEndTime) where restEndTime == nil:
                 return .warning
             default:

@@ -241,7 +241,7 @@ rest runs:
 
 ```
 ✓ Set 2 · 100 kg × 8         [−] [+]   Undo
-  Reps in reserve   0   1   2   3   4+          Rest 1:12 / 2:00
+  Reps in reserve   0 1 2 3 4 5 6+             Rest 1:12 / 2:00
 ```
 
 - Shown only when `rirTracking` is on; optional; never blocks the next set. Five RIR chips map to
@@ -292,7 +292,7 @@ the recommendation below adds without removing the table.
 │ Bench Press                                       │
 │  ✓ 1   97.5 × 8                                   │
 │  ✓ 2   100 × 8      [−][+] reps   Undo            │  ← correction row, during rest
-│        RIR  0  1  2  3  4+        Rest 1:12/2:00  │
+│        RIR 0 1 2 3 4 5 6+         Rest 1:12/2:00  │
 │ ▸ 3   100 × 8   (tinted current row)              │
 │   4   100 × 8                                     │
 └───────────────────────────────────────────────────┘

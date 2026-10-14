@@ -24,20 +24,21 @@ extension ActiveWorkout {
 
     // MARK: - Reps in reserve
 
-    /// The chips, in reps in reserve. The last one reads "4+".
-    static let rirChips = [0, 1, 2, 3, 4]
+    /// The chips, in reps in reserve: the keypad's choices. The last one reads "6+".
+    static let rirChips = EffortScale.rirChoices
 
-    /// The RPE a chip stores: 0 → 10, 1 → 9, … and 4+ → 6.
+    /// The RPE a chip stores: 0 → 10, 1 → 9, … and 6+ → 4.
     static func rirChip(_ rir: Int) -> Double {
-        EffortScale.rpe(fromRIR: min(max(rir, 0), 4))
+        EffortScale.rpe(fromRIR: min(max(rir, 0), rirChips.last ?? 6))
     }
 
     /// The chip that shows `rpe` as selected, or `nil` for none. A half step chosen on the keypad
-    /// (RPE 8.5) falls between two chips and selects neither; anything easier than RPE 6 is 4+.
+    /// (RPE 8.5) falls between two chips and selects neither; anything easier than RPE 4 is 6+.
     static func rirChip(forRPE rpe: Double?) -> Int? {
         guard let rpe else { return nil }
         let rir = EffortScale.rir(fromRPE: rpe)
-        if rir >= 4 { return 4 }
+        let last = rirChips.last ?? 6
+        if rir >= Double(last) { return last }
         return rir >= 0 && rir == rir.rounded() ? Int(rir) : nil
     }
 

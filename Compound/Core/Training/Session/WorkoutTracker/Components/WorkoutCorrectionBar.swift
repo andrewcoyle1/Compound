@@ -94,7 +94,7 @@ struct WorkoutCorrectionBar: View {
         .accessibilityLabel(label)
     }
 
-    /// "Reps in reserve  0 1 2 3 4+", one tap after the set and never in the way of the next.
+    /// "Reps in reserve  0 1 2 3 4 5 6+", one tap after the set and never in the way of the next.
     private func rirLine(_ correction: SetCorrection) -> some View {
         lineLayout {
             Text("Reps in reserve")
@@ -114,22 +114,16 @@ struct WorkoutCorrectionBar: View {
     }
 
     private func rirChip(_ chip: Int, isSelected: Bool) -> some View {
-        let isLast = chip == ActiveWorkout.rirChips.last
+        let text = EffortScale.rirText(chip)
         return Button {
             onAction(.rir(chip))
         } label: {
-            Group {
-                if isLast {
-                    Chip("4+", isSelected: isSelected)
-                } else {
-                    Chip("\(chip)", isSelected: isSelected)
-                }
-            }
-            .monospacedDigit()
-            .chipTapTarget()
+            Chip(text, isSelected: isSelected)
+                .monospacedDigit()
+                .chipTapTarget()
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel(isLast ? String(localized: "4 or more in reserve") : String(localized: "\(chip) in reserve"))
+        .accessibilityLabel(String(localized: "\(text) reps in reserve"))
     }
 }
 
